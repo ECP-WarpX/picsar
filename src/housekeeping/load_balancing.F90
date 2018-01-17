@@ -584,113 +584,113 @@ MODULE load_balance
 
     ! - Y DIRECTION
     IF (iy2min .GE. iy1min) THEN
-      IF(iy2min .LE. iy1max) THEN
-        l_is_intersectiony=.TRUE.
-        iy3min=iy2min
-        iy3max=MIN(iy2max, iy1max)
-      ENDIF
-    ELSE
-      IF(iy1min .LE. iy2max) THEN
-        l_is_intersectiony=.TRUE.
-        iy3min=iy1min
-        iy3max=MIN(iy1max, iy2max)
-      ENDIF
-    ENDIF
+IF(iy2min .LE. iy1max) THEN
+l_is_intersectiony=.TRUE.
+iy3min=iy2min
+iy3max=MIN(iy2max, iy1max)
+ENDIF
+ELSE
+IF(iy1min .LE. iy2max) THEN
+l_is_intersectiony=.TRUE.
+iy3min=iy1min
+iy3max=MIN(iy1max, iy2max)
+ENDIF
+ENDIF
 
-    ! - Z DIRECTION
-    IF (iz2min .GE. iz1min) THEN
-      IF(iz2min .LE. iz1max) THEN
-        l_is_intersectionz=.TRUE.
-        iz3min=iz2min
-        iz3max=MIN(iz2max, iz1max)
-      ENDIF
-    ELSE
-      IF(iz1min .LE. iz2max) THEN
-        l_is_intersectionz=.TRUE.
-        iz3min=iz1min
-        iz3max=MIN(iz1max, iz2max)
-      ENDIF
-    ENDIF
+! - Z DIRECTION
+IF (iz2min .GE. iz1min) THEN
+IF(iz2min .LE. iz1max) THEN
+l_is_intersectionz=.TRUE.
+iz3min=iz2min
+iz3max=MIN(iz2max, iz1max)
+ENDIF
+ELSE
+IF(iz1min .LE. iz2max) THEN
+l_is_intersectionz=.TRUE.
+iz3min=iz1min
+iz3max=MIN(iz1max, iz2max)
+ENDIF
+ENDIF
 
-    IF (l_is_intersectionx .AND. l_is_intersectiony .AND. l_is_intersectionz)         &
-    l_is_intersection=.TRUE.
+IF (l_is_intersectionx .AND. l_is_intersectiony .AND. l_is_intersectionz)         &
+l_is_intersection=.TRUE.
 
-  END SUBROUTINE get_3Dintersection
+END SUBROUTINE get_3Dintersection
 
 
-  ! ______________________________________________________________________________________
-  !> @brief
-  !> This subroutine get intersection area between two 2D domains
-  !> If no intersection l_is_intersection is .FALSE.
-  !> Useful to determine wether to send/recv datas bases on new CPU split
-  !
-  !> @author
-  !> Henri Vincenti
-  !
-  !> @date
-  !> Creation 2016
-  ! ______________________________________________________________________________________
-  SUBROUTINE get_2Dintersection(ix1min, ix1max, iz1min, iz1max, ix2min, ix2max,       &
-    iz2min, iz2max, ix3min, ix3max, iz3min, iz3max, l_is_intersection)
-    IMPLICIT NONE
-    INTEGER(idp), INTENT(IN) ::  ix1min, ix1max, iz1min, iz1max
-    INTEGER(idp), INTENT(IN) ::  ix2min, ix2max, iz2min, iz2max
-    INTEGER(idp), INTENT(IN OUT) ::  ix3min, ix3max, iz3min, iz3max
-    LOGICAL(lp), INTENT(IN OUT) :: l_is_intersection
-    LOGICAL(lp)  :: l_is_intersectionx, l_is_intersectionz
-    ix3min=0; iz3min=0
-    ix3max=0; iz3max=0
-    l_is_intersectionx=.FALSE.
-    l_is_intersectionz=.FALSE.
-    l_is_intersection=.FALSE.
+! ______________________________________________________________________________________
+!> @brief
+!> This subroutine get intersection area between two 2D domains
+!> If no intersection l_is_intersection is .FALSE.
+!> Useful to determine wether to send/recv datas bases on new CPU split
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2016
+! ______________________________________________________________________________________
+SUBROUTINE get_2Dintersection(ix1min, ix1max, iz1min, iz1max, ix2min, ix2max,       &
+iz2min, iz2max, ix3min, ix3max, iz3min, iz3max, l_is_intersection)
+IMPLICIT NONE
+INTEGER(idp), INTENT(IN) ::  ix1min, ix1max, iz1min, iz1max
+INTEGER(idp), INTENT(IN) ::  ix2min, ix2max, iz2min, iz2max
+INTEGER(idp), INTENT(IN OUT) ::  ix3min, ix3max, iz3min, iz3max
+LOGICAL(lp), INTENT(IN OUT) :: l_is_intersection
+LOGICAL(lp)  :: l_is_intersectionx, l_is_intersectionz
+ix3min=0; iz3min=0
+ix3max=0; iz3max=0
+l_is_intersectionx=.FALSE.
+l_is_intersectionz=.FALSE.
+l_is_intersection=.FALSE.
 
-    ! - X DIRECTION
-    IF (ix2min .GE. ix1min) THEN
-      IF(ix2min .LE. ix1max) THEN
-        l_is_intersectionx=.TRUE.
-        ix3min=ix2min
-        ix3max=MIN(ix2max, ix1max)
-      ENDIF
-    ELSE
-      IF(ix1min .LE. ix2max) THEN
-        l_is_intersectionx=.TRUE.
-        ix3min=ix1min
-        ix3max=MIN(ix1max, ix2max)
-      ENDIF
-    ENDIF
-    ! - Z DIRECTION
-    IF (iz2min .GE. iz1min) THEN
-      IF(iz2min .LE. iz1max) THEN
-        l_is_intersectionz=.TRUE.
-        iz3min=iz2min
-        iz3max=MIN(iz2max, iz1max)
-      ENDIF
-    ELSE
-      IF(iz1min .LE. iz2max) THEN
-        l_is_intersectionz=.TRUE.
-        iz3min=iz1min
-        iz3max=MIN(iz1max, iz2max)
-      ENDIF
-    ENDIF
+! - X DIRECTION
+IF (ix2min .GE. ix1min) THEN
+IF(ix2min .LE. ix1max) THEN
+l_is_intersectionx=.TRUE.
+ix3min=ix2min
+ix3max=MIN(ix2max, ix1max)
+ENDIF
+ELSE
+IF(ix1min .LE. ix2max) THEN
+l_is_intersectionx=.TRUE.
+ix3min=ix1min
+ix3max=MIN(ix1max, ix2max)
+ENDIF
+ENDIF
+! - Z DIRECTION
+IF (iz2min .GE. iz1min) THEN
+IF(iz2min .LE. iz1max) THEN
+l_is_intersectionz=.TRUE.
+iz3min=iz2min
+iz3max=MIN(iz2max, iz1max)
+ENDIF
+ELSE
+IF(iz1min .LE. iz2max) THEN
+l_is_intersectionz=.TRUE.
+iz3min=iz1min
+iz3max=MIN(iz1max, iz2max)
+ENDIF
+ENDIF
 
-    IF (l_is_intersectionx .AND. l_is_intersectionz) l_is_intersection=.TRUE.
+IF (l_is_intersectionx .AND. l_is_intersectionz) l_is_intersection=.TRUE.
 
-  END SUBROUTINE get_2Dintersection
+END SUBROUTINE get_2Dintersection
 
-  ! ______________________________________________________________________________________
-  !> @brief
-  !> This subroutine get intersection area between two 1D z_axis domains(emfield
-  !> emfield_r)
-  !> Useful to determine wether to send/recv datas bases on new CPU split
-  !> Also computes mpi derived types for comms
-  !
-  !> @author
-  !> Haithem Kallala
-  !> @date
-  !> Creation 2017
-  ! ______________________________________________________________________________________
+! ______________________________________________________________________________________
+!> @brief
+!> This subroutine get intersection area between two 1D z_axis domains(emfield
+!> emfield_r)
+!> Useful to determine wether to send/recv datas bases on new CPU split
+!> Also computes mpi derived types for comms
+!
+!> @author
+!> Haithem Kallala
+!> @date
+!> Creation 2017
+! ______________________________________________________________________________________
 
-  SUBROUTINE get1D_intersection_group_mpi
+SUBROUTINE get1D_intersection_group_mpi
 
 #if defined(FFTW)
     USE group_parameters
@@ -727,10 +727,11 @@ MODULE load_balance
     DO i = 1,nprocz
       iz2min = cell_z_min(i)
       iz2max = cell_z_max(i)  
-
+      is_grp_min = group_z_min_boundary
+      is_grp_max = group_z_max_boundary
       CALL compute_findex(iz1min, iz1max, iz2min, iz2max,                             &
       sizes_to_exchange_f_to_recv(i), f_first_cell_to_recv(i),                        &
-      sizes_to_exchange_f_to_send(i), f_first_cell_to_send(i))
+      sizes_to_exchange_f_to_send(i),f_first_cell_to_send(i),is_grp_min,is_grp_max)
     ENDDO
   
     !END OF Field_f perspective, begin field perspective
@@ -745,7 +746,124 @@ MODULE load_balance
     sizes_to_exchange_r_to_send = 0_idp 
     ALLOCATE(r_first_cell_to_send(nprocz))
     r_first_cell_to_send = 0_idp
+    iz1min = cell_z_min(z_coords+1)
+    iz1max = cell_z_max(z_coords+1)
+    DO i=1,nprocz
+      iz2min = cell_z_min_lbg(i)
+      iz2max = cell_z_max_lbg(i) 
+      IF(MODULO(i-1_idp,nb_proc_per_group_z) ==0) THEN
+        is_grp_min = .TRUE.
+      ELSE 
+        is_grp_min = .FALSE.
+      ENDIF
+      IF(MODULO(i,nb_proc_per_group_z) == 0) THEN
+        is_grp_max = .TRUE.
+      ELSE 
+        is_grp_max = .FALSE.
+      ENDIF
+      CALL compute_rindex(iz1min, iz1max, iz2min, iz2max,                             &
+      sizes_to_exchange_r_to_recv(i), r_first_cell_to_recv(i),                        &
+      sizes_to_exchange_r_to_send(i), r_first_cell_to_send(i), is_grp_min,is_grp_max)
+    ENDDO
+    ! Create mpi_derived_types for group communications
+    CALL create_derived_types_groups()
+    ! Cleans computed arrays to delete useless cells (to make the code clearer
+    CALL create_work_group_arrays()
+#endif
+  END SUBROUTINE get1D_intersection_group_mpi
 
+
+
+
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine get intersection area between  2D (y a nd z axes domains(emfield
+  !> emfield_r)
+  !> Useful to determine wether to send/recv datas bases on new CPU split
+  !> Also computes mpi derived types for comms
+  !
+  !> @author
+  !> Haithem Kallala
+  !> @date
+  !> Creation 2018
+  ! ______________________________________________________________________________________
+
+  SUBROUTINE get2D_intersection_group_mpi
+
+#if defined(FFTW)
+    USE group_parameters
+    USE mpi_fftw3
+#endif
+    USE shared_data
+    USE mpi
+    USE mpi_derived_types
+    USE fields , ONLY : nxguards, nyguards, nzguards
+    USE params , ONLY : mpicom_curr
+   
+    IMPLICIT NONE
+    INTEGER(idp)                   :: i,j
+    INTEGER(idp)                   :: iz1min,iz1max,iz2min,iz2max, iy1min,iy1max,iy2min,iy2max  
+    INTEGER(isp)                   :: ierr
+    LOGICAL(lp)                      :: is_grp_min, is_grp_max
+    INTEGER(idp)                     :: nb_proc_per_group_z,nb_proc_per_group_y
+#if defined(FFTW)
+
+    !begin field_f perspective by computing indexes OF ex_r to exchange with ex
+    ALLOCATE(sizes_to_exchange_f_to_recv(nprocz));sizes_to_exchange_f_to_recv = 0_idp
+    ALLOCATE(f_first_cell_to_recv(nprocz));f_first_cell_to_recv = 0_idp
+    ALLOCATE(sizes_to_exchange_f_to_send(nprocz));sizes_to_exchange_f_to_send = 0_idp
+    ALLOCATE(f_first_cell_to_send(nprocz));f_first_cell_to_send = 0_idp
+
+
+
+    nb_proc_per_group_z = nprocz/nb_group_z
+    nb_proc_per_group_y = nprocy/nb_group_y
+    iz1min = cell_z_min_lbg(z_coords+1) 
+    iz1max = cell_z_max_lbg(z_coords+1)
+    is_grp_min = group_z_min_boundary
+    is_grp_max = group_z_max_boundary
+    !compute f index trhou z axis
+    DO i = 1,nprocz
+      iz2min = cell_z_min(i)
+      iz2max = cell_z_max(i)  
+   
+
+      CALL compute_findex(iz1min, iz1max, iz2min, iz2max,                             &
+      sizes_to_exchange_f_to_recv(i), f_first_cell_to_recv(i),                        &
+      sizes_to_exchange_f_to_send(i), f_first_cell_to_send(i),is_grp_min,is_grp_max)
+    ENDDO
+#if defined(P3DFFT)
+
+    IF(p3dfft) THEN
+      ALLOCATE(sizes_to_exchange_f_to_recvy(nprocy)); sizes_to_exchange_f_to_recvy = 0_idp
+      ALLOCATE(f_first_cell_to_recvy(nprocy)); f_first_cell_to_recvy = 0_idp
+      ALLOCATE(sizes_to_exchange_f_to_sendy(nprocy)); sizes_to_exchange_f_to_sendy = 0_idp
+      ALLOCATE(f_first_cell_to_sendy(nprocy)); f_first_cell_to_sendy = 0_idp
+      ! Compute f index through y axis
+      iy1min = cell_y_min_lbg(y_coords+1) 
+      iy1max = cell_y_max_lbg(y_coords+1)  
+      is_grp_min = group_y_min_boundary
+      is_grp_max = group_y_max_boundary
+      DO i = 1 , nprocy
+         iy2min = cell_y_min(i)
+         iy2max = cell_y_max(i) 
+
+         CALL compute_findex(iy1min, iy1max, iy2min,iy2max,sizes_to_exchange_f_to_recvy(i), &
+          f_first_cell_to_recvy(i),                        &
+        sizes_to_exchange_f_to_sendy(i), f_first_cell_to_sendy(i),is_grp_min,is_grp_max)
+      ENDDO
+    ENDIF
+#endif
+    !END OF Field_f perspective, begin field perspective
+
+    !begin field perspective by computing indexes OF ex to exchange with ex_r
+
+    ALLOCATE(sizes_to_exchange_r_to_recv(nprocz)); sizes_to_exchange_r_to_recv = 0_idp
+    ALLOCATE(r_first_cell_to_recv(nprocz)); r_first_cell_to_recv = 0_idp
+    ALLOCATE(sizes_to_exchange_r_to_send(nprocz)); sizes_to_exchange_r_to_send = 0_idp
+    ALLOCATE(r_first_cell_to_send(nprocz));r_first_cell_to_send = 0_idp
+
+    !compute r index trhoug z axis
     iz1min = cell_z_min(z_coords+1)
     iz1max = cell_z_max(z_coords+1)
     DO i=1,nprocz
@@ -766,14 +884,56 @@ MODULE load_balance
       sizes_to_exchange_r_to_recv(i), r_first_cell_to_recv(i),                        &
       sizes_to_exchange_r_to_send(i), r_first_cell_to_send(i), is_grp_min,is_grp_max)
     ENDDO
+#if defined(P3DFFT) 
+    IF(p3dfft) THEN
+      ALLOCATE(sizes_to_exchange_r_to_recvy(nprocy));sizes_to_exchange_r_to_recvy = 0_idp
+      ALLOCATE(r_first_cell_to_recvy(nprocy));r_first_cell_to_recvy = 0_idp
+      ALLOCATE(sizes_to_exchange_r_to_sendy(nprocy));sizes_to_exchange_r_to_sendy = 0_idp 
+      ALLOCATE(r_first_cell_to_sendy(nprocy));r_first_cell_to_sendy = 0_idp
+
+      iy1min = cell_y_min(y_coords+1)
+      iy1max = cell_y_max(y_coords+1)
+      !compute r index trhou y axis
+      DO i=1,nprocy
+        iy2min = cell_y_min_lbg(i)
+        iy2max = cell_y_max_lbg(i) 
+        IF(MODULO(i-1_idp,nb_proc_per_group_y) ==0) THEN
+          is_grp_min = .TRUE.
+        ELSE 
+          is_grp_min = .FALSE.
+        ENDIF
+        IF(MODULO(i,nb_proc_per_group_y) == 0) THEN
+          is_grp_max = .TRUE.
+        ELSE 
+          is_grp_max = .FALSE.
+        ENDIF
+
+        CALL compute_rindex(iy1min, iy1max, iy2min, iy2max,                             &
+        sizes_to_exchange_r_to_recvy(i), r_first_cell_to_recvy(i),                        &
+        sizes_to_exchange_r_to_sendy(i), r_first_cell_to_sendy(i), is_grp_min,is_grp_max)
+      ENDDO
+    ENDIF
+#endif 
 
     ! Create mpi_derived_types for group communications
-    CALL create_derived_types_groups()
+    IF(p3dfft) THEN
+      CALL create_derived_types_groups_p3dfft()
+    ELSE
+      CALL create_derived_types_groups()
+    ENDIF
     ! Cleans computed arrays to delete useless cells (to make the code clearer
     CALL create_work_group_arrays()
 
 #endif
-  END SUBROUTINE get1D_intersection_group_mpi
+  END SUBROUTINE get2D_intersection_group_mpi
+
+
+
+
+
+
+
+
   ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine cleans arrays for mpi group communications (deletes useless
@@ -839,6 +999,7 @@ MODULE load_balance
     n=0
     DO i=1,nprocz
       j = MODULO(z_coords+i-1,nprocz) +1; k = MODULO(z_coords-(i-1),nprocz) +1
+
       IF(sizes_to_exchange_r_to_send(j) .GT. 0 .OR.sizes_to_exchange_f_to_recv(k) .GT. 0) THEN
         n=n+1
         work_array_rf(n)=i
@@ -953,8 +1114,9 @@ MODULE load_balance
    ENDDO
    DEALLOCATE(temp_rs,temp_sr)
 
+
 #endif
-  END SUBROUTINE
+  END SUBROUTINE create_work_group_arrays
   ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine creates mpi derived types for group comms
@@ -1017,6 +1179,85 @@ MODULE load_balance
    ENDDO
 #endif
   END SUBROUTINE create_derived_types_groups
+
+
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine creates mpi derived types for group comms when using pdfft
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
+
+  SUBROUTINE create_derived_types_groups_p3dfft()
+#if defined(FFTW)
+  USE mpi_fftw3
+  USE group_parameters
+#endif
+  USE shared_data
+  USE mpi
+  USE mpi_derived_types
+  USE fields , ONLY : nxguards, nyguards, nzguards
+  INTEGER(idp)         ::  i,j
+  INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
+  INTEGER(isp)                     :: basetype
+
+#if defined(FFTW)
+   basetype = mpidbl
+
+   ALLOCATE(send_type_f(nprocz*nprocy),recv_type_f(nprocz*nprocy))
+
+   DO i = 1,nprocz
+     DO j=1,nprocy
+     ! create rcv type
+     sizes(1) = nx_group
+     sizes(2) = p3d_isize(2)
+     sizes(3) = p3d_isize(3)
+     subsizes(1) = MIN(2*nxguards + nx ,nx_group)
+     subsizes(2) = sizes_to_exchange_f_to_recvy(j)
+     subsizes(3) = sizes_to_exchange_f_to_recv(i)
+     starts = 1
+     recv_type_f((i-1)*nprocy+j) = create_3d_array_derived_type(basetype, subsizes,sizes,starts)
+
+     ! create send type
+     subsizes(2) = sizes_to_exchange_f_to_sendy(j)
+     subsizes(3) = sizes_to_exchange_f_to_send(i)
+     send_type_f((i-1)*nprocy+j) = create_3d_array_derived_type(basetype,subsizes,sizes,starts)
+     ENDDO
+   ENDDO
+
+   ALLOCATE(send_type_r(nprocz*nprocy),recv_type_r(nprocz*nprocy))
+   DO i = 1,nprocz
+     Do j = 1,nprocy
+     ! create rcv type
+     sizes(1) = 2*nxguards + nx + 1
+     sizes(2) = 2*nyguards + ny + 1
+     sizes(3) = 2*nzguards + nz + 1
+     subsizes(1) = MIN(2*nxguards + nx ,nx_group)
+     subsizes(2) = sizes_to_exchange_r_to_recvy(j)
+     subsizes(3) = sizes_to_exchange_r_to_recv(i)
+     starts = 1
+     recv_type_r((i-1)*nprocy+j) = create_3d_array_derived_type(basetype,subsizes,sizes,starts)
+
+     ! create send type
+     subsizes(3) = sizes_to_exchange_r_to_send(i)
+     send_type_r((i-1)*nprocy+j) =create_3d_array_derived_type(basetype,subsizes,sizes,starts)
+     ENDDO
+   ENDDO
+#endif
+  END SUBROUTINE create_derived_types_groups_p3dfft
+
+
+
+
+
+
+
+
+
+
 
   ! ______________________________________________________________________________________
   !> @brief
@@ -1128,7 +1369,7 @@ MODULE load_balance
   ! ______________________________________________________________________________________
   SUBROUTINE compute_findex(iz1min,iz1max,iz2min,iz2max,            &
                            size_to_exchange_recv,first_cell_recv,   &
-                           size_to_exchange_send,first_cell_send)
+                           size_to_exchange_send,first_cell_send,is_group_min,is_group_max)
 #if defined(FFTW)
     USE group_parameters
 #endif
@@ -1138,6 +1379,7 @@ MODULE load_balance
     INTEGER(idp) , INTENT(INOUT)  ::   size_to_exchange_recv,first_cell_recv,size_to_exchange_send,first_cell_send
     INTEGER(idp)                  :: index_rf, index_ff, index_rl, index_fl
     INTEGER(idp)                  :: select_case
+    LOGICAL(lp) ,INTENT(IN)       :: is_group_min,is_group_max
 
 #if defined(FFTW)
     IF(iz1min .GE. 0_idp .AND. iz1max .GE. 0_idp .AND. iz1min .LT. nz_global .AND. iz1max .LT. nz_global)  THEN
@@ -1192,8 +1434,8 @@ MODULE load_balance
 
     index_ff = iz1min
     index_fl = iz1max
-    IF(group_z_min_boundary) index_ff = index_ff + nzg_group
-    IF(group_z_max_boundary) index_fl = index_fl - nzg_group
+    IF(is_group_min) index_ff = index_ff + nzg_group
+    IF(is_group_max) index_fl = index_fl - nzg_group
 
    index_ff= Max(index_ff,0)
    index_fl=MIN(index_fl,nz_global-1)

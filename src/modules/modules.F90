@@ -1061,7 +1061,7 @@ MODULE group_parameters!#do not parse
   !> number of groups (this is a parameter in the input file
   INTEGER(idp)    ::  nb_group, nb_group_z, nb_group_y, nb_group_x 
   !> group sizes of of all groups
-  INTEGER(idp), DIMENSION(:), POINTER :: group_sizes
+  INTEGER(idp), DIMENSION(3) :: group_sizes
   !> To which group this mpi task belongs
   INTEGER(idp)    ::  which_group
   !> x y z coordinats of the group
@@ -1117,6 +1117,14 @@ MODULE group_parameters!#do not parse
   INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: sizes_to_exchange_f_to_send,sizes_to_exchange_r_to_send 
   INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: f_first_cell_to_recv,r_first_cell_to_recv
   INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: f_first_cell_to_send,r_first_cell_to_send
+
+
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: sizes_to_exchange_f_to_recvy,sizes_to_exchange_r_to_recvy
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: sizes_to_exchange_f_to_sendy,sizes_to_exchange_r_to_sendy
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: f_first_cell_to_recvy,r_first_cell_to_recvy
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: f_first_cell_to_sendy,r_first_cell_to_sendy
+
+
   !> TYPE IN WHICH ex_r will be recieving
   !> so recv_type_f is ( 2*nxguards+nx+1 , 2*nyguards+ny+1 , size_z )
   INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: recv_type_f   

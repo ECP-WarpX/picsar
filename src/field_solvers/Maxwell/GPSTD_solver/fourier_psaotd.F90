@@ -204,11 +204,11 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
+
     CALL generalized_comms_group_r2f()
+
     ! Get global Fourier transform of all fields components and currents
     CALL fft_forward_r2c_mpi() 
-
-
   END SUBROUTINE get_Ffields_mpi_lb 
 
   SUBROUTINE get_Ffields_mpi
@@ -427,6 +427,12 @@ MODULE fourier_psaotd
                  by_r(ix,iy,iz-1+f_first_cell_to_send(1))
           bz(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_recv(1)) =&
                  bz_r(ix,iy,iz-1+f_first_cell_to_send(1))
+          jx(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_recv(1))=&
+                jx_r(ix,iy,iz-1+f_first_cell_to_send(1))
+          jy(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_recv(1))=&
+                 jy_r(ix,iy,iz-1+f_first_cell_to_send(1))
+          jz(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_recv(1))=&
+                 jz_r(ix,iy,iz-1+f_first_cell_to_send(1))
         END DO
       END DO
     END DO
@@ -781,22 +787,24 @@ MODULE fourier_psaotd
 #endif
     ENDIF
     CALL init_gpstd()
-    IF(rank==0) WRITE(0, *) 'INIT GPSTD MATRIX DONE'
-    IF (fftw_with_mpi) THEN
-      CALL init_plans_fourier_mpi(nopenmp)
-    ELSE
-      IF(c_dim ==3) THEN
-        CALL fast_fftw_create_plan_r2c_3d_dft(nopenmp, nfftx, nffty, nfftz,ex_r, exf,  &
-        plan_r2c, INT(FFTW_MEASURE, idp), INT(FFTW_FORWARD, idp))
-        CALL fast_fftw_create_plan_c2r_3d_dft(nopenmp, nfftx, nffty, nfftz, exf,ex_r,  &
-        plan_c2r, INT(FFTW_MEASURE, idp), INT(FFTW_BACKWARD, idp))
-      ELSE IF(c_dim == 2) THEN
-        CALL fast_fftw_create_plan_r2c_2d_dft(nopenmp, nfftx, nfftz, ex_r, exf,&
-        plan_r2c, INT(FFTW_MEASURE, idp), INT(FFTW_FORWARD, idp))
-        CALL fast_fftw_create_plan_c2r_2d_dft(nopenmp, nfftx, nfftz, exf, ex_r,&
-        plan_c2r, INT(FFTW_MEASURE, idp), INT(FFTW_BACKWARD, idp))
+    IF(.NOT. p3dfft ) THEN
+      IF(rank==0) WRITE(0, *) 'INIT GPSTD MATRIX DONE'
+      IF (fftw_with_mpi) THEN
+        CALL init_plans_fourier_mpi(nopenmp)
+      ELSE
+        IF(c_dim ==3) THEN
+          CALL fast_fftw_create_plan_r2c_3d_dft(nopenmp, nfftx, nffty, nfftz,ex_r, exf,  &
+          plan_r2c, INT(FFTW_MEASURE, idp), INT(FFTW_FORWARD, idp))
+          CALL fast_fftw_create_plan_c2r_3d_dft(nopenmp, nfftx, nffty, nfftz, exf,ex_r,  &
+          plan_c2r, INT(FFTW_MEASURE, idp), INT(FFTW_BACKWARD, idp))
+        ELSE IF(c_dim == 2) THEN
+          CALL fast_fftw_create_plan_r2c_2d_dft(nopenmp, nfftx, nfftz, ex_r, exf,&
+          plan_r2c, INT(FFTW_MEASURE, idp), INT(FFTW_FORWARD, idp))
+          CALL fast_fftw_create_plan_c2r_2d_dft(nopenmp, nfftx, nfftz, exf, ex_r,&
+          plan_c2r, INT(FFTW_MEASURE, idp), INT(FFTW_BACKWARD, idp))
+        ENDIF
       ENDIF
+      IF(rank==0) WRITE(0, *) 'INIT GPSTD PLANS DONE'
     ENDIF
-    IF(rank==0) WRITE(0, *) 'INIT GPSTD PLANS DONE'
   END SUBROUTINE init_plans_blocks
 END MODULE fourier_psaotd

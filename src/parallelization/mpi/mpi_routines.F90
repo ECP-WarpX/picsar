@@ -242,7 +242,7 @@ MODULE mpi_routines
       IF (nxsplit .LT. nxguards .OR. nysplit .LT. nyguards .OR. nzsplit .LT. &
          nzguards)  THEN
         IF (rank .EQ. 0) THEN
-          WRITE(0, *) 'WRONG CPU SPLIT nlocal<nguards'
+          WRITE(0, *) 'WRONG CPU SPLIT nlocal<nguards 1'
           WRITE(0, *) nxsplit, nysplit, nzsplit
           WRITE(0, *) nx_global_grid, ny_global_grid, nz_global_grid
           CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
@@ -251,7 +251,7 @@ MODULE mpi_routines
     ELSE IF(c_dim ==2) THEN 
       IF (nxsplit .LT. nxguards .OR. nzsplit .LT.  nzguards)  THEN
         IF (rank .EQ. 0) THEN
-          WRITE(0, *) 'WRONG CPU SPLIT nlocal<nguards'
+          WRITE(0, *) 'WRONG CPU SPLIT nlocal<nguards 2'
           WRITE(0, *) nxsplit, nzsplit
           WRITE(0, *) nx_global_grid, nz_global_grid
           CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
@@ -568,7 +568,7 @@ INTEGER(idp) :: group_size
 INTEGER(isp), ALLOCATABLE, DIMENSION(:)    :: grp_id, grp_comm, local_roots_rank
 INTEGER(isp), ALLOCATABLE, DIMENSION(:, :) :: grp_ranks
 INTEGER(isp)                                :: roots_grp, roots_comm
-INTEGER(idp)  :: i,j,temp
+INTEGER(idp)  ::cur, i,j,temp,k,l
 INTEGER(idp), DIMENSIOn(:), ALLOCATABLE :: all_nz_group, all_iz_max_r, all_iz_min_r,  &
  all_nz_lb, all_nzp, all_iz_min_lbg, all_iz_max_lbg, all_ny_group, all_nz
 INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg,iy_min_lbg, &
@@ -595,13 +595,18 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
      WRITE(*,*)"ERROR cant run with p3dfft in 2d case"
      CALL MPI_ABORT(comm,errcode,ierr)
   ENDIF
-
+ 
   nb_group_x = nprocx
+  IF(MODULO(nprocx,nb_group_x) .NE. 0 .OR. MODULO(nprocy,nb_group_y) .NE. 0 .OR. MODULO(nprocz,nb_group_z) .NE. 0 ) THEN
+    WRITE(*,*)"ERROR please set nb groups_i to divide nproci"
+    CALL MPI_ABORT(comm,errcode,ierr)
+  ENDIF
   nb_group = nb_group_z*nb_group_y*nb_group_x
-  group_size = nprocx*nprocy*nprocz
-  z_group_coords = z_coords/(nprocz*nb_group_z)
-  y_group_coords = y_coords/(nprocy*nb_group_y)
-  x_group_coords = x_coords/(nprocx*nb_group_x)
+  group_size = (nprocx*nprocy*nprocz)/nb_group
+  group_sizes(1) =nprocx/nb_group_x;group_sizes(2)=nprocy/nb_group_y;group_sizes(3) = nprocz/nb_group_z
+  z_group_coords = z_coords/group_sizes(3)
+  y_group_coords = y_coords/group_sizes(2)
+  x_group_coords = x_coords/group_sizes(1)
 
   ALLOCATE(grp_id(nb_group), grp_comm(nb_group), local_roots_rank(nb_group))
   ALLOCATE(grp_ranks(group_size, nb_group))
@@ -614,29 +619,39 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
     grp_comm(i)  = MPI_COMM_NULL
     grp_id(i) = MPI_GROUP_NULL
   ENDDO
-  DO j=1, nprocx*nprocy/nb_group_y
-    local_roots_rank(j) = INT(j-1, isp)
+!  DO j=1, nprocx*nprocy/nb_group_y
+!    local_roots_rank(j) = INT(j-1, isp)
+!  ENDDO
+!  DO j=nprocx*nprocy/nb_group_y+1, nb_group
+!    i = j-nprocx*nprocy/nb_group_y
+!    local_roots_rank(j) = local_roots_rank(i)+group_size*nprocx*nprocy/nb_group_y
+!  ENDDO
+  DO l=0,nb_group-1
+     k = l/(nb_group_x*nb_group_y)
+     j = (l-k*nb_group_x*nb_group_y)/nb_group_x
+     i = l-k*nb_group_x*nb_group_y -j*nb_group_x
+     local_roots_rank(l+1) = i*group_sizes(1) + j*group_sizes(2)*nb_group_x+k*group_sizes(3)*nb_group_x*nb_group_y 
+
+  ENDDO 
+  DO l=1,nb_group
+     DO i=1,group_sizes(1)
+       DO j=1,group_sizes(2)
+         DO k=1,group_sizes(3)
+            cur= local_roots_rank(l) + (i-1) +(j-1)*nprocx + (k-1)*nprocx*nprocy
+            grp_ranks((i-1)+(j-1)*group_sizes(1)+(k-1)*group_sizes(1)*group_sizes(2)+1,l) = cur
+         ENDDO
+       ENDDO
+     ENDDO
   ENDDO
-  DO j=nprocx*nprocy/nb_group_y+1, nb_group
-    i = j-nprocx*nprocy/nb_group_y
-    local_roots_rank(j) = local_roots_rank(i)+group_size*nprocx*nprocy/nb_group_y
-  ENDDO
-  DO j = 1, nb_group
-    grp_ranks(1, j) = local_roots_rank(j)
-    DO i = 2, group_size
-      grp_ranks(i, j) = grp_ranks(i-1, j) + nprocx*nprocy
-    ENDDO
-  ENDDO
- 
+
   DO i= 1, nb_group
     CALL MPI_GROUP_INCL(MPI_WORLD_GROUP, INT(group_size, isp), grp_ranks(:, i),       &
     grp_id(i), errcode)
     CALL MPI_COMM_CREATE_GROUP(comm, grp_id(i), 0, grp_comm(i), errcode)
   ENDDO
-  
   roots_grp = MPI_GROUP_NULL
   roots_comm = MPI_COMM_NULL
-  
+ 
   CALL MPI_GROUP_INCL(MPI_WORLD_GROUP, INT(nb_group, isp), local_roots_rank,          &
   roots_grp,  errcode)
   
@@ -850,7 +865,6 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
       ENDIF
     ENDIF
   ENDDO
-
   ! THE NEXT ERROR COULD BE REMOVED WITH ADVANCED LOAD BALANCING 
   IF(is_lb_grp .EQV. .FALSE.) THEN
     IF(local_nz .LE. nzg_group) THEN
@@ -972,7 +986,6 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
 #endif
 
 #endif
-
 END SUBROUTINE setup_groups
 
 SUBROUTINE adjust_grid_mpi_global
@@ -1067,7 +1080,7 @@ ALLOCATE(cell_z_min(1:nprocz), cell_z_max(1:nprocz))
 
 #if defined(FFTW)
 ! With fftw_with_mpi CPU split is performed only along z
-IF (fftw_with_mpi) THEN
+IF (fftw_with_mpi .AND. .NOT. fftw_hybrid) THEN
   mz=INT(nz_global,C_INTPTR_T); ly=INT(ny_global,C_INTPTR_T); kx=INT(nx_global,C_INTPTR_T)
   !   get local data size and allocate (note dimension reversal)
   IF(.NOT. fftw_mpi_transpose) THEN

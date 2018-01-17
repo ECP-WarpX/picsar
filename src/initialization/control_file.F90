@@ -91,6 +91,9 @@ MODULE control_file
     l_spectral = .FALSE.! (no spectral solver by default)
     g_spectral = .FALSE.! (no spectral sovler by default)
     l_staggered = .TRUE.! (staggered scheme by default )
+    nb_group_x = 1
+    nb_group_y = 1
+    nb_group_z = 1
     ! --- Order of current deposition/ field gathering
     ! (default is 1 in x, y, z)
     nox = 1
@@ -829,13 +832,13 @@ MODULE control_file
         READ(buffer(ix+1:string_length), '(i10)') nzjguards
 #if defined(FFTW)
 #if defined(P3DFFT)
-      ELSE IF (INDEX(buffer, 'nzg_group') .GT. 0) THEN
+      ELSE IF (INDEX(buffer, 'ngguards_z') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') nzg_group
-      ELSE IF (INDEX(buffer, 'nyg_group') .GT. 0) THEN
+      ELSE IF (INDEX(buffer, 'ngguards_y') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') nyg_group
-      ELSE IF (INDEX(buffer, 'nxg_group') .GT. 0) THEN
+      ELSE IF (INDEX(buffer, 'ngguards_x') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') nxg_group
 #endif
