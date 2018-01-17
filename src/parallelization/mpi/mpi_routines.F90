@@ -584,7 +584,10 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
   CALL MPI_COMM_GROUP(comm, MPI_WORLD_GROUP, errcode)
   IF(.NOT. p3dfft) THEN
     nb_group_y = nprocy
+    nyg_group = nyguards
   ENDIF
+  nb_group_x = nprocx
+
 #if defined(P3DFFT) 
   IF(p3dfft) THEN
     IF(nb_group_y == nprocy) p3dfft = .FALSE. 
@@ -595,8 +598,7 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
      WRITE(*,*)"ERROR cant run with p3dfft in 2d case"
      CALL MPI_ABORT(comm,errcode,ierr)
   ENDIF
- 
-  nb_group_x = nprocx
+
   IF(MODULO(nprocx,nb_group_x) .NE. 0 .OR. MODULO(nprocy,nb_group_y) .NE. 0 .OR. MODULO(nprocz,nb_group_z) .NE. 0 ) THEN
     WRITE(*,*)"ERROR please set nb groups_i to divide nproci"
     CALL MPI_ABORT(comm,errcode,ierr)
@@ -948,7 +950,7 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
   !to take into account odd cases
   ix_min_r = 1
   ix_max_r = nx + 2*nxg_group
-#if !defined(P3DFFT)
+  IF(.NOT. p3dfft) THEN
   nz_lb = MAX(iz_max_r - iz_min_r +1,0)
   nz_grid_lb = nz_lb+1
 
@@ -972,13 +974,15 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
     cell_z_min_f(i) = cell_z_max_f(i-1) + 1
     cell_z_max_f(i) = cell_z_min_f(i)-1 + all_nzp(i)
   ENDDO
-  
-  
+
+  iy_min_r = 1
+  iy_max_r = ny + 2*nyguards
   nz_global_grid_min_lb = cell_z_min_f(z_coords+1)
   nz_global_grid_max_lb = cell_z_max_f(z_coords+1)+1
   
   DEALLOCATE(all_nz_lb, all_nzp)
-#endif
+  ENDIF
+
   DEALLOCATE(grp_id, grp_comm, local_roots_rank, grp_ranks)
 
 #if defined(DEBUG)
