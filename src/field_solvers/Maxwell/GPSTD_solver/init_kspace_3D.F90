@@ -169,7 +169,7 @@ MODULE gpstd_solver
     IF(.NOT. p3dfft) nfftxr = nfftx/2+1
 #if defined(P3DFFT)
     IF(p3dfft) THEN
-      nfftxr = p3d_fsize(1)
+      nfftxr = nfftx
     ENDIF
 #endif
     DO i = 1_idp, 10_idp
@@ -458,8 +458,8 @@ MODULE gpstd_solver
           kxb = k_temp (p3d_fstart(1):p3d_fend(1))
           DEALLOCATE(k_temp)
         ENDIF
-      ENDIF
-#endif
+        ELSE
+#else
       IF(.NOT. fftw_mpi_transpose) THEN
         ALLOCATE(k_temp(nfftz))
         k_temp = kzc
@@ -484,7 +484,12 @@ MODULE gpstd_solver
         kzb = k_temp(local_y0+1:local_y0+local_ny)
       ENDIF
       DEALLOCATE(k_temp)
+#endif
+      ENDIF
+#if defined(P3DFFT)
     ENDIF
+#endif
+
     DEALLOCATE(onesx, onesy, onesz, onesxp, onesyp, oneszp)
     IF(fftw_mpi_transpose) THEN
       sd=dz;dz=dy;dy=sd
@@ -590,15 +595,22 @@ MODULE gpstd_solver
     USE fields, ONLY : g_spectral, norderx, nordery, norderz, nxguards, nyguards,     &
          nzguards, exf, eyf, ezf, bxf, byf, bzf, jxf, jyf, jzf, rhooldf, rhof
     USE params, ONLY : dt
+    USE  group_parameters
 
     INTEGER(idp)           :: i, j, k, p
     COMPLEX(cpx)           :: ii
     LOGICAL(lp)            :: needed
-    INTEGER(idp)           :: nfftx, nffty, nfftz
+    INTEGER(idp)           :: nfftx, nffty, nfftz,nfftxr
     LOGICAL(lp)            :: switch
     REAL(num)              :: coeff_norm
 
     CALL select_case_dims_local(nfftx, nffty, nfftz)
+    IF(.NOT. p3dfft) nfftxr = nfftx/2+1
+#if defined(P3DFFT)
+    IF(p3dfft) THEN
+      nfftxr = p3d_fsize(1)
+    ENDIF
+#endif
     ii=DCMPLX(0., 1.)
     CALL allocate_new_matrix_vector(11_idp)
     CALL init_kspace
@@ -606,9 +618,9 @@ MODULE gpstd_solver
       DO j=1_idp, 11_idp
           CALL is_calculation_needed(i, j, needed)
           IF(g_spectral .OR. needed) THEN
-            ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(nfftx/2+1, nffty,    &
+            ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(nfftxr, nffty,    &
             nfftz))
-            cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = nfftx/2+1
+            cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = nfftxr
             cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = nffty
             cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = nfftz
           ENDIF
@@ -627,12 +639,12 @@ MODULE gpstd_solver
         vold(nmatrixes)%block_vector(10)%block3dc => rhooldf
         vold(nmatrixes)%block_vector(11)%block3dc => rhof
       DO i=1_idp,11_idp
-        ALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc(nfftx/2+1, nffty,&
+        ALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc(nfftxr, nffty,&
         nfftz))
-        vnew(nmatrixes)%block_vector(i)%nx = nfftx/2+1
+        vnew(nmatrixes)%block_vector(i)%nx = nfftxr
         vnew(nmatrixes)%block_vector(i)%ny = nffty
         vnew(nmatrixes)%block_vector(i)%nz = nfftz
-        vold(nmatrixes)%block_vector(i)%nx = nfftx/2+1
+        vold(nmatrixes)%block_vector(i)%nx = nfftxr
         vold(nmatrixes)%block_vector(i)%ny = nffty
         vold(nmatrixes)%block_vector(i)%nz = nfftz
       ENDDO

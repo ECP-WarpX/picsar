@@ -587,20 +587,19 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
     nyg_group = nyguards
   ENDIF
   nb_group_x = nprocx
-
-#if defined(P3DFFT) 
-  IF(p3dfft) THEN
-    IF(nb_group_y == nprocy) p3dfft = .FALSE. 
-    !in case of p3dcall and nb_mpi_pergroup_in_y_direction=1 then call fftw instead of p3d
-  ENDIF
-#endif
+  
   IF(c_dim==2 .AND. p3dfft)  THEN
-     WRITE(*,*)"ERROR cant run with p3dfft in 2d case"
-     CALL MPI_ABORT(comm,errcode,ierr)
+     IF(rank==0) THEN
+       WRITE(*,*)"ERROR cant run with p3dfft in 2d case"
+       WRITE(*,*)"p3dfft = .FALSE."
+     ENDIF
+     p3dfft = .FALSE.
   ENDIF
-
+  IF(p3dfft) THEN
+    fftw_mpi_transpose = .FALSE.
+  ENDIF
   IF(MODULO(nprocx,nb_group_x) .NE. 0 .OR. MODULO(nprocy,nb_group_y) .NE. 0 .OR. MODULO(nprocz,nb_group_z) .NE. 0 ) THEN
-    WRITE(*,*)"ERROR please set nb groups_i to divide nproci"
+    IF(rank==0)   WRITE(*,*)"ERROR please set nb groups_i to divide nproci"
     CALL MPI_ABORT(comm,errcode,ierr)
   ENDIF
   nb_group = nb_group_z*nb_group_y*nb_group_x
@@ -621,19 +620,12 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
     grp_comm(i)  = MPI_COMM_NULL
     grp_id(i) = MPI_GROUP_NULL
   ENDDO
-!  DO j=1, nprocx*nprocy/nb_group_y
-!    local_roots_rank(j) = INT(j-1, isp)
-!  ENDDO
-!  DO j=nprocx*nprocy/nb_group_y+1, nb_group
-!    i = j-nprocx*nprocy/nb_group_y
-!    local_roots_rank(j) = local_roots_rank(i)+group_size*nprocx*nprocy/nb_group_y
-!  ENDDO
+
   DO l=0,nb_group-1
      k = l/(nb_group_x*nb_group_y)
      j = (l-k*nb_group_x*nb_group_y)/nb_group_x
      i = l-k*nb_group_x*nb_group_y -j*nb_group_x
-     local_roots_rank(l+1) = i*group_sizes(1) + j*group_sizes(2)*nb_group_x+k*group_sizes(3)*nb_group_x*nb_group_y 
-
+     local_roots_rank(l+1) = i*group_sizes(1) + j*group_sizes(2)*nb_group_x+k*group_sizes(3)*nprocx*nprocy
   ENDDO 
   DO l=1,nb_group
      DO i=1,group_sizes(1)
@@ -647,6 +639,7 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
   ENDDO
 
   DO i= 1, nb_group
+
     CALL MPI_GROUP_INCL(MPI_WORLD_GROUP, INT(group_size, isp), grp_ranks(:, i),       &
     grp_id(i), errcode)
     CALL MPI_COMM_CREATE_GROUP(comm, grp_id(i), 0, grp_comm(i), errcode)
@@ -860,9 +853,9 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
        local_nz = p3d_iend(3) - p3d_istart(3)+1
        local_ny = p3d_iend(2) - p3d_istart(2)+1  
        local_nx = p3d_iend(1) - p3d_istart(1)+1
-       local_z0 = p3d_istart(3)
-       local_y0 = p3d_istart(2)
-       local_x0 = p3d_istart(1)
+       local_z0 = p3d_istart(3) - 1 
+       local_y0 = p3d_istart(2) - 1
+       local_x0 = p3d_istart(1) - 1
 #endif
       ENDIF
     ENDIF
@@ -1247,7 +1240,7 @@ IF(fftw_hybrid) THEN
   IF(is_lb_grp) THEN
 
     ! computes subdomains and group fields intersection
-    CALL get1D_intersection_group_mpi()
+    CALL get2D_intersection_group_mpi()
   ELSE IF(.NOT. is_lb_grp) THEN
 
     ! Load balancing is not used ,grid decomposition is that of
@@ -1521,31 +1514,44 @@ IF (l_spectral) THEN
       nkx = p3d_fsize(1)
       nky = p3d_fsize(2) 
       nkz = p3d_fsize(3)
+      ALLOCATE(exf(p3d_fstart(1):p3d_fend(1),p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
+      ALLOCATE(eyf(p3d_fstart(1):p3d_fend(1),p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
+      ALLOCATE(ezf(p3d_fstart(1):p3d_fend(1),p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
+      ALLOCATE(bxf(p3d_fstart(1):p3d_fend(1),p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
+      ALLOCATE(byf(p3d_fstart(1):p3d_fend(1),p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
+      ALLOCATE(bzf(p3d_fstart(1):p3d_fend(1),p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
+      ALLOCATE(jxf(p3d_fstart(1):p3d_fend(1),p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
+      ALLOCATE(jyf(p3d_fstart(1):p3d_fend(1),p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
+      ALLOCATE(jzf(p3d_fstart(1):p3d_fend(1),p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
+      ALLOCATE(rhof(p3d_fstart(1):p3d_fend(1),p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
+      ALLOCATE(rhooldf(p3d_fstart(1):p3d_fend(1),p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
+
+    ELSE
+      ! - Allocate complex arrays
+      cdata = fftw_alloc_complex(alloc_local)
+      CALL c_f_pointer(cdata, exf, [nkx, nky, nkz])
+      cdata = fftw_alloc_complex(alloc_local)
+      CALL c_f_pointer(cdata, eyf, [nkx, nky, nkz])
+      cdata = fftw_alloc_complex(alloc_local)
+      CALL c_f_pointer(cdata, ezf, [nkx, nky, nkz])
+      cdata = fftw_alloc_complex(alloc_local)
+      CALL c_f_pointer(cdata, bxf, [nkx, nky, nkz])
+      cdata = fftw_alloc_complex(alloc_local)
+      CALL c_f_pointer(cdata, byf, [nkx, nky, nkz])
+      cdata = fftw_alloc_complex(alloc_local)
+      CALL c_f_pointer(cdata, bzf, [nkx, nky, nkz])
+      cdata = fftw_alloc_complex(alloc_local)
+      CALL c_f_pointer(cdata, jxf, [nkx, nky, nkz])
+      cdata = fftw_alloc_complex(alloc_local)
+      CALL c_f_pointer(cdata, jyf, [nkx, nky, nkz])
+      cdata = fftw_alloc_complex(alloc_local)
+      CALL c_f_pointer(cdata, jzf, [nkx, nky, nkz])
+      cdata = fftw_alloc_complex(alloc_local)
+      CALL c_f_pointer(cdata, rhof, [nkx, nky, nkz])
+      cdata = fftw_alloc_complex(alloc_local)
+      CALL c_f_pointer(cdata, rhooldf, [nkx, nky, nkz])
+      cdata = fftw_alloc_complex(alloc_local)
     ENDIF
-    ! - Allocate complex arrays
-    cdata = fftw_alloc_complex(alloc_local)
-    CALL c_f_pointer(cdata, exf, [nkx, nky, nkz])
-    cdata = fftw_alloc_complex(alloc_local)
-    CALL c_f_pointer(cdata, eyf, [nkx, nky, nkz])
-    cdata = fftw_alloc_complex(alloc_local)
-    CALL c_f_pointer(cdata, ezf, [nkx, nky, nkz])
-    cdata = fftw_alloc_complex(alloc_local)
-    CALL c_f_pointer(cdata, bxf, [nkx, nky, nkz])
-    cdata = fftw_alloc_complex(alloc_local)
-    CALL c_f_pointer(cdata, byf, [nkx, nky, nkz])
-    cdata = fftw_alloc_complex(alloc_local)
-    CALL c_f_pointer(cdata, bzf, [nkx, nky, nkz])
-    cdata = fftw_alloc_complex(alloc_local)
-    CALL c_f_pointer(cdata, jxf, [nkx, nky, nkz])
-    cdata = fftw_alloc_complex(alloc_local)
-    CALL c_f_pointer(cdata, jyf, [nkx, nky, nkz])
-    cdata = fftw_alloc_complex(alloc_local)
-    CALL c_f_pointer(cdata, jzf, [nkx, nky, nkz])
-    cdata = fftw_alloc_complex(alloc_local)
-    CALL c_f_pointer(cdata, rhof, [nkx, nky, nkz])
-    cdata = fftw_alloc_complex(alloc_local)
-    CALL c_f_pointer(cdata, rhooldf, [nkx, nky, nkz])
-    cdata = fftw_alloc_complex(alloc_local)
     ! - Allocate real arrays
     IF(fftw_mpi_transpose .AND. fftw_hybrid) THEN
       nkx = nx_group/2+1
@@ -1585,17 +1591,17 @@ IF (l_spectral) THEN
       nkx = p3d_isize(1) 
       nky = p3d_isize(2) 
       nkz = p3d_isize(3) 
-      ALLOCATE(ex_r(nkx,nky,nkz))
-      ALLOCATE(ey_r(nkx,nky,nkz))
-      ALLOCATE(ez_r(nkx,nky,nkz))
-      ALLOCATE(bx_r(nkx,nky,nkz))
-      ALLOCATE(by_r(nkx,nky,nkz))
-      ALLOCATE(bz_r(nkx,nky,nkz))
-      ALLOCATE(jx_r(nkx,nky,nkz))
-      ALLOCATE(jy_r(nkx,nky,nkz))
-      ALLOCATE(jz_r(nkx,nky,nkz))
-      ALLOCATE(rho_r(nkx,nky,nkz))
-      ALLOCATE(rhoold_r(nkx,nky,nkz))
+      ALLOCATE(ex_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),p3d_istart(3):p3d_iend(3)))
+      ALLOCATE(ey_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),p3d_istart(3):p3d_iend(3)))
+      ALLOCATE(ez_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),p3d_istart(3):p3d_iend(3)))
+      ALLOCATE(bx_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),p3d_istart(3):p3d_iend(3)))
+      ALLOCATE(by_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),p3d_istart(3):p3d_iend(3)))
+      ALLOCATE(bz_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),p3d_istart(3):p3d_iend(3)))
+      ALLOCATE(jx_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),p3d_istart(3):p3d_iend(3)))
+      ALLOCATE(jy_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),p3d_istart(3):p3d_iend(3)))
+      ALLOCATE(jz_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),p3d_istart(3):p3d_iend(3)))
+      ALLOCATE(rho_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),p3d_istart(3):p3d_iend(3)))
+      ALLOCATE(rhoold_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),p3d_istart(3):p3d_iend(3)))
     ENDIF      
   ELSE
     nkx=(2*nxguards+nx)/2+1! Real To Complex Transform

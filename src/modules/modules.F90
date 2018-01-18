@@ -1113,10 +1113,13 @@ MODULE group_parameters!#do not parse
   INTEGER(idp)                               :: nz_global_grid_min_lb , nz_global_grid_max_lb
   !> Cell domain for load balancing general case (taking into account guardcells
   INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: cell_z_min_lbg, cell_z_max_lbg, cell_y_min_lbg, cell_y_max_lbg
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: sizes_to_exchange_f_to_recv, sizes_to_exchange_r_to_recv
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: sizes_to_exchange_f_to_send,sizes_to_exchange_r_to_send 
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: f_first_cell_to_recv,r_first_cell_to_recv
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: f_first_cell_to_send,r_first_cell_to_send
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: sizes_to_exchange_f_to_recvz, sizes_to_exchange_r_to_recvz
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: sizes_to_exchange_f_to_sendz,sizes_to_exchange_r_to_sendz 
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: f_first_cell_to_recvz,r_first_cell_to_recvz
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: f_first_cell_to_sendz,r_first_cell_to_sendz
+
+  INTEGER(idp)  , DIMENSION(:,:) , ALLOCATABLE :: sizes_to_exchange_f_to_recv,sizes_to_exchange_r_to_recv
+  INTEGER(idp)  , DIMENSION(:,:) , ALLOCATABLE :: sizes_to_exchange_f_to_send,sizes_to_exchange_r_to_send
 
 
   INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: sizes_to_exchange_f_to_recvy,sizes_to_exchange_r_to_recvy

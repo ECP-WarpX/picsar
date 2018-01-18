@@ -135,17 +135,6 @@ MODULE fourier_psaotd
     ENDIF
     ! Init fourier fields fields
 #if !defined(LIBRARY)
-!    CALL copy_field(ex_r, nfftx, nffty, nfftz, ex, nxx, nyy, nzz)
-!    CALL copy_field(ey_r, nfftx, nffty, nfftz, ey, nxx, nyy, nzz)
-!    CALL copy_field(ez_r, nfftx, nffty, nfftz, ez, nxx, nyy, nzz)
-!    CALL copy_field(bx_r, nfftx, nffty, nfftz, bx, nxx, nyy, nzz)
-!    CALL copy_field(by_r, nfftx, nffty, nfftz, by, nxx, nyy, nzz)
-!    CALL copy_field(bz_r, nfftx, nffty, nfftz, bz, nxx, nyy, nzz)
-!    CALL copy_field(jx_r, nfftx, nffty, nfftz, jx, nxx, nyy, nzz)
-!    CALL copy_field(jy_r, nfftx, nffty, nfftz, jy, nxx, nyy, nzz)
-!    CALL copy_field(jz_r, nfftx, nffty, nfftz, jz, nxx, nyy, nzz)
-!    CALL copy_field(rho_r, nfftx, nffty, nfftz, rho, nxx, nyy, nzz)
-!    CALL copy_field(rhoold_r, nfftx, nffty, nfftz, rhoold, nxx, nyy, nzz)
      CALL copy_field_forward()
 #endif
     IF (it.ge.timestat_itstart) THEN
@@ -168,35 +157,41 @@ MODULE fourier_psaotd
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz
     REAL(num)    :: tmptime
+    INTEGER(idp)  :: p3d_offset(3)
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
+    IF(p3dfft) THEN
+      p3d_offset = p3d_istart-1
+    ELSE
+      p3d_offset =0
+    ENDIF
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-    DO iz=1,sizes_to_exchange_f_to_recv(1)
-      DO iy=iy_min_r,iy_max_r
+    DO iz=1,sizes_to_exchange_f_to_recvz(1)
+      DO iy =1,sizes_to_exchange_f_to_recvy(1)
         DO ix =ix_min_r,ix_max_r
-           ex_r(ix,iy,iz-1+f_first_cell_to_recv(1)) =&
-                 ex(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(1))
-           ey_r(ix,iy,iz-1+f_first_cell_to_recv(1)) =&
-                 ey(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(1))
-           ez_r(ix,iy,iz-1+f_first_cell_to_recv(1)) =&
-                 ez(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(1))
-           bx_r(ix,iy,iz-1+f_first_cell_to_recv(1)) =&
-                 bx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(1))
-           by_r(ix,iy,iz-1+f_first_cell_to_recv(1)) =&
-                 by(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(1))
-           bz_r(ix,iy,iz-1+f_first_cell_to_recv(1)) =& 
-                bz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(1))
-           jx_r(ix,iy,iz-1+f_first_cell_to_recv(1)) =& 
-                jx(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(1))
-           jy_r(ix,iy,iz-1+f_first_cell_to_recv(1)) =&
-                 jy(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(1))
-           jz_r(ix,iy,iz-1+f_first_cell_to_recv(1)) =& 
-                jz(ix-ix_min_r-nxguards, iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(1))
-           rho_r(ix,iy,iz-1+f_first_cell_to_recv(1)) = &
-                 rho(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(1))
-           rhoold_r(ix,iy,iz-1+f_first_cell_to_recv(1)) =&
-                 rhoold(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_send(1))
+           ex_r(ix+p3d_offset(1),iy-1+f_first_cell_to_recvy(1)+p3d_offset(2),iz-1+f_first_cell_to_recvz(1)+p3d_offset(3)) =&
+                 ex(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_sendy(1) ,iz-1+r_first_cell_to_sendz(1))
+           ey_r(ix+p3d_offset(1),iy-1+f_first_cell_to_recvy(1)+p3d_offset(2),iz-1+f_first_cell_to_recvz(1)+p3d_offset(3))=&
+                 ey(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_sendy(1),iz-1+r_first_cell_to_sendz(1))
+           ez_r(ix+p3d_offset(1),iy-1+f_first_cell_to_recvy(1)+p3d_offset(2),iz-1+f_first_cell_to_recvz(1)+p3d_offset(3))=&
+                 ez(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_sendy(1),iz-1+r_first_cell_to_sendz(1))
+           bx_r(ix+p3d_offset(1),iy-1+f_first_cell_to_recvy(1)+p3d_offset(2),iz-1+f_first_cell_to_recvz(1)+p3d_offset(3))=&
+                 bx(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_sendy(1),iz-1+r_first_cell_to_sendz(1))
+           by_r(ix+p3d_offset(1),iy-1+f_first_cell_to_recvy(1)+p3d_offset(2),iz-1+f_first_cell_to_recvz(1)+p3d_offset(3))=&
+                 by(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_sendy(1),iz-1+r_first_cell_to_sendz(1))
+           bz_r(ix+p3d_offset(1),iy-1+f_first_cell_to_recvy(1)+p3d_offset(2),iz-1+f_first_cell_to_recvz(1)+p3d_offset(3))=&
+                 bz(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_sendy(1),iz-1+r_first_cell_to_sendz(1))
+           jx_r(ix+p3d_offset(1),iy-1+f_first_cell_to_recvy(1)+p3d_offset(2),iz-1+f_first_cell_to_recvz(1)+p3d_offset(3))=&
+                 jx(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_sendy(1),iz-1+r_first_cell_to_sendz(1))
+           jy_r(ix+p3d_offset(1),iy-1+f_first_cell_to_recvy(1)+p3d_offset(2),iz-1+f_first_cell_to_recvz(1)+p3d_offset(3))=&
+                 jy(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_sendy(1),iz-1+r_first_cell_to_sendz(1))
+           jz_r(ix+p3d_offset(1),iy-1+f_first_cell_to_recvy(1)+p3d_offset(2),iz-1+f_first_cell_to_recvz(1)+p3d_offset(3))=&
+                 jz(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_sendy(1),iz-1+r_first_cell_to_sendz(1))
+           rho_r(ix+p3d_offset(1),iy-1+f_first_cell_to_recvy(1)+p3d_offset(2),iz-1+f_first_cell_to_recvz(1)+p3d_offset(3))=&
+                 rho(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_sendy(1),iz-1+r_first_cell_to_sendz(1))
+           rhoold_r(ix+p3d_offset(1),iy-1+f_first_cell_to_recvy(1)+p3d_offset(2),iz-1+f_first_cell_to_recvz(1)+p3d_offset(3))=&
+                 rhoold(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_sendy(1),iz-1+r_first_cell_to_sendz(1))
         ENDDO
       ENDDO
     ENDDO
@@ -320,12 +315,6 @@ MODULE fourier_psaotd
     ENDIF
 
 #if !defined (LIBRARY)
-!    CALL copy_field(ex, nxx, nyy, nzz, ex_r, nfftx, nffty, nfftz)
-!    CALL copy_field(ey, nxx, nyy, nzz, ey_r, nfftx, nffty, nfftz)
-!    CALL copy_field(ez, nxx, nyy, nzz, ez_r, nfftx, nffty, nfftz)
-!    CALL copy_field(bx, nxx, nyy, nzz, bx_r, nfftx, nffty, nfftz)
-!    CALL copy_field(by, nxx, nyy, nzz, by_r, nfftx, nffty, nfftz)
-!    CALL copy_field(bz, nxx, nyy, nzz, bz_r, nfftx, nffty, nfftz)
      CALL copy_field_backward
 #endif
     IF (it.ge.timestat_itstart) THEN
@@ -406,33 +395,44 @@ MODULE fourier_psaotd
     IMPLICIT NONE
     REAL(num) ::  tmptime
     INTEGER(idp) :: ix, iy, iz
+    INTEGER(idp) :: p3d_offset(3) 
     ! Get global Fourier transform of all fields components 
     CALL fft_forward_c2r_mpi
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
+    IF(p3dfft) THEN
+      p3d_offset=p3d_istart-1
+    ELSE
+      p3d_offset = 0
+    ENDIF
+jy_r=1.0_num/(nx_group*ny_group*nz_group)*jy_r
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-    DO iz=1,sizes_to_exchange_r_to_recv(1)
-      DO iy=iy_min_r, iy_max_r
+    DO iz=1,sizes_to_exchange_r_to_recvz(1)
+      DO iy=1,sizes_to_exchange_r_to_recvy(1)
         DO ix=ix_min_r, ix_max_r
-          ex(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_recv(1)) =&
-                 ex_r(ix,iy,iz-1+f_first_cell_to_send(1))
-          ey(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_recv(1)) =& 
-                ey_r(ix,iy,iz-1+f_first_cell_to_send(1))
-          ez(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_recv(1)) =&
-                 ez_r(ix,iy,iz-1+f_first_cell_to_send(1))
-          bx(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_recv(1)) =& 
-                bx_r(ix,iy,iz-1+f_first_cell_to_send(1))
-          by(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_recv(1)) =&
-                 by_r(ix,iy,iz-1+f_first_cell_to_send(1))
-          bz(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_recv(1)) =&
-                 bz_r(ix,iy,iz-1+f_first_cell_to_send(1))
-          jx(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_recv(1))=&
-                jx_r(ix,iy,iz-1+f_first_cell_to_send(1))
-          jy(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_recv(1))=&
-                 jy_r(ix,iy,iz-1+f_first_cell_to_send(1))
-          jz(ix-ix_min_r-nxguards,iy-iy_min_r-nyguards,iz-1+r_first_cell_to_recv(1))=&
-                 jz_r(ix,iy,iz-1+f_first_cell_to_send(1))
+          ex(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_recvy(1),iz-1+r_first_cell_to_recvz(1)) =&
+                 ex_r(ix+p3d_offset(1),iy-1+f_first_cell_to_sendy(1)+p3d_offset(2),iz-1+f_first_cell_to_sendz(1)+p3d_offset(3))
+
+          ey(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_recvy(1),iz-1+r_first_cell_to_recvz(1))=&
+                 ey_r(ix+p3d_offset(1),iy-1+f_first_cell_to_sendy(1)+p3d_offset(2),iz-1+f_first_cell_to_sendz(1)+p3d_offset(3))
+
+          ez(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_recvy(1),iz-1+r_first_cell_to_recvz(1))=&
+                 ez_r(ix+p3d_offset(1),iy-1+f_first_cell_to_sendy(1)+p3d_offset(2),iz-1+f_first_cell_to_sendz(1)+p3d_offset(3))
+
+          bx(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_recvy(1),iz-1+r_first_cell_to_recvz(1))=&
+                 bx_r(ix+p3d_offset(1),iy-1+f_first_cell_to_sendy(1)+p3d_offset(2),iz-1+f_first_cell_to_sendz(1)+p3d_offset(3))
+
+          by(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_recvy(1),iz-1+r_first_cell_to_recvz(1))=&
+                 by_r(ix+p3d_offset(1),iy-1+f_first_cell_to_sendy(1)+p3d_offset(2),iz-1+f_first_cell_to_sendz(1)+p3d_offset(3))
+
+          bz(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_recvy(1),iz-1+r_first_cell_to_recvz(1))=&
+                 bz_r(ix+p3d_offset(1),iy-1+f_first_cell_to_sendy(1)+p3d_offset(2),iz-1+f_first_cell_to_sendz(1)+p3d_offset(3))
+
+          jy(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_recvy(1),iz-1+r_first_cell_to_recvz(1))=&
+               jy_r(ix+p3d_offset(1),iy-1+f_first_cell_to_sendy(1)+p3d_offset(2),iz-1+f_first_cell_to_sendz(1)+p3d_offset(3))
+
+
         END DO
       END DO
     END DO
@@ -480,22 +480,41 @@ MODULE fourier_psaotd
     USE time_stat
     USE shared_data
     USE params
+    USE group_parameters
+#if defined(P3DFFT) 
+    USE p3dfft
+#endif
     REAL(num)   :: tmptime
 
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
-    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ex_r, exf)
-    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ey_r, eyf)
-    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ez_r, ezf)
-    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bx_r, bxf)
-    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, by_r, byf)
-    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bz_r, bzf)
-    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jx_r, jxf)
-    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jy_r, jyf)
-    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jz_r, jzf)
-    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rho_r, rhof)
-    CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rhoold_r, rhooldf)
+    IF(.NOT. p3dfft) THEN
+      CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ex_r, exf)
+      CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ey_r, eyf)
+      CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ez_r, ezf)
+      CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bx_r, bxf)
+      CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, by_r, byf)
+      CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bz_r, bzf)
+      CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jx_r, jxf)
+      CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jy_r, jyf)
+      CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jz_r, jzf)
+      CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rho_r, rhof)
+      CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rhoold_r, rhooldf)
+    ELSE
+     CALL p3dfft_ftran_r2c (ex_r,exf,'fft')
+     CALL p3dfft_ftran_r2c (ey_r,eyf,'fft')
+     CALL p3dfft_ftran_r2c (ez_r,ezf,'fft')
+     CALL p3dfft_ftran_r2c (bx_r,bxf,'fft')
+     CALL p3dfft_ftran_r2c (by_r,byf,'fft')
+     CALL p3dfft_ftran_r2c (bz_r,bzf,'fft')
+     CALL p3dfft_ftran_r2c (jx_r,jxf,'fft')
+     CALL p3dfft_ftran_r2c (jy_r,jyf,'fft')
+     CALL p3dfft_ftran_r2c (jy_r,jzf,'fft')
+     CALL p3dfft_ftran_r2c (rho_r,rhof,'fft')
+     CALL p3dfft_ftran_r2c (rhoold_r,rhooldf,'fft')
+
+    ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
     ENDIF
@@ -522,6 +541,7 @@ MODULE fourier_psaotd
       CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, bxf, bx_r, plan_c2r)
       CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, byf, by_r, plan_c2r)
       CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, bzf, bz_r, plan_c2r)
+
     ELSE IF(g_spectral) THEN
       CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, vnew(nmatrixes)%block_vector(1)%block3dc, ex_r, plan_c2r)
       CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, vnew(nmatrixes)%block_vector(2)%block3dc, ey_r, plan_c2r)
@@ -543,25 +563,55 @@ MODULE fourier_psaotd
     USE time_stat
     USE shared_data
     USE params
+#if defined(P3DFFT)
+    USE p3dfft
+#endif
     REAL(num)   :: tmptime
 
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
     IF(.NOT. g_spectral) THEN
-    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, exf, ex_r)
-    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, eyf, ey_r)
-    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, ezf, ez_r)
-    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bxf, bx_r)
-    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, byf, by_r)
-    CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bzf, bz_r)
+    IF(.NOT. p3dfft) THEN
+      CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, exf, ex_r)
+      CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, eyf, ey_r)
+      CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, ezf, ez_r)
+      CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bxf, bx_r)
+      CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, byf, by_r)
+      CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bzf, bz_r)
+
+      CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, jyf, jy_r)
+
+
+    ELSE
+      CALL p3dfft_btran_c2r (exf,ex_r,'tff')
+      CALL p3dfft_btran_c2r (eyf,ey_r,'tff')
+      CALL p3dfft_btran_c2r (ezf,ez_r,'tff')
+      CALL p3dfft_btran_c2r (bxf,bx_r,'tff')
+      CALL p3dfft_btran_c2r (byf,by_r,'tff')
+      CALL p3dfft_btran_c2r (bzf,bz_r,'tff')
+
+      CALL p3dfft_btran_c2r (jyf,jy_r,'tff')
+
+
+    ENDIF
+
     ELSE IF(g_spectral) THEN
-      CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(1)%block3dc,ex_r)
-      CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(2)%block3dc,ey_r)
-      CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(3)%block3dc,ez_r)
-      CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(4)%block3dc,bx_r)
-      CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(5)%block3dc,by_r)
-      CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(6)%block3dc,bz_r)
+      IF(.NOT. p3dfft) THEN
+        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(1)%block3dc,ex_r)
+        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(2)%block3dc,ey_r)
+        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(3)%block3dc,ez_r)
+        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(4)%block3dc,bx_r)
+        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(5)%block3dc,by_r)
+        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(6)%block3dc,bz_r)
+       ELSE
+        CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(1)%block3dc,ex_r,'tff')
+        CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(2)%block3dc,ey_r,'tff')
+        CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(3)%block3dc,ez_r,'tff')
+        CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(4)%block3dc,bx_r,'tff')
+        CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(5)%block3dc,by_r,'tff')
+        CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(6)%block3dc,bz_r,'tff')
+       ENDIF
     ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
@@ -665,10 +715,13 @@ MODULE fourier_psaotd
     USE time_stat
     USE params
     USE mpi_fftw3
+    USE group_parameters
     IMPLICIT NONE
     INTEGER(idp) ::  ix, iy, iz, nxx, nyy, nzz
     REAL(num) :: tmptime
-    COMPLEX(cpx) :: bxfold, byfold, bzfold, exfold, eyfold, ezfold
+    COMPLEX(cpx) :: bxfold, byfold, bzfold, exfold, eyfold, ezfold,&
+        jxfold,jyfold,jzfold, rhofold,rhooldfold
+    INTEGER(idp) :: p3d_offset(3)
 
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
@@ -676,72 +729,88 @@ MODULE fourier_psaotd
     nxx=size(exf(:, 1, 1))
     nyy=size(exf(1, :, 1))
     nzz=size(exf(1, 1, :))
+    IF(p3dfft) THEN
+      p3d_offset = p3d_fstart-1
+    ELSE
+      p3d_offset =0
+    ENDIF
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, exfold, eyfold, ezfold,     &
-    !$OMP bxfold, byfold, bzfold) COLLAPSE(3)
+    !$OMP bxfold, byfold, bzfold,jxfold,jyfold,jzfold,rhofold,rhooldfold) COLLAPSE(3)
     DO iz=1, nzz
       DO iy=1, nyy
         DO ix=1, nxx
           ! - Bx
-          exfold=exf(ix, iy, iz)
-          eyfold=eyf(ix, iy, iz)
-          ezfold=ezf(ix, iy, iz)
-          bxfold=bxf(ix, iy, iz)
-          byfold=byf(ix, iy, iz)
-          bzfold=bzf(ix, iy, iz)
+          exfold=exf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3))
+          eyfold=eyf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3))
+          ezfold=ezf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3))
+          bxfold=bxf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3))
+          byfold=byf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3))
+          bzfold=bzf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3))
+          jxfold=jxf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3))
+          jyfold=jyf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3))
+          jzfold=jzf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3))
+          rhofold=rhof(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3))
+          rhooldfold=rhooldf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3))
 
-          bxf(ix, iy, iz) = cc_mat(nmatrixes)%block_matrix2d(4, 4)%block3dc(ix, iy,   &
+
+          bxf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3)) = &
+          cc_mat(nmatrixes)%block_matrix2d(4, 4)%block3dc(ix, iy,   &
           iz)*bxfold + cc_mat(nmatrixes)%block_matrix2d(4, 2)%block3dc(ix, iy,        &
           iz)*eyfold + cc_mat(nmatrixes)%block_matrix2d(4, 3)%block3dc(ix, iy,        &
           iz)*ezfold + cc_mat(nmatrixes)%block_matrix2d(4, 8)%block3dc(ix, iy,        &
-          iz)*jyf(ix, iy, iz) + cc_mat(nmatrixes)%block_matrix2d(4, 9)%block3dc(ix,   &
-          iy, iz)*jzf(ix, iy, iz)
+          iz)*jyfold + cc_mat(nmatrixes)%block_matrix2d(4, 9)%block3dc(ix,   &
+          iy, iz)*jzfold
 
           ! - By
-          byf(ix, iy, iz) = cc_mat(nmatrixes)%block_matrix2d(5, 5)%block3dc(ix, iy,   &
+          byf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3)) = &
+          cc_mat(nmatrixes)%block_matrix2d(5, 5)%block3dc(ix, iy,   &
           iz)*byfold + cc_mat(nmatrixes)%block_matrix2d(5, 1)%block3dc(ix, iy,        &
           iz)*exfold + cc_mat(nmatrixes)%block_matrix2d(5, 3)%block3dc(ix, iy,        &
           iz)*ezfold + cc_mat(nmatrixes)%block_matrix2d(5, 7)%block3dc(ix, iy,        &
-          iz)*jxf(ix, iy, iz) + cc_mat(nmatrixes)%block_matrix2d(5, 9)%block3dc(ix,   &
-          iy, iz)*jzf(ix, iy, iz)
+          iz)*jxfold + cc_mat(nmatrixes)%block_matrix2d(5, 9)%block3dc(ix,   &
+          iy, iz)*jzfold
 
 
           ! - Bz
-          bzf(ix, iy, iz) = cc_mat(nmatrixes)%block_matrix2d(6, 6)%block3dc(ix, iy,   &
+          bzf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3)) =  &
+          cc_mat(nmatrixes)%block_matrix2d(6, 6)%block3dc(ix, iy,   &
           iz)*bzfold + cc_mat(nmatrixes)%block_matrix2d(6, 1)%block3dc(ix, iy,        &
           iz)*exfold+ cc_mat(nmatrixes)%block_matrix2d(6, 2)%block3dc(ix, iy,         &
           iz)*eyfold+ cc_mat(nmatrixes)%block_matrix2d(6, 7)%block3dc(ix, iy,         &
-          iz)*jxf(ix, iy, iz)+ cc_mat(nmatrixes)%block_matrix2d(6, 8)%block3dc(ix,    &
-          iy, iz)*jyf(ix, iy, iz)
+          iz)*jxfold+ cc_mat(nmatrixes)%block_matrix2d(6, 8)%block3dc(ix,    &
+          iy, iz)*jyfold
 
           ! Push E a full time step
           ! - Ex
-          exf(ix, iy, iz) = cc_mat(nmatrixes)%block_matrix2d(1, 1)%block3dc(ix, iy,   &
+          exf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3)) = &
+          cc_mat(nmatrixes)%block_matrix2d(1, 1)%block3dc(ix, iy,   &
           iz)*exfold + cc_mat(nmatrixes)%block_matrix2d(1, 5)%block3dc(ix, iy,        &
           iz)*byfold + cc_mat(nmatrixes)%block_matrix2d(1, 6)%block3dc(ix, iy,        &
           iz)*bzfold + cc_mat(nmatrixes)%block_matrix2d(1, 7)%block3dc(ix, iy,        &
-          iz)*jxf(ix, iy, iz)     + cc_mat(nmatrixes)%block_matrix2d(1,               &
-          11)%block3dc(ix, iy, iz)*rhof(ix, iy, iz) +                                 &
-          cc_mat(nmatrixes)%block_matrix2d(1, 10)%block3dc(ix, iy, iz)*rhooldf(ix,    &
-          iy, iz)
+          iz)*jxfold     + cc_mat(nmatrixes)%block_matrix2d(1,               &
+          11)%block3dc(ix, iy, iz)*rhofold       +                                 &
+          cc_mat(nmatrixes)%block_matrix2d(1, 10)%block3dc(ix, iy, iz)*rhooldfold
 
           ! - Ey
-          eyf(ix, iy, iz) = cc_mat(nmatrixes)%block_matrix2d(2, 2)%block3dc(ix, iy,   &
+          eyf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3)) = &
+          cc_mat(nmatrixes)%block_matrix2d(2, 2)%block3dc(ix, iy,   &
           iz)*eyfold + cc_mat(nmatrixes)%block_matrix2d(2, 4)%block3dc(ix, iy,        &
           iz)*bxfold  + cc_mat(nmatrixes)%block_matrix2d(2, 6)%block3dc(ix, iy,       &
           iz)*bzfold  + cc_mat(nmatrixes)%block_matrix2d(2, 8)%block3dc(ix, iy,       &
-          iz)*jyf(ix, iy, iz) + cc_mat(nmatrixes)%block_matrix2d(2, 11)%block3dc(ix,  &
-          iy, iz)*rhof(ix, iy, iz) + cc_mat(nmatrixes)%block_matrix2d(2,              &
-          10)%block3dc(ix, iy, iz)*rhooldf(ix, iy, iz)
+          iz)*jyfold + cc_mat(nmatrixes)%block_matrix2d(2, 11)%block3dc(ix,  &
+          iy, iz)*rhofold + cc_mat(nmatrixes)%block_matrix2d(2,              &
+          10)%block3dc(ix, iy, iz)*rhooldfold
 
 
           ! - Ez
-          ezf(ix, iy, iz) = cc_mat(nmatrixes)%block_matrix2d(3, 3)%block3dc(ix, iy,   &
+          ezf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3)) = &
+          cc_mat(nmatrixes)%block_matrix2d(3, 3)%block3dc(ix, iy,   &
           iz)*ezfold + cc_mat(nmatrixes)%block_matrix2d(3, 4)%block3dc(ix, iy,        &
           iz)*bxfold + cc_mat(nmatrixes)%block_matrix2d(3, 5)%block3dc(ix, iy,        &
           iz)*byfold + cc_mat(nmatrixes)%block_matrix2d(3, 9)%block3dc(ix, iy,        &
-          iz)*jzf(ix, iy, iz) + cc_mat(nmatrixes)%block_matrix2d(3, 11)%block3dc(ix,  &
-          iy, iz)*rhof(ix, iy, iz) + cc_mat(nmatrixes)%block_matrix2d(3,              &
-          10)%block3dc(ix, iy, iz)*rhooldf(ix, iy, iz)
+          iz)*jzfold + cc_mat(nmatrixes)%block_matrix2d(3, 11)%block3dc(ix,  &
+          iy, iz)*rhofold + cc_mat(nmatrixes)%block_matrix2d(3,              &
+          10)%block3dc(ix, iy, iz)*rhooldfold
 
 
         END DO

@@ -65,6 +65,7 @@ SUBROUTINE step(nst)
 #if defined(FFTW)
   USE gpstd_solver
   USE mpi_fftw3
+  USE group_parameters
 #endif
 #if (defined(VTUNE) && VTUNE>0)
   USE ITT_FORTRAN
@@ -104,7 +105,6 @@ SUBROUTINE step(nst)
   ! ___________________________________________
   ! Loop in 3D
   IF (c_dim.eq.3) THEN
-
     rhoold=0.0_num
     rho = 0.0_num
     DO i=1, nst
@@ -145,6 +145,8 @@ SUBROUTINE step(nst)
         !write(0, *), 'Current_bcs'
         CALL current_bcs
       ENDIF
+!ey=rank+1
+!call efield_bcs
 #if defined(FFTW)
       IF (l_spectral) THEN
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
@@ -329,6 +331,7 @@ SUBROUTINE initall
   USE tiling
   USE time_stat
 #if defined(FFTW)
+  USE group_parameters
   USE fourier_psaotd
   USE gpstd_solver
 #endif
@@ -470,8 +473,9 @@ SUBROUTINE initall
     write(0, '(" FFTW - parameters ")')
     IF (l_spectral)    write(0, '(" PSATD Maxwell Solver")')
     IF (fftw_with_mpi) write(0, '(" FFTW distributed version - MPI ")')
-    IF (fftw_hybrid)   write(0, '(" FFTW distributed version, - MPI GROUPS ALOG 3      &
-    AXIS")')
+    IF (fftw_hybrid)   write(0, '(" FFTW distributed version")')
+    IF (p3dfft)   write(0, '(" USING PDFFT")')
+    IF(fftw_hybrid) write(0, '(" nb_groups :", I5, X, I5, X, I5)') nb_group_x,nb_group_y,nb_group_z
     IF (fftw_threads_ok) write(0, '(" FFTW MPI - Threaded support enabled ")')
     IF (fftw_mpi_transpose) write(0, '(" FFTW MPI Transpose plans enabled ")')
     IF (is_lb_grp) write(0, '(" FFTW hybrid balanced ")')
