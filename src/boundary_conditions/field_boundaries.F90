@@ -729,8 +729,8 @@ MODULE field_boundary
       tmptime = MPI_WTIME()
     ENDIF
 
-    nxx = 2*(nx_group/2+1)
-    nyy = ny_group
+    nxx = local_nx 
+    nyy = local_ny
     nzz = local_nz
     IF(mpicom_curr == 1) THEN
       CALL sendrecv_rf_generalized(ex,nx,nxguards,ny,nyguards,nz,nzguards,ex_r,nxx,nyy,nzz)
@@ -800,6 +800,8 @@ MODULE field_boundary
       IF(sizes_to_exchange_r_to_sendz(ii) == 0) rank_to_send_to = MPI_PROC_NULL
       IF(sizes_to_exchange_f_to_recvy(ii) == 0) rank_to_recv_from =MPI_PROC_NULL
       IF(sizes_to_exchange_r_to_sendy(ii) == 0) rank_to_send_to = MPI_PROC_NULL
+!if(rank==0)print*,'aaa',recv_type_f(ii),rank_to_recv_from,sizes_to_exchange_f_to_recvz(ii),sizes_to_exchange_f_to_recvy(ii)
+!if(rank==3)print*,'bbb',send_type_r(ii),rank_to_send_to,sizes_to_exchange_r_to_sendz(ii),sizes_to_exchange_r_to_sendy(ii)
 
       CALL MPI_SENDRECV(field(-nxg, r_first_cell_to_sendy(ii), r_first_cell_to_sendz(ii)), 1_isp, send_type_r(ii),   &
       rank_to_send_to,tag,field_f(1, f_first_cell_to_recvy(ii), f_first_cell_to_recvz(ii)), 1_isp, recv_type_f(ii),  &
@@ -889,8 +891,8 @@ MODULE field_boundary
       tmptime = MPI_WTIME()
     ENDIF
 
-    nxx = 2*(nx_group/2+1)
-    nyy = ny_group
+    nxx = local_nx 
+    nyy = local_ny
     nzz = local_nz
     IF(mpicom_curr ==1) THEN
       CALL sendrecv_fr_generalized(ex,nx,nxguards,ny,nyguards,nz,nzguards,ex_r,nxx,nyy,nzz)
@@ -913,7 +915,6 @@ MODULE field_boundary
 
 
       CALL sendrecv_fr_generalized_non_blocking(jy,nx,nxguards,ny,nyguards,nz,nzguards,jy_r,nxx,nyy,nzz)
-
 
  
     ENDIF

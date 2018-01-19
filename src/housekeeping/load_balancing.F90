@@ -991,7 +991,6 @@ SUBROUTINE get1D_intersection_group_mpi
      ALLOCATE(sizes_to_exchange_r_to_send(nprocy,nprocz), &
          sizes_to_exchange_f_to_recv(nprocy,nprocz)    )
      
-
     DO i=1,nprocy
       DO j=1,nprocz
         sizes_to_exchange_f_to_send(i,j) = sizes_to_exchange_f_to_sendy(i)*sizes_to_exchange_f_to_sendz(j)
@@ -1086,7 +1085,7 @@ SUBROUTINE get1D_intersection_group_mpi
       n=0
       DO i=1,nprocy
         DO j=1,nprocz
-          IF(i ==1 .AND. j==1) CYCLE
+          IF(i ==y_coords+1 .AND. j==z_coords+1) CYCLE
           IF(sizes_to_exchange_r_to_send(i,j) .GT. 0) n = n + 1
           IF(sizes_to_exchange_f_to_recv(i,j) .GT. 0) n = n +1
         ENDDO
@@ -1096,7 +1095,7 @@ SUBROUTINE get1D_intersection_group_mpi
       n=0 
       DO i=1,nprocy
         DO j=1,nprocz
-          IF(i==1 .AND. j==1) CYCLE
+          IF(i==y_coords+1 .AND. j==z_coords+1) CYCLE
           IF(sizes_to_exchange_f_to_send(i,j) .GT. 0) n = n+1
           IF(sizes_to_exchange_r_to_recv(i,j) .GT. 0) n = n+1
         ENDDO
@@ -1112,8 +1111,7 @@ SUBROUTINE get1D_intersection_group_mpi
     DO i=1,nprocy
       DO j=1,nprocz
         ii =MODULO(y_coords+i-1,nprocy)+1; kk=MODULO(y_coords-(i-1),nprocy) +1
-        jj = MODULO(z_coords+i-1,nprocz) +1; ll =MODULO(z_coords-(i-1),nprocz)+1
- 
+        jj = MODULO(z_coords+j-1,nprocz) +1; ll =MODULO(z_coords-(j-1),nprocz)+1
         IF(sizes_to_exchange_r_to_send(ii,jj) .GT. 0     &
           .OR. sizes_to_exchange_f_to_recv(kk,ll) .GT. 0)  n=n+1
       ENDDO
@@ -1121,11 +1119,10 @@ SUBROUTINE get1D_intersection_group_mpi
     ALLOCATE(work_array_rf(n))
     work_array_rf=0
     n=0
-
     DO i=1,nprocy
       DO j=1,nprocz
         ii =MODULO(y_coords+i-1,nprocy)+1; kk= MODULO(y_coords-(i-1),nprocy) +1
-        jj = MODULO(z_coords+i-1,nprocz) +1; ll = MODULO(z_coords-(i-1),nprocz)+1
+        jj = MODULO(z_coords+j-1,nprocz) +1; ll = MODULO(z_coords-(j-1),nprocz)+1
         IF(sizes_to_exchange_r_to_send(ii,jj) .GT. 0     &
           .OR. sizes_to_exchange_f_to_recv(kk,ll) .GT. 0) THEN
           n=n+1
@@ -1138,7 +1135,7 @@ SUBROUTINE get1D_intersection_group_mpi
     DO i=1,nprocy
       DO j=1,nprocz
         ii =MODULO(y_coords+i-1,nprocy)+1; kk= MODULO(y_coords-(i-1),nprocy) +1
-        jj = MODULO(z_coords+i-1,nprocz) +1; ll = MODULO(z_coords-(i-1),nprocz) +1
+        jj = MODULO(z_coords+j-1,nprocz) +1; ll = MODULO(z_coords-(j-1),nprocz) +1
         IF(sizes_to_exchange_f_to_send(ii,jj) .GT. 0     &
           .OR. sizes_to_exchange_r_to_recv(kk,ll) .GT. 0)  n=n+1
       ENDDO
@@ -1150,7 +1147,7 @@ SUBROUTINE get1D_intersection_group_mpi
     DO i=1,nprocy
     DO j=1,nprocz
       ii =MODULO(y_coords+i-1,nprocy)+1; kk= MODULO(y_coords-(i-1),nprocy) +1
-      jj =MODULO(z_coords+i-1,nprocz) +1; ll = MODULO(z_coords-(i-1),nprocz) +1
+      jj =MODULO(z_coords+j-1,nprocz) +1; ll = MODULO(z_coords-(j-1),nprocz) +1
       IF(sizes_to_exchange_f_to_send(ii,jj) .GT. 0     &
         .OR. sizes_to_exchange_r_to_recv(kk,ll) .GT. 0) THEN  
         n=n+1
@@ -1161,7 +1158,6 @@ SUBROUTINE get1D_intersection_group_mpi
 
     nb_comms_rf = SIZE(work_array_rf)
     nb_comms_fr = SIZE(work_array_fr)
-
     DO i=1,nprocy
       DO j=1,nprocz
       IF(sizes_to_exchange_f_to_send(i,j) .LE. 0) THEN
@@ -1419,16 +1415,17 @@ SUBROUTINE get1D_intersection_group_mpi
    DO i = 1,nprocz
      DO j=1,nprocy
      ! create rcv type
-     sizes(1) = nx_group
-     sizes(2) = p3d_isize(2)
-     sizes(3) = p3d_isize(3)
-     subsizes(1) = MIN(2*nxguards + nx ,nx_group)
+     sizes(1) = local_nx
+     sizes(2) = local_ny
+     sizes(3) = local_nz
+     subsizes(1) = MIN(2*nxguards + nx ,local_nx)
      subsizes(2) = sizes_to_exchange_f_to_recvy(j)
      subsizes(3) = sizes_to_exchange_f_to_recvz(i)
      starts = 1
      recv_type_f((i-1)*nprocy+j) = create_3d_array_derived_type(basetype, subsizes,sizes,starts)
 
      ! create send type
+     subsizes(1) = MIN(2*nxguards + nx ,nx_group)
      subsizes(2) = sizes_to_exchange_f_to_sendy(j)
      subsizes(3) = sizes_to_exchange_f_to_sendz(i)
      send_type_f((i-1)*nprocy+j) = create_3d_array_derived_type(basetype,subsizes,sizes,starts)
@@ -1442,13 +1439,15 @@ SUBROUTINE get1D_intersection_group_mpi
      sizes(1) = 2*nxguards + nx + 1
      sizes(2) = 2*nyguards + ny + 1
      sizes(3) = 2*nzguards + nz + 1
-     subsizes(1) = MIN(2*nxguards + nx ,nx_group)
+     subsizes(1) = MIN(2*nxguards + nx ,local_nx)
      subsizes(2) = sizes_to_exchange_r_to_recvy(j)
      subsizes(3) = sizes_to_exchange_r_to_recvz(i)
      starts = 1
      recv_type_r((i-1)*nprocy+j) = create_3d_array_derived_type(basetype,subsizes,sizes,starts)
 
      ! create send type
+     subsizes(1) = MIN(2*nxguards + nx ,nx_group)
+     subsizes(2) = sizes_to_exchange_r_to_sendy(j)
      subsizes(3) = sizes_to_exchange_r_to_sendz(i)
      send_type_r((i-1)*nprocy+j) =create_3d_array_derived_type(basetype,subsizes,sizes,starts)
      ENDDO

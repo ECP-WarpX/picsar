@@ -91,9 +91,11 @@ MODULE control_file
     l_spectral = .FALSE.! (no spectral solver by default)
     g_spectral = .FALSE.! (no spectral sovler by default)
     l_staggered = .TRUE.! (staggered scheme by default )
+#if defined(FFTW)
     nb_group_x = 1
     nb_group_y = 1
     nb_group_z = 1
+#endif
     ! --- Order of current deposition/ field gathering
     ! (default is 1 in x, y, z)
     nox = 1

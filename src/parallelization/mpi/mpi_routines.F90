@@ -828,7 +828,7 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
             local_ny = ny_group 
             local_y0 =0 
           ENDIF
-          local_nx = nx_group  
+          local_nx = 2*(nx_group/2+1) 
           local_x0 =0
         ELSE IF(c_dim == 2) THEN
           alloc_local = FFTW_MPI_LOCAL_SIZE_2D(nz_group, nx_group/2+1,                      &
@@ -839,7 +839,7 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
           ENDIF
             local_ny = ny_group
             local_y0 = 0
-            local_nx = nx_group  
+            local_nx = 2*(nx_group/2+1) 
             local_x0 = 0
         ENDIF
       ELSE 
@@ -850,9 +850,9 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
           MPI_COMM_GROUP_ID(i),INT(nx_group,isp),INT(ny_group,isp),INT(nz_group,isp),.FALSE.)
        CALL p3dfft_get_dims(p3d_istart,p3d_iend,p3d_isize,1)
        CALL p3dfft_get_dims(p3d_fstart,p3d_fend,p3d_fsize,2)
-       local_nz = p3d_iend(3) - p3d_istart(3)+1
-       local_ny = p3d_iend(2) - p3d_istart(2)+1  
-       local_nx = p3d_iend(1) - p3d_istart(1)+1
+       local_nz = p3d_isize(3)!p3d_iend(3) - p3d_istart(3)+1
+       local_ny = p3d_isize(2)!p3d_iend(2) - p3d_istart(2)+1  
+       local_nx = p3d_isize(1)!p3d_iend(1) - p3d_istart(1)+1
        local_z0 = p3d_istart(3) - 1 
        local_y0 = p3d_istart(2) - 1
        local_x0 = p3d_istart(1) - 1

@@ -204,6 +204,7 @@ MODULE fourier_psaotd
 
     ! Get global Fourier transform of all fields components and currents
     CALL fft_forward_r2c_mpi() 
+
   END SUBROUTINE get_Ffields_mpi_lb 
 
   SUBROUTINE get_Ffields_mpi
@@ -406,7 +407,7 @@ MODULE fourier_psaotd
     ELSE
       p3d_offset = 0
     ENDIF
-jy_r=1.0_num/(nx_group*ny_group*nz_group)*jy_r
+jy_r=1.0/(nx_group*ny_group*nz_group)*jy_r
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
     DO iz=1,sizes_to_exchange_r_to_recvz(1)
       DO iy=1,sizes_to_exchange_r_to_recvy(1)
