@@ -145,8 +145,6 @@ SUBROUTINE step(nst)
         !write(0, *), 'Current_bcs'
         CALL current_bcs
       ENDIF
-!ey=rank+1
-!call efield_bcs
 #if defined(FFTW)
       IF (l_spectral) THEN
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD

@@ -1076,6 +1076,13 @@ ALLOCATE(cell_y_min(1:nprocy), cell_y_max(1:nprocy))
 ALLOCATE(cell_z_min(1:nprocz), cell_z_max(1:nprocz))
 
 #if defined(FFTW)
+IF(fftw_hybrid) fftw_with_mpi = .TRUE.
+IF(p3dfft) THEN
+  fftw_with_mpi = .TRUE.
+  fftw_hybrid = .TRUE.
+  is_lb_grp = .TRUE.
+  fftw_mpi_transpose = .FALSE.
+endif
 ! With fftw_with_mpi CPU split is performed only along z
 IF (fftw_with_mpi .AND. .NOT. fftw_hybrid) THEN
   mz=INT(nz_global,C_INTPTR_T); ly=INT(ny_global,C_INTPTR_T); kx=INT(nx_global,C_INTPTR_T)

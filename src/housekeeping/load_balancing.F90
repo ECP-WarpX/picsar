@@ -677,102 +677,6 @@ IF (l_is_intersectionx .AND. l_is_intersectionz) l_is_intersection=.TRUE.
 
 END SUBROUTINE get_2Dintersection
 
-! ______________________________________________________________________________________
-!> @brief
-!> This subroutine get intersection area between two 1D z_axis domains(emfield
-!> emfield_r)
-!> Useful to determine wether to send/recv datas bases on new CPU split
-!> Also computes mpi derived types for comms
-!
-!> @author
-!> Haithem Kallala
-!> @date
-!> Creation 2017
-! ______________________________________________________________________________________
-
-SUBROUTINE get1D_intersection_group_mpi
-
-#if defined(FFTW)
-    USE group_parameters
-    USE mpi_fftw3
-#endif
-    USE shared_data
-    USE mpi
-    USE mpi_derived_types
-    USE fields , ONLY : nxguards, nyguards, nzguards
-    USE params , ONLY : mpicom_curr
-   
-    IMPLICIT NONE
-    INTEGER(idp)                   :: i
-    INTEGER(idp)                   :: iz1min,iz1max,iz2min,iz2max  
-    INTEGER(isp)                   :: ierr
-    LOGICAL(lp)                      :: is_grp_min, is_grp_max
-    INTEGER(idp)                     :: nb_proc_per_group_z
-#if defined(FFTW)
-
-    !begin field_f perspective by computing indexes OF ex_r to exchange with ex
-    ALLOCATE(sizes_to_exchange_f_to_recvz(nprocz))
-    sizes_to_exchange_f_to_recvz = 0_idp
-    ALLOCATE(f_first_cell_to_recvz(nprocz))
-    f_first_cell_to_recvz = 0_idp
-    ALLOCATE(sizes_to_exchange_f_to_sendz(nprocz))
-    sizes_to_exchange_f_to_sendz = 0_idp
-    ALLOCATE(f_first_cell_to_sendz(nprocz))
-    f_first_cell_to_sendz = 0_idp
-
-    nb_proc_per_group_z = nprocz/(nb_group_z)
-
-    iz1min = cell_z_min_lbg(z_coords+1) 
-    iz1max = cell_z_max_lbg(z_coords+1)
-    DO i = 1,nprocz
-      iz2min = cell_z_min(i)
-      iz2max = cell_z_max(i)  
-      is_grp_min = group_z_min_boundary
-      is_grp_max = group_z_max_boundary
-      CALL compute_findex(iz1min, iz1max, iz2min, iz2max,                             &
-      sizes_to_exchange_f_to_recvz(i), f_first_cell_to_recvz(i),                        &
-      sizes_to_exchange_f_to_sendz(i),f_first_cell_to_sendz(i),is_grp_min,is_grp_max)
-    ENDDO
-  
-    !END OF Field_f perspective, begin field perspective
-
-    !begin field perspective by computing indexes OF ex to exchange with ex_r
-
-    ALLOCATE(sizes_to_exchange_r_to_recvz(nprocz)) 
-    sizes_to_exchange_r_to_recvz = 0_idp
-    ALLOCATE(r_first_cell_to_recvz(nprocz))
-    r_first_cell_to_recvz = 0_idp
-    ALLOCATE(sizes_to_exchange_r_to_sendz(nprocz))
-    sizes_to_exchange_r_to_sendz = 0_idp 
-    ALLOCATE(r_first_cell_to_sendz(nprocz))
-    r_first_cell_to_sendz = 0_idp
-    iz1min = cell_z_min(z_coords+1)
-    iz1max = cell_z_max(z_coords+1)
-    DO i=1,nprocz
-      iz2min = cell_z_min_lbg(i)
-      iz2max = cell_z_max_lbg(i) 
-      IF(MODULO(i-1_idp,nb_proc_per_group_z) ==0) THEN
-        is_grp_min = .TRUE.
-      ELSE 
-        is_grp_min = .FALSE.
-      ENDIF
-      IF(MODULO(i,nb_proc_per_group_z) == 0) THEN
-        is_grp_max = .TRUE.
-      ELSE 
-        is_grp_max = .FALSE.
-      ENDIF
-      CALL compute_rindex(iz1min, iz1max, iz2min, iz2max,                             &
-      sizes_to_exchange_r_to_recvz(i), r_first_cell_to_recvz(i),                        &
-      sizes_to_exchange_r_to_sendz(i), r_first_cell_to_sendz(i), is_grp_min,is_grp_max)
-    ENDDO
-    ! Create mpi_derived_types for group communications
-!    CALL create_derived_types_groups()
-    ! Cleans computed arrays to delete useless cells (to make the code clearer
-!    CALL create_work_group_arrays()
-#endif
-  END SUBROUTINE get1D_intersection_group_mpi
-
-
 
 
   ! ______________________________________________________________________________________
@@ -1320,68 +1224,6 @@ SUBROUTINE get1D_intersection_group_mpi
 
 #endif
   END SUBROUTINE create_work_group_arrays_p3dfft
-  ! ______________________________________________________________________________________
-  !> @brief
-  !> This subroutine creates mpi derived types for group comms
-  !> @author
-  !> Haithem Kallala
-  !
-  !> @date
-  !> Creation 2017
-  ! ______________________________________________________________________________________
-
-!  SUBROUTINE create_derived_types_groups()
-!#if defined(FFTW)
-!  USE mpi_fftw3
-!  USE group_parameters
-!#endif
-!  USE shared_data
-!  USE mpi
-!  USE mpi_derived_types
-!  USE fields , ONLY : nxguards, nyguards, nzguards
-!  INTEGER(idp)         ::  i 
-!  INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
-!  INTEGER(isp)                     :: basetype 
-!
-!#if defined(FFTW)
-!   basetype = mpidbl
-!
-!   ALLOCATE(send_type_f(nprocz),recv_type_f(nprocz))
-!   DO i = 1,nprocz
-!     ! create rcv type
-!     sizes(1) =  2*(nx_group/2+1)
-!     sizes(2) = ny_group
-!     sizes(3) = local_nz
-!     subsizes(1) = MIN(2*nxguards + nx ,2*(nx_group/2+1))
-!     subsizes(2) = MIN(2*nyguards + ny ,ny_group)
-!     subsizes(3) = sizes_to_exchange_f_to_recvz(i)
-!     starts = 1
-!     recv_type_f(i) = create_3d_array_derived_type(basetype, subsizes,sizes,starts)
-!
-!     ! create send type
-!     subsizes(3) = sizes_to_exchange_f_to_sendz(i)
-!     send_type_f(i) = create_3d_array_derived_type(basetype,subsizes,sizes,starts)
-!   ENDDO
-!
-!   ALLOCATE(send_type_r(nprocz),recv_type_r(nprocz))
-!   DO i = 1,nprocz
-!
-!     ! create rcv type
-!     sizes(1) = 2*nxguards + nx + 1
-!     sizes(2) = 2*nyguards + ny + 1
-!     sizes(3) = 2*nzguards + nz + 1
-!     subsizes(1) = MIN(2*nxguards + nx ,2*(nx_group/2+1))
-!     subsizes(2) = MIN(2*nyguards + ny ,ny_group)
-!     subsizes(3) = sizes_to_exchange_r_to_recvz(i)
-!     starts = 1
-!     recv_type_r(i) = create_3d_array_derived_type(basetype,subsizes,sizes,starts)
-!
-!     ! create send type
-!     subsizes(3) = sizes_to_exchange_r_to_sendz(i)
-!     send_type_r(i) =create_3d_array_derived_type(basetype,subsizes,sizes,starts)
-!   ENDDO
-!#endif
-!  END SUBROUTINE create_derived_types_groups
 
 
   ! ______________________________________________________________________________________
@@ -1431,7 +1273,6 @@ SUBROUTINE get1D_intersection_group_mpi
      send_type_f((i-1)*nprocy+j) = create_3d_array_derived_type(basetype,subsizes,sizes,starts)
      ENDDO
    ENDDO
-
    ALLOCATE(send_type_r(nprocz*nprocy),recv_type_r(nprocz*nprocy))
    DO i = 1,nprocz
      Do j = 1,nprocy

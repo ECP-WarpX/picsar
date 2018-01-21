@@ -761,7 +761,6 @@ MODULE field_boundary
       localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
     ENDIF
 #endif
-
   END SUBROUTINE generalized_comms_group_r2f
  
 
@@ -800,8 +799,6 @@ MODULE field_boundary
       IF(sizes_to_exchange_r_to_sendz(ii) == 0) rank_to_send_to = MPI_PROC_NULL
       IF(sizes_to_exchange_f_to_recvy(ii) == 0) rank_to_recv_from =MPI_PROC_NULL
       IF(sizes_to_exchange_r_to_sendy(ii) == 0) rank_to_send_to = MPI_PROC_NULL
-!if(rank==0)print*,'aaa',recv_type_f(ii),rank_to_recv_from,sizes_to_exchange_f_to_recvz(ii),sizes_to_exchange_f_to_recvy(ii)
-!if(rank==3)print*,'bbb',send_type_r(ii),rank_to_send_to,sizes_to_exchange_r_to_sendz(ii),sizes_to_exchange_r_to_sendy(ii)
 
       CALL MPI_SENDRECV(field(-nxg, r_first_cell_to_sendy(ii), r_first_cell_to_sendz(ii)), 1_isp, send_type_r(ii),   &
       rank_to_send_to,tag,field_f(1, f_first_cell_to_recvy(ii), f_first_cell_to_recvz(ii)), 1_isp, recv_type_f(ii),  &
@@ -903,7 +900,6 @@ MODULE field_boundary
       CALL sendrecv_fr_generalized(bz,nx,nxguards,ny,nyguards,nz,nzguards,bz_r,nxx,nyy,nzz)
 
 
-      CALL sendrecv_fr_generalized(jy,nx,nxguards,ny,nyguards,nz,nzguards,jy_r,nxx,nyy,nzz)
 
     ELSE 
       CALL sendrecv_fr_generalized_non_blocking(ex,nx,nxguards,ny,nyguards,nz,nzguards,ex_r,nxx,nyy,nzz)
@@ -913,10 +909,6 @@ MODULE field_boundary
       CALL sendrecv_fr_generalized_non_blocking(by,nx,nxguards,ny,nyguards,nz,nzguards,by_r,nxx,nyy,nzz)
       CALL sendrecv_fr_generalized_non_blocking(bz,nx,nxguards,ny,nyguards,nz,nzguards,bz_r,nxx,nyy,nzz)
 
-
-      CALL sendrecv_fr_generalized_non_blocking(jy,nx,nxguards,ny,nyguards,nz,nzguards,jy_r,nxx,nyy,nzz)
-
- 
     ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
@@ -990,16 +982,15 @@ MODULE field_boundary
     REAL(num)   , INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
     INTEGER(idp)        ::ii
     INTEGER(isp)                                  :: rank_to_send_to,rank_to_recv_from
-
 #if defined(FFTW)
     !  i-1 = mpi test in z direction for exchanges
     ! example :
     ! i-1=0 exchange between current rank and itself
     ! i-1=1 send to right (proc_z_max)
     ! i-1=nprocz-1 send to left(proc_z_min)
+
     DO ii=1,nb_comms_fr
       IF(ii==1) CYCLE
-
       rank_to_send_to = INT(array_of_ranks_to_send_to_fr(ii),isp)
       rank_to_recv_from = INT(array_of_ranks_to_recv_from_fr(ii),isp)
 
@@ -1007,7 +998,6 @@ MODULE field_boundary
       IF(sizes_to_exchange_f_to_sendz(ii) == 0) rank_to_send_to = MPI_PROC_NULL
       IF(sizes_to_exchange_r_to_recvy(ii) == 0) rank_to_recv_from = MPI_PROC_NULL
       IF(sizes_to_exchange_f_to_sendy(ii) == 0) rank_to_send_to = MPI_PROC_NULL
-
 
       CALL MPI_SENDRECV(field_f(1,f_first_cell_to_sendy(ii),f_first_cell_to_sendz(ii)) ,1_isp,send_type_f(ii), &
       rank_to_send_to,tag,field(-nxg, r_first_cell_to_recvy(ii), r_first_cell_to_recvz(ii)), 1_isp,&
