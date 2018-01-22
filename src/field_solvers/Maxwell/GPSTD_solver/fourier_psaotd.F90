@@ -488,18 +488,21 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
+#if defined(P3DFFT)
     IF(.NOT. p3dfft) THEN
-      CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ex_r, exf)
-      CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ey_r, eyf)
-      CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ez_r, ezf)
-      CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bx_r, bxf)
-      CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, by_r, byf)
-      CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bz_r, bzf)
-      CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jx_r, jxf)
-      CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jy_r, jyf)
-      CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jz_r, jzf)
-      CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rho_r, rhof)
-      CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rhoold_r, rhooldf)
+#endif
+     CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ex_r, exf)
+     CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ey_r, eyf)
+     CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ez_r, ezf)
+     CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bx_r, bxf)
+     CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, by_r, byf)
+     CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bz_r, bzf)
+     CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jx_r, jxf)
+     CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jy_r, jyf)
+     CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jz_r, jzf)
+     CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rho_r, rhof)
+     CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rhoold_r, rhooldf)
+#if defined(P3DFFT)
     ELSE
      CALL p3dfft_ftran_r2c (ex_r,exf,'fft')
      CALL p3dfft_ftran_r2c (ey_r,eyf,'fft')
@@ -512,8 +515,8 @@ MODULE fourier_psaotd
      CALL p3dfft_ftran_r2c (jy_r,jzf,'fft')
      CALL p3dfft_ftran_r2c (rho_r,rhof,'fft')
      CALL p3dfft_ftran_r2c (rhoold_r,rhooldf,'fft')
-
     ENDIF
+#endif
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
     ENDIF
@@ -571,14 +574,16 @@ MODULE fourier_psaotd
       tmptime = MPI_WTIME()
     ENDIF
     IF(.NOT. g_spectral) THEN
+#if defined(P3DFFT)
     IF(.NOT. p3dfft) THEN
+#endif
       CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, exf, ex_r)
       CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, eyf, ey_r)
       CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, ezf, ez_r)
       CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bxf, bx_r)
       CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, byf, by_r)
       CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bzf, bz_r)
-
+#if defined(P3DFFT)
     ELSE
       CALL p3dfft_btran_c2r (exf,ex_r,'tff')
       CALL p3dfft_btran_c2r (eyf,ey_r,'tff')
@@ -586,17 +591,20 @@ MODULE fourier_psaotd
       CALL p3dfft_btran_c2r (bxf,bx_r,'tff')
       CALL p3dfft_btran_c2r (byf,by_r,'tff')
       CALL p3dfft_btran_c2r (bzf,bz_r,'tff')
-
     ENDIF
+#endif
 
     ELSE IF(g_spectral) THEN
+#if defined(P3DFFT)
       IF(.NOT. p3dfft) THEN
+#endif
         CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(1)%block3dc,ex_r)
         CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(2)%block3dc,ey_r)
         CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(3)%block3dc,ez_r)
         CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(4)%block3dc,bx_r)
         CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(5)%block3dc,by_r)
         CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(6)%block3dc,bz_r)
+#if defined(P3DFFT)
        ELSE
         CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(1)%block3dc,ex_r,'tff')
         CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(2)%block3dc,ey_r,'tff')
@@ -605,6 +613,7 @@ MODULE fourier_psaotd
         CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(5)%block3dc,by_r,'tff')
         CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(6)%block3dc,bz_r,'tff')
        ENDIF
+#endif
     ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
