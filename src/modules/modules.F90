@@ -1276,9 +1276,7 @@ MODULE shared_data
   INTEGER(idp), DIMENSION(:), POINTER :: cell_z_min, cell_z_min_r, cell_z_min_f
   !> Maximal cell number in z for each MPI process
   INTEGER(idp), DIMENSION(:), POINTER :: cell_z_max, cell_z_max_r, cell_z_max_f
-#if defined(P3DFFT) 
   INTEGER(idp), DIMENSION(:), POINTER :: cell_y_min_r,cell_y_max_r,cell_y_min_f,cell_y_max_f
-#endif
   !> Used in em3dsolverPXR.py
   INTEGER(idp), DIMENSION(:), POINTER :: new_cell_x_min
   !> Used in em3dsolverPXR.py
