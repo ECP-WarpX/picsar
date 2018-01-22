@@ -824,7 +824,7 @@ END SUBROUTINE get_2Dintersection
       r_first_cell_to_recvy(y_coords+1) = -nyguards
       r_first_cell_to_sendy(y_coords+1) = -nyguards 
     ENDIF
-    IF(nprocz/nb_group_z==1) THEN
+    IF(nprocz==nb_group_z) THEN
      sizes_to_exchange_r_to_sendz =0 
      sizes_to_exchange_r_to_recvz =0 
      sizes_to_exchange_f_to_sendz =0 
@@ -843,6 +843,26 @@ END SUBROUTINE get_2Dintersection
      f_first_cell_to_sendz(z_coords+1) = 1
      r_first_cell_to_sendz(z_coords+1) = -nzguards
     ENDIF
+    IF(nprocy==nb_group_y) THEN
+     sizes_to_exchange_r_to_sendy =0
+     sizes_to_exchange_r_to_recvy =0
+     sizes_to_exchange_f_to_sendy =0
+     sizes_to_exchange_f_to_recvy = 0
+     r_first_cell_to_recvy =1
+     f_first_cell_to_recvy =1
+     f_first_cell_to_sendy =1
+     r_first_cell_to_sendy =1
+
+     sizes_to_exchange_r_to_sendy(y_coords+1) = ny + 2*nyguards
+     sizes_to_exchange_f_to_recvy(y_coords+1) = ny + 2*nyguards
+     sizes_to_exchange_r_to_recvy(y_coords+1) = ny + 2*nyguards
+     sizes_to_exchange_f_to_sendy(y_coords+1) = ny + 2*nyguards
+     r_first_cell_to_recvy(y_coords+1) = -nyguards
+     f_first_cell_to_recvy(y_coords+1) = 1
+     f_first_cell_to_sendy(y_coords+1) = 1
+     r_first_cell_to_sendy(y_coords+1) = -nyguards
+    ENDIF
+
 
 
     CALL create_derived_types_groups_p3dfft()
