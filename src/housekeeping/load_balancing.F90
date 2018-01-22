@@ -865,8 +865,8 @@ END SUBROUTINE get_2Dintersection
 
 
 
-    CALL create_derived_types_groups_p3dfft()
-    CALL create_work_group_arrays_p3dfft()
+    CALL create_derived_types_groups()
+    CALL create_work_group_arrays()
 #endif
   END SUBROUTINE get2D_intersection_group_mpi
 
@@ -882,7 +882,7 @@ END SUBROUTINE get_2Dintersection
   ! ______________________________________________________________________________________
 
   
-  SUBROUTINE create_work_group_arrays_p3dfft() 
+  SUBROUTINE create_work_group_arrays() 
 #if defined(FFTW) 
    USE group_parameters
    USE params, ONLY : mpicom_curr
@@ -909,17 +909,6 @@ END SUBROUTINE get_2Dintersection
       temp_array_ranks(i,j)=ttemp(x_coords+1,ii,jj)
       ENDDO
   ENDDO
-  ! temp_array_ranks=0
-  ! temp_array_ranks(1,1) = INT(rank,isp)
-  ! ii = z_coords*nprocx*nprocy + (nprocy-1)*nprocx+ x_coords 
-  ! jj = ii-rank
-  ! DO i=1,nprocy
-  !   temp_array_ranks(i,1) = ii - MODULO( jj+nprocx*(i-1),nprocx*nprocy)  
-  ! ENDDO
-
-  ! DO i=2,nprocz
-  !    temp_array_ranks(:,i) = MODULO(temp_array_ranks(:,1) + nprocx*nprocy*(i-1),nproc)
-  ! ENDDO
  
    ALLOCATE(array_of_ranks_to_send_to(nprocy*nprocz)) 
    DO i=1,nprocy
@@ -1283,7 +1272,7 @@ END SUBROUTINE get_2Dintersection
 
 
 #endif
-  END SUBROUTINE create_work_group_arrays_p3dfft
+  END SUBROUTINE create_work_group_arrays
 
 
   ! ______________________________________________________________________________________
@@ -1296,7 +1285,7 @@ END SUBROUTINE get_2Dintersection
   !> Creation 2017
   ! ______________________________________________________________________________________
 
-  SUBROUTINE create_derived_types_groups_p3dfft()
+  SUBROUTINE create_derived_types_groups
 #if defined(FFTW)
   USE mpi_fftw3
   USE group_parameters
@@ -1354,7 +1343,7 @@ END SUBROUTINE get_2Dintersection
      ENDDO
    ENDDO
 #endif
-  END SUBROUTINE create_derived_types_groups_p3dfft
+  END SUBROUTINE create_derived_types_groups
 
   ! ______________________________________________________________________________________
   !> @brief
