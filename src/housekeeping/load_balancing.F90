@@ -726,12 +726,10 @@ END SUBROUTINE get_2Dintersection
     iz1max = cell_z_max_lbg(z_coords+1)
     is_grp_min = group_z_min_boundary
     is_grp_max = group_z_max_boundary
-    !compute f index trhou z axis
     DO i = 1,nprocz
       iz2min = cell_z_min(i)
       iz2max = cell_z_max(i)  
-   
-
+! computes domain intersection along z axis to compute f_indexes
       CALL compute_findex(iz1min, iz1max, iz2min, iz2max,                             &
       sizes_to_exchange_f_to_recvz(i), f_first_cell_to_recvz(i),                        &
       sizes_to_exchange_f_to_sendz(i), f_first_cell_to_sendz(i),is_grp_min,is_grp_max,nz_global,nzg_group)
@@ -742,7 +740,8 @@ END SUBROUTINE get_2Dintersection
       ALLOCATE(f_first_cell_to_sendy(nprocy)); f_first_cell_to_sendy = 0_idp
       ! Compute f index through y axis
     IF(p3dfft) THEN
-
+! when using p3dfft also computes domain intersection along y axis  to compute
+! f_indexes
       iy1min = cell_y_min_lbg(y_coords+1) 
       iy1max = cell_y_max_lbg(y_coords+1)  
       is_grp_min = group_y_min_boundary
@@ -757,6 +756,9 @@ END SUBROUTINE get_2Dintersection
       ENDDO
 
     ELSE 
+!if not using p3dfft then f_indexes are set manually to contain guardcells (in
+!this case no exchanges are done in y_direction since guardcells are copyed when
+!doing communications in z direction
        sizes_to_exchange_f_to_recvy(y_coords+1) = MIN(2*nyguards + ny ,ny_group)
        sizes_to_exchange_f_to_sendy(y_coords+1) = MIN(2*nyguards + ny ,ny_group)
        f_first_cell_to_sendy(y_coords+1) = 1
@@ -787,7 +789,7 @@ END SUBROUTINE get_2Dintersection
       ELSE 
         is_grp_max = .FALSE.
       ENDIF
-
+!computes domain intersection in z direction to compute r_indexes
       CALL compute_rindex(iz1min, iz1max, iz2min, iz2max,                             &
       sizes_to_exchange_r_to_recvz(i), r_first_cell_to_recvz(i),                        &
       sizes_to_exchange_r_to_sendz(i), r_first_cell_to_sendz(i), is_grp_min,is_grp_max,nz_global,nzg_group)
@@ -813,18 +815,23 @@ END SUBROUTINE get_2Dintersection
         ELSE 
           is_grp_max = .FALSE.
         ENDIF
-
+!when using p3dfft computes domain intersection in y direction to compute
+!r_indexes
         CALL compute_rindex(iy1min, iy1max, iy2min, iy2max,                             &
         sizes_to_exchange_r_to_recvy(i), r_first_cell_to_recvy(i),                        &
         sizes_to_exchange_r_to_sendy(i), r_first_cell_to_sendy(i), is_grp_min,is_grp_max,ny_global,nyg_group)
       ENDDO
     ELSE 
+!when not using p3dfft r_indexes in y direction are set manually to perform
+!guardcells communications in y directly
       sizes_to_exchange_r_to_recvy(y_coords+1) =MIN(2*nyguards + ny ,ny_group)
       sizes_to_exchange_r_to_sendy(y_coords+1) = MIN(2*nyguards + ny ,ny_group)
       r_first_cell_to_recvy(y_coords+1) = -nyguards
       r_first_cell_to_sendy(y_coords+1) = -nyguards 
     ENDIF
     IF(nprocz==nb_group_z) THEN
+!corrects a bug that occurs when a group contains 1 mpi in z 
+!direction (since each processor intersects itself twice in this case)
      sizes_to_exchange_r_to_sendz =0 
      sizes_to_exchange_r_to_recvz =0 
      sizes_to_exchange_f_to_sendz =0 
@@ -844,6 +851,8 @@ END SUBROUTINE get_2Dintersection
      r_first_cell_to_sendz(z_coords+1) = -nzguards
     ENDIF
     IF(nprocy==nb_group_y) THEN
+!coorects a bug that occurs when a group contains 1 mpi in 
+!y direction (since  each processor intersects itself twice
      sizes_to_exchange_r_to_sendy =0
      sizes_to_exchange_r_to_recvy =0
      sizes_to_exchange_f_to_sendy =0
@@ -864,8 +873,10 @@ END SUBROUTINE get_2Dintersection
     ENDIF
 
 
-
+! creates derived types for communications
     CALL create_derived_types_groups()
+! compresses arrays for communications (deletes useless send recv targets and
+! types etc ....)
     CALL create_work_group_arrays()
 #endif
   END SUBROUTINE get2D_intersection_group_mpi
@@ -892,7 +903,20 @@ END SUBROUTINE get_2Dintersection
    INTEGER(isp)  , ALLOCATABLE, DIMENSION(:) :: temp_rs, temp_sr
    INTEGER(isp)  , ALLOCATABLE, DIMENSION(:,:) :: temp_array_ranks
    INTEGER(idp) ,  ALLOCATABLE, DIMENSION(:,:,:):: ttemp
-   
+
+! begin compute array of target and recv procs   
+! array_of_ranks_to_send_to and array_of_ranks_to_recv_from respectively
+! these arrays are 1d-nprocy*nprocz sizes 
+! But you can think of these arrays as 2d arrays (nprocy,nprocz)
+
+! array_of_ranks_to_send_to(i,j) = 
+! rank_of_mpi_with: y_coords_target =  y_coords + (j-1) , z_coords_target = z_coords + (i - 1) 
+! + periodic bcs on procs
+
+! array_of_ranks_to_recv_from(i,j) = 
+! rank_of_mpi_with: y_coords_target =  y_coords - (j-1) , z_coords_target =  z_coords - (i - 1) 
+! +periodic bcs on procs
+
    ALLOCATE(ttemp(nprocx,nprocy,nprocz))
    DO i=1,nprocx
      DO j=1,nprocy
@@ -934,11 +958,20 @@ END SUBROUTINE get_2Dintersection
     ENDDO
      DEALLOCATE(temp_array_ranks)
      DEALLOCATE(ttemp)
+
+! end compute array of target and recv procs 
+
+!begin extend r and f indexes and sizes
+
      ALLOCATE(sizes_to_exchange_f_to_send(nprocy,nprocz), &
          sizes_to_exchange_r_to_recv(nprocy,nprocz)    ) 
      ALLOCATE(sizes_to_exchange_r_to_send(nprocy,nprocz), &
          sizes_to_exchange_f_to_recv(nprocy,nprocz)    )
-     
+! sizes_to_exchange_x_to_s/r are 2d arrays  of (nprocy,nprocz) sizes  
+! size_to_exchagex_to_s/r(i,j) = ! sizes_to_exchange_x_to_r/s_y(i)*sizes_to_exchange_x_to_r/s_z(j) 
+! so basically the number of double precision scalars to exchange between
+! current proc and proc with y_coor=i-1,z_coord=j-1 (and same x_coord)
+
     DO i=1,nprocy
       DO j=1,nprocz
         sizes_to_exchange_f_to_send(i,j) = sizes_to_exchange_f_to_sendy(i)*sizes_to_exchange_f_to_sendz(j)
@@ -949,7 +982,9 @@ END SUBROUTINE get_2Dintersection
     ENDDO
     ALLOCATE(temp1(nprocz),temp2(nprocz),temp3(nprocz),temp4(nprocz))
     ALLOCATE(temp5(nprocz),temp6(nprocz),temp7(nprocz),temp8(nprocz))
-
+! transfrom sizes_to_exchange_x_to_s/r_y/z from arrays of size nprocy/z to arrays of size nprocy*nprocz
+! you can still think of these new arrays as 2d arrays of size (nprocy,nprocz)
+! same thing is done for r/s_first_cell_to_r/s_y/z
     temp1=f_first_cell_to_sendz
     temp2=r_first_cell_to_sendz
     temp3=f_first_cell_to_recvz
@@ -1029,9 +1064,12 @@ END SUBROUTINE get_2Dintersection
     ENDDO
     DEALLOCATE(temp1,temp2,temp3,temp4,temp5,temp6,temp7,temp8)
 
-    ! if non blocking communications then computes array of mpi requests to be
-    ! used
-    ! for isend and irecv calls, the size of request array are computed here
+! END of extending r_arraysy/z and f_arrays_y/z
+
+
+! if non blocking comms are used then computes then number of called mpi_isend
+! mpi_irecv for each field component exchanged 
+! this is important to allocate a suitable mpi_requests array 
     IF(mpicom_curr .EQ. 0) THEN
       n=0
       DO i=1,nprocy
@@ -1054,10 +1092,18 @@ END SUBROUTINE get_2Dintersection
       ! mpi request array for r->f
       ALLOCATE(requests_fr(n))
     ENDIF
-    ! Computes z_coords of procs with which communications are performed.
-    ! Theses z_coords are stored in work_array_fr and work_array_rf
-    ! Each processor has different work_array_fr and work_array_rf arrays
 
+
+!end non blocking comms conditioning
+
+! Begin computing work_array_fr and work_array_rf arrays
+! first we browse all sizes_to_exchange_r/s_to_send and its corresponding
+! sizes_to_exchange_s/r_to_recv arrays 
+!(sizes_to_exchange_r_to_send and  sizes_to_exchange_f_to_recv for example)
+! then we determine if there is any communication done between current rank and
+! array_of_rank_to_s/r(i,j) 
+! if  yes then n+=1 ;  work_array_(n) = (i-1)+(j-1)*nprocy (sort of compressing
+! indexes of array_of_ranks) 
     n=0
     DO j=1,nprocz
       DO i=1,nprocy
@@ -1111,6 +1157,12 @@ END SUBROUTINE get_2Dintersection
 
     nb_comms_rf = SIZE(work_array_rf)
     nb_comms_fr = SIZE(work_array_fr)
+
+!end work_array computing section
+
+!sets useless f_/r_first cells to 1 to avoid seg fault when using f-bound-check
+!directive
+
     DO i=1,nprocy
       DO j=1,nprocz
       IF(sizes_to_exchange_f_to_send(i,j) .LE. 0) THEN
@@ -1154,7 +1206,7 @@ END SUBROUTINE get_2Dintersection
     ALLOCATE(r_first_cell_to_recvz(nb_comms_fr))
     ALLOCATE(f_first_cell_to_sendy(nb_comms_fr))
     ALLOCATE(r_first_cell_to_recvy(nb_comms_fr))
-
+! compressing arrays fourier to real
     DO ii=1,nb_comms_fr
        i = work_array_fr(ii) 
        k =   MODULO(i,nprocy)  !Y
@@ -1172,6 +1224,10 @@ END SUBROUTINE get_2Dintersection
        f_first_cell_to_sendy(ii) = temp7(jj*nprocy+kk+1)
        r_first_cell_to_recvy(ii) = temp8(jjj*nprocy+kkk+1)
     ENDDO
+
+!end
+
+! compress arrays real to fourier
 
     temp1 = sizes_to_exchange_r_to_sendz
     temp2 = sizes_to_exchange_f_to_recvz
@@ -1195,7 +1251,6 @@ END SUBROUTINE get_2Dintersection
     ALLOCATE(r_first_cell_to_sendy(nb_comms_rf))
     ALLOCATE(f_first_cell_to_recvy(nb_comms_rf))
 
-
     DO ii=1,nb_comms_rf
        i = work_array_rf(ii)
        k =   MODULO(i,nprocy)  !Y
@@ -1212,12 +1267,14 @@ END SUBROUTINE get_2Dintersection
        f_first_cell_to_recvz(ii) =temp6(jjj*nprocy +kkk+1)
        r_first_cell_to_sendy(ii) = temp7(jj*nprocy+kk+1)
        f_first_cell_to_recvy(ii) = temp8(jjj*nprocy+kkk+1)
-
    ENDDO
    DEALLOCATE(temp1,temp2,temp3,temp4,temp5,temp6,temp7,temp8)
+!end
 
+! compresses arrays of ranks (r to f perspective)
    ALLOCATE(array_of_ranks_to_send_to_rf(nb_comms_rf))
    ALLOCATE(array_of_ranks_to_recv_from_rf(nb_comms_rf))
+
    DO ii=1,nb_comms_rf
       i=work_array_rf(ii)
        k =   MODULO(i,nprocy)  !Y
@@ -1229,6 +1286,9 @@ END SUBROUTINE get_2Dintersection
 
    ALLOCATE(array_of_ranks_to_send_to_fr(nb_comms_fr))
    ALLOCATE(array_of_ranks_to_recv_from_fr(nb_comms_fr))
+!end
+
+! compresses arrays of ranks (f to r perspective)
    DO ii=1,nb_comms_fr
       i=work_array_fr(ii)
        k =   MODULO(i,nprocy)  !Y
@@ -1237,11 +1297,15 @@ END SUBROUTINE get_2Dintersection
       array_of_ranks_to_recv_from_fr(ii) = array_of_ranks_to_recv_from(k+j*nprocy+1)
    ENDDO
    DEALLOCATE(array_of_ranks_to_recv_from,array_of_ranks_to_send_to)
+!end
+
+!compresses arrays of mpi  types
 
    ALLOCATE(temp_rs(nprocz*nprocy),temp_sr(nprocz*nprocy))
    temp_rs = send_type_r;   temp_sr = recv_type_f
    DEALLOCATE(send_type_r); ALLOCATE(send_type_r(nb_comms_rf))
    DEALLOCATE(recv_type_f); ALLOCATE(recv_type_f(nb_comms_rf))
+
    DO ii=1,nb_comms_rf
        i = work_array_rf(ii)
        k =   MODULO(i,nprocy)  !Y
@@ -1269,7 +1333,7 @@ END SUBROUTINE get_2Dintersection
      recv_type_r(ii) = temp_sr(jjj*nprocy+kkk+1)
    ENDDO
    DEALLOCATE(temp_rs,temp_sr)
-
+!end
 
 #endif
   END SUBROUTINE create_work_group_arrays
@@ -1305,41 +1369,55 @@ END SUBROUTINE get_2Dintersection
 
    DO i = 1,nprocz
      DO j=1,nprocy
-     ! create rcv type
-     sizes(1) = local_nx
-     sizes(2) = local_ny
-     sizes(3) = local_nz
-     subsizes(1) = MIN(2*nxguards + nx ,local_nx)
-     subsizes(2) = sizes_to_exchange_f_to_recvy(j)
-     subsizes(3) = sizes_to_exchange_f_to_recvz(i)
-     starts = 1
-     recv_type_f((i-1)*nprocy+j) = create_3d_array_derived_type(basetype, subsizes,sizes,starts)
+       sizes(1) = local_nx
+       sizes(2) = local_ny
+       sizes(3) = local_nz
 
-     ! create send type
-     subsizes(1) = MIN(2*nxguards + nx ,nx_group)
-     subsizes(2) = sizes_to_exchange_f_to_sendy(j)
-     subsizes(3) = sizes_to_exchange_f_to_sendz(i)
-     send_type_f((i-1)*nprocy+j) = create_3d_array_derived_type(basetype,subsizes,sizes,starts)
+!creates mpi_type_to_recv_in_f_field from current mpi to the mpi with rank
+! is determined by y_coord_target = j-1, z_coords_target = i-1 , x_coords_target
+! = x_coords_curent_rank 
+
+       subsizes(1) = MIN(2*nxguards + nx ,local_nx)
+       subsizes(2) = sizes_to_exchange_f_to_recvy(j)
+       subsizes(3) = sizes_to_exchange_f_to_recvz(i)
+       starts = 1
+       recv_type_f((i-1)*nprocy+j) = create_3d_array_derived_type(basetype, subsizes,sizes,starts)
+
+!creates mpi_type_to_send_from_f_field from current mpi to the mpi with rank
+! is determined by y_coord_target = j-1, z_coords_target = i-1 , x_coords_target
+! = x_coords_curent_rank 
+
+       subsizes(1) = MIN(2*nxguards + nx ,nx_group)
+       subsizes(2) = sizes_to_exchange_f_to_sendy(j)
+       subsizes(3) = sizes_to_exchange_f_to_sendz(i)
+       send_type_f((i-1)*nprocy+j) = create_3d_array_derived_type(basetype,subsizes,sizes,starts)
      ENDDO
    ENDDO
    ALLOCATE(send_type_r(nprocz*nprocy),recv_type_r(nprocz*nprocy))
    DO i = 1,nprocz
      Do j = 1,nprocy
-     ! create rcv type
-     sizes(1) = 2*nxguards + nx + 1
-     sizes(2) = 2*nyguards + ny + 1
-     sizes(3) = 2*nzguards + nz + 1
-     subsizes(1) = MIN(2*nxguards + nx ,local_nx)
-     subsizes(2) = sizes_to_exchange_r_to_recvy(j)
-     subsizes(3) = sizes_to_exchange_r_to_recvz(i)
-     starts = 1
-     recv_type_r((i-1)*nprocy+j) = create_3d_array_derived_type(basetype,subsizes,sizes,starts)
+       sizes(1) = 2*nxguards + nx + 1
+       sizes(2) = 2*nyguards + ny + 1
+       sizes(3) = 2*nzguards + nz + 1
 
-     ! create send type
-     subsizes(1) = MIN(2*nxguards + nx ,nx_group)
-     subsizes(2) = sizes_to_exchange_r_to_sendy(j)
-     subsizes(3) = sizes_to_exchange_r_to_sendz(i)
-     send_type_r((i-1)*nprocy+j) =create_3d_array_derived_type(basetype,subsizes,sizes,starts)
+!creates mpi_type_to_send_from_r_field from current mpi to the mpi with rank
+! is determined by y_coord_target = j-1, z_coords_target = i-1 , x_coords_target
+! = x_coords_curent_rank 
+
+       subsizes(1) = MIN(2*nxguards + nx ,local_nx)
+       subsizes(2) = sizes_to_exchange_r_to_recvy(j)
+       subsizes(3) = sizes_to_exchange_r_to_recvz(i)
+       starts = 1
+       recv_type_r((i-1)*nprocy+j) = create_3d_array_derived_type(basetype,subsizes,sizes,starts)
+
+!creates mpi_type_to_send_from_r_field from current mpi to the mpi with rank
+! is determined by y_coord_target = j-1, z_coords_target = i-1 , x_coords_target
+! = x_coords_curent_rank 
+
+       subsizes(1) = MIN(2*nxguards + nx ,nx_group)
+       subsizes(2) = sizes_to_exchange_r_to_sendy(j)
+       subsizes(3) = sizes_to_exchange_r_to_sendz(i)
+       send_type_r((i-1)*nprocy+j) =create_3d_array_derived_type(basetype,subsizes,sizes,starts)
      ENDDO
    ENDDO
 #endif
