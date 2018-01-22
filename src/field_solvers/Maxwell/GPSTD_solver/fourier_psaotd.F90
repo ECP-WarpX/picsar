@@ -636,8 +636,8 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
-    nxx=size(exf(:, 1, 1))
-    nzz=size(exf(1, 1, :))
+    nxx=nkx
+    nzz=nkz
     iy=1_idp
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iz, exfold, eyfold, ezfold,     &
     !$OMP bxfold, byfold, bzfold) COLLAPSE(2)
@@ -728,9 +728,9 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
-    nxx=size(exf(:, 1, 1))
-    nyy=size(exf(1, :, 1))
-    nzz=size(exf(1, 1, :))
+    nxx=nkx
+    nyy=nky
+    nzz=nkz
     IF(p3dfft) THEN
       p3d_offset = p3d_fstart-1
     ELSE

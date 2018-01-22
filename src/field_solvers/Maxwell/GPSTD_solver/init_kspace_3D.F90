@@ -551,6 +551,9 @@ MODULE gpstd_solver
     nfftxr = nfftx/2+1
     IF(p3dfft) nfftxr = nfftx 
     CALL init_kspace
+    nkx = nfftxr 
+    nky = nffty
+    nkz = nfftz
     DO i=1_idp, 11_idp
       DO j=1_idp, 11_idp
           CALL is_calculation_needed(i, j, needed)
