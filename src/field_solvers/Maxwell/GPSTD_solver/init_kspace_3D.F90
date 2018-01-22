@@ -279,6 +279,17 @@ MODULE gpstd_solver
     DEALLOCATE(temp, temp2)
   END SUBROUTINE init_kspace
 
+  SUBROUTINE delete_k_space
+    USE matrix_coefficients
+    INTEGER(idp)  :: i
+    DO i = 1,10
+       DEALLOCATE(Kspace(nmatrixes2)%block_vector(i)%block3dc)
+    ENDDO
+    DO i=1,4
+       DEALLOCATE(AT_OP(nmatrixes2)%block_vector(i)%block3dc)
+    ENDDO
+  END SUBROUTINE delete_k_space
+
   SUBROUTINE compute_k_vec(l_stg)
     USE constants
     USE shared_data
@@ -738,6 +749,7 @@ MODULE gpstd_solver
         ENDIF
       ENDDO
     ENDDO
+    CALL delete_k_space
   END SUBROUTINE init_gpstd
 
   SUBROUTINE FD_weights_hvincenti(p, w, is_staggered)
