@@ -167,31 +167,31 @@ MODULE fourier_psaotd
       p3d_offset =0
     ENDIF
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-    DO iz=1,sizes_to_exchange_f_to_recvz(1)
-      DO iy =1,sizes_to_exchange_f_to_recvy(1)
+    DO iz=1,nb_exchanges_l2g_recv_z(1)
+      DO iy =1,nb_exchanges_l2g_recv_y(1)
         DO ix =ix_min_r,ix_max_r
-           ex_r(ix+p3d_offset(1),iy-1+f_first_cell_to_recvy(1)+p3d_offset(2),iz-1+f_first_cell_to_recvz(1)+p3d_offset(3)) =&
-                 ex(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_sendy(1) ,iz-1+r_first_cell_to_sendz(1))
-           ey_r(ix+p3d_offset(1),iy-1+f_first_cell_to_recvy(1)+p3d_offset(2),iz-1+f_first_cell_to_recvz(1)+p3d_offset(3))=&
-                 ey(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_sendy(1),iz-1+r_first_cell_to_sendz(1))
-           ez_r(ix+p3d_offset(1),iy-1+f_first_cell_to_recvy(1)+p3d_offset(2),iz-1+f_first_cell_to_recvz(1)+p3d_offset(3))=&
-                 ez(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_sendy(1),iz-1+r_first_cell_to_sendz(1))
-           bx_r(ix+p3d_offset(1),iy-1+f_first_cell_to_recvy(1)+p3d_offset(2),iz-1+f_first_cell_to_recvz(1)+p3d_offset(3))=&
-                 bx(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_sendy(1),iz-1+r_first_cell_to_sendz(1))
-           by_r(ix+p3d_offset(1),iy-1+f_first_cell_to_recvy(1)+p3d_offset(2),iz-1+f_first_cell_to_recvz(1)+p3d_offset(3))=&
-                 by(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_sendy(1),iz-1+r_first_cell_to_sendz(1))
-           bz_r(ix+p3d_offset(1),iy-1+f_first_cell_to_recvy(1)+p3d_offset(2),iz-1+f_first_cell_to_recvz(1)+p3d_offset(3))=&
-                 bz(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_sendy(1),iz-1+r_first_cell_to_sendz(1))
-           jx_r(ix+p3d_offset(1),iy-1+f_first_cell_to_recvy(1)+p3d_offset(2),iz-1+f_first_cell_to_recvz(1)+p3d_offset(3))=&
-                 jx(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_sendy(1),iz-1+r_first_cell_to_sendz(1))
-           jy_r(ix+p3d_offset(1),iy-1+f_first_cell_to_recvy(1)+p3d_offset(2),iz-1+f_first_cell_to_recvz(1)+p3d_offset(3))=&
-                 jy(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_sendy(1),iz-1+r_first_cell_to_sendz(1))
-           jz_r(ix+p3d_offset(1),iy-1+f_first_cell_to_recvy(1)+p3d_offset(2),iz-1+f_first_cell_to_recvz(1)+p3d_offset(3))=&
-                 jz(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_sendy(1),iz-1+r_first_cell_to_sendz(1))
-           rho_r(ix+p3d_offset(1),iy-1+f_first_cell_to_recvy(1)+p3d_offset(2),iz-1+f_first_cell_to_recvz(1)+p3d_offset(3))=&
-                 rho(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_sendy(1),iz-1+r_first_cell_to_sendz(1))
-           rhoold_r(ix+p3d_offset(1),iy-1+f_first_cell_to_recvy(1)+p3d_offset(2),iz-1+f_first_cell_to_recvz(1)+p3d_offset(3))=&
-                 rhoold(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_sendy(1),iz-1+r_first_cell_to_sendz(1))
+           ex_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3)) =&
+                 ex(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1) ,iz-1+l_first_cell_to_send_z(1))
+           ey_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=&
+                 ey(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),iz-1+l_first_cell_to_send_z(1))
+           ez_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=&
+                 ez(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),iz-1+l_first_cell_to_send_z(1))
+           bx_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=&
+                 bx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),iz-1+l_first_cell_to_send_z(1))
+           by_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=&
+                 by(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),iz-1+l_first_cell_to_send_z(1))
+           bz_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=&
+                 bz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),iz-1+l_first_cell_to_send_z(1))
+           jx_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=&
+                 jx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),iz-1+l_first_cell_to_send_z(1))
+           jy_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=&
+                 jy(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),iz-1+l_first_cell_to_send_z(1))
+           jz_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=&
+                 jz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),iz-1+l_first_cell_to_send_z(1))
+           rho_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=&
+                 rho(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),iz-1+l_first_cell_to_send_z(1))
+           rhoold_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=&
+                 rhoold(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),iz-1+l_first_cell_to_send_z(1))
         ENDDO
       ENDDO
     ENDDO
@@ -200,7 +200,7 @@ MODULE fourier_psaotd
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
 
-    CALL generalized_comms_group_r2f()
+    CALL generalized_comms_group_l2g()
     ! Get global Fourier transform of all fields components and currents
     CALL fft_forward_r2c_mpi() 
 
@@ -407,31 +407,26 @@ MODULE fourier_psaotd
       p3d_offset = 0
     ENDIF
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-    DO iz=1,sizes_to_exchange_r_to_recvz(1)
-      DO iy=1,sizes_to_exchange_r_to_recvy(1)
+    DO iz=1,nb_exchanges_g2l_recv_z(1)
+      DO iy=1,nb_exchanges_g2l_recv_y(1)
         DO ix=ix_min_r, ix_max_r
-          ex(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_recvy(1),iz-1+r_first_cell_to_recvz(1)) =&
-                 ex_r(ix+p3d_offset(1),iy-1+f_first_cell_to_sendy(1)+p3d_offset(2),iz-1+f_first_cell_to_sendz(1)+p3d_offset(3))
+          ex(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),iz-1+l_first_cell_to_recv_z(1)) =&
+                 ex_r(ix+p3d_offset(1),iy-1+g_first_cell_to_send_y(1)+p3d_offset(2),iz-1+g_first_cell_to_send_z(1)+p3d_offset(3))
 
-          ey(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_recvy(1),iz-1+r_first_cell_to_recvz(1))=&
-                 ey_r(ix+p3d_offset(1),iy-1+f_first_cell_to_sendy(1)+p3d_offset(2),iz-1+f_first_cell_to_sendz(1)+p3d_offset(3))
+          ey(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),iz-1+l_first_cell_to_recv_z(1))=&
+                 ey_r(ix+p3d_offset(1),iy-1+g_first_cell_to_send_y(1)+p3d_offset(2),iz-1+g_first_cell_to_send_z(1)+p3d_offset(3))
 
-          ez(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_recvy(1),iz-1+r_first_cell_to_recvz(1))=&
-                 ez_r(ix+p3d_offset(1),iy-1+f_first_cell_to_sendy(1)+p3d_offset(2),iz-1+f_first_cell_to_sendz(1)+p3d_offset(3))
+          ez(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),iz-1+l_first_cell_to_recv_z(1))=&
+                 ez_r(ix+p3d_offset(1),iy-1+g_first_cell_to_send_y(1)+p3d_offset(2),iz-1+g_first_cell_to_send_z(1)+p3d_offset(3))
 
-          bx(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_recvy(1),iz-1+r_first_cell_to_recvz(1))=&
-                 bx_r(ix+p3d_offset(1),iy-1+f_first_cell_to_sendy(1)+p3d_offset(2),iz-1+f_first_cell_to_sendz(1)+p3d_offset(3))
+          bx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),iz-1+l_first_cell_to_recv_z(1))=&
+                 bx_r(ix+p3d_offset(1),iy-1+g_first_cell_to_send_y(1)+p3d_offset(2),iz-1+g_first_cell_to_send_z(1)+p3d_offset(3))
 
-          by(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_recvy(1),iz-1+r_first_cell_to_recvz(1))=&
-                 by_r(ix+p3d_offset(1),iy-1+f_first_cell_to_sendy(1)+p3d_offset(2),iz-1+f_first_cell_to_sendz(1)+p3d_offset(3))
+          by(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),iz-1+l_first_cell_to_recv_z(1))=&
+                 by_r(ix+p3d_offset(1),iy-1+g_first_cell_to_send_y(1)+p3d_offset(2),iz-1+g_first_cell_to_send_z(1)+p3d_offset(3))
 
-          bz(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_recvy(1),iz-1+r_first_cell_to_recvz(1))=&
-                 bz_r(ix+p3d_offset(1),iy-1+f_first_cell_to_sendy(1)+p3d_offset(2),iz-1+f_first_cell_to_sendz(1)+p3d_offset(3))
-
-
-
-
-
+          bz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),iz-1+l_first_cell_to_recv_z(1))=&
+                 bz_r(ix+p3d_offset(1),iy-1+g_first_cell_to_send_y(1)+p3d_offset(2),iz-1+g_first_cell_to_send_z(1)+p3d_offset(3))
 
         END DO
       END DO
@@ -440,7 +435,7 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
-  CALL generalized_comms_group_f2r()
+  CALL generalized_comms_group_g2l()
   END SUBROUTINE get_fields_mpi_lb
   
   SUBROUTINE fft_forward_r2c_local(nfftx,nffty,nfftz) 

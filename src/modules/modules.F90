@@ -1113,44 +1113,45 @@ MODULE group_parameters!#do not parse
   INTEGER(idp)                               :: nz_global_grid_min_lb , nz_global_grid_max_lb
   !> Cell domain for load balancing general case (taking into account guardcells
   INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: cell_z_min_lbg, cell_z_max_lbg, cell_y_min_lbg, cell_y_max_lbg
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: sizes_to_exchange_f_to_recvz, sizes_to_exchange_r_to_recvz
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: sizes_to_exchange_f_to_sendz,sizes_to_exchange_r_to_sendz 
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: f_first_cell_to_recvz,r_first_cell_to_recvz
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: f_first_cell_to_sendz,r_first_cell_to_sendz
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: nb_exchanges_l2g_recv_z, nb_exchanges_g2l_recv_z
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: nb_exchanges_g2l_send_z,nb_exchanges_l2g_send_z 
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: g_first_cell_to_recv_z,l_first_cell_to_recv_z
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: g_first_cell_to_send_z,l_first_cell_to_send_z
 
-  INTEGER(idp)  , DIMENSION(:,:) , ALLOCATABLE :: sizes_to_exchange_f_to_recv,sizes_to_exchange_r_to_recv
-  INTEGER(idp)  , DIMENSION(:,:) , ALLOCATABLE :: sizes_to_exchange_f_to_send,sizes_to_exchange_r_to_send
+  INTEGER(idp)  , DIMENSION(:,:) , ALLOCATABLE :: nb_exchanges_l2g_recv,nb_exchanges_g2l_recv
+  INTEGER(idp)  , DIMENSION(:,:) , ALLOCATABLE :: nb_exchanges_g2l_send,nb_exchanges_l2g_send
 
 
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: sizes_to_exchange_f_to_recvy,sizes_to_exchange_r_to_recvy
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: sizes_to_exchange_f_to_sendy,sizes_to_exchange_r_to_sendy
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: f_first_cell_to_recvy,r_first_cell_to_recvy
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: f_first_cell_to_sendy,r_first_cell_to_sendy
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: nb_exchanges_l2g_recv_y,nb_exchanges_g2l_recv_y
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: nb_exchanges_g2l_send_y,nb_exchanges_l2g_send_y
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: g_first_cell_to_recv_y,l_first_cell_to_recv_y
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: g_first_cell_to_send_y,l_first_cell_to_send_y
 
 
   !> TYPE IN WHICH ex_r will be recieving
   !> so recv_type_f is ( 2*nxguards+nx+1 , 2*nyguards+ny+1 , size_z )
-  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: recv_type_f   
+  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: recv_type_g   
   !> TYPE IN WHICH ex_r will be sending
   !> so recv_type_f is ( 2*(nx_group/2+1) , ny_group, size_z )
-  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: send_type_f
+  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: send_type_g
   !> TYPE IN WHICH ex will be recieving
   !> so recv_type_f is (2*(nx_group/2+1),ny_group,size_z )
-  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: recv_type_r
+  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: recv_type_l
   !> TYPE IN WHICH ex will be sending
   !> so recv_type_f is  ( 2*nxguards+nx+1 , 2*nyguards+ny+1 , size_z )
-  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: send_type_r
-  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: array_of_ranks_to_send_to,array_of_ranks_to_send_to_rf,array_of_ranks_to_send_to_fr
-  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: array_of_ranks_to_recv_from,array_of_ranks_to_recv_from_rf,&
-  array_of_ranks_to_recv_from_fr
-  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: requests_rf, requests_fr
+  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: send_type_l
+  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: array_of_ranks_to_send_to,array_of_ranks_to_send_to_l2g,    &
+        array_of_ranks_to_send_to_g2l
+  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: array_of_ranks_to_recv_from,array_of_ranks_to_recv_from_l2g,&
+  array_of_ranks_to_recv_from_g2l
+  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: requests_l2g, requests_g2l
   !> Work_array_fr and Work_array_rf contain only non null zcoords ranks with which
   !> exchanges are done during r->f and f-> communications respectively
   !> Its sizes are nb_comms_fr and  nb_comms_rf   respectively
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: work_array_fr, work_array_rf
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: work_array_g2l, work_array_l2g
   !> Nb_comms_fr and nb_comms_rf are equal to the number of send + recv calls
   !done by each mpi in mpi comms group during r->f and f-> communications respectively
-  INTEGER(idp)  :: nb_comms_fr,nb_comms_rf
+  INTEGER(idp)  :: nb_comms_g2l,nb_comms_l2g
   INTEGER(isp) , DIMENSION(3) :: p3d_istart, p3d_iend , p3d_fstart,p3d_fend, p3d_fsize, p3d_isize
 
   
