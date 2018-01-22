@@ -689,26 +689,25 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
       CALL MPI_GROUP_FREE(grp_id(i), errcode)
     ENDIF
   ENDDO
-  
-  IF(group_coordinates(1) .EQ. 0) THEN
+ !local_rank = coord_y_dans_group + coord_z_dans_group*nb_mpi_per_group_y 
+  IF(local_rank/group_sizes(2)==0) THEN
     is_on_boundary_group_z = .TRUE.
     group_z_min_boundary = .TRUE.
   ENDIF
   
-  IF(group_coordinates(1) .EQ. nprocz/nb_group_z-1) THEN
+  IF(local_rank/group_sizes(2)==group_sizes(3)-1) THEN
     is_on_boundary_group_z = .TRUE.
     group_z_max_boundary = .TRUE.
   ENDIF
-  IF(group_coordinates(2) .EQ. 0) THEN
+  IF(MODULO(local_rank,int(group_sizes(2),isp))==0) THEN
     is_on_boundary_group_y = .TRUE.
     group_y_min_boundary = .TRUE.
   ENDIF
 
-  IF(group_coordinates(2) .EQ. nprocy/nb_group_y-1) THEN
+  IF(MODULO(local_rank,int(group_sizes(2),isp))==group_sizes(2)-1) THEN
     is_on_boundary_group_y = .TRUE.
     group_y_max_boundary = .TRUE.
   ENDIF
-
   
   nx_group_global = nx
   ny_group_global = ny_global/nb_group_y
@@ -910,10 +909,9 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
 
     CALL MPI_ALLGATHER(iz_max_lbg,1_isp, MPI_LONG_LONG_INT, all_iz_max_lbg,           &
     INT(1,isp), MPI_LONG_LONG_INT, comm, errcode)
-
     DO i=1, nprocz
-      cell_z_min_lbg(i) = all_iz_min_lbg(x_group_coords+y_group_coords*nb_group_x+(i-1)*nb_group_x*nb_group_y+1)
-      cell_z_max_lbg(i) = all_iz_max_lbg(x_group_coords+y_group_coords*nb_group_x+(i-1)*nb_group_x*nb_group_y+1)
+      cell_z_min_lbg(i) = all_iz_min_lbg(x_coords+y_coords*nprocx+(i-1)*nprocx*nprocy+1)
+      cell_z_max_lbg(i) = all_iz_max_lbg(x_coords+y_coords*nprocx+(i-1)*nprocx*nprocy+1)
     ENDDO
     DEALLOCATE(all_iz_max_lbg,all_iz_min_lbg)
 
@@ -934,8 +932,8 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
     INT(1,isp), MPI_LONG_LONG_INT, comm, errcode)
 
     DO i=1, nprocy
-      cell_y_min_lbg(i) =all_iy_min_lbg(x_group_coords+(i-1)*nb_group_x+z_group_coords*nb_group_x*nb_group_y+1)
-      cell_y_max_lbg(i) =all_iy_max_lbg(x_group_coords+(i-1)*nb_group_x+z_group_coords*nb_group_x*nb_group_y+1)
+      cell_y_min_lbg(i) = all_iy_min_lbg(x_coords+(i-1)*nprocx+z_coords*nprocx*nprocy+1)
+      cell_y_max_lbg(i) = all_iy_max_lbg(x_coords+(i-1)*nprocx+z_coords*nprocx*nprocy+1)
     ENDDO
     DEALLOCATE(all_iy_max_lbg,all_iy_min_lbg)
 

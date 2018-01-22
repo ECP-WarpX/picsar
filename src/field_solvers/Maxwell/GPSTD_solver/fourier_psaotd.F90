@@ -406,6 +406,7 @@ MODULE fourier_psaotd
     ELSE
       p3d_offset = 0
     ENDIF
+jy_r=jy_r*1./(nx_group*ny_group*nz_group)
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
     DO iz=1,sizes_to_exchange_r_to_recvz(1)
       DO iy=1,sizes_to_exchange_r_to_recvy(1)
@@ -427,6 +428,11 @@ MODULE fourier_psaotd
 
           bz(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_recvy(1),iz-1+r_first_cell_to_recvz(1))=&
                  bz_r(ix+p3d_offset(1),iy-1+f_first_cell_to_sendy(1)+p3d_offset(2),iz-1+f_first_cell_to_sendz(1)+p3d_offset(3))
+
+
+
+         jy(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_recvy(1),iz-1+r_first_cell_to_recvz(1))=&
+            jy_r(ix+p3d_offset(1),iy-1+f_first_cell_to_sendy(1)+p3d_offset(2),iz-1+f_first_cell_to_sendz(1)+p3d_offset(3))
 
 
 
@@ -482,7 +488,6 @@ MODULE fourier_psaotd
     USE p3dfft
 #endif
     REAL(num)   :: tmptime
-
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF

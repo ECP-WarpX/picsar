@@ -54,6 +54,14 @@ MODULE gpstd_solver
           nfftz = local_ny
         ENDIF
       ENDIF
+#if defined(P3DFFT)
+      IF(p3dfft) THEN
+        nfftx = p3d_fsize(1)
+        nffty = p3d_fsize(2)
+        nfftz = p3d_fsize(3)
+      ENDIF
+#endif
+
     ELSE
 #if defined(LIBRARY)
       nfftx = nx+2*nxguards+1
@@ -67,20 +75,6 @@ MODULE gpstd_solver
       IF(c_dim ==2) THEN
         nffty = 1
       ENDIF
-
-#if defined(P3DFFT)
-      IF(p3dfft) THEN
-         IF(p3dfft_stride) THEN
-            nfftx = nz_group
-            nffty = ny_group
-            nfftz = nx_group
-         ELSE
-            nfftx = nx_group 
-            nffty = ny_group 
-            nfftz = nz_group
-         ENDIF
-      ENDIF
-#endif
     ENDIF
   END SUBROUTINE select_case_dims_local
 
@@ -131,9 +125,15 @@ MODULE gpstd_solver
 
 #if defined(P3DFFT) 
     IF(p3dfft) THEN
-       nfftx = p3d_fsize(1)
-       nffty =p3d_fsize(2) 
-       nfftz = p3d_fsize(3)
+      IF(p3dfft_stride) THEN
+       nfftx =nz_group
+       nffty =ny_group
+       nfftz =nx_group
+      ELSE
+       nfftx = nx_group 
+       nffty = ny_group
+       nfftz = nz_group 
+     ENDIF
     ENDIF
 #endif
   END SUBROUTINE select_case_dims_global
@@ -198,8 +198,6 @@ MODULE gpstd_solver
               Kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = kzf(k)
               Kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = kzb(k)
               Kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = kzc(k)
-              Kspace(nmatrixes2)%block_vector(10)%block3dc(i, j, k) =                   &
-              SQRT((kxc(i)**2+kyc(j)**2+kzc(k)**2))
             ELSE
               Kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kxf(i)
               Kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kxb(i)
@@ -210,11 +208,10 @@ MODULE gpstd_solver
               Kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = kyf(j)
               Kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = kyb(j)
               Kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = kyc(j)
-              Kspace(nmatrixes2)%block_vector(10)%block3dc(i, j, k) =                   &
-              SQRT((kxc(i)**2+kyc(j)**2+kzc(k)**2))
             ENDIF
           ELSE
             IF(p3dfft_stride) THEN
+
                 Kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kzf(k)
                 Kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kzb(k)
                 Kspace(nmatrixes2)%block_vector(3)%block3dc(i, j, k) = kzc(k)
@@ -224,6 +221,7 @@ MODULE gpstd_solver
                 Kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = kxf(i)
                 Kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = kxb(i)
                 Kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = kxc(i)
+
             ELSE 
                 Kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kxf(i)
                 Kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kxb(i)
@@ -234,12 +232,15 @@ MODULE gpstd_solver
                 Kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = kzf(k)
                 Kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = kzb(k)
                 Kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = kzc(k)
+
             ENDIF
           ENDIF
         ENDDO
       ENDDO
     ENDDO
- 
+    Kspace(nmatrixes2)%block_vector(10)%block3dc= SQRT(ABS(Kspace(nmatrixes2)%block_vector(9)%block3dc)**2 + &
+        ABS(Kspace(nmatrixes2)%block_vector(6)%block3dc)**2 + &
+        ABS(Kspace(nmatrixes2)%block_vector(3)%block3dc)**2)
     switch = .FALSE.
     ALLOCATE(temp(nfftxr, nffty, nfftz))
     ALLOCATE(temp2(nfftxr, nffty, nfftz))
@@ -259,6 +260,7 @@ MODULE gpstd_solver
       Kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1) = DCMPLX(1.0_num,         &
       0.0_num)
       switch = .TRUE.
+
     ENDIF
     AT_OP(nmatrixes2)%block_vector(3)%block3dc = (DCMPLX(1.0_num, 0.0_num) -          &
     AT_OP(nmatrixes2)%block_vector(2)%block3dc)                                       &
@@ -319,7 +321,6 @@ MODULE gpstd_solver
       ENDIF
     ENDIF       
     CALL select_case_dims_global(nfftx, nffty, nfftz)
-
     CALL compute_k_1d( nfftx,kxc,kxf,kxb,norderx,dx,l_stg)
     CALL compute_k_1d( nffty,kyc,kyf,kyb,nordery,dy,l_stg)
     CALL compute_k_1d( nfftz,kzc,kzf,kzb,norderz,dz,l_stg)
@@ -375,11 +376,9 @@ MODULE gpstd_solver
           kxc = kxct(p3d_fstart(1):p3d_fend(1))
           kxb = kxbt(p3d_fstart(1):p3d_fend(1))  
           kxf = kxft(p3d_fstart(1):p3d_fend(1))
-
           kyc = kyct(p3d_fstart(2):p3d_fend(2))
           kyb = kybt(p3d_fstart(2):p3d_fend(2))
           kyf = kyft(p3d_fstart(2):p3d_fend(2))
-
           kzc = kzct(p3d_fstart(3):p3d_fend(3))
           kzb = kzbt(p3d_fstart(3):p3d_fend(3))
           kzf = kzft(p3d_fstart(3):p3d_fend(3))
