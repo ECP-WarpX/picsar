@@ -201,7 +201,6 @@ MODULE fourier_psaotd
     ENDIF
 
     CALL generalized_comms_group_r2f()
-print*,"kok",rank
     ! Get global Fourier transform of all fields components and currents
     CALL fft_forward_r2c_mpi() 
 

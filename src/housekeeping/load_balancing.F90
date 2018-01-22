@@ -755,7 +755,7 @@ END SUBROUTINE get_2Dintersection
           f_first_cell_to_recvy(i),                        &
         sizes_to_exchange_f_to_sendy(i), f_first_cell_to_sendy(i),is_grp_min,is_grp_max,ny_global,nyg_group)
       ENDDO
-if(rank==14)print*,"kokkl",sizes_to_exchange_f_to_recvy,cell_y_max_lbg(y_coords+1),cell_y_min_lbg(y_coords+1)
+
     ELSE 
        sizes_to_exchange_f_to_recvy(y_coords+1) = MIN(2*nyguards + ny ,ny_group)
        sizes_to_exchange_f_to_sendy(y_coords+1) = MIN(2*nyguards + ny ,ny_group)
@@ -916,18 +916,6 @@ if(rank==14)print*,"kokkl",sizes_to_exchange_f_to_recvy,cell_y_max_lbg(y_coords+
       temp_array_ranks(i,j)=ttemp(x_coords+1,ii,jj)
     ENDDO
   ENDDO
-if(rank==14)print*,"coco",array_of_ranks_to_send_to,temp_array_ranks
-   !temp_array_ranks(1,1) = INT(rank,isp)
-   !ii = z_coords*nprocx*nprocy + x_coords
-   !jj = rank - ii
-   !DO i=1,nprocy
-   !  temp_array_ranks(i,1) = ii + MODULO( jj-nprocx*(i-1),nprocx*nprocy) 
-   !ENDDO
-   !DO i=2,nprocz
-   !   temp_array_ranks(:,i) = MODULO(temp_array_ranks(:,1) - nprocx*nprocy*(i-1),nproc)
-   !ENDDO
-
-
 
     ALLOCATE(array_of_ranks_to_recv_from(nprocy*nprocz))
     DO i=1,nprocy
@@ -950,7 +938,6 @@ if(rank==14)print*,"coco",array_of_ranks_to_send_to,temp_array_ranks
         sizes_to_exchange_r_to_recv(i,j) = sizes_to_exchange_r_to_recvy(i)*sizes_to_exchange_r_to_recvz(j)
       ENDDO
     ENDDO
-if(rank==14)print*,"jj",sizes_to_exchange_f_to_recvz,sizes_to_exchange_f_to_recvy
     ALLOCATE(temp1(nprocz),temp2(nprocz),temp3(nprocz),temp4(nprocz))
     ALLOCATE(temp5(nprocz),temp6(nprocz),temp7(nprocz),temp8(nprocz))
 
@@ -1228,10 +1215,8 @@ if(rank==14)print*,"jj",sizes_to_exchange_f_to_recvz,sizes_to_exchange_f_to_recv
        j =   i/nprocy          !Z
       array_of_ranks_to_send_to_rf(ii) = array_of_ranks_to_send_to(k+j*nprocy+1)
       array_of_ranks_to_recv_from_rf(ii) = array_of_ranks_to_recv_from(k+j*nprocy+1)
-if(rank==14)print*,"pp",i,k,j,k+j*nprocy+1
    ENDDO
 
-if(rank==14)print*,'ii',array_of_ranks_to_send_to_rf
 
    ALLOCATE(array_of_ranks_to_send_to_fr(nb_comms_fr))
    ALLOCATE(array_of_ranks_to_recv_from_fr(nb_comms_fr))

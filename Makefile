@@ -331,6 +331,11 @@ ifeq ($(MODE),$(filter $(MODE),prod_spectral debug_spectral))
 	FARGS += -I$(FFTW3_INCLUDE) -D FFTW=1 
 	LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_omp
 endif
+ifeq ($(IS_P3DFFT),true)
+        FARGS += -I /gpfshome/mds/staff/hkallala/INSTALL_P3D/include -D P3DFFT
+        LDFLAGS += /gpfshome/mds/staff/hkallala/INSTALL_P3D/lib/libp3dfft.a
+endif
+IS_P3DFFT = false
 
 ifeq ($(MODE),library)
         FARGS += -fPIC -I$(FFTW3_INCLUDE) -D LIBRARY=1  -D  FFTW=1  

@@ -935,7 +935,6 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
       cell_y_min_lbg(i) = all_iy_min_lbg(x_coords+(i-1)*nprocx+z_coords*nprocx*nprocy+1)
       cell_y_max_lbg(i) = all_iy_max_lbg(x_coords+(i-1)*nprocx+z_coords*nprocx*nprocy+1)
     ENDDO
-if(rank==14)print*,'gg',ny_group_global_array
     DEALLOCATE(all_iy_max_lbg,all_iy_min_lbg)
 
   ENDIF

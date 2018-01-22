@@ -790,8 +790,6 @@ MODULE field_boundary
     INTEGER(idp)                                ::  ii
     INTEGER(isp)                                :: rank_to_send_to, rank_to_recv_from
 #if defined(FFTW)
-print*,'s',rank,array_of_ranks_to_send_to_rf
-print*,'r',rank,array_of_ranks_to_recv_from_rf
     DO ii=1,nb_comms_rf
       IF (ii==1) CYCLE
       rank_to_send_to = INT(array_of_ranks_to_send_to_rf(ii),isp)
