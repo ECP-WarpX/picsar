@@ -339,6 +339,10 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'p3dfft') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) p3dfft
+      ELSE IF (INDEX(buffer, 'p3dstride') .GT. 0) THEN
+        CALL GETARG(i+1, buffer)
+        READ(buffer, *) p3dfft_stride
+
       ELSE IF (INDEX(buffer, 'is_lb_grp') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) is_lb_grp
