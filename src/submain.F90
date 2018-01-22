@@ -469,6 +469,7 @@ SUBROUTINE initall
     write(0, '(" Guard cells:", I5, X, I5, X, I5)') nxguards, nyguards, nzguards
     write(0, *) ''
     write(0, '(" FFTW - parameters ")')
+#if defined(FFTW)
     IF (l_spectral)    write(0, '(" PSATD Maxwell Solver")')
     IF (fftw_with_mpi) write(0, '(" FFTW distributed version - MPI ")')
     IF (fftw_hybrid)   write(0, '(" FFTW distributed version")')
@@ -477,7 +478,7 @@ SUBROUTINE initall
     IF (fftw_threads_ok) write(0, '(" FFTW MPI - Threaded support enabled ")')
     IF (fftw_mpi_transpose) write(0, '(" FFTW MPI Transpose plans enabled ")')
     IF (is_lb_grp) write(0, '(" FFTW hybrid balanced ")')
-
+#endif
     ! Sorting
     IF (sorting_activated.gt.0) THEN
       write(0, *) 'Particle sorting activated'
