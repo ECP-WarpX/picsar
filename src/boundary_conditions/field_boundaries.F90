@@ -710,7 +710,11 @@ MODULE field_boundary
   !
   !> @date
   !> Creation 2017
-  !
+  !  This routine is copying values from the global field arrays to the local
+  !  field arrays 
+  ! local fields are used to perform particle related computations (field
+  ! gathering ...)
+  ! global fields are used to push Maxwell
   ! ______________________________________________________________________________________
   SUBROUTINE generalized_comms_group_l2g()
 #if defined(FFTW) 
@@ -770,14 +774,19 @@ MODULE field_boundary
   !> Haithem Kallala
   !> The input :
   !> field = ex field 
-  !> field_f = ex_r field
+  !> field_g = ex_r field
+
+  ! local fields are used to perform particle related computations (field
+  ! gathering ...)
+  ! global fields are used to push Maxwell
+
   !> nxg,nx1,nyg,ny1,nzg,nz1 : nb guard cells and nb cells in each direction
   !> nxx,nyy,nzz: sizes of ex_r field
   !> @date
   !> Creation 2017
   !
   ! ______________________________________________________________________________________
-  SUBROUTINE sendrecv_l2g_generalized(field,nx1,nxg,ny1,nyg,nz1,nzg,field_f,nxx,nyy,nzz)
+  SUBROUTINE sendrecv_l2g_generalized(field,nx1,nxg,ny1,nyg,nz1,nzg,field_g,nxx,nyy,nzz)
 
 #if defined(FFTW)
     USE load_balance
@@ -786,7 +795,7 @@ MODULE field_boundary
     USE mpi 
     INTEGER(idp), INTENT(IN)                    ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
     REAL(num)    ,INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field
-    REAL(num)    ,INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
+    REAL(num)    ,INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_g
     INTEGER(idp)                                ::  ii
     INTEGER(isp)                                :: rank_to_send_to, rank_to_recv_from
 #if defined(FFTW)
@@ -800,7 +809,7 @@ MODULE field_boundary
       IF(nb_exchanges_l2g_recv_y(ii) == 0) rank_to_recv_from =MPI_PROC_NULL
       IF(nb_exchanges_l2g_send_y(ii) == 0) rank_to_send_to = MPI_PROC_NULL
       CALL MPI_SENDRECV(field(-nxg, l_first_cell_to_send_y(ii), l_first_cell_to_send_z(ii)), 1_isp, send_type_l(ii),   &
-      rank_to_send_to,tag,field_f(1, g_first_cell_to_recv_y(ii), g_first_cell_to_recv_z(ii)), 1_isp, recv_type_g(ii),  &
+      rank_to_send_to,tag,field_g(1, g_first_cell_to_recv_y(ii), g_first_cell_to_recv_z(ii)), 1_isp, recv_type_g(ii),  &
       rank_to_recv_from ,tag ,comm ,status ,errcode)
     ENDDO
 #endif
@@ -813,14 +822,14 @@ MODULE field_boundary
   !> Haithem Kallala
   !> The input :
   !> field = ex field 
-  !> field_f = ex_r field
+  !> field_g = ex_r field
   !> nxg,nx1,nyg,ny1,nzg,nz1 : nb guard cells and nb cells in each direction
   !> nxx,nyy,nzz: sizes of ex_r field
   !> @date
   !> Creation 2017
   !
   ! ______________________________________________________________________________________
-  SUBROUTINE sendrecv_l2g_generalized_non_blocking(field,nx1,nxg,ny1,nyg,nz1,nzg,field_f,nxx,nyy,nzz)
+  SUBROUTINE sendrecv_l2g_generalized_non_blocking(field,nx1,nxg,ny1,nyg,nz1,nzg,field_g,nxx,nyy,nzz)
 
 #if defined(FFTW)
     USE load_balance
@@ -829,7 +838,7 @@ MODULE field_boundary
     USE mpi
     INTEGER(idp), INTENT(IN)                    ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
     REAL(num)    ,INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field
-    REAL(num)    ,INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
+    REAL(num)    ,INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_g
     INTEGER(idp)                                ::  ii
     INTEGER(isp)                                :: rank_to_send_to, rank_to_recv_from
     INTEGER(idp)                                :: n
@@ -844,7 +853,7 @@ MODULE field_boundary
 
       IF(nb_exchanges_l2g_recv_z(ii) .GT. 0 .AND. nb_exchanges_l2g_recv_y(ii) .GT. 0)   THEN 
         n=n+1
-        CALL MPI_IRECV(field_f(1, g_first_cell_to_recv_y(ii), g_first_cell_to_recv_z(ii)), 1_isp,recv_type_g(ii), &
+        CALL MPI_IRECV(field_g(1, g_first_cell_to_recv_y(ii), g_first_cell_to_recv_z(ii)), 1_isp,recv_type_g(ii), &
         rank_to_recv_from,tag,comm,requests_l2g(n),errcode)
       ENDIF
       IF(nb_exchanges_l2g_send_z(ii) .GT. 0 .AND. nb_exchanges_l2g_send_y(ii) .GT. 0) THEN
@@ -868,7 +877,8 @@ MODULE field_boundary
   !
   !> @date
   !> Creation 2017
-  !
+  ! This subroutine copies global field in mpi_group cartesian grid to local
+  ! field in the global  cartesian grid 
   ! ______________________________________________________________________________________
 
   SUBROUTINE generalized_comms_group_g2l()
@@ -919,7 +929,7 @@ MODULE field_boundary
   !> Haithem Kallala
   !> The input :
   !> field = ex field 
-  !> field_f = ex_r field
+  !> field_g = ex_r field
   !> nxg,nx1,nyg,ny1,nzg,nz1 : nb guard cells and nb cells in each direction
   !> nxx,nyy,nzz: sizes of ex_r field
   !> @date
@@ -927,7 +937,7 @@ MODULE field_boundary
   !
   ! ______________________________________________________________________________________
 
-  SUBROUTINE sendrecv_g2l_generalized_non_blocking(field,nx1,nxg,ny1,nyg,nz1,nzg,field_f,nxx,nyy,nzz)
+  SUBROUTINE sendrecv_g2l_generalized_non_blocking(field,nx1,nxg,ny1,nyg,nz1,nzg,field_g,nxx,nyy,nzz)
 
 #if defined(FFTW)
     USE load_balance
@@ -936,7 +946,7 @@ MODULE field_boundary
     USE mpi
     INTEGER(idp), INTENT(IN)                      ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
     REAL(num)   , INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field
-    REAL(num)   , INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
+    REAL(num)   , INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_g
     INTEGER(idp)        :: ii
     INTEGER(isp)                                  :: rank_to_send_to, rank_to_recv_from
     INTEGER(idp)                                :: n
@@ -956,7 +966,7 @@ MODULE field_boundary
       ENDIF
       IF(nb_exchanges_g2l_send_z(ii) .GT. 0 .AND. nb_exchanges_g2l_send_y(ii) .GT. 0 ) THEN
         n=n+1
-        CALL MPI_ISEND(field_f(1,g_first_cell_to_send_y(ii),g_first_cell_to_send_z(ii)) ,1_isp,send_type_g(ii),    &
+        CALL MPI_ISEND(field_g(1,g_first_cell_to_send_y(ii),g_first_cell_to_send_z(ii)) ,1_isp,send_type_g(ii),    &
         rank_to_send_to,tag,comm,requests_g2l(n),errcode)   
       ENDIF
 
@@ -966,7 +976,7 @@ MODULE field_boundary
   END SUBROUTINE  sendrecv_g2l_generalized_non_blocking
 
 
-  SUBROUTINE sendrecv_g2l_generalized(field,nx1,nxg,ny1,nyg,nz1,nzg,field_f,nxx,nyy,nzz)
+  SUBROUTINE sendrecv_g2l_generalized(field,nx1,nxg,ny1,nyg,nz1,nzg,field_g,nxx,nyy,nzz)
 
 #if defined(FFTW)
     USE load_balance
@@ -975,7 +985,7 @@ MODULE field_boundary
     USE mpi
     INTEGER(idp), INTENT(IN)                      :: nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
     REAL(num)   , INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field
-    REAL(num)   , INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
+    REAL(num)   , INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_g
     INTEGER(idp)        ::ii
     INTEGER(isp)                                  :: rank_to_send_to,rank_to_recv_from
 #if defined(FFTW)
@@ -995,7 +1005,7 @@ MODULE field_boundary
       IF(nb_exchanges_g2l_recv_y(ii) == 0) rank_to_recv_from = MPI_PROC_NULL
       IF(nb_exchanges_g2l_send_y(ii) == 0) rank_to_send_to = MPI_PROC_NULL
 
-      CALL MPI_SENDRECV(field_f(1,g_first_cell_to_send_y(ii),g_first_cell_to_send_z(ii)) ,1_isp,send_type_g(ii), &
+      CALL MPI_SENDRECV(field_g(1,g_first_cell_to_send_y(ii),g_first_cell_to_send_z(ii)) ,1_isp,send_type_g(ii), &
       rank_to_send_to,tag,field(-nxg, l_first_cell_to_recv_y(ii), l_first_cell_to_recv_z(ii)), 1_isp,&
       recv_type_l(ii), rank_to_recv_from, tag, comm, status, errcode)
 
