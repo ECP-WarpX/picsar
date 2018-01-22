@@ -567,14 +567,22 @@ MODULE gpstd_solver
     nkz = nfftz
     DO i=1_idp, 11_idp
       DO j=1_idp, 11_idp
-          CALL is_calculation_needed(i, j, needed)
-          IF(g_spectral .OR. needed) THEN
+        CALL is_calculation_needed(i, j, needed)
+        IF(needed .OR. g_spectral) THEN
+          IF(needed) THEN
             ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(nfftxr, nffty,    &
             nfftz))
             cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = nfftxr
             cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = nffty
             cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = nfftz
+          ELSE IF (.NOT. needed .AND. g_spectral) THEN
+            ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(1,1,1))
+            cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = 1
+            cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = 1
+            cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = 1
+            cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(1,1,1) = DCMPLX(0.0,0.0)
           ENDIF
+        ENDIF
       ENDDO
     ENDDO
     IF(g_spectral) THEN
