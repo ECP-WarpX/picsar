@@ -201,6 +201,7 @@ MODULE fourier_psaotd
     ENDIF
 
     CALL generalized_comms_group_r2f()
+print*,"kok",rank
     ! Get global Fourier transform of all fields components and currents
     CALL fft_forward_r2c_mpi() 
 
@@ -406,7 +407,6 @@ MODULE fourier_psaotd
     ELSE
       p3d_offset = 0
     ENDIF
-jy_r=jy_r*1./(nx_group*ny_group*nz_group)
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
     DO iz=1,sizes_to_exchange_r_to_recvz(1)
       DO iy=1,sizes_to_exchange_r_to_recvy(1)
@@ -431,8 +431,6 @@ jy_r=jy_r*1./(nx_group*ny_group*nz_group)
 
 
 
-         jy(ix-ix_min_r-nxguards,iy-1+r_first_cell_to_recvy(1),iz-1+r_first_cell_to_recvz(1))=&
-            jy_r(ix+p3d_offset(1),iy-1+f_first_cell_to_sendy(1)+p3d_offset(2),iz-1+f_first_cell_to_sendz(1)+p3d_offset(3))
 
 
 
@@ -582,9 +580,6 @@ jy_r=jy_r*1./(nx_group*ny_group*nz_group)
       CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, byf, by_r)
       CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bzf, bz_r)
 
-      CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, jyf, jy_r)
-
-
     ELSE
       CALL p3dfft_btran_c2r (exf,ex_r,'tff')
       CALL p3dfft_btran_c2r (eyf,ey_r,'tff')
@@ -592,9 +587,6 @@ jy_r=jy_r*1./(nx_group*ny_group*nz_group)
       CALL p3dfft_btran_c2r (bxf,bx_r,'tff')
       CALL p3dfft_btran_c2r (byf,by_r,'tff')
       CALL p3dfft_btran_c2r (bzf,bz_r,'tff')
-
-      CALL p3dfft_btran_c2r (jyf,jy_r,'tff')
-
 
     ENDIF
 

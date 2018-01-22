@@ -790,6 +790,8 @@ MODULE field_boundary
     INTEGER(idp)                                ::  ii
     INTEGER(isp)                                :: rank_to_send_to, rank_to_recv_from
 #if defined(FFTW)
+print*,'s',rank,array_of_ranks_to_send_to_rf
+print*,'r',rank,array_of_ranks_to_recv_from_rf
     DO ii=1,nb_comms_rf
       IF (ii==1) CYCLE
       rank_to_send_to = INT(array_of_ranks_to_send_to_rf(ii),isp)
@@ -799,7 +801,6 @@ MODULE field_boundary
       IF(sizes_to_exchange_r_to_sendz(ii) == 0) rank_to_send_to = MPI_PROC_NULL
       IF(sizes_to_exchange_f_to_recvy(ii) == 0) rank_to_recv_from =MPI_PROC_NULL
       IF(sizes_to_exchange_r_to_sendy(ii) == 0) rank_to_send_to = MPI_PROC_NULL
-
       CALL MPI_SENDRECV(field(-nxg, r_first_cell_to_sendy(ii), r_first_cell_to_sendz(ii)), 1_isp, send_type_r(ii),   &
       rank_to_send_to,tag,field_f(1, f_first_cell_to_recvy(ii), f_first_cell_to_recvz(ii)), 1_isp, recv_type_f(ii),  &
       rank_to_recv_from ,tag ,comm ,status ,errcode)
@@ -898,10 +899,6 @@ MODULE field_boundary
       CALL sendrecv_fr_generalized(bx,nx,nxguards,ny,nyguards,nz,nzguards,bx_r,nxx,nyy,nzz)
       CALL sendrecv_fr_generalized(by,nx,nxguards,ny,nyguards,nz,nzguards,by_r,nxx,nyy,nzz)
       CALL sendrecv_fr_generalized(bz,nx,nxguards,ny,nyguards,nz,nzguards,bz_r,nxx,nyy,nzz)
-
-      CALL sendrecv_fr_generalized(jy,nx,nxguards,ny,nyguards,nz,nzguards,jy_r,nxx,nyy,nzz)
-
-
 
     ELSE 
       CALL sendrecv_fr_generalized_non_blocking(ex,nx,nxguards,ny,nyguards,nz,nzguards,ex_r,nxx,nyy,nzz)

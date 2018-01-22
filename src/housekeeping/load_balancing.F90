@@ -755,6 +755,7 @@ END SUBROUTINE get_2Dintersection
           f_first_cell_to_recvy(i),                        &
         sizes_to_exchange_f_to_sendy(i), f_first_cell_to_sendy(i),is_grp_min,is_grp_max,ny_global,nyg_group)
       ENDDO
+if(rank==14)print*,"kokkl",sizes_to_exchange_f_to_recvy,cell_y_max_lbg(y_coords+1),cell_y_min_lbg(y_coords+1)
     ELSE 
        sizes_to_exchange_f_to_recvy(y_coords+1) = MIN(2*nyguards + ny ,ny_group)
        sizes_to_exchange_f_to_sendy(y_coords+1) = MIN(2*nyguards + ny ,ny_group)
@@ -823,6 +824,27 @@ END SUBROUTINE get_2Dintersection
       r_first_cell_to_recvy(y_coords+1) = -nyguards
       r_first_cell_to_sendy(y_coords+1) = -nyguards 
     ENDIF
+    IF(nprocz/nb_group_z==1) THEN
+     sizes_to_exchange_r_to_sendz =0 
+     sizes_to_exchange_r_to_recvz =0 
+     sizes_to_exchange_f_to_sendz =0 
+     sizes_to_exchange_f_to_recvz = 0
+     r_first_cell_to_recvz =1 
+     f_first_cell_to_recvz =1 
+     f_first_cell_to_sendz =1 
+     r_first_cell_to_sendz =1 
+
+     sizes_to_exchange_r_to_sendz(z_coords+1) = nz + 2*nzguards
+     sizes_to_exchange_f_to_recvz(z_coords+1) = nz + 2*nzguards
+     sizes_to_exchange_r_to_recvz(z_coords+1) = nz + 2*nzguards
+     sizes_to_exchange_f_to_sendz(z_coords+1) = nz + 2*nzguards
+     r_first_cell_to_recvz(z_coords+1) = -nzguards
+     f_first_cell_to_recvz(z_coords+1) = 1
+     f_first_cell_to_sendz(z_coords+1) = 1
+     r_first_cell_to_sendz(z_coords+1) = -nzguards
+    ENDIF
+
+
     CALL create_derived_types_groups_p3dfft()
     CALL create_work_group_arrays_p3dfft()
 #endif
@@ -848,19 +870,36 @@ END SUBROUTINE get_2Dintersection
    INTEGER(idp)  , ALLOCATABLE, DIMENSION(:) :: temp1,temp2,temp3,temp4,&
         temp5,temp6,temp7,temp8
    INTEGER(isp)  , ALLOCATABLE, DIMENSION(:) :: temp_rs, temp_sr
-   INTEGER(isp)  , ALLOCATABLE , DIMENSION(:,:) :: temp_array_ranks
+   INTEGER(isp)  , ALLOCATABLE, DIMENSION(:,:) :: temp_array_ranks
+   INTEGER(idp) ,  ALLOCATABLE, DIMENSION(:,:,:):: ttemp
    
+   ALLOCATE(ttemp(nprocx,nprocy,nprocz))
+   DO i=1,nprocx
+     DO j=1,nprocy
+       DO k =1,nprocz
+        ttemp(i,j,k) = i-1 +(j-1)*nprocx + (k-1)*nprocx*nprocy 
+       ENDDO
+     ENDDO
+   ENDDO
    ALLOCATE(temp_array_ranks(nprocy,nprocz))
-   temp_array_ranks=0
-   temp_array_ranks(1,1) = INT(rank,isp)
-   ii = z_coords*nprocx*nprocy + (nprocy-1)*nprocx+ x_coords 
-   jj = ii-rank
-   DO i=1,nprocy
-     temp_array_ranks(i,1) = ii - MODULO( jj+nprocx*(i-1),nprocx*nprocy)  
-   ENDDO
-   DO i=2,nprocz
-      temp_array_ranks(:,i) = MODULO(temp_array_ranks(:,1) + nprocx*nprocy*(i-1),nproc)
-   ENDDO
+   DO i = 1,nprocy
+      DO j=1,nprocz 
+      ii=1+ MODULO(y_coords+i-1,nprocy)
+      jj=1+MODULO(z_coords+j-1,nprocz)
+      temp_array_ranks(i,j)=ttemp(x_coords+1,ii,jj)
+      ENDDO
+  ENDDO
+  ! temp_array_ranks=0
+  ! temp_array_ranks(1,1) = INT(rank,isp)
+  ! ii = z_coords*nprocx*nprocy + (nprocy-1)*nprocx+ x_coords 
+  ! jj = ii-rank
+  ! DO i=1,nprocy
+  !   temp_array_ranks(i,1) = ii - MODULO( jj+nprocx*(i-1),nprocx*nprocy)  
+  ! ENDDO
+
+  ! DO i=2,nprocz
+  !    temp_array_ranks(:,i) = MODULO(temp_array_ranks(:,1) + nprocx*nprocy*(i-1),nproc)
+  ! ENDDO
  
    ALLOCATE(array_of_ranks_to_send_to(nprocy*nprocz)) 
    DO i=1,nprocy
@@ -868,16 +907,25 @@ END SUBROUTINE get_2Dintersection
         array_of_ranks_to_send_to((i-1)+(j-1)*nprocy+1) = temp_array_ranks(i,j)
       ENDDO
    ENDDO
+
    temp_array_ranks=0
-   temp_array_ranks(1,1) = INT(rank,isp)
-   ii = z_coords*nprocx*nprocy + x_coords
-   jj = rank - ii
-   DO i=1,nprocy
-     temp_array_ranks(i,1) = ii + MODULO( jj-nprocx*(i-1),nprocx*nprocy) 
-   ENDDO
-   DO i=2,nprocz
-      temp_array_ranks(:,i) = MODULO(temp_array_ranks(:,1) - nprocx*nprocy*(i-1),nproc)
-   ENDDO
+   DO i = 1,nprocy
+    DO j=1,nprocz
+      ii=1+ MODULO(y_coords-(i-1),nprocy)
+      jj=1+MODULO(z_coords-(j-1),nprocz)
+      temp_array_ranks(i,j)=ttemp(x_coords+1,ii,jj)
+    ENDDO
+  ENDDO
+if(rank==14)print*,"coco",array_of_ranks_to_send_to,temp_array_ranks
+   !temp_array_ranks(1,1) = INT(rank,isp)
+   !ii = z_coords*nprocx*nprocy + x_coords
+   !jj = rank - ii
+   !DO i=1,nprocy
+   !  temp_array_ranks(i,1) = ii + MODULO( jj-nprocx*(i-1),nprocx*nprocy) 
+   !ENDDO
+   !DO i=2,nprocz
+   !   temp_array_ranks(:,i) = MODULO(temp_array_ranks(:,1) - nprocx*nprocy*(i-1),nproc)
+   !ENDDO
 
 
 
@@ -887,8 +935,8 @@ END SUBROUTINE get_2Dintersection
          array_of_ranks_to_recv_from((i-1)+(j-1)*nprocy+1) = temp_array_ranks(i,j)
        ENDDO
     ENDDO
-
      DEALLOCATE(temp_array_ranks)
+     DEALLOCATE(ttemp)
      ALLOCATE(sizes_to_exchange_f_to_send(nprocy,nprocz), &
          sizes_to_exchange_r_to_recv(nprocy,nprocz)    ) 
      ALLOCATE(sizes_to_exchange_r_to_send(nprocy,nprocz), &
@@ -902,6 +950,7 @@ END SUBROUTINE get_2Dintersection
         sizes_to_exchange_r_to_recv(i,j) = sizes_to_exchange_r_to_recvy(i)*sizes_to_exchange_r_to_recvz(j)
       ENDDO
     ENDDO
+if(rank==14)print*,"jj",sizes_to_exchange_f_to_recvz,sizes_to_exchange_f_to_recvy
     ALLOCATE(temp1(nprocz),temp2(nprocz),temp3(nprocz),temp4(nprocz))
     ALLOCATE(temp5(nprocz),temp6(nprocz),temp7(nprocz),temp8(nprocz))
 
@@ -1179,7 +1228,11 @@ END SUBROUTINE get_2Dintersection
        j =   i/nprocy          !Z
       array_of_ranks_to_send_to_rf(ii) = array_of_ranks_to_send_to(k+j*nprocy+1)
       array_of_ranks_to_recv_from_rf(ii) = array_of_ranks_to_recv_from(k+j*nprocy+1)
+if(rank==14)print*,"pp",i,k,j,k+j*nprocy+1
    ENDDO
+
+if(rank==14)print*,'ii',array_of_ranks_to_send_to_rf
+
    ALLOCATE(array_of_ranks_to_send_to_fr(nb_comms_fr))
    ALLOCATE(array_of_ranks_to_recv_from_fr(nb_comms_fr))
    DO ii=1,nb_comms_fr

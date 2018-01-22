@@ -740,7 +740,7 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
      
     CALL MPI_ALLGATHER(nz_group_global, 1_isp, MPI_LONG_LONG_INT, nz_group_global_array, 1_isp,&
     MPI_LONG_LONG_INT, MPI_ROOT_COMM, errcode)
-    CALL MPI_ALLGATHER(ny_group_global, 1_isp, MPI_LONG_LONG_INT,nY_group_global_array, 1_isp,&
+    CALL MPI_ALLGATHER(ny_group_global, 1_isp, MPI_LONG_LONG_INT,ny_group_global_array, 1_isp,&
     MPI_LONG_LONG_INT, MPI_ROOT_COMM, errcode)
     CALL MPI_ALLGATHER(nx_group_global, 1_isp, MPI_LONG_LONG_INT,nx_group_global_array, 1_isp,&
     MPI_LONG_LONG_INT, MPI_ROOT_COMM, errcode)
@@ -785,7 +785,7 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
 	errcode)
       CALL  MPI_BCAST(nx_group_global_array,INT(nb_group,isp),MPI_LONG_LONG_INT,0_isp,MPI_COMM_GROUP_ID(i),&
         errcode)
-      CALL MPI_BCAST(nx_group_global_array,INT(nb_group,isp),MPI_LONG_LONG_INT,0_isp,MPI_COMM_GROUP_ID(i),&
+      CALL MPI_BCAST(ny_group_global_array,INT(nb_group,isp),MPI_LONG_LONG_INT,0_isp,MPI_COMM_GROUP_ID(i),&
         errcode)
     ENDIF
   
@@ -935,6 +935,7 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
       cell_y_min_lbg(i) = all_iy_min_lbg(x_coords+(i-1)*nprocx+z_coords*nprocx*nprocy+1)
       cell_y_max_lbg(i) = all_iy_max_lbg(x_coords+(i-1)*nprocx+z_coords*nprocx*nprocy+1)
     ENDDO
+if(rank==14)print*,'gg',ny_group_global_array
     DEALLOCATE(all_iy_max_lbg,all_iy_min_lbg)
 
   ENDIF
