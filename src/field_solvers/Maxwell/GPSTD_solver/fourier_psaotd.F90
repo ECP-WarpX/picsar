@@ -161,7 +161,7 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
-    IF(p3dfft) THEN
+    IF(p3dfft_flag) THEN
       p3d_offset = p3d_istart-1
     ELSE
       p3d_offset =0
@@ -365,7 +365,7 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
-    IF(p3dfft) THEN
+    IF(p3dfft_flag) THEN
       p3d_offset=p3d_istart-1
     ELSE
       p3d_offset = 0
@@ -448,7 +448,7 @@ MODULE fourier_psaotd
       tmptime = MPI_WTIME()
     ENDIF
 #if defined(P3DFFT)
-    IF(.NOT. p3dfft) THEN
+    IF(.NOT. p3dfft_flag) THEN
 #endif
      CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ex_r, exf)
      CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ey_r, eyf)
@@ -534,7 +534,7 @@ MODULE fourier_psaotd
     ENDIF
     IF(.NOT. g_spectral) THEN
 #if defined(P3DFFT)
-    IF(.NOT. p3dfft) THEN
+    IF(.NOT. p3dfft_flag) THEN
 #endif
       CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, exf, ex_r)
       CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, eyf, ey_r)
@@ -555,7 +555,7 @@ MODULE fourier_psaotd
 
     ELSE IF(g_spectral) THEN
 #if defined(P3DFFT)
-      IF(.NOT. p3dfft) THEN
+      IF(.NOT. p3dfft_flag) THEN
 #endif
         CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(1)%block3dc,ex_r)
         CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(2)%block3dc,ey_r)
@@ -690,7 +690,7 @@ MODULE fourier_psaotd
     nxx=nkx
     nyy=nky
     nzz=nkz
-    IF(p3dfft) THEN
+    IF(p3dfft_flag) THEN
       p3d_offset = p3d_fstart-1
     ELSE
       p3d_offset =0
@@ -817,7 +817,7 @@ MODULE fourier_psaotd
 #endif
     ENDIF
     CALL init_gpstd()
-    IF(.NOT. p3dfft ) THEN
+    IF(.NOT. p3dfft_flag ) THEN
       IF(rank==0) WRITE(0, *) 'INIT GPSTD MATRIX DONE'
       IF (fftw_with_mpi) THEN
         CALL init_plans_fourier_mpi(nopenmp)

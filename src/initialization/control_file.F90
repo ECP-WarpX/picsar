@@ -225,7 +225,7 @@ MODULE control_file
     fftw_with_mpi = .FALSE.
     fftw_hybrid = .FALSE.
     fftw_mpi_transpose = .FALSE.
-    p3dfft = .FALSE.
+    p3dfft_flag = .FALSE.
 #if defined(P3DFFT) 
     p3dfft_stride = .TRUE.
 #endif
@@ -335,9 +335,9 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'fftw_hybrid') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) fftw_hybrid
-      ELSE IF (INDEX(buffer, 'p3dfft') .GT. 0) THEN
+      ELSE IF (INDEX(buffer, 'p3dfft_flag') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
-        READ(buffer, *) p3dfft
+        READ(buffer, *) p3dfft_flag
       ELSE IF (INDEX(buffer, 'p3dstride') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) p3dfft_stride
@@ -603,9 +603,9 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'fftw_hybrid') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) fftw_hybrid
-      ELSE IF (INDEX(buffer, 'p3dfft') .GT. 0) THEN
+      ELSE IF (INDEX(buffer, 'p3dfft_flag') .GT. 0) THEN
         ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), *) p3dfft
+        READ(buffer(ix+1:string_length), *) p3dfft_flag
 #if defined(FFTW)
       ELSE IF (INDEX(buffer, 'nb_group_z') .GT. 0) THEN
         ix = INDEX(buffer, "=")

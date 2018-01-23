@@ -583,24 +583,24 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
   CALL MPI_COMM_GROUP(comm, MPI_WORLD_GROUP, errcode)
   
   ! - Computes number of groups along x, y and z
-  IF(.NOT. p3dfft) THEN
+  IF(.NOT. p3dfft_flag) THEN
     nb_group_y = nprocy
     nyg_group = nyguards
   ENDIF
   nb_group_x = nprocx
   
   ! - If 2D case set p3dfft to .FALSE. by default 
-  IF(c_dim==2 .AND. p3dfft)  THEN
+  IF(c_dim==2 .AND. p3dfft_flag)  THEN
      IF(rank==0) THEN
        WRITE(*,*)"ERROR cant run with p3dfft in 2d case"
        WRITE(*,*)"p3dfft = .FALSE."
      ENDIF
-     p3dfft = .FALSE.
+     p3dfft_flag = .FALSE.
   ENDIF
   
   ! - If p3dfft enabled, fftw_mpi_transpose is set to .FALSE. 
   ! - by default (all MPI communications is handled by p3dfft in that case)
-  IF(p3dfft) THEN
+  IF(p3dfft_flag) THEN
     fftw_mpi_transpose = .FALSE.
   ENDIF
   
@@ -875,7 +875,7 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
   DO i=1, nb_group
     IF(MPI_COMM_GROUP_ID(i)  .NE. MPI_COMM_NULL) THEN
       ! Case 1: FFTW-MPI is used for global FFT transpositions among groups 
-      IF(.NOT. p3dfft) THEN
+      IF(.NOT. p3dfft_flag) THEN
         ! - 3D case 
         IF(c_dim == 3) THEN
           IF(fftw_mpi_transpose) THEN
@@ -1156,7 +1156,7 @@ ALLOCATE(cell_z_min(1:nprocz), cell_z_max(1:nprocz))
 
 #if defined(FFTW)
 IF(fftw_hybrid) fftw_with_mpi = .TRUE.
-IF(p3dfft) THEN
+IF(p3dfft_flag) THEN
   fftw_with_mpi = .TRUE.
   fftw_hybrid = .TRUE.
   fftw_mpi_transpose = .FALSE.
@@ -1568,7 +1568,7 @@ IF (l_spectral) THEN
         nkz = local_ny
       ENDIF
     ENDIF
-    IF(p3dfft) THEN
+    IF(p3dfft_flag) THEN
       nkx = p3d_fsize(1)
       nky = p3d_fsize(2) 
       nkz = p3d_fsize(3)
@@ -1622,7 +1622,7 @@ IF (l_spectral) THEN
       nkz = local_nz
     ENDIF
     cin = fftw_alloc_real(2 * alloc_local);
-    IF(.NOT. p3dfft) THEN
+    IF(.NOT. p3dfft_flag) THEN
       CALL c_f_pointer(cin, ex_r, [2*nkx, nky, nkz])
       cin = fftw_alloc_real(2 * alloc_local);
       CALL c_f_pointer(cin, ey_r, [2*nkx, nky, nkz])

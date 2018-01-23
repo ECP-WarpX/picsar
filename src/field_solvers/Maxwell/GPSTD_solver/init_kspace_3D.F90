@@ -55,7 +55,7 @@ MODULE gpstd_solver
         ENDIF
       ENDIF
 #if defined(P3DFFT)
-      IF(p3dfft) THEN
+      IF(p3dfft_flag) THEN
         nfftx = p3d_fsize(1)
         nffty = p3d_fsize(2)
         nfftz = p3d_fsize(3)
@@ -124,7 +124,7 @@ MODULE gpstd_solver
     ENDIF
 
 #if defined(P3DFFT) 
-    IF(p3dfft) THEN
+    IF(p3dfft_flag) THEN
       IF(p3dfft_stride) THEN
        nfftx =nz_group
        nffty =ny_group
@@ -168,7 +168,7 @@ MODULE gpstd_solver
     ALLOCATE(AT_OP(nmatrixes2)%block_vector(4_idp))!S/k, C, (1-C)/k^2
     CALL select_case_dims_local(nfftx, nffty, nfftz)
     nfftxr = nfftx/2+1
-    IF(p3dfft) nfftxr = nfftx
+    IF(p3dfft_flag) nfftxr = nfftx
     DO i = 1_idp, 10_idp
       ALLOCATE(Kspace(nmatrixes2)%block_vector(i)%block3dc(nfftxr, nffty, nfftz))
     ENDDO
@@ -181,7 +181,7 @@ MODULE gpstd_solver
     DO i = 1, nfftxr
       DO j = 1, nffty
         DO k = 1, nfftz
-          IF(.NOT. p3dfft) THEN
+          IF(.NOT. p3dfft_flag) THEN
             IF(.NOT. fftw_mpi_transpose) THEN
               Kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kxf(i)
               Kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kxb(i)
@@ -320,7 +320,7 @@ MODULE gpstd_solver
       norderz=nordery
       nordery=temp_order
     ENDIF
-    IF(p3dfft) THEN
+    IF(p3dfft_flag) THEN
       ! switch z and x
       IF(p3dfft_stride) THEN
         sd = dz
@@ -336,7 +336,7 @@ MODULE gpstd_solver
     CALL compute_k_1d( nffty,kyc,kyf,kyb,nordery,dy,l_stg)
     CALL compute_k_1d( nfftz,kzc,kzf,kzb,norderz,dz,l_stg)
     ! delete second part of kx because real
-    IF(.NOT. p3dfft) THEN
+    IF(.NOT. p3dfft_flag) THEN
       ALLOCATE(k_temp(nfftx));
       k_temp = kxc;
       DEALLOCATE(kxc); ALLOCATE(kxc(nfftx/2+1)) ; kxc = k_temp(1:nfftx/2+1)
@@ -348,7 +348,7 @@ MODULE gpstd_solver
     ENDIF
 
     IF(fftw_with_mpi) THEN
-      IF( .NOT. p3dfft) THEN
+      IF( .NOT. p3dfft_flag) THEN
         IF(.NOT. fftw_mpi_transpose) THEN
           ALLOCATE(k_temp(nfftz))
           k_temp = kzc
@@ -373,7 +373,7 @@ MODULE gpstd_solver
           kzb = k_temp(local_y0+1:local_y0+local_ny)
         ENDIF
         DEALLOCATE(k_temp)
-      ELSE IF(p3dfft) THEN
+      ELSE IF(p3dfft_flag) THEN
         ALLOCATE(kxct(nfftx),kxbt(nfftx),kxft(nfftx),kyct(nffty),kybt(nffty),kyft(nffty),&
           kzct(nfftz),kzbt(nfftz),kzft(nfftz))
           kxct = kxc; kxbt = kxb ; kxft = kxf ; 
@@ -405,7 +405,7 @@ MODULE gpstd_solver
       norderz=nordery
       nordery=temp_order
     ENDIF
-    IF(p3dfft) THEN
+    IF(p3dfft_flag) THEN
       IF(p3dfft_stride) THEN
         sd = dz
         dz = dx
@@ -560,7 +560,7 @@ MODULE gpstd_solver
     ii=DCMPLX(0.0_num, 1.0_num)
     CALL allocate_new_matrix_vector(11_idp)
     nfftxr = nfftx/2+1
-    IF(p3dfft) nfftxr = nfftx 
+    IF(p3dfft_flag) nfftxr = nfftx 
     CALL init_kspace
     nkx = nfftxr 
     nky = nffty
