@@ -545,6 +545,7 @@ ELSE
 ENDIF
 END SUBROUTINE setup_communicator
 
+! ______________________________________________________________________________________
 !> @brief
 !> This routine creates mpi groups and corresponding communicators while using
 !> fftw_hybrid=.TRUE. or hybrid=.TRUE. 
@@ -552,6 +553,7 @@ END SUBROUTINE setup_communicator
 !> H. Kallala
 !> H. Vincenti
 !> 2018
+! ______________________________________________________________________________________
 SUBROUTINE setup_groups
 #if defined(FFTW)
 USE  group_parameters
@@ -1053,6 +1055,15 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
 #endif
 END SUBROUTINE setup_groups
 
+! ______________________________________________________________________________________
+!> @brief
+!> This routine gathers on all ranks, the sizes of the distributed FFT array along z 
+!> on each rank. This is useful to obtain the grid decomposition performed by the 
+!> FFTW distributed FFT library 
+!> @ author 
+!> H. Kallala
+!> 2018
+! ______________________________________________________________________________________
 SUBROUTINE adjust_grid_mpi_global
 
 #if defined(FFTW)
@@ -1066,7 +1077,7 @@ SUBROUTINE adjust_grid_mpi_global
   nz_grid = nz + 1
   ALLOCATE(all_nz(1:nprocz))
   
-  CALL MPI_ALLGATHER(nz, 1_isp, MPI_LONG_LONG_INT, all_nz, 1_isp, MPI_LONG_LONG_INT,    &
+  CALL MPI_ALLGATHER(nz, 1_isp, MPI_INTEGER8, all_nz, 1_isp, MPI_INTEGER8,    &
   comm, errcode)
   
   cell_z_min(1) = 0
