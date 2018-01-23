@@ -1036,8 +1036,10 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
 
   ! -- Store min and max indices along y in 1D arrays
   DO i=1, nprocy
-    cell_y_min_global(i) = all_iy_min_global(x_coords+(i-1)*nprocx+z_coords*nprocx*nprocy+1)
-    cell_y_max_global(i) = all_iy_max_global(x_coords+(i-1)*nprocx+z_coords*nprocx*nprocy+1)
+    cell_y_min_global(i) = all_iy_min_global(x_coords+(i-1)*nprocx+ & 
+    z_coords*nprocx*nprocy+1)
+    cell_y_max_global(i) = all_iy_max_global(x_coords+(i-1)*nprocx+ &
+    z_coords*nprocx*nprocy+1)
   ENDDO
   DEALLOCATE(all_iy_max_global,all_iy_min_global)
   
@@ -1114,6 +1116,7 @@ END SUBROUTINE adjust_grid_mpi_global
 !> @author
 !> Henri Vincenti
 !> Mathieu Lobet
+!> H. Kallala 
 !
 !> @date
 !> Creation 2015
@@ -1131,7 +1134,6 @@ INTEGER(isp) :: nz0, nzp
 INTEGER(idp) :: iz
 #if defined(FFTW)
 INTEGER(C_INTPTR_T):: kx, ly, mz
-INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: nz_procs, all_nz
 #endif
 
 #if defined(DEBUG)
@@ -1161,21 +1163,16 @@ IF(p3dfft_flag) THEN
   fftw_hybrid = .TRUE.
   fftw_mpi_transpose = .FALSE.
 endif
-! With fftw_with_mpi CPU split is performed only along z
+! With fftw_with_mpi CPU split is performed along z only 
 IF (fftw_with_mpi .AND. .NOT. fftw_hybrid) THEN
   mz=INT(nz_global,C_INTPTR_T); ly=INT(ny_global,C_INTPTR_T); kx=INT(nx_global,C_INTPTR_T)
   !   get local data size and allocate (note dimension reversal)
   IF(.NOT. fftw_mpi_transpose) THEN
-   ! alloc_local = fftw_mpi_local_size_many(3,nn,howmany,INT(nz,C_INTPTR_T),comm, local_nz, local_z0)
- alloc_local = fftw_mpi_local_size_3d(mz, ly, kx/2+1, comm, local_nz, local_z0)
-
+    alloc_local = fftw_mpi_local_size_3d(mz, ly, kx/2+1, comm, local_nz, local_z0)
   ELSE
     alloc_local = fftw_mpi_local_size_3d_transposed(mz, ly, kx/2+1, comm, local_nz,   &
     local_z0, local_ny, local_y0)
   ENDIF
-  ALLOCATE(nz_procs(nproc))
-  CALL MPI_ALLGATHER(INT(local_nz, idp), 1_isp, MPI_INTEGER8, nz_procs, INT(1, isp),  &
-  MPI_INTEGER8, comm, errcode)
   ! Regular CPU split
   ! If the total number of gridpoints cannot be exactly subdivided then fix
   ! The first nxp processors have nx0 cells
@@ -1291,24 +1288,27 @@ IF(c_dim == 2) THEN
   nyjguards = 0_idp
 ENDIF
 
-!!! --- if fftw_with_mpi = true then adjust nz to b equal to local_nz (since the
-!two are computed differently
-
 #if defined(FFTW)
-
-IF(fftw_with_mpi ) THEN
-  IF(.NOT. fftw_hybrid) THEN
+! -- Case of distributed FFT
+IF(fftw_with_mpi) THEN
+  ! -- Case of distributed FFT per MPI group only 
+  IF(fftw_hybrid) THEN
+    CALL setup_groups
+  ! -- Case of totally global FFT 
+  ELSE
+    ! -- adjust nz to be equal to local_nz (since 
+    !!! --- it is computed differently by distributed FFT libraries)
     CALL adjust_grid_mpi_global
     IF(nz .NE. cell_z_max(z_coords+1) - cell_z_min(z_coords+1)+1) THEN
       WRITE(*, *), 'ERROR IN AJUSTING THE GRID 1'
       STOP
     ENDIF
-  ELSE
-    CALL setup_groups
   ENDIF
 ENDIF
+
+! -- When using distributed FFT, set
 IF(fftw_hybrid) THEN 
-    ! computes subdomains and group fields intersection
+    ! Computes intersection of FFT distributed arrays and regular grid arrays 
     CALL get2D_intersection_group_mpi()
     ! Load balancing is not used ,grid decomposition is that of
     ! fftw_local_size_3d
