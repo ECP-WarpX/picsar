@@ -772,7 +772,7 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
     group_y_max_boundary = .TRUE.
   ENDIF
   
-  ! - Init number of cells/group along each direction 
+  ! - Init number of cells/group along each direction (EXCLUDING guard cells)
   nx_group_global = nx ! By default there is no group along X in current version 
   ny_group_global = ny_global/nb_group_y
   nz_group_global = nz_global/(nb_group_z)
@@ -903,7 +903,7 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
             ENDIF
           ELSE
             alloc_local = FFTW_MPI_LOCAL_SIZE_3D(nz_group, ny_group, nx_group/2+1,      &
-            MPI_COMM_GROUP_ID(i), local_nz, local_z0)
+            mpi_comm_group_id(i), local_nz, local_z0)
             IF(local_nz .EQ. 0_idp ) THEN
               WRITE(0,*) 'ERROR local_nz = 0 in rank ',rank
               CALL MPI_ABORT(comm,errcode,ierr)
@@ -949,53 +949,44 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
     ENDIF
   ENDDO
   
+  ! - Sanity check on the number of guard cells compared to the global size of the domain 
+  ! - In z and y directions 
   IF(nz_global .LE. 2*nzg_group) THEN
-      WRITE(*,*) '**ERROR **, nz_global too small compared to nzg_group'
-      CALL MPI_ABORT(comm,errcode,ierr)
+    WRITE(*,*) '**ERROR **, nz_global too small compared to nzg_group'
+    CALL MPI_ABORT(comm,errcode,ierr)
+  ELSE IF (ny_global .LE. 2*nyg_group) THEN 
+    WRITE(*,*) '**ERROR **, ny_global too small compared to nyg_group'
+    CALL MPI_ABORT(comm,errcode,ierr)  
   ENDIF
   
-  ! -- Computes Min and max indices along z delimiting cells of the current MPI_rank 
-  ! -- That are not guard cells of the group 
-  ! - Along z
+  ! -- Gets min and max indices of the global FFT array without 
+  ! -- the group guard cells 
+  ! - Along X
   iz_min_r = 1
   iz_max_r = local_nz
   IF(group_z_min_boundary) iz_min_r = nzg_group+1
   IF(group_z_max_boundary) iz_max_r = local_nz-nzg_group
-  ! - Along y 
+  ! - Along Y 
   iy_min_r = 1
   iy_max_r = local_nz
   IF(group_y_min_boundary) iy_min_r = nyg_group+1
   IF(group_y_max_boundary) iy_max_r = local_ny-nyg_group
 
 
-  ! - CPU split for the global grid different than 
-  ! - the one for the local grid. 
-
-  ! - In that case, the origin of the global grid is the same as the global grid 
-  ! - Index of min and max of each MPI process is referred to that origin 
-
-  ! -- Computes min and max cells for each proc along Z   
-
-  ! -- j is the total number of cells in z  direction  
-  ! -- contained in groups behind current group
+  ! -- Computes global index of the lower z-boundary of the distributed FFT array
+  ! -- (The one that includes group guard cells). 
+  ! -- 0 index corresponds to origin of the global simulation grid (WITHOUT guard cells) 
   j=0
   DO i = 1 ,z_group_coords
      j = j +  nz_group_global_array(x_group_coords+                                  &
      y_group_coords*nb_group_x+(i-1)*nb_group_x*nb_group_y+1)
   ENDDO
-
-  ! -- Min index along z of current proc 
-
-  ! -- iz_min_global is the index of the first cell in z direction of current
-  ! -- rank regarding the total physical grid
-
-  ! -- localz0 is the index of the first cell of current rank regarding the
-  ! -- current group (depends on the local rank of current mpi inside its group
-  iz_min_global = local_z0-nzg_group + j
-
-  ! -- iz_max_global is the index of the last cell in z direction of current
-  ! -- rank regarding the total physical grid
+  iz_min_global = local_z0-nzg_group + j ! 
+  ! -- Computes global index of the upper z-boundary of the distributed FFT array
+  ! -- (The one that includes group guard cells) 
   iz_max_global = iz_min_global + local_nz - 1 
+  
+  ! -- Array allocation for performing an MPI allgather operation 
   ALLOCATE(cell_z_min_global(nprocz),cell_z_max_global(nprocz))
   ALLOCATE(all_iz_min_global(nproc),all_iz_max_global(nproc))
 
@@ -1007,36 +998,24 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
   CALL MPI_ALLGATHER(iz_max_global,1_isp, MPI_INTEGER8, all_iz_max_global,           &
   INT(1,isp), MPI_INTEGER8, comm, errcode)
   
-  ! -- Set global index of min and max cells for current proc along z 
-  ! -- Each processor only retains a subarray of all_iz_min/max_global of size
-  ! -- nprocz and put it in cell_z_min/max_global 
-  ! -- All processors have the same cell_z_min/max_global
-
+  ! -- Store min and max indices along z in 1D arrays
   DO i=1, nprocz
     cell_z_min_global(i) = all_iz_min_global(x_coords+y_coords*nprocx+(i-1)*nprocx*nprocy+1)
     cell_z_max_global(i) = all_iz_max_global(x_coords+y_coords*nprocx+(i-1)*nprocx*nprocy+1)
   ENDDO
   DEALLOCATE(all_iz_max_global,all_iz_min_global)
   
-  ! -- Computes min and max cells for each proc along Y    
-
-  ! -- j is the total number of cells in y direction  
-  ! -- contained in groups behind current group
+  ! -- Computes global index of the lower y-boundary of the distributed FFT array
+  ! -- (The one that includes group guard cells). 
+  ! -- 0 index corresponds to origin of the global simulation grid (WITHOUT guard cells) 
   j=0
   DO i = 1 ,y_group_coords
      j = j +ny_group_global_array(x_group_coords+(i-1)*nb_group_x+             & 
      z_group_coords*nb_group_x*nb_group_y+1)
   ENDDO
-  ! -- Min index along y of current proc 
-
-  ! -- iy_min_global is the index of the first cell in y direction of current
-  ! -- rank regarding the total physical grid
-
-  ! -- localy0 is the index of the first cell of current rank regarding the
-  ! -- current group (depends on the local rank of current mpi inside its group)
   iy_min_global = local_y0-nyg_group + j
-  ! -- iy_max_global is the index of the last cell in y direction of current rank
-  ! -- regarding the total physical grid
+  ! -- Computes global index of the upper y-boundary of the distributed FFT array
+  ! -- (The one that includes group guard cells) 
   iy_max_global = iy_min_global + local_ny - 1
 
   ALLOCATE(cell_y_min_global(nprocy),cell_y_max_global(nprocy))
@@ -1050,20 +1029,14 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
   CALL MPI_ALLGATHER(iy_max_global,1_isp, MPI_INTEGER8, all_iy_max_global,&
   INT(1,isp), MPI_INTEGER8, comm, errcode)
 
-  ! -- Set global index of min and max cells for current proc along y
-  ! -- Each processor only retains a subarray of all_iy_min/max_global of size nprocy
-  ! -- and put it in cell_y_min/max_global 
-  ! -- All processors have the same cell_y_min/max_global
+  ! -- Store min and max indices along y in 1D arrays
   DO i=1, nprocy
     cell_y_min_global(i) = all_iy_min_global(x_coords+(i-1)*nprocx+z_coords*nprocx*nprocy+1)
     cell_y_max_global(i) = all_iy_max_global(x_coords+(i-1)*nprocx+z_coords*nprocx*nprocy+1)
   ENDDO
   DEALLOCATE(all_iy_max_global,all_iy_min_global)
   
-  ! -- Computes min and max cells for each proc along X  
-  ! -- This assumes no CPU split along X
-  ! -- This will be implemented when using distributed FFT libraries using 
-  ! -- 3D CPU split (e.g. the Plimpton package)
+  ! -- upper/lower x-boundaries of group 
   ix_min_r = 1
   ix_max_r = nx + 2*nxg_group
   
