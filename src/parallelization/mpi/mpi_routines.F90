@@ -568,12 +568,12 @@ INTEGER(isp), ALLOCATABLE, DIMENSION(:)    :: grp_id, grp_comm, local_roots_rank
 INTEGER(isp), ALLOCATABLE, DIMENSION(:, :) :: grp_ranks
 INTEGER(isp)                                :: roots_grp, roots_comm
 INTEGER(idp)  ::cur, i,j,temp,k,l
-INTEGER(idp), DIMENSIOn(:), ALLOCATABLE :: all_nz_group, all_iz_max_r, all_iz_min_r,  &
- all_nz_lb, all_nzp, all_iz_min_lbg, all_iz_max_lbg, all_ny_group, all_nz
-INTEGER(idp)                            :: iz_min_lbg, iz_max_lbg,iy_min_lbg, &
-iy_max_lbg
+INTEGER(idp), DIMENSIOn(:), ALLOCATABLE :: all_nz_group,  &
+  all_iz_min_global, all_iz_max_global, all_ny_group, all_nz
+INTEGER(idp)                            :: iz_min_global, iz_max_global,iy_min_global, &
+iy_max_global
 INTEGER(isp)                            :: pdims(2)
-INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
+INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
 
 #if defined(FFTW)
 #if defined(DEBUG)
@@ -957,65 +957,95 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
 
   ! - CPU split for the global grid different than 
   ! - the one for the local grid. 
+
   ! - In that case, the origin of the global grid is the same as the global grid 
   ! - Index of min and max of each MPI process is referred to that origin 
+
+  ! -- Computes min and max cells for each proc along Z   
+
+  ! -- j is the total number of cells in z  direction  
+  ! -- contained in groups behind current group
   j=0
-  ! -- Computes min and max cells for each proc along Z
-  ! - Total number of cells between groups 0 and z_group_coords
   DO i = 1 ,z_group_coords
      j = j +  nz_group_global_array(x_group_coords+                                  &
      y_group_coords*nb_group_x+(i-1)*nb_group_x*nb_group_y+1)
   ENDDO
-  ! - Min index along z of current proc 
-  iz_min_lbg = local_z0-nzg_group + j
-  ! - Max index along z of current proc 
-  iz_max_lbg = iz_min_lbg + local_nz - 1 
-  ALLOCATE(cell_z_min_lbg(nprocz),cell_z_max_lbg(nprocz))
-  ALLOCATE(all_iz_min_lbg(nproc),all_iz_max_lbg(nproc))
+
+  ! -- Min index along z of current proc 
+
+  ! -- iz_min_global is the index of the first cell in z direction of current
+  ! -- rank regarding the total physical grid
+
+  ! -- localz0 is the index of the first cell of current rank regarding the
+  ! -- current group (depends on the local rank of current mpi inside its group
+  iz_min_global = local_z0-nzg_group + j
+
+  ! -- iz_max_global is the index of the last cell in z direction of current
+  ! -- rank regarding the total physical grid
+  iz_max_global = iz_min_global + local_nz - 1 
+  ALLOCATE(cell_z_min_global(nprocz),cell_z_max_global(nprocz))
+  ALLOCATE(all_iz_min_global(nproc),all_iz_max_global(nproc))
 
   ! - Gather all min indexes along z from all other procs
-  CALL MPI_ALLGATHER(iz_min_lbg,1_isp, MPI_INTEGER8, all_iz_min_lbg,           &
+  CALL MPI_ALLGATHER(iz_min_global,1_isp, MPI_INTEGER8, all_iz_min_global,           &
   INT(1,isp), MPI_INTEGER8, comm, errcode)
 
   ! - Gather all max indexes along z from all other procs 
-  CALL MPI_ALLGATHER(iz_max_lbg,1_isp, MPI_INTEGER8, all_iz_max_lbg,           &
+  CALL MPI_ALLGATHER(iz_max_global,1_isp, MPI_INTEGER8, all_iz_max_global,           &
   INT(1,isp), MPI_INTEGER8, comm, errcode)
   
-  ! - Set global index of min and max cells for current proc along z 
+  ! -- Set global index of min and max cells for current proc along z 
+  ! -- Each processor only retains a subarray of all_iz_min/max_global of size
+  ! -- nprocz and put it in cell_z_min/max_global 
+  ! -- All processors have the same cell_z_min/max_global
+
   DO i=1, nprocz
-    cell_z_min_lbg(i) = all_iz_min_lbg(x_coords+y_coords*nprocx+(i-1)*nprocx*nprocy+1)
-    cell_z_max_lbg(i) = all_iz_max_lbg(x_coords+y_coords*nprocx+(i-1)*nprocx*nprocy+1)
+    cell_z_min_global(i) = all_iz_min_global(x_coords+y_coords*nprocx+(i-1)*nprocx*nprocy+1)
+    cell_z_max_global(i) = all_iz_max_global(x_coords+y_coords*nprocx+(i-1)*nprocx*nprocy+1)
   ENDDO
-  DEALLOCATE(all_iz_max_lbg,all_iz_min_lbg)
+  DEALLOCATE(all_iz_max_global,all_iz_min_global)
   
   ! -- Computes min and max cells for each proc along Y    
-  ! - Total number of cells between groups 0 and y_group_coords
+
+  ! -- j is the total number of cells in y direction  
+  ! -- contained in groups behind current group
   j=0
   DO i = 1 ,y_group_coords
      j = j +ny_group_global_array(x_group_coords+(i-1)*nb_group_x+             & 
      z_group_coords*nb_group_x*nb_group_y+1)
   ENDDO
-  ! - Min index along y of current proc 
-  iy_min_lbg = local_y0-nyg_group + j
-  ! - Max index along y of current proc 
-  iy_max_lbg = iy_min_lbg + local_ny - 1
-  ALLOCATE(cell_y_min_lbg(nprocy),cell_y_max_lbg(nprocy))
-  ALLOCATE(all_iy_min_lbg(nproc),all_iy_max_lbg(nproc))
+  ! -- Min index along y of current proc 
+
+  ! -- iy_min_global is the index of the first cell in y direction of current
+  ! -- rank regarding the total physical grid
+
+  ! -- localy0 is the index of the first cell of current rank regarding the
+  ! -- current group (depends on the local rank of current mpi inside its group)
+  iy_min_global = local_y0-nyg_group + j
+  ! -- iy_max_global is the index of the last cell in y direction of current rank
+  ! -- regarding the total physical grid
+  iy_max_global = iy_min_global + local_ny - 1
+
+  ALLOCATE(cell_y_min_global(nprocy),cell_y_max_global(nprocy))
+  ALLOCATE(all_iy_min_global(nproc),all_iy_max_global(nproc))
 
   ! - Gather all min indexes along y from all other procs
-  CALL MPI_ALLGATHER(iy_min_lbg,1_isp, MPI_INTEGER8, all_iy_min_lbg,&
+  CALL MPI_ALLGATHER(iy_min_global,1_isp, MPI_INTEGER8, all_iy_min_global,&
   INT(1,isp), MPI_INTEGER8, comm, errcode)
   
   ! - Gather all max indexes along y from all other procs
-  CALL MPI_ALLGATHER(iy_max_lbg,1_isp, MPI_INTEGER8, all_iy_max_lbg,&
+  CALL MPI_ALLGATHER(iy_max_global,1_isp, MPI_INTEGER8, all_iy_max_global,&
   INT(1,isp), MPI_INTEGER8, comm, errcode)
 
-  ! - Set global index of min and max cells for current proc along y
+  ! -- Set global index of min and max cells for current proc along y
+  ! -- Each processor only retains a subarray of all_iy_min/max_global of size nprocy
+  ! -- and put it in cell_y_min/max_global 
+  ! -- All processors have the same cell_y_min/max_global
   DO i=1, nprocy
-    cell_y_min_lbg(i) = all_iy_min_lbg(x_coords+(i-1)*nprocx+z_coords*nprocx*nprocy+1)
-    cell_y_max_lbg(i) = all_iy_max_lbg(x_coords+(i-1)*nprocx+z_coords*nprocx*nprocy+1)
+    cell_y_min_global(i) = all_iy_min_global(x_coords+(i-1)*nprocx+z_coords*nprocx*nprocy+1)
+    cell_y_max_global(i) = all_iy_max_global(x_coords+(i-1)*nprocx+z_coords*nprocx*nprocy+1)
   ENDDO
-  DEALLOCATE(all_iy_max_lbg,all_iy_min_lbg)
+  DEALLOCATE(all_iy_max_global,all_iy_min_global)
   
   ! -- Computes min and max cells for each proc along X  
   ! -- This assumes no CPU split along X
@@ -1024,6 +1054,7 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
   ix_min_r = 1
   ix_max_r = nx + 2*nxg_group
   
+  ! -- Deallocate used arrays
   DEALLOCATE(grp_id, grp_comm, local_roots_rank, grp_ranks)
 
 #if defined(DEBUG)

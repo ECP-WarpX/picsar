@@ -722,8 +722,8 @@ END SUBROUTINE get_2Dintersection
 
     nb_proc_per_group_z = nprocz/nb_group_z
     nb_proc_per_group_y = nprocy/nb_group_y
-    iz1min = cell_z_min_lbg(z_coords+1) 
-    iz1max = cell_z_max_lbg(z_coords+1)
+    iz1min = cell_z_min_global(z_coords+1) 
+    iz1max = cell_z_max_global(z_coords+1)
     is_grp_min = group_z_min_boundary
     is_grp_max = group_z_max_boundary
     DO i = 1,nprocz
@@ -742,8 +742,8 @@ END SUBROUTINE get_2Dintersection
     IF(p3dfft) THEN
 ! when using p3dfft also computes domain intersection along y axis  to compute
 ! f_indexes
-      iy1min = cell_y_min_lbg(y_coords+1) 
-      iy1max = cell_y_max_lbg(y_coords+1)  
+      iy1min = cell_y_min_global(y_coords+1) 
+      iy1max = cell_y_max_global(y_coords+1)  
       is_grp_min = group_y_min_boundary
       is_grp_max = group_y_max_boundary
       DO i = 1 , nprocy
@@ -777,8 +777,8 @@ END SUBROUTINE get_2Dintersection
     iz1min = cell_z_min(z_coords+1)
     iz1max = cell_z_max(z_coords+1)
     DO i=1,nprocz
-      iz2min = cell_z_min_lbg(i)
-      iz2max = cell_z_max_lbg(i) 
+      iz2min = cell_z_min_global(i)
+      iz2max = cell_z_max_global(i) 
       IF(MODULO(i-1_idp,nb_proc_per_group_z) ==0) THEN
         is_grp_min = .TRUE.
       ELSE 
@@ -803,8 +803,8 @@ END SUBROUTINE get_2Dintersection
       iy1max = cell_y_max(y_coords+1)
       !compute r index trhou y axis
       DO i=1,nprocy
-        iy2min = cell_y_min_lbg(i)
-        iy2max = cell_y_max_lbg(i) 
+        iy2min = cell_y_min_global(i)
+        iy2max = cell_y_max_global(i) 
         IF(MODULO(i-1_idp,nb_proc_per_group_y) ==0) THEN
           is_grp_min = .TRUE.
         ELSE 

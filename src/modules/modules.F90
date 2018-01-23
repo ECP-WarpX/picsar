@@ -1111,8 +1111,11 @@ MODULE group_parameters!#do not parse
 
   REAL(num)                                  :: z_min_local_lb, z_max_local_lb 
   INTEGER(idp)                               :: nz_global_grid_min_lb , nz_global_grid_max_lb
-  !> Cell domain for load balancing general case (taking into account guardcells
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: cell_z_min_lbg, cell_z_max_lbg, cell_y_min_lbg, cell_y_max_lbg
+
+  !> Cell domain for load balancing general case (taking into account
+  !--guardcells)
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: cell_z_min_global, cell_z_max_global
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: cell_y_min_global, cell_y_max_global
   INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: nb_exchanges_l2g_recv_z, nb_exchanges_g2l_recv_z
   INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: nb_exchanges_g2l_send_z,nb_exchanges_l2g_send_z 
   INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: g_first_cell_to_recv_z,l_first_cell_to_recv_z
@@ -1129,28 +1132,25 @@ MODULE group_parameters!#do not parse
 
 
   !> TYPE IN WHICH ex_r will be recieving
-  !> so recv_type_f is ( 2*nxguards+nx+1 , 2*nyguards+ny+1 , size_z )
   INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: recv_type_g   
   !> TYPE IN WHICH ex_r will be sending
-  !> so recv_type_f is ( 2*(nx_group/2+1) , ny_group, size_z )
   INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: send_type_g
   !> TYPE IN WHICH ex will be recieving
-  !> so recv_type_f is (2*(nx_group/2+1),ny_group,size_z )
   INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: recv_type_l
   !> TYPE IN WHICH ex will be sending
-  !> so recv_type_f is  ( 2*nxguards+nx+1 , 2*nyguards+ny+1 , size_z )
   INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: send_type_l
   INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: array_of_ranks_to_send_to,array_of_ranks_to_send_to_l2g,    &
         array_of_ranks_to_send_to_g2l
   INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: array_of_ranks_to_recv_from,array_of_ranks_to_recv_from_l2g,&
   array_of_ranks_to_recv_from_g2l
   INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: requests_l2g, requests_g2l
-  !> Work_array_fr and Work_array_rf contain only non null zcoords ranks with which
-  !> exchanges are done during r->f and f-> communications respectively
-  !> Its sizes are nb_comms_fr and  nb_comms_rf   respectively
+  !> Work_array_g2l and Work_array_l2g contain are arrays of sizes nb_comms_g2l and nb_comms_g2l
+  !> respectively.
+  !> each cell of arrays encode the localization of array with which
+  !> communication is performed 
   INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: work_array_g2l, work_array_l2g
-  !> Nb_comms_fr and nb_comms_rf are equal to the number of send + recv calls
-  !done by each mpi in mpi comms group during r->f and f-> communications respectively
+  !> Nb_comms_g2l and nb_comms_l2g are equal to the number of send + recv calls
+  !done by each mpi in mpi comms group during l->g and g->l communications respectively
   INTEGER(idp)  :: nb_comms_g2l,nb_comms_l2g
   INTEGER(isp) , DIMENSION(3) :: p3d_istart, p3d_iend , p3d_fstart,p3d_fend, p3d_fsize, p3d_isize
 
