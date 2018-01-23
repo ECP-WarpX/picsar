@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -545,10 +546,12 @@ ENDIF
 END SUBROUTINE setup_communicator
 
 !> @brief
-!> This routine creates mpi groups and communicators while using
+!> This routine creates mpi groups and corresponding communicators while using
 !> fftw_hybrid=.TRUE. or hybrid=.TRUE. 
-!> Developpers : H. Kallala, H. Vincenti
-!> 2017
+!> @ author 
+!> H. Kallala
+!> H. Vincenti
+!> 2018
 SUBROUTINE setup_groups
 #if defined(FFTW)
 USE  group_parameters
