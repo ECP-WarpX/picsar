@@ -1071,13 +1071,13 @@ MODULE group_parameters!#do not parse
   !> local_size and local rank
   INTEGER(isp)    :: local_size, local_rank
   !> MPI_GROUP associated to mpi_comm_world
-  INTEGER(isp)    :: MPI_WORLD_GROUP
+  INTEGER(isp)    :: mpi_world_group
   !> ARRAY of  MPI_GROUP associated to each mpi task (!= mpi_group_null or
   !mpi_comm_null if and  only if i == which group + 1
-  INTEGER(isp), DIMENSION(:), ALLOCATABLE :: MPI_GROUP_ID, MPI_COMM_GROUP_ID
+  INTEGER(isp), DIMENSION(:), ALLOCATABLE :: mpi_group_id, mpi_comm_group_id
   !>  MPI_COMM for local roots group and MPI_GROUP for local  roots and roots
   !ranks in the mpi_root_comm
-  INTEGER(isp)  :: MPI_ROOT_COMM, MPI_ROOT_GROUP, root_rank, root_size
+  INTEGER(isp)  :: mpi_root_comm, mpi_root_group, root_rank, root_size
   !> Field cell  sizes in groups without guardcells
   INTEGER(idp)  :: nx_group_global, ny_group_global, nz_group_global
   INTEGER(idp) , DIMENSION(:), ALLOCATABLE ::  nz_group_global_array, ny_group_global_array, nx_group_global_array

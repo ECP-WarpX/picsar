@@ -7,7 +7,8 @@
 ! National Laboratory (subject to receipt of any required approvals from the
 ! U.S. Dept. of Energy). All rights reserved.
 !
-! If you have questions about your rights to use or distribute this software, ! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
+! If you have questions about your rights to use or distribute this software, 
+! please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 !
 ! NOTICE.
 ! This Software was developed under funding from the U.S. Department of Energy
@@ -544,11 +545,15 @@ ELSE
 ENDIF
 END SUBROUTINE setup_communicator
 
+! ______________________________________________________________________________________
 !> @brief
-!> This routine creates mpi groups and communicators while using
+!> This routine creates mpi groups and corresponding communicators while using
 !> fftw_hybrid=.TRUE. or hybrid=.TRUE. 
-!> Developpers : H. Kallala, H. Vincenti
-!> 2017
+!> @ author 
+!> H. Kallala
+!> H. Vincenti
+!> 2018
+! ______________________________________________________________________________________
 SUBROUTINE setup_groups
 #if defined(FFTW)
 USE  group_parameters
@@ -580,7 +585,8 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
   WRITE(0, *) "setup_groups : start"
 #endif
 
-  CALL MPI_COMM_GROUP(comm, MPI_WORLD_GROUP, errcode)
+  ! - Create the base group upon which all other groups are defined
+  CALL MPI_COMM_GROUP(comm, mpi_world_group, errcode)
   
   ! - Computes number of groups along x, y and z
   IF(.NOT. p3dfft_flag) THEN
@@ -589,7 +595,7 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
   ENDIF
   nb_group_x = nprocx
   
-  ! - If 2D case set p3dfft to .FALSE. by default 
+  ! - If 2D case set p3dfft to .FALSE. by default  (p3dfft is a 3D library)
   IF(c_dim==2 .AND. p3dfft_flag)  THEN
      IF(rank==0) THEN
        WRITE(*,*)"ERROR cant run with p3dfft in 2d case"
@@ -598,14 +604,14 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
      p3dfft_flag = .FALSE.
   ENDIF
   
-  ! - If p3dfft enabled, fftw_mpi_transpose is set to .FALSE. 
-  ! - by default (all MPI communications is handled by p3dfft in that case)
+  ! - If p3dfft is enabled, fftw_mpi_transpose is set to .FALSE. 
+  ! - by default (all MPI communications are handled by p3dfft in that case)
   IF(p3dfft_flag) THEN
     fftw_mpi_transpose = .FALSE.
   ENDIF
   
   ! - Sanity check: number of groups has to divide number of procs along each direction 
-  ! - If not abort simulation 
+  ! - If not --> abort simulation 
   IF(MODULO(nprocx,nb_group_x) .NE. 0 .OR. MODULO(nprocy,nb_group_y) .NE. 0  & 
   .OR. MODULO(nprocz,nb_group_z) .NE. 0 ) THEN
     IF(rank==0)   & 
@@ -633,18 +639,18 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
   ! - Array allocations 
   ALLOCATE(grp_id(nb_group), grp_comm(nb_group), local_roots_rank(nb_group))
   ALLOCATE(grp_ranks(group_size, nb_group))
-  ALLOCATE(MPI_GROUP_ID(nb_group),MPI_COMM_GROUP_ID(nb_group))
+  ALLOCATE(mpi_group_id(nb_group),mpi_comm_group_id(nb_group))
 
   ! - Init group variables and communicators 
   DO i=1, nb_group
-    MPI_COMM_GROUP_ID(i) = MPI_COMM_NULL
-    MPI_GROUP_ID(i) = MPI_GROUP_NULL
+    mpi_comm_group_id(i) = MPI_COMM_NULL
+    mpi_group_id(i) = MPI_GROUP_NULL
     grp_comm(i)  = MPI_COMM_NULL
     grp_id(i) = MPI_GROUP_NULL
   ENDDO
   
-  ! - Init local root rank for each group 
-  ! - Local roots processes are used to communicate information between MPI groups 
+  ! - Init a local root rank for each group 
+  ! - Local root ranks are used to communicate information between MPI groups 
   ! - By default, the local root rank of a MPI group is 
   ! - the minimum of all ranks contained in that group
   ! - N.B: This implementation assumes that ranks are init regularly in the 
@@ -660,7 +666,7 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
      j*group_sizes(2)*nb_group_x+k*group_sizes(3)*nprocx*nprocy
   ENDDO 
   
-  ! - Init 2D array grp_ranks that contains the set of ranks in each group. 
+  ! - Init 2D array grp_ranks that contains the set of ranks contained in each MPI group. 
   DO l=1,nb_group
      DO i=1,group_sizes(1)
        DO j=1,group_sizes(2)
@@ -672,10 +678,11 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
      ENDDO
   ENDDO
 
-  ! - For each group: (i) Create MPI_group object based on the ranks in each group 
+  ! - For each group: 
+  ! - (i)  Create a MPI_group object based on the ranks contained in each group 
   ! - (ii) Create a MPI communicator associated to each MPI_group object
   DO i= 1, nb_group
-    CALL MPI_GROUP_INCL(MPI_WORLD_GROUP, INT(group_size, isp), grp_ranks(:, i),       &
+    CALL MPI_GROUP_INCL(mpi_world_group, INT(group_size, isp), grp_ranks(:, i),       &
     grp_id(i), errcode)
     CALL MPI_COMM_CREATE_GROUP(comm, grp_id(i), 0, grp_comm(i), errcode)
   ENDDO
@@ -684,20 +691,24 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
   roots_grp = MPI_GROUP_NULL
   roots_comm = MPI_COMM_NULL
  
-  ! - Create group containing the local roots ranks
+  ! - Create a MPI group containing the local root ranks
   CALL MPI_GROUP_INCL(MPI_WORLD_GROUP, INT(nb_group, isp), local_roots_rank,          &
   roots_grp,  errcode)
   ! - Create a MPI communicator associated to the MPI group of local root ranks 
   CALL MPI_COMM_CREATE_GROUP(comm, roots_grp, 0, roots_comm, errcode)
   
-  MPI_ROOT_GROUP = MPI_GROUP_NULL
-  MPI_ROOT_COMM  = MPI_COMM_NULL
+  mpi_root_group = MPI_GROUP_NULL
+  mpi_root_comm  = MPI_COMM_NULL
   root_rank = MPI_PROC_NULL
+  ! - For each process in the root_communicator get: 
+  ! - (i) The size of the root communicator 
+  ! - (ii) The rank of current process in the communicator 
+  ! - (iii) Init mpi_root_comm and mpi_root_group variables 
   IF( roots_comm .NE. MPI_COMM_NULL) THEN
     CALL MPI_COMM_RANK(roots_comm, root_rank, errcode)
     CALL MPI_COMM_SIZE(roots_comm, root_size, errcode)
-    MPI_ROOT_COMM = roots_comm
-    MPI_ROOT_GROUP = roots_grp
+    mpi_root_comm = roots_comm
+    mpi_root_group = roots_grp
   ENDIF
   
   ! - Variable init 
@@ -709,23 +720,29 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
   ! - attributes 
   DO i = 1, nb_group
     IF (grp_comm(i) .NE. MPI_COMM_NULL) THEN
-      ! - Notice that here, procs that do not belong to grp_comm(i) can call 
-      ! - MPI_CART_CREATE. In that case, MPI_COMM_NULL is returned to that processes
+      ! - Create cartesian communicator mpi_comm_group_id(i)
+      ! - from all processes belonging to grp_comm(i)
       CALL MPI_CART_CREATE(grp_comm(i), ndims, dims, periods, reorder,                &
-      MPI_COMM_GROUP_ID(i), errcode)
-      CALL MPI_COMM_GROUP(MPI_COMM_GROUP_ID(i), MPI_GROUP_ID(i), errcode)
-      CALL MPI_COMM_SIZE(MPI_COMM_GROUP_ID(i), local_size, errcode)
-      CALL MPI_COMM_RANK(MPI_COMM_GROUP_ID(i), local_rank, errcode)
-      CALL MPI_CART_COORDS(MPI_COMM_GROUP_ID(i), local_rank, ndims, group_coordinates,&
+      mpi_comm_group_id(i), errcode)
+      ! - Get MPI group corresponding to mpi_comm_group_id(i) communicator 
+      CALL MPI_COMM_GROUP(mpi_comm_group_id(i), mpi_group_id(i), errcode)
+      ! - Get mpi_comm_group_id(i) communicator size 
+      CALL MPI_COMM_SIZE(mpi_comm_group_id(i), local_size, errcode)
+      ! - get rank of current process in mpi_comm_group_id(i)
+      CALL MPI_COMM_RANK(mpi_comm_group_id(i), local_rank, errcode)
+      ! - Get cartesian coordinate of current process in mpi_comm_group_id(i)
+      CALL MPI_CART_COORDS(mpi_comm_group_id(i), local_rank, ndims, group_coordinates,&
       errcode)
     ENDIF
   ENDDO
   
-  ! - Init group number of current group 
+  ! - Init the group id of current group based on its coordinates in the global set of 
+  ! - groups 
   which_group =x_group_coords+y_group_coords*nb_group_x+ & 
   z_group_coords*nb_group_x*nb_group_y
   
   ! - For each group, release old (& temporary) communicators 
+  ! - And keep only new cartesian communicators and groups
   DO i = 1, nb_group
     IF(grp_comm(i) .NE. MPI_COMM_NULL) THEN
       CALL MPI_COMM_FREE(grp_comm(i), errcode)
@@ -733,35 +750,35 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
     ENDIF
   ENDDO
 
-  ! - Detect if current rank is on -z boundary 
+  ! - Detect if current rank is on -z boundary of its group 
   ! - Will be replaced soon by calls to MPI_CART
   IF(local_rank/group_sizes(2)==0) THEN
     is_on_boundary_group_z = .TRUE.
     group_z_min_boundary = .TRUE.
   ENDIF
-  ! - Detect if current rank is on +z boundary 
+  ! - Detect if current rank is on +z boundary of its group 
   ! - Will be replaced soon by calls to MPI_CART
   IF(local_rank/group_sizes(2)==group_sizes(3)-1) THEN
     is_on_boundary_group_z = .TRUE.
     group_z_max_boundary = .TRUE.
   ENDIF
 
-  ! - Detect if current rank is on +y boundary 
+  ! - Detect if current rank is on +y boundary of its group 
   ! - Will be replaced soon by calls to MPI_CART
   IF(MODULO(local_rank,int(group_sizes(2),isp))==0) THEN
     is_on_boundary_group_y = .TRUE.
     group_y_min_boundary = .TRUE.
   ENDIF
 
-  ! - Detect if current rank is on -y boundary 
+  ! - Detect if current rank is on -y boundary of its group 
   ! - Will be replaced soon by calls to MPI_CART
   IF(MODULO(local_rank,int(group_sizes(2),isp))==group_sizes(2)-1) THEN
     is_on_boundary_group_y = .TRUE.
     group_y_max_boundary = .TRUE.
   ENDIF
   
-  ! - Init number of cells/group along each direction 
-  nx_group_global = nx
+  ! - Init number of cells/group along each direction (EXCLUDING guard cells)
+  nx_group_global = nx ! By default there is no group along X in current version 
   ny_group_global = ny_global/nb_group_y
   nz_group_global = nz_global/(nb_group_z)
    
@@ -796,13 +813,13 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
   z_max_group=zmax
   
   ! - GATHER number of cells per groups along each direction from each group local root
-  IF(MPI_ROOT_COMM .NE. MPI_COMM_NULL) THEN ! - If MPI_COMM_NULL current rank is not root
+  IF(mpi_root_comm .NE. MPI_COMM_NULL) THEN ! If == MPI_COMM_NULL current rank is not root
     CALL MPI_ALLGATHER(nz_group_global, 1_isp, MPI_INTEGER8,nz_group_global_array, &
-    1_isp,MPI_INTEGER8, MPI_ROOT_COMM, errcode)
+    1_isp,MPI_INTEGER8, mpi_root_comm, errcode)
     CALL MPI_ALLGATHER(ny_group_global, 1_isp, MPI_INTEGER8,ny_group_global_array, &
-    1_isp,MPI_INTEGER8, MPI_ROOT_COMM, errcode)
+    1_isp,MPI_INTEGER8, mpi_root_comm, errcode)
     CALL MPI_ALLGATHER(nx_group_global, 1_isp, MPI_INTEGER8,nx_group_global_array, &
-    1_isp,MPI_INTEGER8, MPI_ROOT_COMM, errcode)
+    1_isp,MPI_INTEGER8, mpi_root_comm, errcode)
     
     ! - Computes z_min_group/z_max_group for the group containing current local root rank
     DO i=1, z_group_coords
@@ -829,25 +846,25 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
   ! - In each group, broadcast group dimensions and positions from its local root rank 
   ! - to all other ranks 
   DO i=1, nb_group
-    IF(MPI_COMM_GROUP_ID(i)  .NE. MPI_COMM_NULL) THEN
-      CALL MPI_BCAST(z_min_group, 1_isp, MPI_DOUBLE, 0_isp, MPI_COMM_GROUP_ID(i),     &
+    IF(mpi_comm_group_id(i)  .NE. MPI_COMM_NULL) THEN
+      CALL MPI_BCAST(z_min_group, 1_isp, mpidbl, 0_isp, mpi_comm_group_id(i),     &
       errcode)
-      CALL MPI_BCAST(z_max_group, 1_isp, MPI_DOUBLE, 0_isp, MPI_COMM_GROUP_ID(i),     &
+      CALL MPI_BCAST(z_max_group, 1_isp, mpidbl, 0_isp, mpi_comm_group_id(i),     &
       errcode)
-      CALL MPI_BCAST(y_min_group, 1_isp, MPI_DOUBLE, 0_isp,MPI_COMM_GROUP_ID(i),      &
+      CALL MPI_BCAST(y_min_group, 1_isp, mpidbl, 0_isp,mpi_comm_group_id(i),      &
       errcode)
-      CALL MPI_BCAST(y_max_group, 1_isp, MPI_DOUBLE, 0_isp,MPI_COMM_GROUP_ID(i),      &
+      CALL MPI_BCAST(y_max_group, 1_isp, mpidbl, 0_isp,mpi_comm_group_id(i),      &
       errcode)
-      CALL MPI_BCAST(x_min_group, 1_isp, MPI_DOUBLE, 0_isp,MPI_COMM_GROUP_ID(i),      &
+      CALL MPI_BCAST(x_min_group, 1_isp, mpidbl, 0_isp,mpi_comm_group_id(i),      &
       errcode)
-      CALL MPI_BCAST(x_max_group, 1_isp, MPI_DOUBLE, 0_isp,MPI_COMM_GROUP_ID(i),      &
+      CALL MPI_BCAST(x_max_group, 1_isp, mpidbl, 0_isp,mpi_comm_group_id(i),      &
       errcode)
-      CALL MPI_BCAST(nz_group_global_array,INT(nb_group,isp),MPI_LONG_LONG_INT,       &
-      0_isp,MPI_COMM_GROUP_ID(i),errcode)
-      CALL  MPI_BCAST(nx_group_global_array,INT(nb_group,isp),MPI_LONG_LONG_INT,      &
-      0_isp,MPI_COMM_GROUP_ID(i),errcode)
-      CALL MPI_BCAST(ny_group_global_array,INT(nb_group,isp),MPI_LONG_LONG_INT,       &
-      0_isp,MPI_COMM_GROUP_ID(i),errcode)
+      CALL MPI_BCAST(nz_group_global_array,INT(nb_group,isp),MPI_INTEGER8,       &
+      0_isp,mpi_comm_group_id(i),errcode)
+      CALL  MPI_BCAST(nx_group_global_array,INT(nb_group,isp),MPI_INTEGER8,      &
+      0_isp,mpi_comm_group_id(i),errcode)
+      CALL MPI_BCAST(ny_group_global_array,INT(nb_group,isp),MPI_INTEGER8,       &
+      0_isp,mpi_comm_group_id(i),errcode)
     ENDIF
   ENDDO
   
@@ -873,14 +890,14 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
    
   ! - For each group 
   DO i=1, nb_group
-    IF(MPI_COMM_GROUP_ID(i)  .NE. MPI_COMM_NULL) THEN
+    IF(mpi_comm_group_id(i)  .NE. MPI_COMM_NULL) THEN
       ! Case 1: FFTW-MPI is used for global FFT transpositions among groups 
       IF(.NOT. p3dfft_flag) THEN
         ! - 3D case 
         IF(c_dim == 3) THEN
           IF(fftw_mpi_transpose) THEN
             alloc_local = fftw_mpi_local_size_3d_transposed(nz_group, ny_group,         &
-            nx_group/2+1, MPI_COMM_GROUP_ID(i), local_nz, local_z0, local_ny, local_y0)
+            nx_group/2+1, mpi_comm_group_id(i), local_nz, local_z0, local_ny, local_y0)
             ! - Sanity check:  if transposition leads to local_ny > nprocy in group 
             ! - in that case, local_ny can be 0 --> Abort
             ! - Same if local_nz<nprocz in group. This can lead to local_nz=0
@@ -891,7 +908,7 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
             ENDIF
           ELSE
             alloc_local = FFTW_MPI_LOCAL_SIZE_3D(nz_group, ny_group, nx_group/2+1,      &
-            MPI_COMM_GROUP_ID(i), local_nz, local_z0)
+            mpi_comm_group_id(i), local_nz, local_z0)
             IF(local_nz .EQ. 0_idp ) THEN
               WRITE(0,*) 'ERROR local_nz = 0 in rank ',rank
               CALL MPI_ABORT(comm,errcode,ierr)
@@ -921,13 +938,14 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
 #if defined(P3DFFT)
        pdims(1) = INT(nprocy/nb_group_y,isp)
        pdims(2) = INT(nprocz/nb_group_z,isp)
-       CALL p3dfft_setup (pdims,INT(nx_group,isp),INT(ny_group,isp),INT(nz_group,isp),&
-          MPI_COMM_GROUP_ID(i),INT(nx_group,isp),INT(ny_group,isp),INT(nz_group,isp),.FALSE.)
+       CALL p3dfft_setup(pdims,INT(nx_group,isp),INT(ny_group,isp),INT(nz_group,isp),&
+          mpi_comm_group_id(i),INT(nx_group,isp),INT(ny_group,isp),INT(nz_group,isp),&
+          .FALSE.)
        CALL p3dfft_get_dims(p3d_istart,p3d_iend,p3d_isize,1)
        CALL p3dfft_get_dims(p3d_fstart,p3d_fend,p3d_fsize,2)
-       local_nz = p3d_isize(3)!p3d_iend(3) - p3d_istart(3)+1
-       local_ny = p3d_isize(2)!p3d_iend(2) - p3d_istart(2)+1  
-       local_nx = p3d_isize(1)!p3d_iend(1) - p3d_istart(1)+1
+       local_nz = p3d_isize(3)
+       local_ny = p3d_isize(2)  
+       local_nx = p3d_isize(1)
        local_z0 = p3d_istart(3) - 1 
        local_y0 = p3d_istart(2) - 1
        local_x0 = p3d_istart(1) - 1
@@ -936,53 +954,44 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
     ENDIF
   ENDDO
   
+  ! - Sanity check on the number of guard cells compared to the global size of the domain 
+  ! - In z and y directions 
   IF(nz_global .LE. 2*nzg_group) THEN
-      WRITE(*,*) '**ERROR **, nz_global too small compared to nzg_group'
-      CALL MPI_ABORT(comm,errcode,ierr)
+    WRITE(*,*) '**ERROR **, nz_global too small compared to nzg_group'
+    CALL MPI_ABORT(comm,errcode,ierr)
+  ELSE IF (ny_global .LE. 2*nyg_group) THEN 
+    WRITE(*,*) '**ERROR **, ny_global too small compared to nyg_group'
+    CALL MPI_ABORT(comm,errcode,ierr)  
   ENDIF
   
-  ! -- Computes Min and max indices along z delimiting cells of the current MPI_rank 
-  ! -- That are not guard cells of the group 
-  ! - Along z
+  ! -- Gets min and max indices of the global FFT array without 
+  ! -- the group guard cells 
+  ! - Along X
   iz_min_r = 1
   iz_max_r = local_nz
   IF(group_z_min_boundary) iz_min_r = nzg_group+1
   IF(group_z_max_boundary) iz_max_r = local_nz-nzg_group
-  ! - Along y 
+  ! - Along Y 
   iy_min_r = 1
   iy_max_r = local_nz
   IF(group_y_min_boundary) iy_min_r = nyg_group+1
   IF(group_y_max_boundary) iy_max_r = local_ny-nyg_group
 
 
-  ! - CPU split for the global grid different than 
-  ! - the one for the local grid. 
-
-  ! - In that case, the origin of the global grid is the same as the global grid 
-  ! - Index of min and max of each MPI process is referred to that origin 
-
-  ! -- Computes min and max cells for each proc along Z   
-
-  ! -- j is the total number of cells in z  direction  
-  ! -- contained in groups behind current group
+  ! -- Computes global index of the lower z-boundary of the distributed FFT array
+  ! -- (The one that includes group guard cells). 
+  ! -- 0 index corresponds to origin of the global simulation grid (WITHOUT guard cells) 
   j=0
   DO i = 1 ,z_group_coords
      j = j +  nz_group_global_array(x_group_coords+                                  &
      y_group_coords*nb_group_x+(i-1)*nb_group_x*nb_group_y+1)
   ENDDO
-
-  ! -- Min index along z of current proc 
-
-  ! -- iz_min_global is the index of the first cell in z direction of current
-  ! -- rank regarding the total physical grid
-
-  ! -- localz0 is the index of the first cell of current rank regarding the
-  ! -- current group (depends on the local rank of current mpi inside its group
-  iz_min_global = local_z0-nzg_group + j
-
-  ! -- iz_max_global is the index of the last cell in z direction of current
-  ! -- rank regarding the total physical grid
+  iz_min_global = local_z0-nzg_group + j ! 
+  ! -- Computes global index of the upper z-boundary of the distributed FFT array
+  ! -- (The one that includes group guard cells) 
   iz_max_global = iz_min_global + local_nz - 1 
+  
+  ! -- Array allocation for performing an MPI allgather operation 
   ALLOCATE(cell_z_min_global(nprocz),cell_z_max_global(nprocz))
   ALLOCATE(all_iz_min_global(nproc),all_iz_max_global(nproc))
 
@@ -994,36 +1003,24 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
   CALL MPI_ALLGATHER(iz_max_global,1_isp, MPI_INTEGER8, all_iz_max_global,           &
   INT(1,isp), MPI_INTEGER8, comm, errcode)
   
-  ! -- Set global index of min and max cells for current proc along z 
-  ! -- Each processor only retains a subarray of all_iz_min/max_global of size
-  ! -- nprocz and put it in cell_z_min/max_global 
-  ! -- All processors have the same cell_z_min/max_global
-
+  ! -- Store min and max indices along z in 1D arrays
   DO i=1, nprocz
     cell_z_min_global(i) = all_iz_min_global(x_coords+y_coords*nprocx+(i-1)*nprocx*nprocy+1)
     cell_z_max_global(i) = all_iz_max_global(x_coords+y_coords*nprocx+(i-1)*nprocx*nprocy+1)
   ENDDO
   DEALLOCATE(all_iz_max_global,all_iz_min_global)
   
-  ! -- Computes min and max cells for each proc along Y    
-
-  ! -- j is the total number of cells in y direction  
-  ! -- contained in groups behind current group
+  ! -- Computes global index of the lower y-boundary of the distributed FFT array
+  ! -- (The one that includes group guard cells). 
+  ! -- 0 index corresponds to origin of the global simulation grid (WITHOUT guard cells) 
   j=0
   DO i = 1 ,y_group_coords
      j = j +ny_group_global_array(x_group_coords+(i-1)*nb_group_x+             & 
      z_group_coords*nb_group_x*nb_group_y+1)
   ENDDO
-  ! -- Min index along y of current proc 
-
-  ! -- iy_min_global is the index of the first cell in y direction of current
-  ! -- rank regarding the total physical grid
-
-  ! -- localy0 is the index of the first cell of current rank regarding the
-  ! -- current group (depends on the local rank of current mpi inside its group)
   iy_min_global = local_y0-nyg_group + j
-  ! -- iy_max_global is the index of the last cell in y direction of current rank
-  ! -- regarding the total physical grid
+  ! -- Computes global index of the upper y-boundary of the distributed FFT array
+  ! -- (The one that includes group guard cells) 
   iy_max_global = iy_min_global + local_ny - 1
 
   ALLOCATE(cell_y_min_global(nprocy),cell_y_max_global(nprocy))
@@ -1037,20 +1034,16 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
   CALL MPI_ALLGATHER(iy_max_global,1_isp, MPI_INTEGER8, all_iy_max_global,&
   INT(1,isp), MPI_INTEGER8, comm, errcode)
 
-  ! -- Set global index of min and max cells for current proc along y
-  ! -- Each processor only retains a subarray of all_iy_min/max_global of size nprocy
-  ! -- and put it in cell_y_min/max_global 
-  ! -- All processors have the same cell_y_min/max_global
+  ! -- Store min and max indices along y in 1D arrays
   DO i=1, nprocy
-    cell_y_min_global(i) = all_iy_min_global(x_coords+(i-1)*nprocx+z_coords*nprocx*nprocy+1)
-    cell_y_max_global(i) = all_iy_max_global(x_coords+(i-1)*nprocx+z_coords*nprocx*nprocy+1)
+    cell_y_min_global(i) = all_iy_min_global(x_coords+(i-1)*nprocx+ & 
+    z_coords*nprocx*nprocy+1)
+    cell_y_max_global(i) = all_iy_max_global(x_coords+(i-1)*nprocx+ &
+    z_coords*nprocx*nprocy+1)
   ENDDO
   DEALLOCATE(all_iy_max_global,all_iy_min_global)
   
-  ! -- Computes min and max cells for each proc along X  
-  ! -- This assumes no CPU split along X
-  ! -- This will be implemented when using distributed FFT libraries using 
-  ! -- 3D CPU split (e.g. the Plimpton package)
+  ! -- upper/lower x-boundaries of group 
   ix_min_r = 1
   ix_max_r = nx + 2*nxg_group
   
@@ -1064,6 +1057,15 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
 #endif
 END SUBROUTINE setup_groups
 
+! ______________________________________________________________________________________
+!> @brief
+!> This routine gathers on all ranks, the sizes of the distributed FFT array along z 
+!> on each rank. This is useful to obtain the grid decomposition performed by the 
+!> FFTW distributed FFT library 
+!> @ author 
+!> H. Kallala
+!> 2018
+! ______________________________________________________________________________________
 SUBROUTINE adjust_grid_mpi_global
 
 #if defined(FFTW)
@@ -1077,7 +1079,7 @@ SUBROUTINE adjust_grid_mpi_global
   nz_grid = nz + 1
   ALLOCATE(all_nz(1:nprocz))
   
-  CALL MPI_ALLGATHER(nz, 1_isp, MPI_LONG_LONG_INT, all_nz, 1_isp, MPI_LONG_LONG_INT,    &
+  CALL MPI_ALLGATHER(nz, 1_isp, MPI_INTEGER8, all_nz, 1_isp, MPI_INTEGER8,    &
   comm, errcode)
   
   cell_z_min(1) = 0
@@ -1114,6 +1116,7 @@ END SUBROUTINE adjust_grid_mpi_global
 !> @author
 !> Henri Vincenti
 !> Mathieu Lobet
+!> H. Kallala 
 !
 !> @date
 !> Creation 2015
@@ -1131,7 +1134,6 @@ INTEGER(isp) :: nz0, nzp
 INTEGER(idp) :: iz
 #if defined(FFTW)
 INTEGER(C_INTPTR_T):: kx, ly, mz
-INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: nz_procs, all_nz
 #endif
 
 #if defined(DEBUG)
@@ -1161,21 +1163,16 @@ IF(p3dfft_flag) THEN
   fftw_hybrid = .TRUE.
   fftw_mpi_transpose = .FALSE.
 endif
-! With fftw_with_mpi CPU split is performed only along z
+! With fftw_with_mpi CPU split is performed along z only 
 IF (fftw_with_mpi .AND. .NOT. fftw_hybrid) THEN
   mz=INT(nz_global,C_INTPTR_T); ly=INT(ny_global,C_INTPTR_T); kx=INT(nx_global,C_INTPTR_T)
   !   get local data size and allocate (note dimension reversal)
   IF(.NOT. fftw_mpi_transpose) THEN
-   ! alloc_local = fftw_mpi_local_size_many(3,nn,howmany,INT(nz,C_INTPTR_T),comm, local_nz, local_z0)
- alloc_local = fftw_mpi_local_size_3d(mz, ly, kx/2+1, comm, local_nz, local_z0)
-
+    alloc_local = fftw_mpi_local_size_3d(mz, ly, kx/2+1, comm, local_nz, local_z0)
   ELSE
     alloc_local = fftw_mpi_local_size_3d_transposed(mz, ly, kx/2+1, comm, local_nz,   &
     local_z0, local_ny, local_y0)
   ENDIF
-  ALLOCATE(nz_procs(nproc))
-  CALL MPI_ALLGATHER(INT(local_nz, idp), 1_isp, MPI_INTEGER8, nz_procs, INT(1, isp),  &
-  MPI_INTEGER8, comm, errcode)
   ! Regular CPU split
   ! If the total number of gridpoints cannot be exactly subdivided then fix
   ! The first nxp processors have nx0 cells
@@ -1291,24 +1288,27 @@ IF(c_dim == 2) THEN
   nyjguards = 0_idp
 ENDIF
 
-!!! --- if fftw_with_mpi = true then adjust nz to b equal to local_nz (since the
-!two are computed differently
-
 #if defined(FFTW)
-
-IF(fftw_with_mpi ) THEN
-  IF(.NOT. fftw_hybrid) THEN
+! -- Case of distributed FFT
+IF(fftw_with_mpi) THEN
+  ! -- Case of distributed FFT per MPI group only 
+  IF(fftw_hybrid) THEN
+    CALL setup_groups
+  ! -- Case of totally global FFT 
+  ELSE
+    ! -- adjust nz to be equal to local_nz (since 
+    !!! --- it is computed differently by distributed FFT libraries)
     CALL adjust_grid_mpi_global
     IF(nz .NE. cell_z_max(z_coords+1) - cell_z_min(z_coords+1)+1) THEN
       WRITE(*, *), 'ERROR IN AJUSTING THE GRID 1'
       STOP
     ENDIF
-  ELSE
-    CALL setup_groups
   ENDIF
 ENDIF
+
+! -- When using distributed FFT, set
 IF(fftw_hybrid) THEN 
-    ! computes subdomains and group fields intersection
+    ! Computes intersection of FFT distributed arrays and regular grid arrays 
     CALL get2D_intersection_group_mpi()
     ! Load balancing is not used ,grid decomposition is that of
     ! fftw_local_size_3d
