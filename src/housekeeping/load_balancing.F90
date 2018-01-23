@@ -898,12 +898,12 @@ END SUBROUTINE get_2Dintersection
 #if defined(FFTW) 
    USE group_parameters
    USE params, ONLY : mpicom_curr
-   INTEGER(idp)     :: ll,ii,i,j,k,n,jj,jjj,kk,kkk
+   INTEGER(idp)     :: ll,ii,i,j,k,n,jj,jjj,kk,kkk,shift_y,shift_z
    INTEGER(idp)  , ALLOCATABLE, DIMENSION(:) :: temp1,temp2,temp3,temp4,&
         temp5,temp6,temp7,temp8
    INTEGER(isp)  , ALLOCATABLE, DIMENSION(:) :: temp_rs, temp_sr
-   INTEGER(isp)  , ALLOCATABLE, DIMENSION(:,:) :: temp_array_ranks
-   INTEGER(idp) ,  ALLOCATABLE, DIMENSION(:,:,:):: ttemp
+   INTEGER(isp) ,  ALLOCATABLE, DIMENSION(:,:,:):: topo_array
+   INTEGER(isp)                                 :: fake_rank
 
   !-- begin compute array of target and recv procs   
   !-- array_of_ranks_to_send_to and array_of_ranks_to_recv_from respectively
@@ -918,423 +918,407 @@ END SUBROUTINE get_2Dintersection
   !-- rank_of_mpi_with: y_coords_target =  y_coords - (j-1) , z_coords_target =  z_coords - (i - 1) 
   !-- +periodic bcs on procs
 
-   ALLOCATE(ttemp(nprocx,nprocy,nprocz))
-   DO i=1,nprocx
-     DO j=1,nprocy
-       DO k =1,nprocz
-        ttemp(i,j,k) = i-1 +(j-1)*nprocx + (k-1)*nprocx*nprocy 
-       ENDDO
-     ENDDO
-  ENDDO
-  ALLOCATE(temp_array_ranks(nprocy,nprocz))
-  DO i = 1,nprocy
-    DO j=1,nprocz 
-      ii=1+ MODULO(y_coords+i-1,nprocy)
-      jj=1+MODULO(z_coords+j-1,nprocz)
-      temp_array_ranks(i,j)=ttemp(x_coords+1,ii,jj)
-    ENDDO
-  ENDDO
- 
+  fake_rank = x_coords + y_coords*nprocx + z_coords*nprocx*nprocy
+  ALLOCATE(topo_array(0:nprocx-1,0:nprocy-1,0:nprocz-1))
+  CALL MPI_ALLGATHER(fake_rank, 1_isp, MPI_INTEGER,topo_array,1_isp,MPI_INTEGER,comm,&
+  errcode)
+
   ALLOCATE(array_of_ranks_to_send_to(nprocy*nprocz)) 
-  DO i=1,nprocy
-    DO j=1,nprocz 
-      array_of_ranks_to_send_to((i-1)+(j-1)*nprocy+1) = temp_array_ranks(i,j)
+  DO i=0,nprocy-1
+    DO j=0,nprocz-1
+      shift_y = MODULO(y_coords + i,nprocy) 
+      shift_z = MODULO(z_coords + j,nprocz)
+      array_of_ranks_to_send_to(i+j*nprocy+1) = topo_array(x_coords,shift_y,shift_z)
     ENDDO
   ENDDO
 
-   temp_array_ranks=0
-   DO i = 1,nprocy
-     DO j=1,nprocz
-       ii=1+ MODULO(y_coords-(i-1),nprocy)
-       jj=1+MODULO(z_coords-(j-1),nprocz)
-       temp_array_ranks(i,j)=ttemp(x_coords+1,ii,jj)
-     ENDDO
-   ENDDO
+  ALLOCATE(array_of_ranks_to_recv_from(nprocy*nprocz))
+  DO i=0,nprocy-1
+    DO j=0,nprocz-1
+      shift_y = MODULO(y_coords - i,nprocy) 
+      shift_z = MODULO(z_coords - j,nprocz)
+      array_of_ranks_to_recv_from(i+j*nprocy+1) = topo_array(x_coords,shift_y,shift_z)
+    ENDDO
+  ENDDO
 
-   ALLOCATE(array_of_ranks_to_recv_from(nprocy*nprocz))
-   DO i=1,nprocy
-     DO j=1,nprocz
-       array_of_ranks_to_recv_from((i-1)+(j-1)*nprocy+1) = temp_array_ranks(i,j)
-     ENDDO
-   ENDDO
-   DEALLOCATE(temp_array_ranks)
-   DEALLOCATE(ttemp)
 
-   !-- end compute array of target and recv procs 
+  DEALLOCATE(topo_array)
 
-   !-- begin extend r and f indexes and sizes
+  !-- end compute array of target and recv procs 
 
-   ALLOCATE(nb_exchanges_g2l_send(nprocy,nprocz), &
-       nb_exchanges_g2l_recv(nprocy,nprocz)    ) 
-   ALLOCATE(nb_exchanges_l2g_send(nprocy,nprocz), &
-       nb_exchanges_l2g_recv(nprocy,nprocz)    )
-   !-- nb_exchanges_g2l_send / nb_exchanges_g2l_recv  /nb_exchanges_l2g_send
-   !-- nb_exchanges_l2g_recv 2d arrays  of (nprocy,nprocz) sizes  
-   !-- nb_exchanges_g2l_send(i,j) =  nb_exchanges_g2l_send_y(i)*nb_exchanges_g2l_send_z(j) 
-   !-- so basically the number of double precision scalars to exchange between
-   !-- current proc and proc with y_coor=i-1,z_coord=j-1 (and same x_coord)
+  !-- begin extend r and f indexes and sizes
 
-   DO i=1,nprocy
-     DO j=1,nprocz
-       nb_exchanges_g2l_send(i,j) = nb_exchanges_g2l_send_y(i)*nb_exchanges_g2l_send_z(j)
-       nb_exchanges_l2g_send(i,j) = nb_exchanges_l2g_send_y(i)*nb_exchanges_l2g_send_z(j)
-       nb_exchanges_l2g_recv(i,j) = nb_exchanges_l2g_recv_y(i)*nb_exchanges_l2g_recv_z(j)
-       nb_exchanges_g2l_recv(i,j) = nb_exchanges_g2l_recv_y(i)*nb_exchanges_g2l_recv_z(j)
-     ENDDO
-   ENDDO
-   ALLOCATE(temp1(nprocz),temp2(nprocz),temp3(nprocz),temp4(nprocz))
-   ALLOCATE(temp5(nprocz),temp6(nprocz),temp7(nprocz),temp8(nprocz))
-   !-- transfrom nb_exchanges_l2g/52l_recv/send_y/z from arrays of size nprocy or nprocz to arrays of size nprocy*nprocz
-   !-- you can still think of these new arrays as 2d arrays of size (nprocy,nprocz)
-   !-- same thing is done for r/s_first_cell_to_r/s_y/z
-   temp1=g_first_cell_to_send_z
-   temp2=l_first_cell_to_send_z
-   temp3=g_first_cell_to_recv_z
-   temp4=l_first_cell_to_recv_z
-   temp5=nb_exchanges_g2l_send_z
-   temp6=nb_exchanges_l2g_send_z
-   temp7=nb_exchanges_l2g_recv_z 
-   temp8=nb_exchanges_g2l_recv_z
+  ALLOCATE(nb_exchanges_g2l_send(nprocy,nprocz), &
+      nb_exchanges_g2l_recv(nprocy,nprocz)    ) 
+  ALLOCATE(nb_exchanges_l2g_send(nprocy,nprocz), &
+      nb_exchanges_l2g_recv(nprocy,nprocz)    )
+  !-- nb_exchanges_g2l_send / nb_exchanges_g2l_recv  /nb_exchanges_l2g_send
+  !-- nb_exchanges_l2g_recv 2d arrays  of (nprocy,nprocz) sizes  
+  !-- nb_exchanges_g2l_send(i,j) =  nb_exchanges_g2l_send_y(i)*nb_exchanges_g2l_send_z(j) 
+  !-- so basically the number of double precision scalars to exchange between
+  !-- current proc and proc with y_coor=i-1,z_coord=j-1 (and same x_coord)
 
-   DEALLOCATE(g_first_cell_to_send_z,l_first_cell_to_send_z,&
-   g_first_cell_to_recv_z,l_first_cell_to_recv_z)
+  DO i=1,nprocy
+    DO j=1,nprocz
+      nb_exchanges_g2l_send(i,j) = nb_exchanges_g2l_send_y(i)*nb_exchanges_g2l_send_z(j)
+      nb_exchanges_l2g_send(i,j) = nb_exchanges_l2g_send_y(i)*nb_exchanges_l2g_send_z(j)
+      nb_exchanges_l2g_recv(i,j) = nb_exchanges_l2g_recv_y(i)*nb_exchanges_l2g_recv_z(j)
+      nb_exchanges_g2l_recv(i,j) = nb_exchanges_g2l_recv_y(i)*nb_exchanges_g2l_recv_z(j)
+    ENDDO
+  ENDDO
+  ALLOCATE(temp1(nprocz),temp2(nprocz),temp3(nprocz),temp4(nprocz))
+  ALLOCATE(temp5(nprocz),temp6(nprocz),temp7(nprocz),temp8(nprocz))
+  !-- transfrom nb_exchanges_l2g/52l_recv/send_y/z from arrays of size nprocy or nprocz to arrays of size nprocy*nprocz
+  !-- you can still think of these new arrays as 2d arrays of size (nprocy,nprocz)
+  !-- same thing is done for r/s_first_cell_to_r/s_y/z
+  temp1=g_first_cell_to_send_z
+  temp2=l_first_cell_to_send_z
+  temp3=g_first_cell_to_recv_z
+  temp4=l_first_cell_to_recv_z
+  temp5=nb_exchanges_g2l_send_z
+  temp6=nb_exchanges_l2g_send_z
+  temp7=nb_exchanges_l2g_recv_z 
+  temp8=nb_exchanges_g2l_recv_z
 
-   DEALLOCATE(nb_exchanges_g2l_send_z,nb_exchanges_l2g_send_z,&
-   nb_exchanges_l2g_recv_z,nb_exchanges_g2l_recv_z)
+  DEALLOCATE(g_first_cell_to_send_z,l_first_cell_to_send_z,&
+  g_first_cell_to_recv_z,l_first_cell_to_recv_z)
 
-   ALLOCATE(g_first_cell_to_send_z(nprocy*nprocz));   g_first_cell_to_send_z=0
-   ALLOCATE(g_first_cell_to_recv_z(nprocy*nprocz));   g_first_cell_to_recv_z=0
-   ALLOCATE(l_first_cell_to_send_z(nprocy*nprocz));   l_first_cell_to_send_z=0
-   ALLOCATE(l_first_cell_to_recv_z(nprocy*nprocz));   l_first_cell_to_recv_z=0
-   ALLOCATE(nb_exchanges_g2l_send_z(nprocy*nprocz));   nb_exchanges_g2l_send_z =0
-   ALLOCATE(nb_exchanges_l2g_send_z(nprocy*nprocz));   nb_exchanges_l2g_send_z=0
-   ALLOCATE(nb_exchanges_l2g_recv_z(nprocy*nprocz));   nb_exchanges_l2g_recv_z=0
-   ALLOCATE(nb_exchanges_g2l_recv_z(nprocy*nprocz));   nb_exchanges_g2l_recv_z=0
+  DEALLOCATE(nb_exchanges_g2l_send_z,nb_exchanges_l2g_send_z,&
+  nb_exchanges_l2g_recv_z,nb_exchanges_g2l_recv_z)
+
+  ALLOCATE(g_first_cell_to_send_z(nprocy*nprocz));   g_first_cell_to_send_z=0
+  ALLOCATE(g_first_cell_to_recv_z(nprocy*nprocz));   g_first_cell_to_recv_z=0
+  ALLOCATE(l_first_cell_to_send_z(nprocy*nprocz));   l_first_cell_to_send_z=0
+  ALLOCATE(l_first_cell_to_recv_z(nprocy*nprocz));   l_first_cell_to_recv_z=0
+  ALLOCATE(nb_exchanges_g2l_send_z(nprocy*nprocz));   nb_exchanges_g2l_send_z =0
+  ALLOCATE(nb_exchanges_l2g_send_z(nprocy*nprocz));   nb_exchanges_l2g_send_z=0
+  ALLOCATE(nb_exchanges_l2g_recv_z(nprocy*nprocz));   nb_exchanges_l2g_recv_z=0
+  ALLOCATE(nb_exchanges_g2l_recv_z(nprocy*nprocz));   nb_exchanges_g2l_recv_z=0
   
 
-   DO i=1,nprocy
-     DO j=1,nprocz
-       g_first_cell_to_send_z(i+(j-1)*nprocy) =        temp1(j)
-       l_first_cell_to_send_z(i+(j-1)*nprocy) =        temp2(j)
-       g_first_cell_to_recv_z(i+(j-1)*nprocy) =        temp3(j)
-       l_first_cell_to_recv_z(i+(j-1)*nprocy) =        temp4(j)
-       nb_exchanges_g2l_send_z(i+(j-1)*nprocy) = temp5(j)
-       nb_exchanges_l2g_send_z(i+(j-1)*nprocy) = temp6(j)
-       nb_exchanges_l2g_recv_z(i+(j-1)*nprocy) = temp7(j)
-       nb_exchanges_g2l_recv_z(i+(j-1)*nprocy) = temp8(j)
-     ENDDO
-   ENDDO
-   DEALLOCATE(temp1,temp2,temp3,temp4,temp5,temp6,temp7,temp8)
-
-   ALLOCATE(temp1(nprocy),temp2(nprocy),temp3(nprocy),temp4(nprocy))
-   ALLOCATE(temp5(nprocy),temp6(nprocy),temp7(nprocy),temp8(nprocy))
-
-   temp1=g_first_cell_to_send_y
-   temp2=l_first_cell_to_send_y
-   temp3=g_first_cell_to_recv_y
-   temp4=l_first_cell_to_recv_y
-   temp5=nb_exchanges_g2l_send_y
-   temp6=nb_exchanges_l2g_send_y
-   temp7=nb_exchanges_l2g_recv_y
-   temp8=nb_exchanges_g2l_recv_y
-
-   DEALLOCATE(g_first_cell_to_send_y,l_first_cell_to_send_y,g_first_cell_to_recv_y,l_first_cell_to_recv_y)
-   DEALLOCATE(nb_exchanges_g2l_send_y,nb_exchanges_l2g_send_y,&
-       nb_exchanges_l2g_recv_y,nb_exchanges_g2l_recv_y)
-
-
-   ALLOCATE(g_first_cell_to_send_y(nprocy*nprocz)); g_first_cell_to_send_y=0
-   ALLOCATE(g_first_cell_to_recv_y(nprocy*nprocz)); g_first_cell_to_recv_y=0
-   ALLOCATE(l_first_cell_to_send_y(nprocy*nprocz)); l_first_cell_to_send_y=0
-   ALLOCATE(l_first_cell_to_recv_y(nprocy*nprocz)); l_first_cell_to_recv_y=0
-   ALLOCATE(nb_exchanges_g2l_send_y(nprocy*nprocz)); nb_exchanges_g2l_send_y=0
-   ALLOCATE(nb_exchanges_l2g_send_y(nprocy*nprocz)); nb_exchanges_l2g_send_y=0
-   ALLOCATE(nb_exchanges_l2g_recv_y(nprocy*nprocz)); nb_exchanges_l2g_recv_y=0
-   ALLOCATE(nb_exchanges_g2l_recv_y(nprocy*nprocz)); nb_exchanges_g2l_recv_y=0
-
-   DO i=1,nprocy
+  DO i=1,nprocy
     DO j=1,nprocz
-      g_first_cell_to_send_y(i+(j-1)*nprocy) =        temp1(i)
-      l_first_cell_to_send_y(i+(j-1)*nprocy) =        temp2(i)
-      g_first_cell_to_recv_y(i+(j-1)*nprocy) =        temp3(i)
-      l_first_cell_to_recv_y(i+(j-1)*nprocy) =        temp4(i)
-      nb_exchanges_g2l_send_y(i+(j-1)*nprocy) = temp5(i)
-      nb_exchanges_l2g_send_y(i+(j-1)*nprocy) = temp6(i)
-      nb_exchanges_l2g_recv_y(i+(j-1)*nprocy) = temp7(i)
-      nb_exchanges_g2l_recv_y(i+(j-1)*nprocy) = temp8(i)
-     ENDDO
-   ENDDO
-   DEALLOCATE(temp1,temp2,temp3,temp4,temp5,temp6,temp7,temp8)
+      g_first_cell_to_send_z(i+(j-1)*nprocy) =        temp1(j)
+      l_first_cell_to_send_z(i+(j-1)*nprocy) =        temp2(j)
+      g_first_cell_to_recv_z(i+(j-1)*nprocy) =        temp3(j)
+      l_first_cell_to_recv_z(i+(j-1)*nprocy) =        temp4(j)
+      nb_exchanges_g2l_send_z(i+(j-1)*nprocy) = temp5(j)
+      nb_exchanges_l2g_send_z(i+(j-1)*nprocy) = temp6(j)
+      nb_exchanges_l2g_recv_z(i+(j-1)*nprocy) = temp7(j)
+      nb_exchanges_g2l_recv_z(i+(j-1)*nprocy) = temp8(j)
+    ENDDO
+  ENDDO
+  DEALLOCATE(temp1,temp2,temp3,temp4,temp5,temp6,temp7,temp8)
 
-   !-- END of extending r_arraysy/z and f_arrays_y/z
-   
-   
-   !-- if non blocking comms are used then computes then number of called mpi_isend
-   !-- mpi_irecv for each field component exchanged 
-   !-- this is important to allocate a suitable mpi_requests array 
-   IF(mpicom_curr .EQ. 0) THEN
-     n=0
-     DO i=1,nprocy
-       DO j=1,nprocz
-         IF(i ==y_coords+1 .AND. j==z_coords+1) CYCLE
-         IF(nb_exchanges_l2g_send(i,j) .GT. 0) n = n + 1
-         IF(nb_exchanges_l2g_recv(i,j) .GT. 0) n = n +1
-       ENDDO
-     ENDDO
-     ! mpi request array for l->g communication
-     ALLOCATE(requests_l2g(n))
-     n=0 
-     DO i=1,nprocy
-       DO j=1,nprocz
-         IF(i==y_coords+1 .AND. j==z_coords+1) CYCLE
-         IF(nb_exchanges_g2l_send(i,j) .GT. 0) n = n+1
-         IF(nb_exchanges_g2l_recv(i,j) .GT. 0) n = n+1
-       ENDDO
-     ENDDO
-     ! mpi request array for g->l
-     ALLOCATE(requests_g2l(n))
-   ENDIF
-   
-   
-   !-- end non blocking comms conditioning
-   
-   !-- Begin computing work_array_g2l and work_array_ arrays
-   !-- first we browse all nb_exchanges_g2l_send and nb_exchanges_g2l_recv and its corresponding
-   !-- then we determine if there is any communication done between current rank and
-   !-- array_of_rank_to_s/r(i,j) 
-   !-- if  yes then n+=1 ;  work_array_(n) = (i-1)+(j-1)*nprocy (sort of compressing
-   !-- indexes of array_of_ranks) 
-   n=0
+  ALLOCATE(temp1(nprocy),temp2(nprocy),temp3(nprocy),temp4(nprocy))
+  ALLOCATE(temp5(nprocy),temp6(nprocy),temp7(nprocy),temp8(nprocy))
+
+  temp1=g_first_cell_to_send_y
+  temp2=l_first_cell_to_send_y
+  temp3=g_first_cell_to_recv_y
+  temp4=l_first_cell_to_recv_y
+  temp5=nb_exchanges_g2l_send_y
+  temp6=nb_exchanges_l2g_send_y
+  temp7=nb_exchanges_l2g_recv_y
+  temp8=nb_exchanges_g2l_recv_y
+
+  DEALLOCATE(g_first_cell_to_send_y,l_first_cell_to_send_y,g_first_cell_to_recv_y,l_first_cell_to_recv_y)
+  DEALLOCATE(nb_exchanges_g2l_send_y,nb_exchanges_l2g_send_y,&
+      nb_exchanges_l2g_recv_y,nb_exchanges_g2l_recv_y)
+
+
+  ALLOCATE(g_first_cell_to_send_y(nprocy*nprocz)); g_first_cell_to_send_y=0
+  ALLOCATE(g_first_cell_to_recv_y(nprocy*nprocz)); g_first_cell_to_recv_y=0
+  ALLOCATE(l_first_cell_to_send_y(nprocy*nprocz)); l_first_cell_to_send_y=0
+  ALLOCATE(l_first_cell_to_recv_y(nprocy*nprocz)); l_first_cell_to_recv_y=0
+  ALLOCATE(nb_exchanges_g2l_send_y(nprocy*nprocz)); nb_exchanges_g2l_send_y=0
+  ALLOCATE(nb_exchanges_l2g_send_y(nprocy*nprocz)); nb_exchanges_l2g_send_y=0
+  ALLOCATE(nb_exchanges_l2g_recv_y(nprocy*nprocz)); nb_exchanges_l2g_recv_y=0
+  ALLOCATE(nb_exchanges_g2l_recv_y(nprocy*nprocz)); nb_exchanges_g2l_recv_y=0
+
+  DO i=1,nprocy
    DO j=1,nprocz
-     DO i=1,nprocy
+     g_first_cell_to_send_y(i+(j-1)*nprocy) =        temp1(i)
+     l_first_cell_to_send_y(i+(j-1)*nprocy) =        temp2(i)
+     g_first_cell_to_recv_y(i+(j-1)*nprocy) =        temp3(i)
+     l_first_cell_to_recv_y(i+(j-1)*nprocy) =        temp4(i)
+     nb_exchanges_g2l_send_y(i+(j-1)*nprocy) = temp5(i)
+     nb_exchanges_l2g_send_y(i+(j-1)*nprocy) = temp6(i)
+     nb_exchanges_l2g_recv_y(i+(j-1)*nprocy) = temp7(i)
+     nb_exchanges_g2l_recv_y(i+(j-1)*nprocy) = temp8(i)
+    ENDDO
+  ENDDO
+  DEALLOCATE(temp1,temp2,temp3,temp4,temp5,temp6,temp7,temp8)
 
-       ii =MODULO(y_coords+i-1,nprocy)+1; kk=MODULO(y_coords-(i-1),nprocy) +1
-       jj = MODULO(z_coords+j-1,nprocz) +1; ll =MODULO(z_coords-(j-1),nprocz)+1
-       IF(nb_exchanges_l2g_send(ii,jj) .GT. 0     &
-         .OR. nb_exchanges_l2g_recv(kk,ll) .GT. 0)  n=n+1
-     ENDDO
-   ENDDO
-   ALLOCATE(work_array_l2g(n))
-   work_array_l2g=0
-   n=0
-   DO j=1,nprocz
-     DO i=1,nprocy
-       ii =MODULO(y_coords+i-1,nprocy)+1; kk= MODULO(y_coords-(i-1),nprocy) +1
-       jj = MODULO(z_coords+j-1,nprocz) +1; ll = MODULO(z_coords-(j-1),nprocz)+1
-       IF(nb_exchanges_l2g_send(ii,jj) .GT. 0     &
-         .OR. nb_exchanges_l2g_recv(kk,ll) .GT. 0) THEN
-         n=n+1
-         work_array_l2g(n)=(i-1)+(j-1)*nprocy
-       ENDIF
-     ENDDO
-   ENDDO
+  !-- END of extending r_arraysy/z and f_arrays_y/z
+  
+  
+  !-- if non blocking comms are used then computes then number of called mpi_isend
+  !-- mpi_irecv for each field component exchanged 
+  !-- this is important to allocate a suitable mpi_requests array 
+  IF(mpicom_curr .EQ. 0) THEN
+    n=0
+    DO i=1,nprocy
+      DO j=1,nprocz
+        IF(i ==y_coords+1 .AND. j==z_coords+1) CYCLE
+        IF(nb_exchanges_l2g_send(i,j) .GT. 0) n = n + 1
+        IF(nb_exchanges_l2g_recv(i,j) .GT. 0) n = n +1
+      ENDDO
+    ENDDO
+    ! mpi request array for l->g communication
+    ALLOCATE(requests_l2g(n))
+    n=0 
+    DO i=1,nprocy
+      DO j=1,nprocz
+        IF(i==y_coords+1 .AND. j==z_coords+1) CYCLE
+        IF(nb_exchanges_g2l_send(i,j) .GT. 0) n = n+1
+        IF(nb_exchanges_g2l_recv(i,j) .GT. 0) n = n+1
+      ENDDO
+    ENDDO
+    ! mpi request array for g->l
+    ALLOCATE(requests_g2l(n))
+  ENDIF
+  
+  
+  !-- end non blocking comms conditioning
+  
+  !-- Begin computing work_array_g2l and work_array_ arrays
+  !-- first we browse all nb_exchanges_g2l_send and nb_exchanges_g2l_recv and its corresponding
+  !-- then we determine if there is any communication done between current rank and
+  !-- array_of_rank_to_s/r(i,j) 
+  !-- if  yes then n+=1 ;  work_array_(n) = (i-1)+(j-1)*nprocy (sort of compressing
+  !-- indexes of array_of_ranks) 
+  n=0
+  DO j=1,nprocz
+    DO i=1,nprocy
 
-   n=0
+      ii =MODULO(y_coords+i-1,nprocy)+1; kk=MODULO(y_coords-(i-1),nprocy) +1
+      jj = MODULO(z_coords+j-1,nprocz) +1; ll =MODULO(z_coords-(j-1),nprocz)+1
+      IF(nb_exchanges_l2g_send(ii,jj) .GT. 0     &
+        .OR. nb_exchanges_l2g_recv(kk,ll) .GT. 0)  n=n+1
+    ENDDO
+  ENDDO
+  ALLOCATE(work_array_l2g(n))
+  work_array_l2g=0
+  n=0
+  DO j=1,nprocz
+    DO i=1,nprocy
+      ii =MODULO(y_coords+i-1,nprocy)+1; kk= MODULO(y_coords-(i-1),nprocy) +1
+      jj = MODULO(z_coords+j-1,nprocz) +1; ll = MODULO(z_coords-(j-1),nprocz)+1
+      IF(nb_exchanges_l2g_send(ii,jj) .GT. 0     &
+        .OR. nb_exchanges_l2g_recv(kk,ll) .GT. 0) THEN
+        n=n+1
+        work_array_l2g(n)=(i-1)+(j-1)*nprocy
+      ENDIF
+    ENDDO
+  ENDDO
 
-   DO j=1,nprocz
-     DO i=1,nprocy
-       ii =MODULO(y_coords+i-1,nprocy)+1; kk= MODULO(y_coords-(i-1),nprocy) +1
-       jj = MODULO(z_coords+j-1,nprocz) +1; ll = MODULO(z_coords-(j-1),nprocz) +1
-       IF(nb_exchanges_g2l_send(ii,jj) .GT. 0     &
-         .OR. nb_exchanges_g2l_recv(kk,ll) .GT. 0)  n=n+1
-     ENDDO
-   ENDDO
-   ALLOCATE(work_array_g2l(n))
-   work_array_g2l=0
-   n=0
+  n=0
 
-   DO j=1,nprocz
-     DO i=1,nprocy
-       ii =MODULO(y_coords+i-1,nprocy)+1; kk= MODULO(y_coords-(i-1),nprocy) +1
-       jj =MODULO(z_coords+j-1,nprocz) +1; ll = MODULO(z_coords-(j-1),nprocz) +1
-       IF(nb_exchanges_g2l_send(ii,jj) .GT. 0     &
-         .OR. nb_exchanges_g2l_recv(kk,ll) .GT. 0) THEN  
-         n=n+1
-         work_array_g2l(n)=(i-1)+(j-1)*nprocy
-       ENDIF
-   ENDDO
-   ENDDO
+  DO j=1,nprocz
+    DO i=1,nprocy
+      ii =MODULO(y_coords+i-1,nprocy)+1; kk= MODULO(y_coords-(i-1),nprocy) +1
+      jj = MODULO(z_coords+j-1,nprocz) +1; ll = MODULO(z_coords-(j-1),nprocz) +1
+      IF(nb_exchanges_g2l_send(ii,jj) .GT. 0     &
+        .OR. nb_exchanges_g2l_recv(kk,ll) .GT. 0)  n=n+1
+    ENDDO
+  ENDDO
+  ALLOCATE(work_array_g2l(n))
+  work_array_g2l=0
+  n=0
 
-   nb_comms_l2g = SIZE(work_array_l2g)
-   nb_comms_g2l = SIZE(work_array_g2l)
+  DO j=1,nprocz
+    DO i=1,nprocy
+      ii =MODULO(y_coords+i-1,nprocy)+1; kk= MODULO(y_coords-(i-1),nprocy) +1
+      jj =MODULO(z_coords+j-1,nprocz) +1; ll = MODULO(z_coords-(j-1),nprocz) +1
+      IF(nb_exchanges_g2l_send(ii,jj) .GT. 0     &
+        .OR. nb_exchanges_g2l_recv(kk,ll) .GT. 0) THEN  
+        n=n+1
+        work_array_g2l(n)=(i-1)+(j-1)*nprocy
+      ENDIF
+  ENDDO
+  ENDDO
 
-   !--end work_array computing section
-   
-   !--sets useless local_/global_first cells to 1 to avoid seg fault when using f-bound-check
-   !--directive
+  nb_comms_l2g = SIZE(work_array_l2g)
+  nb_comms_g2l = SIZE(work_array_g2l)
 
-   DO i=1,nprocy
-     DO j=1,nprocz
-     IF(nb_exchanges_g2l_send(i,j) .LE. 0) THEN
-       g_first_cell_to_send_z(i+(j-1)*nprocy)=1
-       g_first_cell_to_send_y(i+(j-1)*nprocy)=1
-     ENDIF
-     IF(nb_exchanges_l2g_send(i,j) .LE. 0) THEN
-       l_first_cell_to_send_z(i+(j-1)*nprocy)=1
-       l_first_cell_to_send_y(i+(j-1)*nprocy)=1
-     ENDIF
-     IF(nb_exchanges_l2g_recv(i,j) .LE. 0) THEN
-       g_first_cell_to_recv_z(i+(j-1)*nprocy)=1
-       g_first_cell_to_recv_y(i+(j-1)*nprocy)=1
-     ENDIF
-     IF(nb_exchanges_g2l_recv(i,j) .LE. 0) THEN
-       l_first_cell_to_recv_z(i+(j-1)*nprocy)=1
-       l_first_cell_to_recv_y(i+(j-1)*nprocy)=1
-     ENDIF
-     ENDDO
-   ENDDO
+  !--end work_array computing section
+  
+  !--sets useless local_/global_first cells to 1 to avoid seg fault when using f-bound-check
+  !--directive
+
+  DO i=1,nprocy
+    DO j=1,nprocz
+    IF(nb_exchanges_g2l_send(i,j) .LE. 0) THEN
+      g_first_cell_to_send_z(i+(j-1)*nprocy)=1
+      g_first_cell_to_send_y(i+(j-1)*nprocy)=1
+    ENDIF
+    IF(nb_exchanges_l2g_send(i,j) .LE. 0) THEN
+      l_first_cell_to_send_z(i+(j-1)*nprocy)=1
+      l_first_cell_to_send_y(i+(j-1)*nprocy)=1
+    ENDIF
+    IF(nb_exchanges_l2g_recv(i,j) .LE. 0) THEN
+      g_first_cell_to_recv_z(i+(j-1)*nprocy)=1
+      g_first_cell_to_recv_y(i+(j-1)*nprocy)=1
+    ENDIF
+    IF(nb_exchanges_g2l_recv(i,j) .LE. 0) THEN
+      l_first_cell_to_recv_z(i+(j-1)*nprocy)=1
+      l_first_cell_to_recv_y(i+(j-1)*nprocy)=1
+    ENDIF
+    ENDDO
+  ENDDO
 
 
-   ALLOCATE(temp1(nprocy*nprocz)); temp1 = nb_exchanges_g2l_send_z
-   ALLOCATE(temp2(nprocy*nprocz)); temp2 = nb_exchanges_g2l_recv_z
-   ALLOCATE(temp3(nprocy*nprocz)); temp3 = nb_exchanges_g2l_send_y
-   ALLOCATE(temp4(nprocy*nprocz)); temp4 = nb_exchanges_g2l_recv_y
-   ALLOCATE(temp5(nprocy*nprocz)); temp5 = g_first_cell_to_send_z
-   ALLOCATE(temp6(nprocy*nprocz)); temp6 = l_first_cell_to_recv_z
-   ALLOCATE(temp7(nprocy*nprocz)); temp7 = g_first_cell_to_send_y
-   ALLOCATE(temp8(nprocy*nprocz)); temp8 = l_first_cell_to_recv_y
+  ALLOCATE(temp1(nprocy*nprocz)); temp1 = nb_exchanges_g2l_send_z
+  ALLOCATE(temp2(nprocy*nprocz)); temp2 = nb_exchanges_g2l_recv_z
+  ALLOCATE(temp3(nprocy*nprocz)); temp3 = nb_exchanges_g2l_send_y
+  ALLOCATE(temp4(nprocy*nprocz)); temp4 = nb_exchanges_g2l_recv_y
+  ALLOCATE(temp5(nprocy*nprocz)); temp5 = g_first_cell_to_send_z
+  ALLOCATE(temp6(nprocy*nprocz)); temp6 = l_first_cell_to_recv_z
+  ALLOCATE(temp7(nprocy*nprocz)); temp7 = g_first_cell_to_send_y
+  ALLOCATE(temp8(nprocy*nprocz)); temp8 = l_first_cell_to_recv_y
 
-   DEALLOCATE(nb_exchanges_g2l_send_z,nb_exchanges_g2l_recv_z,&
-   nb_exchanges_g2l_send_y ,nb_exchanges_g2l_recv_y, g_first_cell_to_send_z,&
-   l_first_cell_to_recv_z, g_first_cell_to_send_y,l_first_cell_to_recv_y) 
+  DEALLOCATE(nb_exchanges_g2l_send_z,nb_exchanges_g2l_recv_z,&
+  nb_exchanges_g2l_send_y ,nb_exchanges_g2l_recv_y, g_first_cell_to_send_z,&
+  l_first_cell_to_recv_z, g_first_cell_to_send_y,l_first_cell_to_recv_y) 
 
-   ALLOCATE(nb_exchanges_g2l_send_z(nb_comms_g2l))
-   ALLOCATE(nb_exchanges_g2l_recv_z(nb_comms_g2l))
-   ALLOCATE(nb_exchanges_g2l_send_y(nb_comms_g2l))
-   ALLOCATE(nb_exchanges_g2l_recv_y(nb_comms_g2l))
-   ALLOCATE(g_first_cell_to_send_z(nb_comms_g2l))
-   ALLOCATE(l_first_cell_to_recv_z(nb_comms_g2l))
-   ALLOCATE(g_first_cell_to_send_y(nb_comms_g2l))
-   ALLOCATE(l_first_cell_to_recv_y(nb_comms_g2l))
+  ALLOCATE(nb_exchanges_g2l_send_z(nb_comms_g2l))
+  ALLOCATE(nb_exchanges_g2l_recv_z(nb_comms_g2l))
+  ALLOCATE(nb_exchanges_g2l_send_y(nb_comms_g2l))
+  ALLOCATE(nb_exchanges_g2l_recv_y(nb_comms_g2l))
+  ALLOCATE(g_first_cell_to_send_z(nb_comms_g2l))
+  ALLOCATE(l_first_cell_to_recv_z(nb_comms_g2l))
+  ALLOCATE(g_first_cell_to_send_y(nb_comms_g2l))
+  ALLOCATE(l_first_cell_to_recv_y(nb_comms_g2l))
 
-   !-- compressing arrays fourier to real
-   DO ii=1,nb_comms_g2l
-      i = work_array_g2l(ii) 
+  !-- compressing arrays fourier to real
+  DO ii=1,nb_comms_g2l
+     i = work_array_g2l(ii) 
+     k =   MODULO(i,nprocy)  !Y
+     j =   i/nprocy          !Z
+     jj  =  MODULO(z_coords + j,nprocz) 
+     jjj = MODULO(z_coords -j,nprocz) 
+     kk  =  MODULO(y_coords +  k,nprocy) 
+     kkk =  MODULO(y_coords-k,nprocy)  
+     nb_exchanges_g2l_send_z(ii) = temp1(jj*nprocy+kk+1)
+     nb_exchanges_g2l_recv_z(ii) = temp2(jjj*nprocy+kkk+1)
+     nb_exchanges_g2l_send_y(ii) = temp3(jj*nprocy+kk+1)
+     nb_exchanges_g2l_recv_y(ii) = temp4(jjj*nprocy+kkk+1)
+     g_first_cell_to_send_z(ii) = temp5(jj*nprocy+kk+1)
+     l_first_cell_to_recv_z(ii) =temp6(jjj*nprocy+kkk+1)
+     g_first_cell_to_send_y(ii) = temp7(jj*nprocy+kk+1)
+     l_first_cell_to_recv_y(ii) = temp8(jjj*nprocy+kkk+1)
+  ENDDO
+
+  !-- end
+  
+  !-- compress arrays real to fourier
+
+  temp1 = nb_exchanges_l2g_send_z
+  temp2 = nb_exchanges_l2g_recv_z
+  temp3 = nb_exchanges_l2g_send_y
+  temp4 = nb_exchanges_l2g_recv_y
+  temp5 = l_first_cell_to_send_z
+  temp6 = g_first_cell_to_recv_z
+  temp7 = l_first_cell_to_send_y
+  temp8 = g_first_cell_to_recv_y
+  
+  DEALLOCATE(nb_exchanges_l2g_send_z,nb_exchanges_l2g_recv_z,&
+  nb_exchanges_l2g_send_y ,nb_exchanges_l2g_recv_y,l_first_cell_to_send_z,&
+  g_first_cell_to_recv_z, l_first_cell_to_send_y,g_first_cell_to_recv_y)
+
+  ALLOCATE(nb_exchanges_l2g_send_z(nb_comms_l2g))
+  ALLOCATE(nb_exchanges_l2g_recv_z(nb_comms_l2g))
+  ALLOCATE(nb_exchanges_l2g_send_y(nb_comms_l2g))
+  ALLOCATE(nb_exchanges_l2g_recv_y(nb_comms_l2g))
+  ALLOCATE(l_first_cell_to_send_z(nb_comms_l2g))
+  ALLOCATE(g_first_cell_to_recv_z(nb_comms_l2g))
+  ALLOCATE(l_first_cell_to_send_y(nb_comms_l2g))
+  ALLOCATE(g_first_cell_to_recv_y(nb_comms_l2g))
+
+  DO ii=1,nb_comms_l2g
+     i = work_array_l2g(ii)
+     k =   MODULO(i,nprocy)  !Y
+     j =   i/nprocy          !Z
+     jj  =  MODULO(z_coords + j,nprocz)
+     jjj =  MODULO(z_coords -j,nprocz)
+     kk  =  MODULO(y_coords +  k,nprocy)
+     kkk =  MODULO(y_coords-k,nprocy) 
+     nb_exchanges_l2g_send_z(ii) = temp1(jj*nprocy + kk+1)
+     nb_exchanges_l2g_recv_z(ii) = temp2(jjj*nprocy +kkk+1)
+     nb_exchanges_l2g_send_y(ii) = temp3(jj*nprocy+  kk +1 )
+     nb_exchanges_l2g_recv_y(ii) = temp4( jjj*nprocy +kkk+1)
+     l_first_cell_to_send_z(ii) = temp5(jj*nprocy +kk+1)
+     g_first_cell_to_recv_z(ii) =temp6(jjj*nprocy +kkk+1)
+     l_first_cell_to_send_y(ii) = temp7(jj*nprocy+kk+1)
+     g_first_cell_to_recv_y(ii) = temp8(jjj*nprocy+kkk+1)
+  ENDDO
+  DEALLOCATE(temp1,temp2,temp3,temp4,temp5,temp6,temp7,temp8)
+  !--end
+
+  !--compresses arrays of ranks (r to f perspective)
+  ALLOCATE(array_of_ranks_to_send_to_l2g(nb_comms_l2g))
+  ALLOCATE(array_of_ranks_to_recv_from_l2g(nb_comms_l2g))
+
+  DO ii=1,nb_comms_l2g
+     i=work_array_l2g(ii)
       k =   MODULO(i,nprocy)  !Y
       j =   i/nprocy          !Z
-      jj  =  MODULO(z_coords + j,nprocz) 
-      jjj = MODULO(z_coords -j,nprocz) 
-      kk  =  MODULO(y_coords +  k,nprocy) 
-      kkk =  MODULO(y_coords-k,nprocy)  
-      nb_exchanges_g2l_send_z(ii) = temp1(jj*nprocy+kk+1)
-      nb_exchanges_g2l_recv_z(ii) = temp2(jjj*nprocy+kkk+1)
-      nb_exchanges_g2l_send_y(ii) = temp3(jj*nprocy+kk+1)
-      nb_exchanges_g2l_recv_y(ii) = temp4(jjj*nprocy+kkk+1)
-      g_first_cell_to_send_z(ii) = temp5(jj*nprocy+kk+1)
-      l_first_cell_to_recv_z(ii) =temp6(jjj*nprocy+kkk+1)
-      g_first_cell_to_send_y(ii) = temp7(jj*nprocy+kk+1)
-      l_first_cell_to_recv_y(ii) = temp8(jjj*nprocy+kkk+1)
-   ENDDO
+     array_of_ranks_to_send_to_l2g(ii) = array_of_ranks_to_send_to(k+j*nprocy+1)
+     array_of_ranks_to_recv_from_l2g(ii) = array_of_ranks_to_recv_from(k+j*nprocy+1)
+  ENDDO
 
-   !-- end
-   
-   !-- compress arrays real to fourier
 
-   temp1 = nb_exchanges_l2g_send_z
-   temp2 = nb_exchanges_l2g_recv_z
-   temp3 = nb_exchanges_l2g_send_y
-   temp4 = nb_exchanges_l2g_recv_y
-   temp5 = l_first_cell_to_send_z
-   temp6 = g_first_cell_to_recv_z
-   temp7 = l_first_cell_to_send_y
-   temp8 = g_first_cell_to_recv_y
-   
-   DEALLOCATE(nb_exchanges_l2g_send_z,nb_exchanges_l2g_recv_z,&
-   nb_exchanges_l2g_send_y ,nb_exchanges_l2g_recv_y,l_first_cell_to_send_z,&
-   g_first_cell_to_recv_z, l_first_cell_to_send_y,g_first_cell_to_recv_y)
+  ALLOCATE(array_of_ranks_to_send_to_g2l(nb_comms_g2l))
+  ALLOCATE(array_of_ranks_to_recv_from_g2l(nb_comms_g2l))
+  !--  end
+  
+  !-- compresses arrays of ranks (f to r perspective)
+  DO ii=1,nb_comms_g2l
+     i=work_array_g2l(ii)
+      k =   MODULO(i,nprocy)  !Y
+      j =   i/nprocy          !Z
+     array_of_ranks_to_send_to_g2l(ii) = array_of_ranks_to_send_to(k+j*nprocy+1)
+     array_of_ranks_to_recv_from_g2l(ii) = array_of_ranks_to_recv_from(k+j*nprocy+1)
+  ENDDO
+  DEALLOCATE(array_of_ranks_to_recv_from,array_of_ranks_to_send_to)
+  !-- end
 
-   ALLOCATE(nb_exchanges_l2g_send_z(nb_comms_l2g))
-   ALLOCATE(nb_exchanges_l2g_recv_z(nb_comms_l2g))
-   ALLOCATE(nb_exchanges_l2g_send_y(nb_comms_l2g))
-   ALLOCATE(nb_exchanges_l2g_recv_y(nb_comms_l2g))
-   ALLOCATE(l_first_cell_to_send_z(nb_comms_l2g))
-   ALLOCATE(g_first_cell_to_recv_z(nb_comms_l2g))
-   ALLOCATE(l_first_cell_to_send_y(nb_comms_l2g))
-   ALLOCATE(g_first_cell_to_recv_y(nb_comms_l2g))
+  !-- compresses arrays of mpi  types
 
-   DO ii=1,nb_comms_l2g
+  ALLOCATE(temp_rs(nprocz*nprocy),temp_sr(nprocz*nprocy))
+  temp_rs = send_type_l;   temp_sr = recv_type_g
+  DEALLOCATE(send_type_l); ALLOCATE(send_type_l(nb_comms_l2g))
+  DEALLOCATE(recv_type_g); ALLOCATE(recv_type_g(nb_comms_l2g))
+
+  DO ii=1,nb_comms_l2g
       i = work_array_l2g(ii)
       k =   MODULO(i,nprocy)  !Y
       j =   i/nprocy          !Z
       jj  =  MODULO(z_coords + j,nprocz)
       jjj =  MODULO(z_coords -j,nprocz)
       kk  =  MODULO(y_coords +  k,nprocy)
+      kkk =  MODULO(y_coords-k,nprocy)
+    send_type_l(ii) = temp_rs(jj*nprocy+kk+1)
+    recv_type_g(ii) = temp_sr(jjj*nprocy+kkk+1)
+  ENDDO
+  temp_rs = send_type_g;   temp_sr = recv_type_l
+  DEALLOCATE(send_type_g); ALLOCATE(send_type_g(nb_comms_g2l))
+  DEALLOCATE(recv_type_l); ALLOCATE(recv_type_l(nb_comms_g2l))
+  DO ii=1,nb_comms_g2l
+      i = work_array_g2l(ii)
+      k =   MODULO(i,nprocy)  !Y
+      j =   i/nprocy          !Z
+      jj  =  MODULO(z_coords + j,nprocz) 
+      jjj = MODULO(z_coords -j,nprocz) 
+      kk  =  MODULO(y_coords +  k,nprocy)
       kkk =  MODULO(y_coords-k,nprocy) 
-      nb_exchanges_l2g_send_z(ii) = temp1(jj*nprocy + kk+1)
-      nb_exchanges_l2g_recv_z(ii) = temp2(jjj*nprocy +kkk+1)
-      nb_exchanges_l2g_send_y(ii) = temp3(jj*nprocy+  kk +1 )
-      nb_exchanges_l2g_recv_y(ii) = temp4( jjj*nprocy +kkk+1)
-      l_first_cell_to_send_z(ii) = temp5(jj*nprocy +kk+1)
-      g_first_cell_to_recv_z(ii) =temp6(jjj*nprocy +kkk+1)
-      l_first_cell_to_send_y(ii) = temp7(jj*nprocy+kk+1)
-      g_first_cell_to_recv_y(ii) = temp8(jjj*nprocy+kkk+1)
-   ENDDO
-   DEALLOCATE(temp1,temp2,temp3,temp4,temp5,temp6,temp7,temp8)
-   !--end
 
-   !--compresses arrays of ranks (r to f perspective)
-   ALLOCATE(array_of_ranks_to_send_to_l2g(nb_comms_l2g))
-   ALLOCATE(array_of_ranks_to_recv_from_l2g(nb_comms_l2g))
-
-   DO ii=1,nb_comms_l2g
-      i=work_array_l2g(ii)
-       k =   MODULO(i,nprocy)  !Y
-       j =   i/nprocy          !Z
-      array_of_ranks_to_send_to_l2g(ii) = array_of_ranks_to_send_to(k+j*nprocy+1)
-      array_of_ranks_to_recv_from_l2g(ii) = array_of_ranks_to_recv_from(k+j*nprocy+1)
-   ENDDO
-
-
-   ALLOCATE(array_of_ranks_to_send_to_g2l(nb_comms_g2l))
-   ALLOCATE(array_of_ranks_to_recv_from_g2l(nb_comms_g2l))
-   !--  end
-   
-   !-- compresses arrays of ranks (f to r perspective)
-   DO ii=1,nb_comms_g2l
-      i=work_array_g2l(ii)
-       k =   MODULO(i,nprocy)  !Y
-       j =   i/nprocy          !Z
-      array_of_ranks_to_send_to_g2l(ii) = array_of_ranks_to_send_to(k+j*nprocy+1)
-      array_of_ranks_to_recv_from_g2l(ii) = array_of_ranks_to_recv_from(k+j*nprocy+1)
-   ENDDO
-   DEALLOCATE(array_of_ranks_to_recv_from,array_of_ranks_to_send_to)
-   !-- end
-
-   !-- compresses arrays of mpi  types
-
-   ALLOCATE(temp_rs(nprocz*nprocy),temp_sr(nprocz*nprocy))
-   temp_rs = send_type_l;   temp_sr = recv_type_g
-   DEALLOCATE(send_type_l); ALLOCATE(send_type_l(nb_comms_l2g))
-   DEALLOCATE(recv_type_g); ALLOCATE(recv_type_g(nb_comms_l2g))
-
-   DO ii=1,nb_comms_l2g
-       i = work_array_l2g(ii)
-       k =   MODULO(i,nprocy)  !Y
-       j =   i/nprocy          !Z
-       jj  =  MODULO(z_coords + j,nprocz)
-       jjj =  MODULO(z_coords -j,nprocz)
-       kk  =  MODULO(y_coords +  k,nprocy)
-       kkk =  MODULO(y_coords-k,nprocy)
-     send_type_l(ii) = temp_rs(jj*nprocy+kk+1)
-     recv_type_g(ii) = temp_sr(jjj*nprocy+kkk+1)
-   ENDDO
-   temp_rs = send_type_g;   temp_sr = recv_type_l
-   DEALLOCATE(send_type_g); ALLOCATE(send_type_g(nb_comms_g2l))
-   DEALLOCATE(recv_type_l); ALLOCATE(recv_type_l(nb_comms_g2l))
-   DO ii=1,nb_comms_g2l
-       i = work_array_g2l(ii)
-       k =   MODULO(i,nprocy)  !Y
-       j =   i/nprocy          !Z
-       jj  =  MODULO(z_coords + j,nprocz) 
-       jjj = MODULO(z_coords -j,nprocz) 
-       kk  =  MODULO(y_coords +  k,nprocy)
-       kkk =  MODULO(y_coords-k,nprocy) 
-
-     send_type_g(ii) = temp_rs(jj*nprocy+kk+1)
-     recv_type_l(ii) = temp_sr(jjj*nprocy+kkk+1)
-   ENDDO
-   DEALLOCATE(temp_rs,temp_sr)
-   !-- end
+    send_type_g(ii) = temp_rs(jj*nprocy+kk+1)
+    recv_type_l(ii) = temp_sr(jjj*nprocy+kkk+1)
+  ENDDO
+  DEALLOCATE(temp_rs,temp_sr)
+  !-- end
 
 #endif
   END SUBROUTINE create_work_group_arrays
