@@ -1047,9 +1047,12 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
   ! -- 3D CPU split (e.g. the Plimpton package)
   ix_min_r = 1
   ix_max_r = nx + 2*nxg_group
+  
+  
   ! -- This treats the case of distributed FFTW
+  ! -- In that case, CPU split is performed on z only 
   IF(.NOT. p3dfft) THEN
-    nz_lb = MAX(iz_max_r - iz_min_r +1,0)
+    nz_lb = MAX(iz_max_r - iz_min_r +1,0_idp)
     nz_grid_lb = nz_lb+1
 
     ALLOCATE(all_nz_lb(nproc), all_nzp(nprocz))
