@@ -936,17 +936,9 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
     ENDIF
   ENDDO
   
-  ! THE NEXT ERROR COULD BE REMOVED WITH ADVANCED LOAD BALANCING 
-  IF(is_lb_grp .EQV. .FALSE.) THEN
-    IF(local_nz .LE. nzg_group) THEN
-      WRITE(*,*) '**ERROR **, nz_group too small compared to nzg_group'
-      CALL MPI_ABORT(comm,errcode,ierr)
-    ENDIF
-  ELSE
-    IF(nz_global .LE. 2*nzg_group) THEN
+  IF(nz_global .LE. 2*nzg_group) THEN
       WRITE(*,*) '**ERROR **, nz_global too small compared to nzg_group'
       CALL MPI_ABORT(comm,errcode,ierr)
-    ENDIF
   ENDIF
   
   ! -- Computes Min and max indices along z delimiting cells of the current MPI_rank 
@@ -963,83 +955,67 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
   IF(group_y_max_boundary) iy_max_r = local_ny-nyg_group
 
 
-  ! - Sanity check when load balancing is not activated (i.e same CPU split for local 
-  ! - and global arrays)
-  ! - NB: this mode will disappear soon and will be exclusively replaced 
-  ! - By is_lb_grp=.TRUE. 
-  IF(.NOT. is_lb_grp) THEN 
-   ! Case where some procs solve maxwell in ghost region exclusively is only
-   ! supported when load balancing is activated 
-    IF(iz_min_r .GT. iz_max_r) THEN
-      WRITE(0, *) '*** ERROR ***'
-      WRITE(0, *) '*** iz_max_r < iz_min_r ***'
-      CALL MPI_ABORT(comm,errcode,ierr)
-    ENDIF
-  ENDIF
-  
-  ! - Case when load balancing is activated (CPU split for the global grid different than 
+  ! - CPU split for the global grid different than 
   ! - the one for the local grid. 
   ! - In that case, the origin of the global grid is the same as the global grid 
   ! - Index of min and max of each MPI process is referred to that origin 
-  IF(is_lb_grp) THEN
-    j=0
-    ! -- Computes min and max cells for each proc along Z
-    ! - Total number of cells between groups 0 and z_group_coords
-    DO i = 1 ,z_group_coords
-       j = j +  nz_group_global_array(x_group_coords+                                  &
-       y_group_coords*nb_group_x+(i-1)*nb_group_x*nb_group_y+1)
-    ENDDO
-    ! - Min index along z of current proc 
-    iz_min_lbg = local_z0-nzg_group + j
-    ! - Max index along z of current proc 
-    iz_max_lbg = iz_min_lbg + local_nz - 1 
-    ALLOCATE(cell_z_min_lbg(nprocz),cell_z_max_lbg(nprocz))
-    ALLOCATE(all_iz_min_lbg(nproc),all_iz_max_lbg(nproc))
+  j=0
+  ! -- Computes min and max cells for each proc along Z
+  ! - Total number of cells between groups 0 and z_group_coords
+  DO i = 1 ,z_group_coords
+     j = j +  nz_group_global_array(x_group_coords+                                  &
+     y_group_coords*nb_group_x+(i-1)*nb_group_x*nb_group_y+1)
+  ENDDO
+  ! - Min index along z of current proc 
+  iz_min_lbg = local_z0-nzg_group + j
+  ! - Max index along z of current proc 
+  iz_max_lbg = iz_min_lbg + local_nz - 1 
+  ALLOCATE(cell_z_min_lbg(nprocz),cell_z_max_lbg(nprocz))
+  ALLOCATE(all_iz_min_lbg(nproc),all_iz_max_lbg(nproc))
 
-    ! - Gather all min indexes along z from all other procs
-    CALL MPI_ALLGATHER(iz_min_lbg,1_isp, MPI_INTEGER8, all_iz_min_lbg,           &
-    INT(1,isp), MPI_INTEGER8, comm, errcode)
+  ! - Gather all min indexes along z from all other procs
+  CALL MPI_ALLGATHER(iz_min_lbg,1_isp, MPI_INTEGER8, all_iz_min_lbg,           &
+  INT(1,isp), MPI_INTEGER8, comm, errcode)
 
-    ! - Gather all max indexes along z from all other procs 
-    CALL MPI_ALLGATHER(iz_max_lbg,1_isp, MPI_INTEGER8, all_iz_max_lbg,           &
-    INT(1,isp), MPI_INTEGER8, comm, errcode)
-    
-    ! - Set global index of min and max cells for current proc along z 
-    DO i=1, nprocz
-      cell_z_min_lbg(i) = all_iz_min_lbg(x_coords+y_coords*nprocx+(i-1)*nprocx*nprocy+1)
-      cell_z_max_lbg(i) = all_iz_max_lbg(x_coords+y_coords*nprocx+(i-1)*nprocx*nprocy+1)
-    ENDDO
-    DEALLOCATE(all_iz_max_lbg,all_iz_min_lbg)
-    
-    ! -- Computes min and max cells for each proc along Y    
-    ! - Total number of cells between groups 0 and y_group_coords
-    j=0
-    DO i = 1 ,y_group_coords
-       j = j +ny_group_global_array(x_group_coords+(i-1)*nb_group_x+             & 
-       z_group_coords*nb_group_x*nb_group_y+1)
-    ENDDO
-    ! - Min index along y of current proc 
-    iy_min_lbg = local_y0-nyg_group + j
-    ! - Max index along y of current proc 
-    iy_max_lbg = iy_min_lbg + local_ny - 1
-    ALLOCATE(cell_y_min_lbg(nprocy),cell_y_max_lbg(nprocy))
-    ALLOCATE(all_iy_min_lbg(nproc),all_iy_max_lbg(nproc))
+  ! - Gather all max indexes along z from all other procs 
+  CALL MPI_ALLGATHER(iz_max_lbg,1_isp, MPI_INTEGER8, all_iz_max_lbg,           &
+  INT(1,isp), MPI_INTEGER8, comm, errcode)
+  
+  ! - Set global index of min and max cells for current proc along z 
+  DO i=1, nprocz
+    cell_z_min_lbg(i) = all_iz_min_lbg(x_coords+y_coords*nprocx+(i-1)*nprocx*nprocy+1)
+    cell_z_max_lbg(i) = all_iz_max_lbg(x_coords+y_coords*nprocx+(i-1)*nprocx*nprocy+1)
+  ENDDO
+  DEALLOCATE(all_iz_max_lbg,all_iz_min_lbg)
+  
+  ! -- Computes min and max cells for each proc along Y    
+  ! - Total number of cells between groups 0 and y_group_coords
+  j=0
+  DO i = 1 ,y_group_coords
+     j = j +ny_group_global_array(x_group_coords+(i-1)*nb_group_x+             & 
+     z_group_coords*nb_group_x*nb_group_y+1)
+  ENDDO
+  ! - Min index along y of current proc 
+  iy_min_lbg = local_y0-nyg_group + j
+  ! - Max index along y of current proc 
+  iy_max_lbg = iy_min_lbg + local_ny - 1
+  ALLOCATE(cell_y_min_lbg(nprocy),cell_y_max_lbg(nprocy))
+  ALLOCATE(all_iy_min_lbg(nproc),all_iy_max_lbg(nproc))
 
-   ! - Gather all min indexes along y from all other procs
-    CALL MPI_ALLGATHER(iy_min_lbg,1_isp, MPI_INTEGER8, all_iy_min_lbg,&
-    INT(1,isp), MPI_INTEGER8, comm, errcode)
-    
-   ! - Gather all max indexes along y from all other procs
-    CALL MPI_ALLGATHER(iy_max_lbg,1_isp, MPI_INTEGER8, all_iy_max_lbg,&
-    INT(1,isp), MPI_INTEGER8, comm, errcode)
+  ! - Gather all min indexes along y from all other procs
+  CALL MPI_ALLGATHER(iy_min_lbg,1_isp, MPI_INTEGER8, all_iy_min_lbg,&
+  INT(1,isp), MPI_INTEGER8, comm, errcode)
+  
+  ! - Gather all max indexes along y from all other procs
+  CALL MPI_ALLGATHER(iy_max_lbg,1_isp, MPI_INTEGER8, all_iy_max_lbg,&
+  INT(1,isp), MPI_INTEGER8, comm, errcode)
 
-    ! - Set global index of min and max cells for current proc along y
-    DO i=1, nprocy
-      cell_y_min_lbg(i) = all_iy_min_lbg(x_coords+(i-1)*nprocx+z_coords*nprocx*nprocy+1)
-      cell_y_max_lbg(i) = all_iy_max_lbg(x_coords+(i-1)*nprocx+z_coords*nprocx*nprocy+1)
-    ENDDO
-    DEALLOCATE(all_iy_max_lbg,all_iy_min_lbg)
-  ENDIF
+  ! - Set global index of min and max cells for current proc along y
+  DO i=1, nprocy
+    cell_y_min_lbg(i) = all_iy_min_lbg(x_coords+(i-1)*nprocx+z_coords*nprocx*nprocy+1)
+    cell_y_max_lbg(i) = all_iy_max_lbg(x_coords+(i-1)*nprocx+z_coords*nprocx*nprocy+1)
+  ENDDO
+  DEALLOCATE(all_iy_max_lbg,all_iy_min_lbg)
   
   ! -- Computes min and max cells for each proc along X  
   ! -- This assumes no CPU split along X
@@ -1048,41 +1024,6 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_lbg,all_iy_max_lbg
   ix_min_r = 1
   ix_max_r = nx + 2*nxg_group
   
-  
-  ! -- This treats the case of distributed FFTW
-  ! -- In that case, CPU split is performed on z only 
-  IF(.NOT. p3dfft) THEN
-    nz_lb = MAX(iz_max_r - iz_min_r +1,0_idp)
-    nz_grid_lb = nz_lb+1
-
-    ALLOCATE(all_nz_lb(nproc), all_nzp(nprocz))
-  
-    CALL MPI_ALLGATHER(nz_lb, 1_isp, MPI_LONG_LONG_INT, all_nz_lb, 1_isp      ,         &
-    MPI_LONG_LONG_INT, comm, errcode)
-  
-    DO i=1, nprocz
-      all_nzp(i) = all_nz_lb((i-1)*nprocx*nprocy+1)
-    ENDDO
-
-    z_min_local_lb = zmin
-    z_max_local_lb = zmax
-    z_min_local_lb = z_min_local_lb + dz*sum(all_nzp(1:z_coords))
-    z_max_local_lb = z_min_local_lb +nz_lb*dz
-    cell_z_min_f(1) = 0
-    cell_z_max_f(1) = all_nzp(1) - 1
-  
-    DO i =2, nprocz
-      cell_z_min_f(i) = cell_z_max_f(i-1) + 1
-      cell_z_max_f(i) = cell_z_min_f(i)-1 + all_nzp(i)
-    ENDDO
-
-    iy_min_r = 1
-    iy_max_r = ny + 2*nyguards
-    nz_global_grid_min_lb = cell_z_min_f(z_coords+1)
-    nz_global_grid_max_lb = cell_z_max_f(z_coords+1)+1
-  
-    DEALLOCATE(all_nz_lb, all_nzp)
-  ENDIF
   DEALLOCATE(grp_id, grp_comm, local_roots_rank, grp_ranks)
 
 #if defined(DEBUG)
@@ -1187,7 +1128,6 @@ IF(fftw_hybrid) fftw_with_mpi = .TRUE.
 IF(p3dfft) THEN
   fftw_with_mpi = .TRUE.
   fftw_hybrid = .TRUE.
-  is_lb_grp = .TRUE.
   fftw_mpi_transpose = .FALSE.
 endif
 ! With fftw_with_mpi CPU split is performed only along z
@@ -1333,41 +1273,14 @@ IF(fftw_with_mpi ) THEN
       STOP
     ENDIF
   ELSE
-    ALLOCATE(cell_z_min_r(1:nprocz),cell_z_max_r(1:nprocz))
-    cell_z_min_r = cell_z_min
-    cell_z_max_r = cell_z_max
-    ALLOCATE(cell_z_min_f(1:nprocz),cell_z_max_f(1:nprocz))
-#if defined(P3DFFT)
-    ALLOCATE(cell_y_min_r(1:nprocy),cell_y_max_r(1:nprocy))
-    cell_y_min_r = cell_y_min 
-    cell_y_max_r = cell_y_max
-    ALLOCATE(cell_y_min_f(1:nprocy),cell_y_max_f(1:nprocy))
-#endif
     CALL setup_groups
-   ! IF(nz_lb .NE. cell_z_max_f(z_coords+1) - cell_z_min_f(z_coords+1)+1) THEN
-   !   WRITE(*, *), 'ERROR IN AJUSTING THE GRID 2'
-   !   STOP
-   ! ENDIF
   ENDIF
 ENDIF
 IF(fftw_hybrid) THEN 
-  IF(is_lb_grp) THEN
-
     ! computes subdomains and group fields intersection
     CALL get2D_intersection_group_mpi()
-  ELSE IF(.NOT. is_lb_grp) THEN
-
     ! Load balancing is not used ,grid decomposition is that of
     ! fftw_local_size_3d
-    cell_z_min = cell_z_min_f
-    cell_z_max = cell_z_max_f
-    nz = nz_lb
-    nz_grid = nz_grid_lb 
-    nz_global_grid_min = nz_global_grid_min_lb
-    nz_global_grid_max = nz_global_grid_max_lb
-    z_min_local = z_min_local_lb
-    z_max_local = z_max_local_lb
-  ENDIF
 ENDIF
 #endif
 

@@ -224,7 +224,6 @@ MODULE control_file
     ! SET FFTW WITH MPI FLAG
     fftw_with_mpi = .FALSE.
     fftw_hybrid = .FALSE.
-    is_lb_grp = .FALSE.
     fftw_mpi_transpose = .FALSE.
     p3dfft = .FALSE.
 #if defined(P3DFFT) 
@@ -342,10 +341,6 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'p3dstride') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) p3dfft_stride
-
-      ELSE IF (INDEX(buffer, 'is_lb_grp') .GT. 0) THEN
-        CALL GETARG(i+1, buffer)
-        READ(buffer, *) is_lb_grp
       ELSE IF (INDEX(buffer, 'fftw_mpi_tr') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) fftw_mpi_transpose
@@ -611,10 +606,6 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'p3dfft') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) p3dfft
-
-      ELSE IF (INDEX(buffer, 'is_lb_grp') .GT. 0) THEN
-        ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), *) is_lb_grp
 #if defined(FFTW)
       ELSE IF (INDEX(buffer, 'nb_group_z') .GT. 0) THEN
         ix = INDEX(buffer, "=")

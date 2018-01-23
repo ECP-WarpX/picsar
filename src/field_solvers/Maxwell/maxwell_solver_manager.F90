@@ -295,7 +295,7 @@ SUBROUTINE push_psatd_ebfield_3d() bind(C, name='push_psatd_ebfield_3d_')
 #if defined(FFTW)
   ! - Fourier Transform R2C
   IF (fftw_with_mpi) THEN
-    IF(is_lb_grp) THEN
+    IF(fftw_hybrid) THEN
       CALL get_Ffields_mpi_lb!  -global-hybrid balanced FFT
     ELSE
       CALL get_Ffields_mpi! - global-hybrid FFT
@@ -316,7 +316,7 @@ SUBROUTINE push_psatd_ebfield_3d() bind(C, name='push_psatd_ebfield_3d_')
   ENDIF
   ! - Inverse Fourier Transform C2R
   IF (fftw_with_mpi) THEN
-    IF(is_lb_grp) THEN
+    IF(fftw_hybrid) THEN
       CALL get_fields_mpi_lb! -global-hybrid balanced IFFT
     ELSE
       CALL get_fields_mpi! global-hybrid IFFT
@@ -373,7 +373,7 @@ SUBROUTINE push_psatd_ebfield_2d() bind(C, name='push_psatd_ebfield_2d_')
 #if defined(FFTW)
   ! - Fourier Transform R2C
   IF (fftw_with_mpi) THEN
-    IF(is_lb_grp) THEN
+    IF(fftw_hybrid) THEN
       CALL get_Ffields_mpi_lb ! -global-hybrid balanced FFT
     ELSE
       CALL get_Ffields_mpi! - global-hybrid FFT
@@ -399,7 +399,7 @@ SUBROUTINE push_psatd_ebfield_2d() bind(C, name='push_psatd_ebfield_2d_')
   ENDIF
   ! - Inverse Fourier Transform C2R
   IF (fftw_with_mpi) THEN
-    IF(is_lb_grp) THEN
+    IF(fftw_hybrid) THEN
       CALL get_fields_mpi_lb! global-hybrid balanced IFFT
     ELSE
       CALL get_fields_mpi! global-hybrid IFFT

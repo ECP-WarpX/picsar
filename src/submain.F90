@@ -477,7 +477,6 @@ SUBROUTINE initall
     IF(fftw_hybrid) write(0, '(" nb_groups :", I5, X, I5, X, I5)') nb_group_x,nb_group_y,nb_group_z
     IF (fftw_threads_ok) write(0, '(" FFTW MPI - Threaded support enabled ")')
     IF (fftw_mpi_transpose) write(0, '(" FFTW MPI Transpose plans enabled ")')
-    IF (is_lb_grp) write(0, '(" FFTW hybrid balanced ")')
 #endif
     ! Sorting
     IF (sorting_activated.gt.0) THEN
