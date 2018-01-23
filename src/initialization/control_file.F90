@@ -338,7 +338,7 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'p3dfft_flag') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) p3dfft_flag
-      ELSE IF (INDEX(buffer, 'p3dstride') .GT. 0) THEN
+      ELSE IF (INDEX(buffer, 'p3dfft_stride') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) p3dfft_stride
       ELSE IF (INDEX(buffer, 'fftw_mpi_tr') .GT. 0) THEN
@@ -606,6 +606,9 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'p3dfft_flag') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) p3dfft_flag
+      ELSE IF (INDEX(buffer, 'p3dfft_stride') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) p3dfft_stride
 #if defined(FFTW)
       ELSE IF (INDEX(buffer, 'nb_group_z') .GT. 0) THEN
         ix = INDEX(buffer, "=")
