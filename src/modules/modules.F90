@@ -1116,19 +1116,19 @@ MODULE group_parameters!#do not parse
 
   !> Cell domain for load balancing general case (taking into account
   !--guardcells)
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: cell_z_min_global, cell_z_max_global
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: cell_y_min_global, cell_y_max_global
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: nb_exchanges_l2g_recv_z, nb_exchanges_g2l_recv_z
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: nb_exchanges_g2l_send_z,nb_exchanges_l2g_send_z 
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: cell_z_min_g, cell_z_max_g
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: cell_y_min_g, cell_y_max_g
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: size_exchanges_l2g_recv_z, size_exchanges_g2l_recv_z
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: size_exchanges_g2l_send_z,size_exchanges_l2g_send_z 
   INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: g_first_cell_to_recv_z,l_first_cell_to_recv_z
   INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: g_first_cell_to_send_z,l_first_cell_to_send_z
 
-  INTEGER(idp)  , DIMENSION(:,:) , ALLOCATABLE :: nb_exchanges_l2g_recv,nb_exchanges_g2l_recv
-  INTEGER(idp)  , DIMENSION(:,:) , ALLOCATABLE :: nb_exchanges_g2l_send,nb_exchanges_l2g_send
+  INTEGER(idp)  , DIMENSION(:,:) , ALLOCATABLE :: size_exchanges_l2g_recv,size_exchanges_g2l_recv
+  INTEGER(idp)  , DIMENSION(:,:) , ALLOCATABLE :: size_exchanges_g2l_send,size_exchanges_l2g_send
 
 
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: nb_exchanges_l2g_recv_y,nb_exchanges_g2l_recv_y
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: nb_exchanges_g2l_send_y,nb_exchanges_l2g_send_y
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: size_exchanges_l2g_recv_y,size_exchanges_g2l_recv_y
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: size_exchanges_g2l_send_y,size_exchanges_l2g_send_y
   INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: g_first_cell_to_recv_y,l_first_cell_to_recv_y
   INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: g_first_cell_to_send_y,l_first_cell_to_send_y
 

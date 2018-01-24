@@ -167,8 +167,8 @@ MODULE fourier_psaotd
       p3d_offset =0
     ENDIF
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-    DO iz=1,nb_exchanges_l2g_recv_z(1)
-      DO iy =1,nb_exchanges_l2g_recv_y(1)
+    DO iz=1,size_exchanges_l2g_recv_z(1)
+      DO iy =1,size_exchanges_l2g_recv_y(1)
         DO ix =ix_min_r,ix_max_r
            ex_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3)) =&
                  ex(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1) ,iz-1+l_first_cell_to_send_z(1))
@@ -371,8 +371,8 @@ MODULE fourier_psaotd
       p3d_offset = 0
     ENDIF
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-    DO iz=1,nb_exchanges_g2l_recv_z(1)
-      DO iy=1,nb_exchanges_g2l_recv_y(1)
+    DO iz=1,size_exchanges_g2l_recv_z(1)
+      DO iy=1,size_exchanges_g2l_recv_y(1)
         DO ix=ix_min_r, ix_max_r
           ex(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),iz-1+l_first_cell_to_recv_z(1)) =&
                  ex_r(ix+p3d_offset(1),iy-1+g_first_cell_to_send_y(1)+p3d_offset(2),iz-1+g_first_cell_to_send_z(1)+p3d_offset(3))

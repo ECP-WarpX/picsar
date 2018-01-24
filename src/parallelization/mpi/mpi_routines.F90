@@ -991,7 +991,7 @@ INTEGER(isp)                              :: key, key_roots,color_roots
   iz_max_global = iz_min_global + local_nz - 1 
   
   ! -- Array allocation for performing an MPI allgather operation 
-  ALLOCATE(cell_z_min_global(nprocz),cell_z_max_global(nprocz))
+  ALLOCATE(cell_z_min_g(nprocz),cell_z_max_g(nprocz))
   ALLOCATE(all_iz_min_global(nproc),all_iz_max_global(nproc))
 
   ! - Gather all min indexes along z from all other procs
@@ -1004,8 +1004,8 @@ INTEGER(isp)                              :: key, key_roots,color_roots
   
   ! -- Store min and max indices along z in 1D arrays
   DO i=1, nprocz
-    cell_z_min_global(i) = all_iz_min_global(x_coords+y_coords*nprocx+(i-1)*nprocx*nprocy+1)
-    cell_z_max_global(i) = all_iz_max_global(x_coords+y_coords*nprocx+(i-1)*nprocx*nprocy+1)
+    cell_z_min_g(i) = all_iz_min_global(x_coords+y_coords*nprocx+(i-1)*nprocx*nprocy+1)
+    cell_z_max_g(i) = all_iz_max_global(x_coords+y_coords*nprocx+(i-1)*nprocx*nprocy+1)
   ENDDO
   DEALLOCATE(all_iz_max_global,all_iz_min_global)
   
@@ -1022,7 +1022,7 @@ INTEGER(isp)                              :: key, key_roots,color_roots
   ! -- (The one that includes group guard cells) 
   iy_max_global = iy_min_global + local_ny - 1
 
-  ALLOCATE(cell_y_min_global(nprocy),cell_y_max_global(nprocy))
+  ALLOCATE(cell_y_min_g(nprocy),cell_y_max_g(nprocy))
   ALLOCATE(all_iy_min_global(nproc),all_iy_max_global(nproc))
 
   ! - Gather all min indexes along y from all other procs
@@ -1035,9 +1035,9 @@ INTEGER(isp)                              :: key, key_roots,color_roots
 
   ! -- Store min and max indices along y in 1D arrays
   DO i=1, nprocy
-    cell_y_min_global(i) = all_iy_min_global(x_coords+(i-1)*nprocx+ & 
+    cell_y_min_g(i) = all_iy_min_global(x_coords+(i-1)*nprocx+ & 
     z_coords*nprocx*nprocy+1)
-    cell_y_max_global(i) = all_iy_max_global(x_coords+(i-1)*nprocx+ &
+    cell_y_max_g(i) = all_iy_max_global(x_coords+(i-1)*nprocx+ &
     z_coords*nprocx*nprocy+1)
   ENDDO
   DEALLOCATE(all_iy_max_global,all_iy_min_global)

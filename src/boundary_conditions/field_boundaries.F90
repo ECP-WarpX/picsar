@@ -605,10 +605,10 @@ MODULE field_boundary
       rank_to_send_to = INT(array_of_ranks_to_send_to_l2g(ii),isp)
       rank_to_recv_from = INT(array_of_ranks_to_recv_from_l2g(ii),isp)
 
-      IF(nb_exchanges_l2g_recv_z(ii) == 0) rank_to_recv_from = MPI_PROC_NULL
-      IF(nb_exchanges_l2g_send_z(ii) == 0) rank_to_send_to = MPI_PROC_NULL
-      IF(nb_exchanges_l2g_recv_y(ii) == 0) rank_to_recv_from =MPI_PROC_NULL
-      IF(nb_exchanges_l2g_send_y(ii) == 0) rank_to_send_to = MPI_PROC_NULL
+      IF(size_exchanges_l2g_recv_z(ii) == 0) rank_to_recv_from = MPI_PROC_NULL
+      IF(size_exchanges_l2g_send_z(ii) == 0) rank_to_send_to = MPI_PROC_NULL
+      IF(size_exchanges_l2g_recv_y(ii) == 0) rank_to_recv_from =MPI_PROC_NULL
+      IF(size_exchanges_l2g_send_y(ii) == 0) rank_to_send_to = MPI_PROC_NULL
       CALL MPI_SENDRECV(field_l(-nxg, l_first_cell_to_send_y(ii), l_first_cell_to_send_z(ii)), 1_isp, send_type_l(ii),   &
       rank_to_send_to,tag,field_g(1, g_first_cell_to_recv_y(ii), g_first_cell_to_recv_z(ii)), 1_isp, recv_type_g(ii),  &
       rank_to_recv_from ,tag ,comm ,status ,errcode)
@@ -657,12 +657,12 @@ MODULE field_boundary
       rank_to_send_to = INT(array_of_ranks_to_send_to_l2g(ii),isp)
       rank_to_recv_from = INT(array_of_ranks_to_recv_from_l2g(ii),isp)
 
-      IF(nb_exchanges_l2g_recv_z(ii) .GT. 0 .AND. nb_exchanges_l2g_recv_y(ii) .GT. 0)   THEN 
+      IF(size_exchanges_l2g_recv_z(ii) .GT. 0 .AND. size_exchanges_l2g_recv_y(ii) .GT. 0)   THEN 
         n=n+1
         CALL MPI_IRECV(field_g(1, g_first_cell_to_recv_y(ii), g_first_cell_to_recv_z(ii)), 1_isp,recv_type_g(ii), &
         rank_to_recv_from,tag,comm,requests_l2g(n),errcode)
       ENDIF
-      IF(nb_exchanges_l2g_send_z(ii) .GT. 0 .AND. nb_exchanges_l2g_send_y(ii) .GT. 0) THEN
+      IF(size_exchanges_l2g_send_z(ii) .GT. 0 .AND. size_exchanges_l2g_send_y(ii) .GT. 0) THEN
         n=n+1
         CALL MPI_ISEND(field_l(-nxg, l_first_cell_to_send_y(ii), l_first_cell_to_send_z(ii)), 1_isp, send_type_l(ii) &
         ,rank_to_send_to,tag,comm,requests_l2g(n),errcode)
@@ -771,12 +771,12 @@ MODULE field_boundary
       rank_to_send_to = INT(array_of_ranks_to_send_to_g2l(ii),isp)
       rank_to_recv_from = INT(array_of_ranks_to_recv_from_g2l(ii),isp)
  
-      IF(nb_exchanges_g2l_recv_z(ii) .GT. 0 .AND. nb_exchanges_g2l_recv_y(ii) .GT. 0) THEN
+      IF(size_exchanges_g2l_recv_z(ii) .GT. 0 .AND. size_exchanges_g2l_recv_y(ii) .GT. 0) THEN
         n=n+1
         CALL MPI_IRECV(field_l(-nxg, l_first_cell_to_recv_y(ii), l_first_cell_to_recv_z(ii)), 1_isp,recv_type_l(ii)&
         , rank_to_recv_from,tag,comm,requests_g2l(n),errcode)
       ENDIF
-      IF(nb_exchanges_g2l_send_z(ii) .GT. 0 .AND. nb_exchanges_g2l_send_y(ii) .GT. 0 ) THEN
+      IF(size_exchanges_g2l_send_z(ii) .GT. 0 .AND. size_exchanges_g2l_send_y(ii) .GT. 0 ) THEN
         n=n+1
         CALL MPI_ISEND(field_g(1,g_first_cell_to_send_y(ii),g_first_cell_to_send_z(ii)) ,1_isp,send_type_g(ii),    &
         rank_to_send_to,tag,comm,requests_g2l(n),errcode)   
@@ -812,10 +812,10 @@ MODULE field_boundary
       rank_to_send_to = INT(array_of_ranks_to_send_to_g2l(ii),isp)
       rank_to_recv_from = INT(array_of_ranks_to_recv_from_g2l(ii),isp)
 
-      IF(nb_exchanges_g2l_recv_z(ii) == 0) rank_to_recv_from = MPI_PROC_NULL
-      IF(nb_exchanges_g2l_send_z(ii) == 0) rank_to_send_to = MPI_PROC_NULL
-      IF(nb_exchanges_g2l_recv_y(ii) == 0) rank_to_recv_from = MPI_PROC_NULL
-      IF(nb_exchanges_g2l_send_y(ii) == 0) rank_to_send_to = MPI_PROC_NULL
+      IF(size_exchanges_g2l_recv_z(ii) == 0) rank_to_recv_from = MPI_PROC_NULL
+      IF(size_exchanges_g2l_send_z(ii) == 0) rank_to_send_to = MPI_PROC_NULL
+      IF(size_exchanges_g2l_recv_y(ii) == 0) rank_to_recv_from = MPI_PROC_NULL
+      IF(size_exchanges_g2l_send_y(ii) == 0) rank_to_send_to = MPI_PROC_NULL
 
       CALL MPI_SENDRECV(field_g(1,g_first_cell_to_send_y(ii),g_first_cell_to_send_z(ii)) ,1_isp,send_type_g(ii), &
       rank_to_send_to,tag,field_l(-nxg, l_first_cell_to_recv_y(ii), l_first_cell_to_recv_z(ii)), 1_isp,&
