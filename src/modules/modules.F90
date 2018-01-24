@@ -1078,6 +1078,8 @@ MODULE group_parameters!#do not parse
   !>  MPI_COMM for local roots group and MPI_GROUP for local  roots and roots
   !ranks in the mpi_root_comm
   INTEGER(isp)  :: mpi_root_comm, mpi_root_group, root_rank, root_size
+  !> Ordered comm world (for computing group splitting)
+  INTEGER(isp)  :: mpi_ordered_comm_world
   !> Field cell  sizes in groups without guardcells
   INTEGER(idp)  :: nx_group_global, ny_group_global, nz_group_global
   INTEGER(idp) , DIMENSION(:), ALLOCATABLE ::  nz_group_global_array, ny_group_global_array, nx_group_global_array

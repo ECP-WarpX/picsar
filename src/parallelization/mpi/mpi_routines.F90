@@ -569,9 +569,8 @@ INTEGER(isp), PARAMETER :: ndims = 3
 LOGICAL(isp) :: periods(ndims), reorder
 INTEGER(isp) :: dims(ndims), ierr
 INTEGER(idp) :: group_size
-INTEGER(isp), ALLOCATABLE, DIMENSION(:)    :: grp_id, grp_comm, local_roots_rank
-INTEGER(isp), ALLOCATABLE, DIMENSION(:, :) :: grp_ranks
-INTEGER(isp)                                :: roots_grp, roots_comm
+INTEGER(isp), ALLOCATABLE, DIMENSION(:)    ::  grp_comm
+INTEGER(isp)                                :: roots_comm
 INTEGER(idp)  ::cur, i,j,temp,k,l
 INTEGER(idp), DIMENSIOn(:), ALLOCATABLE :: all_nz_group,  &
   all_iz_min_global, all_iz_max_global, all_ny_group, all_nz
@@ -579,6 +578,8 @@ INTEGER(idp)                            :: iz_min_global, iz_max_global,iy_min_g
 iy_max_global
 INTEGER(isp)                            :: pdims(2)
 INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
+INTEGER(isp) , ALLOCATABLE, DIMENSION(:)  :: colors
+INTEGER(isp)                              :: key, key_roots,color_roots
 
 #if defined(FFTW)
 #if defined(DEBUG)
@@ -614,8 +615,9 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
   ! - If not --> abort simulation 
   IF(MODULO(nprocx,nb_group_x) .NE. 0 .OR. MODULO(nprocy,nb_group_y) .NE. 0  & 
   .OR. MODULO(nprocz,nb_group_z) .NE. 0 ) THEN
-    IF(rank==0)   & 
-    WRITE(*,*)"ERROR please set a number of groups multiple of nproc along each direction"
+    IF(rank==0)   THEN 
+      WRITE(*,*)"ERROR please set a number of groups multiple of nproc along each direction"
+    ENDIF
     CALL MPI_ABORT(comm,errcode,ierr)
   ENDIF
   
@@ -635,120 +637,117 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
   y_group_coords = y_coords/group_sizes(2)
   ! - Computes coordinates of current group in the global set of groups along x 
   x_group_coords = x_coords/group_sizes(1)
+  ! - Init the group id of current group based on its coordinates in the global
+  ! set of  groups 
+  which_group =x_group_coords+y_group_coords*nb_group_x+ &
+  z_group_coords*nb_group_x*nb_group_y
+
 
   ! - Array allocations 
-  ALLOCATE(grp_id(nb_group), grp_comm(nb_group), local_roots_rank(nb_group))
-  ALLOCATE(grp_ranks(group_size, nb_group))
+  ALLOCATE(grp_comm(nb_group))
   ALLOCATE(mpi_group_id(nb_group),mpi_comm_group_id(nb_group))
 
-  ! - Init group variables and communicators 
-  DO i=1, nb_group
-    mpi_comm_group_id(i) = MPI_COMM_NULL
-    mpi_group_id(i) = MPI_GROUP_NULL
-    grp_comm(i)  = MPI_COMM_NULL
-    grp_id(i) = MPI_GROUP_NULL
-  ENDDO
   
   ! - Init a local root rank for each group 
   ! - Local root ranks are used to communicate information between MPI groups 
   ! - By default, the local root rank of a MPI group is 
   ! - the minimum of all ranks contained in that group
-  ! - N.B: This implementation assumes that ranks are init regularly in the 
-  ! - communicator by increasing the rank number by 1 when moving along direction x. 
-  ! - This will produce wrong results when using a random communicator for instance. 
-  ! - Will be replaced soon by gathering all ranks in a 3D array as a function of 
-  ! - (xcoords,ycoords,zcoords) and taking the minimum rank for each group. 
-  DO l=0,nb_group-1
-     k = l/(nb_group_x*nb_group_y)
-     j = (l-k*nb_group_x*nb_group_y)/nb_group_x
-     i = l-k*nb_group_x*nb_group_y -j*nb_group_x
-     local_roots_rank(l+1) = i*group_sizes(1) +  &
-     j*group_sizes(2)*nb_group_x+k*group_sizes(3)*nprocx*nprocy
-  ENDDO 
-  
-  ! - Init 2D array grp_ranks that contains the set of ranks contained in each MPI group. 
-  DO l=1,nb_group
-     DO i=1,group_sizes(1)
-       DO j=1,group_sizes(2)
-         DO k=1,group_sizes(3)
-            cur= local_roots_rank(l) + (i-1) +(j-1)*nprocx + (k-1)*nprocx*nprocy
-            grp_ranks((i-1)+(j-1)*group_sizes(1)+(k-1)*group_sizes(1)*group_sizes(2)+1,l) = cur
-         ENDDO
-       ENDDO
-     ENDDO
-  ENDDO
 
-  ! - For each group: 
-  ! - (i)  Create a MPI_group object based on the ranks contained in each group 
-  ! - (ii) Create a MPI communicator associated to each MPI_group object
-  DO i= 1, nb_group
-    CALL MPI_GROUP_INCL(mpi_world_group, INT(group_size, isp), grp_ranks(:, i),       &
-    grp_id(i), errcode)
-    CALL MPI_COMM_CREATE_GROUP(comm, grp_id(i), 0, grp_comm(i), errcode)
-  ENDDO
-  
-  ! - Variable init 
-  roots_grp = MPI_GROUP_NULL
+
+  !-- computing the rank of the process in it's group 
+  key = MODULO(z_coords,group_sizes(3))*group_sizes(1)*group_sizes(2) + &
+        MODULO(y_coords,group_sizes(2))*group_sizes(1) + & 
+        MODULO(x_coords,group_sizes(1))
+
+  ! - Init a local root rank for each group 
+  ! - Local root ranks are used to communicate information between MPI groups 
+  ! - By default, the local root rank of a MPI group is 
+  ! - the minimum of all ranks contained in that group which is spoted by key==0
+
+
+  !-- Creating roots communicator and mpi_group
+
+  IF(key==0) color_roots = 1_isp  ! 1 != mpi_undefined
+
+  ! ranks of procs inside roots_comm will be in the same order as groups
+  key_roots = z_group_coords*nb_group_y*nb_group_x + y_group_coords*nb_group_x &
+  + x_group_coords
+
   roots_comm = MPI_COMM_NULL
- 
-  ! - Create a MPI group containing the local root ranks
-  CALL MPI_GROUP_INCL(MPI_WORLD_GROUP, INT(nb_group, isp), local_roots_rank,          &
-  roots_grp,  errcode)
-  ! - Create a MPI communicator associated to the MPI group of local root ranks 
-  CALL MPI_COMM_CREATE_GROUP(comm, roots_grp, 0, roots_comm, errcode)
-  
-  mpi_root_group = MPI_GROUP_NULL
-  mpi_root_comm  = MPI_COMM_NULL
   root_rank = MPI_PROC_NULL
+  mpi_root_comm = MPI_COMM_NULL
+
+  ! -- Create a MPI communicator associated to the local roots
+  CALL MPI_COMM_SPLIT(comm,color_roots, key_roots,roots_comm,errcode)
+
   ! - For each process in the root_communicator get: 
   ! - (i) The size of the root communicator 
   ! - (ii) The rank of current process in the communicator 
   ! - (iii) Init mpi_root_comm and mpi_root_group variables 
   IF( roots_comm .NE. MPI_COMM_NULL) THEN
-    CALL MPI_COMM_RANK(roots_comm, root_rank, errcode)
-    CALL MPI_COMM_SIZE(roots_comm, root_size, errcode)
-    mpi_root_comm = roots_comm
-    mpi_root_group = roots_grp
+    ! - Duplicate roots_comm into mpi_root_com 
+    CALL MPI_COMM_DUP(roots_comm,mpi_root_comm,errcode)
+    ! - Create a MPI group associated to the MPI communicatorof local root ranks 
+    CALL MPI_COMM_GROUP(mpi_root_comm,mpi_root_group,errcode)
+    ! - Get mpi ranks in mpi_root_comm
+    CALL MPI_COMM_RANK(mpi_root_comm, root_rank, errcode)
+    ! - Get mpi size in mpi_root_comm
+    CALL MPI_COMM_SIZE(mpi_root_comm, root_size, errcode)
+    ! - Free old roots_comm and keep mpi_root_comm
+    CALL MPI_COMM_FREE(roots_comm, errcode)
   ENDIF
+
+
+  ! -- Create groups communicators and groups
+  ! -- mpi taks in the same group have the same value of which_group which is
+  ! -- unique to each group
+  ! -- Mpi processes of the same group share the same value of
+  ! -- colors(which_group) so mpi_comm_world will be split into nb_group
+  ! -- key enables to arrange ranks in the group the same way they are in the
+  ! -- ordered grid 
+  ALLOCATE(colors(0:nb_group-1))
+  colors = MPI_UNDEFINED
+  ! - Init group variables and communicators 
+  DO i=1, nb_group
+    mpi_comm_group_id(i) = MPI_COMM_NULL
+    mpi_group_id(i) = MPI_GROUP_NULL
+    grp_comm(i)  = MPI_COMM_NULL
+  ENDDO
+  !-- set colors to MPI_UNDEFINED
+  colors = MPI_UNDEFINED 
+  DO i =0,nb_group-1
+    IF(i==which_group) THEN
+      colors(i) = which_group  
+    ENDIF
+  ENDDO
+  ! -- Create communicator associated to each group
   
-  ! - Variable init 
-  periods = (/.FALSE., .FALSE., .FALSE./)
-  dims = (/INT(group_size, isp), 1_isp, 1_isp/)
-  reorder = .TRUE.
+  CALL MPI_COMM_SPLIT(comm,colors(which_group),key,grp_comm(which_group+1),errcode)
+  DEALLOCATE(colors)
   
-  ! - For each group, create a cartesian communicator and get new communicator/processes
-  ! - attributes 
+  ! -- Duplicate old communicators to the variables mpi_comm_group_id,
+  ! -- mpi_group_id 
   DO i = 1, nb_group
     IF (grp_comm(i) .NE. MPI_COMM_NULL) THEN
-      ! - Create cartesian communicator mpi_comm_group_id(i)
-      ! - from all processes belonging to grp_comm(i)
-      CALL MPI_CART_CREATE(grp_comm(i), ndims, dims, periods, reorder,                &
-      mpi_comm_group_id(i), errcode)
-      ! - Get MPI group corresponding to mpi_comm_group_id(i) communicator 
+      CALL MPI_COMM_DUP(grp_comm(i),mpi_comm_group_id(i),errcode)
+      ! -- Create a MPI group associated to the local MPI communicator  
       CALL MPI_COMM_GROUP(mpi_comm_group_id(i), mpi_group_id(i), errcode)
       ! - Get mpi_comm_group_id(i) communicator size 
       CALL MPI_COMM_SIZE(mpi_comm_group_id(i), local_size, errcode)
       ! - get rank of current process in mpi_comm_group_id(i)
       CALL MPI_COMM_RANK(mpi_comm_group_id(i), local_rank, errcode)
-      ! - Get cartesian coordinate of current process in mpi_comm_group_id(i)
-      CALL MPI_CART_COORDS(mpi_comm_group_id(i), local_rank, ndims, group_coordinates,&
-      errcode)
-    ENDIF
-  ENDDO
-  
-  ! - Init the group id of current group based on its coordinates in the global set of 
-  ! - groups 
-  which_group =x_group_coords+y_group_coords*nb_group_x+ & 
-  z_group_coords*nb_group_x*nb_group_y
-  
-  ! - For each group, release old (& temporary) communicators 
-  ! - And keep only new cartesian communicators and groups
-  DO i = 1, nb_group
-    IF(grp_comm(i) .NE. MPI_COMM_NULL) THEN
+      ! - For each group, release old (& temporary) communicators 
+      ! - And keep only new communicators and groups
       CALL MPI_COMM_FREE(grp_comm(i), errcode)
-      CALL MPI_GROUP_FREE(grp_id(i), errcode)
     ENDIF
   ENDDO
+  ! - Create and ordered comm world  to compute communication scheduling
+  ! -- key is the topological rank of current mpi if mpi_comm_world would have
+  ! -- been cartesian
+  key = z_coords*nprocx*nprocy+ y_coords*nprocx + x_coords
+  color_roots = MPI_UNDEFINED
+  color_roots = 1_isp
+  CALL MPI_COMM_SPLIT(comm,color_roots,key,mpi_ordered_comm_world,errcode)
 
   ! - Detect if current rank is on -z boundary of its group 
   ! - Will be replaced soon by calls to MPI_CART
@@ -997,11 +996,11 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
 
   ! - Gather all min indexes along z from all other procs
   CALL MPI_ALLGATHER(iz_min_global,1_isp, MPI_INTEGER8, all_iz_min_global,           &
-  INT(1,isp), MPI_INTEGER8, comm, errcode)
+  INT(1,isp), MPI_INTEGER8, mpi_ordered_comm_world, errcode)
 
   ! - Gather all max indexes along z from all other procs 
   CALL MPI_ALLGATHER(iz_max_global,1_isp, MPI_INTEGER8, all_iz_max_global,           &
-  INT(1,isp), MPI_INTEGER8, comm, errcode)
+  INT(1,isp), MPI_INTEGER8, mpi_ordered_comm_world, errcode)
   
   ! -- Store min and max indices along z in 1D arrays
   DO i=1, nprocz
@@ -1028,11 +1027,11 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
 
   ! - Gather all min indexes along y from all other procs
   CALL MPI_ALLGATHER(iy_min_global,1_isp, MPI_INTEGER8, all_iy_min_global,&
-  INT(1,isp), MPI_INTEGER8, comm, errcode)
+  INT(1,isp), MPI_INTEGER8, mpi_ordered_comm_world, errcode)
   
   ! - Gather all max indexes along y from all other procs
   CALL MPI_ALLGATHER(iy_max_global,1_isp, MPI_INTEGER8, all_iy_max_global,&
-  INT(1,isp), MPI_INTEGER8, comm, errcode)
+  INT(1,isp), MPI_INTEGER8, mpi_ordered_comm_world, errcode)
 
   ! -- Store min and max indices along y in 1D arrays
   DO i=1, nprocy
@@ -1048,7 +1047,7 @@ INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
   ix_max_r = nx + 2*nxg_group
   
   ! -- Deallocate used arrays
-  DEALLOCATE(grp_id, grp_comm, local_roots_rank, grp_ranks)
+  DEALLOCATE(grp_comm )
 
 #if defined(DEBUG)
   WRITE(0, *) "setup_groups : end"

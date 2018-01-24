@@ -902,8 +902,7 @@ END SUBROUTINE get_2Dintersection
         temp5,temp6,temp7,temp8
    INTEGER(isp)  , ALLOCATABLE, DIMENSION(:) :: temp_rs, temp_sr
    INTEGER(isp) ,  ALLOCATABLE, DIMENSION(:,:,:):: topo_array
-   INTEGER(isp)                                 :: fake_rank
-
+   INTEGER(isp)                                 :: ordered_rank
   !-- begin compute array of target and recv procs   
   !-- array_of_ranks_to_send_to and array_of_ranks_to_recv_from respectively
   !-- these arrays are 1d-nprocy*nprocz sizes 
@@ -917,10 +916,10 @@ END SUBROUTINE get_2Dintersection
   !-- rank_of_mpi_with: y_coords_target =  y_coords - (j-1) , z_coords_target =  z_coords - (i - 1) 
   !-- +periodic bcs on procs
 
-  fake_rank = x_coords + y_coords*nprocx + z_coords*nprocx*nprocy
+  ordered_rank = INT(rank,isp)
   ALLOCATE(topo_array(0:nprocx-1,0:nprocy-1,0:nprocz-1))
-  CALL MPI_ALLGATHER(fake_rank, 1_isp, MPI_INTEGER,topo_array,1_isp,MPI_INTEGER,comm,&
-  errcode)
+  CALL MPI_ALLGATHER(ordered_rank, 1_isp, MPI_INTEGER,topo_array,1_isp,MPI_INTEGER,  &
+       mpi_ordered_comm_world,  errcode)
 
   ALLOCATE(array_of_ranks_to_send_to(nprocy*nprocz)) 
   DO i=0,nprocy-1
