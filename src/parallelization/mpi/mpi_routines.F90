@@ -666,7 +666,7 @@ INTEGER(isp)                              :: key, key_roots,color_roots
 
 
   !-- Creating roots communicator and mpi_group
-
+  color_roots=MPI_UNDEFINED
   IF(key==0) color_roots = 1_isp  ! 1 != mpi_undefined
 
   ! ranks of procs inside roots_comm will be in the same order as groups
