@@ -40,6 +40,7 @@ MODULE link_external_tools
     INTEGER(idp) :: imn, imx, jmn, jmx, kmn, kmx
     LOGICAL(C_BOOL)   , INTENT(IN)   :: is_spec
     LOGICAL(lp)                      :: l_stg
+    INTEGER(isp)                     :: iret
 
     IF(rank==0) PRINT*, 'BEGIN INIT EXTERNAL'
     l_spectral  = LOGICAL(is_spec,lp) 
@@ -47,6 +48,11 @@ MODULE link_external_tools
     fftw_hybrid = .FALSE.
     fftw_mpi_transpose = .FALSE.
     l_staggered = .TRUE.
+    fftw_threads_ok = .FALSE.
+    CALL DFFTW_INIT_THREADS(iret)
+    fftw_threads_ok = .TRUE.
+    p3dfft_flag = .FALSE.
+    p3dfft_stride = .FALSE.
     c_dim = INT(cdim,idp)
     nx = INT(n3,idp)
     ny = INT(n2,idp)
