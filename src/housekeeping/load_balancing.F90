@@ -1189,6 +1189,7 @@ END SUBROUTINE get_2Dintersection
   ALLOCATE(l_first_cell_to_recv_y(nb_comms_g2l))
   ALLOCATE(array_of_ranks_to_send_to_g2l(nb_comms_g2l))
   ALLOCATE(array_of_ranks_to_recv_from_g2l(nb_comms_g2l))
+  ALLOCATE(temp_rs(nprocy*nprocz));ALLOCATE(temp_sr(nprocy*nprocz))
   temp_rs = send_type_g;   temp_sr = recv_type_l
   DEALLOCATE(send_type_g); ALLOCATE(send_type_g(nb_comms_g2l))
   DEALLOCATE(recv_type_l); ALLOCATE(recv_type_l(nb_comms_g2l))
@@ -1245,7 +1246,6 @@ END SUBROUTINE get_2Dintersection
   ALLOCATE(g_first_cell_to_recv_y(nb_comms_l2g))
   ALLOCATE(array_of_ranks_to_send_to_l2g(nb_comms_l2g))
   ALLOCATE(array_of_ranks_to_recv_from_l2g(nb_comms_l2g))
-  ALLOCATE(temp_rs(nprocz*nprocy),temp_sr(nprocz*nprocy))
   temp_rs = send_type_l;   temp_sr = recv_type_g
   DEALLOCATE(send_type_l); ALLOCATE(send_type_l(nb_comms_l2g))
   DEALLOCATE(recv_type_g); ALLOCATE(recv_type_g(nb_comms_l2g))
