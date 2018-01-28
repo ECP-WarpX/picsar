@@ -578,7 +578,7 @@ INTEGER(idp)                            :: iz_min_global, iz_max_global,iy_min_g
 iy_max_global
 INTEGER(isp)                            :: pdims(2)
 INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
-INTEGER(isp) , ALLOCATABLE, DIMENSION(:)  :: colors
+INTEGER(isp) :: color
 INTEGER(isp)                              :: key, key_roots,color_roots
 
 #if defined(FFTW)
@@ -648,24 +648,17 @@ INTEGER(isp)                              :: key, key_roots,color_roots
   ALLOCATE(mpi_group_id(nb_group),mpi_comm_group_id(nb_group))
 
   
-  ! - Init a local root rank for each group 
-  ! - Local root ranks are used to communicate information between MPI groups 
-  ! - By default, the local root rank of a MPI group is 
-  ! - the minimum of all ranks contained in that group
-
-
-  !-- computing the rank of the process in it's group 
+  !-- Computing the rank of the process in its MPI group 
+  !-- Key is initialized so that processes in the new MPI group communicators
+  !-- have the same neighbors than the ones in the global communicator comm 
   key = MODULO(z_coords,group_sizes(3))*group_sizes(1)*group_sizes(2) + &
         MODULO(y_coords,group_sizes(2))*group_sizes(1) + & 
         MODULO(x_coords,group_sizes(1))
 
-  ! - Init a local root rank for each group 
+  ! - Init a local root rank for each group identified by color_roots
   ! - Local root ranks are used to communicate information between MPI groups 
   ! - By default, the local root rank of a MPI group is 
-  ! - the minimum of all ranks contained in that group which is spoted by key==0
-
-
-  !-- Creating roots communicator and mpi_group
+  ! - the minimum of all ranks contained in that group which is spoted by key==0 here
   color_roots=MPI_UNDEFINED
   IF(key==0) color_roots = 1_isp  ! 1 != mpi_undefined
 
@@ -697,6 +690,13 @@ INTEGER(isp)                              :: key, key_roots,color_roots
     CALL MPI_COMM_FREE(roots_comm, errcode)
   ENDIF
 
+  ! - Init group variables and communicators 
+  DO i=1, nb_group
+    mpi_comm_group_id(i) = MPI_COMM_NULL
+    mpi_group_id(i) = MPI_GROUP_NULL
+    grp_comm(i)  = MPI_COMM_NULL
+  ENDDO
+
 
   ! -- Create groups communicators and groups
   ! -- mpi taks in the same group have the same value of which_group which is
@@ -705,26 +705,9 @@ INTEGER(isp)                              :: key, key_roots,color_roots
   ! -- colors(which_group) so mpi_comm_world will be split into nb_group
   ! -- key enables to arrange ranks in the group the same way they are in the
   ! -- ordered grid 
-  ALLOCATE(colors(0:nb_group-1))
-  colors = MPI_UNDEFINED
-  ! - Init group variables and communicators 
-  DO i=1, nb_group
-    mpi_comm_group_id(i) = MPI_COMM_NULL
-    mpi_group_id(i) = MPI_GROUP_NULL
-    grp_comm(i)  = MPI_COMM_NULL
-  ENDDO
-  !-- set colors to MPI_UNDEFINED
-  colors = MPI_UNDEFINED 
-  DO i =0,nb_group-1
-    IF(i==which_group) THEN
-      colors(i) = which_group  
-    ENDIF
-  ENDDO
+  color = which_group
   ! -- Create communicator associated to each group
-  
-  CALL MPI_COMM_SPLIT(comm,colors(which_group),key,grp_comm(which_group+1),errcode)
-  DEALLOCATE(colors)
-  
+  CALL MPI_COMM_SPLIT(comm,color,key,grp_comm(which_group+1),errcode)
   ! -- Duplicate old communicators to the variables mpi_comm_group_id,
   ! -- mpi_group_id 
   DO i = 1, nb_group
@@ -858,11 +841,11 @@ INTEGER(isp)                              :: key, key_roots,color_roots
       errcode)
       CALL MPI_BCAST(x_max_group, 1_isp, mpidbl, 0_isp,mpi_comm_group_id(i),      &
       errcode)
-      CALL MPI_BCAST(nz_group_global_array,INT(nb_group,isp),MPI_INTEGER8,       &
+      CALL MPI_BCAST(nz_group_global_array,INT(nb_group,isp),MPI_INTEGER8,        &
       0_isp,mpi_comm_group_id(i),errcode)
-      CALL  MPI_BCAST(nx_group_global_array,INT(nb_group,isp),MPI_INTEGER8,      &
+      CALL  MPI_BCAST(nx_group_global_array,INT(nb_group,isp),MPI_INTEGER8,       &
       0_isp,mpi_comm_group_id(i),errcode)
-      CALL MPI_BCAST(ny_group_global_array,INT(nb_group,isp),MPI_INTEGER8,       &
+      CALL MPI_BCAST(ny_group_global_array,INT(nb_group,isp),MPI_INTEGER8,        &
       0_isp,mpi_comm_group_id(i),errcode)
     ENDIF
   ENDDO
@@ -937,17 +920,18 @@ INTEGER(isp)                              :: key, key_roots,color_roots
 #if defined(P3DFFT)
        pdims(1) = INT(nprocy/nb_group_y,isp)
        pdims(2) = INT(nprocz/nb_group_z,isp)
+       ! Set up P3DFFT plans and decomp 
        CALL p3dfft_setup(pdims,INT(nx_group,isp),INT(ny_group,isp),INT(nz_group,isp),&
           mpi_comm_group_id(i),INT(nx_group,isp),INT(ny_group,isp),INT(nz_group,isp),&
           .FALSE.)
        CALL p3dfft_get_dims(p3d_istart,p3d_iend,p3d_isize,1)
        CALL p3dfft_get_dims(p3d_fstart,p3d_fend,p3d_fsize,2)
-       local_nz = p3d_isize(3)
-       local_ny = p3d_isize(2)  
-       local_nx = p3d_isize(1)
-       local_z0 = p3d_istart(3) - 1 
-       local_y0 = p3d_istart(2) - 1
-       local_x0 = p3d_istart(1) - 1
+       local_nz = p3d_isize(3) ! Local size of FFT array along Z 
+       local_ny = p3d_isize(2) ! Local size of FFT array along Y
+       local_nx = p3d_isize(1) ! Local size of FFT array along X
+       local_z0 = p3d_istart(3) - 1 ! Min global X-index boundary of local FFT array 
+       local_y0 = p3d_istart(2) - 1 ! Min global Y-index boundary of local FFT array 
+       local_x0 = p3d_istart(1) - 1 ! Min global Z-index boundary of local FFT array 
 #endif
       ENDIF
     ENDIF
