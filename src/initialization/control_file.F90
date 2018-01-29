@@ -91,6 +91,11 @@ MODULE control_file
     l_spectral = .FALSE.! (no spectral solver by default)
     g_spectral = .FALSE.! (no spectral sovler by default)
     l_staggered = .TRUE.! (staggered scheme by default )
+#if defined(FFTW)
+    nb_group_x = 1
+    nb_group_y = 1
+    nb_group_z = 1
+#endif
     ! --- Order of current deposition/ field gathering
     ! (default is 1 in x, y, z)
     nox = 1
@@ -219,8 +224,11 @@ MODULE control_file
     ! SET FFTW WITH MPI FLAG
     fftw_with_mpi = .FALSE.
     fftw_hybrid = .FALSE.
-    is_lb_grp = .FALSE.
     fftw_mpi_transpose = .FALSE.
+    p3dfft_flag = .FALSE.
+#if defined(P3DFFT) 
+    p3dfft_stride = .TRUE.
+#endif
   END SUBROUTINE default_init
 
   ! ______________________________________________________________________________________
@@ -327,9 +335,12 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'fftw_hybrid') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) fftw_hybrid
-      ELSE IF (INDEX(buffer, 'is_lb_grp') .GT. 0) THEN
+      ELSE IF (INDEX(buffer, 'p3dfft_flag') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
-        READ(buffer, *) is_lb_grp
+        READ(buffer, *) p3dfft_flag
+      ELSE IF (INDEX(buffer, 'p3dfft_stride') .GT. 0) THEN
+        CALL GETARG(i+1, buffer)
+        READ(buffer, *) p3dfft_stride
       ELSE IF (INDEX(buffer, 'fftw_mpi_tr') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) fftw_mpi_transpose
@@ -349,9 +360,14 @@ MODULE control_file
         CALL GETARG(i+1, buffer)
         READ(buffer, *) nsteps
 #if defined(FFTW)
-      ELSE IF (INDEX(buffer, 'nb_group') .GT. 0) THEN
+      ELSE IF (INDEX(buffer, 'nb_group_z') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
-        READ(buffer, *) nb_group
+        READ(buffer, *) nb_group_z
+#if defined(P3DFFT) 
+      ELSE IF (INDEX(buffer, 'nb_group_y') .GT. 0) THEN
+        CALL GETARG(i+1, buffer)
+        READ(buffer, *) nb_group_y
+#endif
 #endif
       ELSE IF (INDEX(buffer, 'c_dim') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
@@ -587,13 +603,21 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'fftw_hybrid') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) fftw_hybrid
-      ELSE IF (INDEX(buffer, 'is_lb_grp') .GT. 0) THEN
+      ELSE IF (INDEX(buffer, 'p3dfft_flag') .GT. 0) THEN
         ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), *) is_lb_grp
+        READ(buffer(ix+1:string_length), *) p3dfft_flag
+      ELSE IF (INDEX(buffer, 'p3dfft_stride') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) p3dfft_stride
 #if defined(FFTW)
-      ELSE IF (INDEX(buffer, 'nb_group') .GT. 0) THEN
+      ELSE IF (INDEX(buffer, 'nb_group_z') .GT. 0) THEN
         ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), '(i10)') nb_group
+        READ(buffer(ix+1:string_length), '(i10)') nb_group_z
+#if defined(P3DFFT)
+      ELSE IF (INDEX(buffer, 'nb_group_y') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') nb_group_y
+#endif
 #endif
       ELSE IF (INDEX(buffer, 'fg_p_pp_separated') .GT. 0) THEN
         ix = INDEX(buffer, "=")
@@ -807,9 +831,17 @@ MODULE control_file
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') nzjguards
 #if defined(FFTW)
-      ELSE IF (INDEX(buffer, 'gzgrp') .GT. 0) THEN
+#if defined(P3DFFT)
+      ELSE IF (INDEX(buffer, 'ngguards_z') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') nzg_group
+      ELSE IF (INDEX(buffer, 'ngguards_y') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') nyg_group
+      ELSE IF (INDEX(buffer, 'ngguards_x') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') nxg_group
+#endif
 #endif
       ELSE IF (INDEX(buffer, 'l_plasma') .GT. 0) THEN
         ix = INDEX(buffer, "=")

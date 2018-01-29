@@ -498,221 +498,23 @@ MODULE field_boundary
     CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
 
   END SUBROUTINE summation_bcs
-  !> <@brief
-  !> Boundary condition routine for E and B between mpi_groups
+
+  ! ______________________________________________________________________________________
   !
   !> @author
   !> Haithem Kallala
-  !>date
-  !> Creation 2017
-  !
-  !
-  ! ______________________________________________________________________________________
-  SUBROUTINE ebj_field_bcs_groups()
-#if defined(FFTW)
-    USE group_parameters
-    USE mpi_fftw3
-#endif
-    USE shared_data
-    REAL(num) :: tmptime
-    INTEGER(idp)     ::  size_nx
-#if defined(DEBUG)
-    WRITE(0, *) "efield_bcs_group: start"
-#endif
-#if defined(FFTW)
-    IF (it.ge.timestat_itstart) THEN
-      tmptime = MPI_WTIME()
-    ENDIF
-    size_nx = 2*(nx_group/2+1)
-    IF(mpicom_curr .EQ. 0) THEN
-      CALL field_bc_group_non_blocking(ex_r, size_nx, ny_group, local_nz, nzg_group)
-      CALL field_bc_group_non_blocking(ey_r, size_nx, ny_group, local_nz, nzg_group)
-      CALL field_bc_group_non_blocking(ez_r, size_nx, ny_group, local_nz, nzg_group)
-      CALL field_bc_group_non_blocking(bx_r, size_nx, ny_group, local_nz, nzg_group)
-      CALL field_bc_group_non_blocking(by_r, size_nx, ny_group, local_nz, nzg_group)
-      CALL field_bc_group_non_blocking(bz_r, size_nx, ny_group, local_nz, nzg_group)
-      CALL field_bc_group_non_blocking(jx_r, size_nx, ny_group, local_nz,           &
-      nzg_group)
-      CALL field_bc_group_non_blocking(jy_r, size_nx, ny_group, local_nz,           &
-      nzg_group)
-      CALL field_bc_group_non_blocking(jz_r, size_nx, ny_group, local_nz,           &
-      nzg_group)
-      CALL field_bc_group_non_blocking(rho_r, size_nx, ny_group, local_nz,          &
-      nzg_group)
-      CALL field_bc_group_non_blocking(rhoold_r, size_nx, ny_group, local_nz,       &
-      nzg_group)
-    ELSE
-      CALL field_bc_group_blocking(ex_r, size_nx, ny_group, local_nz, nzg_group)
-      CALL field_bc_group_blocking(ey_r, size_nx, ny_group, local_nz, nzg_group)
-      CALL field_bc_group_blocking(ez_r, size_nx, ny_group, local_nz, nzg_group)
-      CALL field_bc_group_blocking(bx_r, size_nx, ny_group, local_nz, nzg_group)
-      CALL field_bc_group_blocking(by_r, size_nx, ny_group, local_nz, nzg_group)
-      CALL field_bc_group_blocking(bz_r, size_nx, ny_group, local_nz, nzg_group)
-      CALL field_bc_group_blocking(jx_r, size_nx, ny_group, local_nz, nzg_group)
-      CALL field_bc_group_blocking(jy_r, size_nx, ny_group, local_nz, nzg_group)
-      CALL field_bc_group_blocking(jz_r, size_nx, ny_group, local_nz, nzg_group)
-      CALL field_bc_group_blocking(rho_r, size_nx, ny_group, local_nz, nzg_group)
-      CALL field_bc_group_blocking(rhoold_r, size_nx, ny_group, local_nz,           &
-      nzg_group)
-
-    ENDIF
-    IF (it.ge.timestat_itstart) THEN
-      localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
-    ENDIF
-#endif
-  END SUBROUTINE ebj_field_bcs_groups
-
-
-!This subroutine is still not working correctly so please use mpicom_curr=0 with
-!groups 
-  SUBROUTINE field_bc_group_blocking(field, nxx, nyy, nzz, ngroupz)
-#if defined(FFTW)
-    USE group_parameters
-#endif
-    USE mpi
-    USE shared_data
-    INTEGER(idp), INTENT(IN)  :: nxx, nyy, nzz, ngroupz
-    REAL(num), INTENT(INOUT), DIMENSION(1:nxx, 1:nyy, 1:nzz)  :: field
-    INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
-    INTEGER(isp) :: basetype
-    REAL(num)   , ALLOCATABLE , DIMENSION(:) :: temp
-    INTEGER(idp)                             :: sz,ix,iy,iz,n
-#if defined(FFTW)
-    basetype = mpidbl
-    sizes(1) = nxx
-    sizes(2) = nyy
-    sizes(3) = nzz
-    starts=1
-    subsizes(1) = sizes(1)
-    subsizes(2) = sizes(2)
-    subsizes(3) = ngroupz
-
-    IF (is_dtype_init(20)) THEN
-      mpi_dtypes(20) = create_3d_array_derived_type(basetype, subsizes, sizes,        &
-      starts)
-      is_dtype_init(20) = .FALSE.
-    ENDIF
-    IF(XOR(group_z_min_boundary,group_z_max_boundary)) THEN
-      IF(group_z_min_boundary) THEN
-        CALL MPI_SEND(field(1, 1, iz_min_r), 1_isp, mpi_dtypes(20), INT(proc_z_min,   &
-        isp), tag, comm, errcode)
-        CALL MPI_RECV(field(1, 1, 1), 1_isp, mpi_dtypes(20), INT(proc_z_min,isp), tag,&
-        comm,MPI_STATUS_IGNORE, errcode)
-      ENDIF
-      IF(group_z_max_boundary) THEN
-        CALL MPI_RECV(field(1, 1, iz_max_r+1), 1_isp, mpi_dtypes(20), INT(proc_z_max, &
-        isp), tag, comm,MPI_STATUS_IGNORE, errcode)
-        CALL MPI_SEND(field(1, 1, iz_max_r-ngroupz +1), 1_isp, mpi_dtypes(20),        &
-        INT(proc_z_max, isp), tag, comm, errcode)
-      ENDIF
-    ELSE IF( group_z_min_boundary .AND. group_z_max_boundary) THEN
-      sz  = subsizes(1)*subsizes(2)*subsizes(3)
-      ALLOCATE(temp(sz))
-      CALL MPI_SENDRECV(field(1,1,iz_min_r), 1_isp, mpi_dtypes(20),INT(proc_z_min,    &
-      isp), tag, temp, INT(sz,isp), basetype, INT(proc_z_max, isp), tag, comm, status,errcode)
-      IF(proc_z_max .NE. MPI_PROC_NULL) THEN
-        n=1
-        DO iz= iz_max_r+1,nzz
-          DO iy=1,nyy
-            DO ix=1,nxx
-               field(ix,iy,iz) = temp(n)
-               n = n+1
-            ENDDO 
-          ENDDO
-        ENDDO
-      ENDIF
-      CALL MPI_SENDRECV(field(1,1,iz_max_r-ngroupz+1), 1_isp,mpi_dtypes(20),          &
-      INT(proc_z_max,isp), tag, temp, INT(sz,isp), basetype, INT(proc_z_min, isp), tag, comm,  &
-      status,errcode)
-      IF(proc_z_min .NE. MPI_PROC_NULL) THEN
-        n=1
-        DO iz= 1,ngroupz
-          DO iy=1,nyy
-            DO ix=1,nxx
-               field(ix,iy,iz) = temp(n)
-               n = n+1
-            ENDDO
-          ENDDO
-        ENDDO
-      ENDIF
-      DEALLOCATE(temp)
-    ENDIF
-#endif
-  END SUBROUTINE field_bc_group_blocking
-
-
-
-  SUBROUTINE field_bc_group_non_blocking(field, nxx, nyy, nzz, ngroupz)
-#if defined(FFTW)
-    USE group_parameters
-#endif
-    USE shared_data
-    USE mpi
-    INTEGER(idp), INTENT(IN)  :: nxx, nyy, nzz, ngroupz
-    REAL(num), INTENT(INOUT), DIMENSION(1:nxx, 1:nyy, 1:nzz)  :: field
-    INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
-    INTEGER(isp) :: basetype
-    INTEGER(isp):: requests_1(2), requests_2(2)
-
-    basetype = mpidbl
-    sizes(1) = nxx
-    sizes(2) = nyy
-    sizes(3) = nzz
-    starts=1
-    subsizes(1) = sizes(1)
-    subsizes(2) = sizes(2)
-    subsizes(3) = ngroupz
-    IF (is_dtype_init(20)) THEN
-      mpi_dtypes(20) = create_3d_array_derived_type(basetype, subsizes, sizes,        &
-      starts)
-      is_dtype_init(20) = .FALSE.
-    ENDIF
-#if defined(FFTW)
-!CASE Where each group has more than one mpi task
-    IF (XOR(group_z_min_boundary,group_z_max_boundary))  THEN
-      IF(group_z_min_boundary) THEN
-        CALL MPI_IRECV(field(1, 1, 1), 1_isp,mpi_dtypes(20),INT(proc_z_min,isp),      &
-        tag, comm, requests_1(1), errcode)
-        CALL MPI_ISEND(field(1, 1, iz_min_r), 1_isp, mpi_dtypes(20),INT(proc_z_min,   &
-        isp), tag, comm, requests_1(2), errcode)
-        CALL MPI_WAITALL(2_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
-      ENDIF
-      IF(group_z_max_boundary) THEN
-        CALL MPI_IRECV(field(1, 1, iz_max_r+1), 1_isp, mpi_dtypes(20),INT(proc_z_max, &
-        isp), tag, comm, requests_2(1), errcode)
-        CALL MPI_ISEND(field(1, 1, iz_max_r-ngroupz +1), 1_isp, mpi_dtypes(20),       &
-        INT(proc_z_max, isp), tag, comm, requests_2(2), errcode)
-        CALL MPI_WAITALL(2_isp, requests_2, MPI_STATUSES_IGNORE, errcode)
-      ENDIF
-    ENDIF
-!case where each group has one mpi task 
-    IF(group_z_min_boundary .AND. group_z_max_boundary) THEN
-      CALL MPI_IRECV(field(1, 1, iz_max_r+1), 1_isp,mpi_dtypes(20),INT(proc_z_max,   &
-      isp), tag, comm, requests_1(2), errcode)
-      CALL MPI_ISEND(field(1, 1, iz_min_r), 1_isp, mpi_dtypes(20),INT(proc_z_min,     &
-      isp), tag, comm, requests_1(1), errcode)
-      CALL MPI_WAITALL(2_isp, requests_1, MPI_STATUSES_IGNORE, errcode)
-
-      CALL MPI_IRECV(field(1, 1, 1), 1_isp, mpi_dtypes(20), INT(proc_z_min,isp),      &
-      tag, comm, requests_2(2), errcode)
-      CALL MPI_ISEND(field(1, 1, iz_max_r-ngroupz +1), 1_isp, mpi_dtypes(20),         &
-      INT(proc_z_max, isp), tag, comm, requests_2(1), errcode)
-      CALL MPI_WAITALL(2_isp, requests_2, MPI_STATUSES_IGNORE, errcode)
-    ENDIF
-#endif
-  END SUBROUTINE field_bc_group_non_blocking
-
-  ! ______________________________________________________________________________________
-  !> Routine for filling ex_r fields with ex fields  
-  !
-  !> @author
-  !> Haithem Kallala
-  !
+  !> 
   !> @date
   !> Creation 2017
-  !
+  !> 
+  !> @ brief 
+  !> This routine is copying values from the local  field arrays to the 
+  !> FFT field arrays. FFT arrays are used to perform distributed FFTs on each MPI 
+  !> groups. Local field arrays are used to perform field gathering operations during 
+  !> the PIC cycle. Keeping two different grids allows for efficient load balancing 
+  !> of computations in the field gathering and Maxwell solvers stages of the PIC cycle. 
   ! ______________________________________________________________________________________
-  SUBROUTINE generalized_comms_group_r2f()
+  SUBROUTINE generalized_comms_group_l2g()
 #if defined(FFTW) 
     USE group_parameters
     USE mpi_fftw3
@@ -729,99 +531,140 @@ MODULE field_boundary
       tmptime = MPI_WTIME()
     ENDIF
 
-    nxx = 2*(nx_group/2+1)
-    nyy = ny_group
+    nxx = local_nx 
+    nyy = local_ny
     nzz = local_nz
     IF(mpicom_curr == 1) THEN
-      CALL sendrecv_rf_generalized(ex,nx,nxguards,ny,nyguards,nz,nzguards,ex_r,nxx,nyy,nzz)
-      CALL sendrecv_rf_generalized(ey,nx,nxguards,ny,nyguards,nz,nzguards,ey_r,nxx,nyy,nzz)
-      CALL sendrecv_rf_generalized(ez,nx,nxguards,ny,nyguards,nz,nzguards,ez_r,nxx,nyy,nzz)
-      CALL sendrecv_rf_generalized(bx,nx,nxguards,ny,nyguards,nz,nzguards,bx_r,nxx,nyy,nzz)
-      CALL sendrecv_rf_generalized(by,nx,nxguards,ny,nyguards,nz,nzguards,by_r,nxx,nyy,nzz)
-      CALL sendrecv_rf_generalized(bz,nx,nxguards,ny,nyguards,nz,nzguards,bz_r,nxx,nyy,nzz)
-      CALL sendrecv_rf_generalized(jx,nx,nxguards,ny,nyguards,nz,nzguards,jx_r,nxx,nyy,nzz)
-      CALL sendrecv_rf_generalized(jy,nx,nxguards,ny,nyguards,nz,nzguards,jy_r,nxx,nyy,nzz)
-      CALL sendrecv_rf_generalized(jz,nx,nxguards,ny,nyguards,nz,nzguards,jz_r,nxx,nyy,nzz)
-      CALL sendrecv_rf_generalized(rho,nx,nxguards,ny,nyguards,nz,nzguards,rho_r,nxx,nyy,nzz)
-      CALL sendrecv_rf_generalized(rhoold,nx,nxguards,ny,nyguards,nz,nzguards,rhoold_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized(ex,nx,nxguards,ny,nyguards,nz,nzguards,            &
+      ex_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized(ey,nx,nxguards,ny,nyguards,nz,nzguards,            &
+      ey_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized(ez,nx,nxguards,ny,nyguards,nz,nzguards,            &
+      ez_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized(bx,nx,nxguards,ny,nyguards,nz,nzguards,            &
+      bx_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized(by,nx,nxguards,ny,nyguards,nz,nzguards,            &
+      by_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized(bz,nx,nxguards,ny,nyguards,nz,nzguards,            &
+      bz_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized(jx,nx,nxguards,ny,nyguards,nz,nzguards,            &
+      jx_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized(jy,nx,nxguards,ny,nyguards,nz,nzguards,            &
+      jy_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized(jz,nx,nxguards,ny,nyguards,nz,nzguards,            &
+      jz_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized(rho,nx,nxguards,ny,nyguards,nz,nzguards,           &
+      rho_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized(rhoold,nx,nxguards,ny,nyguards,nz,nzguards,        &
+      rhoold_r,nxx,nyy,nzz)
     ELSE 
-      CALL sendrecv_rf_generalized_non_blocking(ex,nx,nxguards,ny,nyguards,nz,nzguards,ex_r,nxx,nyy,nzz)
-      CALL sendrecv_rf_generalized_non_blocking(ey,nx,nxguards,ny,nyguards,nz,nzguards,ey_r,nxx,nyy,nzz)
-      CALL sendrecv_rf_generalized_non_blocking(ez,nx,nxguards,ny,nyguards,nz,nzguards,ez_r,nxx,nyy,nzz)
-      CALL sendrecv_rf_generalized_non_blocking(bx,nx,nxguards,ny,nyguards,nz,nzguards,bx_r,nxx,nyy,nzz)
-      CALL sendrecv_rf_generalized_non_blocking(by,nx,nxguards,ny,nyguards,nz,nzguards,by_r,nxx,nyy,nzz)
-      CALL sendrecv_rf_generalized_non_blocking(bz,nx,nxguards,ny,nyguards,nz,nzguards,bz_r,nxx,nyy,nzz)
-      CALL sendrecv_rf_generalized_non_blocking(jx,nx,nxguards,ny,nyguards,nz,nzguards,jx_r,nxx,nyy,nzz)
-      CALL sendrecv_rf_generalized_non_blocking(jy,nx,nxguards,ny,nyguards,nz,nzguards,jy_r,nxx,nyy,nzz)
-      CALL sendrecv_rf_generalized_non_blocking(jz,nx,nxguards,ny,nyguards,nz,nzguards,jz_r,nxx,nyy,nzz)
-      CALL sendrecv_rf_generalized_non_blocking(rho,nx,nxguards,ny,nyguards,nz,nzguards,rho_r,nxx,nyy,nzz)
-      CALL sendrecv_rf_generalized_non_blocking(rhoold,nx,nxguards,ny,nyguards,nz,nzguards,rhoold_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized_non_blocking(ex,nx,nxguards,ny,nyguards,nz,        &
+      nzguards,ex_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized_non_blocking(ey,nx,nxguards,ny,nyguards,nz,        &
+      nzguards,ey_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized_non_blocking(ez,nx,nxguards,ny,nyguards,nz,        &
+      nzguards,ez_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized_non_blocking(bx,nx,nxguards,ny,nyguards,nz,        &
+      nzguards,bx_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized_non_blocking(by,nx,nxguards,ny,nyguards,nz,        &
+      nzguards,by_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized_non_blocking(bz,nx,nxguards,ny,nyguards,nz,        &
+      nzguards,bz_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized_non_blocking(jx,nx,nxguards,ny,nyguards,nz,        &
+      nzguards,jx_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized_non_blocking(jy,nx,nxguards,ny,nyguards,nz,        &
+      nzguards,jy_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized_non_blocking(jz,nx,nxguards,ny,nyguards,nz,        &
+      nzguards,jz_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized_non_blocking(rho,nx,nxguards,ny,nyguards,nz,       &
+      nzguards,rho_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized_non_blocking(rhoold,nx,nxguards,ny,nyguards,nz,    &
+      nzguards,rhoold_r,nxx,nyy,nzz)
     ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
     ENDIF
 #endif
-
-  END SUBROUTINE generalized_comms_group_r2f
- 
+  END SUBROUTINE generalized_comms_group_l2g
 
   ! ______________________________________________________________________________________
-  !> Routine for blocking communication filling ex_r from ex
+  !> @brief 
+  !> Routine for exchanging data from the local grid arrays to the FFT grid arrays 
+  !> This routine uses blocking SENDRECV MPI exchanges
   !> @author
   !> Haithem Kallala
-  !> The input :
-  !> field = ex field 
-  !> field_f = ex_r field
-  !> nxg,nx1,nyg,ny1,nzg,nz1 : nb guard cells and nb cells in each direction
-  !> nxx,nyy,nzz: sizes of ex_r field
+  !> @params[in,out] 3D REAL(num) array field_l - local field array (e.g. ex)
+  !> @params[in,out] 3D REAL(num) array field_g - FFT field array (e.g. ex_r)
+  !> @params[in] nx1 - number of cells along dimension X of field_l
+  !> @params[in] nxg - number of guard cells along dimension X of field_l
+  !> @params[in] ny1 - number of cells along dimension Y of field_l
+  !> @params[in] nyg - number of guard cells along dimension Y of field_l
+  !> @params[in] nz1 - number of cells along dimension Z of field_l
+  !> @params[in] nzg - number of guard cells along dimension Z of field_l
+  !> @params[in] nxx - size of array field_g along X 
+  !> @params[in] nyy - size of array field_g along Y
+  !> @params[in] nyz - size of array field_g along Y
   !> @date
   !> Creation 2017
-  !
   ! ______________________________________________________________________________________
-  SUBROUTINE sendrecv_rf_generalized(field,nx1,nxg,ny1,nyg,nz1,nzg,field_f,nxx,nyy,nzz)
-
+  SUBROUTINE sendrecv_l2g_generalized(field_l,nx1,nxg,ny1,nyg,nz1,nzg,field_g,nxx,nyy,nzz)
 #if defined(FFTW)
     USE load_balance
     USE group_parameters
 #endif
     USE mpi 
     INTEGER(idp), INTENT(IN)                    ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
-    REAL(num)    ,INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field
-    REAL(num)    ,INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
+    REAL(num)    ,INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)   & 
+    :: field_l
+    REAL(num)    ,INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_g
     INTEGER(idp)                                ::  ii
     INTEGER(isp)                                :: rank_to_send_to, rank_to_recv_from
 #if defined(FFTW)
-    DO ii=1,nb_comms_rf
-      IF (ii==1) CYCLE
+    DO ii=1,nb_comms_l2g
+     ! ii==1 corresponds to target_rank = my_rank 
+     ! and recv_rank = my_rank 
+     ! this copy is done locally in fourier_psaod.F90
 
-      rank_to_send_to = INT(array_of_ranks_to_send_to_rf(ii),isp)
-      rank_to_recv_from = INT(array_of_ranks_to_recv_from_rf(ii),isp)
+      IF (ii==1) CYCLE  
+                         
+      rank_to_send_to = INT(array_of_ranks_to_send_to_l2g(ii),isp)
+      rank_to_recv_from = INT(array_of_ranks_to_recv_from_l2g(ii),isp)
 
-      IF(sizes_to_exchange_f_to_recv(ii) == 0) rank_to_recv_from = MPI_PROC_NULL
-      IF(sizes_to_exchange_r_to_send(ii) == 0) rank_to_send_to = MPI_PROC_NULL
-
-      CALL MPI_SENDRECV(field(-nxg, -nyg, r_first_cell_to_send(ii)), 1_isp, send_type_r(ii),   &
-      rank_to_send_to,tag,field_f(1, 1, f_first_cell_to_recv(ii)), 1_isp, recv_type_f(ii),  &
+      IF(size_exchanges_l2g_recv_z(ii) == 0) rank_to_recv_from = MPI_PROC_NULL
+      IF(size_exchanges_l2g_send_z(ii) == 0) rank_to_send_to = MPI_PROC_NULL
+      IF(size_exchanges_l2g_recv_y(ii) == 0) rank_to_recv_from =MPI_PROC_NULL
+      IF(size_exchanges_l2g_send_y(ii) == 0) rank_to_send_to = MPI_PROC_NULL
+      CALL MPI_SENDRECV(field_l(-nxg, l_first_cell_to_send_y(ii),                      &
+      l_first_cell_to_send_z(ii)), 1_isp, send_type_l(ii),                             &
+      rank_to_send_to,tag,field_g(1, g_first_cell_to_recv_y(ii),                       &
+      g_first_cell_to_recv_z(ii)), 1_isp, recv_type_g(ii),                             &
       rank_to_recv_from ,tag ,comm ,status ,errcode)
     ENDDO
 #endif
-  END SUBROUTINE  sendrecv_rf_generalized
-
+  END SUBROUTINE  sendrecv_l2g_generalized
 
   ! ______________________________________________________________________________________
-  !> Routine for non blocking communication filling ex_r from ex
+  !> @brief 
+  !> Routine for exchanging data from the local grid arrays to the FFT grid arrays 
+  !> This routine uses ISEND and IRECV MPI exchanges (non-blocking exchanges) 
   !> @author
   !> Haithem Kallala
-  !> The input :
-  !> field = ex field 
-  !> field_f = ex_r field
-  !> nxg,nx1,nyg,ny1,nzg,nz1 : nb guard cells and nb cells in each direction
-  !> nxx,nyy,nzz: sizes of ex_r field
+  !> @params[in,out] 3D REAL(num) array field_l - local field array (e.g. ex)
+  !> @params[in,out] 3D REAL(num) array field_g - FFT field array (e.g. ex_r)
+  !> @params[in] nx1 - number of cells along dimension X of field_l
+  !> @params[in] nxg - number of guard cells along dimension X of field_l
+  !> @params[in] ny1 - number of cells along dimension Y of field_l
+  !> @params[in] nyg - number of guard cells along dimension Y of field_l
+  !> @params[in] nz1 - number of cells along dimension Z of field_l
+  !> @params[in] nzg - number of guard cells along dimension Z of field_l
+  !> @params[in] nxx - size of array field_g along X 
+  !> @params[in] nyy - size of array field_g along Y
+  !> @params[in] nyz - size of array field_g along Y
   !> @date
   !> Creation 2017
-  !
   ! ______________________________________________________________________________________
-  SUBROUTINE sendrecv_rf_generalized_non_blocking(field,nx1,nxg,ny1,nyg,nz1,nzg,field_f,nxx,nyy,nzz)
+  SUBROUTINE sendrecv_l2g_generalized_non_blocking(field_l,nx1,nxg,ny1,nyg,nz1,nzg,    &
+  field_g,nxx,nyy,nzz)
 
 #if defined(FFTW)
     USE load_balance
@@ -829,50 +672,59 @@ MODULE field_boundary
 #endif
     USE mpi
     INTEGER(idp), INTENT(IN)                    ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
-    REAL(num)    ,INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field
-    REAL(num)    ,INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
+    REAL(num)    ,INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)   &
+    :: field_l
+    REAL(num)    ,INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_g
     INTEGER(idp)                                ::  ii
     INTEGER(isp)                                :: rank_to_send_to, rank_to_recv_from
     INTEGER(idp)                                :: n
 
 #if defined(FFTW)
-    requests_rf = 0
+    requests_l2g = 0
     n=0
-    DO ii=1,nb_comms_rf
+    DO ii=1,nb_comms_l2g
+     ! ii==1 corresponds to target_rank = my_rank 
+     ! and recv_rank = my_rank 
+     ! this copy is done locally in fourier_psaod.F90
       IF(ii==1) CYCLE
-      rank_to_send_to = INT(array_of_ranks_to_send_to_rf(ii),isp)
-      rank_to_recv_from = INT(array_of_ranks_to_recv_from_rf(ii),isp)
+      rank_to_send_to = INT(array_of_ranks_to_send_to_l2g(ii),isp)
+      rank_to_recv_from = INT(array_of_ranks_to_recv_from_l2g(ii),isp)
 
-      IF(sizes_to_exchange_f_to_recv(ii) .GT. 0)   THEN 
+      IF(size_exchanges_l2g_recv_z(ii) .GT. 0 .AND.                                    &
+      size_exchanges_l2g_recv_y(ii) .GT. 0)   THEN                                     
         n=n+1
-        CALL MPI_IRECV(field_f(1, 1, f_first_cell_to_recv(ii)), 1_isp,recv_type_f(ii), &
-        rank_to_recv_from,tag,comm,requests_rf(n),errcode)
+        CALL MPI_IRECV(field_g(1, g_first_cell_to_recv_y(ii),                          &
+        g_first_cell_to_recv_z(ii)), 1_isp,recv_type_g(ii),                            &
+        rank_to_recv_from,tag,comm,requests_l2g(n),errcode)
       ENDIF
-      IF(sizes_to_exchange_r_to_send(ii) .GT. 0) THEN
+      IF(size_exchanges_l2g_send_z(ii) .GT. 0                                          &
+      .AND. size_exchanges_l2g_send_y(ii) .GT. 0) THEN
         n=n+1
-        CALL MPI_ISEND(field(-nxg, -nyg, r_first_cell_to_send(ii)), 1_isp, send_type_r(ii) &
-        ,rank_to_send_to,tag,comm,requests_rf(n),errcode)
+        CALL MPI_ISEND(field_l(-nxg, l_first_cell_to_send_y(ii),                       &
+         l_first_cell_to_send_z(ii)), 1_isp, send_type_l(ii)                           &
+        ,rank_to_send_to,tag,comm,requests_l2g(n),errcode)
       ENDIF
     ENDDO
-    CALL MPI_WAITALL(INT(n,isp),requests_rf, MPI_STATUSES_IGNORE, errcode)
+    CALL MPI_WAITALL(INT(n,isp),requests_l2g, MPI_STATUSES_IGNORE, errcode)
 #endif
-  END SUBROUTINE  sendrecv_rf_generalized_non_blocking
-
-
-
-
+  END SUBROUTINE  sendrecv_l2g_generalized_non_blocking
+  
   ! ______________________________________________________________________________________
-  !> Routine for filling ex fields with ex_r fields  
   !
   !> @author
   !> Haithem Kallala
-  !
+  !> 
   !> @date
   !> Creation 2017
-  !
+  !> 
+  !> @ brief 
+  !> This routine is copying values from the FFT field arrays to the 
+  !> local field arrays. FFT arrays are used to perform distributed FFTs on each MPI 
+  !> groups. Local field arrays are used to perform field gathering operations during 
+  !> the PIC cycle. Keeping two different grids allows for efficient load balancing 
+  !> of computations in the field gathering and Maxwell solvers stages of the PIC cycle. 
   ! ______________________________________________________________________________________
-
-  SUBROUTINE generalized_comms_group_f2r()
+  SUBROUTINE generalized_comms_group_g2l()
 #if defined(FFTW) 
     USE group_parameters
     USE mpi_fftw3
@@ -888,47 +740,66 @@ MODULE field_boundary
       tmptime = MPI_WTIME()
     ENDIF
 
-    nxx = 2*(nx_group/2+1)
-    nyy = ny_group
+    nxx = local_nx 
+    nyy = local_ny
     nzz = local_nz
     IF(mpicom_curr ==1) THEN
-      CALL sendrecv_fr_generalized(ex,nx,nxguards,ny,nyguards,nz,nzguards,ex_r,nxx,nyy,nzz)
-      CALL sendrecv_fr_generalized(ey,nx,nxguards,ny,nyguards,nz,nzguards,ey_r,nxx,nyy,nzz)
-      CALL sendrecv_fr_generalized(ez,nx,nxguards,ny,nyguards,nz,nzguards,ez_r,nxx,nyy,nzz)
-      CALL sendrecv_fr_generalized(bx,nx,nxguards,ny,nyguards,nz,nzguards,bx_r,nxx,nyy,nzz)
-      CALL sendrecv_fr_generalized(by,nx,nxguards,ny,nyguards,nz,nzguards,by_r,nxx,nyy,nzz)
-      CALL sendrecv_fr_generalized(bz,nx,nxguards,ny,nyguards,nz,nzguards,bz_r,nxx,nyy,nzz)
+      CALL sendrecv_g2l_generalized(ex,nx,nxguards,ny,nyguards,nz,nzguards,            &
+      ex_r,nxx,nyy,nzz)
+      CALL sendrecv_g2l_generalized(ey,nx,nxguards,ny,nyguards,nz,nzguards,            &
+      ey_r,nxx,nyy,nzz)
+      CALL sendrecv_g2l_generalized(ez,nx,nxguards,ny,nyguards,nz,nzguards,            &
+      ez_r,nxx,nyy,nzz)
+      CALL sendrecv_g2l_generalized(bx,nx,nxguards,ny,nyguards,nz,nzguards,            &
+      bx_r,nxx,nyy,nzz)
+      CALL sendrecv_g2l_generalized(by,nx,nxguards,ny,nyguards,nz,nzguards,            &
+      by_r,nxx,nyy,nzz)
+      CALL sendrecv_g2l_generalized(bz,nx,nxguards,ny,nyguards,nz,nzguards,            &
+      bz_r,nxx,nyy,nzz)
+
     ELSE 
-      CALL sendrecv_fr_generalized_non_blocking(ex,nx,nxguards,ny,nyguards,nz,nzguards,ex_r,nxx,nyy,nzz)
-      CALL sendrecv_fr_generalized_non_blocking(ey,nx,nxguards,ny,nyguards,nz,nzguards,ey_r,nxx,nyy,nzz)
-      CALL sendrecv_fr_generalized_non_blocking(ez,nx,nxguards,ny,nyguards,nz,nzguards,ez_r,nxx,nyy,nzz)
-      CALL sendrecv_fr_generalized_non_blocking(bx,nx,nxguards,ny,nyguards,nz,nzguards,bx_r,nxx,nyy,nzz)
-      CALL sendrecv_fr_generalized_non_blocking(by,nx,nxguards,ny,nyguards,nz,nzguards,by_r,nxx,nyy,nzz)
-      CALL sendrecv_fr_generalized_non_blocking(bz,nx,nxguards,ny,nyguards,nz,nzguards,bz_r,nxx,nyy,nzz)
- 
+      CALL sendrecv_g2l_generalized_non_blocking(ex,nx,nxguards,ny,nyguards,           &
+      nz,nzguards,ex_r,nxx,nyy,nzz)
+      CALL sendrecv_g2l_generalized_non_blocking(ey,nx,nxguards,ny,nyguards,           &
+      nz,nzguards,ey_r,nxx,nyy,nzz)
+      CALL sendrecv_g2l_generalized_non_blocking(ez,nx,nxguards,ny,nyguards,           &
+      nz,nzguards,ez_r,nxx,nyy,nzz)
+      CALL sendrecv_g2l_generalized_non_blocking(bx,nx,nxguards,ny,nyguards,           &
+      nz,nzguards,bx_r,nxx,nyy,nzz)
+      CALL sendrecv_g2l_generalized_non_blocking(by,nx,nxguards,ny,nyguards,           &
+      nz,nzguards,by_r,nxx,nyy,nzz)
+      CALL sendrecv_g2l_generalized_non_blocking(bz,nx,nxguards,ny,nyguards,           &
+      nz,nzguards,bz_r,nxx,nyy,nzz)
     ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
     ENDIF
 #endif
 
-  END SUBROUTINE generalized_comms_group_f2r
+  END SUBROUTINE generalized_comms_group_g2l
 
   ! ______________________________________________________________________________________
-  !> Routine for blocking communication filling ex from ex_r
+  !> @brief 
+  !> Routine for exchanging data from the FFT grid arrays to the local grid arrays 
+  !> This routine uses ISEND and IRECV MPI exchanges (non-blocking exchanges) 
   !> @author
   !> Haithem Kallala
-  !> The input :
-  !> field = ex field 
-  !> field_f = ex_r field
-  !> nxg,nx1,nyg,ny1,nzg,nz1 : nb guard cells and nb cells in each direction
-  !> nxx,nyy,nzz: sizes of ex_r field
+  !> @params[in,out] 3D REAL(num) array field_l - local field array (e.g. ex)
+  !> @params[in,out] 3D REAL(num) array field_g - FFT field array (e.g. ex_r)
+  !> @params[in] nx1 - number of cells along dimension X of field_l
+  !> @params[in] nxg - number of guard cells along dimension X of field_l
+  !> @params[in] ny1 - number of cells along dimension Y of field_l
+  !> @params[in] nyg - number of guard cells along dimension Y of field_l
+  !> @params[in] nz1 - number of cells along dimension Z of field_l
+  !> @params[in] nzg - number of guard cells along dimension Z of field_l
+  !> @params[in] nxx - size of array field_g along X 
+  !> @params[in] nyy - size of array field_g along Y
+  !> @params[in] nyz - size of array field_g along Y
   !> @date
   !> Creation 2017
-  !
   ! ______________________________________________________________________________________
-
-  SUBROUTINE sendrecv_fr_generalized_non_blocking(field,nx1,nxg,ny1,nyg,nz1,nzg,field_f,nxx,nyy,nzz)
+  SUBROUTINE sendrecv_g2l_generalized_non_blocking(field_l,nx1,nxg,ny1,nyg,nz1,nzg,    &
+  field_g,nxx,nyy,nzz)
 
 #if defined(FFTW)
     USE load_balance
@@ -936,75 +807,105 @@ MODULE field_boundary
 #endif
     USE mpi
     INTEGER(idp), INTENT(IN)                      ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
-    REAL(num)   , INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field
-    REAL(num)   , INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
+    REAL(num)   , INTENT(INOUT)  ,                                                     &
+    DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field_l
+    REAL(num)   , INTENT(INOUT)  ,                                                     &
+    DIMENSION(nxx,nyy,nzz)  :: field_g
     INTEGER(idp)        :: ii
     INTEGER(isp)                                  :: rank_to_send_to, rank_to_recv_from
     INTEGER(idp)                                :: n
    
 #if defined(FFTW)
-    requests_fr = 0 
+    requests_g2l = 0 
     n = 0
-    DO ii=1,nb_comms_fr
+    DO ii=1,nb_comms_g2l
+     ! ii==1 corresponds to target_rank = my_rank 
+     ! and recv_rank = my_rank 
+     ! this copy is done locally in fourier_psaod.F90
+
       IF(ii==1) CYCLE
-      rank_to_send_to = INT(array_of_ranks_to_send_to_fr(ii),isp)
-      rank_to_recv_from = INT(array_of_ranks_to_recv_from_fr(ii),isp)
+      rank_to_send_to = INT(array_of_ranks_to_send_to_g2l(ii),isp)
+      rank_to_recv_from = INT(array_of_ranks_to_recv_from_g2l(ii),isp)
  
-      IF(sizes_to_exchange_r_to_recv(ii) .GT. 0) THEN
+      IF(size_exchanges_g2l_recv_z(ii) .GT. 0 .AND.                                    &
+      size_exchanges_g2l_recv_y(ii) .GT. 0) THEN                                       
         n=n+1
-        CALL MPI_IRECV(field(-nxg, -nyg, r_first_cell_to_recv(ii)), 1_isp,recv_type_r(ii)&
-        , rank_to_recv_from,tag,comm,requests_fr(n),errcode)
+        CALL MPI_IRECV(field_l(-nxg, l_first_cell_to_recv_y(ii),                       &
+        l_first_cell_to_recv_z(ii)), 1_isp,recv_type_l(ii)                             &
+        , rank_to_recv_from,tag,comm,requests_g2l(n),errcode)
       ENDIF
-      IF(sizes_to_exchange_f_to_send(ii) .GT. 0) THEN
+      IF(size_exchanges_g2l_send_z(ii) .GT. 0 .AND.                                    &
+      size_exchanges_g2l_send_y(ii) .GT. 0 ) THEN
         n=n+1
-        CALL MPI_ISEND(field_f(1,1,f_first_cell_to_send(ii)) ,1_isp,send_type_f(ii),    &
-        rank_to_send_to,tag,comm,requests_fr(n),errcode)   
+        CALL MPI_ISEND(field_g(1,g_first_cell_to_send_y(ii),                           &
+        g_first_cell_to_send_z(ii)) ,1_isp,send_type_g(ii),                            &
+        rank_to_send_to,tag,comm,requests_g2l(n),errcode)   
       ENDIF
 
     ENDDO
-    CALL MPI_WAITALL(INT(n,isp),requests_fr, MPI_STATUSES_IGNORE, errcode)
+    CALL MPI_WAITALL(INT(n,isp),requests_g2l, MPI_STATUSES_IGNORE, errcode)
 #endif
-  END SUBROUTINE  sendrecv_fr_generalized_non_blocking
+  END SUBROUTINE  sendrecv_g2l_generalized_non_blocking
 
-
-  SUBROUTINE sendrecv_fr_generalized(field,nx1,nxg,ny1,nyg,nz1,nzg,field_f,nxx,nyy,nzz)
-
+  ! ______________________________________________________________________________________
+  !> @brief 
+  !> Routine for exchanging data from the FFT grid arrays to the local grid arrays 
+  !> This routine uses blocking SENDRECV MPI exchanges 
+  !> @author
+  !> Haithem Kallala
+  !> @params[in,out] 3D REAL(num) array field_l - local field array (e.g. ex)
+  !> @params[in,out] 3D REAL(num) array field_g - FFT field array (e.g. ex_r)
+  !> @params[in] nx1 - number of cells along dimension X of field_l
+  !> @params[in] nxg - number of guard cells along dimension X of field_l
+  !> @params[in] ny1 - number of cells along dimension Y of field_l
+  !> @params[in] nyg - number of guard cells along dimension Y of field_l
+  !> @params[in] nz1 - number of cells along dimension Z of field_l
+  !> @params[in] nzg - number of guard cells along dimension Z of field_l
+  !> @params[in] nxx - size of array field_g along X 
+  !> @params[in] nyy - size of array field_g along Y
+  !> @params[in] nyz - size of array field_g along Y
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
+  SUBROUTINE sendrecv_g2l_generalized(field_l,nx1,nxg,ny1,nyg,nz1,nzg,field_g,nxx,nyy,nzz)
 #if defined(FFTW)
     USE load_balance
     USE group_parameters
 #endif
     USE mpi
     INTEGER(idp), INTENT(IN)                      :: nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
-    REAL(num)   , INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field
-    REAL(num)   , INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_f
+    REAL(num), INTENT(INOUT),                                                          &
+    DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field_l
+    REAL(num)   , INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_g
     INTEGER(idp)        ::ii
-    INTEGER(isp)                                  :: rank_to_send_to,rank_to_recv_from
-
+    INTEGER(isp)        :: rank_to_send_to,rank_to_recv_from
 #if defined(FFTW)
-    !  i-1 = mpi test in z direction for exchanges
-    ! example :
-    ! i-1=0 exchange between current rank and itself
-    ! i-1=1 send to right (proc_z_max)
-    ! i-1=nprocz-1 send to left(proc_z_min)
-    DO ii=1,nb_comms_fr
+
+    DO ii=1,nb_comms_g2l
+     ! ii==1 corresponds to target_rank = my_rank 
+     ! and recv_rank = my_rank 
+     ! this copy is done locally in fourier_psaod.F90
+
+
       IF(ii==1) CYCLE
+      rank_to_send_to = INT(array_of_ranks_to_send_to_g2l(ii),isp)
+      rank_to_recv_from = INT(array_of_ranks_to_recv_from_g2l(ii),isp)
 
-      rank_to_send_to = INT(array_of_ranks_to_send_to_fr(ii),isp)
-      rank_to_recv_from = INT(array_of_ranks_to_recv_from_fr(ii),isp)
+      IF(size_exchanges_g2l_recv_z(ii) == 0) rank_to_recv_from = MPI_PROC_NULL
+      IF(size_exchanges_g2l_send_z(ii) == 0) rank_to_send_to = MPI_PROC_NULL
+      IF(size_exchanges_g2l_recv_y(ii) == 0) rank_to_recv_from = MPI_PROC_NULL
+      IF(size_exchanges_g2l_send_y(ii) == 0) rank_to_send_to = MPI_PROC_NULL
 
-      IF(sizes_to_exchange_r_to_recv(ii) == 0) rank_to_recv_from = MPI_PROC_NULL
-      IF(sizes_to_exchange_f_to_send(ii) == 0) rank_to_send_to = MPI_PROC_NULL
-
-      CALL MPI_SENDRECV(field_f(1,1,f_first_cell_to_send(ii)) ,1_isp,send_type_f(ii), &
-      rank_to_send_to,tag,field(-nxg, -nyg, r_first_cell_to_recv(ii)), 1_isp,&
-      recv_type_r(ii), rank_to_recv_from, tag, comm, status, errcode)
+      CALL MPI_SENDRECV(field_g(1,g_first_cell_to_send_y(ii),                          &
+      g_first_cell_to_send_z(ii)) ,1_isp,send_type_g(ii),                              &
+      rank_to_send_to,tag,field_l(-nxg, l_first_cell_to_recv_y(ii),                    &
+      l_first_cell_to_recv_z(ii)), 1_isp,&
+      recv_type_l(ii), rank_to_recv_from, tag, comm, status, errcode)
 
     ENDDO
 #endif
-  END SUBROUTINE  sendrecv_fr_generalized
-
-
-  
+  END SUBROUTINE  sendrecv_g2l_generalized
+    
   ! ______________________________________________________________________________________
   !> Routine for adding current contributions fron adjacent subdomains
   ! nonblocking version

@@ -55,6 +55,9 @@ FFTW3_LIB=/usr/lib/x86_64-linux-gnu
 FFTW3_INCLUDE=/usr/include
 VTUNEDIR=/opt/intel/vtune_amplifier_xe_2017.2.0.499904
 
+P3DFFT_INCLUDE=
+P3DFFT_LIB=
+IS_P3DFFT = false
 
 
 
@@ -330,6 +333,10 @@ FARGS+= $(LARCH)
 ifeq ($(MODE),$(filter $(MODE),prod_spectral debug_spectral))
 	FARGS += -I$(FFTW3_INCLUDE) -D FFTW=1 
 	LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_omp
+endif
+ifeq ($(IS_P3DFFT),true)
+        FARGS += -I$(P3DFFT_INCLUDE)  -D P3DFFT
+        LDFLAGS += $(P3DFFT_LIB)/libp3dfft.a
 endif
 
 ifeq ($(MODE),library)

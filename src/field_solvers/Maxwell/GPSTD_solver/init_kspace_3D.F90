@@ -1,5 +1,9 @@
+! ________________________________________________________________________________________
 !> @brief
-!> This module contains subroutines for psatd_with_blocks
+!> This module contains subroutines that init Fourier domain arrays and variables 
+!> required in the spectral Maxwell solver step of the PIC cycle 
+!> This includes init of block matrixes for the GPSTD at t=0 as well as k-vectors 
+!> (local, global, or semi-global/hybrid depending on the FFT algorithm)
 !
 !> @author
 !> Haithem Kallala
@@ -7,32 +11,39 @@
 !> @date
 !> Creation 2017
 ! ________________________________________________________________________________________
-
 MODULE gpstd_solver
   USE PICSAR_PRECISION
   IMPLICIT NONE
   COMPLEX(cpx), DIMENSION(:), ALLOCATABLE :: kxc, kxb, kxf, kyc, kyb, kyf, kzc, kzb,  &
   kzf
   CONTAINS
+#if defined(FFTW)
+  ! ______________________________________________________________________________________
   !> @brief
-  !> This subroutine calculates spectral space and other usefull blocks
+  !> This subroutine computes dimensions on which the FFT is performed depending on 
+  !> the type of FFT performed (local FFT or distributed FFT but without MPI groups). 
+  !> It includes 2D and 3D dimensions. 
+  !> N.B: this routine is deprecated and will be removed in upcoming versions. 
   !
   !> @author
   !> Haithem Kallala
   !
   !> @date
   !> Creation 2017
-  ! ________________________________________________________________________________________
-#if defined(FFTW)
+  !
+  !> @params[in,out] nfftx INTEGER(idp) - Number of points in spectral space along X 
+  !> @params[in,out] nffty INTEGER(idp) - Number of points in spectral space along Y
+  !> @params[in,out] nfftz INTEGER(idp) - Number of points in spectral space along Z
+  ! ______________________________________________________________________________________
   SUBROUTINE select_case_dims_local(nfftx, nffty, nfftz)
     USE shared_data
     USE mpi_fftw3
     USE group_parameters
     USE params
     USE fields, ONLY : nxguards, nyguards, nzguards
-
     INTEGER(idp), INTENT(INOUT) :: nfftx, nffty, nfftz
-    IF( fftw_with_mpi) THEN
+    
+    IF(fftw_with_mpi) THEN
       IF(.NOT. fftw_hybrid) THEN
         IF(.NOT. fftw_mpi_transpose) THEN
           nfftx=nx_global
@@ -54,6 +65,14 @@ MODULE gpstd_solver
           nfftz = local_ny
         ENDIF
       ENDIF
+#if defined(P3DFFT)
+      IF(p3dfft_flag) THEN
+        nfftx = p3d_fsize(1)
+        nffty = p3d_fsize(2)
+        nfftz = p3d_fsize(3)
+      ENDIF
+#endif
+
     ELSE
 #if defined(LIBRARY)
       nfftx = nx+2*nxguards+1
@@ -70,14 +89,31 @@ MODULE gpstd_solver
     ENDIF
   END SUBROUTINE select_case_dims_local
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine computes dimensions on which the FFT is performed depending on 
+  !> the type of FFT performed (local FFT, distributed FFT with and without MPI groups). 
+  !> N.B: this subroutine will fully replace deprecated select_case_dims_local subroutine
+  !> in future release of PICSAR. 
+  ! 
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2017
+  !
+  !> @params[in,out] nfftx INTEGER(idp) - Number of points in spectral space along X 
+  !> @params[in,out] nffty INTEGER(idp) - Number of points in spectral space along Y
+  !> @params[in,out] nfftz INTEGER(idp) - Number of points in spectral space along Z
+  ! ______________________________________________________________________________________
   SUBROUTINE select_case_dims_global(nfftx, nffty, nfftz)
     USE shared_data
     USE mpi_fftw3
     USE group_parameters
     USE params
     USE fields, ONLY : nxguards, nyguards, nzguards
-
     INTEGER(idp), INTENT(INOUT) :: nfftx, nffty, nfftz
+    
     IF( fftw_with_mpi) THEN
       IF(.NOT. fftw_hybrid) THEN
         IF(.NOT. fftw_mpi_transpose) THEN
@@ -114,9 +150,33 @@ MODULE gpstd_solver
     IF(c_dim ==2) THEN
       nffty=1
     ENDIF
+
+#if defined(P3DFFT) 
+    IF(p3dfft_flag) THEN
+      IF(p3dfft_stride) THEN
+       nfftx =nz_group
+       nffty =ny_group
+       nfftz =nx_group
+      ELSE
+       nfftx = nx_group 
+       nffty = ny_group
+       nfftz = nz_group 
+     ENDIF
+    ENDIF
+#endif
   END SUBROUTINE select_case_dims_global
 
-
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine computes block matrixes for the GPSTD solver as well as 
+  !> K-vectors along X,Y,Z directions
+  ! 
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
   SUBROUTINE init_kspace
     USE matrix_coefficients
     USE CONSTANTS
@@ -129,7 +189,7 @@ MODULE gpstd_solver
     REAL(num), ALLOCATABLE, DIMENSION(:, :, :)    :: temp, temp2
     INTEGER(idp)                                  :: i, j, k
     COMPLEX(cpx)                                  :: ii
-    INTEGER(idp)                                  :: nfftx, nffty, nfftz
+    INTEGER(idp)                                  :: nfftx, nffty, nfftz, nfftxr
     LOGICAL(lp)                                   :: switch
 
     IF(.NOT. ASSOCIATED(Kspace)) THEN
@@ -145,58 +205,85 @@ MODULE gpstd_solver
     ENDIF
     ALLOCATE(AT_OP(nmatrixes2)%block_vector(4_idp))!S/k, C, (1-C)/k^2
     CALL select_case_dims_local(nfftx, nffty, nfftz)
+    nfftxr = nfftx/2+1
+    IF(p3dfft_flag) nfftxr = nfftx
     DO i = 1_idp, 10_idp
-      ALLOCATE(Kspace(nmatrixes2)%block_vector(i)%block3dc(nfftx/2+1, nffty, nfftz))
+      ALLOCATE(Kspace(nmatrixes2)%block_vector(i)%block3dc(nfftxr, nffty, nfftz))
     ENDDO
     DO i = 1_idp, 4_idp
-      ALLOCATE(AT_OP(nmatrixes2)%block_vector(i)%block3dc(nfftx/2+1, nffty, nfftz))
+      ALLOCATE(AT_OP(nmatrixes2)%block_vector(i)%block3dc(nfftxr, nffty, nfftz))
     ENDDO
     !construct kspace
     ii=DCMPLX(0.0_num, 1.0_num)
     CALL compute_k_vec(l_staggered)
-    DO i = 1, nfftx/2+1
+    DO i = 1, nfftxr
       DO j = 1, nffty
         DO k = 1, nfftz
-          IF(.NOT. fftw_mpi_transpose) THEN
-            Kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kxf(i)
-            Kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kxb(i)
-            Kspace(nmatrixes2)%block_vector(3)%block3dc(i, j, k) = kxc(i)
-            IF(c_dim == 3) THEN
-              Kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k) = kyf(j)
-              Kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k) = kyb(j)
-              Kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k) = kyc(j)
-            ELSE IF(c_dim == 2) THEN
-              Kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k)= (0.0_num,0.0_num) 
-              Kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k)= (0.0_num,0.0_num)
-              Kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k)= (0.0_num,0.0_num) 
+          IF(.NOT. p3dfft_flag) THEN
+            IF(.NOT. fftw_mpi_transpose) THEN
+              Kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kxf(i)
+              Kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kxb(i)
+              Kspace(nmatrixes2)%block_vector(3)%block3dc(i, j, k) = kxc(i)
+              IF(c_dim == 3) THEN
+                Kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k) = kyf(j)
+                Kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k) = kyb(j)
+                Kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k) = kyc(j)
+              ELSE IF(c_dim == 2) THEN
+                Kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k)= (0.0_num,0.0_num) 
+                Kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k)= (0.0_num,0.0_num)
+                Kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k)= (0.0_num,0.0_num) 
+              ENDIF
+              Kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = kzf(k)
+              Kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = kzb(k)
+              Kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = kzc(k)
+            ELSE
+              Kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kxf(i)
+              Kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kxb(i)
+              Kspace(nmatrixes2)%block_vector(3)%block3dc(i, j, k) = kxc(i)
+              Kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k) = kzf(k)
+              Kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k) = kzb(k)
+              Kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k) = kzc(k)
+              Kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = kyf(j)
+              Kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = kyb(j)
+              Kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = kyc(j)
             ENDIF
-            Kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = kzf(k)
-            Kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = kzb(k)
-            Kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = kzc(k)
-            Kspace(nmatrixes2)%block_vector(10)%block3dc(i, j, k) =                   &
-            SQRT((kxc(i)**2+kyc(j)**2+kzc(k)**2))
           ELSE
-            Kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kxf(i)
-            Kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kxb(i)
-            Kspace(nmatrixes2)%block_vector(3)%block3dc(i, j, k) = kxc(i)
-            Kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k) = kzf(k)
-            Kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k) = kzb(k)
-            Kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k) = kzc(k)
-            Kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = kyf(j)
-            Kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = kyb(j)
-            Kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = kyc(j)
-            Kspace(nmatrixes2)%block_vector(10)%block3dc(i, j, k) =                   &
-            SQRT((kxc(i)**2+kyc(j)**2+kzc(k)**2))
+            IF(p3dfft_stride) THEN
+                Kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kzf(k)
+                Kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kzb(k)
+                Kspace(nmatrixes2)%block_vector(3)%block3dc(i, j, k) = kzc(k)
+                Kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k) = kyf(j)
+                Kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k) = kyb(j)
+                Kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k) = kyc(j)
+                Kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = kxf(i)
+                Kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = kxb(i)
+                Kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = kxc(i)
+
+            ELSE 
+                Kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kxf(i)
+                Kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kxb(i)
+                Kspace(nmatrixes2)%block_vector(3)%block3dc(i, j, k) = kxc(i)
+                Kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k) = kyf(j)
+                Kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k) = kyb(j)
+                Kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k) = kyc(j)
+                Kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = kzf(k)
+                Kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = kzb(k)
+                Kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = kzc(k)
+
+            ENDIF
           ENDIF
         ENDDO
       ENDDO
     ENDDO
- 
+    Kspace(nmatrixes2)%block_vector(10)%block3dc=                                    &
+    SQRT(ABS(Kspace(nmatrixes2)%block_vector(9)%block3dc)**2 +                       &
+        ABS(Kspace(nmatrixes2)%block_vector(6)%block3dc)**2 +                        &
+        ABS(Kspace(nmatrixes2)%block_vector(3)%block3dc)**2)
     switch = .FALSE.
-    ALLOCATE(temp(nfftx/2+1, nffty, nfftz))
-    ALLOCATE(temp2(nfftx/2+1, nffty, nfftz))
+    ALLOCATE(temp(nfftxr, nffty, nfftz))
+    ALLOCATE(temp2(nfftxr, nffty, nfftz))
     temp=dt*clight*REAL(Kspace(nmatrixes2)%block_vector(10)%block3dc, num)
-    temp2=sinc_block(nfftx/2+1_idp, nffty, nfftz, temp)
+    temp2=sinc_block(nfftxr, nffty, nfftz, temp)
     AT_OP(nmatrixes2)%block_vector(1)%block3dc = DCMPLX(temp2, 0._num)
     AT_OP(nmatrixes2)%block_vector(1)%block3dc =                                      &
     clight*dt*AT_OP(nmatrixes2)%block_vector(1)%block3dc
@@ -204,13 +291,14 @@ MODULE gpstd_solver
     AT_OP(nmatrixes2)%block_vector(2)%block3dc = DCMPLX(temp2, 0._num)
     temp=0.5_num*temp
     AT_OP(nmatrixes2)%block_vector(3)%block3dc = 2._num*(clight*dt/2.0_num)**2        &
-    *sinc_block(nfftx/2+1, nffty, nfftz, temp)*sinc_block(nfftx/2+1, nffty, nfftz,    &
+    *sinc_block(nfftxr, nffty, nfftz, temp)*sinc_block(nfftxr, nffty, nfftz,    &
     temp)
 
     IF(ABS(Kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)) .EQ. 0.0_num) THEN
       Kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1) = DCMPLX(1.0_num,         &
       0.0_num)
       switch = .TRUE.
+
     ENDIF
     AT_OP(nmatrixes2)%block_vector(3)%block3dc = (DCMPLX(1.0_num, 0.0_num) -          &
     AT_OP(nmatrixes2)%block_vector(2)%block3dc)                                       &
@@ -229,17 +317,49 @@ MODULE gpstd_solver
     DEALLOCATE(temp, temp2)
   END SUBROUTINE init_kspace
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine deallocates all block matrixes already initialized 
+  ! 
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
+  SUBROUTINE delete_k_space
+    USE matrix_coefficients
+    INTEGER(idp)  :: i
+    DO i = 1,10
+       DEALLOCATE(Kspace(nmatrixes2)%block_vector(i)%block3dc)
+    ENDDO
+    DO i=1,4
+       DEALLOCATE(AT_OP(nmatrixes2)%block_vector(i)%block3dc)
+    ENDDO
+  END SUBROUTINE delete_k_space
+
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine computes K-vectors along X,Y,Z
+  ! 
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @params[in] l_stg LOGICAL(lp) - Assumes staggered grid for l_stg==.TRUE.
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
   SUBROUTINE compute_k_vec(l_stg)
     USE constants
     USE shared_data
     USE fields
     USE mpi_fftw3
+    USE group_parameters
     IMPLICIT NONE
     LOGICAL(lp), INTENT(IN)                     :: l_stg
-    COMPLEX(cpx), ALLOCATABLE, DIMENSION(:)     :: kxff, kxbb, kxcc, k_temp
-    REAL(num), ALLOCATABLE, DIMENSION(:)        :: FD_x, FD_y, FD_z
-    COMPLEX(cpx), ALLOCATABLE, DIMENSION(:)     :: onesxp, onesyp, oneszp, onesx,     &
-    onesy, onesz
+    COMPLEX(cpx), ALLOCATABLE, DIMENSION(:)     ::                                     &
+     kxct,kxbt,kxft,kyct,kybt,kyft,kzct,kzbt,kzft, k_temp
     COMPLEX(cpx)                                  :: ii
     INTEGER(idp)                                  :: i, j, k
     INTEGER(idp)                                  :: nfftx, nffty, nfftz
@@ -253,6 +373,7 @@ MODULE gpstd_solver
     ii = DCMPLX(0.0_num, 1.0_num)
 #endif
     IF(fftw_mpi_transpose) THEN
+     ! switch  z and y
       sd=dz
       dz=dy
       dy=sd
@@ -260,134 +381,82 @@ MODULE gpstd_solver
       norderz=nordery
       nordery=temp_order
     ENDIF
+    IF(p3dfft_flag) THEN
+      ! switch z and x
+      IF(p3dfft_stride) THEN
+        sd = dz
+        dz = dx
+        dx = sd
+        temp_order = norderz
+        norderz = norderx
+        norderx = temp_order
+      ENDIF
+    ENDIF       
     CALL select_case_dims_global(nfftx, nffty, nfftz)
-    ALLOCATE(onesx(nfftx/2+1), onesxp(nfftx/2+1))
-    ALLOCATE(onesy(nffty), onesyp(nffty))
-    ALLOCATE(onesz(nfftz), oneszp(nfftz))
-    DO i=1_idp, nfftx/2+1
-      onesx(i)  = DCMPLX(i-1.0_num, 0.0_num)
-      onesxp(i) = DCMPLX(i-1.0_num, 0.0_num)
-    ENDDO
-    DO j=1_idp, nffty
-      onesy(j)  = DCMPLX(j-1.0_num, 0.0_num)
-      onesyp(j) = DCMPLX(j-1.0_num, 0.0_num)
-      IF(j .GT. nffty/2_idp +1) THEN
-        onesy(j)  =DCMPLX(-onesy(j))
-        onesyp(j) =DCMPLX( nffty + onesyp(j))
-      ENDIF
-    ENDDO
-    DO k=1_idp, nfftz
-      onesz(k)  = DCMPLX(k-1.0_num)
-      oneszp(k) = DCMPLX(k-1.0_num)
-      IF(k .GT. nfftz/2_idp +1) THEN
-        onesz(k) = DCMPLX(- onesz(k))
-        oneszp(k) = DCMPLX(nfftz + oneszp(k))
-      ENDIF
-    ENDDO
-    IF(.NOT. ALLOCATED(kxf)) THEN
-      ALLOCATE(kxf(nfftx/2+1), kxb(nfftx/2+1), kxc(nfftx/2+1))
-      ALLOCATE(kyf(nffty), kyb(nffty), kyc(nffty))
-      ALLOCATE(kzf(nfftz), kzb(nfftz), kzc(nfftz))
-    ELSE
-      DEALLOCATE(kxf, kyf, kzf, kxb, kyb, kzb, kxc, kyc, kzc)
-      ALLOCATE(kxf(nfftx/2+1), kxb(nfftx/2+1), kxc(nfftx/2+1))
-      ALLOCATE(kyf(nffty), kyb(nffty), kyc(nffty))
-      ALLOCATE(kzf(nfftz), kzb(nfftz), kzc(nfftz))
-    ENDIF
-    IF (norderx .ne. 0_idp ) THEN! if 0 then infinite order
-      ALLOCATE(FD_x(norderx/2))
-      CALL FD_weights_hvincenti(norderx, FD_x, l_stg)
-      kxf=(0._num, 0._num)*kxf
-      kxb=(0._num, 0._num)*kxb
-      kxc=(0._num, 0._num)*kxc
-      DO i=1_idp, norderx/2
-        kxc=kxc+2.0_num/dx*FD_x(i)*SIN((i*2.0_num-1.0_num)*PI*onesx/nfftx)
-      ENDDO
-      DEALLOCATE(FD_x)
-    ELSE
-      ALLOCATE(kxff(nfftx), kxbb(nfftx), kxcc(nfftx))
-      CALL fftfreq(nfftx, kxff, dx)
-      CALL fftfreq(nfftx, kxbb, dx)
-      CALL fftfreq(nfftx, kxcc, dx)
-      kxf=kxff(1:nfftx/2+1)
-      kxb=kxbb(1:nfftx/2+1)
-      kxc=kxcc(1:nfftx/2+1)
-      DEALLOCATE(kxff, kxbb, kxcc)
-    ENDIF
-    IF (nordery .ne. 0_idp) THEN
-      ALLOCATE(FD_y(nordery/2))
-      CALL FD_weights_hvincenti(nordery, FD_y, l_stg)
-      kyf=(0._num, 0._num)*kyf
-      kyb=(0._num, 0._num)*kyb
-      kyc=(0._num, 0._num)*kyc
-      DO i=1_idp, nordery/2
-        kyc=kyc+2.0_num/dy*FD_y(i)*SIN((i*2.0_num-1.0_num)*PI*onesy/nffty)
-      ENDDO
-      DEALLOCATE(FD_y)
-    ELSE
-      CALL fftfreq(nffty, kyf, dy)
-      CALL fftfreq(nffty, kyb, dy)
-      CALL fftfreq(nffty, kyc, dy)
-    ENDIF
-    IF (norderz .ne. 0_idp) THEN
-      ALLOCATE(FD_z(norderz/2))
-      CALL FD_weights_hvincenti(norderz, FD_z, l_stg)
-      kzf=(0._num, 0._num)*kzf
-      kzb=(0._num, 0._num)*kzb
-      kzc=(0._num, 0._num)*kzc
-      DO i=1_idp, norderz/2
-        kzc=kzc+2.0_num/dz*FD_z(i)*SIN((i*2.0_num-1.0_num)*PI*onesz/nfftz)
-      ENDDO
-      DEALLOCATE(FD_z)
-    ELSE
-      CALL fftfreq(nfftz, kzf, dz)
-      CALL fftfreq(nfftz, kzb, dz)
-      CALL fftfreq(nfftz, kzc, dz)
-    ENDIF
-    IF(l_stg) THEN
-      kxf=kxc*EXP(-ii*PI*onesxp/nfftx)
-      kxb=kxc*EXP(ii*PI*onesxp/nfftx)
-
-      kyf=kyc*EXP(-ii*PI*onesyp/nffty)
-      kyb=kyc*EXP(ii*PI*onesyp/nffty)
-
-      kzf=kzc*EXP(-ii*PI*oneszp/nfftz)
-      kzb=kzc*EXP(ii*PI*oneszp/nfftz)
-    ELSE
-      kxf=kxc
-      kxb=kxc
-      kyf=kyc
-      kyb=kyc
-      kzf=kzc
-      kzb=kzc
-    ENDIF
-    IF(fftw_with_mpi) THEN
-      IF(.NOT. fftw_mpi_transpose) THEN
-        ALLOCATE(k_temp(nfftz))
-        k_temp = kzc
-        DEALLOCATE(kzc);ALLOCATE(kzc(local_nz))
-        kzc = k_temp(local_z0+1:local_z0+local_nz)
-        k_temp = kzf
-        DEALLOCATE(kzf);ALLOCATE(kzf(local_nz))
-        kzf = k_temp(local_z0+1:local_z0+local_nz)
-        k_temp = kzb
-        DEALLOCATE(kzb);ALLOCATE(kzb(local_nz))
-        kzb = k_temp(local_z0+1:local_z0+local_nz)
-      ELSE
-        ALLOCATE(k_temp(nfftz))
-        k_temp = kzc
-        DEALLOCATE(kzc);ALLOCATE(kzc(local_ny))
-        kzc = k_temp(local_y0+1:local_y0+local_ny)
-        k_temp = kzf
-        DEALLOCATE(kzf);ALLOCATE(kzf(local_ny))
-        kzf = k_temp(local_y0+1:local_y0+local_ny)
-        k_temp = kzb
-        DEALLOCATE(kzb);ALLOCATE(kzb(local_ny))
-        kzb = k_temp(local_y0+1:local_y0+local_ny)
-      ENDIF
+    CALL compute_k_1d( nfftx,kxc,kxf,kxb,norderx,dx,l_stg)
+    CALL compute_k_1d( nffty,kyc,kyf,kyb,nordery,dy,l_stg)
+    CALL compute_k_1d( nfftz,kzc,kzf,kzb,norderz,dz,l_stg)
+    ! delete second part of kx because real
+    IF(.NOT. p3dfft_flag) THEN
+      ALLOCATE(k_temp(nfftx));
+      k_temp = kxc;
+      DEALLOCATE(kxc); ALLOCATE(kxc(nfftx/2+1)) ; kxc = k_temp(1:nfftx/2+1)
+      k_temp = kxb;
+      DEALLOCATE(kxb); ALLOCATE(kxb(nfftx/2+1)) ; kxb = k_temp(1:nfftx/2+1)
+      k_temp = kxf;
+      DEALLOCATE(kxf); ALLOCATE(kxf(nfftx/2+1)) ; kxf = k_temp(1:nfftx/2+1)
       DEALLOCATE(k_temp)
     ENDIF
-    DEALLOCATE(onesx, onesy, onesz, onesxp, onesyp, oneszp)
+
+    IF(fftw_with_mpi) THEN
+      IF( .NOT. p3dfft_flag) THEN
+        IF(.NOT. fftw_mpi_transpose) THEN
+          ALLOCATE(k_temp(nfftz))
+          k_temp = kzc
+          DEALLOCATE(kzc);ALLOCATE(kzc(local_nz))
+          kzc = k_temp(local_z0+1:local_z0+local_nz)
+          k_temp = kzf
+          DEALLOCATE(kzf);ALLOCATE(kzf(local_nz))
+          kzf = k_temp(local_z0+1:local_z0+local_nz)
+          k_temp = kzb
+          DEALLOCATE(kzb);ALLOCATE(kzb(local_nz))
+          kzb = k_temp(local_z0+1:local_z0+local_nz)
+        ELSE
+          ALLOCATE(k_temp(nfftz))
+          k_temp = kzc
+          DEALLOCATE(kzc);ALLOCATE(kzc(local_ny))
+          kzc = k_temp(local_y0+1:local_y0+local_ny)
+          k_temp = kzf
+          DEALLOCATE(kzf);ALLOCATE(kzf(local_ny))
+          kzf = k_temp(local_y0+1:local_y0+local_ny)
+          k_temp = kzb
+          DEALLOCATE(kzb);ALLOCATE(kzb(local_ny))
+          kzb = k_temp(local_y0+1:local_y0+local_ny)
+        ENDIF
+        DEALLOCATE(k_temp)
+      ELSE IF(p3dfft_flag) THEN
+          ALLOCATE(kxct(nfftx),kxbt(nfftx),kxft(nfftx),kyct(nffty),kybt(nffty),        &
+          kyft(nffty),kzct(nfftz),kzbt(nfftz),kzft(nfftz))
+          kxct = kxc; kxbt = kxb ; kxft = kxf ; 
+          kyct = kyc; kybt = kyb ; kyft = kyf ;
+          kzct = kzc; kzbt = kzb ; kzft = kzf ; 
+          DEALLOCATE(kxc,kxf,kxb,kyc,kyf,kyb,kzc,kzf,kzb)
+
+          ALLOCATE(kxc(p3d_fsize(1)),kxf(p3d_fsize(1)),kxb(p3d_fsize(1)))
+          ALLOCATE(kyc(p3d_fsize(2)),kyf(p3d_fsize(2)),kyb(p3d_fsize(2)))
+          ALLOCATE(kzc(p3d_fsize(3)),kzf(p3d_fsize(3)),kzb(p3d_fsize(3)))
+          kxc = kxct(p3d_fstart(1):p3d_fend(1))
+          kxb = kxbt(p3d_fstart(1):p3d_fend(1))  
+          kxf = kxft(p3d_fstart(1):p3d_fend(1))
+          kyc = kyct(p3d_fstart(2):p3d_fend(2))
+          kyb = kybt(p3d_fstart(2):p3d_fend(2))
+          kyf = kyft(p3d_fstart(2):p3d_fend(2))
+          kzc = kzct(p3d_fstart(3):p3d_fend(3))
+          kzb = kzbt(p3d_fstart(3):p3d_fend(3))
+          kzf = kzft(p3d_fstart(3):p3d_fend(3))
+          DEALLOCATE(kxct,kxbt,kxft,kyct,kybt,kyft,kzct,kzbt,kzft)
+       ENDIF 
+    ENDIF
     IF(fftw_mpi_transpose) THEN
       sd=dz
       dz=dy
@@ -396,8 +465,99 @@ MODULE gpstd_solver
       norderz=nordery
       nordery=temp_order
     ENDIF
+    IF(p3dfft_flag) THEN
+      IF(p3dfft_stride) THEN
+        sd = dz
+        dz = dx
+        dx = sd
+        temp_order = norderz
+        norderz = norderx   
+        norderx = temp_order
+      ENDIF
+    ENDIF
   END SUBROUTINE compute_k_vec
+  
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine computes a 1D k-vector along a given direction
+  ! 
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @params[in] nfft INTEGER(idp) - number of points on which the FFT is performed on 
+  !> current axis
+  !> @params[in] norder - INTEGER(idp) - stencil spatial order 
+  !> @params[in] d  - REAL(num) - sampling period in real space 
+  !> @params[in] l_stg - LOGICAL(lp) - Assumes staggered grid for l_stg==.TRUE.
+  !> @params[in,out] kvec - array of REAL(num) - kvector 
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
+  SUBROUTINE compute_k_1d(nfft,kvec,kvecf,kvecb,norder,d,l_stg)
+     USE picsar_precision
+     USE constants
+     REAL(num) , INTENT(IN)  :: d
+     INTEGER(idp) , INTENT(IN) :: norder,nfft
+     COMPLEX(cpx) , DIMENSION(:) , ALLOCATABLE , INTENT(INOUT) :: kvec,kvecf,kvecb
+     LOGICAL(lp)  , INTENT(IN)             :: l_stg
+     COMPLEX(cpx), ALLOCATABLE, DIMENSION(:)     ::  ones, onesp
+     REAL(num), ALLOCATABLE, DIMENSION(:)        :: FD
+     INTEGER(idp)                                ::j,i
+     COMPLEX(cpx)                                ::  ii
+    
+     ii = (0.0_num,1.0_num)
 
+     ALLOCATE(ones(nfft), onesp(nfft))
+     ALLOCATE(kvec(nfft),kvecf(nfft),kvecb(nfft))
+     kvec=(0._num, 0._num)
+     kvecb=(0._num, 0._num)
+     kvecf=(0._num, 0._num)
+     DO j=1_idp, nfft
+       ones(j)  = DCMPLX(j-1.0_num, 0.0_num)
+       onesp(j) = DCMPLX(j-1.0_num, 0.0_num)
+       IF(j .GT. nfft/2_idp +1) THEN
+         ones(j)  =DCMPLX(-ones(j))
+         onesp(j) =DCMPLX( nfft + onesp(j))
+       ENDIF
+     ENDDO
+     
+     IF (norder .ne. 0_idp) THEN
+       ALLOCATE(FD(norder/2))
+       CALL FD_weights_hvincenti(norder, FD, l_stg)
+       DO i=1_idp, norder/2
+         kvec=kvec+2.0_num/d*FD(i)*SIN((i*2.0_num-1.0_num)*PI*ones/nfft)
+       ENDDO
+     ELSE
+       CALL fftfreq(nfft, kvec,  d)
+     ENDIF
+     
+     IF(l_stg) THEN
+       kvecf=kvec*EXP(-ii*PI*onesp/nfft)
+       kvecb=kvec*EXP(ii*PI*onesp/nfft)
+     ELSE
+       kvecb=kvec
+       kvecf=kvec
+     ENDIF
+     
+     DEALLOCATE(onesp,ones,FD)
+  END SUBROUTINE compute_k_1d
+  
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine computes a 1D k-vector along a given direction
+  ! 
+  !> @author
+  !> H. Vincenti
+  !
+  !> @params[in] nxx - INTEGER(idp) - number of points on which the FFT is performed on 
+  !> current axis
+  !> @params[in] dxx - REAL(num) - sampling period along current axis 
+  !> @params[in,out] kxx - array of REAL(num) - kvector along current durection 
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
   SUBROUTINE fftfreq(nxx, kxx, dxx)
     USE constants
     IMPLICIT NONE
@@ -434,6 +594,22 @@ MODULE gpstd_solver
     kxx=kxx/(dxx*nxx)/2.0_num*PI
   END SUBROUTINE fftfreq
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This function computes SINC value of an array of real 
+  ! 
+  !> @author
+  !> H. Kallala
+  !
+  !> @params[in] block - array of REAL(num)
+  !> @params[in] n1 - INTEGER(idp) - size of array block along dimension 1  
+  !> @params[in] n2 - INTEGER(idp) - size of array block along dimension 2
+  !> @params[in] n3 - INTEGER(idp) - size of array block along dimension 3  
+  !> @params[out] sinc_block - array of REAL(num) - SINC of input array 
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
   FUNCTION sinc_block(n1, n2, n3, block)
     USE  constants
     INTEGER(idp), INTENT(IN)                     :: n1, n2, n3
@@ -451,6 +627,19 @@ MODULE gpstd_solver
     RETURN
   END FUNCTION sinc_block
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This function computes SINC value of a REAL(num)
+  ! 
+  !> @author
+  !> H. Kallala
+  !
+  !> @params[in] x -  REAL(num)  
+  !> @params[out] sinc - REAL(num) - returns SINC of input variable 
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
   FUNCTION sinc (x)
     USE picsar_precision
     IMPLICIT NONE
@@ -464,6 +653,7 @@ MODULE gpstd_solver
     RETURN
   END FUNCTION sinc
 
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine constructs gpstd_blocks and puts them into cc_mat operator
   !
@@ -472,9 +662,7 @@ MODULE gpstd_solver
   !
   !> @date
   !> Creation 2017
-  ! ________________________________________________________________________________________
-
-
+  ! ______________________________________________________________________________________
   SUBROUTINE init_gpstd() bind(C, name='init_gpstd_pxr')
     USE matrix_coefficients
     USE PICSAR_PRECISION
@@ -489,24 +677,37 @@ MODULE gpstd_solver
     INTEGER(idp)           :: i, j, k, p
     COMPLEX(cpx)           :: ii
     LOGICAL(lp)            :: needed
-    INTEGER(idp)           :: nfftx, nffty, nfftz
+    INTEGER(idp)           :: nfftx, nffty, nfftz,nfftxr
     LOGICAL(lp)            :: switch
     REAL(num)              :: coeff_norm
 
     CALL select_case_dims_local(nfftx, nffty, nfftz)
-    ii=DCMPLX(0., 1.)
+    ii=DCMPLX(0.0_num, 1.0_num)
     CALL allocate_new_matrix_vector(11_idp)
+    nfftxr = nfftx/2+1
+    IF(p3dfft_flag) nfftxr = nfftx 
     CALL init_kspace
+    nkx = nfftxr 
+    nky = nffty
+    nkz = nfftz
     DO i=1_idp, 11_idp
       DO j=1_idp, 11_idp
-          CALL is_calculation_needed(i, j, needed)
-          IF(g_spectral .OR. needed) THEN
-            ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(nfftx/2+1, nffty,    &
+        CALL is_calculation_needed(i, j, needed)
+        IF(needed .OR. g_spectral) THEN
+          IF(needed) THEN
+            ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(nfftxr, nffty,    &
             nfftz))
-            cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = nfftx/2+1
+            cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = nfftxr
             cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = nffty
             cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = nfftz
+          ELSE IF (.NOT. needed .AND. g_spectral) THEN
+            ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(1,1,1))
+            cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = 1
+            cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = 1
+            cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = 1
+            cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(1,1,1) = DCMPLX(0.0,0.0)
           ENDIF
+        ENDIF
       ENDDO
     ENDDO
     IF(g_spectral) THEN
@@ -522,12 +723,12 @@ MODULE gpstd_solver
         vold(nmatrixes)%block_vector(10)%block3dc => rhooldf
         vold(nmatrixes)%block_vector(11)%block3dc => rhof
       DO i=1_idp,11_idp
-        ALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc(nfftx/2+1, nffty,&
+        ALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc(nfftxr, nffty,&
         nfftz))
-        vnew(nmatrixes)%block_vector(i)%nx = nfftx/2+1
+        vnew(nmatrixes)%block_vector(i)%nx = nfftxr
         vnew(nmatrixes)%block_vector(i)%ny = nffty
         vnew(nmatrixes)%block_vector(i)%nz = nfftz
-        vold(nmatrixes)%block_vector(i)%nx = nfftx/2+1
+        vold(nmatrixes)%block_vector(i)%nx = nfftxr
         vold(nmatrixes)%block_vector(i)%ny = nffty
         vold(nmatrixes)%block_vector(i)%nz = nfftz
       ENDDO
@@ -677,12 +878,32 @@ MODULE gpstd_solver
       DO j=1,11
         CALL is_calculation_needed(i, j, needed)
         IF(needed .OR. g_spectral) THEN
-          cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc = coeff_norm*cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc
+          cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc =                            &
+          coeff_norm*cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc
         ENDIF
       ENDDO
     ENDDO
+    CALL delete_k_space
   END SUBROUTINE init_gpstd
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This function computes coefficients of order p stencil for centered/staggered 
+  !> scheme - Taken from H. Vincenti and J-L Vay, CPC, 200, 147 (2016).
+  ! 
+  !> @author
+  !> H. Vincenti 
+  !> H. Kallala
+  !
+  !> @params[in] is_staggered - LOGICAL(lp) - assumes staggered grid if 
+  !> is_staggered==.TRUE.  
+  !> @params[in] p - INTEGER(idp) - spatial order p of the stencil 
+  !> @params[out] w - array of REAL(num) of size p/2 - array containing 
+  !> stencil coefficients  
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
   SUBROUTINE FD_weights_hvincenti(p, w, is_staggered)
     USE picsar_PRECISION
     IMPLICIT NONE
@@ -738,7 +959,6 @@ MODULE gpstd_solver
     ENDIF
     RETURN
   END FUNCTION logfactorial
-
 
   SUBROUTINE copy_field(ex_out, n1, n2, n3, ex_in, nxx, nyy, nzz)
     USE PICSAR_precision

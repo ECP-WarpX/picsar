@@ -42,7 +42,6 @@
 
 
 PROGRAM main
-
   USE constants
   USE fields
   USE particles
