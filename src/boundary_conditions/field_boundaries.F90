@@ -690,8 +690,8 @@ MODULE field_boundary
       rank_to_send_to = INT(array_of_ranks_to_send_to_l2g(ii),isp)
       rank_to_recv_from = INT(array_of_ranks_to_recv_from_l2g(ii),isp)
 
-      IF(size_exchanges_l2g_recv_z(ii) .GT. 0 .AND. 
-      size_exchanges_l2g_recv_y(ii) .GT. 0)   THEN                                     &
+      IF(size_exchanges_l2g_recv_z(ii) .GT. 0 .AND.                                    &
+      size_exchanges_l2g_recv_y(ii) .GT. 0)   THEN                                     
         n=n+1
         CALL MPI_IRECV(field_g(1, g_first_cell_to_recv_y(ii),                          &
         g_first_cell_to_recv_z(ii)), 1_isp,recv_type_g(ii),                            &
