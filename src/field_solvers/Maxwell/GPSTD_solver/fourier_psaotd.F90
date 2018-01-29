@@ -38,9 +38,6 @@
 ! Creation March, 2017
 !
 ! ________________________________________________________________________________________
-
-! ---
-
 MODULE fourier_psaotd
   USE gpstd_solver
   USE matrix_coefficients
@@ -48,6 +45,18 @@ MODULE fourier_psaotd
   IMPLICIT NONE
   CONTAINS
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine computes FFTW plans 
+  !
+  !> @author
+  !> Haithem Kallala
+  !> H. Vincenti 
+  !> @date
+  !> Creation 2017
+  !
+  !> @params[in] nopenmp - INTEGER(idp) - number of OpenMP threads/MPI processes  
+  ! ______________________________________________________________________________________
   SUBROUTINE init_plans_fourier_mpi(nopenmp)
     USE PICSAR_precision
     USE shared_data
@@ -109,6 +118,18 @@ MODULE fourier_psaotd
     ENDIF
   END SUBROUTINE init_plans_fourier_mpi
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine computes forward  R2Clocal FFTs - concerns only the local 
+  !> pseudo-spectral solver
+  !
+  !> @author
+  !> H. Vincenti 
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
   SUBROUTINE get_Ffields()
     USE shared_data
     USE fields
@@ -140,11 +161,23 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
-    ! Do Fourier Transform
+    
+    ! Perform local forward FFTs R2C of all grid arrays 
     CALL fft_forward_r2c_local(nfftx,nffty,nfftz)
 
   END SUBROUTINE get_Ffields
  
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine computes forward R2C distributed FFTs (with MPI groups)
+  !
+  !> @author
+  !> Haithem Kallala
+  !> H. Vincenti 
+  !> 
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
   SUBROUTINE get_Ffields_mpi_lb()
     USE shared_data
     USE fields
@@ -166,58 +199,89 @@ MODULE fourier_psaotd
     ELSE
       p3d_offset =0
     ENDIF
+    
+    ! Performs copies of overlapping portions of local arrays (ex,ey,ez, etc.) 
+    ! and FFT arrays (ex_r,ey_r,ez_r etc.) - non overlapping portions requires 
+    ! MPI exchanges that are performed further below in this subroutine 
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
     DO iz=1,size_exchanges_l2g_recv_z(1)
       DO iy =1,size_exchanges_l2g_recv_y(1)
         DO ix =ix_min_r,ix_max_r
-           ex_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3)) =&
-                 ex(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1) ,iz-1+l_first_cell_to_send_z(1))
-           ey_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=&
-                 ey(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),iz-1+l_first_cell_to_send_z(1))
-           ez_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=&
-                 ez(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),iz-1+l_first_cell_to_send_z(1))
-           bx_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=&
-                 bx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),iz-1+l_first_cell_to_send_z(1))
-           by_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=&
-                 by(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),iz-1+l_first_cell_to_send_z(1))
-           bz_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=&
-                 bz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),iz-1+l_first_cell_to_send_z(1))
-           jx_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=&
-                 jx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),iz-1+l_first_cell_to_send_z(1))
-           jy_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=&
-                 jy(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),iz-1+l_first_cell_to_send_z(1))
-           jz_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=&
-                 jz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),iz-1+l_first_cell_to_send_z(1))
-           rho_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=&
-                 rho(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),iz-1+l_first_cell_to_send_z(1))
-           rhoold_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=&
-                 rhoold(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),iz-1+l_first_cell_to_send_z(1))
+           ex_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+                       &
+           p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=                &
+                 ex(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
+                 iz-1+l_first_cell_to_send_z(1))
+           ey_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+                       &
+           p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=                &
+                 ey(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
+                 iz-1+l_first_cell_to_send_z(1))
+           ez_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+                       &
+           p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=                &
+                 ez(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
+                 iz-1+l_first_cell_to_send_z(1))
+           bx_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+                       &
+           p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=                &
+                 bx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
+                 iz-1+l_first_cell_to_send_z(1))
+           by_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+                       &
+           p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=                &
+                 by(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
+                 iz-1+l_first_cell_to_send_z(1))
+           bz_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+                       &
+           p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=                &
+                 bz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
+                 iz-1+l_first_cell_to_send_z(1))
+           jx_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+                       &
+           p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=                &
+                 jx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
+                 iz-1+l_first_cell_to_send_z(1))
+           jy_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+                       &
+           p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=                &
+                 jy(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
+                 iz-1+l_first_cell_to_send_z(1))
+           jz_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+                       &
+           p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=                &
+                 jz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
+                 iz-1+l_first_cell_to_send_z(1))
+           rho_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+                      &
+           p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=                &
+                 rho(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),              &
+                 iz-1+l_first_cell_to_send_z(1))
+           rhoold_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+                   &
+           p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=                &
+                 rhoold(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),           &
+                 iz-1+l_first_cell_to_send_z(1))
         ENDDO
       ENDDO
     ENDDO
     !$OMP END PARALLEL DO
+
+    ! Timers 
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
 
+    ! Performs MPI exchanges for non-overlapping portions of local and FFT ARRAYS 
     CALL generalized_comms_group_l2g()
-    ! Get global Fourier transform of all fields components and currents
+    
+    ! Perform distributed R2C FFTs of all grid arrays (including fields, currents, charge)
     CALL fft_forward_r2c_mpi() 
 
   END SUBROUTINE get_Ffields_mpi_lb 
 
- ! ________________________________________________________________________________________
-!> @brief
-!> This subroutine is used to get fourier fields (ex_r) with fftw_with_mpi=true
-!> and without groups 
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2017
-! ________________________________________________________________________________________
- 
+ ! _______________________________________________________________________________________
+ !> @brief
+ !> This subroutine is used perform forward R2C distributed FFTs with fftw_with_mpi=true
+ !> and without MPI groups 
+ !> N.B: this routine is deprecated and will be integrally replaced by get_Ffields_mpi_lb 
+ !> in the future 
+ !> 
+ !> @author
+ !> Henri Vincenti
+ !
+ !> @date
+ !> Creation 2017
+ ! _______________________________________________________________________________________
   SUBROUTINE get_Ffields_mpi
     USE shared_data
     USE fields
@@ -261,7 +325,18 @@ MODULE fourier_psaotd
 
   END SUBROUTINE get_Ffields_mpi
 
-
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine computes backward C2R local FFTs - concerns only the local 
+  !> pseudo-spectral solver
+  !
+  !> @author
+  !> H. Vincenti 
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
   SUBROUTINE get_fields()
     USE params
     USE shared_data
@@ -297,19 +372,19 @@ MODULE fourier_psaotd
     ENDIF
   END SUBROUTINE get_fields
 
-
- ! ________________________________________________________________________________________
-!> @brief
-!> This subroutine is used to get locl fields (ex) with fftw_with_mpi=true
-!> and without groups 
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2017
-! ________________________________________________________________________________________
-
+ ! _______________________________________________________________________________________
+ !> @brief
+ !> This subroutine is used perform backward C2R distributed FFTs with fftw_with_mpi=true
+ !> and without MPI groups 
+ !> N.B: this routine is deprecated and will be integrally replaced by get_fields_mpi_lb 
+ !> in the future 
+ !> 
+ !> @author
+ !> Henri Vincenti
+ !
+ !> @date
+ !> Creation 2017
+ ! _______________________________________________________________________________________
   SUBROUTINE get_fields_mpi
     USE shared_data
     USE fields
@@ -348,6 +423,17 @@ MODULE fourier_psaotd
   END SUBROUTINE get_fields_mpi
 
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine computes backward C2R distributed FFTs (with MPI groups)
+  !
+  !> @author
+  !> Haithem Kallala
+  !> H. Vincenti 
+  !> 
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
   SUBROUTINE get_fields_mpi_lb
     USE shared_data
     USE fields
@@ -360,8 +446,10 @@ MODULE fourier_psaotd
     REAL(num) ::  tmptime
     INTEGER(idp) :: ix, iy, iz
     INTEGER(idp) :: p3d_offset(3) 
-    ! Get global Fourier transform of all fields components 
+    
+    ! Perform distributed C2R FFTs of all grid arrays (including fields, currents, charge)
     CALL fft_forward_c2r_mpi
+    
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
@@ -370,28 +458,43 @@ MODULE fourier_psaotd
     ELSE
       p3d_offset = 0
     ENDIF
+    
+    ! Performs copies of overlapping portions of FFT arrays (ex_r,ey_r,ez_r, etc.) 
+    ! and local arrays (ex,ey,ez etc.) - non overlapping portions requires 
+    ! MPI exchanges that are performed further below in this subroutine
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
     DO iz=1,size_exchanges_g2l_recv_z(1)
       DO iy=1,size_exchanges_g2l_recv_y(1)
         DO ix=ix_min_r, ix_max_r
-          ex(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),iz-1+l_first_cell_to_recv_z(1)) =&
-                 ex_r(ix+p3d_offset(1),iy-1+g_first_cell_to_send_y(1)+p3d_offset(2),iz-1+g_first_cell_to_send_z(1)+p3d_offset(3))
+          ex(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),
+          iz-1+l_first_cell_to_recv_z(1)) =                                            &
+                 ex_r(ix+p3d_offset(1),iy-1+g_first_cell_to_send_y(1)+                 &
+                 p3d_offset(2),iz-1+g_first_cell_to_send_z(1)+p3d_offset(3))
 
-          ey(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),iz-1+l_first_cell_to_recv_z(1))=&
-                 ey_r(ix+p3d_offset(1),iy-1+g_first_cell_to_send_y(1)+p3d_offset(2),iz-1+g_first_cell_to_send_z(1)+p3d_offset(3))
+          ey(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),
+          iz-1+l_first_cell_to_recv_z(1))=                                             &
+                 ey_r(ix+p3d_offset(1),iy-1+g_first_cell_to_send_y(1)+                 &
+                 p3d_offset(2),iz-1+g_first_cell_to_send_z(1)+p3d_offset(3))
 
-          ez(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),iz-1+l_first_cell_to_recv_z(1))=&
-                 ez_r(ix+p3d_offset(1),iy-1+g_first_cell_to_send_y(1)+p3d_offset(2),iz-1+g_first_cell_to_send_z(1)+p3d_offset(3))
+          ez(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),
+          iz-1+l_first_cell_to_recv_z(1))=                                             &
+                 ez_r(ix+p3d_offset(1),iy-1+g_first_cell_to_send_y(1)+                 &
+                 p3d_offset(2),iz-1+g_first_cell_to_send_z(1)+p3d_offset(3))
 
-          bx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),iz-1+l_first_cell_to_recv_z(1))=&
-                 bx_r(ix+p3d_offset(1),iy-1+g_first_cell_to_send_y(1)+p3d_offset(2),iz-1+g_first_cell_to_send_z(1)+p3d_offset(3))
+          bx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),
+          iz-1+l_first_cell_to_recv_z(1))=                                             &
+                 bx_r(ix+p3d_offset(1),iy-1+g_first_cell_to_send_y(1)+                 &
+                 p3d_offset(2),iz-1+g_first_cell_to_send_z(1)+p3d_offset(3))
 
-          by(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),iz-1+l_first_cell_to_recv_z(1))=&
-                 by_r(ix+p3d_offset(1),iy-1+g_first_cell_to_send_y(1)+p3d_offset(2),iz-1+g_first_cell_to_send_z(1)+p3d_offset(3))
+          by(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),
+          iz-1+l_first_cell_to_recv_z(1))=                                             &
+                 by_r(ix+p3d_offset(1),iy-1+g_first_cell_to_send_y(1)+                 &
+                 p3d_offset(2),iz-1+g_first_cell_to_send_z(1)+p3d_offset(3))
 
-          bz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),iz-1+l_first_cell_to_recv_z(1))=&
-                 bz_r(ix+p3d_offset(1),iy-1+g_first_cell_to_send_y(1)+p3d_offset(2),iz-1+g_first_cell_to_send_z(1)+p3d_offset(3))
-
+          bz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),
+          iz-1+l_first_cell_to_recv_z(1))=                                             &
+                 bz_r(ix+p3d_offset(1),iy-1+g_first_cell_to_send_y(1)+                 &
+                 p3d_offset(2),iz-1+g_first_cell_to_send_z(1)+p3d_offset(3))
         END DO
       END DO
     END DO
@@ -399,7 +502,8 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
-  CALL generalized_comms_group_g2l()
+    ! Performs MPI exchanges for non-overlapping portions of local and FFT ARRAYS 
+    CALL generalized_comms_group_g2l()
   END SUBROUTINE get_fields_mpi_lb
   
   SUBROUTINE fft_forward_r2c_local(nfftx,nffty,nfftz) 
@@ -504,12 +608,18 @@ MODULE fourier_psaotd
       CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, bzf, bz_r, plan_c2r)
 
     ELSE IF(g_spectral) THEN
-      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, vnew(nmatrixes)%block_vector(1)%block3dc, ex_r, plan_c2r)
-      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, vnew(nmatrixes)%block_vector(2)%block3dc, ey_r, plan_c2r)
-      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, vnew(nmatrixes)%block_vector(3)%block3dc, ez_r, plan_c2r)
-      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, vnew(nmatrixes)%block_vector(4)%block3dc, bx_r, plan_c2r)
-      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, vnew(nmatrixes)%block_vector(5)%block3dc, by_r, plan_c2r)
-      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, vnew(nmatrixes)%block_vector(6)%block3dc, bz_r, plan_c2r)
+      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                              &
+      vnew(nmatrixes)%block_vector(1)%block3dc, ex_r, plan_c2r)
+      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                              &
+      vnew(nmatrixes)%block_vector(2)%block3dc, ey_r, plan_c2r)
+      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                              & 
+      vnew(nmatrixes)%block_vector(3)%block3dc, ez_r, plan_c2r)
+      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                              &
+      vnew(nmatrixes)%block_vector(4)%block3dc, bx_r, plan_c2r)
+      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                              &
+      vnew(nmatrixes)%block_vector(5)%block3dc, by_r, plan_c2r)
+      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                              &
+      vnew(nmatrixes)%block_vector(6)%block3dc, bz_r, plan_c2r)
     ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
@@ -557,12 +667,18 @@ MODULE fourier_psaotd
 #if defined(P3DFFT)
       IF(.NOT. p3dfft_flag) THEN
 #endif
-        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(1)%block3dc,ex_r)
-        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(2)%block3dc,ey_r)
-        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(3)%block3dc,ez_r)
-        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(4)%block3dc,bx_r)
-        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(5)%block3dc,by_r)
-        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,vnew(nmatrixes)%block_vector(6)%block3dc,bz_r)
+        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
+        vnew(nmatrixes)%block_vector(1)%block3dc,ex_r)
+        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
+        vnew(nmatrixes)%block_vector(2)%block3dc,ey_r)
+        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
+        vnew(nmatrixes)%block_vector(3)%block3dc,ez_r)
+        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
+        vnew(nmatrixes)%block_vector(4)%block3dc,bx_r)
+        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
+        vnew(nmatrixes)%block_vector(5)%block3dc,by_r)
+        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
+        vnew(nmatrixes)%block_vector(6)%block3dc,bz_r)
 #if defined(P3DFFT)
        ELSE
         CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(1)%block3dc,ex_r,'tff')
@@ -667,8 +783,6 @@ MODULE fourier_psaotd
   END SUBROUTINE push_psaotd_ebfielfs_2d
 
 
-
-
   SUBROUTINE push_psaotd_ebfielfs() bind(C, name='push_psaotd_ebfields')
     USE shared_data
     USE fields
@@ -714,63 +828,63 @@ MODULE fourier_psaotd
           rhooldfold=rhooldf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3))
 
 
-          bxf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3)) = &
-          cc_mat(nmatrixes)%block_matrix2d(4, 4)%block3dc(ix, iy,   &
+          bxf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3)) =                 &
+          cc_mat(nmatrixes)%block_matrix2d(4, 4)%block3dc(ix, iy,                     &
           iz)*bxfold + cc_mat(nmatrixes)%block_matrix2d(4, 2)%block3dc(ix, iy,        &
           iz)*eyfold + cc_mat(nmatrixes)%block_matrix2d(4, 3)%block3dc(ix, iy,        &
           iz)*ezfold + cc_mat(nmatrixes)%block_matrix2d(4, 8)%block3dc(ix, iy,        &
-          iz)*jyfold + cc_mat(nmatrixes)%block_matrix2d(4, 9)%block3dc(ix,   &
+          iz)*jyfold + cc_mat(nmatrixes)%block_matrix2d(4, 9)%block3dc(ix,            &
           iy, iz)*jzfold
 
           ! - By
-          byf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3)) = &
-          cc_mat(nmatrixes)%block_matrix2d(5, 5)%block3dc(ix, iy,   &
+          byf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3)) =                 &
+          cc_mat(nmatrixes)%block_matrix2d(5, 5)%block3dc(ix, iy,                     &
           iz)*byfold + cc_mat(nmatrixes)%block_matrix2d(5, 1)%block3dc(ix, iy,        &
           iz)*exfold + cc_mat(nmatrixes)%block_matrix2d(5, 3)%block3dc(ix, iy,        &
           iz)*ezfold + cc_mat(nmatrixes)%block_matrix2d(5, 7)%block3dc(ix, iy,        &
-          iz)*jxfold + cc_mat(nmatrixes)%block_matrix2d(5, 9)%block3dc(ix,   &
+          iz)*jxfold + cc_mat(nmatrixes)%block_matrix2d(5, 9)%block3dc(ix,            &
           iy, iz)*jzfold
 
 
           ! - Bz
-          bzf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3)) =  &
-          cc_mat(nmatrixes)%block_matrix2d(6, 6)%block3dc(ix, iy,   &
+          bzf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3)) =                 &
+          cc_mat(nmatrixes)%block_matrix2d(6, 6)%block3dc(ix, iy,                     &
           iz)*bzfold + cc_mat(nmatrixes)%block_matrix2d(6, 1)%block3dc(ix, iy,        &
           iz)*exfold+ cc_mat(nmatrixes)%block_matrix2d(6, 2)%block3dc(ix, iy,         &
           iz)*eyfold+ cc_mat(nmatrixes)%block_matrix2d(6, 7)%block3dc(ix, iy,         &
-          iz)*jxfold+ cc_mat(nmatrixes)%block_matrix2d(6, 8)%block3dc(ix,    &
+          iz)*jxfold+ cc_mat(nmatrixes)%block_matrix2d(6, 8)%block3dc(ix,             &
           iy, iz)*jyfold
 
           ! Push E a full time step
           ! - Ex
-          exf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3)) = &
-          cc_mat(nmatrixes)%block_matrix2d(1, 1)%block3dc(ix, iy,   &
+          exf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3)) =                 &
+          cc_mat(nmatrixes)%block_matrix2d(1, 1)%block3dc(ix, iy,                     &
           iz)*exfold + cc_mat(nmatrixes)%block_matrix2d(1, 5)%block3dc(ix, iy,        &
           iz)*byfold + cc_mat(nmatrixes)%block_matrix2d(1, 6)%block3dc(ix, iy,        &
           iz)*bzfold + cc_mat(nmatrixes)%block_matrix2d(1, 7)%block3dc(ix, iy,        &
-          iz)*jxfold     + cc_mat(nmatrixes)%block_matrix2d(1,               &
-          11)%block3dc(ix, iy, iz)*rhofold       +                                 &
+          iz)*jxfold     + cc_mat(nmatrixes)%block_matrix2d(1,                        &
+          11)%block3dc(ix, iy, iz)*rhofold       +                                    &
           cc_mat(nmatrixes)%block_matrix2d(1, 10)%block3dc(ix, iy, iz)*rhooldfold
 
           ! - Ey
-          eyf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3)) = &
-          cc_mat(nmatrixes)%block_matrix2d(2, 2)%block3dc(ix, iy,   &
+          eyf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3)) =                 &
+          cc_mat(nmatrixes)%block_matrix2d(2, 2)%block3dc(ix, iy,                     &
           iz)*eyfold + cc_mat(nmatrixes)%block_matrix2d(2, 4)%block3dc(ix, iy,        &
           iz)*bxfold  + cc_mat(nmatrixes)%block_matrix2d(2, 6)%block3dc(ix, iy,       &
           iz)*bzfold  + cc_mat(nmatrixes)%block_matrix2d(2, 8)%block3dc(ix, iy,       &
-          iz)*jyfold + cc_mat(nmatrixes)%block_matrix2d(2, 11)%block3dc(ix,  &
-          iy, iz)*rhofold + cc_mat(nmatrixes)%block_matrix2d(2,              &
+          iz)*jyfold + cc_mat(nmatrixes)%block_matrix2d(2, 11)%block3dc(ix,           &
+          iy, iz)*rhofold + cc_mat(nmatrixes)%block_matrix2d(2,                       &
           10)%block3dc(ix, iy, iz)*rhooldfold
 
 
           ! - Ez
-          ezf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3)) = &
-          cc_mat(nmatrixes)%block_matrix2d(3, 3)%block3dc(ix, iy,   &
+          ezf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3)) =                 &
+          cc_mat(nmatrixes)%block_matrix2d(3, 3)%block3dc(ix, iy,                     &
           iz)*ezfold + cc_mat(nmatrixes)%block_matrix2d(3, 4)%block3dc(ix, iy,        &
           iz)*bxfold + cc_mat(nmatrixes)%block_matrix2d(3, 5)%block3dc(ix, iy,        &
           iz)*byfold + cc_mat(nmatrixes)%block_matrix2d(3, 9)%block3dc(ix, iy,        &
-          iz)*jzfold + cc_mat(nmatrixes)%block_matrix2d(3, 11)%block3dc(ix,  &
-          iy, iz)*rhofold + cc_mat(nmatrixes)%block_matrix2d(3,              &
+          iz)*jzfold + cc_mat(nmatrixes)%block_matrix2d(3, 11)%block3dc(ix,           &
+          iy, iz)*rhofold + cc_mat(nmatrixes)%block_matrix2d(3,                       &
           10)%block3dc(ix, iy, iz)*rhooldfold
 
 
@@ -782,7 +896,6 @@ MODULE fourier_psaotd
       localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime)
     ENDIF
   END SUBROUTINE push_psaotd_ebfielfs
-
 
 
   SUBROUTINE init_plans_blocks() bind(C, name='init_plans_blocks_pxr')
@@ -828,9 +941,9 @@ MODULE fourier_psaotd
           CALL fast_fftw_create_plan_c2r_3d_dft(nopenmp, nfftx, nffty, nfftz, exf,ex_r,  &
           plan_c2r, INT(FFTW_MEASURE, idp), INT(FFTW_BACKWARD, idp))
         ELSE IF(c_dim == 2) THEN
-          CALL fast_fftw_create_plan_r2c_2d_dft(nopenmp, nfftx, nfftz, ex_r, exf,&
+          CALL fast_fftw_create_plan_r2c_2d_dft(nopenmp, nfftx, nfftz, ex_r, exf,        &
           plan_r2c, INT(FFTW_MEASURE, idp), INT(FFTW_FORWARD, idp))
-          CALL fast_fftw_create_plan_c2r_2d_dft(nopenmp, nfftx, nfftz, exf, ex_r,&
+          CALL fast_fftw_create_plan_c2r_2d_dft(nopenmp, nfftx, nfftz, exf, ex_r,        &
           plan_c2r, INT(FFTW_MEASURE, idp), INT(FFTW_BACKWARD, idp))
         ENDIF
       ENDIF
