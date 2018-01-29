@@ -1,5 +1,9 @@
+! ________________________________________________________________________________________
 !> @brief
-!> This module contains subroutines for psatd_with_blocks
+!> This module contains subroutines that init Fourier domain arrays and variables 
+!> required in the spectral Maxwell solver step of the PIC cycle 
+!> This includes init of block matrixes for the GPSTD at t=0 as well as k-vectors 
+!> (local, global, or semi-global/hybrid depending on the FFT algorithm)
 !
 !> @author
 !> Haithem Kallala
@@ -7,7 +11,6 @@
 !> @date
 !> Creation 2017
 ! ________________________________________________________________________________________
-
 MODULE gpstd_solver
   USE PICSAR_PRECISION
   IMPLICIT NONE
@@ -22,7 +25,7 @@ MODULE gpstd_solver
   !
   !> @date
   !> Creation 2017
-  ! ________________________________________________________________________________________
+  ! ______________________________________________________________________________________
 #if defined(FFTW)
   SUBROUTINE select_case_dims_local(nfftx, nffty, nfftz)
     USE shared_data
@@ -238,8 +241,9 @@ MODULE gpstd_solver
         ENDDO
       ENDDO
     ENDDO
-    Kspace(nmatrixes2)%block_vector(10)%block3dc= SQRT(ABS(Kspace(nmatrixes2)%block_vector(9)%block3dc)**2 + &
-        ABS(Kspace(nmatrixes2)%block_vector(6)%block3dc)**2 + &
+    Kspace(nmatrixes2)%block_vector(10)%block3dc=                                    &
+    SQRT(ABS(Kspace(nmatrixes2)%block_vector(9)%block3dc)**2 +                       &
+        ABS(Kspace(nmatrixes2)%block_vector(6)%block3dc)**2 +                        &
         ABS(Kspace(nmatrixes2)%block_vector(3)%block3dc)**2)
     switch = .FALSE.
     ALLOCATE(temp(nfftxr, nffty, nfftz))
@@ -298,7 +302,8 @@ MODULE gpstd_solver
     USE group_parameters
     IMPLICIT NONE
     LOGICAL(lp), INTENT(IN)                     :: l_stg
-    COMPLEX(cpx), ALLOCATABLE, DIMENSION(:)     :: kxct,kxbt,kxft,kyct,kybt,kyft,kzct,kzbt,kzft, k_temp
+    COMPLEX(cpx), ALLOCATABLE, DIMENSION(:)     ::                                     &
+     kxct,kxbt,kxft,kyct,kybt,kyft,kzct,kzbt,kzft, k_temp
     COMPLEX(cpx)                                  :: ii
     INTEGER(idp)                                  :: i, j, k
     INTEGER(idp)                                  :: nfftx, nffty, nfftz
@@ -374,8 +379,8 @@ MODULE gpstd_solver
         ENDIF
         DEALLOCATE(k_temp)
       ELSE IF(p3dfft_flag) THEN
-        ALLOCATE(kxct(nfftx),kxbt(nfftx),kxft(nfftx),kyct(nffty),kybt(nffty),kyft(nffty),&
-          kzct(nfftz),kzbt(nfftz),kzft(nfftz))
+          ALLOCATE(kxct(nfftx),kxbt(nfftx),kxft(nfftx),kyct(nffty),kybt(nffty),        &
+          kyft(nffty),kzct(nfftz),kzbt(nfftz),kzft(nfftz))
           kxct = kxc; kxbt = kxb ; kxft = kxf ; 
           kyct = kyc; kybt = kyb ; kyft = kyf ;
           kzct = kzc; kzbt = kzb ; kzft = kzf ; 
@@ -753,7 +758,8 @@ MODULE gpstd_solver
       DO j=1,11
         CALL is_calculation_needed(i, j, needed)
         IF(needed .OR. g_spectral) THEN
-          cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc = coeff_norm*cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc
+          cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc =                            &
+          coeff_norm*cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc
         ENDIF
       ENDDO
     ENDDO
