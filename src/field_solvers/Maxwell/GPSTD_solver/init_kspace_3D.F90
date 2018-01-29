@@ -17,25 +17,33 @@ MODULE gpstd_solver
   COMPLEX(cpx), DIMENSION(:), ALLOCATABLE :: kxc, kxb, kxf, kyc, kyb, kyf, kzc, kzb,  &
   kzf
   CONTAINS
+#if defined(FFTW)
+  ! ______________________________________________________________________________________
   !> @brief
-  !> This subroutine calculates spectral space and other usefull blocks
+  !> This subroutine computes dimensions on which the FFT is performed depending on 
+  !> the type of FFT performed (local FFT or distributed FFT but without MPI groups). 
+  !> It includes 2D and 3D dimensions. 
+  !> N.B: this routine is deprecated and will be removed in upcoming versions. 
   !
   !> @author
   !> Haithem Kallala
   !
   !> @date
   !> Creation 2017
+  !
+  !> @params[in,out] nfftx INTEGER(idp) - Number of points in spectral space along X 
+  !> @params[in,out] nffty INTEGER(idp) - Number of points in spectral space along Y
+  !> @params[in,out] nfftz INTEGER(idp) - Number of points in spectral space along Z
   ! ______________________________________________________________________________________
-#if defined(FFTW)
   SUBROUTINE select_case_dims_local(nfftx, nffty, nfftz)
     USE shared_data
     USE mpi_fftw3
     USE group_parameters
     USE params
     USE fields, ONLY : nxguards, nyguards, nzguards
-
     INTEGER(idp), INTENT(INOUT) :: nfftx, nffty, nfftz
-    IF( fftw_with_mpi) THEN
+    
+    IF(fftw_with_mpi) THEN
       IF(.NOT. fftw_hybrid) THEN
         IF(.NOT. fftw_mpi_transpose) THEN
           nfftx=nx_global
@@ -81,14 +89,31 @@ MODULE gpstd_solver
     ENDIF
   END SUBROUTINE select_case_dims_local
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine computes dimensions on which the FFT is performed depending on 
+  !> the type of FFT performed (local FFT, distributed FFT with and without MPI groups). 
+  !> N.B: this subroutine will fully replace deprecated select_case_dims_local subroutine
+  !> in future release of PICSAR. 
+  ! 
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2017
+  !
+  !> @params[in,out] nfftx INTEGER(idp) - Number of points in spectral space along X 
+  !> @params[in,out] nffty INTEGER(idp) - Number of points in spectral space along Y
+  !> @params[in,out] nfftz INTEGER(idp) - Number of points in spectral space along Z
+  ! ______________________________________________________________________________________
   SUBROUTINE select_case_dims_global(nfftx, nffty, nfftz)
     USE shared_data
     USE mpi_fftw3
     USE group_parameters
     USE params
     USE fields, ONLY : nxguards, nyguards, nzguards
-
     INTEGER(idp), INTENT(INOUT) :: nfftx, nffty, nfftz
+    
     IF( fftw_with_mpi) THEN
       IF(.NOT. fftw_hybrid) THEN
         IF(.NOT. fftw_mpi_transpose) THEN
@@ -141,7 +166,17 @@ MODULE gpstd_solver
 #endif
   END SUBROUTINE select_case_dims_global
 
-
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine computes block matrixes for the GPSTD solver as well as 
+  !> K-vectors along X,Y,Z directions
+  ! 
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
   SUBROUTINE init_kspace
     USE matrix_coefficients
     USE CONSTANTS
@@ -214,7 +249,6 @@ MODULE gpstd_solver
             ENDIF
           ELSE
             IF(p3dfft_stride) THEN
-
                 Kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kzf(k)
                 Kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kzb(k)
                 Kspace(nmatrixes2)%block_vector(3)%block3dc(i, j, k) = kzc(k)
@@ -283,6 +317,16 @@ MODULE gpstd_solver
     DEALLOCATE(temp, temp2)
   END SUBROUTINE init_kspace
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine deallocates all block matrixes already initialized 
+  ! 
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
   SUBROUTINE delete_k_space
     USE matrix_coefficients
     INTEGER(idp)  :: i
@@ -294,6 +338,18 @@ MODULE gpstd_solver
     ENDDO
   END SUBROUTINE delete_k_space
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine computes K-vectors along X,Y,Z
+  ! 
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @params[in] l_stg LOGICAL(lp) - Assumes staggered grid for l_stg==.TRUE.
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
   SUBROUTINE compute_k_vec(l_stg)
     USE constants
     USE shared_data
@@ -400,7 +456,6 @@ MODULE gpstd_solver
           kzf = kzft(p3d_fstart(3):p3d_fend(3))
           DEALLOCATE(kxct,kxbt,kxft,kyct,kybt,kyft,kzct,kzbt,kzft)
        ENDIF 
-
     ENDIF
     IF(fftw_mpi_transpose) THEN
       sd=dz
@@ -421,6 +476,24 @@ MODULE gpstd_solver
       ENDIF
     ENDIF
   END SUBROUTINE compute_k_vec
+  
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine computes a 1D k-vector along a given direction
+  ! 
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @params[in] nfft INTEGER(idp) - number of points on which the FFT is performed on 
+  !> current axis
+  !> @params[in] norder - INTEGER(idp) - stencil spatial order 
+  !> @params[in] d  - REAL(num) - sampling period in real space 
+  !> @params[in] l_stg - LOGICAL(lp) - Assumes staggered grid for l_stg==.TRUE.
+  !> @params[in,out] kvec - array of REAL(num) - kvector 
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
   SUBROUTINE compute_k_1d(nfft,kvec,kvecf,kvecb,norder,d,l_stg)
      USE picsar_precision
      USE constants
@@ -437,6 +510,9 @@ MODULE gpstd_solver
 
      ALLOCATE(ones(nfft), onesp(nfft))
      ALLOCATE(kvec(nfft),kvecf(nfft),kvecb(nfft))
+     kvec=(0._num, 0._num)
+     kvecb=(0._num, 0._num)
+     kvecf=(0._num, 0._num)
      DO j=1_idp, nfft
        ones(j)  = DCMPLX(j-1.0_num, 0.0_num)
        onesp(j) = DCMPLX(j-1.0_num, 0.0_num)
@@ -445,18 +521,17 @@ MODULE gpstd_solver
          onesp(j) =DCMPLX( nfft + onesp(j))
        ENDIF
      ENDDO
+     
      IF (norder .ne. 0_idp) THEN
        ALLOCATE(FD(norder/2))
        CALL FD_weights_hvincenti(norder, FD, l_stg)
-       kvec=(0._num, 0._num)*kvec
-       kvecb=(0._num, 0._num)*kvecb
-       kvecf=(0._num, 0._num)*kvecf
        DO i=1_idp, norder/2
          kvec=kvec+2.0_num/d*FD(i)*SIN((i*2.0_num-1.0_num)*PI*ones/nfft)
        ENDDO
      ELSE
        CALL fftfreq(nfft, kvec,  d)
      ENDIF
+     
      IF(l_stg) THEN
        kvecf=kvec*EXP(-ii*PI*onesp/nfft)
        kvecb=kvec*EXP(ii*PI*onesp/nfft)
@@ -464,8 +539,25 @@ MODULE gpstd_solver
        kvecb=kvec
        kvecf=kvec
      ENDIF
+     
      DEALLOCATE(onesp,ones,FD)
   END SUBROUTINE compute_k_1d
+  
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine computes a 1D k-vector along a given direction
+  ! 
+  !> @author
+  !> H. Vincenti
+  !
+  !> @params[in] nxx - INTEGER(idp) - number of points on which the FFT is performed on 
+  !> current axis
+  !> @params[in] dxx - REAL(num) - sampling period along current axis 
+  !> @params[in,out] kxx - array of REAL(num) - kvector along current durection 
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
   SUBROUTINE fftfreq(nxx, kxx, dxx)
     USE constants
     IMPLICIT NONE
@@ -502,6 +594,22 @@ MODULE gpstd_solver
     kxx=kxx/(dxx*nxx)/2.0_num*PI
   END SUBROUTINE fftfreq
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This function computes SINC value of an array of real 
+  ! 
+  !> @author
+  !> H. Kallala
+  !
+  !> @params[in] block - array of REAL(num)
+  !> @params[in] n1 - INTEGER(idp) - size of array block along dimension 1  
+  !> @params[in] n2 - INTEGER(idp) - size of array block along dimension 2
+  !> @params[in] n3 - INTEGER(idp) - size of array block along dimension 3  
+  !> @params[out] sinc_block - array of REAL(num) - SINC of input array 
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
   FUNCTION sinc_block(n1, n2, n3, block)
     USE  constants
     INTEGER(idp), INTENT(IN)                     :: n1, n2, n3
@@ -519,6 +627,19 @@ MODULE gpstd_solver
     RETURN
   END FUNCTION sinc_block
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This function computes SINC value of a REAL(num)
+  ! 
+  !> @author
+  !> H. Kallala
+  !
+  !> @params[in] x -  REAL(num)  
+  !> @params[out] sinc - REAL(num) - returns SINC of input variable 
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
   FUNCTION sinc (x)
     USE picsar_precision
     IMPLICIT NONE
@@ -532,6 +653,7 @@ MODULE gpstd_solver
     RETURN
   END FUNCTION sinc
 
+  ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine constructs gpstd_blocks and puts them into cc_mat operator
   !
@@ -540,9 +662,7 @@ MODULE gpstd_solver
   !
   !> @date
   !> Creation 2017
-  ! ________________________________________________________________________________________
-
-
+  ! ______________________________________________________________________________________
   SUBROUTINE init_gpstd() bind(C, name='init_gpstd_pxr')
     USE matrix_coefficients
     USE PICSAR_PRECISION
@@ -766,6 +886,24 @@ MODULE gpstd_solver
     CALL delete_k_space
   END SUBROUTINE init_gpstd
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This function computes coefficients of order p stencil for centered/staggered 
+  !> scheme - Taken from H. Vincenti and J-L Vay, CPC, 200, 147 (2016).
+  ! 
+  !> @author
+  !> H. Vincenti 
+  !> H. Kallala
+  !
+  !> @params[in] is_staggered - LOGICAL(lp) - assumes staggered grid if 
+  !> is_staggered==.TRUE.  
+  !> @params[in] p - INTEGER(idp) - spatial order p of the stencil 
+  !> @params[out] w - array of REAL(num) of size p/2 - array containing 
+  !> stencil coefficients  
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
   SUBROUTINE FD_weights_hvincenti(p, w, is_staggered)
     USE picsar_PRECISION
     IMPLICIT NONE
@@ -821,7 +959,6 @@ MODULE gpstd_solver
     ENDIF
     RETURN
   END FUNCTION logfactorial
-
 
   SUBROUTINE copy_field(ex_out, n1, n2, n3, ex_in, nxx, nyy, nzz)
     USE PICSAR_precision
