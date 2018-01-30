@@ -831,7 +831,6 @@ MODULE control_file
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') nzjguards
 #if defined(FFTW)
-#if defined(P3DFFT)
       ELSE IF (INDEX(buffer, 'ngguards_z') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') nzg_group
@@ -841,7 +840,6 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'ngguards_x') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') nxg_group
-#endif
 #endif
       ELSE IF (INDEX(buffer, 'l_plasma') .GT. 0) THEN
         ix = INDEX(buffer, "=")
