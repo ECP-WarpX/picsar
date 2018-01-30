@@ -1140,12 +1140,22 @@ ALLOCATE(cell_y_min(1:nprocy), cell_y_max(1:nprocy))
 ALLOCATE(cell_z_min(1:nprocz), cell_z_max(1:nprocz))
 
 #if defined(FFTW)
-IF(fftw_hybrid) fftw_with_mpi = .TRUE.
+IF(fftw_hybrid) THEN 
+  fftw_with_mpi = .TRUE.
+  ! - Properly sets group guard cells along X 
+  ! - As there is no groups along X, nxg_group and nxguards must be identical
+  IF (nxg_group .EQ. 0_idp) THEN
+    nxg_group=nxguards ! Case when nxg_group has not been defined: use nxguards
+  ELSE
+    nxguards=nxg_group ! Case when nxg_group has been defined by user. In that case 
+                        ! use nxguards=ngguards_x. 
+  ENDIF
+ENDIF
 IF(p3dfft_flag) THEN
   fftw_with_mpi = .TRUE.
   fftw_hybrid = .TRUE.
   fftw_mpi_transpose = .FALSE.
-endif
+ENDIF
 ! With fftw_with_mpi CPU split is performed along z only 
 IF (fftw_with_mpi .AND. .NOT. fftw_hybrid) THEN
   mz=INT(nz_global,C_INTPTR_T); ly=INT(ny_global,C_INTPTR_T); kx=INT(nx_global,C_INTPTR_T)
