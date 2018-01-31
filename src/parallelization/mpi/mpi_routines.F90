@@ -1617,13 +1617,6 @@ IF (l_spectral) THEN
     nkx=local_nx_tr
     nky=local_ny_tr
     nkz=local_nz_tr
-    ! If fftw_mpi transposed plans are used, fourier fields need to be
-    ! transposed too
-    IF(fftw_mpi_transpose) THEN
-      nkx = local_nx_tr
-      nky = nz_group
-      nkz = local_ny_tr
-    ENDIF
     IF(p3dfft_flag) THEN
       nkx = p3d_fsize(1)
       nky = p3d_fsize(2) 
