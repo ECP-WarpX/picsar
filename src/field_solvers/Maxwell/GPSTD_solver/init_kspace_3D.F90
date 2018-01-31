@@ -44,41 +44,46 @@ MODULE gpstd_solver
     INTEGER(idp), INTENT(INOUT) :: nfftx, nffty, nfftz
     
     IF(fftw_with_mpi) THEN
+      !> Global pseudo spectral solver, Only periodic bcs, no guard cells
       IF(.NOT. fftw_hybrid) THEN
         IF(.NOT. fftw_mpi_transpose) THEN
           nfftx=nx_global
           nffty=ny_global
           nfftz=local_nz
-        ELSE
+        ELSE IF(fftw_mpi_transpose) THEN
           nfftx=nx_global
           nffty=nz_global
           nfftz=local_ny_tr
         ENDIF
-      ELSE
+      !> Hybrid pseudo spectral solver 
+      ELSE IF(fftw_hybrid) THEN
         IF(.NOT. fftw_mpi_transpose) THEN
           nfftx = nx_group
           nffty = ny_group
           nfftz = local_nz
-        ELSE
+        ELSE IF(fftw_mpi_transpose) THEN
           nfftx = nx_group
           nffty = nz_group
           nfftz = local_ny_tr
         ENDIF
       ENDIF
 #if defined(P3DFFT)
+      !> If p3d_fft to perform ffts and create groups in y and z directions
       IF(p3dfft_flag) THEN
         nfftx = p3d_fsize(1)
         nffty = p3d_fsize(2)
         nfftz = p3d_fsize(3)
       ENDIF
 #endif
-
-    ELSE
+    !> Local pseudo spectral solver
+    ELSE IF(.NOT. fftw_with_mpi) THEN
+      !> When using picsar with smilei
 #if defined(LIBRARY)
       nfftx = nx+2*nxguards+1
       nffty = ny+2*nyguards+1
       nfftz = nz+2*nzguards+1
 #else
+      !> When using picsar
       nfftx = nx+2*nxguards
       nffty = ny+2*nyguards
       nfftz = nz+2*nzguards
@@ -113,35 +118,40 @@ MODULE gpstd_solver
     USE params
     USE fields, ONLY : nxguards, nyguards, nzguards
     INTEGER(idp), INTENT(INOUT) :: nfftx, nffty, nfftz
-    
+    !> When using global or hybrid pseudo spectral solver
     IF( fftw_with_mpi) THEN
+      !> When using global pseudo spectral solver with periodic bcs and no guard
+      !> cells
       IF(.NOT. fftw_hybrid) THEN
         IF(.NOT. fftw_mpi_transpose) THEN
           nfftx=nx_global
           nffty=ny_global
           nfftz=nz_global
-        ELSE
+        ELSE IF(fftw_mpi_transpose) THEN
           nfftx=nx_global
           nffty=nz_global
           nfftz=ny_global
         ENDIF
-      ELSE
+      ELSE IF(fftw_hybrid) THEN
         IF(.NOT. fftw_mpi_transpose) THEN
           nfftx = nx_group
           nffty = ny_group
           nfftz = nz_group
-        ELSE
+        ELSE IF(fftw_mpi_transpose) THEN
           nfftx = nx_group
           nffty = nz_group
           nfftz = ny_group
         ENDIF
       ENDIF
-    ELSE
+    !> local pseudo spectral solver
+    ELSE IF(.NOT. fftw_with_mpi) THEN
 #if defined(LIBRARY)
+      !> When using Smilei with picsar
       nfftx = nx+2*nxguards+1
       nffty = ny+2*nyguards+1
       nfftz = nz+2*nzguards+1
 #else
+      !> When using only picsar
       nfftx = nx+2*nxguards
       nffty = ny+2*nyguards
       nfftz = nz+2*nzguards
@@ -152,12 +162,14 @@ MODULE gpstd_solver
     ENDIF
 
 #if defined(P3DFFT) 
+    !> When using P3DFFT library to perform ffts
     IF(p3dfft_flag) THEN
       IF(p3dfft_stride) THEN
        nfftx =nz_group
        nffty =ny_group
        nfftz =nx_group
-      ELSE
+      !> When P3D is compiled with stride flag on 
+      ELSE IF( .NOT. p3dfft_stride) THEN
        nfftx = nx_group 
        nffty = ny_group
        nfftz = nz_group 

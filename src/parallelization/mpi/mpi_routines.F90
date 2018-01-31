@@ -1617,6 +1617,13 @@ IF (l_spectral) THEN
     nkx=local_nx_tr
     nky=local_ny_tr
     nkz=local_nz_tr
+    ! If fftw_mpi transposed plans are used, fourier fields need to be
+    ! transposed too
+    IF(fftw_mpi_transpose) THEN
+      nkx = local_nx_tr
+      nky = nz_group
+      nkz = local_ny_tr
+    ENDIF
     IF(p3dfft_flag) THEN
       nkx = p3d_fsize(1)
       nky = p3d_fsize(2) 
@@ -1643,7 +1650,7 @@ IF (l_spectral) THEN
       p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
       ALLOCATE(rhooldf(p3d_fstart(1):p3d_fend(1),                                      &
       p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
-    ELSE
+    ELSE IF(.NOT. p3dfft_flag) THEN
       ! - Allocate complex arrays
       cdata = fftw_alloc_complex(alloc_local)
       CALL c_f_pointer(cdata, exf, [nkx, nky, nkz])
@@ -1696,7 +1703,7 @@ IF (l_spectral) THEN
       cin = fftw_alloc_real(2 * alloc_local);
       CALL c_f_pointer(cin, rhoold_r, [nxx, nyy, nzz])
       cin = fftw_alloc_real(2 * alloc_local);
-    ELSE
+    ELSE IF(p3dfft_flag) THEN
       ALLOCATE(ex_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),               &
       p3d_istart(3):p3d_iend(3)))
       ALLOCATE(ey_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),               &
@@ -1720,7 +1727,8 @@ IF (l_spectral) THEN
       ALLOCATE(rhoold_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),           &
       p3d_istart(3):p3d_iend(3)))
     ENDIF      
-  ELSE
+  ! local pseudo spectral solver
+  ELSE IF(.NOT. fftw_with_mpi) THEN
     nkx=(2*nxguards+nx)/2+1! Real To Complex Transform
     nky=(2*nyguards+ny)
     nkz=(2*nzguards+nz)
