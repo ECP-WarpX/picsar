@@ -1,0 +1,195 @@
+######################## INPUT FILE FOR THE CODE PICSAR
+section::cpusplit
+ nprocx =1
+ nprocy =1
+ nprocz =8
+ topology = 0 
+ 
+ # MPI com type
+ mpicom_curr =0
+ # LVEC size for the current deposition
+ lvec_curr_depo = 8
+ 
+ # LVEC size for the charge deposition
+ lvec_charge_depo = 64
+
+ # LVEC size for the charge deposition
+ lvec_fieldgathe = 256
+ 
+ # buffer size for MPI exchanges
+ mpi_buf_size = 2000
+ 
+end::cpusplit
+
+section::main
+ # Number of grid points in x,y,z
+ nx =41 
+ ny =41 
+ nz =101 
+
+ # Origin of simulation axes
+ xmin = -1e-5
+ ymin = -1e-5
+ zmin = -1e-5
+ xmax = 1e-5
+ ymax = 1e-5
+ zmax = 1e-5
+ # Simulation duration (in 1/w0)
+ #t_max = 7
+ nsteps=50
+ 
+ ntilex =1 
+ ntiley =1  
+ ntilez =1  
+ 
+ # Guard cells for the local domain 
+ nguardsx =10
+ nguardsy =10
+ nguardsz =10
+ njguardsx =10
+ njguardsy =10
+ njguardsz =10
+  
+ # Group guard cells for MPI groups along X,Y,Z
+ ngguards_x=10 
+ ngguards_y=10
+ ngguards_z=10
+end::main
+
+
+section::solver
+ 
+ # Maxwell solver order
+ l_spectral = .TRUE.
+ # If g_spectral is .TRUE. uses GPSTD formalism (Block matrix by block vector product) 
+ # Otherwise: regular inlined PSATD
+ g_spectral = .TRUE.
+ # If fftw_with_mpi is .TRUE., uses a distributed FFT algorithm (hybrid or purely global)
+ fftw_with_mpi = .TRUE.
+ # If fftw_mpi_tr is .TRUE., Fourier arrays are not transposed back before the Maxwell 
+ # push. This saves two global transpositions and can speed-up FFTs
+ # NB: this is currently not supported in 2D or with p3dfft
+ fftw_mpi_tr = .TRUE.
+ # If fftw_hybrid is .TRUE., then FFTs are done by MPI subgroups 
+ fftw_hybrid = .TRUE.
+ # If p3dfft_flag is .TRUE, used p3dfft library to perform transpositions 
+ # FFTs might still be done with FFTW or other 1D FFT libraries (e.g. ESSL on IBM)
+ p3dfft_flag=.TRUE.
+ # If p3dfft_stride is .TRUE. assumes that this STRIDE=1 was used when compiling p3dfft
+ # This can considerably speed up computations and will be imposed in the future 
+ p3dfft_stride=.TRUE. 
+ # Number of MPI groups along the Z direction 
+ nb_group_z=1
+ # Number of MPI groups along Y direction (only considered with p3dfft_flag=.TRUE.)
+ nb_group_y=1
+ 
+ # Stencil order along X, Y, Z 
+ norderx =164
+ nordery =164
+ norderz =164
+ # Shape factor order
+ nox =1
+ noy =1 
+ noz =1 
+
+ # Current deposition method
+ currdepo = 0
+ 
+ # Field gathering method
+ fieldgathe = 0
+ 
+ # Type of particle communication
+ partcom = 1
+
+ # Charge deposition method
+ rhodepo = 0
+
+ # Particle pusher and field gathering seperated
+ fg_p_pp_separated = 0
+
+ # Particle pusher algorithm
+ particle_pusher = 0
+
+end::solver
+
+section::plasma
+
+ nlab=1.1e25
+ gamma0=1
+ 
+ # Initialization type
+ pdistr=1
+ 
+end::plasma
+
+section::sorting
+ activation = 1
+ dx=0.5
+ dy=0.5
+ dz=0.5
+ shiftx=-0.5
+ shifty=-0.5
+ shiftz=-0.5
+end::sorting 
+
+section::output
+ output_frequency =10
+ output_step_min  = 0
+ output_step_max  = 1000
+ ex = 1
+ ey = 1
+ ez = 1
+ jy = 1
+ jx= 1
+ jz = 1
+end::output
+
+section::timestat
+  activation=0
+  period=1
+  buffer=10
+end::timestat
+
+#section::antenna
+  # Laser wave vector (orthogonal to antenna)
+  vector_x = .0
+  vector_y = 0.0
+  vector_z = 1.0
+  # Laser center in antenna plane
+  spot_x = 0e-6  
+  spot_y = 0e-5
+  spot_z = 0e-6
+  # Laser wavelength 
+  lambda_laser = 2e-6
+  # Polar vector (E-field)
+  pvec_x = 0.0
+  pvec_y = 1.0
+  pvec_z = 0.0
+  # Polar angle (0 - linear, 1/4 - Circular)
+  polangle = 0
+  # Laser duration 
+  laser_ctau =5e-6
+  # Laser amplitude component 
+  laser_a_1=1.
+  laser_a_2=.0
+  # Laser waist 
+  laser_w0 = 2e-6
+  # Focusing length 
+  focal_length = 0.
+  temporal_order = 2 
+#end::antenna
+
+section::temporal
+  # output 0 - binary, 1 - ascii
+  #kinE=1
+  #exE=1
+  #eyE=1
+  #ezE=1
+  #bxE=1
+  #byE=1
+  #bzE=1
+  #divE-rho=1
+  #rho=1
+  #divE=1
+end::temporal
+
