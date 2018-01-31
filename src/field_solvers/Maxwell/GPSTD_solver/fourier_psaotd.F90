@@ -75,8 +75,8 @@ MODULE fourier_psaotd
       CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
     ENDIF
     IF(fftw_mpi_transpose) THEN
-      planner_flag_1 = FFTW_MPI_TRANSPOSED_OUT
-      planner_flag_2 = FFTW_MPI_TRANSPOSED_IN
+      planner_flag_1 = IOR(FFTW_MEASURE,FFTW_MPI_TRANSPOSED_OUT)
+      planner_flag_2 = IOR(FFTW_MEASURE,FFTW_MPI_TRANSPOSED_IN)
     ELSE
       planner_flag_1 = FFTW_MEASURE
       planner_flag_2 = FFTW_MEASURE

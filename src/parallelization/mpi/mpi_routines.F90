@@ -877,18 +877,30 @@ INTEGER(isp)                              :: key, key_roots,color_roots
       IF(.NOT. p3dfft_flag) THEN
         ! - 3D case 
         IF(c_dim == 3) THEN
+          ! Fourier arrays have transposed dimensions
           IF(fftw_mpi_transpose) THEN
+            ! - Init starting index/local size of FFT input arrays along Z
+            ! - and starting index/local size of FFT output arrays along Y 
+            ! - (transposed case)
             alloc_local = fftw_mpi_local_size_3d_transposed(nz_group, ny_group,         &
-            nx_group/2+1, mpi_comm_group_id(i), local_nz, local_z0, local_ny, local_y0)
-            ! - Sanity check:  if transposition leads to local_ny > nprocy in group 
-            ! - in that case, local_ny can be 0 --> Abort
+            nx_group/2+1, mpi_comm_group_id(i), local_nz, local_z0, local_ny_tr,        &
+            local_y0_tr)
+            ! - Init starting index/ local size of FFT input arrays along Y
+            local_y0=0 
+            local_ny=ny_group
+            ! - Sanity check:  if transposition leads to local_ny_tr > nprocy in group 
+            ! - in that case, local_ny_tr can be 0 --> Abort
             ! - Same if local_nz<nprocz in group. This can lead to local_nz=0
             ! - In that case --> Abort as well 
-            IF(local_nz .EQ. 0_idp .OR. local_ny .EQ. 0_idp) THEN
+            IF(local_nz .EQ. 0_idp .OR. local_ny_tr .EQ. 0_idp) THEN
               WRITE(0,*) 'ERROR local_ny or local_nz = 0 in rank ',rank
               CALL MPI_ABORT(comm,errcode,ierr)
             ENDIF
-          ELSE
+            ! - Init starting index and local size of output FFT arrays along Z
+            local_z0_tr=local_z0
+            local_nz_tr=ny_group
+          ! Fourier arrays have same dimensions than real arrays
+          ELSE 
             alloc_local = FFTW_MPI_LOCAL_SIZE_3D(nz_group, ny_group, nx_group/2+1,      &
             mpi_comm_group_id(i), local_nz, local_z0)
             IF(local_nz .EQ. 0_idp ) THEN
@@ -896,12 +908,22 @@ INTEGER(isp)                              :: key, key_roots,color_roots
               CALL MPI_ABORT(comm,errcode,ierr)
             ENDIF
             local_ny = ny_group 
-            local_y0 =0 
+            local_y0 =0_idp
+            ! - Init starting indexes and local sizes of output FFT arrays along Y and Z
+            local_ny_tr=local_ny
+            local_y0_tr=local_y0
+            local_nz_tr=local_nz
+            local_z0_tr=local_z0
           ENDIF
-          local_nx = 2*(nx_group/2+1) 
-          local_x0 =0
+          ! - Init starting index and local size of local input FFT arrays along X
+          local_nx = 2_idp*(nx_group/2+1) 
+          local_x0 =0_idp
+          ! - Init starting index and local size of local output FFT arrays along X
+          local_nx_tr=nx_group/2+1
+          local_x0_tr=local_x0
         ! - 2D case 
-        ELSE IF(c_dim == 2) THEN
+        ELSE IF(c_dim == 2_idp) THEN
+          ! - Init FFT
           alloc_local = FFTW_MPI_LOCAL_SIZE_2D(nz_group, nx_group/2+1,                  &
           MPI_COMM_GROUP_ID(i), local_nz, local_z0)
           ! - Sanity check: if local_nz<nprocz in group, this can lead to 
@@ -910,10 +932,20 @@ INTEGER(isp)                              :: key, key_roots,color_roots
             WRITE(0,*) 'ERROR local_nz = 0 in rank ',rank
             CALL MPI_ABORT(comm,errcode,ierr)
           ENDIF
-            local_ny = ny_group
-            local_y0 = 0
-            local_nx = 2*(nx_group/2+1) 
-            local_x0 = 0
+          local_ny = ny_group
+          local_y0 = 0_idp
+          local_nx = 2_idp*(nx_group/2_idp+1_idp)
+          local_x0 = 0_idp
+          ! - Init starting indexes/ local sizes of FFT output arrays along X,Y,Z
+          ! - NB: At present, 2D geometry does not support fftw_transpose mode 
+          ! - So dimensions and starting indexes of local input/output FFT arrays are 
+          ! - identical 
+          local_nz_tr=local_nz
+          local_z0_tr=local_z0
+          local_ny_tr=local_ny
+          local_y0_tr=local_y0
+          local_nx_tr=local_nx/2_idp
+          local_x0_tr=local_x0  
         ENDIF
       ! - Case 2: P3DFFT is used for global FFT transpositions among groups 
       ELSE 
@@ -926,12 +958,23 @@ INTEGER(isp)                              :: key, key_roots,color_roots
           .FALSE.)
        CALL p3dfft_get_dims(p3d_istart,p3d_iend,p3d_isize,1)
        CALL p3dfft_get_dims(p3d_fstart,p3d_fend,p3d_fsize,2)
+       ! - Init starting indexes/ local sizes of FFT input arrays along X,Y,Z
        local_nz = p3d_isize(3) ! Local size of FFT array along Z 
        local_ny = p3d_isize(2) ! Local size of FFT array along Y
        local_nx = p3d_isize(1) ! Local size of FFT array along X
-       local_z0 = p3d_istart(3) - 1 ! Min global X-index boundary of local FFT array 
-       local_y0 = p3d_istart(2) - 1 ! Min global Y-index boundary of local FFT array 
-       local_x0 = p3d_istart(1) - 1 ! Min global Z-index boundary of local FFT array 
+       local_z0 = p3d_istart(3) - 1_idp ! Min global X-index boundary of local FFT array 
+       local_y0 = p3d_istart(2) - 1_idp ! Min global Y-index boundary of local FFT array 
+       local_x0 = p3d_istart(1) - 1_idp ! Min global Z-index boundary of local FFT array 
+       ! - Init starting indexes/ local sizes of FFT output array along X,Y,Z
+       ! - NB: At present, p3dfft does not support fftw_transpose mode 
+       ! - So dimensions and starting indexes of local input/output FFT arrays are 
+       ! - identical 
+       local_nz_tr=local_nz
+       local_ny_tr=local_ny
+       local_nx_tr=local_nx/2_idp
+       local_z0_tr=local_z0
+       local_y0_tr=local_y0
+       local_x0_tr=local_x0
 #endif
       ENDIF
     ENDIF
@@ -947,32 +990,31 @@ INTEGER(isp)                              :: key, key_roots,color_roots
     CALL MPI_ABORT(comm,errcode,ierr)  
   ENDIF
   
-  ! -- Gets min and max indices of the global FFT array without 
+  ! -- Gets min and max indices of the global FFT input array without 
   ! -- the group guard cells 
   ! - Along X
-  iz_min_r = 1
+  iz_min_r = 1_idp
   iz_max_r = local_nz
-  IF(group_z_min_boundary) iz_min_r = nzg_group+1
+  IF(group_z_min_boundary) iz_min_r = nzg_group+1_idp
   IF(group_z_max_boundary) iz_max_r = local_nz-nzg_group
   ! - Along Y 
-  iy_min_r = 1
+  iy_min_r = 1_idp
   iy_max_r = local_nz
-  IF(group_y_min_boundary) iy_min_r = nyg_group+1
+  IF(group_y_min_boundary) iy_min_r = nyg_group+1_idp
   IF(group_y_max_boundary) iy_max_r = local_ny-nyg_group
 
-
-  ! -- Computes global index of the lower z-boundary of the distributed FFT array
+  ! -- Computes global index of the lower z-boundary of the distributed FFT input array
   ! -- (The one that includes group guard cells). 
   ! -- 0 index corresponds to origin of the global simulation grid (WITHOUT guard cells) 
-  j=0
-  DO i = 1 ,z_group_coords
+  j=0_idp
+  DO i = 1_idp ,z_group_coords
      j = j +  nz_group_global_array(x_group_coords+                                  &
-     y_group_coords*nb_group_x+(i-1)*nb_group_x*nb_group_y+1)
+     y_group_coords*nb_group_x+(i-1_idp)*nb_group_x*nb_group_y+1_idp)
   ENDDO
   iz_min_global = local_z0-nzg_group + j ! 
   ! -- Computes global index of the upper z-boundary of the distributed FFT array
   ! -- (The one that includes group guard cells) 
-  iz_max_global = iz_min_global + local_nz - 1 
+  iz_max_global = iz_min_global + local_nz - 1_idp
   
   ! -- Array allocation for performing an MPI allgather operation 
   ALLOCATE(cell_z_min_g(nprocz),cell_z_max_g(nprocz))
@@ -996,15 +1038,15 @@ INTEGER(isp)                              :: key, key_roots,color_roots
   ! -- Computes global index of the lower y-boundary of the distributed FFT array
   ! -- (The one that includes group guard cells). 
   ! -- 0 index corresponds to origin of the global simulation grid (WITHOUT guard cells) 
-  j=0
-  DO i = 1 ,y_group_coords
-     j = j +ny_group_global_array(x_group_coords+(i-1)*nb_group_x+             & 
-     z_group_coords*nb_group_x*nb_group_y+1)
+  j=0_idp
+  DO i = 1_idp,y_group_coords
+     j = j +ny_group_global_array(x_group_coords+(i-1_idp)*nb_group_x+               & 
+     z_group_coords*nb_group_x*nb_group_y+1_idp)
   ENDDO
   iy_min_global = local_y0-nyg_group + j
   ! -- Computes global index of the upper y-boundary of the distributed FFT array
   ! -- (The one that includes group guard cells) 
-  iy_max_global = iy_min_global + local_ny - 1
+  iy_max_global = iy_min_global + local_ny - 1_idp
 
   ALLOCATE(cell_y_min_g(nprocy),cell_y_max_g(nprocy))
   ALLOCATE(all_iy_min_global(nproc),all_iy_max_global(nproc))
@@ -1020,14 +1062,14 @@ INTEGER(isp)                              :: key, key_roots,color_roots
   ! -- Store min and max indices along y in 1D arrays
   DO i=1, nprocy
     cell_y_min_g(i) = all_iy_min_global(x_coords+(i-1)*nprocx+ & 
-    z_coords*nprocx*nprocy+1)
+    z_coords*nprocx*nprocy+1_idp)
     cell_y_max_g(i) = all_iy_max_global(x_coords+(i-1)*nprocx+ &
-    z_coords*nprocx*nprocy+1)
+    z_coords*nprocx*nprocy+1_idp)
   ENDDO
   DEALLOCATE(all_iy_max_global,all_iy_min_global)
   
   ! -- upper/lower x-boundaries of group 
-  ix_min_r = 1
+  ix_min_r = 1_idp
   ix_max_r = nx + 2*nxg_group
   
   ! -- Deallocate used arrays
@@ -1044,7 +1086,8 @@ END SUBROUTINE setup_groups
 !> @brief
 !> This routine gathers on all ranks, the sizes of the distributed FFT array along z 
 !> on each rank. This is useful to obtain the grid decomposition performed by the 
-!> FFTW distributed FFT library 
+!> FFTW distributed FFT library - This is used when fftw_with_mpi=.TRUE. 
+!> and fftw_hybrid=.FALSE.
 !> @ author 
 !> H. Kallala
 !> 2018
@@ -1087,6 +1130,33 @@ SUBROUTINE adjust_grid_mpi_global
   iz_min_r = 1
   iz_max_r = local_nz
   
+  ! - Get local sizes of FFT input/output arrays along directions orthogonal to 
+  ! - the direction of MPI CPU-split (FFTW-MPI only)
+  IF ((.NOT. fftw_hybrid) .AND. (fftw_with_mpi)) THEN 
+    IF (fftw_mpi_transpose) THEN 
+      ! - Starting indexes/local sizes of FFT input arrays along Y
+      local_ny=ny_global
+      local_y0=0
+      ! - Starting indexes/local sizes of FFT output arrays along Z
+      local_nz_tr=ny_global
+      local_z0_tr=0
+    ELSE
+      ! - Starting indexes/local sizes of FFT input arrays along Y
+      local_ny=ny_global
+      local_y0=0
+      ! - Starting indexes/local sizes of FFT output arrays along Y and Z
+      local_ny_tr=local_ny
+      local_y0_tr=local_y0
+      local_nz_tr=ny_global
+      local_z0_tr=0
+    ENDIF 
+    ! - Starting indexes/local sizes of FFT input arrays along X
+    local_nx=(nx_global/2_idp+1)*2_idp
+    local_x0=0
+    ! - Starting indexes/local sizes of FFT output arrays along X
+    local_nx_tr=local_nx/2_idp
+    local_x0_tr=local_x0
+  ENDIF 
 #endif
 
 END SUBROUTINE adjust_grid_mpi_global
@@ -1164,7 +1234,7 @@ IF (fftw_with_mpi .AND. .NOT. fftw_hybrid) THEN
     alloc_local = fftw_mpi_local_size_3d(mz, ly, kx/2+1, comm, local_nz, local_z0)
   ELSE
     alloc_local = fftw_mpi_local_size_3d_transposed(mz, ly, kx/2+1, comm, local_nz,   &
-    local_z0, local_ny, local_y0)
+    local_z0, local_ny_tr, local_y0_tr)
   ENDIF
   ! Regular CPU split
   ! If the total number of gridpoints cannot be exactly subdivided then fix
@@ -1510,6 +1580,7 @@ IMPLICIT NONE
 #if defined(FFTW)
 TYPE(C_PTR) :: cdata, cin
 INTEGER(idp) :: imn, imx, jmn, jmx, kmn, kmx
+INTEGER(idp) :: nxx, nyy, nzz
 #endif
 ! --- Allocate regular grid quantities (in real space)
 ALLOCATE(ex(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
@@ -1543,40 +1614,35 @@ bz_p => bz
 ! ---  Allocate grid quantities in Fourier space
 IF (l_spectral) THEN
   IF (fftw_with_mpi) THEN
-    nkx=(nx_global)/2+1! Real To Complex Transform
-    nky=ny_global
-    nkz=local_nz
-    IF(fftw_mpi_transpose) THEN
-      nkx=(nx_global)/2+1! Real To Complex Transform
-      nky=nz_global
-      nkz=local_ny
-    ENDIF
-    IF(fftw_hybrid)  THEN
-      nkx = nx_group/2+1
-      nky = ny_group
-      nkz = local_nz
-      IF(fftw_mpi_transpose) THEN
-        nkx = nx_group/2+1
-        nky = nz_group
-        nkz = local_ny
-      ENDIF
-    ENDIF
+    nkx=local_nx_tr
+    nky=local_ny_tr
+    nkz=local_nz_tr
     IF(p3dfft_flag) THEN
       nkx = p3d_fsize(1)
       nky = p3d_fsize(2) 
       nkz = p3d_fsize(3)
-      ALLOCATE(exf(p3d_fstart(1):p3d_fend(1),p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
-      ALLOCATE(eyf(p3d_fstart(1):p3d_fend(1),p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
-      ALLOCATE(ezf(p3d_fstart(1):p3d_fend(1),p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
-      ALLOCATE(bxf(p3d_fstart(1):p3d_fend(1),p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
-      ALLOCATE(byf(p3d_fstart(1):p3d_fend(1),p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
-      ALLOCATE(bzf(p3d_fstart(1):p3d_fend(1),p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
-      ALLOCATE(jxf(p3d_fstart(1):p3d_fend(1),p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
-      ALLOCATE(jyf(p3d_fstart(1):p3d_fend(1),p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
-      ALLOCATE(jzf(p3d_fstart(1):p3d_fend(1),p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
-      ALLOCATE(rhof(p3d_fstart(1):p3d_fend(1),p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
-      ALLOCATE(rhooldf(p3d_fstart(1):p3d_fend(1),p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
-
+      ALLOCATE(exf(p3d_fstart(1):p3d_fend(1),                                          &
+      p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
+      ALLOCATE(eyf(p3d_fstart(1):p3d_fend(1),                                          &
+      p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
+      ALLOCATE(ezf(p3d_fstart(1):p3d_fend(1),                                          &
+      p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
+      ALLOCATE(bxf(p3d_fstart(1):p3d_fend(1),                                          &
+      p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
+      ALLOCATE(byf(p3d_fstart(1):p3d_fend(1),                                          &
+      p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
+      ALLOCATE(bzf(p3d_fstart(1):p3d_fend(1),                                          &
+      p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
+      ALLOCATE(jxf(p3d_fstart(1):p3d_fend(1),                                          &
+      p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
+      ALLOCATE(jyf(p3d_fstart(1):p3d_fend(1),                                          &
+      p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
+      ALLOCATE(jzf(p3d_fstart(1):p3d_fend(1),                                          &
+      p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
+      ALLOCATE(rhof(p3d_fstart(1):p3d_fend(1),                                         &
+      p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
+      ALLOCATE(rhooldf(p3d_fstart(1):p3d_fend(1),                                      &
+      p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
     ELSE
       ! - Allocate complex arrays
       cdata = fftw_alloc_complex(alloc_local)
@@ -1603,56 +1669,56 @@ IF (l_spectral) THEN
       CALL c_f_pointer(cdata, rhooldf, [nkx, nky, nkz])
       cdata = fftw_alloc_complex(alloc_local)
     ENDIF
-    ! - Allocate real arrays
-    IF(fftw_mpi_transpose .AND. fftw_hybrid) THEN
-      nkx = nx_group/2+1
-      nky = ny_group
-      nkz = local_nz
-    ENDIF
-    IF(fftw_mpi_transpose .AND. .NOT. fftw_hybrid) THEN
-      nkx = nx_global/2+1
-      nky = ny_global
-      nkz = local_nz
-    ENDIF
+    nxx = local_nx
+    nyy = local_ny
+    nzz = local_nz
     cin = fftw_alloc_real(2 * alloc_local);
     IF(.NOT. p3dfft_flag) THEN
-      CALL c_f_pointer(cin, ex_r, [2*nkx, nky, nkz])
+      CALL c_f_pointer(cin, ex_r, [nxx, nyy, nzz])
       cin = fftw_alloc_real(2 * alloc_local);
-      CALL c_f_pointer(cin, ey_r, [2*nkx, nky, nkz])
+      CALL c_f_pointer(cin, ey_r, [nxx, nyy, nzz])
       cin = fftw_alloc_real(2 * alloc_local);
-      CALL c_f_pointer(cin, ez_r, [2*nkx, nky, nkz])
+      CALL c_f_pointer(cin, ez_r, [nxx, nyy, nzz])
       cin = fftw_alloc_real(2 * alloc_local);
-      CALL c_f_pointer(cin, bx_r, [2*nkx, nky, nkz])
+      CALL c_f_pointer(cin, bx_r, [nxx, nyy, nzz])
       cin = fftw_alloc_real(2 * alloc_local);
-      CALL c_f_pointer(cin, by_r, [2*nkx, nky, nkz])
+      CALL c_f_pointer(cin, by_r, [nxx, nyy, nzz])
       cin = fftw_alloc_real(2 * alloc_local);
-      CALL c_f_pointer(cin, bz_r, [2*nkx, nky, nkz])
+      CALL c_f_pointer(cin, bz_r, [nxx, nyy, nzz])
       cin = fftw_alloc_real(2 * alloc_local);
-      CALL c_f_pointer(cin, jx_r, [2*nkx, nky, nkz])
+      CALL c_f_pointer(cin, jx_r, [nxx, nyy, nzz])
       cin = fftw_alloc_real(2 * alloc_local);
-      CALL c_f_pointer(cin, jy_r, [2*nkx, nky, nkz])
+      CALL c_f_pointer(cin, jy_r, [nxx, nyy, nzz])
       cin = fftw_alloc_real(2 * alloc_local);
-      CALL c_f_pointer(cin, jz_r, [2*nkx, nky, nkz])
+      CALL c_f_pointer(cin, jz_r, [nxx, nyy, nzz])
       cin = fftw_alloc_real(2 * alloc_local);
-      CALL c_f_pointer(cin, rho_r, [2*nkx, nky, nkz])
+      CALL c_f_pointer(cin, rho_r, [nxx, nyy, nzz])
       cin = fftw_alloc_real(2 * alloc_local);
-      CALL c_f_pointer(cin, rhoold_r, [2*nkx, nky, nkz])
+      CALL c_f_pointer(cin, rhoold_r, [nxx, nyy, nzz])
       cin = fftw_alloc_real(2 * alloc_local);
     ELSE
-      nkx = p3d_isize(1) 
-      nky = p3d_isize(2) 
-      nkz = p3d_isize(3) 
-      ALLOCATE(ex_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),p3d_istart(3):p3d_iend(3)))
-      ALLOCATE(ey_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),p3d_istart(3):p3d_iend(3)))
-      ALLOCATE(ez_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),p3d_istart(3):p3d_iend(3)))
-      ALLOCATE(bx_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),p3d_istart(3):p3d_iend(3)))
-      ALLOCATE(by_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),p3d_istart(3):p3d_iend(3)))
-      ALLOCATE(bz_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),p3d_istart(3):p3d_iend(3)))
-      ALLOCATE(jx_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),p3d_istart(3):p3d_iend(3)))
-      ALLOCATE(jy_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),p3d_istart(3):p3d_iend(3)))
-      ALLOCATE(jz_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),p3d_istart(3):p3d_iend(3)))
-      ALLOCATE(rho_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),p3d_istart(3):p3d_iend(3)))
-      ALLOCATE(rhoold_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),p3d_istart(3):p3d_iend(3)))
+      ALLOCATE(ex_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),               &
+      p3d_istart(3):p3d_iend(3)))
+      ALLOCATE(ey_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),               &
+      p3d_istart(3):p3d_iend(3)))
+      ALLOCATE(ez_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),               &
+      p3d_istart(3):p3d_iend(3)))
+      ALLOCATE(bx_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),               &
+      p3d_istart(3):p3d_iend(3)))
+      ALLOCATE(by_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),               &
+      p3d_istart(3):p3d_iend(3)))
+      ALLOCATE(bz_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),               &
+      p3d_istart(3):p3d_iend(3)))
+      ALLOCATE(jx_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),               &
+      p3d_istart(3):p3d_iend(3)))
+      ALLOCATE(jy_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),               &
+      p3d_istart(3):p3d_iend(3)))
+      ALLOCATE(jz_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),               &
+      p3d_istart(3):p3d_iend(3)))
+      ALLOCATE(rho_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),              &
+      p3d_istart(3):p3d_iend(3)))
+      ALLOCATE(rhoold_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),           &
+      p3d_istart(3):p3d_iend(3)))
     ENDIF      
   ELSE
     nkx=(2*nxguards+nx)/2+1! Real To Complex Transform
