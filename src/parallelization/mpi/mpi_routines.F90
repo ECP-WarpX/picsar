@@ -1613,14 +1613,11 @@ bz_p => bz
 #if defined(FFTW)
 ! ---  Allocate grid quantities in Fourier space
 IF (l_spectral) THEN
+  ! - Case when fftw_with_mpi is .TRUE. (distributed FFT)
   IF (fftw_with_mpi) THEN
-    nkx=local_nx_tr
-    nky=local_ny_tr
-    nkz=local_nz_tr
+    ! - Allocate complex FFT arrays
+    ! - Case when p3dfft_flag is .TRUE. (p3dfft is used for distributed FFT)
     IF(p3dfft_flag) THEN
-      nkx = p3d_fsize(1)
-      nky = p3d_fsize(2) 
-      nkz = p3d_fsize(3)
       ALLOCATE(exf(p3d_fstart(1):p3d_fend(1),                                          &
       p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
       ALLOCATE(eyf(p3d_fstart(1):p3d_fend(1),                                          &
@@ -1643,8 +1640,11 @@ IF (l_spectral) THEN
       p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
       ALLOCATE(rhooldf(p3d_fstart(1):p3d_fend(1),                                      &
       p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
+    ! - Case when FFTW is used for the distributed FFT
     ELSE IF(.NOT. p3dfft_flag) THEN
-      ! - Allocate complex arrays
+      nkx=local_nx_tr
+      nky=local_ny_tr
+      nkz=local_nz_tr
       cdata = fftw_alloc_complex(alloc_local)
       CALL c_f_pointer(cdata, exf, [nkx, nky, nkz])
       cdata = fftw_alloc_complex(alloc_local)
@@ -1669,10 +1669,12 @@ IF (l_spectral) THEN
       CALL c_f_pointer(cdata, rhooldf, [nkx, nky, nkz])
       cdata = fftw_alloc_complex(alloc_local)
     ENDIF
+    ! - Allocate real FFT arrays 
     nxx = local_nx
     nyy = local_ny
     nzz = local_nz
     cin = fftw_alloc_real(2 * alloc_local);
+    ! - Case when p3dfft_flag is .TRUE. (p3dfft is used for distributed FFT)
     IF(.NOT. p3dfft_flag) THEN
       CALL c_f_pointer(cin, ex_r, [nxx, nyy, nzz])
       cin = fftw_alloc_real(2 * alloc_local);
@@ -1696,6 +1698,7 @@ IF (l_spectral) THEN
       cin = fftw_alloc_real(2 * alloc_local);
       CALL c_f_pointer(cin, rhoold_r, [nxx, nyy, nzz])
       cin = fftw_alloc_real(2 * alloc_local);
+    ! - Case when FFTW is used for the distributed FFT
     ELSE IF(p3dfft_flag) THEN
       ALLOCATE(ex_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),               &
       p3d_istart(3):p3d_iend(3)))
@@ -1720,11 +1723,12 @@ IF (l_spectral) THEN
       ALLOCATE(rhoold_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),           &
       p3d_istart(3):p3d_iend(3)))
     ENDIF      
-  ! local pseudo spectral solver
+  ! Case of local FFTs (purely local pseudo-spectral solver)
   ELSE IF(.NOT. fftw_with_mpi) THEN
     nkx=(2*nxguards+nx)/2+1! Real To Complex Transform
     nky=(2*nyguards+ny)
     nkz=(2*nzguards+nz)
+    ! - Allocate complex FFT arrays
     ALLOCATE(exf(nkx, nky, nkz))
     ALLOCATE(eyf(nkx, nky, nkz))
     ALLOCATE(ezf(nkx, nky, nkz))
@@ -1736,6 +1740,7 @@ IF (l_spectral) THEN
     ALLOCATE(jzf(nkx, nky, nkz))
     ALLOCATE(rhof(nkx, nky, nkz))
     ALLOCATE(rhooldf(nkx, nky, nkz))
+    ! - Allocate real FFT arrays 
     imn=-nxguards; imx=nx+nxguards-1
     jmn=-nyguards;jmx=ny+nyguards-1
     kmn=-nzguards;kmx=nz+nzguards-1
@@ -1753,7 +1758,8 @@ IF (l_spectral) THEN
   ENDIF
 ENDIF
 #endif
-! --- Quantities used by the dynamic load balancer
+
+! --- Quantities used by the dynamic load balancer for distributed FFTs
 ALLOCATE(new_cell_x_min(1:nprocx), new_cell_x_max(1:nprocx))
 ALLOCATE(new_cell_y_min(1:nprocy), new_cell_y_max(1:nprocy))
 ALLOCATE(new_cell_z_min(1:nprocz), new_cell_z_max(1:nprocz))
