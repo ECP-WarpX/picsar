@@ -53,7 +53,7 @@ MODULE gpstd_solver
         ELSE IF(fftw_mpi_transpose) THEN
           nfftx=nx_global
           nffty=nz_global
-          nfftz=local_ny_tr
+          nfftz=local_nz_tr
         ENDIF
       !> Hybrid pseudo spectral solver 
       ELSE IF(fftw_hybrid) THEN
@@ -64,7 +64,7 @@ MODULE gpstd_solver
         ELSE IF(fftw_mpi_transpose) THEN
           nfftx = nx_group
           nffty = nz_group
-          nfftz = local_ny_tr
+          nfftz = local_nz_tr
         ENDIF
       ENDIF
 #if defined(P3DFFT)
@@ -436,14 +436,14 @@ MODULE gpstd_solver
         ELSE
           ALLOCATE(k_temp(nfftz))
           k_temp = kzc
-          DEALLOCATE(kzc);ALLOCATE(kzc(local_ny_tr))
-          kzc = k_temp(local_y0_tr+1:local_y0_tr+local_ny_tr)
+          DEALLOCATE(kzc);ALLOCATE(kzc(local_nz_tr))
+          kzc = k_temp(local_z0_tr+1:local_z0_tr+local_nz_tr)
           k_temp = kzf
-          DEALLOCATE(kzf);ALLOCATE(kzf(local_ny))
-          kzf = k_temp(local_y0_tr+1:local_y0_tr+local_ny_tr)
+          DEALLOCATE(kzf);ALLOCATE(kzf(local_nz_tr))
+          kzf = k_temp(local_z0_tr+1:local_z0_tr+local_nz_tr)
           k_temp = kzb
-          DEALLOCATE(kzb);ALLOCATE(kzb(local_ny_tr))
-          kzb = k_temp(local_y0_tr+1:local_y0_tr+local_ny_tr)
+          DEALLOCATE(kzb);ALLOCATE(kzb(local_nz_tr))
+          kzb = k_temp(local_z0_tr+1:local_z0_tr+local_nz_tr)
         ENDIF
         DEALLOCATE(k_temp)
       ELSE IF(p3dfft_flag) THEN

@@ -883,8 +883,8 @@ INTEGER(isp)                              :: key, key_roots,color_roots
             ! - and starting index/local size of FFT output arrays along Y 
             ! - (transposed case)
             alloc_local = fftw_mpi_local_size_3d_transposed(nz_group, ny_group,         &
-            nx_group/2+1, mpi_comm_group_id(i), local_nz, local_z0, local_ny_tr,        &
-            local_y0_tr)
+            nx_group/2+1, mpi_comm_group_id(i), local_nz, local_z0, local_nz_tr,        &
+            local_z0_tr)
             ! - Init starting index/ local size of FFT input arrays along Y
             local_y0=0 
             local_ny=ny_group
@@ -892,13 +892,13 @@ INTEGER(isp)                              :: key, key_roots,color_roots
             ! - in that case, local_ny_tr can be 0 --> Abort
             ! - Same if local_nz<nprocz in group. This can lead to local_nz=0
             ! - In that case --> Abort as well 
-            IF(local_nz .EQ. 0_idp .OR. local_ny_tr .EQ. 0_idp) THEN
+            IF(local_nz .EQ. 0_idp .OR. local_nz_tr .EQ. 0_idp) THEN
               WRITE(0,*) 'ERROR local_ny or local_nz = 0 in rank ',rank
               CALL MPI_ABORT(comm,errcode,ierr)
             ENDIF
             ! - Init starting index and local size of output FFT arrays along Z
-            local_z0_tr=local_z0
-            local_nz_tr=ny_group
+            local_y0_tr=0
+            local_ny_tr=nz_group
           ! Fourier arrays have same dimensions than real arrays
           ELSE 
             alloc_local = FFTW_MPI_LOCAL_SIZE_3D(nz_group, ny_group, nx_group/2+1,      &
@@ -956,8 +956,10 @@ INTEGER(isp)                              :: key, key_roots,color_roots
        CALL p3dfft_setup(pdims,INT(nx_group,isp),INT(ny_group,isp),INT(nz_group,isp),&
           mpi_comm_group_id(i),INT(nx_group,isp),INT(ny_group,isp),INT(nz_group,isp),&
           .FALSE.)
-       CALL p3dfft_get_dims(p3d_istart,p3d_iend,p3d_isize,1)
-       CALL p3dfft_get_dims(p3d_fstart,p3d_fend,p3d_fsize,2)
+       ! - Get local dimensions/starting indices of FFT arrays in real space
+       CALL p3dfft_get_dims(p3d_istart,p3d_iend,p3d_isize,1_isp)
+       ! - Get local dimensions/starting indices of FFT arrays in Fourier space
+       CALL p3dfft_get_dims(p3d_fstart,p3d_fend,p3d_fsize,2_isp)
        ! - Init starting indexes/ local sizes of FFT input arrays along X,Y,Z
        local_nz = p3d_isize(3) ! Local size of FFT array along Z 
        local_ny = p3d_isize(2) ! Local size of FFT array along Y
@@ -969,12 +971,12 @@ INTEGER(isp)                              :: key, key_roots,color_roots
        ! - NB: At present, p3dfft does not support fftw_transpose mode 
        ! - So dimensions and starting indexes of local input/output FFT arrays are 
        ! - identical 
-       local_nz_tr=local_nz
-       local_ny_tr=local_ny
-       local_nx_tr=local_nx/2_idp
-       local_z0_tr=local_z0
-       local_y0_tr=local_y0
-       local_x0_tr=local_x0
+       local_nz_tr=p3d_fsize(3)
+       local_ny_tr=p3d_fsize(2)
+       local_nx_tr=p3d_fsize(1)
+       local_z0_tr=p3d_fstart(3) - 1_idp
+       local_y0_tr=p3d_fstart(3) - 2_idp
+       local_x0_tr=p3d_fstart(3) - 3_idp
 #endif
       ENDIF
     ENDIF
@@ -1134,12 +1136,12 @@ SUBROUTINE adjust_grid_mpi_global
   ! - the direction of MPI CPU-split (FFTW-MPI only)
   IF ((.NOT. fftw_hybrid) .AND. (fftw_with_mpi)) THEN 
     IF (fftw_mpi_transpose) THEN 
-      ! - Starting indexes/local sizes of FFT input arrays along Y
+      ! - Starting indexes/local sizes of FFT real arrays along Y
       local_ny=ny_global
       local_y0=0
-      ! - Starting indexes/local sizes of FFT output arrays along Z
-      local_nz_tr=ny_global
-      local_z0_tr=0
+      ! - Starting indexes/local sizes of FFT Fourier arrays along Y
+      local_ny_tr=nz_global
+      local_y0_tr=0
     ELSE
       ! - Starting indexes/local sizes of FFT input arrays along Y
       local_ny=ny_global
@@ -1147,7 +1149,7 @@ SUBROUTINE adjust_grid_mpi_global
       ! - Starting indexes/local sizes of FFT output arrays along Y and Z
       local_ny_tr=local_ny
       local_y0_tr=local_y0
-      local_nz_tr=ny_global
+      local_nz_tr=local_nz
       local_z0_tr=0
     ENDIF 
     ! - Starting indexes/local sizes of FFT input arrays along X
@@ -1238,7 +1240,7 @@ IF (fftw_with_mpi .AND. .NOT. fftw_hybrid) THEN
     alloc_local = fftw_mpi_local_size_3d(mz, ly, kx/2+1, comm, local_nz, local_z0)
   ELSE
     alloc_local = fftw_mpi_local_size_3d_transposed(mz, ly, kx/2+1, comm, local_nz,   &
-    local_z0, local_ny_tr, local_y0_tr)
+    local_z0, local_nz_tr, local_z0_tr)
   ENDIF
   ! Regular CPU split
   ! If the total number of gridpoints cannot be exactly subdivided then fix
@@ -1619,36 +1621,26 @@ bz_p => bz
 IF (l_spectral) THEN
   ! - Case when fftw_with_mpi is .TRUE. (distributed FFT)
   IF (fftw_with_mpi) THEN
+    ! - FFT arrays dimensions in Fourier space along X,Y,Z
+    nkx=local_nx_tr
+    nky=local_ny_tr
+    nkz=local_nz_tr
     ! - Allocate complex FFT arrays
     ! - Case when p3dfft_flag is .TRUE. (p3dfft is used for distributed FFT)
     IF(p3dfft_flag) THEN
-      ALLOCATE(exf(p3d_fstart(1):p3d_fend(1),                                          &
-      p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
-      ALLOCATE(eyf(p3d_fstart(1):p3d_fend(1),                                          &
-      p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
-      ALLOCATE(ezf(p3d_fstart(1):p3d_fend(1),                                          &
-      p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
-      ALLOCATE(bxf(p3d_fstart(1):p3d_fend(1),                                          &
-      p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
-      ALLOCATE(byf(p3d_fstart(1):p3d_fend(1),                                          &
-      p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
-      ALLOCATE(bzf(p3d_fstart(1):p3d_fend(1),                                          &
-      p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
-      ALLOCATE(jxf(p3d_fstart(1):p3d_fend(1),                                          &
-      p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
-      ALLOCATE(jyf(p3d_fstart(1):p3d_fend(1),                                          &
-      p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
-      ALLOCATE(jzf(p3d_fstart(1):p3d_fend(1),                                          &
-      p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
-      ALLOCATE(rhof(p3d_fstart(1):p3d_fend(1),                                         &
-      p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
-      ALLOCATE(rhooldf(p3d_fstart(1):p3d_fend(1),                                      &
-      p3d_fstart(2):p3d_fend(2),p3d_fstart(3):p3d_fend(3)))
+      ALLOCATE(exf(nkx,nky,nkz))
+      ALLOCATE(eyf(nkx,nky,nkz))
+      ALLOCATE(ezf(nkx,nky,nkz))
+      ALLOCATE(bxf(nkx,nky,nkz))
+      ALLOCATE(byf(nkx,nky,nkz))
+      ALLOCATE(bzf(nkx,nky,nkz))
+      ALLOCATE(jxf(nkx,nky,nkz))
+      ALLOCATE(jyf(nkx,nky,nkz))
+      ALLOCATE(jzf(nkx,nky,nkz))
+      ALLOCATE(rhof(nkx,nky,nkz))
+      ALLOCATE(rhooldf(nkx,nky,nkz))
     ! - Case when FFTW is used for the distributed FFT
     ELSE IF(.NOT. p3dfft_flag) THEN
-      nkx=local_nx_tr
-      nky=local_ny_tr
-      nkz=local_nz_tr
       cdata = fftw_alloc_complex(alloc_local)
       CALL c_f_pointer(cdata, exf, [nkx, nky, nkz])
       cdata = fftw_alloc_complex(alloc_local)
@@ -1704,28 +1696,17 @@ IF (l_spectral) THEN
       cin = fftw_alloc_real(2 * alloc_local);
     ! - Case when FFTW is used for the distributed FFT
     ELSE IF(p3dfft_flag) THEN
-      ALLOCATE(ex_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),               &
-      p3d_istart(3):p3d_iend(3)))
-      ALLOCATE(ey_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),               &
-      p3d_istart(3):p3d_iend(3)))
-      ALLOCATE(ez_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),               &
-      p3d_istart(3):p3d_iend(3)))
-      ALLOCATE(bx_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),               &
-      p3d_istart(3):p3d_iend(3)))
-      ALLOCATE(by_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),               &
-      p3d_istart(3):p3d_iend(3)))
-      ALLOCATE(bz_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),               &
-      p3d_istart(3):p3d_iend(3)))
-      ALLOCATE(jx_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),               &
-      p3d_istart(3):p3d_iend(3)))
-      ALLOCATE(jy_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),               &
-      p3d_istart(3):p3d_iend(3)))
-      ALLOCATE(jz_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),               &
-      p3d_istart(3):p3d_iend(3)))
-      ALLOCATE(rho_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),              &
-      p3d_istart(3):p3d_iend(3)))
-      ALLOCATE(rhoold_r(p3d_istart(1):p3d_iend(1),p3d_istart(2):p3d_iend(2),           &
-      p3d_istart(3):p3d_iend(3)))
+      ALLOCATE(ex_r(nxx,nyy,nzz))
+      ALLOCATE(ey_r(nxx,nyy,nzz))
+      ALLOCATE(ez_r(nxx,nyy,nzz))
+      ALLOCATE(bx_r(nxx,nyy,nzz))
+      ALLOCATE(by_r(nxx,nyy,nzz))
+      ALLOCATE(bz_r(nxx,nyy,nzz))
+      ALLOCATE(jx_r(nxx,nyy,nzz))
+      ALLOCATE(jy_r(nxx,nyy,nzz))
+      ALLOCATE(jz_r(nxx,nyy,nzz))
+      ALLOCATE(rho_r(nxx,nyy,nzz))
+      ALLOCATE(rhoold_r(nxx,nyy,nzz))
     ENDIF      
   ! Case of local FFTs (purely local pseudo-spectral solver)
   ELSE IF(.NOT. fftw_with_mpi) THEN

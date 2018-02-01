@@ -195,7 +195,7 @@ MODULE fourier_psaotd
       tmptime = MPI_WTIME()
     ENDIF
     IF(p3dfft_flag) THEN
-      p3d_offset = p3d_istart-1
+      p3d_offset = 0
     ELSE
       p3d_offset =0
     ENDIF
@@ -454,7 +454,7 @@ MODULE fourier_psaotd
       tmptime = MPI_WTIME()
     ENDIF
     IF(p3dfft_flag) THEN
-      p3d_offset=p3d_istart-1
+      p3d_offset= 0
     ELSE
       p3d_offset = 0
     ENDIF
@@ -805,7 +805,7 @@ MODULE fourier_psaotd
     nyy=nky
     nzz=nkz
     IF(p3dfft_flag) THEN
-      p3d_offset = p3d_fstart-1
+      p3d_offset = 0
     ELSE
       p3d_offset =0
     ENDIF
@@ -886,8 +886,6 @@ MODULE fourier_psaotd
           iz)*jzfold + cc_mat(nmatrixes)%block_matrix2d(3, 11)%block3dc(ix,           &
           iy, iz)*rhofold + cc_mat(nmatrixes)%block_matrix2d(3,                       &
           10)%block3dc(ix, iy, iz)*rhooldfold
-
-
         END DO
       END DO
     END DO
