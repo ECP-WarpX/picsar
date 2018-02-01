@@ -1213,12 +1213,16 @@ ALLOCATE(cell_z_min(1:nprocz), cell_z_max(1:nprocz))
 IF(fftw_hybrid) THEN 
   fftw_with_mpi = .TRUE.
   ! - Properly sets group guard cells along X 
-  ! - As there is no groups along X, nxg_group and nxguards must be identical
-  IF (nxg_group .EQ. 0_idp) THEN
-    nxg_group=nxguards ! Case when nxg_group has not been defined: use nxguards
-  ELSE
-    nxguards=nxg_group ! Case when nxg_group has been defined by user. In that case 
-                        ! use nxguards=ngguards_x. 
+  ! - As there is no group along x, impose nxg_group=nxguards 
+  ! - (Only local FFTs along X at present)
+  nxg_group=nxguards 
+  ! - Properly sets group guard cells along Y
+  IF (nyg_group .EQ. 0_idp) THEN
+    nyg_group=nyguards ! Case when nyg_group has not been defined: use nyguards
+  ENDIF
+  ! - Properly sets group guard cells along Z 
+  IF (nzg_group .EQ. 0_idp) THEN
+    nzg_group=nzguards ! Case when nzg_group has not been defined: use nzguards
   ENDIF
 ENDIF
 IF(p3dfft_flag) THEN
