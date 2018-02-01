@@ -190,16 +190,10 @@ MODULE fourier_psaotd
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz
     REAL(num)    :: tmptime
-    INTEGER(idp)  :: p3d_offset(3)
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
-    IF(p3dfft_flag) THEN
-      p3d_offset = 0
-    ELSE
-      p3d_offset =0
-    ENDIF
-    
+
     ! Performs copies of overlapping portions of local arrays (ex,ey,ez, etc.) 
     ! and FFT arrays (ex_r,ey_r,ez_r etc.) - non overlapping portions requires 
     ! MPI exchanges that are performed further below in this subroutine 
@@ -207,48 +201,48 @@ MODULE fourier_psaotd
     DO iz=1,size_exchanges_l2g_recv_z(1)
       DO iy =1,size_exchanges_l2g_recv_y(1)
         DO ix =ix_min_r,ix_max_r
-           ex_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+                       &
-           p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=                &
+           ex_r(ix,iy-1+g_first_cell_to_recv_y(1)                                      &
+           ,iz-1+g_first_cell_to_recv_z(1))=                                           &
                  ex(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
                  iz-1+l_first_cell_to_send_z(1))
-           ey_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+                       &
-           p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=                &
+           ey_r(ix,iy-1+g_first_cell_to_recv_y(1)                                      &
+           ,iz-1+g_first_cell_to_recv_z(1))=                                           &
                  ey(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
                  iz-1+l_first_cell_to_send_z(1))
-           ez_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+                       &
-           p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=                &
+           ez_r(ix,iy-1+g_first_cell_to_recv_y(1)                                      &
+           ,iz-1+g_first_cell_to_recv_z(1))=                                           &
                  ez(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
                  iz-1+l_first_cell_to_send_z(1))
-           bx_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+                       &
-           p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=                &
+           bx_r(ix,iy-1+g_first_cell_to_recv_y(1)                                      &
+           ,iz-1+g_first_cell_to_recv_z(1))=                                           &
                  bx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
                  iz-1+l_first_cell_to_send_z(1))
-           by_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+                       &
-           p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=                &
+           by_r(ix,iy-1+g_first_cell_to_recv_y(1)                                      & 
+           ,iz-1+g_first_cell_to_recv_z(1))=                                           &
                  by(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
                  iz-1+l_first_cell_to_send_z(1))
-           bz_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+                       &
-           p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=                &
+           bz_r(ix,iy-1+g_first_cell_to_recv_y(1)                                      &
+           ,iz-1+g_first_cell_to_recv_z(1))=                                           &
                  bz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
                  iz-1+l_first_cell_to_send_z(1))
-           jx_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+                       &
-           p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=                &
+           jx_r(ix,iy-1+g_first_cell_to_recv_y(1)                                      &
+           ,iz-1+g_first_cell_to_recv_z(1))=                                           &
                  jx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
                  iz-1+l_first_cell_to_send_z(1))
-           jy_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+                       &
-           p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=                &
+           jy_r(ix,iy-1+g_first_cell_to_recv_y(1)                                      &
+           ,iz-1+g_first_cell_to_recv_z(1))=                                           &
                  jy(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
                  iz-1+l_first_cell_to_send_z(1))
-           jz_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+                       &
-           p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=                &
+           jz_r(ix,iy-1+g_first_cell_to_recv_y(1)                                      &
+           ,iz-1+g_first_cell_to_recv_z(1))=                                           &
                  jz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
                  iz-1+l_first_cell_to_send_z(1))
-           rho_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+                      &
-           p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=                &
+           rho_r(ix,iy-1+g_first_cell_to_recv_y(1)                                     &
+           ,iz-1+g_first_cell_to_recv_z(1))=                                           &
                  rho(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),              &
                  iz-1+l_first_cell_to_send_z(1))
-           rhoold_r(ix+p3d_offset(1),iy-1+g_first_cell_to_recv_y(1)+                   &
-           p3d_offset(2),iz-1+g_first_cell_to_recv_z(1)+p3d_offset(3))=                &
+           rhoold_r(ix,iy-1+g_first_cell_to_recv_y(1)                                  &
+           ,iz-1+g_first_cell_to_recv_z(1))=                                           &
                  rhoold(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),           &
                  iz-1+l_first_cell_to_send_z(1))
         ENDDO
@@ -445,7 +439,6 @@ MODULE fourier_psaotd
     IMPLICIT NONE
     REAL(num) ::  tmptime
     INTEGER(idp) :: ix, iy, iz
-    INTEGER(idp) :: p3d_offset(3) 
     
     ! Perform distributed C2R FFTs of all grid arrays (including fields, currents, charge)
     CALL fft_forward_c2r_mpi
@@ -453,12 +446,7 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
-    IF(p3dfft_flag) THEN
-      p3d_offset= 0
-    ELSE
-      p3d_offset = 0
-    ENDIF
-    
+
     ! Performs copies of overlapping portions of FFT arrays (ex_r,ey_r,ez_r, etc.) 
     ! and local arrays (ex,ey,ez etc.) - non overlapping portions requires 
     ! MPI exchanges that are performed further below in this subroutine
@@ -468,33 +456,33 @@ MODULE fourier_psaotd
         DO ix=ix_min_r, ix_max_r
           ex(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
           iz-1+l_first_cell_to_recv_z(1)) =                                            &
-                 ex_r(ix+p3d_offset(1),iy-1+g_first_cell_to_send_y(1)+                 &
-                 p3d_offset(2),iz-1+g_first_cell_to_send_z(1)+p3d_offset(3))
+                 ex_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                 ,iz-1+g_first_cell_to_send_z(1))
 
           ey(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
           iz-1+l_first_cell_to_recv_z(1))=                                             &
-                 ey_r(ix+p3d_offset(1),iy-1+g_first_cell_to_send_y(1)+                 &
-                 p3d_offset(2),iz-1+g_first_cell_to_send_z(1)+p3d_offset(3))
+                 ey_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                 ,iz-1+g_first_cell_to_send_z(1))
 
           ez(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
           iz-1+l_first_cell_to_recv_z(1))=                                             &
-                 ez_r(ix+p3d_offset(1),iy-1+g_first_cell_to_send_y(1)+                 &
-                 p3d_offset(2),iz-1+g_first_cell_to_send_z(1)+p3d_offset(3))
+                 ez_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                 ,iz-1+g_first_cell_to_send_z(1))
 
           bx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
           iz-1+l_first_cell_to_recv_z(1))=                                             &
-                 bx_r(ix+p3d_offset(1),iy-1+g_first_cell_to_send_y(1)+                 &
-                 p3d_offset(2),iz-1+g_first_cell_to_send_z(1)+p3d_offset(3))
+                 bx_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                 ,iz-1+g_first_cell_to_send_z(1))
 
           by(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
           iz-1+l_first_cell_to_recv_z(1))=                                             &
-                 by_r(ix+p3d_offset(1),iy-1+g_first_cell_to_send_y(1)+                 &
-                 p3d_offset(2),iz-1+g_first_cell_to_send_z(1)+p3d_offset(3))
+                 by_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                 ,iz-1+g_first_cell_to_send_z(1))
 
           bz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
           iz-1+l_first_cell_to_recv_z(1))=                                             &
-                 bz_r(ix+p3d_offset(1),iy-1+g_first_cell_to_send_y(1)+                 &
-                 p3d_offset(2),iz-1+g_first_cell_to_send_z(1)+p3d_offset(3))
+                 bz_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                ,iz-1+g_first_cell_to_send_z(1))
         END DO
       END DO
     END DO
@@ -796,7 +784,6 @@ MODULE fourier_psaotd
     REAL(num) :: tmptime
     COMPLEX(cpx) :: bxfold, byfold, bzfold, exfold, eyfold, ezfold,&
         jxfold,jyfold,jzfold, rhofold,rhooldfold
-    INTEGER(idp) :: p3d_offset(3)
 
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
@@ -804,31 +791,26 @@ MODULE fourier_psaotd
     nxx=nkx
     nyy=nky
     nzz=nkz
-    IF(p3dfft_flag) THEN
-      p3d_offset = 0
-    ELSE
-      p3d_offset =0
-    ENDIF
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, exfold, eyfold, ezfold,     &
     !$OMP bxfold, byfold, bzfold,jxfold,jyfold,jzfold,rhofold,rhooldfold) COLLAPSE(3)
     DO iz=1, nzz
       DO iy=1, nyy
         DO ix=1, nxx
           ! - Bx
-          exfold=exf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3))
-          eyfold=eyf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3))
-          ezfold=ezf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3))
-          bxfold=bxf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3))
-          byfold=byf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3))
-          bzfold=bzf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3))
-          jxfold=jxf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3))
-          jyfold=jyf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3))
-          jzfold=jzf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3))
-          rhofold=rhof(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3))
-          rhooldfold=rhooldf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3))
+          exfold=exf(ix, iy, iz)
+          eyfold=eyf(ix, iy, iz)
+          ezfold=ezf(ix, iy, iz)
+          bxfold=bxf(ix, iy, iz)
+          byfold=byf(ix, iy, iz)
+          bzfold=bzf(ix, iy, iz)
+          jxfold=jxf(ix, iy, iz)
+          jyfold=jyf(ix, iy, iz)
+          jzfold=jzf(ix, iy, iz)
+          rhofold=rhof(ix, iy, iz)
+          rhooldfold=rhooldf(ix, iy, iz)
 
 
-          bxf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3)) =                 &
+          bxf(ix, iy, iz) =                                                           &
           cc_mat(nmatrixes)%block_matrix2d(4, 4)%block3dc(ix, iy,                     &
           iz)*bxfold + cc_mat(nmatrixes)%block_matrix2d(4, 2)%block3dc(ix, iy,        &
           iz)*eyfold + cc_mat(nmatrixes)%block_matrix2d(4, 3)%block3dc(ix, iy,        &
@@ -837,7 +819,7 @@ MODULE fourier_psaotd
           iy, iz)*jzfold
 
           ! - By
-          byf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3)) =                 &
+          byf(ix, iy, iz) =                                                           &
           cc_mat(nmatrixes)%block_matrix2d(5, 5)%block3dc(ix, iy,                     &
           iz)*byfold + cc_mat(nmatrixes)%block_matrix2d(5, 1)%block3dc(ix, iy,        &
           iz)*exfold + cc_mat(nmatrixes)%block_matrix2d(5, 3)%block3dc(ix, iy,        &
@@ -847,7 +829,7 @@ MODULE fourier_psaotd
 
 
           ! - Bz
-          bzf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3)) =                 &
+          bzf(ix, iy, iz) =                                                           &
           cc_mat(nmatrixes)%block_matrix2d(6, 6)%block3dc(ix, iy,                     &
           iz)*bzfold + cc_mat(nmatrixes)%block_matrix2d(6, 1)%block3dc(ix, iy,        &
           iz)*exfold+ cc_mat(nmatrixes)%block_matrix2d(6, 2)%block3dc(ix, iy,         &
@@ -857,7 +839,7 @@ MODULE fourier_psaotd
 
           ! Push E a full time step
           ! - Ex
-          exf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3)) =                 &
+          exf(ix, iy, iz) =                                                           &
           cc_mat(nmatrixes)%block_matrix2d(1, 1)%block3dc(ix, iy,                     &
           iz)*exfold + cc_mat(nmatrixes)%block_matrix2d(1, 5)%block3dc(ix, iy,        &
           iz)*byfold + cc_mat(nmatrixes)%block_matrix2d(1, 6)%block3dc(ix, iy,        &
@@ -867,7 +849,7 @@ MODULE fourier_psaotd
           cc_mat(nmatrixes)%block_matrix2d(1, 10)%block3dc(ix, iy, iz)*rhooldfold
 
           ! - Ey
-          eyf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3)) =                 &
+          eyf(ix, iy, iz) =                                                           &
           cc_mat(nmatrixes)%block_matrix2d(2, 2)%block3dc(ix, iy,                     &
           iz)*eyfold + cc_mat(nmatrixes)%block_matrix2d(2, 4)%block3dc(ix, iy,        &
           iz)*bxfold  + cc_mat(nmatrixes)%block_matrix2d(2, 6)%block3dc(ix, iy,       &
@@ -878,7 +860,7 @@ MODULE fourier_psaotd
 
 
           ! - Ez
-          ezf(ix+p3d_offset(1), iy+p3d_offset(2), iz+p3d_offset(3)) =                 &
+          ezf(ix, iy, iz) =                                                           &
           cc_mat(nmatrixes)%block_matrix2d(3, 3)%block3dc(ix, iy,                     &
           iz)*ezfold + cc_mat(nmatrixes)%block_matrix2d(3, 4)%block3dc(ix, iy,        &
           iz)*bxfold + cc_mat(nmatrixes)%block_matrix2d(3, 5)%block3dc(ix, iy,        &
