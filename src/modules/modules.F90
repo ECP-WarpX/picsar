@@ -1155,11 +1155,6 @@ MODULE group_parameters!#do not parse
   !done by each mpi in mpi comms group during l->g and g->l communications respectively
   INTEGER(idp)  :: nb_comms_g2l,nb_comms_l2g
   INTEGER(isp) , DIMENSION(3) :: p3d_istart, p3d_iend , p3d_fstart,p3d_fend, p3d_fsize, p3d_isize
-
-  
-
-
-
 END MODULE
 
 #endif

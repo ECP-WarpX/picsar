@@ -57,8 +57,19 @@ MODULE mpi_fftw3
   ! > Fortran Integer Array where C integer pointers to plans are stored
   integer(idp), DIMENSION(nmaxplan_mpi) :: plans_cint_mpi
   integer(C_INT) :: nplan_mpi=0
-  INTEGER(C_INTPTR_T) :: alloc_local, local_nz, local_z0, local_ny, local_y0,&
-  local_nx , local_x0
+  ! - Starting indexes and dimensions along X,Y,Z 
+  ! - of the input FFT arrays 
+  INTEGER(C_INTPTR_T) :: alloc_local ! used for memory alloc in FFTW
+  INTEGER(C_INTPTR_T) :: local_x0, local_nx
+  INTEGER(C_INTPTR_T) :: local_y0, local_ny
+  INTEGER(C_INTPTR_T) :: local_z0, local_nz
+  ! - Starting indexes and dimensions along X,Y,Z 
+  ! - of the  output FFT array (tranpsosed or not)
+  ! (these parameters are different from the ones 
+  ! - of real arrays above, when fftw_mpi_transpose=.TRUE.)
+  INTEGER(C_INTPTR_T) :: local_x0_tr, local_nx_tr
+  INTEGER(C_INTPTR_T) :: local_y0_tr, local_ny_tr
+  INTEGER(C_INTPTR_T) :: local_z0_tr, local_nz_tr
   TYPE(C_PTR) :: plan_r2c_mpi, plan_c2r_mpi 
 END MODULE mpi_fftw3
 
