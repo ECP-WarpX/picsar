@@ -683,15 +683,15 @@ MODULE gpstd_solver
     USE omp_lib
     USE shared_data!, ONLY : dx, dy, dz, nx, ny, nz
     USE fields, ONLY : g_spectral, norderx, nordery, norderz, nxguards, nyguards,     &
-         nzguards, exf, eyf, ezf, bxf, byf, bzf, jxf, jyf, jzf, rhooldf, rhof
+         nzguards
     USE params, ONLY : dt
 
-    INTEGER(idp)           :: i, j, k, p
+    INTEGER(idp)           :: i, j
     COMPLEX(cpx)           :: ii
-    LOGICAL(lp)            :: needed
     INTEGER(idp)           :: nfftx, nffty, nfftz,nfftxr
     LOGICAL(lp)            :: switch
     REAL(num)              :: coeff_norm
+    TYPE(C_PTR)            :: cdata     
 
     CALL select_case_dims_local(nfftx, nffty, nfftz)
     ii=DCMPLX(0.0_num, 1.0_num)
@@ -704,53 +704,61 @@ MODULE gpstd_solver
     nkz = nfftz
     DO i=1_idp, 11_idp
       DO j=1_idp, 11_idp
-        CALL is_calculation_needed(i, j, needed)
-        IF(needed .OR. g_spectral) THEN
-          IF(needed) THEN
-            ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(nfftxr, nffty,    &
-            nfftz))
-            cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = nfftxr
-            cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = nffty
-            cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = nfftz
-          ELSE IF (.NOT. needed .AND. g_spectral) THEN
-            ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(1,1,1))
-            cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = 1
-            cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = 1
-            cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = 1
-            cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(1,1,1) = DCMPLX(0.0,0.0)
-          ENDIF
-        ENDIF
+        ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(nfftxr, nffty,    &
+        nfftz))
+        cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = nfftxr
+        cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = nffty
+        cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = nfftz
       ENDDO
     ENDDO
     IF(g_spectral) THEN
-        vold(nmatrixes)%block_vector(1)%block3dc => exf
-        vold(nmatrixes)%block_vector(2)%block3dc => eyf
-        vold(nmatrixes)%block_vector(3)%block3dc => ezf       
-        vold(nmatrixes)%block_vector(4)%block3dc => bxf
-        vold(nmatrixes)%block_vector(5)%block3dc => byf
-        vold(nmatrixes)%block_vector(6)%block3dc => bzf
-        vold(nmatrixes)%block_vector(7)%block3dc => jxf
-        vold(nmatrixes)%block_vector(8)%block3dc => jyf
-        vold(nmatrixes)%block_vector(9)%block3dc => jzf
-        vold(nmatrixes)%block_vector(10)%block3dc => rhooldf
-        vold(nmatrixes)%block_vector(11)%block3dc => rhof
-      DO i=1_idp,11_idp
-        ALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc(nfftxr, nffty,&
-        nfftz))
-        vnew(nmatrixes)%block_vector(i)%nx = nfftxr
-        vnew(nmatrixes)%block_vector(i)%ny = nffty
-        vnew(nmatrixes)%block_vector(i)%nz = nfftz
+      IF(p3dfft_flag) THEN  ! hybrid with p3dfft
+        DO i = 1,11
+          ALLOCATE(vold(nmatrixes)%block_vector(i)%block3dc(nkx,nky,nkz))
+        ENDDO
+        DO i = 1,6
+          ALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc(nkx,nky,nkz))
+        ENDDO
+      ELSE IF(fftw_with_mpi) THEN ! hybrid or global with fftw
+        DO i =1,11
+          cdata = fftw_alloc_complex(alloc_local)
+          CALL c_f_pointer(cdata, vold(nmatrixes)%block_vector(i)%block3dc, [nkx, nky, nkz])
+        ENDDO
+        DO i=1,6
+          cdata = fftw_alloc_complex(alloc_local)
+          CALL c_f_pointer(cdata, vnew(nmatrixes)%block_vector(i)%block3dc,[nkx, nky, nkz]) 
+        ENDDO
+      ELSE IF(.NOT. fftw_with_mpi) THEN ! local psatd
+        DO i = 1,11
+          ALLOCATE(vold(nmatrixes)%block_vector(i)%block3dc(nkx,nky,nkz))
+        ENDDO
+        DO i = 1,6
+          ALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc(nkx,nky,nkz))
+        ENDDO
+      ENDIF
+      DO i = 1,11
         vold(nmatrixes)%block_vector(i)%nx = nfftxr
         vold(nmatrixes)%block_vector(i)%ny = nffty
         vold(nmatrixes)%block_vector(i)%nz = nfftz
       ENDDO
-      DO i = 1,11
-        DO j=1,11 
-          cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc = CMPLX(0.0_num,0.0_num)
-        ENDDO
-          cc_mat(nmatrixes)%block_matrix2d(i, i)%block3dc = CMPLX(1.0_num,0.0_num) 
+      DO i=1,6
+        vnew(nmatrixes)%block_vector(i)%nx = nfftxr
+        vnew(nmatrixes)%block_vector(i)%ny = nffty
+        vnew(nmatrixes)%block_vector(i)%nz = nfftz
+      ENDDO
+      DO i=7,11
+        ALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc(1,1,1))
+        vnew(nmatrixes)%block_vector(i)%nx = 1 
+        vnew(nmatrixes)%block_vector(i)%ny = 1 
+        vnew(nmatrixes)%block_vector(i)%nz = 1 
       ENDDO
     ENDIF
+
+    DO i = 1,11
+      DO j=1,11 
+        cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc = CMPLX(0.0_num,0.0_num)
+      ENDDO
+    ENDDO
 
 
     cc_mat(nmatrixes)%block_matrix2d(1, 5)%block3dc = -                               &
@@ -884,14 +892,28 @@ MODULE gpstd_solver
     IF(switch) THEN
       Kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)   = DCMPLX(0., 0.)
     ENDIF
+    
+    ! Introduce fft normalisation factor in mat bloc mult
     CALL select_case_dims_global(nfftx,nffty,nfftz)
     coeff_norm = 1.0_num/(nfftx*nffty*nfftz)  
+
     DO i=1,11
       DO j=1,11
-        CALL is_calculation_needed(i, j, needed)
-        IF(needed .OR. g_spectral) THEN
           cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc =                            &
           coeff_norm*cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc
+      ENDDO
+    ENDDO
+    ! Delete uninitialized blocks
+    DO i=1,11
+      DO j=1,11
+        IF(sum(abs(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc))                   &
+        /size(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc)  == 0.0_num) THEN
+          DEALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc)
+          ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc(1,1,1))
+          cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc(1,1,1) = (0._num,0._num)
+          cc_mat(nmatrixes)%block_matrix2d(i,j)%nx = 1
+          cc_mat(nmatrixes)%block_matrix2d(i,j)%ny = 1
+          cc_mat(nmatrixes)%block_matrix2d(i,j)%nz = 1
         ENDIF
       ENDDO
     ENDDO

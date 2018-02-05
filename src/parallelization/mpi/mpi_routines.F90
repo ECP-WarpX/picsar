@@ -1628,50 +1628,53 @@ IF (l_spectral) THEN
     ! - Allocate complex FFT arrays
     ! - Case when p3dfft_flag is .TRUE. (p3dfft is used for distributed FFT)
     IF(p3dfft_flag) THEN
-      ALLOCATE(exf(nkx,nky,nkz))
-      ALLOCATE(eyf(nkx,nky,nkz))
-      ALLOCATE(ezf(nkx,nky,nkz))
-      ALLOCATE(bxf(nkx,nky,nkz))
-      ALLOCATE(byf(nkx,nky,nkz))
-      ALLOCATE(bzf(nkx,nky,nkz))
-      ALLOCATE(jxf(nkx,nky,nkz))
-      ALLOCATE(jyf(nkx,nky,nkz))
-      ALLOCATE(jzf(nkx,nky,nkz))
-      ALLOCATE(rhof(nkx,nky,nkz))
-      ALLOCATE(rhooldf(nkx,nky,nkz))
+      IF(.NOT. g_spectral) THEN
+        ALLOCATE(exf(nkx,nky,nkz))
+        ALLOCATE(eyf(nkx,nky,nkz))
+        ALLOCATE(ezf(nkx,nky,nkz))
+        ALLOCATE(bxf(nkx,nky,nkz))
+        ALLOCATE(byf(nkx,nky,nkz))
+        ALLOCATE(bzf(nkx,nky,nkz))
+        ALLOCATE(jxf(nkx,nky,nkz))
+        ALLOCATE(jyf(nkx,nky,nkz))
+        ALLOCATE(jzf(nkx,nky,nkz))
+        ALLOCATE(rhof(nkx,nky,nkz))
+        ALLOCATE(rhooldf(nkx,nky,nkz))
+      ENDIF
     ! - Case when FFTW is used for the distributed FFT
     ELSE IF(.NOT. p3dfft_flag) THEN
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, exf, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, eyf, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, ezf, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, bxf, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, byf, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, bzf, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, jxf, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, jyf, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, jzf, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, rhof, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
-      CALL c_f_pointer(cdata, rhooldf, [nkx, nky, nkz])
-      cdata = fftw_alloc_complex(alloc_local)
+      IF(.NOT. g_spectral) THEN
+        cdata = fftw_alloc_complex(alloc_local)
+        CALL c_f_pointer(cdata, exf, [nkx, nky, nkz])
+        cdata = fftw_alloc_complex(alloc_local)
+        CALL c_f_pointer(cdata, eyf, [nkx, nky, nkz])
+        cdata = fftw_alloc_complex(alloc_local)
+        CALL c_f_pointer(cdata, ezf, [nkx, nky, nkz])
+        cdata = fftw_alloc_complex(alloc_local)
+        CALL c_f_pointer(cdata, bxf, [nkx, nky, nkz])
+        cdata = fftw_alloc_complex(alloc_local)
+        CALL c_f_pointer(cdata, byf, [nkx, nky, nkz])
+        cdata = fftw_alloc_complex(alloc_local)
+        CALL c_f_pointer(cdata, bzf, [nkx, nky, nkz])
+        cdata = fftw_alloc_complex(alloc_local)
+        CALL c_f_pointer(cdata, jxf, [nkx, nky, nkz])
+        cdata = fftw_alloc_complex(alloc_local)
+        CALL c_f_pointer(cdata, jyf, [nkx, nky, nkz])
+        cdata = fftw_alloc_complex(alloc_local)
+        CALL c_f_pointer(cdata, jzf, [nkx, nky, nkz])
+        cdata = fftw_alloc_complex(alloc_local)
+        CALL c_f_pointer(cdata, rhof, [nkx, nky, nkz])
+        cdata = fftw_alloc_complex(alloc_local)
+        CALL c_f_pointer(cdata, rhooldf, [nkx, nky, nkz])
+      ENDIF
     ENDIF
     ! - Allocate real FFT arrays 
     nxx = local_nx
     nyy = local_ny
     nzz = local_nz
-    cin = fftw_alloc_real(2 * alloc_local);
     ! - Case when p3dfft_flag is .TRUE. (p3dfft is used for distributed FFT)
     IF(.NOT. p3dfft_flag) THEN
+      cin = fftw_alloc_real(2 * alloc_local);
       CALL c_f_pointer(cin, ex_r, [nxx, nyy, nzz])
       cin = fftw_alloc_real(2 * alloc_local);
       CALL c_f_pointer(cin, ey_r, [nxx, nyy, nzz])
@@ -1713,18 +1716,20 @@ IF (l_spectral) THEN
     nkx=(2*nxguards+nx)/2+1! Real To Complex Transform
     nky=(2*nyguards+ny)
     nkz=(2*nzguards+nz)
+    IF(.NOT. g_spectral) THEN
     ! - Allocate complex FFT arrays
-    ALLOCATE(exf(nkx, nky, nkz))
-    ALLOCATE(eyf(nkx, nky, nkz))
-    ALLOCATE(ezf(nkx, nky, nkz))
-    ALLOCATE(bxf(nkx, nky, nkz))
-    ALLOCATE(byf(nkx, nky, nkz))
-    ALLOCATE(bzf(nkx, nky, nkz))
-    ALLOCATE(jxf(nkx, nky, nkz))
-    ALLOCATE(jyf(nkx, nky, nkz))
-    ALLOCATE(jzf(nkx, nky, nkz))
-    ALLOCATE(rhof(nkx, nky, nkz))
-    ALLOCATE(rhooldf(nkx, nky, nkz))
+      ALLOCATE(exf(nkx, nky, nkz))
+      ALLOCATE(eyf(nkx, nky, nkz))
+      ALLOCATE(ezf(nkx, nky, nkz))
+      ALLOCATE(bxf(nkx, nky, nkz))
+      ALLOCATE(byf(nkx, nky, nkz))
+      ALLOCATE(bzf(nkx, nky, nkz))
+      ALLOCATE(jxf(nkx, nky, nkz))
+      ALLOCATE(jyf(nkx, nky, nkz))
+      ALLOCATE(jzf(nkx, nky, nkz))
+      ALLOCATE(rhof(nkx, nky, nkz))
+      ALLOCATE(rhooldf(nkx, nky, nkz))
+    ENDIF
     ! - Allocate real FFT arrays 
     imn=-nxguards; imx=nx+nxguards-1
     jmn=-nyguards;jmx=ny+nyguards-1

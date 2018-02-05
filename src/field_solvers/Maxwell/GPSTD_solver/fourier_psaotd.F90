@@ -63,6 +63,7 @@ MODULE fourier_psaotd
     USE fields
     USE mpi_fftw3
     USE group_parameters
+    USE matrix_coefficients
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: nopenmp
     INTEGER(C_INT) :: nopenmp_cint, iret
@@ -70,7 +71,9 @@ MODULE fourier_psaotd
     INTEGER(idp)        :: i
     INTEGER(isp)        :: planner_flag_1, planner_flag_2
     nopenmp_cint=nopenmp
-
+    IF(g_spectral) THEN
+      exf => vold(nmatrixes)%block_vector(1)%block3dc
+    ENDIF
     IF  (fftw_threads_ok) THEN
       CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
     ENDIF
@@ -249,7 +252,6 @@ MODULE fourier_psaotd
       ENDDO
     ENDDO
     !$OMP END PARALLEL DO
-
     ! Timers 
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
@@ -259,8 +261,7 @@ MODULE fourier_psaotd
     CALL generalized_comms_group_l2g()
     
     ! Perform distributed R2C FFTs of all grid arrays (including fields, currents, charge)
-    CALL fft_forward_r2c_mpi() 
-
+    CALL fft_forward_r2c_hybrid() 
   END SUBROUTINE get_Ffields_mpi_lb 
 
  ! _______________________________________________________________________________________
@@ -315,7 +316,7 @@ MODULE fourier_psaotd
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
     ! Get global Fourier transform of all fields components and currents
-    CALL fft_forward_r2c_mpi
+    CALL fft_forward_r2c_hybrid
 
   END SUBROUTINE get_Ffields_mpi
 
@@ -391,7 +392,7 @@ MODULE fourier_psaotd
     INTEGER(idp) :: ix, iy, iz
 
     ! Get global Fourier transform of all fields components 
-    CALL fft_forward_c2r_mpi
+    CALL fft_backward_c2r_hybrid
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
@@ -441,7 +442,7 @@ MODULE fourier_psaotd
     INTEGER(idp) :: ix, iy, iz
     
     ! Perform distributed C2R FFTs of all grid arrays (including fields, currents, charge)
-    CALL fft_forward_c2r_mpi
+    CALL fft_backward_c2r_hybrid
     
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
@@ -507,24 +508,49 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ex_r, exf, plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ey_r, eyf, plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ez_r, ezf, plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bx_r, bxf, plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, by_r, byf, plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bz_r, bzf, plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jx_r, jxf, plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jy_r, jyf, plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jz_r, jzf, plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rhoold_r, rhooldf,plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rho_r, rhof, plan_r2c) 
+    IF(g_spectral) THEN
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ex_r,                        &
+         vold(nmatrixes)%block_vector(1)%block3dc, plan_r2c)
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ey_r,                        &
+        vold(nmatrixes)%block_vector(2)%block3dc, plan_r2c)
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ez_r,                        &
+        vold(nmatrixes)%block_vector(3)%block3dc , plan_r2c)
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bx_r,                        &
+        vold(nmatrixes)%block_vector(4)%block3dc , plan_r2c)
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, by_r,                        &
+        vold(nmatrixes)%block_vector(5)%block3dc , plan_r2c)
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bz_r,                        &  
+        vold(nmatrixes)%block_vector(6)%block3dc , plan_r2c)
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jx_r,                        &
+        vold(nmatrixes)%block_vector(7)%block3dc , plan_r2c)
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jy_r,                        &
+        vold(nmatrixes)%block_vector(8)%block3dc, plan_r2c)
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jz_r,                        &
+        vold(nmatrixes)%block_vector(9)%block3dc, plan_r2c)
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rhoold_r,                    &
+        vold(nmatrixes)%block_vector(10)%block3dc,plan_r2c)
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rho_r,                       &
+        vold(nmatrixes)%block_vector(11)%block3dc, plan_r2c)
+    ELSE IF (.NOT. g_spectral) THEN
+      CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ex_r, exf, plan_r2c)
+      CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ey_r, eyf, plan_r2c)
+      CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ez_r, ezf, plan_r2c)
+      CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bx_r, bxf, plan_r2c)
+      CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, by_r, byf, plan_r2c)
+      CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bz_r, bzf, plan_r2c)
+      CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jx_r, jxf, plan_r2c)
+      CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jy_r, jyf, plan_r2c)
+      CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jz_r, jzf, plan_r2c)
+      CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rhoold_r, rhooldf,plan_r2c)
+      CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rho_r, rhof, plan_r2c) 
+    ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
     ENDIF
 
   END SUBROUTINE fft_forward_r2c_local
 
-  SUBROUTINE fft_forward_r2c_mpi()
+  SUBROUTINE fft_forward_r2c_hybrid()
     USE fields
     USE fastfft
     USE mpi_fftw3
@@ -539,40 +565,83 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
+    IF(g_spectral) THEN
 #if defined(P3DFFT)
-    IF(.NOT. p3dfft_flag) THEN
+      IF(.NOT. p3dfft_flag) THEN
 #endif
-     CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ex_r, exf)
-     CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ey_r, eyf)
-     CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ez_r, ezf)
-     CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bx_r, bxf)
-     CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, by_r, byf)
-     CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bz_r, bzf)
-     CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jx_r, jxf)
-     CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jy_r, jyf)
-     CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jz_r, jzf)
-     CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rho_r, rhof)
-     CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rhoold_r, rhooldf)
+        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ex_r,                             &
+           vold(nmatrixes)%block_vector(1)%block3dc)
+        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ey_r,                             &
+           vold(nmatrixes)%block_vector(2)%block3dc)
+        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ez_r,                             &
+           vold(nmatrixes)%block_vector(3)%block3dc)
+        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bx_r,                             &
+           vold(nmatrixes)%block_vector(4)%block3dc)
+        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, by_r,                             &
+           vold(nmatrixes)%block_vector(5)%block3dc)
+        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bz_r,                             &
+           vold(nmatrixes)%block_vector(6)%block3dc)
+        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jx_r,                             &
+           vold(nmatrixes)%block_vector(7)%block3dc)
+        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jy_r,                             &
+           vold(nmatrixes)%block_vector(8)%block3dc)
+        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jz_r,                             &
+           vold(nmatrixes)%block_vector(9)%block3dc)
+        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rhoold_r,                         &
+           vold(nmatrixes)%block_vector(10)%block3dc)
+        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rho_r,                            &
+           vold(nmatrixes)%block_vector(11)%block3dc)
 #if defined(P3DFFT)
-    ELSE
-     CALL p3dfft_ftran_r2c (ex_r,exf,'fft')
-     CALL p3dfft_ftran_r2c (ey_r,eyf,'fft')
-     CALL p3dfft_ftran_r2c (ez_r,ezf,'fft')
-     CALL p3dfft_ftran_r2c (bx_r,bxf,'fft')
-     CALL p3dfft_ftran_r2c (by_r,byf,'fft')
-     CALL p3dfft_ftran_r2c (bz_r,bzf,'fft')
-     CALL p3dfft_ftran_r2c (jx_r,jxf,'fft')
-     CALL p3dfft_ftran_r2c (jy_r,jyf,'fft')
-     CALL p3dfft_ftran_r2c (jy_r,jzf,'fft')
-     CALL p3dfft_ftran_r2c (rho_r,rhof,'fft')
-     CALL p3dfft_ftran_r2c (rhoold_r,rhooldf,'fft')
+      ELSE IF(p3dfft_flag) THEN
+        CALL p3dfft_ftran_r2c (ex_r,vold(nmatrixes)%block_vector(1)%block3dc,'fft')
+        CALL p3dfft_ftran_r2c (ey_r,vold(nmatrixes)%block_vector(2)%block3dc,'fft')
+        CALL p3dfft_ftran_r2c (ez_r,vold(nmatrixes)%block_vector(3)%block3dc,'fft')
+        CALL p3dfft_ftran_r2c (bx_r,vold(nmatrixes)%block_vector(4)%block3dc,'fft')
+        CALL p3dfft_ftran_r2c (by_r,vold(nmatrixes)%block_vector(5)%block3dc,'fft')
+        CALL p3dfft_ftran_r2c (bz_r,vold(nmatrixes)%block_vector(6)%block3dc,'fft')
+        CALL p3dfft_ftran_r2c (jx_r,vold(nmatrixes)%block_vector(7)%block3dc,'fft')
+        CALL p3dfft_ftran_r2c (jy_r,vold(nmatrixes)%block_vector(8)%block3dc,'fft')
+        CALL p3dfft_ftran_r2c (jy_r,vold(nmatrixes)%block_vector(9)%block3dc,'fft')
+        CALL p3dfft_ftran_r2c(rhoold_r,vold(nmatrixes)%block_vector(10)%block3dc,'fft')
+        CALL p3dfft_ftran_r2c(rho_r,vold(nmatrixes)%block_vector(11)%block3dc,'fft')
+      ENDIF
+#endif
+    ELSE IF(.NOT. g_spectral) THEN
+#if defined(P3DFFT)
+      IF(.NOT. p3dfft_flag) THEN
+#endif
+        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ex_r, exf)
+        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ey_r, eyf)
+        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ez_r, ezf)
+        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bx_r, bxf)
+        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, by_r, byf)
+        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bz_r, bzf)
+        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jx_r, jxf)
+        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jy_r, jyf)
+        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jz_r, jzf)
+        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rho_r, rhof)
+        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rhoold_r, rhooldf)
+#if defined(P3DFFT)
+      ELSE IF(p3dfft_flag) THEN
+        CALL p3dfft_ftran_r2c (ex_r,exf,'fft')
+        CALL p3dfft_ftran_r2c (ey_r,eyf,'fft')
+        CALL p3dfft_ftran_r2c (ez_r,ezf,'fft')
+        CALL p3dfft_ftran_r2c (bx_r,bxf,'fft')
+        CALL p3dfft_ftran_r2c (by_r,byf,'fft')
+        CALL p3dfft_ftran_r2c (bz_r,bzf,'fft')
+        CALL p3dfft_ftran_r2c (jx_r,jxf,'fft')
+        CALL p3dfft_ftran_r2c (jy_r,jyf,'fft')
+        CALL p3dfft_ftran_r2c (jy_r,jzf,'fft')
+        CALL p3dfft_ftran_r2c (rho_r,rhof,'fft')
+        CALL p3dfft_ftran_r2c (rhoold_r,rhooldf,'fft')
+      ENDIF
+#endif
     ENDIF
-#endif
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
     ENDIF
 
-  END SUBROUTINE fft_forward_r2c_mpi
+  END SUBROUTINE fft_forward_r2c_hybrid
 
   SUBROUTINE fft_backward_c2r_local(nfftx,nffty,nfftz)
     USE fields
@@ -615,7 +684,7 @@ MODULE fourier_psaotd
 
   END SUBROUTINE fft_backward_c2r_local
 
-  SUBROUTINE fft_forward_c2r_mpi()
+  SUBROUTINE fft_backward_c2r_hybrid()
     USE fields
     USE fastfft
     USE mpi_fftw3
@@ -641,7 +710,7 @@ MODULE fourier_psaotd
       CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, byf, by_r)
       CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bzf, bz_r)
 #if defined(P3DFFT)
-    ELSE
+    ELSE IF(p3dfft_flag) THEN
       CALL p3dfft_btran_c2r (exf,ex_r,'tff')
       CALL p3dfft_btran_c2r (eyf,ey_r,'tff')
       CALL p3dfft_btran_c2r (ezf,ez_r,'tff')
@@ -668,21 +737,21 @@ MODULE fourier_psaotd
         CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
         vnew(nmatrixes)%block_vector(6)%block3dc,bz_r)
 #if defined(P3DFFT)
-       ELSE
+      ELSE IF(p3dfft_flag) THEN
         CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(1)%block3dc,ex_r,'tff')
         CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(2)%block3dc,ey_r,'tff')
         CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(3)%block3dc,ez_r,'tff')
         CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(4)%block3dc,bx_r,'tff')
         CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(5)%block3dc,by_r,'tff')
         CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(6)%block3dc,bz_r,'tff')
-       ENDIF
+      ENDIF
 #endif
     ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
     ENDIF
 
-  END SUBROUTINE fft_forward_c2r_mpi
+  END SUBROUTINE fft_backward_c2r_hybrid
 
   SUBROUTINE push_psaotd_ebfielfs_2d() bind(C, name='push_psaotd_ebfields_2d')
     USE shared_data
@@ -909,11 +978,14 @@ MODULE fourier_psaotd
 #endif
     ENDIF
     CALL init_gpstd()
+    IF(g_spectral) THEN
+      exf => vold(nmatrixes)%block_vector(1)%block3dc
+    ENDIF      
     IF(.NOT. p3dfft_flag ) THEN
       IF(rank==0) WRITE(0, *) 'INIT GPSTD MATRIX DONE'
       IF (fftw_with_mpi) THEN
         CALL init_plans_fourier_mpi(nopenmp)
-      ELSE
+      ELSE IF(.NOT. fftw_with_mpi) THEN
         IF(c_dim ==3) THEN
           CALL fast_fftw_create_plan_r2c_3d_dft(nopenmp, nfftx, nffty, nfftz,ex_r, exf,  &
           plan_r2c, INT(FFTW_MEASURE, idp), INT(FFTW_FORWARD, idp))
