@@ -903,6 +903,7 @@ MODULE gpstd_solver
           coeff_norm*cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc
       ENDDO
     ENDDO
+
     ! Delete uninitialized blocks
     DO i=1,11
       DO j=1,11

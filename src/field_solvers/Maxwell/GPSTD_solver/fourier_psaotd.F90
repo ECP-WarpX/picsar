@@ -443,7 +443,6 @@ MODULE fourier_psaotd
     
     ! Perform distributed C2R FFTs of all grid arrays (including fields, currents, charge)
     CALL fft_backward_c2r_hybrid
-    
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
@@ -601,7 +600,7 @@ MODULE fourier_psaotd
         CALL p3dfft_ftran_r2c (bz_r,vold(nmatrixes)%block_vector(6)%block3dc,'fft')
         CALL p3dfft_ftran_r2c (jx_r,vold(nmatrixes)%block_vector(7)%block3dc,'fft')
         CALL p3dfft_ftran_r2c (jy_r,vold(nmatrixes)%block_vector(8)%block3dc,'fft')
-        CALL p3dfft_ftran_r2c (jy_r,vold(nmatrixes)%block_vector(9)%block3dc,'fft')
+        CALL p3dfft_ftran_r2c (jz_r,vold(nmatrixes)%block_vector(9)%block3dc,'fft')
         CALL p3dfft_ftran_r2c(rhoold_r,vold(nmatrixes)%block_vector(10)%block3dc,'fft')
         CALL p3dfft_ftran_r2c(rho_r,vold(nmatrixes)%block_vector(11)%block3dc,'fft')
       ENDIF
@@ -631,7 +630,7 @@ MODULE fourier_psaotd
         CALL p3dfft_ftran_r2c (bz_r,bzf,'fft')
         CALL p3dfft_ftran_r2c (jx_r,jxf,'fft')
         CALL p3dfft_ftran_r2c (jy_r,jyf,'fft')
-        CALL p3dfft_ftran_r2c (jy_r,jzf,'fft')
+        CALL p3dfft_ftran_r2c (jz_r,jzf,'fft')
         CALL p3dfft_ftran_r2c (rho_r,rhof,'fft')
         CALL p3dfft_ftran_r2c (rhoold_r,rhooldf,'fft')
       ENDIF
