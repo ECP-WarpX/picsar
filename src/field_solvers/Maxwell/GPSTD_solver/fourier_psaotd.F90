@@ -71,12 +71,17 @@ MODULE fourier_psaotd
     INTEGER(idp)        :: i
     INTEGER(isp)        :: planner_flag_1, planner_flag_2
     nopenmp_cint=nopenmp
+    !> If g_spectral then exf is not initialized
+    !> exf points to vold(nmatrixes)%block_vector(1)%block3dc to be used as an
+    !> input  to fftw_mpi_plans_dft
     IF(g_spectral) THEN
       exf => vold(nmatrixes)%block_vector(1)%block3dc
     ENDIF
     IF  (fftw_threads_ok) THEN
       CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
     ENDIF
+    !> If fftw_mpi_transpose then use FFTW_MPI_TRANSPOSED_OUT/IN plans
+    
     IF(fftw_mpi_transpose) THEN
       planner_flag_1 = IOR(FFTW_MEASURE,FFTW_MPI_TRANSPOSED_OUT)
       planner_flag_2 = IOR(FFTW_MEASURE,FFTW_MPI_TRANSPOSED_IN)
@@ -99,7 +104,7 @@ MODULE fourier_psaotd
         plan_c2r_mpi = fftw_mpi_plan_dft_c2r_2d(nz_cint,nx_cint, exf,ex_r,   &
         comm, planner_flag_2)
       ENDIF
-    ELSE
+    ELSE 
       nz_cint = nz_group
       ny_cint = ny_group
       nx_cint = nx_group
@@ -976,14 +981,20 @@ MODULE fourier_psaotd
       nfftz=nz+2*nzguards
 #endif
     ENDIF
+    !> Init matrix blocks for psatd
     CALL init_gpstd()
     IF(g_spectral) THEN
       exf => vold(nmatrixes)%block_vector(1)%block3dc
     ENDIF      
+    !> Init fftw plans if used
+    !> NB: if p3dfft is used the the init is performed in mpi_routines during
+    !> p3dfft_setup
     IF(.NOT. p3dfft_flag ) THEN
       IF(rank==0) WRITE(0, *) 'INIT GPSTD MATRIX DONE'
+      !> if fftw_with_mpi perform fftw_init_plans in the following routine
       IF (fftw_with_mpi) THEN
         CALL init_plans_fourier_mpi(nopenmp)
+      !> If local psatd, plans are initialized here
       ELSE IF(.NOT. fftw_with_mpi) THEN
         IF(c_dim ==3) THEN
           CALL fast_fftw_create_plan_r2c_3d_dft(nopenmp, nfftx, nffty, nfftz,ex_r, exf,  &

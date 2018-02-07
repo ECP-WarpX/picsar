@@ -180,9 +180,8 @@ MODULE gpstd_solver
 
   ! ______________________________________________________________________________________
   !> @brief
-  !> This subroutine computes block matrixes for the GPSTD solver as well as 
-  !> K-vectors along X,Y,Z directions
-  ! 
+  !> This subroutine computes block matrixes of fourier space wavelength vactor
+  !> As well different other blocks usefull to compute block matrixes for psatd
   !> @author
   !> Haithem Kallala
   !
@@ -204,9 +203,39 @@ MODULE gpstd_solver
     INTEGER(idp)                                  :: nfftx, nffty, nfftz, nfftxr
     LOGICAL(lp)                                   :: switch
 
+    !> Kspace is the (inf)finite order wave vector block matrix in 
+    !> different directions
+    !> It has 10 blocks: 
+    !> i=3,6,9 => Kspace(nmatrixes2)%block_vector(i) = 
+    !> centered (in case of no mesh staggering for E and B) derivative  operator
+    !> along x,y,z directions respectively.
+    !> i=1,4,7 => Kspace(nmatrixes2)%block_vector(i) =
+    !> derivative operator from dual to primal meshgrid (involved in Maxwell
+    !> Ampere equation) along x,y,z respectively
+    !> i=2,5,8 => Kspace(nmatrixes2)%block_vector(i) =
+    !> derivative operator from primal to dual meshgrid (involved in Maxwell
+    !> Faradar equation) along x,y,z respectively
+    !> Kspace(nmatrixes2)%block_vector(10) = Absolute value of wave vector
+
+
+    !> PS: If using fftw_mpi_transpose or strided p3dfft
+    !> y and z axis are transposed but not 
+    !> The effect of Kspace(nmatrixes2)%block_vector which remains the same as
+    !> before
+ 
+   
     IF(.NOT. ASSOCIATED(Kspace)) THEN
       ALLOCATE(KSPACE(ns_max))
     ENDIF
+    !> AT_OP is the block matrix for different operators involved
+    !> in psatd block matrixes computations.
+    !> It has 4 blocks
+
+    !> AT_OP(nmatrixes2)%block_vector(1) = sin(|K|*c*dt)/(|K|)
+    !> AT_OP(nmatrixes2)%block_vector(2) = cos(|K|*c*dt)
+    !> AT_OP(nmatrixes2)%block_vector(3) = (1-cos(|K|*c*dt))/|K|**2
+    !> AT_OP(nmatrixes2)%block_vector(4) = (sin(|K|*c*dt)/(|K|)-c*dt)/|K|**2
+
     IF(.NOT. ASSOCIATED(AT_OP)) THEN
       ALLOCATE(AT_OP(ns_max))
     ENDIF
@@ -215,6 +244,7 @@ MODULE gpstd_solver
     IF(.NOT. ASSOCIATED(AT_OP)) THEN
       ALLOCATE(AT_OP(ns_max))
     ENDIF
+   
     ALLOCATE(AT_OP(nmatrixes2)%block_vector(4_idp))!S/k, C, (1-C)/k^2
     CALL select_case_dims_local(nfftx, nffty, nfftz)
     nfftxr = nfftx/2+1
@@ -227,6 +257,9 @@ MODULE gpstd_solver
     ENDDO
     !construct kspace
     ii=DCMPLX(0.0_num, 1.0_num)
+    !> computes wave vector for a staggered or an unstaggered grid 
+    !> takes into account norderx, nordery, norderz
+    !> if norder ==0 then compute wave vector for an infinite order stencil
     CALL compute_k_vec(l_staggered)
     DO i = 1, nfftxr
       DO j = 1, nffty
@@ -248,7 +281,9 @@ MODULE gpstd_solver
               Kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = kzf(k)
               Kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = kzb(k)
               Kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = kzc(k)
-            ELSE
+            ELSE IF(fftw_mpi_transpose) THEN
+              !> If fftw_mpi_transpose kyc is the derivative operator along z and 
+              !> kzc is the derivative  operator along y
               Kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kxf(i)
               Kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kxb(i)
               Kspace(nmatrixes2)%block_vector(3)%block3dc(i, j, k) = kxc(i)
@@ -261,6 +296,9 @@ MODULE gpstd_solver
             ENDIF
           ELSE
             IF(p3dfft_stride) THEN
+                !> If p3dfft_stride x and z axis are transposed: 
+                !> kzc is the derivative along x and kxc is the derivative
+                !> along z
                 Kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kzf(k)
                 Kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kzb(k)
                 Kspace(nmatrixes2)%block_vector(3)%block3dc(i, j, k) = kzc(k)
@@ -271,7 +309,7 @@ MODULE gpstd_solver
                 Kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = kxb(i)
                 Kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = kxc(i)
 
-            ELSE 
+            ELSE IF(.NOT. p3dfft_stride) THEN
                 Kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kxf(i)
                 Kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kxb(i)
                 Kspace(nmatrixes2)%block_vector(3)%block3dc(i, j, k) = kxc(i)
@@ -287,31 +325,42 @@ MODULE gpstd_solver
         ENDDO
       ENDDO
     ENDDO
+
+    !> Computes the norm of wave vector in fourier space 
     Kspace(nmatrixes2)%block_vector(10)%block3dc=                                    &
     SQRT(ABS(Kspace(nmatrixes2)%block_vector(9)%block3dc)**2 +                       &
         ABS(Kspace(nmatrixes2)%block_vector(6)%block3dc)**2 +                        &
         ABS(Kspace(nmatrixes2)%block_vector(3)%block3dc)**2)
     switch = .FALSE.
+
     ALLOCATE(temp(nfftxr, nffty, nfftz))
     ALLOCATE(temp2(nfftxr, nffty, nfftz))
+
     temp=dt*clight*REAL(Kspace(nmatrixes2)%block_vector(10)%block3dc, num)
     temp2=sinc_block(nfftxr, nffty, nfftz, temp)
+
     AT_OP(nmatrixes2)%block_vector(1)%block3dc = DCMPLX(temp2, 0._num)
+
     AT_OP(nmatrixes2)%block_vector(1)%block3dc =                                      &
     clight*dt*AT_OP(nmatrixes2)%block_vector(1)%block3dc
     temp2=COS(temp)
+
     AT_OP(nmatrixes2)%block_vector(2)%block3dc = DCMPLX(temp2, 0._num)
     temp=0.5_num*temp
+
     AT_OP(nmatrixes2)%block_vector(3)%block3dc = 2._num*(clight*dt/2.0_num)**2        &
     *sinc_block(nfftxr, nffty, nfftz, temp)*sinc_block(nfftxr, nffty, nfftz,    &
     temp)
 
+    !> if current mpi task contains the null frequency then this processor it
+    !> tagged by switch = .TRUE. in order perform Taylor expansion
+    !> for AT_OP...(i)(1,1,1) only in this mpi task
     IF(ABS(Kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)) .EQ. 0.0_num) THEN
       Kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1) = DCMPLX(1.0_num,         &
       0.0_num)
       switch = .TRUE.
-
     ENDIF
+    
     AT_OP(nmatrixes2)%block_vector(3)%block3dc = (DCMPLX(1.0_num, 0.0_num) -          &
     AT_OP(nmatrixes2)%block_vector(2)%block3dc)                                       &
     /Kspace(nmatrixes2)%block_vector(10)%block3dc**2
@@ -320,6 +369,13 @@ MODULE gpstd_solver
     (AT_OP(nmatrixes2)%block_vector(1)%block3dc-clight*dt) /                          &
     Kspace(nmatrixes2)%block_vector(10)%block3dc/                                     &
     Kspace(nmatrixes2)%block_vector(10)%block3dc
+
+    !> Performs Taylor expansion for
+    !> AT_OP(nmatrixes2)%block_vector(3-4)%block3dc(1, 1, 1)
+    !> Taylor expansion for
+    !> AT_OP(nmatrixes2)%block_vector(1)%block3dc(1, 1, 1) is performed inside
+    !> sinc function
+
     IF(switch) THEN
       AT_OP(nmatrixes2)%block_vector(3)%block3dc(1, 1, 1) = (clight*dt)**2/2.0_num
       AT_OP(nmatrixes2)%block_vector(4)%block3dc(1, 1,                                &
@@ -384,8 +440,9 @@ MODULE gpstd_solver
 #else
     ii = DCMPLX(0.0_num, 1.0_num)
 #endif
+    !> If fftw_mpi_transpose, y and z are transposed so nordery, norderz, and  dy 
+    !> dz are switched
     IF(fftw_mpi_transpose) THEN
-     ! switch  z and y
       sd=dz
       dz=dy
       dy=sd
@@ -393,8 +450,9 @@ MODULE gpstd_solver
       norderz=nordery
       nordery=temp_order
     ENDIF
+    !> if p3dfft_stride x and z are transposed, so norderz, norderx and dz, dy
+    !> are switched
     IF(p3dfft_flag) THEN
-      ! switch z and x
       IF(p3dfft_stride) THEN
         sd = dz
         dz = dx
@@ -403,12 +461,16 @@ MODULE gpstd_solver
         norderz = norderx
         norderx = temp_order
       ENDIF
-    ENDIF       
+    ENDIF
+    !> computes fourier space size for all the group (if hybrid)  
+    !> or only locally (if local psatd) or for the whole domain(if gloal psatd)
     CALL select_case_dims_global(nfftx, nffty, nfftz)
+    !> computes wave vector components in each direction
     CALL compute_k_1d( nfftx,kxc,kxf,kxb,norderx,dx,l_stg)
     CALL compute_k_1d( nffty,kyc,kyf,kyb,nordery,dy,l_stg)
     CALL compute_k_1d( nfftz,kzc,kzf,kzb,norderz,dz,l_stg)
-    ! delete second part of kx because real
+
+    ! Selects only haf of  kx because r2c and c2r ffts
     IF(.NOT. p3dfft_flag) THEN
       ALLOCATE(k_temp(nfftx));
       k_temp = kxc;
@@ -419,7 +481,8 @@ MODULE gpstd_solver
       DEALLOCATE(kxf); ALLOCATE(kxf(nfftx/2+1)) ; kxf = k_temp(1:nfftx/2+1)
       DEALLOCATE(k_temp)
     ENDIF
-
+    !> Selects only relevent wave vector components for each processor
+    
     IF(fftw_with_mpi) THEN
       IF( .NOT. p3dfft_flag) THEN
         IF(.NOT. fftw_mpi_transpose) THEN
@@ -469,6 +532,7 @@ MODULE gpstd_solver
           DEALLOCATE(kxct,kxbt,kxft,kyct,kybt,kyft,kzct,kzbt,kzft)
        ENDIF 
     ENDIF
+    !> If fftw_mpi_transpose , p3dfft_stride reswitch parameters
     IF(fftw_mpi_transpose) THEN
       sd=dz
       dz=dy
@@ -533,21 +597,28 @@ MODULE gpstd_solver
          onesp(j) =DCMPLX( nfft + onesp(j))
        ENDIF
      ENDDO
-     
+     ! > By convention, if norder == 0 then computes derivative operatior with
+     ! > infinite order stencil
      IF (norder .ne. 0_idp) THEN
        ALLOCATE(FD(norder/2))
+       !> Computes finite difference coefficients for a staggered or an
+       !> unstaggered grid
        CALL FD_weights_hvincenti(norder, FD, l_stg)
        DO i=1_idp, norder/2
          kvec=kvec+2.0_num/d*FD(i)*SIN((i*2.0_num-1.0_num)*PI*ones/nfft)
        ENDDO
      ELSE
+       !> If norder == 0 then computes the exact wave vector
+       !> with an infinite stencil
        CALL fftfreq(nfft, kvec,  d)
      ENDIF
-     
+     !> If staggered grid then computes staggered derivative operator  
+     !> (dual to primal and primal to dual)  
      IF(l_stg) THEN
        kvecf=kvec*EXP(-ii*PI*onesp/nfft)
        kvecb=kvec*EXP(ii*PI*onesp/nfft)
      ELSE
+     !> If unstaggered grid 
        kvecb=kvec
        kvecf=kvec
      ENDIF
@@ -642,7 +713,7 @@ MODULE gpstd_solver
   ! ______________________________________________________________________________________
   !> @brief
   !> This function computes SINC value of a REAL(num)
-  ! 
+  !  sinc(x) = sin(x)/x if x != 0 else sinc(x) = 1.0
   !> @author
   !> H. Kallala
   !
@@ -702,6 +773,10 @@ MODULE gpstd_solver
     nkx = nfftxr 
     nky = nffty
     nkz = nfftz
+    !> Allocates cc_mat block vector
+    !> for psatd implementation there is 11 field components 
+    !> cc_mat blocks are initally allocated fully 
+    !> and in the and there is a check that deletes useless blocks 
     DO i=1_idp, 11_idp
       DO j=1_idp, 11_idp
         ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(nfftxr, nffty,    &
@@ -711,6 +786,12 @@ MODULE gpstd_solver
         cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = nfftz
       ENDDO
     ENDDO
+    !> If g_spectral then psatd uses multiply_mat_vec routine in GPSTD.F90 
+    !> to perform the maxwell push in Fourier space
+    !> So we need to allocate vold/vnew vector blocks
+    !> else if g_spectral == false these arrays are not allocated, and
+    !> push_psatd_3d/2d is used to perform the maxwell push in Fourier space
+
     IF(g_spectral) THEN
       IF(p3dfft_flag) THEN  ! hybrid with p3dfft
         DO i = 1,11
@@ -753,14 +834,23 @@ MODULE gpstd_solver
         vnew(nmatrixes)%block_vector(i)%nz = 1 
       ENDDO
     ENDIF
-
+    !> Init all blocks to 0.0
     DO i = 1,11
       DO j=1,11 
         cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc = CMPLX(0.0_num,0.0_num)
       ENDDO
     ENDDO
 
+    !> cc_mat_(nmatrixes)block_matrix2d(i,j) components are sorted using the
+    !>following nomenclature 
+    !> 1-> exf; 2->eyf; 3->ezf; 4->bxf; 5->byf; 6->bzf
+    !> 7->jxf; 8->jyf; 9->jzf; 10-> rhooldf; 11->rhof
+    !> cc_mat_(nmatrixes)block_matrix2d(i,j) is the contribution of the j-th
+    !> scalar field to the i-th scalar field 
+    
 
+  
+    !> Contribution of B field to E field update
     cc_mat(nmatrixes)%block_matrix2d(1, 5)%block3dc = -                               &
     ii*Kspace(nmatrixes2)%block_vector(7)%block3dc*clight                             &
     *AT_OP(nmatrixes2)%block_vector(1)%block3dc
@@ -783,7 +873,10 @@ MODULE gpstd_solver
     cc_mat(nmatrixes)%block_matrix2d(3, 5)%block3dc =                                 &
     ii*Kspace(nmatrixes2)%block_vector(1)%block3dc*clight                             &
     *AT_OP(nmatrixes2)%block_vector(1)%block3dc
-
+    
+    !> End contribution B field to E field
+    
+    !> Contribution of E field to B field
     cc_mat(nmatrixes)%block_matrix2d(4, 2)%block3dc =                                 &
     ii*Kspace(nmatrixes2)%block_vector(8)%block3dc/clight                             &
     *AT_OP(nmatrixes2)%block_vector(1)%block3dc
@@ -807,15 +900,24 @@ MODULE gpstd_solver
     cc_mat(nmatrixes)%block_matrix2d(6, 2)%block3dc =                                 &
     -ii*Kspace(nmatrixes2)%block_vector(2)%block3dc/clight                            &
     *AT_OP(nmatrixes2)%block_vector(1)%block3dc
-
+   
+    !> End contribiton E field to B field
+ 
+    !> Contribution of E field to E field and B field to B field
     DO i=1, 6
       cc_mat(nmatrixes)%block_matrix2d(i, i)%block3dc =                               &
       AT_OP(nmatrixes2)%block_vector(2)%block3dc
     ENDDO
+    !> End contribution of E field To E field and B field to B field    
+
+    !> Contribution of J field to E field
     DO i = 1, 3
       cc_mat(nmatrixes)%block_matrix2d(i, i+6)%block3dc =                             &
       (-1._num)*clight*mu0*AT_OP(nmatrixes2)%block_vector(1)%block3dc
     ENDDO
+    ! End contribution of J field to E field
+
+    !> Contribution of J field to B field
     cc_mat(nmatrixes)%block_matrix2d(4, 8)%block3dc = - mu0*                          &
     ii*Kspace(nmatrixes2)%block_vector(8)%block3dc*                                   &
     AT_OP(nmatrixes2)%block_vector(3)%block3dc
@@ -845,9 +947,10 @@ MODULE gpstd_solver
     cc_mat(nmatrixes)%block_matrix2d(6, 8)%block3dc =                                 &
     -mu0*(-ii)*Kspace(nmatrixes2)%block_vector(2)%block3dc*                           &
     AT_OP(nmatrixes2)%block_vector(3)%block3dc
+    
+    !> End contribution of J field to B field
 
-
-    !contribution rho old
+    !> Contribution of rhoold field to E field
     switch = .FALSE.
     IF(ABS(Kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)) .EQ. 0.0_num) THEN
       Kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1) = (1.0_num, 0.0_num)
@@ -862,6 +965,9 @@ MODULE gpstd_solver
       cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc =                          &
       cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc                            &
       *Kspace(nmatrixes2)%block_vector(3*i-1)%block3dc
+      !> If current mpi task contains null frequency then performs Taylor
+      !expansion for cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc(1, 1,
+      !1)
       IF(switch) THEN
         cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc(1, 1, 1) =               &
         -1.0_num/3.0_num*(0.0_num, 1.0_num)*(clight*dt)**2
@@ -873,7 +979,9 @@ MODULE gpstd_solver
       Kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1) = DCMPLX(0.0_num,         &
       0.0_num)
     ENDIF
-    !contribution rho new 
+    !> End contribution of rhoold field to E field
+  
+    !> Contribution of rho field to E field
     DO i = 1, 3
       cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc = DCMPLX(0.,               &
       1.)*(1./(clight*dt)* AT_OP(nmatrixes2)%block_vector(1)%block3dc -DCMPLX(1.,     &
@@ -882,6 +990,9 @@ MODULE gpstd_solver
       cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc =                          &
       cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc                            &
       *Kspace(nmatrixes2)%block_vector(3*i-1)%block3dc
+      !> If current mpi task contains null frequency then performs Taylor
+      !expansion for cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc(1, 1,
+      !1)
       IF(switch) THEN
         cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc(1, 1, 1) =               &
         -1.0_num/6.0_num*(0.0_num, 1.0_num)*(clight*dt)**2
@@ -892,7 +1003,8 @@ MODULE gpstd_solver
     IF(switch) THEN
       Kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)   = DCMPLX(0., 0.)
     ENDIF
-    
+    !> End contribution of rho field to E field   
+ 
     ! Introduce fft normalisation factor in mat bloc mult
     CALL select_case_dims_global(nfftx,nffty,nfftz)
     coeff_norm = 1.0_num/(nfftx*nffty*nfftz)  
@@ -918,6 +1030,9 @@ MODULE gpstd_solver
         ENDIF
       ENDDO
     ENDDO
+    !> Delete Kspace and AT_OP blocks
+    !> Might not delete these blocks if current filtering or field correction is
+    !> needed in Fourier space
     CALL delete_k_space
   END SUBROUTINE init_gpstd
 
@@ -1067,7 +1182,7 @@ MODULE gpstd_solver
     !$OMP END PARALLEL DO
   END SUBROUTINE copy_field_backward
 
-
+  !> Useless routine
   SUBROUTINE is_calculation_needed(irow, icol, needed)
     USE picsar_precision
     INTEGER(idp), INTENT(IN)    :: irow, icol
