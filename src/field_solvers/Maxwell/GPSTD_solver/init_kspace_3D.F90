@@ -406,8 +406,6 @@ MODULE gpstd_solver
     DO i=1,4
        DEALLOCATE(at_op(nmatrixes2)%block_vector(i)%block3dc)
     ENDDO
-    DEALLOCATE(kspace(nmatrixes2))
-    DEALLOCATE(at_op(nmatrixes2))
     DEALLOCATE(kxc,kxb,kxf,kyc,kyb,kyf,kzc,kzb,kzf)
   END SUBROUTINE delete_k_space
 
@@ -976,6 +974,11 @@ MODULE gpstd_solver
     !> End contribution of J field to B field
 
     !> Contribution of rhoold field to E field
+
+    !> if current mpi task contains the null frequency then this processor it
+    !> tagged by switch = .TRUE. in order perform Taylor expansion
+    !> for certain blocks
+
     switch = .FALSE.
     IF(ABS(kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)) .EQ. 0.0_num) THEN
       kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1) = (1.0_num, 0.0_num)
@@ -992,7 +995,7 @@ MODULE gpstd_solver
       *kspace(nmatrixes2)%block_vector(3*i-1)%block3dc
 
       !> If current mpi task contains null frequency then performs Taylor
-      !expansion for cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc(1, 1,
+      !> expansion for cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc(1, 1,
       !1)
       IF(switch) THEN
         cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc(1, 1, 1) =               &
