@@ -797,10 +797,10 @@ MODULE gpstd_solver
     nkx = nfftxr 
     nky = nffty
     nkz = nfftz
-    !> Allocates cc_mat block vector
+    !> Allocates cc_mat  block matrix
     !> for psatd implementation there is 11 field components 
-    !> cc_mat blocks are initally allocated fully 
-    !> and in the and there is a check that deletes useless blocks 
+    !> cc_mat blocks are initally as an 11x11 block matrix 
+    !> At the end of the routine, useless blcoks are deleted  
     DO i=1_idp, 11_idp
       DO j=1_idp, 11_idp
         ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(nfftxr, nffty,    &
@@ -815,7 +815,7 @@ MODULE gpstd_solver
     !> to perform the maxwell push in Fourier space
     !> So we need to allocate vold/vnew vector blocks
     !> else if g_spectral == false these arrays are not allocated, and
-    !> push_psatd_3d/2d is used to perform the maxwell push in Fourier space
+    !> push_psaotd_ebfields_3d/2d is used to perform the maxwell push in Fourier space
 
     IF(g_spectral) THEN
       IF(p3dfft_flag) THEN  ! hybrid with p3dfft
