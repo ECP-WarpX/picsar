@@ -577,6 +577,7 @@ END MODULE tile_params
 
 
 ! ________________________________________________________________________________________
+!> @brief
 !> Module containing useful properties for the particles
 ! ________________________________________________________________________________________
 MODULE particle_properties
@@ -1698,3 +1699,31 @@ MODULE python_pointers
 #endif
   !DIR ATTRIBUTES FASTMEM  :: partbz
 END MODULE python_pointers
+
+! ________________________________________________________________________________________
+!> @brief
+!> Module that stores memory sizes of Fortran arrays/derived types allocated on local rank 
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2018
+! ________________________________________________________________________________________
+MODULE mem_status
+  USE constants 
+  ! Memory size (in Bytes) occupied by grid arrays on local rank 
+  REAL(num) :: local_grid_mem = 0._num
+  ! Memory size (in Bytes) occupied by tiles grid arrays on local rank 
+  ! (arrays used for field gathering on each tile)
+  REAL(num) :: local_grid_tiles_mem = 0._num
+  ! Memory size (in Bytes) occupied by particle arrays (tile structure) on local rank 
+  REAL(num) :: local_part_tiles_mem = 0._num
+  ! Total (all ranks) of memory size (in Bytes) occupied by grid arrays 
+  REAL(num) :: global_grid_mem = 0._num
+  ! Total (all ranks) of memory size (in Bytes) occupied by tile grid arrays 
+  REAL(num) :: global_grid_tiles_mem = 0._num
+  ! Total (all ranks) of memory size (in Bytes) occupied by particle
+  ! arrays/structures on local rank 
+  REAL(num) :: global_part_tiles_mem = 0._num
+END MODULE mem_status

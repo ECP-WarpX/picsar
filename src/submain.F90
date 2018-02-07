@@ -47,9 +47,8 @@
 !
 !> @param[in] nst number of time steps
 !
+! ________________________________________________________________________________________
 SUBROUTINE step(nst)
-  ! ________________________________________________________________________________________
-
 
   USE constants
   USE fields
@@ -417,7 +416,7 @@ SUBROUTINE initall
   dys2 = dy*0.5_num
   dzs2 = dz*0.5_num
 
-  !- Init stencil coefficients
+  ! - Init stencil coefficients
   CALL init_stencil_coefficients()
 
   ! Summary
@@ -565,7 +564,7 @@ SUBROUTINE initall
   ENDIF
 #endif
   ! - Estimate tile size
-  CALL estimate_memory_consumption
+  CALL estimate_total_memory_consumption
 
   ! ----- INIT FIELD ARRAYS
   !!! --- Initialize field/currents arrays
@@ -577,6 +576,45 @@ END SUBROUTINE initall
 
 ! ________________________________________________________________________________________
 !> @brief
+!> Subroutine that computes total memory consumption (particle/grid tile structures and 
+!> regular grid arrays used in the Maxwell solver)
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2018
+! ________________________________________________________________________________________
+SUBROUTINE estimate_total_memory_consumption
+  USE tiling
+  USE mpi_routines
+  USE mem_status
+  IMPLICIT NONE 
+  REAL(num) :: total_memory=0._num, avg_per_mpi=0._num
+  ! - Get local/global memory occupied by tile arrays (grid and particles)
+  CALL get_local_tile_mem()
+  CALL get_global_tile_mem()
+
+  ! - Get local/global memory occupied by grid arrays (Maxwell solver)
+  CALL get_local_grid_mem()
+  CALL get_global_grid_mem()
+
+  ! - Output results on standard output 
+  IF (rank .EQ. 0) THEN 
+    total_memory=global_grid_mem+global_grid_tiles_mem+global_part_tiles_mem
+    avg_per_mpi=total_memory/nproc
+    WRITE(0, *) 'Total memory (GB) for grid arrays ', global_grid_mem/1e9
+    WRITE(0, *) 'Total memory (GB) for grid tile arrays ', global_grid_tiles_mem/1e9
+    WRITE(0, *) 'Total memory (GB) for particle tile arrays ', global_part_tiles_mem/1e9
+    WRITE(0, *) 'Total memory (GB)', total_memory/1e9
+    WRITE(0, *) 'Avg memory (GB) /MPI process ', avg_per_mpi/1e9
+  ENDIF 
+END SUBROUTINE estimate_total_memory_consumption
+
+
+
+! ________________________________________________________________________________________
+!> @brief
 !> Initialize stencil coefficients.
 !
 !> @author
@@ -584,8 +622,8 @@ END SUBROUTINE initall
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 SUBROUTINE init_stencil_coefficients()
-  ! ________________________________________________________________________________________
 
   USE constants
   USE params
