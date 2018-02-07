@@ -1612,6 +1612,8 @@ ALLOCATE(rhoold(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,               
 -nzjguards:nz+nzjguards))
 ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards,                       &
 -nzguards:nz+nzguards))
+ALLOCATE(divj(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+ALLOCATE(divb(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 
 ! --- Initialize auxiliary field arrays for gather to particles
 ex_p => ex
@@ -1758,10 +1760,6 @@ ENDIF
 ALLOCATE(new_cell_x_min(1:nprocx), new_cell_x_max(1:nprocx))
 ALLOCATE(new_cell_y_min(1:nprocy), new_cell_y_max(1:nprocy))
 ALLOCATE(new_cell_z_min(1:nprocz), new_cell_z_max(1:nprocz))
-
-ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-ALLOCATE(divj(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-ALLOCATE(divb(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 
 END SUBROUTINE allocate_grid_quantities
 
@@ -2061,4 +2059,62 @@ IF (timestat_perit.gt.0) THEN
   ENDIF
 ENDIF
 END SUBROUTINE time_statistics_per_iteration
+
+SUBROUTINE get_local_grid_mem()
+  USE mem_status, ONLY: local_grid_mem
+  IMPLICIT NONE 
+  local_grid_mem = 0._num
+
+  ! -- Update of memory size occupied by real-space arrays 
+  local_grid_mem = local_grid_mem + SIZEOF(ex)
+  local_grid_mem = local_grid_mem + SIZEOF(ey)
+  local_grid_mem = local_grid_mem + SIZEOF(ez)
+  local_grid_mem = local_grid_mem + SIZEOF(bx)
+  local_grid_mem = local_grid_mem + SIZEOF(by)
+  local_grid_mem = local_grid_mem + SIZEOF(bz)
+  local_grid_mem = local_grid_mem + SIZEOF(jx)
+  local_grid_mem = local_grid_mem + SIZEOF(jy)
+  local_grid_mem = local_grid_mem + SIZEOF(jz)
+  local_grid_mem = local_grid_mem + SIZEOF(rho)
+  local_grid_mem = local_grid_mem + SIZEOF(rhoold)
+  local_grid_mem = local_grid_mem + SIZEOF(dive)
+  local_grid_mem = local_grid_mem + SIZEOF(divj)
+  local_grid_mem = local_grid_mem + SIZEOF(divb)
+
+#if defined(FFTW)
+  ! -- Update of memory size occupied by Fourier arrays 
+  local_grid_mem = local_grid_mem + SIZEOF(exf)
+  local_grid_mem = local_grid_mem + SIZEOF(eyf)
+  local_grid_mem = local_grid_mem + SIZEOF(ezf)
+  local_grid_mem = local_grid_mem + SIZEOF(bxf)
+  local_grid_mem = local_grid_mem + SIZEOF(byf)
+  local_grid_mem = local_grid_mem + SIZEOF(bzf)
+  local_grid_mem = local_grid_mem + SIZEOF(jxf)
+  local_grid_mem = local_grid_mem + SIZEOF(jyf)
+  local_grid_mem = local_grid_mem + SIZEOF(jzf)
+  local_grid_mem = local_grid_mem + SIZEOF(rhof)
+  local_grid_mem = local_grid_mem + SIZEOF(rhooldf)
+  local_grid_mem = local_grid_mem + SIZEOF(ex_r)
+  local_grid_mem = local_grid_mem + SIZEOF(ey_r)
+  local_grid_mem = local_grid_mem + SIZEOF(ez_r)
+  local_grid_mem = local_grid_mem + SIZEOF(bx_r)
+  local_grid_mem = local_grid_mem + SIZEOF(by_r)
+  local_grid_mem = local_grid_mem + SIZEOF(bz_r)
+  local_grid_mem = local_grid_mem + SIZEOF(jx_r)
+  local_grid_mem = local_grid_mem + SIZEOF(jy_r)
+  local_grid_mem = local_grid_mem + SIZEOF(jz_r)
+  local_grid_mem = local_grid_mem + SIZEOF(rho_r)
+  local_grid_mem = local_grid_mem + SIZEOF(rhoold_r)
+#endif
+END SUBROUTINE get_local_grid_mem 
+
+SUBROUTINE get_global_grid_mem()
+  USE mem_status, ONLY: local_grid_mem, global_grid_mem 
+  IMPLICIT NONE 
+
+  ! - Estimate total grid arrays memory (reduce on proc 0)
+  CALL MPI_REDUCE(local_grid_mem, global_grid_mem,                                     &
+  1_isp, mpidbl, MPI_SUM, 0_isp,comm,errcode)
+END SUBROUTINE get_global_grid_mem 
+
 END MODULE mpi_routines

@@ -1698,3 +1698,24 @@ MODULE python_pointers
 #endif
   !DIR ATTRIBUTES FASTMEM  :: partbz
 END MODULE python_pointers
+
+! Module that stores memory sizes for local rank 
+! Amount of memory occupied is updated when arrays are allocated/deallocated
+! When adding allocation/de-allocation statements, these variables should be updated
+MODULE mem_status
+  USE constants 
+  ! Memory size (in Bytes) occupied by grid arrays on local rank 
+  REAL(num) :: local_grid_mem = 0._num
+  ! Memory size (in Bytes) occupied by tiles grid arrays on local rank 
+  ! (arrays used for field gathering on each tile)
+  REAL(num) :: local_grid_tiles_mem = 0._num
+  ! Memory size (in Bytes) occupied by particle arrays (tile structure) on local rank 
+  REAL(num) :: local_part_tiles_mem = 0._num
+  ! Total (all ranks) of memory size (in Bytes) occupied by grid arrays 
+  REAL(num) :: global_grid_mem = 0._num
+  ! Total (all ranks) of memory size (in Bytes) occupied by tile grid arrays 
+  REAL(num) :: global_grid_tiles_mem = 0._num
+  ! Total (all ranks) of memory size (in Bytes) occupied by particle
+  ! arrays/structures on local rank 
+  REAL(num) :: global_part_tiles_mem = 0._num
+END MODULE mem_status

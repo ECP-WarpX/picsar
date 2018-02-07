@@ -1447,7 +1447,7 @@ MODULE tiling
   !> Creation: 2015
   !
   ! ______________________________________________________________________________________
-  SUBROUTINE estimate_memory_consumption
+  SUBROUTINE estimate_tiles_memory_consumption
     USE shared_data
     USE constants
     USE particles
@@ -1626,7 +1626,7 @@ MODULE tiling
     IF (rank.eq.0) WRITE(0, *) 'Average tile size for the current', tilefieldsize*3., &
     unity
 
-  END SUBROUTINE estimate_memory_consumption
+  END SUBROUTINE estimate_tiles_memory_consumption
 
   SUBROUTINE load_laser_species(curr)
     USE antenna
@@ -1829,4 +1829,98 @@ MODULE tiling
       ENDDO
     ENDDO
   END SUBROUTINE
+
+  SUBROUTINE get_local_tile_mem()
+    USE constants, ONLY: num
+    USE grid_tilemodule, ONLY: aofgrid_tiles
+    USE particles, ONLY: species_parray
+    USE particle_properties, ONLY : nspecies
+    USE tile_params
+    USE mem_status, ONLY: local_grid_tiles_mem, local_part_tiles_mem
+    IMPLICIT NONE 
+    INTEGER(idp) :: ispecies, ix,iy,iz
+    TYPE(particle_species), POINTER :: curr_sp
+    TYPE(particle_tile), POINTER :: curr
+
+    ! Get local size of species_parray structure 
+    local_part_tiles_mem=0._num
+    DO ispecies =1, nspecies
+      curr_sp => species_parray(ispecies)
+      ! Sets tile spatial extents for current species
+      DO iz=1, ntilez
+        DO iy=1, ntiley
+          DO ix=1, ntilex
+            curr=>curr_sp%array_of_tiles(ix, iy, iz)
+            ! If no particles in tile, allocate particle arrays
+            IF (.NOT. curr%l_arrays_allocated) THEN
+              CYCLE
+            ELSE 
+              local_part_tiles_mem=local_part_tiles_mem+SIZEOF(curr%part_x)
+              local_part_tiles_mem=local_part_tiles_mem+SIZEOF(curr%part_y)
+              local_part_tiles_mem=local_part_tiles_mem+SIZEOF(curr%part_z)
+              local_part_tiles_mem=local_part_tiles_mem+SIZEOF(curr%part_ux)
+              local_part_tiles_mem=local_part_tiles_mem+SIZEOF(curr%part_uy)
+              local_part_tiles_mem=local_part_tiles_mem+SIZEOF(curr%part_uz)
+              local_part_tiles_mem=local_part_tiles_mem+SIZEOF(curr%part_ex)
+              local_part_tiles_mem=local_part_tiles_mem+SIZEOF(curr%part_ey)
+              local_part_tiles_mem=local_part_tiles_mem+SIZEOF(curr%part_ez)
+              local_part_tiles_mem=local_part_tiles_mem+SIZEOF(curr%part_bx)
+              local_part_tiles_mem=local_part_tiles_mem+SIZEOF(curr%part_by)
+              local_part_tiles_mem=local_part_tiles_mem+SIZEOF(curr%part_bz)
+              local_part_tiles_mem=local_part_tiles_mem+SIZEOF(curr%pid)
+              local_part_tiles_mem=local_part_tiles_mem+SIZEOF(curr%part_gaminv)
+            ENDIF
+          END DO
+        END DO 
+      END DO
+    END DO
+
+    ! Get local size of aofgrid_tiles structure 
+    local_grid_tiles_mem=0._num
+    DO iz=1, ntilez! LOOP ON TILES
+      DO iy=1, ntiley
+        DO ix=1, ntilex
+          local_grid_tiles_mem=local_grid_tiles_mem+                                   &
+          SIZEOF(aofgrid_tiles(ix, iy, iz)%extile)
+          local_grid_tiles_mem=local_grid_tiles_mem+                                   &
+          SIZEOF(aofgrid_tiles(ix, iy, iz)%eytile)
+          local_grid_tiles_mem=local_grid_tiles_mem+                                   &
+          SIZEOF(aofgrid_tiles(ix, iy, iz)%eztile)
+          local_grid_tiles_mem=local_grid_tiles_mem+                                   &
+          SIZEOF(aofgrid_tiles(ix, iy, iz)%bxtile)
+          local_grid_tiles_mem=local_grid_tiles_mem+                                   &
+          SIZEOF(aofgrid_tiles(ix, iy, iz)%bytile)
+          local_grid_tiles_mem=local_grid_tiles_mem+                                   &
+          SIZEOF(aofgrid_tiles(ix, iy, iz)%bztile)
+          local_grid_tiles_mem=local_grid_tiles_mem+                                   &
+          SIZEOF(aofgrid_tiles(ix, iy, iz)%jxtile)
+          local_grid_tiles_mem=local_grid_tiles_mem+                                   &
+          SIZEOF(aofgrid_tiles(ix, iy, iz)%jytile)
+          local_grid_tiles_mem=local_grid_tiles_mem+                                   &
+          SIZEOF(aofgrid_tiles(ix, iy, iz)%jztile)
+          local_grid_tiles_mem=local_grid_tiles_mem+                                   &
+          SIZEOF(aofgrid_tiles(ix, iy, iz)%rhotile)
+        END DO
+      END DO
+    END DO! END LOOP ON TILES
+  END SUBROUTINE get_local_tile_mem 
+
+  SUBROUTINE get_global_tile_mem()
+    USE constants, ONLY: isp
+    USE shared_data, ONLY: errcode, comm
+    USE mpi_type_constants, ONLY: mpidbl
+    USE mem_status, ONLY: local_grid_tiles_mem, local_part_tiles_mem,                  &
+    global_grid_tiles_mem, global_part_tiles_mem 
+    IMPLICIT NONE 
+
+    ! - Estimate total particle arrays memory (reduce on proc 0)
+    CALL MPI_REDUCE(local_part_tiles_mem, global_part_tiles_mem,                       &
+    1_isp, mpidbl, MPI_SUM, 0_isp,comm,errcode)
+    ! - Estimate total grid tile arrays memory (reduce on proc 0)
+    CALL MPI_REDUCE(local_grid_tiles_mem, global_grid_tiles_mem,                       &
+    1_isp, mpidbl, MPI_SUM, 0_isp,comm,errcode)
+  END SUBROUTINE get_global_tile_mem 
+
 END MODULE tiling
+
+
