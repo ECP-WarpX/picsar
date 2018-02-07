@@ -218,11 +218,11 @@ MODULE gpstd_solver
     !> Kspace(nmatrixes2)%block_vector(10) = Absolute value of wave vector
 
 
-    !> PS: If using fftw_mpi_transpose or strided p3dfft
-    !> y and z axis (or x and z for p3dfft) are transposed but not 
-    !> The effect of Kspace(nmatrixes2)%block_vector which remains the same as
-    !> before
- 
+    !> PS: If using fftw_mpi_transpose or strided p3dfft then
+    !> y and z axis (or x and z for strided p3dfft) are transposed inside Kspace
+    !> blocks. 
+    !> But the convention above remains  identical
+  
    
     IF(.NOT. ASSOCIATED(Kspace)) THEN
       ALLOCATE(KSPACE(ns_max))
@@ -446,6 +446,21 @@ MODULE gpstd_solver
 #else
     ii = DCMPLX(0.0_num, 1.0_num)
 #endif
+    !> If fftw_mpi_transpose then use FFTW_MPI_TRANSPOSED_OUT/IN plans
+    !> fftw_mpi_transpose avoids spurious mpi_alltoall call for each
+    !> fftw_mpi_exec call. (initially fftw_mpi_exec call mpi_alltoall two
+    !> times to perform gloal data transposition along y and z axis)
+    !> Hence fftw_mpi_exec is faster when using transposed plans
+    !> But the user should keep in mind that fourier fields are then transposed
+    !> in memory and data splitting along mpi procs is done along y axis instead
+    !of z 
+    !> axis  with regular fftw_mpi.
+    !> block matrixes are also transposed conveniently  during init_gpstd when
+    !> using transposed plans
+    !> A similar optimization is possible when using p3dfft (p3dfft_stride =
+    !.TRUE.)  but z and x axis are then transposed 
+
+
     !> If fftw_mpi_transpose, y and z are transposed so nordery, norderz, and  dy 
     !> dz are switched
     IF(fftw_mpi_transpose) THEN

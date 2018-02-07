@@ -74,8 +74,20 @@ MODULE fourier_psaotd
     IF  (fftw_threads_ok) THEN
       CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
     ENDIF
+
     !> If fftw_mpi_transpose then use FFTW_MPI_TRANSPOSED_OUT/IN plans
-    
+    !> fftw_mpi_transpose avoids spurious mpi_alltoall call for each
+    !> fftw_mpi_exec call. (initially fftw_mpi_exec call mpi_alltoall two
+    !> times to perform gloal data transposition along y and z axis)
+    !> Hence fftw_mpi_exec is faster when using transposed plans
+    !> But the user should keep in mind that fourier fields are then transposed
+    !> in memory and data splitting along mpi procs is done along y axis instead of z
+    !> axis  with regular fftw_mpi.
+    !> block matrixes are also transposed conveniently  during init_gpstd when
+    !> using transposed plans
+    !> A similar optimization is possible when using p3dfft (p3dfft_stride =
+    !.TRUE.) but z and x axis are then transposed 
+
     IF(fftw_mpi_transpose) THEN
       planner_flag_1 = IOR(FFTW_MEASURE,FFTW_MPI_TRANSPOSED_OUT)
       planner_flag_2 = IOR(FFTW_MEASURE,FFTW_MPI_TRANSPOSED_IN)
@@ -990,7 +1002,7 @@ MODULE fourier_psaotd
       exf => vold(nmatrixes)%block_vector(1)%block3dc
     ENDIF      
     !> Init fftw plans if used
-    !> NB: if p3dfft is used the the init is performed in mpi_routines during
+    !> NB: if p3dfft is used, then the init is performed in mpi_routines during
     !> p3dfft_setup
     IF(.NOT. p3dfft_flag ) THEN
       IF(rank==0) WRITE(0, *) 'INIT GPSTD MATRIX DONE'
