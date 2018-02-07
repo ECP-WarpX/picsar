@@ -408,6 +408,7 @@ MODULE gpstd_solver
     ENDDO
     DEALLOCATE(kspace(nmatrixes2))
     DEALLOCATE(at_op(nmatrixes2))
+    DEALLOCATE(kxc,kxb,kxf,kyc,kyb,kyf,kzc,kzb,kzf)
   END SUBROUTINE delete_k_space
 
   ! ______________________________________________________________________________________
