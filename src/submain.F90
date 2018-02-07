@@ -47,9 +47,8 @@
 !
 !> @param[in] nst number of time steps
 !
+! ________________________________________________________________________________________
 SUBROUTINE step(nst)
-  ! ________________________________________________________________________________________
-
 
   USE constants
   USE fields
@@ -575,8 +574,17 @@ SUBROUTINE initall
   jx=0.0_num;jy=0.0_num;jz=0.0_num
 END SUBROUTINE initall
 
-
-
+! ________________________________________________________________________________________
+!> @brief
+!> Subroutine that computes total memory consumption (particle/grid tile structures and 
+!> regular grid arrays used in the Maxwell solver)
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2018
+! ________________________________________________________________________________________
 SUBROUTINE estimate_total_memory_consumption
   USE tiling
   USE mpi_routines
@@ -614,8 +622,8 @@ END SUBROUTINE estimate_total_memory_consumption
 !
 !> @date
 !> Creation 2015
+! ________________________________________________________________________________________
 SUBROUTINE init_stencil_coefficients()
-  ! ________________________________________________________________________________________
 
   USE constants
   USE params

@@ -577,6 +577,7 @@ END MODULE tile_params
 
 
 ! ________________________________________________________________________________________
+!> @brief
 !> Module containing useful properties for the particles
 ! ________________________________________________________________________________________
 MODULE particle_properties
@@ -1699,9 +1700,16 @@ MODULE python_pointers
   !DIR ATTRIBUTES FASTMEM  :: partbz
 END MODULE python_pointers
 
-! Module that stores memory sizes for local rank 
-! Amount of memory occupied is updated when arrays are allocated/deallocated
-! When adding allocation/de-allocation statements, these variables should be updated
+! ________________________________________________________________________________________
+!> @brief
+!> Module that stores memory sizes of Fortran arrays/derived types allocated on local rank 
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2018
+! ________________________________________________________________________________________
 MODULE mem_status
   USE constants 
   ! Memory size (in Bytes) occupied by grid arrays on local rank 

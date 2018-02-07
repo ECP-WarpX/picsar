@@ -1830,6 +1830,18 @@ MODULE tiling
     ENDDO
   END SUBROUTINE
 
+ ! _______________________________________________________________________________________
+ !> @brief
+ !> Subroutine that gets total memory size in Bytes occupied by tile structures (grid/
+ !> particles) on local rank. These memory sizes are stored in the mem_status module 
+ !> variables: local_grid_tiles_mem (for grid) and local_part_tiles_mem (for particles)
+ !
+ !> @author
+ !> Henri Vincenti
+ !
+ !> @date
+ !> Creation 2018
+ ! _______________________________________________________________________________________
   SUBROUTINE get_local_tile_mem()
     USE constants, ONLY: num
     USE grid_tilemodule, ONLY: aofgrid_tiles
@@ -1905,6 +1917,19 @@ MODULE tiling
     END DO! END LOOP ON TILES
   END SUBROUTINE get_local_tile_mem 
 
+ ! _______________________________________________________________________________________
+ !> @brief
+ !> Subroutine that computes the total memory size in Bytes occupied by tile structures 
+ !> (grid/particles) on all ranks. These memory sizes are reduced on rank 0
+ !>  in the mem_status module variables: global_grid_tiles_mem (for grid) and 
+ !> global_part_tiles_mem (for particles)
+ !
+ !> @author
+ !> Henri Vincenti
+ !
+ !> @date
+ !> Creation 2018
+ ! _______________________________________________________________________________________
   SUBROUTINE get_global_tile_mem()
     USE constants, ONLY: isp
     USE shared_data, ONLY: errcode, comm

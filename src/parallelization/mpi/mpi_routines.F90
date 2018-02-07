@@ -2060,6 +2060,18 @@ IF (timestat_perit.gt.0) THEN
 ENDIF
 END SUBROUTINE time_statistics_per_iteration
 
+! ________________________________________________________________________________________
+!> @brief
+!> Subroutine that gets total memory size in Bytes occupied by tile structures grid
+!> arrays on local rank. These memory sizes are stored in the mem_status module 
+!> variable local_grid_mem
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2018
+! ________________________________________________________________________________________
 SUBROUTINE get_local_grid_mem()
   USE mem_status, ONLY: local_grid_mem
   IMPLICIT NONE 
@@ -2108,6 +2120,18 @@ SUBROUTINE get_local_grid_mem()
 #endif
 END SUBROUTINE get_local_grid_mem 
 
+! ________________________________________________________________________________________
+!> @brief
+!> Subroutine that computes the total memory size in Bytes occupied by grid arrays 
+!> on all ranks. These memory sizes are reduced on rank 0 in the mem_status module 
+!> variable: global_grid_mem
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2018
+! ________________________________________________________________________________________
 SUBROUTINE get_global_grid_mem()
   USE mem_status, ONLY: local_grid_mem, global_grid_mem 
   IMPLICIT NONE 
