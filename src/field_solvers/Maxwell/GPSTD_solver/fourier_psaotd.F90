@@ -23,10 +23,9 @@
 !
 ! Purpose:
 ! This file contains subroutines for:
-! (i)  Fourier init (allocation and init of Fourier k-vectors,
-! creation of planes for FFTW etc.),
+! (i)  fftw init plans   
 ! (ii) Forward/Backward Fourier transform of EM fields using,
-! FFTW (Distributed/Shared version),
+! FFTW (Distributed/Shared version) or P3DFFT
 ! (iii) Maxwell push in the spectral space using the Pseudo-Spectral Arbitrary Order
 ! Analytical Time Domain (PSAOTD) Maxwell solver.
 !
@@ -275,7 +274,7 @@ MODULE fourier_psaotd
  !> and without MPI groups 
  !> N.B: this routine is deprecated and will be integrally replaced by get_Ffields_mpi_lb 
  !> in the future 
- !> 
+ !>  
  !> @author
  !> Henri Vincenti
  !
