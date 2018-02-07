@@ -70,12 +70,7 @@ MODULE fourier_psaotd
     INTEGER(idp)        :: i
     INTEGER(isp)        :: planner_flag_1, planner_flag_2
     nopenmp_cint=nopenmp
-    !> If g_spectral then exf is not initialized
-    !> exf points to vold(nmatrixes)%block_vector(1)%block3dc to be used as an
-    !> input  to fftw_mpi_plans_dft
-    IF(g_spectral) THEN
-      exf => vold(nmatrixes)%block_vector(1)%block3dc
-    ENDIF
+
     IF  (fftw_threads_ok) THEN
       CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
     ENDIF
@@ -982,6 +977,15 @@ MODULE fourier_psaotd
     ENDIF
     !> Init matrix blocks for psatd
     CALL init_gpstd()
+
+    !> If g_spectral == .TRUE. then exf is not initialized in mpi_routine.F90
+    !> Instead, vector blocks structures are used to store fourier fields
+    !> and multiply_mat_vector(GPSTD.F90) is used to push fields in Fourier
+    !> space 
+    !> exf only points to vold(nmatrixes)%block_vector(1)%block3dc to initialize
+    !> fftw plans
+    !> If g_spectral == .FALSE. then exf is already allocated 
+
     IF(g_spectral) THEN
       exf => vold(nmatrixes)%block_vector(1)%block3dc
     ENDIF      
