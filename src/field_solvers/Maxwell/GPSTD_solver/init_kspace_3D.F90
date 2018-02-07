@@ -449,7 +449,7 @@ MODULE gpstd_solver
     !> If fftw_mpi_transpose then use FFTW_MPI_TRANSPOSED_OUT/IN plans
     !> fftw_mpi_transpose avoids spurious mpi_alltoall call for each
     !> fftw_mpi_exec call. (initially fftw_mpi_exec call mpi_alltoall two
-    !> times to perform gloal data transposition along y and z axis)
+    !> times to perform global data transposition along y and z axis)
     !> Hence fftw_mpi_exec is faster when using transposed plans
     !> But the user should keep in mind that fourier fields are then transposed
     !> in memory and data splitting along mpi procs is done along y axis instead
