@@ -78,12 +78,15 @@ MODULE fourier_psaotd
     !> If fftw_mpi_transpose then use FFTW_MPI_TRANSPOSED_OUT/IN plans
     !> fftw_mpi_transpose avoids spurious mpi_alltoall call for each
     !> fftw_mpi_exec call. (initially fftw_mpi_exec call mpi_alltoall two
-    !> times to perform global data transposition along y and z axis)
+    !> times to perform global data transposition along y and z axis back and
+    !> forth)
+    !> The second mpi_alltoall is ommited when using fftw_mpi_transpose.
     !> Hence fftw_mpi_exec is faster when using transposed plans
-    !> But the user should keep in mind that fourier fields are then transposed
-    !> in memory and data splitting along mpi procs is done along y axis instead of z
-    !> axis  with regular fftw_mpi.
-    !> block matrixes are also transposed conveniently  during init_gpstd when
+    !> But the user should keep in mind that fourier fields are not transposed
+    !> back to have the same sizes as real fields since z and y axis are now
+    !> switched.
+
+    !> Block matrixes are also transposed conveniently  during init_gpstd when
     !> using transposed plans
     !> A similar optimization is possible when using p3dfft (p3dfft_stride =
     !.TRUE.) but z and x axis are then transposed 
