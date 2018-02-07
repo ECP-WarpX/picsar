@@ -180,8 +180,8 @@ MODULE gpstd_solver
 
   ! ______________________________________________________________________________________
   !> @brief
-  !> This subroutine computes block matrixes of fourier space wavelength vactor
-  !> As well different other blocks usefull to compute block matrixes for psatd
+  !> This subroutine computes block matrixes of fourier space wavelength vector
+  !> As well as different other blocks usefull to compute block matrixes for psatd
   !> @author
   !> Haithem Kallala
   !
@@ -207,19 +207,19 @@ MODULE gpstd_solver
     !> different directions
     !> It has 10 blocks: 
     !> i=3,6,9 => Kspace(nmatrixes2)%block_vector(i) = 
-    !> centered (in case of no mesh staggering for E and B) derivative  operator
+    !> centered  derivative  operator
     !> along x,y,z directions respectively.
     !> i=1,4,7 => Kspace(nmatrixes2)%block_vector(i) =
     !> derivative operator from dual to primal meshgrid (involved in Maxwell
     !> Ampere equation) along x,y,z respectively
     !> i=2,5,8 => Kspace(nmatrixes2)%block_vector(i) =
     !> derivative operator from primal to dual meshgrid (involved in Maxwell
-    !> Faradar equation) along x,y,z respectively
+    !> Faraday equation) along x,y,z respectively
     !> Kspace(nmatrixes2)%block_vector(10) = Absolute value of wave vector
 
 
     !> PS: If using fftw_mpi_transpose or strided p3dfft
-    !> y and z axis are transposed but not 
+    !> y and z axis (or x and z for p3dfft) are transposed but not 
     !> The effect of Kspace(nmatrixes2)%block_vector which remains the same as
     !> before
  
@@ -230,11 +230,14 @@ MODULE gpstd_solver
     !> AT_OP is the block matrix for different operators involved
     !> in psatd block matrixes computations.
     !> It has 4 blocks
+  
+    !> The first component (for null frequency) of each block
+    !> except block 2 is computed using Taylor expansion 
 
     !> AT_OP(nmatrixes2)%block_vector(1) = sin(|K|*c*dt)/(|K|)
     !> AT_OP(nmatrixes2)%block_vector(2) = cos(|K|*c*dt)
     !> AT_OP(nmatrixes2)%block_vector(3) = (1-cos(|K|*c*dt))/|K|**2
-    !> AT_OP(nmatrixes2)%block_vector(4) = (sin(|K|*c*dt)/(|K|)-c*dt)/|K|**2
+    !> AT_OP(nmatrixes2)%block_vector(4) = (sin(|K|*c*dt)/|K|-c*dt)/|K|**2
 
     IF(.NOT. ASSOCIATED(AT_OP)) THEN
       ALLOCATE(AT_OP(ns_max))
@@ -259,7 +262,7 @@ MODULE gpstd_solver
     ii=DCMPLX(0.0_num, 1.0_num)
     !> computes wave vector for a staggered or an unstaggered grid 
     !> takes into account norderx, nordery, norderz
-    !> if norder ==0 then compute wave vector for an infinite order stencil
+    !> if norder == 0 then compute wave vector for an infinite order stencil
     CALL compute_k_vec(l_staggered)
     DO i = 1, nfftxr
       DO j = 1, nffty
@@ -274,6 +277,9 @@ MODULE gpstd_solver
                 Kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k) = kyb(j)
                 Kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k) = kyc(j)
               ELSE IF(c_dim == 2) THEN
+                !> If c_dim == 2 Then y derivative is null
+                !> c_dim = 2 cannot be used with p3dfft or fftw_mpi_transpose
+                !> flag
                 Kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k)= (0.0_num,0.0_num) 
                 Kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k)= (0.0_num,0.0_num)
                 Kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k)= (0.0_num,0.0_num) 
@@ -462,9 +468,11 @@ MODULE gpstd_solver
         norderx = temp_order
       ENDIF
     ENDIF
+
     !> computes fourier space size for all the group (if hybrid)  
     !> or only locally (if local psatd) or for the whole domain(if gloal psatd)
     CALL select_case_dims_global(nfftx, nffty, nfftz)
+
     !> computes wave vector components in each direction
     CALL compute_k_1d( nfftx,kxc,kxf,kxb,norderx,dx,l_stg)
     CALL compute_k_1d( nffty,kyc,kyf,kyb,nordery,dy,l_stg)
@@ -481,8 +489,8 @@ MODULE gpstd_solver
       DEALLOCATE(kxf); ALLOCATE(kxf(nfftx/2+1)) ; kxf = k_temp(1:nfftx/2+1)
       DEALLOCATE(k_temp)
     ENDIF
-    !> Selects only relevent wave vector components for each processor
-    
+
+    !> Selects only relevent wave vector components for each processor    
     IF(fftw_with_mpi) THEN
       IF( .NOT. p3dfft_flag) THEN
         IF(.NOT. fftw_mpi_transpose) THEN
@@ -496,7 +504,7 @@ MODULE gpstd_solver
           k_temp = kzb
           DEALLOCATE(kzb);ALLOCATE(kzb(local_nz))
           kzb = k_temp(local_z0+1:local_z0+local_nz)
-        ELSE
+        ELSE IF(fftw_mpi_transpose) THEN
           ALLOCATE(k_temp(nfftz))
           k_temp = kzc
           DEALLOCATE(kzc);ALLOCATE(kzc(local_nz_tr))
@@ -532,6 +540,7 @@ MODULE gpstd_solver
           DEALLOCATE(kxct,kxbt,kxft,kyct,kybt,kyft,kzct,kzbt,kzft)
        ENDIF 
     ENDIF
+
     !> If fftw_mpi_transpose , p3dfft_stride reswitch parameters
     IF(fftw_mpi_transpose) THEN
       sd=dz
@@ -786,6 +795,7 @@ MODULE gpstd_solver
         cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = nfftz
       ENDDO
     ENDDO
+
     !> If g_spectral then psatd uses multiply_mat_vec routine in GPSTD.F90 
     !> to perform the maxwell push in Fourier space
     !> So we need to allocate vold/vnew vector blocks
@@ -834,6 +844,7 @@ MODULE gpstd_solver
         vnew(nmatrixes)%block_vector(i)%nz = 1 
       ENDDO
     ENDIF
+
     !> Init all blocks to 0.0
     DO i = 1,11
       DO j=1,11 
@@ -965,6 +976,7 @@ MODULE gpstd_solver
       cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc =                          &
       cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc                            &
       *Kspace(nmatrixes2)%block_vector(3*i-1)%block3dc
+
       !> If current mpi task contains null frequency then performs Taylor
       !expansion for cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc(1, 1,
       !1)
@@ -990,6 +1002,7 @@ MODULE gpstd_solver
       cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc =                          &
       cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc                            &
       *Kspace(nmatrixes2)%block_vector(3*i-1)%block3dc
+
       !> If current mpi task contains null frequency then performs Taylor
       !expansion for cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc(1, 1,
       !1)
@@ -1005,7 +1018,11 @@ MODULE gpstd_solver
     ENDIF
     !> End contribution of rho field to E field   
  
-    ! Introduce fft normalisation factor in mat bloc mult
+    !> Renormalize cc_mat blocks
+    !> Because fftw_r2c and followed by fftw_c2r multiplies fields by 
+    !> nfftx*nffty*nfftz 
+    !> This way, no need to normalize fields in a separate step
+
     CALL select_case_dims_global(nfftx,nffty,nfftz)
     coeff_norm = 1.0_num/(nfftx*nffty*nfftz)  
 
@@ -1016,7 +1033,7 @@ MODULE gpstd_solver
       ENDDO
     ENDDO
 
-    ! Delete uninitialized blocks
+    !> Delete uninitialized blocks
     DO i=1,11
       DO j=1,11
         IF(sum(abs(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc))                   &
@@ -1030,6 +1047,7 @@ MODULE gpstd_solver
         ENDIF
       ENDDO
     ENDDO
+
     !> Delete Kspace and AT_OP blocks
     !> Might not delete these blocks if current filtering or field correction is
     !> needed in Fourier space
@@ -1182,51 +1200,6 @@ MODULE gpstd_solver
     !$OMP END PARALLEL DO
   END SUBROUTINE copy_field_backward
 
-  !> Useless routine
-  SUBROUTINE is_calculation_needed(irow, icol, needed)
-    USE picsar_precision
-    INTEGER(idp), INTENT(IN)    :: irow, icol
-    LOGICAL(lp), INTENT(INOUT) :: needed
-
-    needed = .TRUE.
-    IF(irow .LE. 3_idp) THEN
-      IF((icol .LE. 3_idp) .AND. (icol .NE. irow)) THEN
-        needed = .FALSE.
-        RETURN
-      ENDIF
-      IF(icol  .EQ. irow+3_idp) THEN
-        needed = .FALSE.
-        RETURN
-      ENDIF
-      IF((icol .GE. 7_idp) .AND. (icol .LE. 9_idp) .AND. (icol .NE. irow + 6_idp))    &
-      THEN
-      needed = .FALSE.
-      RETURN
-    ENDIF
-  ENDIF
-  IF ((irow .LE. 6_idp) .AND. (irow .GE. 4_idp)) THEN
-    IF ((icol .LE. 3_idp) .AND. icol .EQ. irow - 3_idp) THEN
-      needed = .FALSE.
-      RETURN
-    ENDIF
-    IF((icol .LE. 6_idp) .AND. (icol .GE. 4_idp) .AND. icol .NE. irow) THEN
-      needed = .FALSE.
-      RETURN
-    ENDIF
-    IF((icol .GE. 7_idp) .AND. (icol .EQ. irow + 3_idp)) THEN
-      needed = .FALSE.
-      RETURN
-    ENDIF
-    IF((icol .EQ. 10_idp) .OR. (icol .EQ. 11_idp)) THEN
-      needed = .FALSE.
-      RETURN
-    ENDIF
-  ENDIF
-  IF (irow .GE. 7_idp) THEN
-    needed = .FALSE.
-    RETURN
-  ENDIF
-END SUBROUTINE is_calculation_needed
 #endif
 END MODULE
 
