@@ -59,7 +59,6 @@ MODULE mpi_routines
   SUBROUTINE mpi_minimal_init()
     LOGICAL(isp) :: isinitialized
     INTEGER(isp) :: nproc_comm, rank_in_comm
-    INTEGER(isp) :: iret
     CALL MPI_INITIALIZED(isinitialized, errcode)
     IF (.NOT. isinitialized) THEN
       CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE, provided, errcode)
@@ -148,9 +147,6 @@ MODULE mpi_routines
   !>                             Cartesian topology.
   ! ______________________________________________________________________________________
   SUBROUTINE setup_communicator
-#if defined(FFTW)
-    USE group_parameters , ONLY : nb_group
-#endif
     INTEGER(isp), PARAMETER :: ndims = 3
     INTEGER(idp) :: idim
     INTEGER(isp) :: nproc_comm, dims(ndims), old_comm, ierr, neighb
@@ -565,18 +561,17 @@ USE mpi
 #if defined(P3DFFT)
   USE p3dfft
 #endif
-INTEGER(isp), PARAMETER :: ndims = 3
-LOGICAL(isp) :: periods(ndims), reorder
-INTEGER(isp) :: dims(ndims), ierr
+INTEGER(isp) :: ierr
 INTEGER(idp) :: group_size
 INTEGER(isp), ALLOCATABLE, DIMENSION(:)    ::  grp_comm
 INTEGER(isp)                                :: roots_comm
-INTEGER(idp)  ::cur, i,j,temp,k,l
-INTEGER(idp), DIMENSIOn(:), ALLOCATABLE :: all_nz_group,  &
-  all_iz_min_global, all_iz_max_global, all_ny_group, all_nz
+INTEGER(idp)  :: i,j,temp
+INTEGER(idp), DIMENSIOn(:), ALLOCATABLE :: all_iz_min_global, all_iz_max_global
 INTEGER(idp)                            :: iz_min_global, iz_max_global,iy_min_global, &
 iy_max_global
+#if defined(P3DFFT)
 INTEGER(isp)                            :: pdims(2)
+#endif
 INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
 INTEGER(isp) :: color
 INTEGER(isp)                              :: key, key_roots,color_roots
@@ -1185,11 +1180,10 @@ USE mpi_fftw3
 USE group_parameters
 USE load_balance
 #endif
-INTEGER(isp) :: idim,ierr
+INTEGER(isp) :: idim
 INTEGER(isp) :: nx0, nxp
 INTEGER(isp) :: ny0, nyp
 INTEGER(isp) :: nz0, nzp
-INTEGER(idp) :: iz
 #if defined(FFTW)
 INTEGER(C_INTPTR_T):: kx, ly, mz
 #endif
