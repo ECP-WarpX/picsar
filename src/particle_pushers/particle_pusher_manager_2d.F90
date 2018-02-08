@@ -87,11 +87,14 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, 
   INTEGER(idp) :: ispecies, ix, iy, iz, count
   INTEGER(idp) :: jmin, jmax, kmin, kmax, lmin, lmax
   TYPE(particle_species), POINTER :: curr
-  TYPE(grid_tile), POINTER :: currg
   TYPE(particle_tile), POINTER :: curr_tile
   REAL(num) :: tdeb, tend
   INTEGER(idp) :: nxc, nyc, nzc, ipmin, ipmax, ip
-  INTEGER(idp) :: nxjg, nyjg, nzjg
+  INTEGER(idp) :: nxjg, nzjg
+  INTEGER(idp)             :: nxt, nyt, nzt
+  INTEGER(idp)             :: nxt_o, nyt_o, nzt_o
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: extile, eytile, eztile
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: bxtile, bytile, bztile
   LOGICAL(lp)  :: isgathered=.FALSE.
 
   tdeb=MPI_WTIME()
@@ -99,19 +102,22 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, 
 #if PROFILING==3
   CALL start_collection()
 #endif
-
+  nxt_o=0_idp
+  nyt_o=0_idp
+  nzt_o=0_idp
   !$OMP PARALLEL DO COLLAPSE(2) SCHEDULE(runtime) DEFAULT(NONE) SHARED(ntilex,        &
   !$OMP ntiley, ntilez, nspecies, species_parray, aofgrid_tiles, nxjguard, nyjguard,  &
   !$OMP nzjguard, nxguard, nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg, dxx, dyy,  &
   !$OMP dzz, dtt, noxx, noyy, nozz, c_dim, fieldgathe, LVEC_fieldgathe) PRIVATE(ix,   &
-  !$OMP iy, iz, ispecies, curr, curr_tile, currg, count, jmin, jmax, kmin, kmax,      &
-  !$OMP lmin, lmax, nxc, nyc, nzc, ipmin, ipmax, ip, nxjg, nyjg, nzjg, isgathered)
+  !$OMP iy, iz, ispecies, curr, curr_tile, count, jmin, jmax, kmin, kmax,             &
+  !$OMP lmin, lmax, nxc, nyc, nzc, ipmin, ipmax, ip, nxjg, nzjg, isgathered,          &
+  !$OMP extile, eytile, eztile, bxtile, bytile, bztile, nxt, nyt, nzt)                &
+  !$OMP FIRSTPRIVATE(nxt_o, nyt_o, nzt_o)                                           
   DO iz=1, ntilez! LOOP ON TILES
     DO ix=1, ntilex
       curr=>species_parray(1)
       curr_tile=>curr%array_of_tiles(ix, 1, iz)
       nxjg=curr_tile%nxg_tile
-
       nzjg=curr_tile%nzg_tile
       jmin=curr_tile%nx_tile_min-nxjg
       jmax=curr_tile%nx_tile_max+nxjg
@@ -129,13 +135,29 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, 
         IF (count .GT. 0) isgathered=.TRUE.
       END DO
       IF (isgathered) THEN
-        currg=>aofgrid_tiles(ix, 1, iz)
-        currg%extile=exg(jmin:jmax, kmin:kmax, lmin:lmax)
-        currg%eytile=eyg(jmin:jmax, kmin:kmax, lmin:lmax)
-        currg%eztile=ezg(jmin:jmax, kmin:kmax, lmin:lmax)
-        currg%bxtile=bxg(jmin:jmax, kmin:kmax, lmin:lmax)
-        currg%bytile=byg(jmin:jmax, kmin:kmax, lmin:lmax)
-        currg%bztile=bzg(jmin:jmax, kmin:kmax, lmin:lmax)
+        nxt=jmax-jmin+1_idp
+        nyt=kmax-kmin+1_idp
+        nzt=lmax-lmin+1_idp
+        ! - Only resize temporary private grid tile arrays if tile size has changed
+        ! - i.e (nxt!=nxt_o or nyt!= nyt_o or nzt!=nzt_o)
+        ! - If tile array not allocated yet, allocate tile array with sizes nxt, nyt,
+        ! - nzt
+        CALL resize_3D_array_real(extile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+        CALL resize_3D_array_real(eytile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+        CALL resize_3D_array_real(eztile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+        CALL resize_3D_array_real(bxtile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+        CALL resize_3D_array_real(bytile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+        CALL resize_3D_array_real(bztile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+        nxt_o=nxt
+        nyt_o=nyt
+        nzt_o=nzt
+        ! - Copy values of field arrays in temporary grid tile arrays 
+        extile=exg(jmin:jmax, kmin:kmax, lmin:lmax)
+        eytile=eyg(jmin:jmax, kmin:kmax, lmin:lmax)
+        eztile=ezg(jmin:jmax, kmin:kmax, lmin:lmax)
+        bxtile=bxg(jmin:jmax, kmin:kmax, lmin:lmax)
+        bytile=byg(jmin:jmax, kmin:kmax, lmin:lmax)
+        bztile=bzg(jmin:jmax, kmin:kmax, lmin:lmax)
         DO ispecies=1, nspecies! LOOP ON SPECIES
           ! - Get current tile properties
           ! - Init current tile variables
@@ -143,9 +165,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, 
           IF (curr%is_antenna) CYCLE
           curr_tile=>curr%array_of_tiles(ix, 1, iz)
           count=curr_tile%np_tile(1)
-
           IF (count .EQ. 0) CYCLE
-
           IF (fieldgathe.gt.-1) then
             curr_tile%part_ex(1:count) = 0.0_num
             curr_tile%part_ey(1:count) = 0.0_num
@@ -155,18 +175,17 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, 
             curr_tile%part_bz(1:count)=0.0_num
             !!! ---- Loop by blocks over particles in a tile (blocking)
             !!! --- Gather electric field on particles
-
             !!! --- Gather electric and magnetic fields on particles
             CALL geteb2dxz_energy_conserving(count, curr_tile%part_x,                 &
             curr_tile%part_y, curr_tile%part_z, curr_tile%part_ex, curr_tile%part_ey, &
             curr_tile%part_ez, curr_tile%part_bx, curr_tile%part_by,                  &
             curr_tile%part_bz, curr_tile%x_grid_tile_min, curr_tile%y_grid_tile_min,  &
             curr_tile%z_grid_tile_min, dxx, dyy, dzz, curr_tile%nx_cells_tile,        &
-            curr_tile%ny_cells_tile, curr_tile%nz_cells_tile, nxjg, nyjg, nzjg, noxx, &
-            noyy, nozz, currg%extile, currg%eytile, currg%eztile, currg%bxtile,       &
-            currg%bytile, currg%bztile , .FALSE., .TRUE., LVEC_fieldgathe,            &
+            curr_tile%ny_cells_tile, curr_tile%nz_cells_tile, nxjg, 0_idp, nzjg, noxx,&
+            noyy, nozz, extile, eytile, eztile, bxtile,                               &
+            bytile, bztile , .FALSE., .TRUE., LVEC_fieldgathe,                        &
             fieldgathe)
-          end if
+          END IF
 
           !! --- Push velocity with E half step
           CALL pxr_epush_v(count, curr_tile%part_ux, curr_tile%part_uy,               &
@@ -190,7 +209,6 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, 
           CALL pxr_push2dxz(count, curr_tile%part_x, curr_tile%part_z,                &
           curr_tile%part_ux, curr_tile%part_uy, curr_tile%part_uz,                    &
           curr_tile%part_gaminv, dtt)
-
         END DO! END LOOP ON SPECIES
       ENDIF
     END DO

@@ -317,7 +317,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog, nxx, nyy, nzz, nxjguard, 
         nyc=curr_tile%ny_cells_tile
         nzc=curr_tile%nz_cells_tile
         currg=>aofgrid_tiles(ix, iy, iz)
-        currg%rhotile=0._num
+        currg%arr1=0._num
         isdeposited=.FALSE._lp
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
@@ -330,7 +330,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog, nxx, nyy, nzz, nxjguard, 
             isdeposited=.TRUE._lp
           ENDIF
           ! Depose charge in rhotile
-          CALL pxr_depose_rho_n(currg%rhotile, count, curr_tile%part_x,               &
+          CALL pxr_depose_rho_n(currg%arr1, count, curr_tile%part_x,               &
           curr_tile%part_y, curr_tile%part_z, curr_tile%pid(1, wpid), curr%charge,    &
           curr_tile%x_grid_tile_min, curr_tile%y_grid_tile_min,                       &
           curr_tile%z_grid_tile_min, dxx, dyy, dzz, nxc, nyc, nzc, nxjg, nyjg, nzjg,  &
@@ -338,7 +338,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog, nxx, nyy, nzz, nxjguard, 
         END DO! END LOOP ON SPECIES
         IF (isdeposited) THEN
           rhog(jmin:jmax, kmin:kmax, lmin:lmax)=rhog(jmin:jmax, kmin:kmax,            &
-          lmin:lmax)+currg%rhotile(0:nxc, 0:nyc, 0:nzc)
+          lmin:lmax)+currg%arr1(0:nxc, 0:nyc, 0:nzc)
         ENDIF
       END DO
     END DO
@@ -378,10 +378,10 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog, nxx, nyy, nzz, nxjguard, 
           ! --- RHO
           ! - FACES +/- X
           rhog(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = rhog(jminc:jmin-1,           &
-          kminc:kmaxc, lminc:lmaxc)+ currg%rhotile(-nxjg:-1, -nyjg:nyc+nyjg,          &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr1(-nxjg:-1, -nyjg:nyc+nyjg,          &
           -nzjg:nzc+nzjg)
           rhog(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = rhog(jmax+1:jmaxc,           &
-          kminc:kmaxc, lminc:lmaxc)+ currg%rhotile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,    &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr1(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,    &
           -nzjg:nzc+nzjg)
         ENDIF
       END DO
@@ -421,9 +421,9 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog, nxx, nyy, nzz, nxjguard, 
           ! --- RHO
           ! - FACES +/- Y
           rhog(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = rhog(jmin:jmax, kminc:kmin-1,  &
-          lminc:lmaxc)+ currg%rhotile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr1(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           rhog(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = rhog(jmin:jmax, kmax+1:kmaxc,  &
-          lminc:lmaxc)+ currg%rhotile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr1(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -462,9 +462,9 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog, nxx, nyy, nzz, nxjguard, 
           ! --- RHO
           ! - FACES +/- Z
           rhog(jmin:jmax, kmin:kmax, lminc:lmin-1) = rhog(jmin:jmax, kmin:kmax,       &
-          lminc:lmin-1)+ currg%rhotile(0:nxc, 0:nyc, -nzjg:-1)
+          lminc:lmin-1)+ currg%arr1(0:nxc, 0:nyc, -nzjg:-1)
           rhog(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = rhog(jmin:jmax, kmin:kmax,       &
-          lmax+1:lmaxc)+ currg%rhotile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
+          lmax+1:lmaxc)+ currg%arr1(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -568,7 +568,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d(func_order, rhog, nxx, nyy, nzz, 
         nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
         nzc=curr_tile%nz_cells_tile
         currg=>aofgrid_tiles(ix, iy, iz)
-        currg%rhotile=0._num
+        currg%arr1=0._num
         isdeposited=.FALSE._lp
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
@@ -581,7 +581,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d(func_order, rhog, nxx, nyy, nzz, 
             isdeposited=.TRUE._lp
           ENDIF
           ! Depose charge in rhotile
-          CALL func_order(currg%rhotile, count, curr_tile%part_x, curr_tile%part_y,   &
+          CALL func_order(currg%arr1, count, curr_tile%part_x, curr_tile%part_y,   &
           curr_tile%part_z, curr_tile%pid(1, wpid), curr%charge,                      &
           curr_tile%x_grid_tile_min, curr_tile%y_grid_tile_min,                       &
           curr_tile%z_grid_tile_min, dxx, dyy, dzz, nxc, nyc, nzc, nxjg, nyjg, nzjg,  &
@@ -589,7 +589,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d(func_order, rhog, nxx, nyy, nzz, 
         END DO! END LOOP ON SPECIES
         IF (isdeposited) THEN
           rhog(jmin:jmax, kmin:kmax, lmin:lmax)= rhog(jmin:jmax, kmin:kmax,           &
-          lmin:lmax)+currg%rhotile(0:nxc, 0:nyc, 0:nzc)
+          lmin:lmax)+currg%arr1(0:nxc, 0:nyc, 0:nzc)
         ENDIF
       END DO
     END DO
@@ -629,10 +629,10 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d(func_order, rhog, nxx, nyy, nzz, 
           ! --- RHO
           ! - FACES +/- X
           rhog(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = rhog(jminc:jmin-1,           &
-          kminc:kmaxc, lminc:lmaxc)+ currg%rhotile(-nxjg:-1, -nyjg:nyc+nyjg,          &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr1(-nxjg:-1, -nyjg:nyc+nyjg,          &
           -nzjg:nzc+nzjg)
           rhog(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = rhog(jmax+1:jmaxc,           &
-          kminc:kmaxc, lminc:lmaxc)+ currg%rhotile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,    &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr1(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,    &
           -nzjg:nzc+nzjg)
         ENDIF
       END DO
@@ -672,9 +672,9 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d(func_order, rhog, nxx, nyy, nzz, 
           ! --- RHO
           ! - FACES +/- Y
           rhog(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = rhog(jmin:jmax, kminc:kmin-1,  &
-          lminc:lmaxc)+ currg%rhotile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr1(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           rhog(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = rhog(jmin:jmax, kmax+1:kmaxc,  &
-          lminc:lmaxc)+ currg%rhotile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr1(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -713,9 +713,9 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d(func_order, rhog, nxx, nyy, nzz, 
           ! --- RHO
           ! - FACES +/- Z
           rhog(jmin:jmax, kmin:kmax, lminc:lmin-1) = rhog(jmin:jmax, kmin:kmax,       &
-          lminc:lmin-1)+ currg%rhotile(0:nxc, 0:nyc, -nzjg:-1)
+          lminc:lmin-1)+ currg%arr1(0:nxc, 0:nyc, -nzjg:-1)
           rhog(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = rhog(jmin:jmax, kmin:kmax,       &
-          lmax+1:lmaxc)+ currg%rhotile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
+          lmax+1:lmaxc)+ currg%arr1(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -794,7 +794,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d(rhog, nxx, nyy, nzz, nxjguard,   
         nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
         nzc=curr_tile%nz_cells_tile
         currg=>aofgrid_tiles(ix, iy, iz)
-        currg%rhotile=0._num
+        currg%arr1=0._num
         isdeposited=.FALSE._lp
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
@@ -809,13 +809,13 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d(rhog, nxx, nyy, nzz, nxjguard,   
           ! Depose charge in rhotile
           SELECT CASE (c_rho_old)
           CASE(1)! Rho at older time
-            CALL pxr_depose_rhoold_n_2dxz(currg%rhotile(:, 0, :), count,              &
+            CALL pxr_depose_rhoold_n_2dxz(currg%arr1(:, 0, :), count,              &
             curr_tile%part_x, curr_tile%part_z, curr_tile%part_ux, curr_tile%part_uy, &
             curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%pid(1, wpid),         &
             curr%charge, curr_tile%x_grid_tile_min, curr_tile%z_grid_tile_min, dtt,   &
             dxx, dzz, nxc, nzc, nxjg, nzjg, noxx, nozz, .TRUE._lp, .FALSE._lp)
           CASE DEFAULT! Rho at current time
-            CALL pxr_depose_rho_n_2dxz(currg%rhotile(:, 0, :), count,                 &
+            CALL pxr_depose_rho_n_2dxz(currg%arr1(:, 0, :), count,                 &
             curr_tile%part_x, curr_tile%part_y, curr_tile%part_z, curr_tile%pid(1,    &
             wpid), curr%charge, curr_tile%x_grid_tile_min, curr_tile%z_grid_tile_min, &
             dxx, dzz, nxc, nzc, nxjg, nzjg, noxx, nozz, .TRUE._lp, .FALSE._lp,        &
@@ -824,7 +824,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d(rhog, nxx, nyy, nzz, nxjguard,   
         END DO! END LOOP ON SPECIES
         IF (isdeposited) THEN
           rhog(jmin:jmax, kmin:kmax, lmin:lmax)= rhog(jmin:jmax, kmin:kmax,           &
-          lmin:lmax)+ currg%rhotile(0:nxc, 0:nyc, 0:nzc)
+          lmin:lmax)+ currg%arr1(0:nxc, 0:nyc, 0:nzc)
         ENDIF
       END DO
     END DO
@@ -864,10 +864,10 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d(rhog, nxx, nyy, nzz, nxjguard,   
           ! --- RHO
           ! - FACES +/- X
           rhog(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = rhog(jminc:jmin-1,           &
-          kminc:kmaxc, lminc:lmaxc)+ currg%rhotile(-nxjg:-1, -nyjg:nyc+nyjg,          &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr1(-nxjg:-1, -nyjg:nyc+nyjg,          &
           -nzjg:nzc+nzjg)
           rhog(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = rhog(jmax+1:jmaxc,           &
-          kminc:kmaxc, lminc:lmaxc)+ currg%rhotile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,    &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr1(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,    &
           -nzjg:nzc+nzjg)
         ENDIF
       END DO
@@ -907,9 +907,9 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d(rhog, nxx, nyy, nzz, nxjguard,   
           ! --- RHO
           ! - FACES +/- Y
           rhog(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = rhog(jmin:jmax, kminc:kmin-1,  &
-          lminc:lmaxc)+ currg%rhotile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr1(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           rhog(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = rhog(jmin:jmax, kmax+1:kmaxc,  &
-          lminc:lmaxc)+ currg%rhotile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr1(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -948,9 +948,9 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d(rhog, nxx, nyy, nzz, nxjguard,   
           ! --- RHO
           ! - FACES +/- Z
           rhog(jmin:jmax, kmin:kmax, lminc:lmin-1) = rhog(jmin:jmax, kmin:kmax,       &
-          lminc:lmin-1)+ currg%rhotile(0:nxc, 0:nyc, -nzjg:-1)
+          lminc:lmin-1)+ currg%arr1(0:nxc, 0:nyc, -nzjg:-1)
           rhog(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = rhog(jmin:jmax, kmin:kmax,       &
-          lmax+1:lmaxc)+ currg%rhotile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
+          lmax+1:lmaxc)+ currg%arr1(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -1032,7 +1032,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog, nxx, nyy, nzz, nxjgu
         nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
         nzc=curr_tile%nz_cells_tile
         currg=>aofgrid_tiles(ix, iy, iz)
-        currg%rhotile=0._num
+        currg%arr1=0._num
         isdeposited=.FALSE._lp
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
@@ -1046,25 +1046,25 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog, nxx, nyy, nzz, nxjgu
           ENDIF
           ! Depose charge in rhotile
           IF ((noxx.eq.3).AND.(noyy.eq.3).AND.(nozz.eq.3)) THEN
-            CALL depose_rho_scalar_3_3_3(currg%rhotile, count, curr_tile%part_x,      &
+            CALL depose_rho_scalar_3_3_3(currg%arr1, count, curr_tile%part_x,      &
             curr_tile%part_y, curr_tile%part_z, curr_tile%pid(1, wpid), curr%charge,  &
             curr_tile%x_grid_tile_min, curr_tile%y_grid_tile_min,                     &
             curr_tile%z_grid_tile_min, dxx, dyy, dzz, nxc, nyc, nzc, nxjg, nyjg,      &
             nzjg, 0_idp)
           ELSE IF ((noxx.eq.2).AND.(noyy.eq.2).AND.(nozz.eq.2)) THEN
-            CALL depose_rho_scalar_2_2_2(currg%rhotile, count, curr_tile%part_x,      &
+            CALL depose_rho_scalar_2_2_2(currg%arr1, count, curr_tile%part_x,      &
             curr_tile%part_y, curr_tile%part_z, curr_tile%pid(1, wpid), curr%charge,  &
             curr_tile%x_grid_tile_min, curr_tile%y_grid_tile_min,                     &
             curr_tile%z_grid_tile_min, dxx, dyy, dzz, nxc, nyc, nzc, nxjg, nyjg,      &
             nzjg, 0_idp)
           ELSE IF ((noxx.eq.1).AND.(noyy.eq.1).AND.(nozz.eq.1)) THEN
-            CALL depose_rho_scalar_1_1_1(currg%rhotile, count, curr_tile%part_x,      &
+            CALL depose_rho_scalar_1_1_1(currg%arr1, count, curr_tile%part_x,      &
             curr_tile%part_y, curr_tile%part_z, curr_tile%pid(1, wpid), curr%charge,  &
             curr_tile%x_grid_tile_min, curr_tile%y_grid_tile_min,                     &
             curr_tile%z_grid_tile_min, dxx, dyy, dzz, nxc, nyc, nzc, nxjg, nyjg,      &
             nzjg, 0_idp)
           ELSE
-            CALL pxr_depose_rho_n(currg%rhotile, count, curr_tile%part_x,             &
+            CALL pxr_depose_rho_n(currg%arr1, count, curr_tile%part_x,             &
             curr_tile%part_y, curr_tile%part_z, curr_tile%pid(1, wpid), curr%charge,  &
             curr_tile%x_grid_tile_min, curr_tile%y_grid_tile_min,                     &
             curr_tile%z_grid_tile_min, dxx, dyy, dzz, nxc, nyc, nzc, nxjg, nyjg,      &
@@ -1073,7 +1073,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog, nxx, nyy, nzz, nxjgu
         END DO! END LOOP ON SPECIES
         IF (isdeposited) THEN
           rhog(jmin:jmax, kmin:kmax, lmin:lmax)=rhog(jmin:jmax, kmin:kmax,            &
-          lmin:lmax)+currg%rhotile(0:nxc, 0:nyc, 0:nzc)
+          lmin:lmax)+currg%arr1(0:nxc, 0:nyc, 0:nzc)
         ENDIF
       END DO
     END DO
@@ -1114,10 +1114,10 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog, nxx, nyy, nzz, nxjgu
           ! --- RHO
           ! - FACES +/- X
           rhog(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = rhog(jminc:jmin-1,           &
-          kminc:kmaxc, lminc:lmaxc)+ currg%rhotile(-nxjg:-1, -nyjg:nyc+nyjg,          &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr1(-nxjg:-1, -nyjg:nyc+nyjg,          &
           -nzjg:nzc+nzjg)
           rhog(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = rhog(jmax+1:jmaxc,           &
-          kminc:kmaxc, lminc:lmaxc)+ currg%rhotile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,    &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr1(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,    &
           -nzjg:nzc+nzjg)
         ENDIF
       END DO
@@ -1157,9 +1157,9 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog, nxx, nyy, nzz, nxjgu
           ! --- RHO
           ! - FACES +/- Y
           rhog(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = rhog(jmin:jmax, kminc:kmin-1,  &
-          lminc:lmaxc)+ currg%rhotile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr1(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           rhog(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = rhog(jmin:jmax, kmax+1:kmaxc,  &
-          lminc:lmaxc)+ currg%rhotile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr1(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -1198,9 +1198,9 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog, nxx, nyy, nzz, nxjgu
           ! --- RHO
           ! - FACES +/- Z
           rhog(jmin:jmax, kmin:kmax, lminc:lmin-1) = rhog(jmin:jmax, kmin:kmax,       &
-          lminc:lmin-1)+ currg%rhotile(0:nxc, 0:nyc, -nzjg:-1)
+          lminc:lmin-1)+ currg%arr1(0:nxc, 0:nyc, -nzjg:-1)
           rhog(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = rhog(jmin:jmax, kmin:kmax,       &
-          lmax+1:lmaxc)+ currg%rhotile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
+          lmax+1:lmaxc)+ currg%arr1(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -1282,7 +1282,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog, nxx, nyy, nzz, nxjgua
         nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
         nzc=curr_tile%nz_cells_tile
         currg=>aofgrid_tiles(ix, iy, iz)
-        currg%rhotile=0._num
+        currg%arr1=0._num
         isdeposited=.FALSE._lp
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
@@ -1296,25 +1296,25 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog, nxx, nyy, nzz, nxjgua
           ENDIF
           ! Depose charge in rhotile
           IF ((noxx.eq.3).AND.(noyy.eq.3).AND.(nozz.eq.3)) THEN
-            CALL depose_rho_vecHVv4_3_3_3(currg%rhotile, count, curr_tile%part_x,     &
+            CALL depose_rho_vecHVv4_3_3_3(currg%arr1, count, curr_tile%part_x,     &
             curr_tile%part_y, curr_tile%part_z, curr_tile%pid(1, wpid), curr%charge,  &
             curr_tile%x_grid_tile_min, curr_tile%y_grid_tile_min,                     &
             curr_tile%z_grid_tile_min, dxx, dyy, dzz, nxc, nyc, nzc, nxjg, nyjg,      &
             nzjg, LVECT)
           ELSE IF ((noxx.eq.2).AND.(noyy.eq.2).AND.(nozz.eq.2)) THEN
-            CALL depose_rho_vecHVv2_2_2_2(currg%rhotile, count, curr_tile%part_x,     &
+            CALL depose_rho_vecHVv2_2_2_2(currg%arr1, count, curr_tile%part_x,     &
             curr_tile%part_y, curr_tile%part_z, curr_tile%pid(1, wpid), curr%charge,  &
             curr_tile%x_grid_tile_min, curr_tile%y_grid_tile_min,                     &
             curr_tile%z_grid_tile_min, dxx, dyy, dzz, nxc, nyc, nzc, nxjg, nyjg,      &
             nzjg, lvect)
           ELSE IF ((noxx.eq.1).AND.(noyy.eq.1).AND.(nozz.eq.1)) THEN
-            CALL depose_rho_vecHVv2_1_1_1(currg%rhotile, count, curr_tile%part_x,     &
+            CALL depose_rho_vecHVv2_1_1_1(currg%arr1, count, curr_tile%part_x,     &
             curr_tile%part_y, curr_tile%part_z, curr_tile%pid(1, wpid), curr%charge,  &
             curr_tile%x_grid_tile_min, curr_tile%y_grid_tile_min,                     &
             curr_tile%z_grid_tile_min, dxx, dyy, dzz, nxc, nyc, nzc, nxjg, nyjg,      &
             nzjg, lvect)
           ELSE
-            CALL pxr_depose_rho_n(currg%rhotile, count, curr_tile%part_x,             &
+            CALL pxr_depose_rho_n(currg%arr1, count, curr_tile%part_x,             &
             curr_tile%part_y, curr_tile%part_z, curr_tile%pid(1, wpid), curr%charge,  &
             curr_tile%x_grid_tile_min, curr_tile%y_grid_tile_min,                     &
             curr_tile%z_grid_tile_min, dxx, dyy, dzz, nxc, nyc, nzc, nxjg, nyjg,      &
@@ -1323,7 +1323,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog, nxx, nyy, nzz, nxjgua
         END DO! END LOOP ON SPECIES
         IF (isdeposited) THEN
           rhog(jmin:jmax, kmin:kmax, lmin:lmax)=rhog(jmin:jmax, kmin:kmax,            &
-          lmin:lmax)+currg%rhotile(0:nxc, 0:nyc, 0:nzc)
+          lmin:lmax)+currg%arr1(0:nxc, 0:nyc, 0:nzc)
         ENDIF
       END DO
     END DO
@@ -1364,10 +1364,10 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog, nxx, nyy, nzz, nxjgua
           ! --- RHO
           ! - FACES +/- X
           rhog(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = rhog(jminc:jmin-1,           &
-          kminc:kmaxc, lminc:lmaxc)+ currg%rhotile(-nxjg:-1, -nyjg:nyc+nyjg,          &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr1(-nxjg:-1, -nyjg:nyc+nyjg,          &
           -nzjg:nzc+nzjg)
           rhog(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = rhog(jmax+1:jmaxc,           &
-          kminc:kmaxc, lminc:lmaxc)+ currg%rhotile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,    &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr1(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,    &
           -nzjg:nzc+nzjg)
         ENDIF
       END DO
@@ -1407,9 +1407,9 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog, nxx, nyy, nzz, nxjgua
           ! --- RHO
           ! - FACES +/- Y
           rhog(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = rhog(jmin:jmax, kminc:kmin-1,  &
-          lminc:lmaxc)+ currg%rhotile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr1(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           rhog(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = rhog(jmin:jmax, kmax+1:kmaxc,  &
-          lminc:lmaxc)+ currg%rhotile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr1(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -1448,9 +1448,9 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog, nxx, nyy, nzz, nxjgua
           ! --- RHO
           ! - FACES +/- Z
           rhog(jmin:jmax, kmin:kmax, lminc:lmin-1) = rhog(jmin:jmax, kmin:kmax,       &
-          lminc:lmin-1)+ currg%rhotile(0:nxc, 0:nyc, -nzjg:-1)
+          lminc:lmin-1)+ currg%arr1(0:nxc, 0:nyc, -nzjg:-1)
           rhog(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = rhog(jmin:jmax, kmin:kmax,       &
-          lmax+1:lmaxc)+ currg%rhotile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
+          lmax+1:lmaxc)+ currg%arr1(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
         END IF
       END DO
     END DO

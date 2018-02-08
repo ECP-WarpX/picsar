@@ -404,7 +404,7 @@ SUBROUTINE check(tilesumrho)
 
         currg=>aofgrid_tiles(ix,iy,iz)
 
-        tilesumrho(iz,iy,ix)=SUM(currg%rhotile)
+        tilesumrho(iz,iy,ix)=SUM(currg%arr1)
 
       END DO
     END DO

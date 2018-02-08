@@ -732,9 +732,9 @@ SUBROUTINE check(tilesumjx,tilesumjy,tilesumjz)
 
         currg=>aofgrid_tiles(ix,iy,iz)
 
-        tilesumjx(iz,iy,ix)=SUM(currg%jxtile)
-        tilesumjy(iz,iy,ix)=SUM(currg%jytile)
-        tilesumjz(iz,iy,ix)=SUM(currg%jztile)
+        tilesumjx(iz,iy,ix)=SUM(currg%arr1)
+        tilesumjy(iz,iy,ix)=SUM(currg%arr2)
+        tilesumjz(iz,iy,ix)=SUM(currg%arr3)
 
       END DO
     END DO

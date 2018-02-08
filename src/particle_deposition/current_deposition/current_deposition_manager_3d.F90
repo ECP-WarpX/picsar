@@ -573,9 +573,9 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(func_order, jx
         nyc=curr_tile%ny_cells_tile
         nzc=curr_tile%nz_cells_tile
         currg=>aofgrid_tiles(ix, iy, iz)
-        currg%jxtile=0.
-        currg%jytile=0.
-        currg%jztile=0.!jzg(jmin:jmax, kmin:kmax, lmin:lmax)
+        currg%arr1=0.
+        currg%arr2=0.
+        currg%arr3=0.
         isdeposited=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
@@ -588,7 +588,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(func_order, jx
             isdeposited=.TRUE.
           ENDIF
           ! Depose current in jtile
-          CALL func_order(currg%jxtile, currg%jytile, currg%jztile, count,            &
+          CALL func_order(currg%arr1, currg%arr2, currg%arr3, count,            &
           curr_tile%part_x, curr_tile%part_y, curr_tile%part_z, curr_tile%part_ux,    &
           curr_tile%part_uy, curr_tile%part_uz, curr_tile%part_gaminv,                &
           curr_tile%pid(1, wpid), curr%charge, curr_tile%x_grid_tile_min,             &
@@ -597,11 +597,11 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(func_order, jx
         END DO! END LOOP ON SPECIES
         IF (isdeposited) THEN
           jxg(jmin:jmax, kmin:kmax, lmin:lmax)=jxg(jmin:jmax, kmin:kmax,              &
-          lmin:lmax)+currg%jxtile(0:nxc, 0:nyc, 0:nzc)
+          lmin:lmax)+currg%arr1(0:nxc, 0:nyc, 0:nzc)
           jyg(jmin:jmax, kmin:kmax, lmin:lmax)=jyg(jmin:jmax, kmin:kmax,              &
-          lmin:lmax)+currg%jytile(0:nxc, 0:nyc, 0:nzc)
+          lmin:lmax)+currg%arr2(0:nxc, 0:nyc, 0:nzc)
           jzg(jmin:jmax, kmin:kmax, lmin:lmax)=jzg(jmin:jmax, kmin:kmax,              &
-          lmin:lmax)+currg%jztile(0:nxc, 0:nyc, 0:nzc)
+          lmin:lmax)+currg%arr3(0:nxc, 0:nyc, 0:nzc)
         ENDIF
       END DO
     END DO
@@ -641,26 +641,26 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(func_order, jx
           ! --- JX
           ! - FACES +/- X
           jxg(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = jxg(jminc:jmin-1,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jxtile(-nxjg:-1, -nyjg:nyc+nyjg,           &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr1(-nxjg:-1, -nyjg:nyc+nyjg,           &
           -nzjg:nzc+nzjg)
           jxg(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = jxg(jmax+1:jmaxc,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jxtile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr1(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
           -nzjg:nzc+nzjg)
           ! --- JY
           ! - FACES +/- X
           jyg(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = jyg(jminc:jmin-1,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jytile(-nxjg:-1, -nyjg:nyc+nyjg,           &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr2(-nxjg:-1, -nyjg:nyc+nyjg,           &
           -nzjg:nzc+nzjg)
           jyg(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = jyg(jmax+1:jmaxc,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jytile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr2(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
           -nzjg:nzc+nzjg)
           ! --- JZ
           ! - FACES +/- X
           jzg(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = jzg(jminc:jmin-1,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jztile(-nxjg:-1, -nyjg:nyc+nyjg,           &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr3(-nxjg:-1, -nyjg:nyc+nyjg,           &
           -nzjg:nzc+nzjg)
           jzg(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = jzg(jmax+1:jmaxc,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jztile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr3(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
           -nzjg:nzc+nzjg)
         ENDIF
       END DO
@@ -700,21 +700,21 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(func_order, jx
           ! --- JX
           ! - FACES +/- Y
           jxg(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = jxg(jmin:jmax, kminc:kmin-1,    &
-          lminc:lmaxc)+ currg%jxtile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr1(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           jxg(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = jxg(jmin:jmax, kmax+1:kmaxc,    &
-          lminc:lmaxc)+ currg%jxtile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr1(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
           ! --- JY
           ! - FACES +/- Y
           jyg(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = jyg(jmin:jmax, kminc:kmin-1,    &
-          lminc:lmaxc)+ currg%jytile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr2(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           jyg(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = jyg(jmin:jmax, kmax+1:kmaxc,    &
-          lminc:lmaxc)+ currg%jytile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr2(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
           ! --- JZ
           ! - FACES +/- Y
           jzg(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = jzg(jmin:jmax, kminc:kmin-1,    &
-          lminc:lmaxc)+ currg%jztile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr3(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           jzg(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = jzg(jmin:jmax, kmax+1:kmaxc,    &
-          lminc:lmaxc)+ currg%jztile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr3(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -753,28 +753,27 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(func_order, jx
           ! --- JX
           ! - FACES +/- Z
           jxg(jmin:jmax, kmin:kmax, lminc:lmin-1) = jxg(jmin:jmax, kmin:kmax,         &
-          lminc:lmin-1)+ currg%jxtile(0:nxc, 0:nyc, -nzjg:-1)
+          lminc:lmin-1)+ currg%arr1(0:nxc, 0:nyc, -nzjg:-1)
           jxg(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = jxg(jmin:jmax, kmin:kmax,         &
-          lmax+1:lmaxc)+ currg%jxtile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
+          lmax+1:lmaxc)+ currg%arr1(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
           ! --- JY
           ! - FACES +/- Z
           jyg(jmin:jmax, kmin:kmax, lminc:lmin-1) = jyg(jmin:jmax, kmin:kmax,         &
-          lminc:lmin-1)+ currg%jytile(0:nxc, 0:nyc, -nzjg:-1)
+          lminc:lmin-1)+ currg%arr2(0:nxc, 0:nyc, -nzjg:-1)
           jyg(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = jyg(jmin:jmax, kmin:kmax,         &
-          lmax+1:lmaxc)+ currg%jytile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
+          lmax+1:lmaxc)+ currg%arr2(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
           ! --- JZ
           ! - FACES +/- Z
           jzg(jmin:jmax, kmin:kmax, lminc:lmin-1) = jzg(jmin:jmax, kmin:kmax,         &
-          lminc:lmin-1)+ currg%jztile(0:nxc, 0:nyc, -nzjg:-1)
+          lminc:lmin-1)+ currg%arr3(0:nxc, 0:nyc, -nzjg:-1)
           jzg(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = jzg(jmin:jmax, kmin:kmax,         &
-          lmax+1:lmaxc)+ currg%jztile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
+          lmax+1:lmaxc)+ currg%arr3(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
         END IF
       END DO
     END DO
   END DO!END LOOP ON TILES
   !$OMP END DO
   !$OMP END PARALLEL
-
 END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp
 
 
@@ -901,9 +900,9 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( curr_depo_
         nyc=curr_tile%ny_cells_tile
         nzc=curr_tile%nz_cells_tile
         currg=>aofgrid_tiles(ix, iy, iz)
-        currg%jxtile=0.
-        currg%jytile=0.
-        currg%jztile=0.!jzg(jmin:jmax, kmin:kmax, lmin:lmax)
+        currg%arr1=0.
+        currg%arr2=0.
+        currg%arr3=0.!jzg(jmin:jmax, kmin:kmax, lmin:lmax)
         isdeposited=.FALSE.
 
         IF ((noxx.eq.3).and.(noyy.eq.3).and.(nozz.eq.3))  THEN
@@ -945,18 +944,18 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( curr_depo_
 
         END DO! END LOOP ON SPECIES
 
-        CALL curr_reduc_sub(currg%jxtile, currg%jytile, currg%jztile, jxcells,        &
+        CALL curr_reduc_sub(currg%arr1, currg%arr2, currg%arr3, jxcells,        &
         jycells, jzcells, ncells, nxc, nyc, nzc, nxjg, nyjg, nzjg, ncx, ncy, ncz)
 
         DEALLOCATE(jxcells, jzcells, jycells)
 
         IF (isdeposited) THEN
           jxg(jmin:jmax, kmin:kmax, lmin:lmax)=jxg(jmin:jmax, kmin:kmax,              &
-          lmin:lmax)+currg%jxtile(0:nxc, 0:nyc, 0:nzc)
+          lmin:lmax)+currg%arr1(0:nxc, 0:nyc, 0:nzc)
           jyg(jmin:jmax, kmin:kmax, lmin:lmax)=jyg(jmin:jmax, kmin:kmax,              &
-          lmin:lmax)+currg%jytile(0:nxc, 0:nyc, 0:nzc)
+          lmin:lmax)+currg%arr2(0:nxc, 0:nyc, 0:nzc)
           jzg(jmin:jmax, kmin:kmax, lmin:lmax)=jzg(jmin:jmax, kmin:kmax,              &
-          lmin:lmax)+currg%jztile(0:nxc, 0:nyc, 0:nzc)
+          lmin:lmax)+currg%arr3(0:nxc, 0:nyc, 0:nzc)
         ENDIF
       END DO
     END DO
@@ -996,26 +995,26 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( curr_depo_
           ! --- JX
           ! - FACES +/- X
           jxg(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = jxg(jminc:jmin-1,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jxtile(-nxjg:-1, -nyjg:nyc+nyjg,           &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr1(-nxjg:-1, -nyjg:nyc+nyjg,           &
           -nzjg:nzc+nzjg)
           jxg(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = jxg(jmax+1:jmaxc,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jxtile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr1(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
           -nzjg:nzc+nzjg)
           ! --- JY
           ! - FACES +/- X
           jyg(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = jyg(jminc:jmin-1,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jytile(-nxjg:-1, -nyjg:nyc+nyjg,           &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr2(-nxjg:-1, -nyjg:nyc+nyjg,           &
           -nzjg:nzc+nzjg)
           jyg(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = jyg(jmax+1:jmaxc,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jytile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr2(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
           -nzjg:nzc+nzjg)
           ! --- JZ
           ! - FACES +/- X
           jzg(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = jzg(jminc:jmin-1,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jztile(-nxjg:-1, -nyjg:nyc+nyjg,           &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr3(-nxjg:-1, -nyjg:nyc+nyjg,           &
           -nzjg:nzc+nzjg)
           jzg(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = jzg(jmax+1:jmaxc,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jztile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr3(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
           -nzjg:nzc+nzjg)
         ENDIF
       END DO
@@ -1055,21 +1054,21 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( curr_depo_
           ! --- JX
           ! - FACES +/- Y
           jxg(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = jxg(jmin:jmax, kminc:kmin-1,    &
-          lminc:lmaxc)+ currg%jxtile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr1(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           jxg(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = jxg(jmin:jmax, kmax+1:kmaxc,    &
-          lminc:lmaxc)+ currg%jxtile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr1(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
           ! --- JY
           ! - FACES +/- Y
           jyg(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = jyg(jmin:jmax, kminc:kmin-1,    &
-          lminc:lmaxc)+ currg%jytile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr2(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           jyg(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = jyg(jmin:jmax, kmax+1:kmaxc,    &
-          lminc:lmaxc)+ currg%jytile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr2(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
           ! --- JZ
           ! - FACES +/- Y
           jzg(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = jzg(jmin:jmax, kminc:kmin-1,    &
-          lminc:lmaxc)+ currg%jztile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr3(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           jzg(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = jzg(jmin:jmax, kmax+1:kmaxc,    &
-          lminc:lmaxc)+ currg%jztile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr3(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -1108,21 +1107,21 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( curr_depo_
           ! --- JX
           ! - FACES +/- Z
           jxg(jmin:jmax, kmin:kmax, lminc:lmin-1) = jxg(jmin:jmax, kmin:kmax,         &
-          lminc:lmin-1)+ currg%jxtile(0:nxc, 0:nyc, -nzjg:-1)
+          lminc:lmin-1)+ currg%arr1(0:nxc, 0:nyc, -nzjg:-1)
           jxg(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = jxg(jmin:jmax, kmin:kmax,         &
-          lmax+1:lmaxc)+ currg%jxtile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
+          lmax+1:lmaxc)+ currg%arr1(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
           ! --- JY
           ! - FACES +/- Z
           jyg(jmin:jmax, kmin:kmax, lminc:lmin-1) = jyg(jmin:jmax, kmin:kmax,         &
-          lminc:lmin-1)+ currg%jytile(0:nxc, 0:nyc, -nzjg:-1)
+          lminc:lmin-1)+ currg%arr2(0:nxc, 0:nyc, -nzjg:-1)
           jyg(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = jyg(jmin:jmax, kmin:kmax,         &
-          lmax+1:lmaxc)+ currg%jytile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
+          lmax+1:lmaxc)+ currg%arr2(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
           ! --- JZ
           ! - FACES +/- Z
           jzg(jmin:jmax, kmin:kmax, lminc:lmin-1) = jzg(jmin:jmax, kmin:kmax,         &
-          lminc:lmin-1)+ currg%jztile(0:nxc, 0:nyc, -nzjg:-1)
+          lminc:lmin-1)+ currg%arr3(0:nxc, 0:nyc, -nzjg:-1)
           jzg(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = jzg(jmin:jmax, kmin:kmax,         &
-          lmax+1:lmaxc)+ currg%jztile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
+          lmax+1:lmaxc)+ currg%arr3(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -1262,9 +1261,9 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3( curr_depo_
           nyc=curr_tile%ny_cells_tile
           nzc=curr_tile%nz_cells_tile
           currg=>aofgrid_tiles(ix, iy, iz)
-          currg%jxtile=0.
-          currg%jytile=0.
-          currg%jztile=0.!jzg(jmin:jmax, kmin:kmax, lmin:lmax)
+          currg%arr1=0.
+          currg%arr2=0.
+          currg%arr3=0.!jzg(jmin:jmax, kmin:kmax, lmin:lmax)
           isdeposited=.FALSE.
 
           IF ((noxx.eq.3).and.(noyy.eq.3).and.(nozz.eq.3))  THEN
@@ -1300,18 +1299,18 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3( curr_depo_
           !print*, sum(jxcells), sum(jycells), sum(jzcells)
 
 
-          CALL curr_reduc_sub(currg%jxtile, currg%jytile, currg%jztile, jxcells,      &
+          CALL curr_reduc_sub(currg%arr1, currg%arr2, currg%arr3, jxcells,      &
           jycells, jzcells, ncells, nxc, nyc, nzc, nxjg, nyjg, nzjg, ncx, ncy, ncz)
 
           DEALLOCATE(jxcells, jzcells, jycells)
 
           IF (isdeposited) THEN
             jxg(jmin:jmax, kmin:kmax, lmin:lmax)=jxg(jmin:jmax, kmin:kmax,            &
-            lmin:lmax)+currg%jxtile(0:nxc, 0:nyc, 0:nzc)
+            lmin:lmax)+currg%arr1(0:nxc, 0:nyc, 0:nzc)
             jyg(jmin:jmax, kmin:kmax, lmin:lmax)=jyg(jmin:jmax, kmin:kmax,            &
-            lmin:lmax)+currg%jytile(0:nxc, 0:nyc, 0:nzc)
+            lmin:lmax)+currg%arr2(0:nxc, 0:nyc, 0:nzc)
             jzg(jmin:jmax, kmin:kmax, lmin:lmax)=jzg(jmin:jmax, kmin:kmax,            &
-            lmin:lmax)+currg%jztile(0:nxc, 0:nyc, 0:nzc)
+            lmin:lmax)+currg%arr3(0:nxc, 0:nyc, 0:nzc)
           ENDIF
         END DO
       END DO
@@ -1354,26 +1353,26 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3( curr_depo_
           ! --- JX
           ! - FACES +/- X
           jxg(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = jxg(jminc:jmin-1,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jxtile(-nxjg:-1, -nyjg:nyc+nyjg,           &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr1(-nxjg:-1, -nyjg:nyc+nyjg,           &
           -nzjg:nzc+nzjg)
           jxg(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = jxg(jmax+1:jmaxc,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jxtile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr1(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
           -nzjg:nzc+nzjg)
           ! --- JY
           ! - FACES +/- X
           jyg(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = jyg(jminc:jmin-1,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jytile(-nxjg:-1, -nyjg:nyc+nyjg,           &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr2(-nxjg:-1, -nyjg:nyc+nyjg,           &
           -nzjg:nzc+nzjg)
           jyg(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = jyg(jmax+1:jmaxc,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jytile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr2(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
           -nzjg:nzc+nzjg)
           ! --- JZ
           ! - FACES +/- X
           jzg(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = jzg(jminc:jmin-1,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jztile(-nxjg:-1, -nyjg:nyc+nyjg,           &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr3(-nxjg:-1, -nyjg:nyc+nyjg,           &
           -nzjg:nzc+nzjg)
           jzg(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = jzg(jmax+1:jmaxc,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jztile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr3(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
           -nzjg:nzc+nzjg)
         ENDIF
       END DO
@@ -1413,21 +1412,21 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3( curr_depo_
           ! --- JX
           ! - FACES +/- Y
           jxg(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = jxg(jmin:jmax, kminc:kmin-1,    &
-          lminc:lmaxc)+ currg%jxtile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr1(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           jxg(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = jxg(jmin:jmax, kmax+1:kmaxc,    &
-          lminc:lmaxc)+ currg%jxtile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr1(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
           ! --- JY
           ! - FACES +/- Y
           jyg(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = jyg(jmin:jmax, kminc:kmin-1,    &
-          lminc:lmaxc)+ currg%jytile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr2(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           jyg(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = jyg(jmin:jmax, kmax+1:kmaxc,    &
-          lminc:lmaxc)+ currg%jytile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr2(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
           ! --- JZ
           ! - FACES +/- Y
           jzg(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = jzg(jmin:jmax, kminc:kmin-1,    &
-          lminc:lmaxc)+ currg%jztile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr3(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           jzg(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = jzg(jmin:jmax, kmax+1:kmaxc,    &
-          lminc:lmaxc)+ currg%jztile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr3(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -1466,21 +1465,21 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3( curr_depo_
           ! --- JX
           ! - FACES +/- Z
           jxg(jmin:jmax, kmin:kmax, lminc:lmin-1) = jxg(jmin:jmax, kmin:kmax,         &
-          lminc:lmin-1)+ currg%jxtile(0:nxc, 0:nyc, -nzjg:-1)
+          lminc:lmin-1)+ currg%arr1(0:nxc, 0:nyc, -nzjg:-1)
           jxg(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = jxg(jmin:jmax, kmin:kmax,         &
-          lmax+1:lmaxc)+ currg%jxtile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
+          lmax+1:lmaxc)+ currg%arr1(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
           ! --- JY
           ! - FACES +/- Z
           jyg(jmin:jmax, kmin:kmax, lminc:lmin-1) = jyg(jmin:jmax, kmin:kmax,         &
-          lminc:lmin-1)+ currg%jytile(0:nxc, 0:nyc, -nzjg:-1)
+          lminc:lmin-1)+ currg%arr2(0:nxc, 0:nyc, -nzjg:-1)
           jyg(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = jyg(jmin:jmax, kmin:kmax,         &
-          lmax+1:lmaxc)+ currg%jytile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
+          lmax+1:lmaxc)+ currg%arr2(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
           ! --- JZ
           ! - FACES +/- Z
           jzg(jmin:jmax, kmin:kmax, lminc:lmin-1) = jzg(jmin:jmax, kmin:kmax,         &
-          lminc:lmin-1)+ currg%jztile(0:nxc, 0:nyc, -nzjg:-1)
+          lminc:lmin-1)+ currg%arr3(0:nxc, 0:nyc, -nzjg:-1)
           jzg(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = jzg(jmin:jmax, kmin:kmax,         &
-          lmax+1:lmaxc)+ currg%jztile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
+          lmax+1:lmaxc)+ currg%arr3(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -1575,9 +1574,9 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order, jx
         nyc=curr_tile%ny_cells_tile
         nzc=curr_tile%nz_cells_tile
         currg=>aofgrid_tiles(ix, iy, iz)
-        currg%jxtile=0.
-        currg%jytile=0.
-        currg%jztile=0.!jzg(jmin:jmax, kmin:kmax, lmin:lmax)
+        currg%arr1=0.
+        currg%arr2=0.
+        currg%arr3=0.!jzg(jmin:jmax, kmin:kmax, lmin:lmax)
         isdeposited=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
@@ -1591,7 +1590,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order, jx
           ENDIF
 
           ! Depose current in jtile
-          CALL func_order(currg%jxtile, currg%jytile, currg%jztile, count,            &
+          CALL func_order(currg%arr1, currg%arr2, currg%arr3, count,            &
           curr_tile%part_x, curr_tile%part_y, curr_tile%part_z, curr_tile%part_ux,    &
           curr_tile%part_uy, curr_tile%part_uz, curr_tile%part_gaminv,                &
           curr_tile%pid(1, wpid), curr%charge, curr_tile%x_grid_tile_min,             &
@@ -1601,11 +1600,11 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order, jx
         END DO! END LOOP ON SPECIES
         IF (isdeposited) THEN
           jxg(jmin:jmax, kmin:kmax, lmin:lmax)=jxg(jmin:jmax, kmin:kmax,              &
-          lmin:lmax)+currg%jxtile(0:nxc, 0:nyc, 0:nzc)
+          lmin:lmax)+currg%arr1(0:nxc, 0:nyc, 0:nzc)
           jyg(jmin:jmax, kmin:kmax, lmin:lmax)=jyg(jmin:jmax, kmin:kmax,              &
-          lmin:lmax)+currg%jytile(0:nxc, 0:nyc, 0:nzc)
+          lmin:lmax)+currg%arr2(0:nxc, 0:nyc, 0:nzc)
           jzg(jmin:jmax, kmin:kmax, lmin:lmax)=jzg(jmin:jmax, kmin:kmax,              &
-          lmin:lmax)+currg%jztile(0:nxc, 0:nyc, 0:nzc)
+          lmin:lmax)+currg%arr3(0:nxc, 0:nyc, 0:nzc)
         ENDIF
       END DO
     END DO
@@ -1645,26 +1644,26 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order, jx
           ! --- JX
           ! - FACES +/- X
           jxg(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = jxg(jminc:jmin-1,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jxtile(-nxjg:-1, -nyjg:nyc+nyjg,           &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr1(-nxjg:-1, -nyjg:nyc+nyjg,           &
           -nzjg:nzc+nzjg)
           jxg(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = jxg(jmax+1:jmaxc,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jxtile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr1(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
           -nzjg:nzc+nzjg)
           ! --- JY
           ! - FACES +/- X
           jyg(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = jyg(jminc:jmin-1,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jytile(-nxjg:-1, -nyjg:nyc+nyjg,           &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr2(-nxjg:-1, -nyjg:nyc+nyjg,           &
           -nzjg:nzc+nzjg)
           jyg(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = jyg(jmax+1:jmaxc,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jytile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr2(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
           -nzjg:nzc+nzjg)
           ! --- JZ
           ! - FACES +/- X
           jzg(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = jzg(jminc:jmin-1,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jztile(-nxjg:-1, -nyjg:nyc+nyjg,           &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr3(-nxjg:-1, -nyjg:nyc+nyjg,           &
           -nzjg:nzc+nzjg)
           jzg(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = jzg(jmax+1:jmaxc,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jztile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr3(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
           -nzjg:nzc+nzjg)
         ENDIF
       END DO
@@ -1704,21 +1703,21 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order, jx
           ! --- JX
           ! - FACES +/- Y
           jxg(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = jxg(jmin:jmax, kminc:kmin-1,    &
-          lminc:lmaxc)+ currg%jxtile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr1(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           jxg(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = jxg(jmin:jmax, kmax+1:kmaxc,    &
-          lminc:lmaxc)+ currg%jxtile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr1(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
           ! --- JY
           ! - FACES +/- Y
           jyg(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = jyg(jmin:jmax, kminc:kmin-1,    &
-          lminc:lmaxc)+ currg%jytile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr2(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           jyg(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = jyg(jmin:jmax, kmax+1:kmaxc,    &
-          lminc:lmaxc)+ currg%jytile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr2(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
           ! --- JZ
           ! - FACES +/- Y
           jzg(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = jzg(jmin:jmax, kminc:kmin-1,    &
-          lminc:lmaxc)+ currg%jztile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr3(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           jzg(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = jzg(jmin:jmax, kmax+1:kmaxc,    &
-          lminc:lmaxc)+ currg%jztile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr3(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -1757,21 +1756,21 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order, jx
           ! --- JX
           ! - FACES +/- Z
           jxg(jmin:jmax, kmin:kmax, lminc:lmin-1) = jxg(jmin:jmax, kmin:kmax,         &
-          lminc:lmin-1)+ currg%jxtile(0:nxc, 0:nyc, -nzjg:-1)
+          lminc:lmin-1)+ currg%arr1(0:nxc, 0:nyc, -nzjg:-1)
           jxg(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = jxg(jmin:jmax, kmin:kmax,         &
-          lmax+1:lmaxc)+ currg%jxtile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
+          lmax+1:lmaxc)+ currg%arr1(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
           ! --- JY
           ! - FACES +/- Z
           jyg(jmin:jmax, kmin:kmax, lminc:lmin-1) = jyg(jmin:jmax, kmin:kmax,         &
-          lminc:lmin-1)+ currg%jytile(0:nxc, 0:nyc, -nzjg:-1)
+          lminc:lmin-1)+ currg%arr2(0:nxc, 0:nyc, -nzjg:-1)
           jyg(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = jyg(jmin:jmax, kmin:kmax,         &
-          lmax+1:lmaxc)+ currg%jytile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
+          lmax+1:lmaxc)+ currg%arr2(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
           ! --- JZ
           ! - FACES +/- Z
           jzg(jmin:jmax, kmin:kmax, lminc:lmin-1) = jzg(jmin:jmax, kmin:kmax,         &
-          lminc:lmin-1)+ currg%jztile(0:nxc, 0:nyc, -nzjg:-1)
+          lminc:lmin-1)+ currg%arr3(0:nxc, 0:nyc, -nzjg:-1)
           jzg(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = jzg(jmin:jmax, kmin:kmax,         &
-          lmax+1:lmaxc)+ currg%jztile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
+          lmax+1:lmaxc)+ currg%arr3(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -1852,9 +1851,9 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg, jyg, jzg, nxx, nyy,
         nyc=curr_tile%ny_cells_tile
         nzc=curr_tile%nz_cells_tile
         currg=>aofgrid_tiles(ix, iy, iz)
-        currg%jxtile=0.
-        currg%jytile=0.
-        currg%jztile=0.!jzg(jmin:jmax, kmin:kmax, lmin:lmax)
+        currg%arr1=0.
+        currg%arr2=0.
+        currg%arr3=0.!jzg(jmin:jmax, kmin:kmax, lmin:lmax)
         isdeposited=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
@@ -1869,14 +1868,14 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg, jyg, jzg, nxx, nyy,
           ! Depose current in jtile
           SELECT CASE (c_dim)
           CASE (2)
-            CALL depose_jxjyjz_esirkepov_2d( currg%jxtile(:, 0, :), currg%jytile(:,   &
-            0, :), currg%jztile(:, 0, :), count, curr_tile%part_x, curr_tile%part_y,  &
+            CALL depose_jxjyjz_esirkepov_2d( currg%arr1(:, 0, :), currg%arr2(:,   &
+            0, :), currg%arr3(:, 0, :), count, curr_tile%part_x, curr_tile%part_y,  &
             curr_tile%part_z, curr_tile%part_ux, curr_tile%part_uy,                   &
             curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%pid(1, wpid),         &
             curr%charge, curr_tile%x_grid_tile_min, curr_tile%z_grid_tile_min, dtt,   &
             dxx, dzz, nxc, nzc, nxjg, nzjg, noxx, nozz)
           CASE DEFAULT
-            CALL depose_jxjyjz_esirkepov( currg%jxtile, currg%jytile, currg%jztile,   &
+            CALL depose_jxjyjz_esirkepov( currg%arr1, currg%arr2, currg%arr3,   &
             count, curr_tile%part_x, curr_tile%part_y, curr_tile%part_z,              &
             curr_tile%part_ux, curr_tile%part_uy, curr_tile%part_uz,                  &
             curr_tile%part_gaminv, curr_tile%pid(1, wpid), curr%charge,               &
@@ -1887,11 +1886,11 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg, jyg, jzg, nxx, nyy,
         END DO! END LOOP ON SPECIES
         IF (isdeposited) THEN
           jxg(jmin:jmax, kmin:kmax, lmin:lmax)=jxg(jmin:jmax, kmin:kmax,              &
-          lmin:lmax)+currg%jxtile(0:nxc, 0:nyc, 0:nzc)
+          lmin:lmax)+currg%arr1(0:nxc, 0:nyc, 0:nzc)
           jyg(jmin:jmax, kmin:kmax, lmin:lmax)=jyg(jmin:jmax, kmin:kmax,              &
-          lmin:lmax)+currg%jytile(0:nxc, 0:nyc, 0:nzc)
+          lmin:lmax)+currg%arr2(0:nxc, 0:nyc, 0:nzc)
           jzg(jmin:jmax, kmin:kmax, lmin:lmax)=jzg(jmin:jmax, kmin:kmax,              &
-          lmin:lmax)+currg%jztile(0:nxc, 0:nyc, 0:nzc)
+          lmin:lmax)+currg%arr3(0:nxc, 0:nyc, 0:nzc)
         ENDIF
       END DO
     END DO
@@ -1931,26 +1930,26 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg, jyg, jzg, nxx, nyy,
           ! --- JX
           ! - FACES +/- X
           jxg(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = jxg(jminc:jmin-1,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jxtile(-nxjg:-1, -nyjg:nyc+nyjg,           &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr1(-nxjg:-1, -nyjg:nyc+nyjg,           &
           -nzjg:nzc+nzjg)
           jxg(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = jxg(jmax+1:jmaxc,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jxtile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr1(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
           -nzjg:nzc+nzjg)
           ! --- JY
           ! - FACES +/- X
           jyg(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = jyg(jminc:jmin-1,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jytile(-nxjg:-1, -nyjg:nyc+nyjg,           &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr2(-nxjg:-1, -nyjg:nyc+nyjg,           &
           -nzjg:nzc+nzjg)
           jyg(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = jyg(jmax+1:jmaxc,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jytile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr2(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
           -nzjg:nzc+nzjg)
           ! --- JZ
           ! - FACES +/- X
           jzg(jminc:jmin-1, kminc:kmaxc, lminc:lmaxc) = jzg(jminc:jmin-1,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jztile(-nxjg:-1, -nyjg:nyc+nyjg,           &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr3(-nxjg:-1, -nyjg:nyc+nyjg,           &
           -nzjg:nzc+nzjg)
           jzg(jmax+1:jmaxc, kminc:kmaxc, lminc:lmaxc) = jzg(jmax+1:jmaxc,             &
-          kminc:kmaxc, lminc:lmaxc)+ currg%jztile(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
+          kminc:kmaxc, lminc:lmaxc)+ currg%arr3(nxc+1:nxc+nxjg, -nyjg:nyc+nyjg,     &
           -nzjg:nzc+nzjg)
         ENDIF
       END DO
@@ -1990,21 +1989,21 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg, jyg, jzg, nxx, nyy,
           ! --- JX
           ! - FACES +/- Y
           jxg(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = jxg(jmin:jmax, kminc:kmin-1,    &
-          lminc:lmaxc)+ currg%jxtile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr1(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           jxg(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = jxg(jmin:jmax, kmax+1:kmaxc,    &
-          lminc:lmaxc)+ currg%jxtile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr1(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
           ! --- JY
           ! - FACES +/- Y
           jyg(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = jyg(jmin:jmax, kminc:kmin-1,    &
-          lminc:lmaxc)+ currg%jytile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr2(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           jyg(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = jyg(jmin:jmax, kmax+1:kmaxc,    &
-          lminc:lmaxc)+ currg%jytile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr2(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
           ! --- JZ
           ! - FACES +/- Y
           jzg(jmin:jmax, kminc:kmin-1, lminc:lmaxc) = jzg(jmin:jmax, kminc:kmin-1,    &
-          lminc:lmaxc)+ currg%jztile(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr3(0:nxc, -nyjg:-1, -nzjg:nzc+nzjg)
           jzg(jmin:jmax, kmax+1:kmaxc, lminc:lmaxc) = jzg(jmin:jmax, kmax+1:kmaxc,    &
-          lminc:lmaxc)+ currg%jztile(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
+          lminc:lmaxc)+ currg%arr3(0:nxc, nyc+1:nyc+nyjg, -nzjg:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -2043,21 +2042,21 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg, jyg, jzg, nxx, nyy,
           ! --- JX
           ! - FACES +/- Z
           jxg(jmin:jmax, kmin:kmax, lminc:lmin-1) = jxg(jmin:jmax, kmin:kmax,         &
-          lminc:lmin-1)+ currg%jxtile(0:nxc, 0:nyc, -nzjg:-1)
+          lminc:lmin-1)+ currg%arr1(0:nxc, 0:nyc, -nzjg:-1)
           jxg(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = jxg(jmin:jmax, kmin:kmax,         &
-          lmax+1:lmaxc)+ currg%jxtile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
+          lmax+1:lmaxc)+ currg%arr1(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
           ! --- JY
           ! - FACES +/- Z
           jyg(jmin:jmax, kmin:kmax, lminc:lmin-1) = jyg(jmin:jmax, kmin:kmax,         &
-          lminc:lmin-1)+ currg%jytile(0:nxc, 0:nyc, -nzjg:-1)
+          lminc:lmin-1)+ currg%arr2(0:nxc, 0:nyc, -nzjg:-1)
           jyg(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = jyg(jmin:jmax, kmin:kmax,         &
-          lmax+1:lmaxc)+ currg%jytile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
+          lmax+1:lmaxc)+ currg%arr2(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
           ! --- JZ
           ! - FACES +/- Z
           jzg(jmin:jmax, kmin:kmax, lminc:lmin-1) = jzg(jmin:jmax, kmin:kmax,         &
-          lminc:lmin-1)+ currg%jztile(0:nxc, 0:nyc, -nzjg:-1)
+          lminc:lmin-1)+ currg%arr3(0:nxc, 0:nyc, -nzjg:-1)
           jzg(jmin:jmax, kmin:kmax, lmax+1:lmaxc) = jzg(jmin:jmax, kmin:kmax,         &
-          lmax+1:lmaxc)+ currg%jztile(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
+          lmax+1:lmaxc)+ currg%arr3(0:nxc, 0:nyc, nzc+1:nzc+nzjg)
         END IF
       END DO
     END DO
@@ -2138,9 +2137,9 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq(func_order, jxg, 
         nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
         nzc=curr_tile%nz_cells_tile
         currg=>aofgrid_tiles(ix, iy, iz)
-        currg%jxtile=0.
-        currg%jytile=0.
-        currg%jztile=0.!jzg(jmin:jmax, kmin:kmax, lmin:lmax)
+        currg%arr1=0.
+        currg%arr2=0.
+        currg%arr3=0.!jzg(jmin:jmax, kmin:kmax, lmin:lmax)
         isdeposited=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
@@ -2153,7 +2152,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq(func_order, jxg, 
             isdeposited=.TRUE.
           ENDIF
           ! Depose current in jtile
-          CALL func_order(currg%jxtile, currg%jytile, currg%jztile, count,            &
+          CALL func_order(currg%arr1, currg%arr2, currg%arr3, count,            &
           curr_tile%part_x, curr_tile%part_y, curr_tile%part_z, curr_tile%part_ux,    &
           curr_tile%part_uy, curr_tile%part_uz, curr_tile%part_gaminv,                &
           curr_tile%pid(1, wpid), curr%charge, curr_tile%x_grid_tile_min,             &
@@ -2162,11 +2161,11 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq(func_order, jxg, 
         END DO! END LOOP ON SPECIES
         IF (isdeposited) THEN
           jxg(jmin:jmax, kmin:kmax, lmin:lmax)=jxg(jmin:jmax, kmin:kmax,              &
-          lmin:lmax)+currg%jxtile
+          lmin:lmax)+currg%arr1
           jyg(jmin:jmax, kmin:kmax, lmin:lmax)=jyg(jmin:jmax, kmin:kmax,              &
-          lmin:lmax)+currg%jytile
+          lmin:lmax)+currg%arr2
           jzg(jmin:jmax, kmin:kmax, lmin:lmax)=jzg(jmin:jmax, kmin:kmax,              &
-          lmin:lmax)+currg%jztile
+          lmin:lmax)+currg%arr3
         ENDIF
       END DO
     END DO
@@ -2232,9 +2231,9 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq(jxg, jyg, jzg, nx
         nxc=curr_tile%nx_cells_tile; nyc=curr_tile%ny_cells_tile
         nzc=curr_tile%nz_cells_tile
         currg=>aofgrid_tiles(ix, iy, iz)
-        currg%jxtile=0.
-        currg%jytile=0.
-        currg%jztile=0.!jzg(jmin:jmax, kmin:kmax, lmin:lmax)
+        currg%arr1=0.
+        currg%arr2=0.
+        currg%arr3=0.!jzg(jmin:jmax, kmin:kmax, lmin:lmax)
         isdeposited=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr => species_parray(ispecies)
@@ -2247,7 +2246,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq(jxg, jyg, jzg, nx
             isdeposited=.TRUE.
           ENDIF
           ! Depose current in jtile
-          CALL depose_jxjyjz_esirkepov( currg%jxtile, currg%jytile, currg%jztile,     &
+          CALL depose_jxjyjz_esirkepov( currg%arr1, currg%arr2, currg%arr3,     &
           count, curr_tile%part_x, curr_tile%part_y, curr_tile%part_z,                &
           curr_tile%part_ux, curr_tile%part_uy, curr_tile%part_uz,                    &
           curr_tile%part_gaminv, curr_tile%pid(1, wpid), curr%charge,                 &
@@ -2257,11 +2256,11 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq(jxg, jyg, jzg, nx
         END DO! END LOOP ON SPECIES
         IF (isdeposited) THEN
           jxg(jmin:jmax, kmin:kmax, lmin:lmax)=jxg(jmin:jmax, kmin:kmax,              &
-          lmin:lmax)+currg%jxtile
+          lmin:lmax)+currg%arr1
           jyg(jmin:jmax, kmin:kmax, lmin:lmax)=jyg(jmin:jmax, kmin:kmax,              &
-          lmin:lmax)+currg%jytile
+          lmin:lmax)+currg%arr2
           jzg(jmin:jmax, kmin:kmax, lmin:lmax)=jzg(jmin:jmax, kmin:kmax,              &
-          lmin:lmax)+currg%jztile
+          lmin:lmax)+currg%arr3
         ENDIF
       END DO
     END DO
