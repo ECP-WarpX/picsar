@@ -1035,6 +1035,7 @@ SUBROUTINE particle_bcs_mpi_blocking
 USE mpi
 INTEGER(isp) :: nvar! Simple implementation
 INTEGER(isp), DIMENSION(-1:1, -1:1, -1:1) :: nptoexch
+INTEGER(isp), DIMENSION(:, :, :), ALLOCATABLE :: out_dir
 REAL(num), ALLOCATABLE, DIMENSION(:, :, :, :) :: sendbuf
 REAL(num), ALLOCATABLE, DIMENSION(:) :: recvbuf
 LOGICAL(lp), ALLOCATABLE, DIMENSION(:) :: mask
@@ -1055,22 +1056,63 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
   tdeb=MPI_WTIME()
   ! Init send recv buffers
   currsp => species_parray(ispecies)
-  nptoexch=0
-  nsend_buf=0
-  nout=0
+  nptoexch=0_isp
+  nsend_buf=0_isp
+  nout=0_isp
   nrecv_buf=0
-  nbuff=0
-  ibuff=1
-  ! GET NUMBER OF PARTICLES IN BORDER TILES
+  nbuff=0_isp
+  ibuff=1_isp
+  ALLOCATE(out_dir(-1:1,-1:1,-1:1))
+  out_dir=0_isp
+  ! GET NUMBER OF PARTICLES ESCAPING THE DOMAIN 
+  !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr, ixtile, iytile, iztile, i, xbd, ybd,  &
+  !$OMP zbd, part_xyz)                                                                &
+  !$OMP SHARED(ntilex, ntiley, ntilez, currsp, x_min_local_part, x_max_local_part,    &
+  !$OMP y_min_local_part, y_max_local_part, z_min_local_part, z_max_local_part,       &
+  !$OMP out_dir)
   DO iztile=1, ntilez!LOOP ON TILES
     DO iytile=1, ntiley
       DO ixtile=1, ntilex
         curr=>currsp%array_of_tiles(ixtile, iytile, iztile)
         IF (.NOT. curr%subdomain_bound) CYCLE
-        nbuff=nbuff+curr%np_tile(1)
-      END DO
+        ! Identify outbounds particles
+        DO i = 1, curr%np_tile(1)!LOOP ON PARTICLES
+          xbd = 0_isp
+          ybd = 0_isp
+          zbd = 0_isp
+          part_xyz = curr%part_x(i)
+          ! Particle has left this processor -x
+          IF (part_xyz .LT. x_min_local_part) THEN
+            xbd=-1
+          ELSE IF (part_xyz .GE. x_max_local_part) THEN
+            xbd=+1
+          ENDIF
+          part_xyz = curr%part_y(i)
+          ! Particle has left this processor -y
+          IF (part_xyz .LT. y_min_local_part) THEN
+            ybd=-1
+          ELSE IF (part_xyz .GE. x_max_local_part) THEN
+            ybd=+1
+          ENDIF
+          part_xyz = curr%part_z(i)
+          ! Particle has left this processor -z
+          IF (part_xyz .LT. z_min_local_part) THEN
+            zbd=-1
+          ELSE IF (part_xyz .GE. z_max_local_part) THEN
+            zbd=+1
+          ENDIF
+		  IF (ABS(xbd)+ABS(ybd)+ABS(zbd) .GT. 0_isp) THEN  
+            !$OMP CRITICAL
+			out_dir(xbd,ybd,zbd)=out_dir(xbd,ybd,zbd)+1_isp
+            !$OMP END CRITICAL
+          ENDIF 
+        END DO
+      END DO 
     END DO
   END DO
+  !$OMP END PARALLEL DO 
+  nbuff=MAXVAL(out_dir)
+  DEALLOCATE(out_dir)
   ALLOCATE(sendbuf(-1:1, -1:1, -1:1, 1:nbuff*nvar))
   DO iztile=1, ntilez!LOOP ON TILES
     DO iytile=1, ntiley
