@@ -822,25 +822,11 @@ MODULE tiling
           ng1=curr_tile%nxg_tile
           ng2=curr_tile%nyg_tile
           ng3=curr_tile%nzg_tile
-          ALLOCATE(aofgtiles(ix, iy, iz)%extile(-ng1:n1+ng1, -ng2:n2+ng2,             &
+          ALLOCATE(aofgtiles(ix, iy, iz)%arr1(-ng1:n1+ng1, -ng2:n2+ng2,               &
           -ng3:n3+ng3))
-          ALLOCATE(aofgtiles(ix, iy, iz)%eytile(-ng1:n1+ng1, -ng2:n2+ng2,             &
+          ALLOCATE(aofgtiles(ix, iy, iz)%arr2(-ng1:n1+ng1, -ng2:n2+ng2,               &
           -ng3:n3+ng3))
-          ALLOCATE(aofgtiles(ix, iy, iz)%eztile(-ng1:n1+ng1, -ng2:n2+ng2,             &
-          -ng3:n3+ng3))
-          ALLOCATE(aofgtiles(ix, iy, iz)%bxtile(-ng1:n1+ng1, -ng2:n2+ng2,             &
-          -ng3:n3+ng3))
-          ALLOCATE(aofgtiles(ix, iy, iz)%bytile(-ng1:n1+ng1, -ng2:n2+ng2,             &
-          -ng3:n3+ng3))
-          ALLOCATE(aofgtiles(ix, iy, iz)%bztile(-ng1:n1+ng1, -ng2:n2+ng2,             &
-          -ng3:n3+ng3))
-          ALLOCATE(aofgtiles(ix, iy, iz)%jxtile(-ng1:n1+ng1, -ng2:n2+ng2,             &
-          -ng3:n3+ng3))
-          ALLOCATE(aofgtiles(ix, iy, iz)%jytile(-ng1:n1+ng1, -ng2:n2+ng2,             &
-          -ng3:n3+ng3))
-          ALLOCATE(aofgtiles(ix, iy, iz)%jztile(-ng1:n1+ng1, -ng2:n2+ng2,             &
-          -ng3:n3+ng3))
-          ALLOCATE(aofgtiles(ix, iy, iz)%rhotile(-ng1:n1+ng1, -ng2:n2+ng2,            &
+          ALLOCATE(aofgtiles(ix, iy, iz)%arr3(-ng1:n1+ng1, -ng2:n2+ng2,               &
           -ng3:n3+ng3))
         END DO
       END DO
@@ -1118,19 +1104,29 @@ MODULE tiling
     IMPLICIT NONE
     REAL(num), DIMENSION(:), ALLOCATABLE, INTENT(IN OUT) :: arr
     REAL(num), DIMENSION(:), ALLOCATABLE :: temp
-    INTEGER(idp) :: old_size, new_size
+    INTEGER(idp) :: old_size, new_size, ncheck
 
-    ALLOCATE(temp(1:new_size))
-    ! reshape array
-    IF (new_size .GT. old_size) THEN
-      temp(1:old_size)=arr(1:old_size)
+    ! - Sanity check (If old/new dimensions are identical - Return)
+    ncheck = (old_size-new_size)
+    IF (ncheck .EQ. 0_idp) RETURN 
+
+    IF (ALLOCATED(arr)) THEN
+      ! - Allocate temporary array for copying arr before its de-allocation/re-allocation
+      ALLOCATE(temp(1:new_size))
+      ! reshape array
+      IF (new_size .GT. old_size) THEN
+        temp(1:old_size)=arr(1:old_size)
+      ELSE
+        temp(1:new_size)=arr(1:new_size)
+      ENDIF
+      DEALLOCATE(arr)
+      ALLOCATE(arr(1:new_size))
+      arr=temp
+      DEALLOCATE(temp)
     ELSE
-      temp(1:new_size)=arr(1:new_size)
+	  ! - Just allocate array arr without copying its old values 
+      ALLOCATE(arr(1:new_size))
     ENDIF
-    DEALLOCATE(arr)
-    ALLOCATE(arr(1:new_size))
-    arr=temp
-    DEALLOCATE(temp)
   END SUBROUTINE resize_1D_array_real
 
   ! ______________________________________________________________________________________
@@ -1148,27 +1144,36 @@ MODULE tiling
     IMPLICIT NONE
     REAL(num), DIMENSION(:, :), ALLOCATABLE, INTENT(IN OUT) :: arr
     INTEGER(idp), INTENT(IN) :: nx_old, ny_old, nx_new, ny_new
-    INTEGER(idp)            :: nx_temp, ny_temp
+    INTEGER(idp)            :: nx_temp, ny_temp, ncheck
     REAL(num), DIMENSION(:, :), ALLOCATABLE :: temp
 
-    ALLOCATE(temp(1:nx_new, 1:ny_new))
-    ! reshape array
-    ! reshape array
-    IF (nx_new .GT. nx_old) THEN
-      nx_temp=nx_old
-    ELSE
-      nx_temp=nx_new
-    ENDIF
-    IF (ny_new .GT. ny_old) THEN
-      ny_temp=ny_old
-    ELSE
-      ny_temp=ny_new
-    ENDIF
-    temp(1:nx_temp, 1:ny_temp)= arr(1:nx_temp, 1:ny_temp)
-    DEALLOCATE(arr)
-    ALLOCATE(arr(1:nx_new, 1:ny_new))
-    arr=temp
-    DEALLOCATE(temp)
+    ! - Sanity check (If old/new dimensions are identical - Return)
+    ncheck = (nx_new-nx_old)+(ny_new-ny_old)
+    IF (ncheck .EQ. 0_idp) RETURN
+ 
+    IF (ALLOCATED(arr)) THEN 
+      ! - Allocate temporary array for copying arr before its de-allocation/re-allocation
+      ALLOCATE(temp(1:nx_new, 1:ny_new))
+      ! reshape array
+      IF (nx_new .GT. nx_old) THEN
+        nx_temp=nx_old
+      ELSE
+        nx_temp=nx_new
+      ENDIF
+      IF (ny_new .GT. ny_old) THEN
+        ny_temp=ny_old
+      ELSE
+        ny_temp=ny_new
+      ENDIF
+      temp(1:nx_temp, 1:ny_temp)= arr(1:nx_temp, 1:ny_temp)
+      DEALLOCATE(arr)
+      ALLOCATE(arr(1:nx_new, 1:ny_new))
+      arr=temp
+      DEALLOCATE(temp)
+    ELSE 
+	  ! - Just allocate array arr without copying its old values 
+      ALLOCATE(arr(1:nx_new, 1:ny_new))    
+    ENDIF 
   END SUBROUTINE resize_2D_array_real
 
   ! ______________________________________________________________________________________
@@ -1187,32 +1192,42 @@ MODULE tiling
     IMPLICIT NONE
     REAL(num), DIMENSION(:, :, :), ALLOCATABLE, INTENT(IN OUT) :: arr
     INTEGER(idp), INTENT(IN) :: nx_old, ny_old, nz_old, nx_new, ny_new, nz_new
-    INTEGER(idp)            :: nx_temp, ny_temp, nz_temp
+    INTEGER(idp)            :: nx_temp, ny_temp, nz_temp, ncheck
     REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: temp
+ 
+    ! - Sanity check (If old/new dimensions are identical - Return)
+    ncheck = (nx_new-nx_old)+(ny_new-ny_old)+(nz_new-nz_old)
+    IF (ncheck .EQ. 0_idp) RETURN 
+    
+    IF (ALLOCATED(arr)) THEN 
+      ! - Allocate temporary array for copying arr before its de-allocation/re-allocation
+      ALLOCATE(temp(1:nx_new, 1:ny_new, 1:nz_new))
+      ! reshape array
+      IF (nx_new .GT. nx_old) THEN
+        nx_temp=nx_old
+      ELSE
+        nx_temp=nx_new
+      ENDIF
+      IF (ny_new .GT. ny_old) THEN
+        ny_temp=ny_old
+      ELSE
+        ny_temp=ny_new
+      ENDIF
+      IF (nz_new .GT. nz_old) THEN
+        nz_temp=nz_old
+      ELSE
+        nz_temp=nz_new
+      ENDIF
+      temp(1:nx_temp, 1:ny_temp, 1:nz_temp)= arr(1:nx_temp, 1:ny_temp, 1:nz_temp)
+      DEALLOCATE(arr)
 
-    ALLOCATE(temp(1:nx_new, 1:ny_new, 1:nz_new))
-    ! reshape array
-    IF (nx_new .GT. nx_old) THEN
-      nx_temp=nx_old
-    ELSE
-      nx_temp=nx_new
+      ALLOCATE(arr(1:nx_new, 1:ny_new, 1:nz_new))
+      arr=temp
+      DEALLOCATE(temp)
+    ELSE 
+	  ! - Just allocate array arr without copying its old values 
+      ALLOCATE(arr(1:nx_new, 1:ny_new, 1:nz_new))
     ENDIF
-    IF (ny_new .GT. ny_old) THEN
-      ny_temp=ny_old
-    ELSE
-      ny_temp=ny_new
-    ENDIF
-    IF (nz_new .GT. nz_old) THEN
-      nz_temp=nz_old
-    ELSE
-      nz_temp=nz_new
-    ENDIF
-    temp(1:nx_temp, 1:ny_temp, 1:nz_temp)= arr(1:nx_temp, 1:ny_temp, 1:nz_temp)
-    DEALLOCATE(arr)
-
-    ALLOCATE(arr(1:nx_new, 1:ny_new, 1:nz_new))
-    arr=temp
-    DEALLOCATE(temp)
   END SUBROUTINE resize_3D_array_real
 
   ! ____________________________________________________________________________________
@@ -1893,25 +1908,11 @@ MODULE tiling
       DO iy=1, ntiley
         DO ix=1, ntilex
           local_grid_tiles_mem=local_grid_tiles_mem+                                   &
-          SIZEOF(aofgrid_tiles(ix, iy, iz)%extile)
+          SIZEOF(aofgrid_tiles(ix, iy, iz)%arr1)
           local_grid_tiles_mem=local_grid_tiles_mem+                                   &
-          SIZEOF(aofgrid_tiles(ix, iy, iz)%eytile)
+          SIZEOF(aofgrid_tiles(ix, iy, iz)%arr2)
           local_grid_tiles_mem=local_grid_tiles_mem+                                   &
-          SIZEOF(aofgrid_tiles(ix, iy, iz)%eztile)
-          local_grid_tiles_mem=local_grid_tiles_mem+                                   &
-          SIZEOF(aofgrid_tiles(ix, iy, iz)%bxtile)
-          local_grid_tiles_mem=local_grid_tiles_mem+                                   &
-          SIZEOF(aofgrid_tiles(ix, iy, iz)%bytile)
-          local_grid_tiles_mem=local_grid_tiles_mem+                                   &
-          SIZEOF(aofgrid_tiles(ix, iy, iz)%bztile)
-          local_grid_tiles_mem=local_grid_tiles_mem+                                   &
-          SIZEOF(aofgrid_tiles(ix, iy, iz)%jxtile)
-          local_grid_tiles_mem=local_grid_tiles_mem+                                   &
-          SIZEOF(aofgrid_tiles(ix, iy, iz)%jytile)
-          local_grid_tiles_mem=local_grid_tiles_mem+                                   &
-          SIZEOF(aofgrid_tiles(ix, iy, iz)%jztile)
-          local_grid_tiles_mem=local_grid_tiles_mem+                                   &
-          SIZEOF(aofgrid_tiles(ix, iy, iz)%rhotile)
+          SIZEOF(aofgrid_tiles(ix, iy, iz)%arr3)
         END DO
       END DO
     END DO! END LOOP ON TILES

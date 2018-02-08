@@ -135,7 +135,7 @@ END SUBROUTINE field_gathering_plus_particle_pusher
 !>
 ! ________________________________________________________________________________________
 SUBROUTINE field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg,     &
-  nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy,   &
+  nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, &
   nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in)
   USE particles
   USE constants
@@ -172,11 +172,14 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg
   INTEGER(idp)             :: ispecies, ix, iy, iz, count
   INTEGER(idp)             :: jmin, jmax, kmin, kmax, lmin, lmax
   TYPE(particle_species), POINTER :: curr
-  TYPE(grid_tile), POINTER        :: currg
   TYPE(particle_tile), POINTER    :: curr_tile
   REAL(num)                :: tdeb, tend
   INTEGER(idp)             :: nxc, nyc, nzc, ipmin, ipmax, ip
   INTEGER(idp)             :: nxjg, nyjg, nzjg
+  INTEGER(idp)             :: nxt, nyt, nzt
+  INTEGER(idp)             :: nxt_o, nyt_o, nzt_o
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: extile, eytile, eztile
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: bxtile, bytile, bztile
   LOGICAL(lp)              :: isgathered=.FALSE.
 
   tdeb=MPI_WTIME()
@@ -186,13 +189,18 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg
 #endif
 
   IF (nspecies .EQ. 0_idp) RETURN
+  nxt_o=0_idp
+  nyt_o=0_idp
+  nzt_o=0_idp
   !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) SHARED(ntilex,        &
   !$OMP ntiley, ntilez, nspecies, species_parray, aofgrid_tiles, nxjguard, nyjguard,  &
   !$OMP nzjguard, nxguard, nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg, dxx, dyy,  &
   !$OMP dzz, dtt, noxx, noyy, nozz, c_dim, l_lower_order_in_v_in, particle_pusher,    &
   !$OMP fieldgathe, LVEC_fieldgathe) PRIVATE(ix, iy, iz, ispecies, curr, curr_tile,   &
-  !$OMP currg, count, jmin, jmax, kmin, kmax, lmin, lmax, nxc, nyc, nzc, ipmin,       &
-  !$OMP ipmax, ip, nxjg, nyjg, nzjg, isgathered)
+  !$OMP count, jmin, jmax, kmin, kmax, lmin, lmax, nxc, nyc, nzc, ipmin,              &
+  !$OMP extile, eytile, eztile, bxtile, bytile, bztile,                               &
+  !$OMP nxt, nyt, nzt, ipmax, ip, nxjg, nyjg, nzjg, isgathered)                       &
+  !$OMP FIRSTPRIVATE(nxt_o, nyt_o, nzt_o)
   DO iz=1, ntilez! LOOP ON TILES
     DO iy=1, ntiley
       DO ix=1, ntilex
@@ -211,7 +219,6 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg
         nyc=curr_tile%ny_cells_tile
         nzc=curr_tile%nz_cells_tile
         isgathered=.FALSE.
-
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr=>species_parray(ispecies)
           IF (curr%is_antenna) CYCLE
@@ -219,15 +226,30 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isgathered=.TRUE.
         END DO
-
         IF (isgathered) THEN
-          currg=>aofgrid_tiles(ix, iy, iz)
-          currg%extile=exg(jmin:jmax, kmin:kmax, lmin:lmax)
-          currg%eytile=eyg(jmin:jmax, kmin:kmax, lmin:lmax)
-          currg%eztile=ezg(jmin:jmax, kmin:kmax, lmin:lmax)
-          currg%bxtile=bxg(jmin:jmax, kmin:kmax, lmin:lmax)
-          currg%bytile=byg(jmin:jmax, kmin:kmax, lmin:lmax)
-          currg%bztile=bzg(jmin:jmax, kmin:kmax, lmin:lmax)
+          nxt=jmax-jmin+1_idp
+          nyt=kmax-kmin+1_idp
+          nzt=lmax-lmin+1_idp
+          ! - Only resize temporary private grid tile arrays if tile size has changed
+          ! - i.e (nxt!=nxt_o or nyt!= nyt_o or nzt!=nzt_o)
+          ! - If tile array not allocated yet, allocate tile array with sizes nxt, nyt,
+          ! - nzt
+          CALL resize_3D_array_real(extile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          CALL resize_3D_array_real(eytile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          CALL resize_3D_array_real(eztile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          CALL resize_3D_array_real(bxtile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          CALL resize_3D_array_real(bytile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          CALL resize_3D_array_real(bztile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          nxt_o=nxt
+          nyt_o=nyt
+          nzt_o=nzt
+          ! - Copy values of field arrays in temporary grid tile arrays 
+          extile=exg(jmin:jmax, kmin:kmax, lmin:lmax)
+          eytile=eyg(jmin:jmax, kmin:kmax, lmin:lmax)
+          eztile=ezg(jmin:jmax, kmin:kmax, lmin:lmax)
+          bxtile=bxg(jmin:jmax, kmin:kmax, lmin:lmax)
+          bytile=byg(jmin:jmax, kmin:kmax, lmin:lmax)
+          bztile=bzg(jmin:jmax, kmin:kmax, lmin:lmax)
           DO ispecies=1, nspecies! LOOP ON SPECIES
             ! - Get current tile properties
             ! - Init current tile variables
@@ -256,8 +278,8 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg
               curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min, dxx, dyy, dzz,    &
               curr_tile%nx_cells_tile, curr_tile%ny_cells_tile,                       &
               curr_tile%nz_cells_tile, nxjg, nyjg, nzjg, noxx, noyy, nozz,            &
-              currg%extile, currg%eytile, currg%eztile, currg%bxtile, currg%bytile,   &
-              currg%bztile, .FALSE., l_lower_order_in_v_in, LVEC_fieldgathe,          &
+              extile, eytile, eztile, bxtile, bytile,                                 &
+              bztile, .FALSE., l_lower_order_in_v_in, LVEC_fieldgathe,                &
               fieldgathe)
 
             CASE DEFAULT! 3D CASE
@@ -270,8 +292,8 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg
               curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min, dxx, dyy, dzz,    &
               curr_tile%nx_cells_tile, curr_tile%ny_cells_tile,                       &
               curr_tile%nz_cells_tile, nxjg, nyjg, nzjg, noxx, noyy, nozz,            &
-              currg%extile, currg%eytile, currg%eztile, currg%bxtile, currg%bytile,   &
-              currg%bztile , .FALSE., l_lower_order_in_v_in, lvec_fieldgathe,         &
+              extile, eytile, eztile, bxtile, bytile,                                 &
+              bztile , .FALSE., l_lower_order_in_v_in, lvec_fieldgathe,               &
               fieldgathe)
             END SELECT
 
@@ -345,7 +367,7 @@ END SUBROUTINE field_gathering_plus_particle_pusher_sub
 !>
 ! ________________________________________________________________________________________
 SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg, eyg, ezg, bxg,    &
-  byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard,     &
+  byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard,   &
   noxx, noyy, nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in)
   USE particles
   USE constants
@@ -379,11 +401,14 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg, eyg, ezg, bx
   INTEGER(idp)             :: ispecies, ix, iy, iz, count
   INTEGER(idp)             :: jmin, jmax, kmin, kmax, lmin, lmax
   TYPE(particle_species), POINTER :: curr
-  TYPE(grid_tile), POINTER        :: currg
   TYPE(particle_tile), POINTER    :: curr_tile
   REAL(num)                :: tdeb, tend
   INTEGER(idp)             :: nxc, nyc, nzc, ipmin, ipmax, ip
   INTEGER(idp)             :: nxjg, nyjg, nzjg
+  INTEGER(idp)             :: nxt, nyt, nzt
+  INTEGER(idp)             :: nxt_o, nyt_o, nzt_o
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: extile, eytile, eztile
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: bxtile, bytile, bztile
   LOGICAL(lp)              :: isgathered=.FALSE.
 
   IF (it.ge.timestat_itstart) THEN
@@ -395,13 +420,17 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg, eyg, ezg, bx
 #endif
 
   IF (nspecies .EQ. 0_idp) RETURN
+  nxt_o=0_idp
+  nyt_o=0_idp
+  nzt_o=0_idp
   !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) SHARED(ntilex,        &
   !$OMP ntiley, ntilez, nspecies, species_parray, aofgrid_tiles, nxjguard, nyjguard,  &
   !$OMP nzjguard, nxguard, nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg, dxx, dyy,  &
   !$OMP dzz, dtt, noxx, noyy, nozz, c_dim, lvec_fieldgathe, l_lower_order_in_v)       &
-  !$OMP PRIVATE(ix, iy, iz, ispecies, curr, curr_tile, currg, count, jmin, jmax,      &
+  !$OMP PRIVATE(ix, iy, iz, ispecies, curr, curr_tile, count, jmin, jmax,             &
+  !$OMP extile, eytile, eztile, bxtile, bytile, bztile, nxt, nyt, nzt,                &
   !$OMP kmin, kmax, lmin, lmax, nxc, nyc, nzc, ipmin, ipmax, ip, nxjg, nyjg, nzjg,    &
-  !$OMP isgathered)
+  !$OMP isgathered) FIRSTPRIVATE(nxt_o, nyt_o, nzt_o)
   DO iz=1, ntilez! LOOP ON TILES
     DO iy=1, ntiley
       DO ix=1, ntilex
@@ -430,13 +459,29 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg, eyg, ezg, bx
         END DO
 
         IF (isgathered) THEN
-          currg=>aofgrid_tiles(ix, iy, iz)
-          currg%extile=exg(jmin:jmax, kmin:kmax, lmin:lmax)
-          currg%eytile=eyg(jmin:jmax, kmin:kmax, lmin:lmax)
-          currg%eztile=ezg(jmin:jmax, kmin:kmax, lmin:lmax)
-          currg%bxtile=bxg(jmin:jmax, kmin:kmax, lmin:lmax)
-          currg%bytile=byg(jmin:jmax, kmin:kmax, lmin:lmax)
-          currg%bztile=bzg(jmin:jmax, kmin:kmax, lmin:lmax)
+          nxt=jmax-jmin+1_idp
+          nyt=kmax-kmin+1_idp
+          nzt=lmax-lmin+1_idp
+          ! - Only resize temporary private grid tile arrays if tile size has changed
+          ! - i.e (nxt!=nxt_o or nyt!= nyt_o or nzt!=nzt_o)
+          ! - If tile array not allocated yet, allocate tile array with sizes nxt, nyt,
+          ! - nzt
+          CALL resize_3D_array_real(extile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          CALL resize_3D_array_real(eytile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          CALL resize_3D_array_real(eztile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          CALL resize_3D_array_real(bxtile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          CALL resize_3D_array_real(bytile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          CALL resize_3D_array_real(bztile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          nxt_o=nxt
+          nyt_o=nyt
+          nzt_o=nzt
+          ! - Copy values of field arrays in temporary grid tile arrays 
+          extile=exg(jmin:jmax, kmin:kmax, lmin:lmax)
+          eytile=eyg(jmin:jmax, kmin:kmax, lmin:lmax)
+          eztile=ezg(jmin:jmax, kmin:kmax, lmin:lmax)
+          bxtile=bxg(jmin:jmax, kmin:kmax, lmin:lmax)
+          bytile=byg(jmin:jmax, kmin:kmax, lmin:lmax)
+          bztile=bzg(jmin:jmax, kmin:kmax, lmin:lmax)
           DO ispecies=1, nspecies! LOOP ON SPECIES
             ! - Get current tile properties
             ! - Init current tile variables
@@ -463,8 +508,8 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg, eyg, ezg, bx
               curr_tile%part_bz, curr_tile%x_grid_tile_min,                           &
               curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min, dxx, dyy, dzz,    &
               dtt, curr_tile%nx_cells_tile, curr_tile%ny_cells_tile,                  &
-              curr_tile%nz_cells_tile, nxjg, nyjg, nzjg, currg%extile, currg%eytile,  &
-              currg%eztile, currg%bxtile, currg%bytile, currg%bztile, curr%charge,    &
+              curr_tile%nz_cells_tile, nxjg, nyjg, nzjg, extile, eytile,              &
+              eztile, bxtile, bytile, bztile, curr%charge,                            &
               curr%mass, lvec_fieldgathe, l_lower_order_in_v)
 
             ELSE IF ((noxx.eq.2).and.(noyy.eq.2).and.(nozz.eq.2)) THEN
@@ -478,8 +523,8 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg, eyg, ezg, bx
               curr_tile%part_bz, curr_tile%x_grid_tile_min,                           &
               curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min, dxx, dyy, dzz,    &
               dtt, curr_tile%nx_cells_tile, curr_tile%ny_cells_tile,                  &
-              curr_tile%nz_cells_tile, nxjg, nyjg, nzjg, currg%extile, currg%eytile,  &
-              currg%eztile, currg%bxtile, currg%bytile, currg%bztile, curr%charge,    &
+              curr_tile%nz_cells_tile, nxjg, nyjg, nzjg, extile, eytile,              &
+              eztile, bxtile, bytile, bztile, curr%charge,                            &
               curr%mass, lvec_fieldgathe, l_lower_order_in_v)
 
             ELSE IF ((noxx.eq.3).and.(noyy.eq.3).and.(nozz.eq.3)) THEN
@@ -493,8 +538,8 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg, eyg, ezg, bx
               curr_tile%part_bz, curr_tile%x_grid_tile_min,                           &
               curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min, dxx, dyy, dzz,    &
               dtt, curr_tile%nx_cells_tile, curr_tile%ny_cells_tile,                  &
-              curr_tile%nz_cells_tile, nxjg, nyjg, nzjg, currg%extile, currg%eytile,  &
-              currg%eztile, currg%bxtile, currg%bytile, currg%bztile, curr%charge,    &
+              curr_tile%nz_cells_tile, nxjg, nyjg, nzjg, extile, eytile,              &
+              eztile, bxtile, bytile, bztile, curr%charge,                            &
               curr%mass, lvec_fieldgathe, l_lower_order_in_v)
 
             ENDIF
@@ -573,11 +618,14 @@ SUBROUTINE particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
   INTEGER(idp)             :: ispecies, ix, iy, iz, count
   INTEGER(idp)             :: jmin, jmax, kmin, kmax, lmin, lmax
   TYPE(particle_species), POINTER :: curr
-  TYPE(grid_tile), POINTER        :: currg
   TYPE(particle_tile), POINTER    :: curr_tile
   REAL(num)                :: tdeb, tend
   INTEGER(idp)             :: nxc, nyc, nzc, ipmin, ipmax, ip
   INTEGER(idp)             :: nxjg, nyjg, nzjg
+  INTEGER(idp)             :: nxt, nyt, nzt
+  INTEGER(idp)             :: nxt_o, nyt_o, nzt_o
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: extile, eytile, eztile
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: bxtile, bytile, bztile
   LOGICAL(lp)              :: isgathered=.FALSE.
 
   IF (nspecies .EQ. 0_idp) RETURN
@@ -591,12 +639,17 @@ SUBROUTINE particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
 #if defined(DEBUG)
 #endif
 
+  nxt_o=0_idp
+  nyt_o=0_idp
+  nzt_o=0_idp
   !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) SHARED(ntilex,        &
   !$OMP ntiley, ntilez, nspecies, species_parray, aofgrid_tiles, nxjguard, nyjguard,  &
   !$OMP nzjguard, nxguard, nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg, dxx, dyy,  &
   !$OMP dzz, dtt, noxx, noyy, nozz, c_dim, particle_pusher) PRIVATE(ix, iy, iz,       &
-  !$OMP ispecies, curr, curr_tile, currg, count, jmin, jmax, kmin, kmax, lmin, lmax,  &
-  !$OMP nxc, nyc, nzc, ipmin, ipmax, ip, nxjg, nyjg, nzjg, isgathered)
+  !$OMP ispecies, curr, curr_tile, count, jmin, jmax, kmin, kmax, lmin, lmax,         &
+  !$OMP extile, eytile, eztile, bxtile, bytile, bztile, nxt, nyt, nzt,                &
+  !$OMP nxc, nyc, nzc, ipmin, ipmax, ip, nxjg, nyjg, nzjg, isgathered)                &
+  !$OMP FIRSTPRIVATE(nxt_o, nyt_o, nzt_o)
   DO iz=1, ntilez! LOOP ON TILES
     DO iy=1, ntiley
       DO ix=1, ntilex
@@ -623,13 +676,29 @@ SUBROUTINE particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
           IF (count .GT. 0) isgathered=.TRUE.
         END DO
         IF (isgathered) THEN
-          currg=>aofgrid_tiles(ix, iy, iz)
-          currg%extile=exg(jmin:jmax, kmin:kmax, lmin:lmax)
-          currg%eytile=eyg(jmin:jmax, kmin:kmax, lmin:lmax)
-          currg%eztile=ezg(jmin:jmax, kmin:kmax, lmin:lmax)
-          currg%bxtile=bxg(jmin:jmax, kmin:kmax, lmin:lmax)
-          currg%bytile=byg(jmin:jmax, kmin:kmax, lmin:lmax)
-          currg%bztile=bzg(jmin:jmax, kmin:kmax, lmin:lmax)
+          nxt=jmax-jmin+1_idp
+          nyt=kmax-kmin+1_idp
+          nzt=lmax-lmin+1_idp
+          ! - Only resize temporary private grid tile arrays if tile size has changed
+          ! - i.e (nxt!=nxt_o or nyt!= nyt_o or nzt!=nzt_o)
+          ! - If tile array not allocated yet, allocate tile array with sizes nxt, nyt,
+          ! - nzt
+          CALL resize_3D_array_real(extile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          CALL resize_3D_array_real(eytile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          CALL resize_3D_array_real(eztile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          CALL resize_3D_array_real(bxtile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          CALL resize_3D_array_real(bytile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          CALL resize_3D_array_real(bztile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          nxt_o=nxt
+          nyt_o=nyt
+          nzt_o=nzt
+          ! - Copy values of field arrays in temporary grid tile arrays 
+          extile=exg(jmin:jmax, kmin:kmax, lmin:lmax)
+          eytile=eyg(jmin:jmax, kmin:kmax, lmin:lmax)
+          eztile=ezg(jmin:jmax, kmin:kmax, lmin:lmax)
+          bxtile=bxg(jmin:jmax, kmin:kmax, lmin:lmax)
+          bytile=byg(jmin:jmax, kmin:kmax, lmin:lmax)
+          bztile=bzg(jmin:jmax, kmin:kmax, lmin:lmax)
           DO ispecies=1, nspecies! LOOP ON SPECIES
             ! - Get current tile properties
             ! - Init current tile variables
@@ -740,7 +809,7 @@ END SUBROUTINE pxrpush_particles_part1
 !>
 ! ________________________________________________________________________________________
 SUBROUTINE pxrpush_particles_part1_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz,   &
-  nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy,  &
+  nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy,&
   dzz, dtt, l4symtry_in, l_lower_order_in_v_in, lvect, field_gathe_algo)
   USE particles
   USE constants
@@ -769,20 +838,26 @@ SUBROUTINE pxrpush_particles_part1_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, n
   INTEGER(idp)          :: jmin, jmax, kmin, kmax, lmin, lmax
   TYPE(particle_species), POINTER :: curr
   TYPE(particle_tile), POINTER    :: curr_tile
-  TYPE(grid_tile), POINTER        :: currg
   INTEGER(idp)                    :: nxc, nyc, nzc
   INTEGER(idp)                    :: nxjg, nyjg, nzjg
+  INTEGER(idp)             :: nxt, nyt, nzt
+  INTEGER(idp)             :: nxt_o, nyt_o, nzt_o
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: extile, eytile, eztile
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: bxtile, bytile, bztile
   LOGICAL(lp)                     :: isgathered=.FALSE.
 
-
+  nxt_o=0_idp
+  nyt_o=0_idp
+  nzt_o=0_idp
   IF (nspecies .EQ. 0_idp) RETURN
   !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) SHARED(ntilex,        &
   !$OMP ntiley, ntilez, nspecies, species_parray, aofgrid_tiles, nxjguard, nyjguard,  &
   !$OMP nzjguard, exg, eyg, ezg, bxg, byg, bzg, dxx, dyy, dzz, dtt, noxx, noyy,       &
   !$OMP l4symtry_in, l_lower_order_in_v_in, nozz, c_dim, fieldgathe, particle_pusher, &
   !$OMP field_gathe_algo, lvect) PRIVATE(ix, iy, iz, ispecies, curr, curr_tile,       &
-  !$OMP currg, count, jmin, jmax, kmin, kmax, lmin, lmax, nxc, nyc, nzc, nxjg, nyjg,  &
-  !$OMP nzjg, isgathered)
+  !$OMP extile, eytile, eztile, bxtile, bytile, bztile, nxt, nyt, nzt,                &
+  !$OMP count, jmin, jmax, kmin, kmax, lmin, lmax, nxc, nyc, nzc, nxjg, nyjg,         &
+  !$OMP nzjg, isgathered) FIRSTPRIVATE(nxt_o, nyt_o, nzt_o)
   DO iz=1, ntilez! LOOP ON TILES
     DO iy=1, ntiley
       DO ix=1, ntilex
@@ -809,13 +884,29 @@ SUBROUTINE pxrpush_particles_part1_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, n
           IF (count .GT. 0) isgathered=.TRUE.
         END DO
         IF (isgathered) THEN
-          currg=>aofgrid_tiles(ix, iy, iz)
-          currg%extile=exg(jmin:jmax, kmin:kmax, lmin:lmax)
-          currg%eytile=eyg(jmin:jmax, kmin:kmax, lmin:lmax)
-          currg%eztile=ezg(jmin:jmax, kmin:kmax, lmin:lmax)
-          currg%bxtile=bxg(jmin:jmax, kmin:kmax, lmin:lmax)
-          currg%bytile=byg(jmin:jmax, kmin:kmax, lmin:lmax)
-          currg%bztile=bzg(jmin:jmax, kmin:kmax, lmin:lmax)
+          nxt=jmax-jmin+1_idp
+          nyt=kmax-kmin+1_idp
+          nzt=lmax-lmin+1_idp
+          ! - Only resize temporary private grid tile arrays if tile size has changed
+          ! - i.e (nxt!=nxt_o or nyt!= nyt_o or nzt!=nzt_o)
+          ! - If tile array not allocated yet, allocate tile array with sizes nxt, nyt,
+          ! - nzt
+          CALL resize_3D_array_real(extile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          CALL resize_3D_array_real(eytile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          CALL resize_3D_array_real(eztile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          CALL resize_3D_array_real(bxtile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          CALL resize_3D_array_real(bytile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          CALL resize_3D_array_real(bztile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          nxt_o=nxt
+          nyt_o=nyt
+          nzt_o=nzt
+          ! - Copy values of field arrays in temporary grid tile arrays 
+          extile=exg(jmin:jmax, kmin:kmax, lmin:lmax)
+          eytile=eyg(jmin:jmax, kmin:kmax, lmin:lmax)
+          eztile=ezg(jmin:jmax, kmin:kmax, lmin:lmax)
+          bxtile=bxg(jmin:jmax, kmin:kmax, lmin:lmax)
+          bytile=byg(jmin:jmax, kmin:kmax, lmin:lmax)
+          bztile=bzg(jmin:jmax, kmin:kmax, lmin:lmax)
           DO ispecies=1, nspecies! LOOP ON SPECIES
             ! - Get current tile properties
             ! - Init current tile variables
@@ -845,8 +936,8 @@ SUBROUTINE pxrpush_particles_part1_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, n
                 curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min, dxx, dyy, dzz,  &
                 curr_tile%nx_cells_tile, curr_tile%ny_cells_tile,                     &
                 curr_tile%nz_cells_tile, nxjg, nyjg, nzjg, noxx, noyy, nozz,          &
-                currg%extile, currg%eytile, currg%eztile, currg%bxtile, currg%bytile, &
-                currg%bztile , l4symtry_in, l_lower_order_in_v_in, lvect,             &
+                extile, eytile, eztile, bxtile, bytile,                               &
+                bztile , l4symtry_in, l_lower_order_in_v_in, lvect,                   &
                 field_gathe_algo)
               CASE DEFAULT! 3D CASE
                 !!! --- Gather electric and magnetic fields on particles
@@ -857,8 +948,8 @@ SUBROUTINE pxrpush_particles_part1_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, n
                 curr_tile%y_grid_tile_min, curr_tile%z_grid_tile_min, dxx, dyy, dzz,  &
                 curr_tile%nx_cells_tile, curr_tile%ny_cells_tile,                     &
                 curr_tile%nz_cells_tile, nxjg, nyjg, nzjg, noxx, noyy, nozz,          &
-                currg%extile, currg%eytile, currg%eztile, currg%bxtile, currg%bytile, &
-                currg%bztile , l4symtry_in, l_lower_order_in_v_in, lvect,             &
+                extile, eytile, eztile, bxtile, bytile,                               &
+                bztile , l4symtry_in, l_lower_order_in_v_in, lvect,                   &
                 field_gathe_algo)
               END SELECT
 

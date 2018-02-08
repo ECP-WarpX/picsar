@@ -108,11 +108,14 @@ SUBROUTINE field_gathering_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
   INTEGER(idp)             :: ispecies, ix, iy, iz, count
   INTEGER(idp)             :: jmin, jmax, kmin, kmax, lmin, lmax
   TYPE(particle_species), POINTER :: curr
-  TYPE(grid_tile), POINTER        :: currg
   TYPE(particle_tile), POINTER    :: curr_tile
   REAL(num)                :: tdeb, tend
   INTEGER(idp)             :: nxc, nyc, nzc
   INTEGER(idp)             :: nxjg, nyjg, nzjg
+  INTEGER(idp)             :: nxt, nyt, nzt
+  INTEGER(idp)             :: nxt_o, nyt_o, nzt_o
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: extile, eytile, eztile
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: bxtile, bytile, bztile
   LOGICAL(lp)                   :: isgathered=.FALSE._lp
 
   IF (nspecies .EQ. 0_idp) RETURN
@@ -128,13 +131,17 @@ SUBROUTINE field_gathering_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
   CALL start_sde_collection()
 #endif
 
+  nxt_o=0_idp
+  nyt_o=0_idp
+  nzt_o=0_idp
   !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) SHARED(ntilex,        &
   !$OMP ntiley, ntilez, nspecies, species_parray, aofgrid_tiles, nxjguard, nyjguard,  &
   !$OMP nzjguard, nxguard, nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg, dxx, dyy,  &
   !$OMP dzz, dtt, noxx, noyy, nozz, c_dim, l_lower_order_in_v_in, fieldgathe,         &
-  !$OMP LVEC_fieldgathe) PRIVATE(ix, iy, iz, ispecies, curr, curr_tile, currg, count, &
+  !$OMP LVEC_fieldgathe) PRIVATE(ix, iy, iz, ispecies, curr, curr_tile, count,        &
+  !$OMP extile, eytile, eztile, bxtile, bytile, bztile, nxt, nyt, nzt,                &
   !$OMP jmin, jmax, kmin, kmax, lmin, lmax, nxc, nyc, nzc, nxjg, nyjg, nzjg,          &
-  !$OMP isgathered)
+  !$OMP isgathered) FIRSTPRIVATE(nxt_o, nyt_o, nzt_o)                            
   DO iz=1, ntilez! LOOP ON TILES
     DO iy=1, ntiley
       DO ix=1, ntilex
@@ -153,7 +160,6 @@ SUBROUTINE field_gathering_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
         nyc=curr_tile%ny_cells_tile
         nzc=curr_tile%nz_cells_tile
         isgathered=.FALSE._lp
-
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr=>species_parray(ispecies)
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
@@ -161,13 +167,29 @@ SUBROUTINE field_gathering_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
           IF (count .GT. 0) isgathered=.TRUE.
         END DO
         IF (isgathered) THEN
-          currg=>aofgrid_tiles(ix, iy, iz)
-          currg%extile=exg(jmin:jmax, kmin:kmax, lmin:lmax)
-          currg%eytile=eyg(jmin:jmax, kmin:kmax, lmin:lmax)
-          currg%eztile=ezg(jmin:jmax, kmin:kmax, lmin:lmax)
-          currg%bxtile=bxg(jmin:jmax, kmin:kmax, lmin:lmax)
-          currg%bytile=byg(jmin:jmax, kmin:kmax, lmin:lmax)
-          currg%bztile=bzg(jmin:jmax, kmin:kmax, lmin:lmax)
+          nxt=jmax-jmin+1_idp
+          nyt=kmax-kmin+1_idp
+          nzt=lmax-lmin+1_idp
+          ! - Only resize temporary private grid tile arrays if tile size has changed
+          ! - i.e (nxt!=nxt_o or nyt!= nyt_o or nzt!=nzt_o)
+          ! - If tile array not allocated yet, allocate tile array with sizes nxt, nyt,
+          ! - nzt
+          CALL resize_3D_array_real(extile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          CALL resize_3D_array_real(eytile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          CALL resize_3D_array_real(eztile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          CALL resize_3D_array_real(bxtile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          CALL resize_3D_array_real(bytile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          CALL resize_3D_array_real(bztile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+          nxt_o=nxt
+          nyt_o=nyt
+          nzt_o=nzt
+          ! - Copy values of field arrays in temporary grid tile arrays 
+          extile=exg(jmin:jmax, kmin:kmax, lmin:lmax)
+          eytile=eyg(jmin:jmax, kmin:kmax, lmin:lmax)
+          eztile=ezg(jmin:jmax, kmin:kmax, lmin:lmax)
+          bxtile=bxg(jmin:jmax, kmin:kmax, lmin:lmax)
+          bytile=byg(jmin:jmax, kmin:kmax, lmin:lmax)
+          bztile=bzg(jmin:jmax, kmin:kmax, lmin:lmax)
           DO ispecies=1, nspecies! LOOP ON SPECIES
             ! - Get current tile properties
             ! - Init current tile variables
@@ -192,10 +214,8 @@ SUBROUTINE field_gathering_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
             curr_tile%part_bz, curr_tile%x_grid_tile_min, curr_tile%y_grid_tile_min,  &
             curr_tile%z_grid_tile_min, dxx, dyy, dzz, curr_tile%nx_cells_tile,        &
             curr_tile%ny_cells_tile, curr_tile%nz_cells_tile, nxjg, nyjg, nzjg, noxx, &
-            noyy, nozz, currg%extile, currg%eytile, currg%eztile, currg%bxtile,       &
-            currg%bytile, currg%bztile , .FALSE._lp, l_lower_order_in_v_in,           &
-            LVEC_fieldgathe, fieldgathe)
-
+            noyy, nozz, extile, eytile, eztile, bxtile, bytile, bztile, .FALSE._lp,   &
+            l_lower_order_in_v_in, LVEC_fieldgathe, fieldgathe)
           END DO! END LOOP ON SPECIES
         ENDIF
       END DO

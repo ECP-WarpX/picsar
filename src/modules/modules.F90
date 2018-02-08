@@ -264,52 +264,43 @@ END MODULE fields
 
 ! ________________________________________________________________________________________
 !> @brief
-!> Module containing the field tile data structure.
+!> Module containing the current/charge tile data structure.
 ! ________________________________________________________________________________________
 MODULE grid_tilemodule!#do not parse
   USE constants
-  !> This object contains 3D field grids for one tile
+  !> This object contains 3D field grids for one tile 
   TYPE grid_tile
-    !> Tile Electric field grid in x
-    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: extile
-    !> Tile Electric field grid in y
-    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: eytile
-    !> Tile Electric field grid in z
-    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: eztile
-    !> Tile Magnetic field grid in x
-    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: bxtile
-    !> Tile Magnetic field grid in y
-    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: bytile
-    !> Tile Magnetic field grid in z
-    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: bztile
-    !> Tile Current grid in x
-    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: jxtile
+    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: arr1 ! For X current component 
+                                                       ! or charge 
     !> Tile Current grid in y
-    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: jytile
+    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: arr2 ! For Y current component 
     !> Tile Current grid in z
-    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: jztile
-    !> Tile Charge grid
-    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: rhotile
-
+    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: arr3 ! For Z current component
     ! We declare arrays aligned for vectorization efficiency.
     ! These directives are only understood by the Intel compiler.
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-    !dir$ attributes align:64 :: extile
-    !dir$ attributes align:64 :: eytile
-    !dir$ attributes align:64 :: eztile
-    !dir$ attributes align:64 :: bxtile
-    !dir$ attributes align:64 :: bytile
-    !dir$ attributes align:64 :: bztile
-    !dir$ attributes align:64 :: jxtile
-    !dir$ attributes align:64 :: jytile
-    !dir$ attributes align:64 :: jztile
-    !dir$ attributes align:64 :: rhotile
+    !dir$ attributes align:64 :: arr1
+    !dir$ attributes align:64 :: arr2
+    !dir$ attributes align:64 :: arr3
 #endif
   END TYPE
 
-  !> This array contains a list of tile field grids.
+  !> This array contains a list of current grid tiles
   !> This array is local to each MPI domain.
-  !> Tile grids are contained in the object grid_tile (see extile, eytile...).
+  !> This structure is used to avoid contentions during the parallel threaded 
+  !> reductions of currents by threads in the large current array (used in the 
+  !> the Maxwell solver). In particular, to avoid contention, copies of guard cells 
+  !> from grid tiles to the large current arrays are done alternatively in X, Y, Z 
+  !> directions with implicit synchronization between each direction. This imposes to 
+  !> store grid tile arrays in shared memory via this structure aofgrid_tiles. 
+  !> This moderately increases memory footprint but allows 
+  !> for very good parallel efficiency of the current deposition. 
+  !> N.B: for field gathering fields are copied from the large field arrays (used 
+  !> in the Maxwell solver) to private grid tile arrays to each thread before the 
+  !> field gathering step on the particles. As this step does not involve any contention, 
+  !> (copy operation by threads) these private arrays can thus
+  !> be allocated/de-allocated when needed and do not require to be saved in 
+  !> aofgrid_tiles (therefore saving a significant amount of memory). 
   TYPE(grid_tile), ALLOCATABLE, TARGET, DIMENSION(:, :, :) :: aofgrid_tiles
 
 END MODULE grid_tilemodule
