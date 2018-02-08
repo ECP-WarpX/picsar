@@ -1033,10 +1033,12 @@ END SUBROUTINE particle_bsc_openmp_reordering
 ! ________________________________________________________________________________________
 SUBROUTINE particle_bcs_mpi_blocking
 USE mpi
+USE buff_exchange_part
 INTEGER(isp) :: nvar! Simple implementation
+INTEGER(idp) :: nold, nnew
 INTEGER(isp), DIMENSION(-1:1, -1:1, -1:1) :: nptoexch
 INTEGER(isp), DIMENSION(:, :, :), ALLOCATABLE :: out_dir
-REAL(num), ALLOCATABLE, DIMENSION(:, :, :, :) :: sendbuf
+TYPE(buff_part), ALLOCATABLE, DIMENSION(:, :, :)    :: sendbuf
 REAL(num), ALLOCATABLE, DIMENSION(:) :: recvbuf
 LOGICAL(lp), ALLOCATABLE, DIMENSION(:) :: mask
 INTEGER(isp) :: ibuff, nout, nbuff
@@ -1052,7 +1054,9 @@ TYPE(particle_species), POINTER :: currsp
 TYPE(particle_tile), POINTER :: curr
 
 nvar=npid+7
-DO ispecies=1, nspecies!LOOP ON SPECIES
+
+! - LOOP ON SPECIES
+DO ispecies=1, nspecies!
   tdeb=MPI_WTIME()
   ! Init send recv buffers
   currsp => species_parray(ispecies)
@@ -1062,58 +1066,18 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
   nrecv_buf=0
   nbuff=0_isp
   ibuff=1_isp
-  ALLOCATE(out_dir(-1:1,-1:1,-1:1))
-  out_dir=0_isp
-  ! GET NUMBER OF PARTICLES ESCAPING THE DOMAIN 
-  !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr, ixtile, iytile, iztile, i, xbd, ybd,  &
-  !$OMP zbd, part_xyz)                                                                &
-  !$OMP SHARED(ntilex, ntiley, ntilez, currsp, x_min_local_part, x_max_local_part,    &
-  !$OMP y_min_local_part, y_max_local_part, z_min_local_part, z_max_local_part,       &
-  !$OMP out_dir)
-  DO iztile=1, ntilez!LOOP ON TILES
-    DO iytile=1, ntiley
-      DO ixtile=1, ntilex
-        curr=>currsp%array_of_tiles(ixtile, iytile, iztile)
-        IF (.NOT. curr%subdomain_bound) CYCLE
-        ! Identify outbounds particles
-        DO i = 1, curr%np_tile(1)!LOOP ON PARTICLES
-          xbd = 0_isp
-          ybd = 0_isp
-          zbd = 0_isp
-          part_xyz = curr%part_x(i)
-          ! Particle has left this processor -x
-          IF (part_xyz .LT. x_min_local_part) THEN
-            xbd=-1
-          ELSE IF (part_xyz .GE. x_max_local_part) THEN
-            xbd=+1
-          ENDIF
-          part_xyz = curr%part_y(i)
-          ! Particle has left this processor -y
-          IF (part_xyz .LT. y_min_local_part) THEN
-            ybd=-1
-          ELSE IF (part_xyz .GE. x_max_local_part) THEN
-            ybd=+1
-          ENDIF
-          part_xyz = curr%part_z(i)
-          ! Particle has left this processor -z
-          IF (part_xyz .LT. z_min_local_part) THEN
-            zbd=-1
-          ELSE IF (part_xyz .GE. z_max_local_part) THEN
-            zbd=+1
-          ENDIF
-		  IF (ABS(xbd)+ABS(ybd)+ABS(zbd) .GT. 0_isp) THEN  
-            !$OMP CRITICAL
-			out_dir(xbd,ybd,zbd)=out_dir(xbd,ybd,zbd)+1_isp
-            !$OMP END CRITICAL
-          ENDIF 
-        END DO
-      END DO 
-    END DO
-  END DO
-  !$OMP END PARALLEL DO 
-  nbuff=MAXVAL(out_dir)
-  DEALLOCATE(out_dir)
-  ALLOCATE(sendbuf(-1:1, -1:1, -1:1, 1:nbuff*nvar))
+  ! ALLOCATE and init sendbuf attributes for particle exchanges
+  ALLOCATE(sendbuf(-1:1,-1:1,-1:1))
+  DO iz=-1,1
+    DO iy=-1,1
+      DO ix=-1,1
+        sendbuf(ix,iy,iz)%ibuff=1_idp
+        sendbuf(ix,iy,iz)%nbuff=1_idp
+        ALLOCATE(sendbuf(ix,iy,iz)%buff_arr(sendbuf(ix,iy,iz)%nbuff))
+      ENDDO
+    ENDDO
+  ENDDO 
+  ! - LOOP ON TILES 
   DO iztile=1, ntilez!LOOP ON TILES
     DO iytile=1, ntiley
       DO ixtile=1, ntilex
@@ -1330,16 +1294,23 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
             ! Particle has left processor, send it to its neighbour
             mask(i)=.FALSE.
             nout=nout+1
-            ibuff=nptoexch(xbd, ybd, zbd)*nvar+1
-            sendbuf(xbd, ybd, zbd, ibuff)    = curr%part_x(i)
-            sendbuf(xbd, ybd, zbd, ibuff+1)  = curr%part_y(i)
-            sendbuf(xbd, ybd, zbd, ibuff+2)  = curr%part_z(i)
-            sendbuf(xbd, ybd, zbd, ibuff+3)  = curr%part_ux(i)
-            sendbuf(xbd, ybd, zbd, ibuff+4)  = curr%part_uy(i)
-            sendbuf(xbd, ybd, zbd, ibuff+5)  = curr%part_uz(i)
-            sendbuf(xbd, ybd, zbd, ibuff+6)  = curr%part_gaminv(i)
-            sendbuf(xbd, ybd, zbd, ibuff+7:ibuff+6+npid)  = curr%pid(i, 1:npid)
+            ibuff=sendbuf(xbd, ybd, zbd)%ibuff
+            IF (ibuff+nvar .GT. sendbuf(xbd, ybd, zbd)%nbuff) THEN
+                nold = sendbuf(xbd, ybd, zbd)%nbuff
+                nnew = 2_idp*nvar*(sendbuf(xbd, ybd, zbd)%nbuff+1_idp) ! ARRAY LIST TYPE
+				CALL resize_1D_array_real(sendbuf(xbd, ybd, zbd)%buff_arr, nold, nnew)
+				sendbuf(xbd, ybd, zbd)%nbuff=nnew
+            ENDIF 
+            sendbuf(xbd, ybd, zbd)%buff_arr(ibuff)    = curr%part_x(i)
+            sendbuf(xbd, ybd, zbd)%buff_arr(ibuff+1)  = curr%part_y(i)
+            sendbuf(xbd, ybd, zbd)%buff_arr(ibuff+2)  = curr%part_z(i)
+            sendbuf(xbd, ybd, zbd)%buff_arr(ibuff+3)  = curr%part_ux(i)
+            sendbuf(xbd, ybd, zbd)%buff_arr(ibuff+4)  = curr%part_uy(i)
+            sendbuf(xbd, ybd, zbd)%buff_arr(ibuff+5)  = curr%part_uz(i)
+            sendbuf(xbd, ybd, zbd)%buff_arr(ibuff+6)  = curr%part_gaminv(i)
+            sendbuf(xbd, ybd, zbd)%buff_arr(ibuff+7:ibuff+6+npid)  = curr%pid(i, 1:npid)
             nptoexch(xbd, ybd, zbd) = nptoexch(xbd, ybd, zbd)+1
+            sendbuf(xbd, ybd, zbd)%ibuff  = nptoexch(xbd, ybd, zbd)*nvar+1
           ENDIF
         ENDDO!END LOOP ON PARTICLES
         ! Remove outbound particles from current tile
@@ -1368,8 +1339,8 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
         CALL MPI_SENDRECV(nsend_buf, 1_isp, MPI_INTEGER, dest, tag, nrecv_buf, 1_isp, &
         MPI_INTEGER, src, tag, comm, status, errcode)
         ALLOCATE(recvbuf(1:nrecv_buf))
-        CALL MPI_SENDRECV(sendbuf(ix, iy, iz, 1:nsend_buf), nsend_buf, mpidbl, dest,  &
-        tag, recvbuf, nrecv_buf, mpidbl, src, tag, comm, status, errcode)
+        CALL MPI_SENDRECV(sendbuf(ix, iy, iz)%buff_arr(1:nsend_buf), nsend_buf,       & 
+        mpidbl, dest, tag, recvbuf, nrecv_buf, mpidbl, src, tag, comm, status, errcode)
         ! Add received particles to particle arrays
         DO i =1, nrecv_buf, nvar
           CALL add_particle_to_species(currsp, recvbuf(i), recvbuf(i+1),              &
@@ -1380,6 +1351,14 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
       ENDDO
     ENDDO
   ENDDO
+  ! DEALLOCATE sendbuf and its attributes 
+  DO iz=-1,1
+    DO iy=-1,1
+      DO ix=-1,1
+        DEALLOCATE(sendbuf(ix,iy,iz)%buff_arr)
+      ENDDO
+    ENDDO
+  ENDDO 
   DEALLOCATE(sendbuf)
 END DO! End loop on species
 END SUBROUTINE particle_bcs_mpi_blocking
@@ -1401,10 +1380,11 @@ END SUBROUTINE particle_bcs_mpi_blocking
 ! ________________________________________________________________________________________
 SUBROUTINE particle_bcs_mpi_non_blocking
 USE mpi
+USE buff_exchange_part
 IMPLICIT NONE
 INTEGER(isp) :: nvar! Simple implementation
 INTEGER(isp), DIMENSION(-1:1, -1:1, -1:1) :: nptoexch
-REAL(num), ALLOCATABLE, DIMENSION(:, :, :, :) :: sendbuff, recvbuff
+TYPE(buff_part), ALLOCATABLE, DIMENSION(:, :, :)    :: sendbuff, recvbuff
 LOGICAL(lp)  :: remove_from_sim
 INTEGER(isp) :: ibuff, nbuff
 INTEGER(isp) :: xbd, ybd, zbd
@@ -1412,7 +1392,7 @@ INTEGER(isp) :: mpitag, count
 INTEGER(idp), ALLOCATABLE, DIMENSION(:, :, :, :) :: npart_recv, npart_send
 INTEGER(isp) :: dest, src, ireq
 INTEGER(isp), DIMENSION(:), ALLOCATABLE :: requests
-INTEGER(idp) :: ispecies, i, ix, iy, iz, npcurr, ipart
+INTEGER(idp) :: ispecies, i, ix, iy, iz, npcurr, ipart, nold, nnew
 INTEGER(idp) :: ixtile, iytile, iztile, ispec, nmax
 REAL(num) :: part_xyz
 TYPE(particle_species), POINTER :: currsp
@@ -1442,26 +1422,20 @@ DO iz = -1, 1
   END DO
 END DO
 
+! ----- ALLOCATE/INIT SEND BUFFER
+ALLOCATE(sendbuff(-1:1,-1:1,-1:1))
+DO iz=-1,1
+  DO iy=-1,1
+    DO ix=-1,1
+      sendbuff(ix,iy,iz)%ibuff=1_idp
+      sendbuff(ix,iy,iz)%nbuff=1_idp
+      ALLOCATE(sendbuff(ix,iy,iz)%buff_arr(sendbuff(ix,iy,iz)%nbuff))
+    ENDDO
+  ENDDO
+ENDDO 
 
-! GET NUMBER OF PARTICLES AT BORDER OF CURRENT DOMAIN (INIT SEND BUFFER)
-nbuff=0
-DO ispecies=1, nspecies
-  currsp => species_parray(ispecies)
-  DO iztile=1, ntilez!LOOP ON TILES
-    DO iytile=1, ntiley
-      DO ixtile=1, ntilex
-        curr=>currsp%array_of_tiles(ixtile, iytile, iztile)
-        IF (.NOT. curr%subdomain_bound) CYCLE
-        nbuff=nbuff+ curr%np_tile(1)
-      END DO
-    END DO
-  END DO
-END DO
-
-ALLOCATE(sendbuff(1:nbuff*nvar, -1:1, -1:1, -1:1))
-! PUT PARTICLES TO BE SENT IN BUFFER
+! ----- PUT PARTICLES TO BE SENT IN SENDBUFF BUFFER
 nptoexch=0
-
 DO ispecies=1, nspecies!LOOP ON SPECIES
   ! Init send recv buffers
   currsp => species_parray(ispecies)
@@ -1672,18 +1646,26 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
           IF (ABS(xbd) + ABS(ybd) + ABS(zbd) .GT. 0) THEN
             ! Particle has left processor, send it to its neighbour
             IF (.NOT. remove_from_sim) THEN
-              ibuff=nptoexch(xbd, ybd, zbd)*nvar+1
-              sendbuff(ibuff, xbd, ybd, zbd)    = curr%part_x(i)
-              sendbuff(ibuff+1, xbd, ybd, zbd)  = curr%part_y(i)
-              sendbuff(ibuff+2, xbd, ybd, zbd)  = curr%part_z(i)
-              sendbuff(ibuff+3, xbd, ybd, zbd)  = curr%part_ux(i)
-              sendbuff(ibuff+4, xbd, ybd, zbd)  = curr%part_uy(i)
-              sendbuff(ibuff+5, xbd, ybd, zbd)  = curr%part_uz(i)
-              sendbuff(ibuff+6, xbd, ybd, zbd)  = curr%part_gaminv(i)
-              sendbuff(ibuff+7:ibuff+6+npid, xbd, ybd, zbd)  = curr%pid(i, 1:npid)
+              !ibuff=nptoexch(xbd, ybd, zbd)*nvar+1
+              ibuff=sendbuff(xbd, ybd, zbd)%ibuff
+              IF (ibuff+nvar .GT. sendbuff(xbd, ybd, zbd)%nbuff) THEN
+                nold = sendbuff(xbd, ybd, zbd)%nbuff
+                nnew = 2_idp*nvar*(sendbuff(xbd, ybd, zbd)%nbuff+1_idp) ! ARRAY LIST TYPE
+				CALL resize_1D_array_real(sendbuff(xbd, ybd, zbd)%buff_arr, nold, nnew)
+				sendbuff(xbd, ybd, zbd)%nbuff=nnew
+              ENDIF 
+              sendbuff(xbd, ybd, zbd)%buff_arr(ibuff)    = curr%part_x(i)
+              sendbuff(xbd, ybd, zbd)%buff_arr(ibuff+1)   = curr%part_y(i)
+              sendbuff(xbd, ybd, zbd)%buff_arr(ibuff+2)   = curr%part_z(i)
+              sendbuff(xbd, ybd, zbd)%buff_arr(ibuff+3)  = curr%part_ux(i)
+              sendbuff(xbd, ybd, zbd)%buff_arr(ibuff+4)  = curr%part_uy(i)
+              sendbuff(xbd, ybd, zbd)%buff_arr(ibuff+5)  = curr%part_uz(i)
+              sendbuff(xbd, ybd, zbd)%buff_arr(ibuff+6)  = curr%part_gaminv(i)
+              sendbuff(xbd, ybd, zbd)%buff_arr(ibuff+7:ibuff+6+npid) = curr%pid(i, 1:npid)
               npart_send(ispecies, xbd, ybd, zbd)=npart_send(ispecies, xbd, ybd,      &
               zbd)+1
               nptoexch(xbd, ybd, zbd) = nptoexch(xbd, ybd, zbd)+1
+              sendbuff(xbd, ybd, zbd)%ibuff  = nptoexch(xbd, ybd, zbd)*nvar+1
               ! Remove particle of current species from current tile
             ENDIF
             CALL rm_particles_from_species(currsp, ixtile, iytile, iztile, i)
@@ -1713,9 +1695,19 @@ CALL MPI_WAITALL(ireq-1_isp, requests, MPI_STATUSES_IGNORE, errcode)
 requests=0_isp
 ireq=1
 
+! ----- ALLOCATION OF RECV BUFFER 
+ALLOCATE(recvbuff(-1:1,-1:1,-1:1))
+DO iz = -1, 1
+  DO iy = -1, 1
+    DO ix = -1, 1
+      recvbuff(ix,iy,iz)%ibuff=1_idp
+      recvbuff(ix,iy,iz)%nbuff=SUM(npart_recv(:, ix, iy, iz))*nvar
+      ALLOCATE(recvbuff(ix,iy,iz)%buff_arr(recvbuff(ix,iy,iz)%nbuff))
+    END DO
+  END DO
+END DO
+
 ! ----- POST IRECV FOR PARTICLE DATA
-nmax=nvar*MAXVAL(SUM(npart_recv, 1))
-ALLOCATE(recvbuff(nmax, -1:1, -1:1, -1:1))
 DO iz = -1, 1
   DO iy = -1, 1
     DO ix = -1, 1
@@ -1723,8 +1715,8 @@ DO iz = -1, 1
       IF (ABS(ix) + ABS(iy) + ABS(iz) .EQ. 0) CYCLE
       IF (count .GT. 0) THEN
         src = INT(neighbour(ix, iy, iz), isp)
-        CALL MPI_IRECV(recvbuff(1:count, ix, iy, iz), count, MPI_DOUBLE_PRECISION,    &
-        src, MPI_ANY_TAG, comm, requests(ireq), errcode)
+        CALL MPI_IRECV(recvbuff(ix, iy, iz)%buff_arr(1:count), count,                  &
+        MPI_DOUBLE_PRECISION, src, MPI_ANY_TAG, comm, requests(ireq), errcode)
         ireq=ireq+1
       ENDIF
     END DO
@@ -1739,8 +1731,8 @@ DO iz = -1, 1
       IF (ABS(ix) + ABS(iy) + ABS(iz) .EQ. 0) CYCLE
       IF (count .GT. 0) THEN
         dest = INT(neighbour(ix, iy, iz), isp)
-        CALL MPI_ISEND(sendbuff(1:count, ix, iy, iz), count, MPI_DOUBLE_PRECISION,    &
-        dest, mpitag, comm, requests(ireq), errcode)
+        CALL MPI_ISEND(sendbuff(ix, iy, iz)%buff_arr(1:count), count,                  & 
+        MPI_DOUBLE_PRECISION, dest, mpitag, comm, requests(ireq), errcode)
         ireq=ireq+1
       ENDIF
     END DO
@@ -1763,11 +1755,15 @@ DO iz = -1, 1
         currsp=> species_parray(ispecies)
         DO ipart=1, nvar*npart_recv(ispecies, ix, iy, iz), nvar
           ibuff=ispec+ipart
-          CALL add_particle_to_species(currsp, recvbuff(ibuff, ix, iy, iz),           &
-          recvbuff(ibuff+1, ix, iy, iz), recvbuff(ibuff+2, ix, iy, iz),               &
-          recvbuff(ibuff+3, ix, iy, iz), recvbuff(ibuff+4, ix, iy, iz),               &
-          recvbuff(ibuff+5, ix, iy, iz), recvbuff(ibuff+6, ix, iy, iz),               &
-          recvbuff(ibuff+7:ibuff+6+npid, ix, iy, iz))
+          CALL add_particle_to_species(currsp,                  & 
+          recvbuff(ix, iy, iz)%buff_arr(ibuff),                 &
+          recvbuff(ix, iy, iz)%buff_arr(ibuff+1),               & 
+          recvbuff(ix, iy, iz)%buff_arr(ibuff+2),               &
+          recvbuff(ix, iy, iz)%buff_arr(ibuff+2),               & 
+          recvbuff(ix, iy, iz)%buff_arr(ibuff+4),               &
+          recvbuff(ix, iy, iz)%buff_arr(ibuff+5),               & 
+          recvbuff(ix, iy, iz)%buff_arr(ibuff+6),               &
+          recvbuff(ix, iy, iz)%buff_arr(ibuff+7:ibuff+6+npid))
         END DO
         ispec=ispec+nvar*npart_recv(ispecies, ix, iy, iz)
       END DO
@@ -1775,8 +1771,17 @@ DO iz = -1, 1
   END DO
 END DO
 
+! ----- DEALLOCATE SENDBUFF/RECVBUFF
+DO iz=-1,1
+  DO iy=-1,1
+    DO ix=-1,1
+      DEALLOCATE(sendbuff(ix,iy,iz)%buff_arr,recvbuff(ix,iy,iz)%buff_arr)
+      ENDDO
+  ENDDO
+ENDDO 
+DEALLOCATE(sendbuff,recvbuff)
 
-DEALLOCATE(sendbuff, recvbuff, npart_send, npart_recv, requests)
+DEALLOCATE(npart_send, npart_recv, requests)
 END SUBROUTINE particle_bcs_mpi_non_blocking
 
 ! ________________________________________________________________________________________

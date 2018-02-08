@@ -430,6 +430,18 @@ MODULE particle_tilemodule!#do not parse
 END MODULE particle_tilemodule
 
 ! ________________________________________________________________________________________
+!> Module used for particle exchanges in MPI routines
+! ________________________________________________________________________________________
+MODULE buff_exchange_part!#do not parse
+USE constants 
+  TYPE buff_part
+    INTEGER(idp) :: nbuff ! % curent size of buffer array
+    INTEGER(idp) :: ibuff ! % curent position in buffer array
+    REAL(num), DIMENSION(:), ALLOCATABLE  :: buff_arr
+  END TYPE buff_part
+END MODULE buff_exchange_part
+
+! ________________________________________________________________________________________
 !> Module defining particle_antenna type
 ! ________________________________________________________________________________________
 MODULE antenna!#do not parse
