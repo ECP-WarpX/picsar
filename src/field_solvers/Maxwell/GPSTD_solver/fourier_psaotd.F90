@@ -23,10 +23,9 @@
 !
 ! Purpose:
 ! This file contains subroutines for:
-! (i)  Fourier init (allocation and init of Fourier k-vectors,
-! creation of planes for FFTW etc.),
+! (i)  fftw init plans   
 ! (ii) Forward/Backward Fourier transform of EM fields using,
-! FFTW (Distributed/Shared version),
+! FFTW (Distributed/Shared version) or P3DFFT
 ! (iii) Maxwell push in the spectral space using the Pseudo-Spectral Arbitrary Order
 ! Analytical Time Domain (PSAOTD) Maxwell solver.
 !
@@ -71,12 +70,27 @@ MODULE fourier_psaotd
     INTEGER(idp)        :: i
     INTEGER(isp)        :: planner_flag_1, planner_flag_2
     nopenmp_cint=nopenmp
-    IF(g_spectral) THEN
-      exf => vold(nmatrixes)%block_vector(1)%block3dc
-    ENDIF
+
     IF  (fftw_threads_ok) THEN
       CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
     ENDIF
+
+    !> If fftw_mpi_transpose then use FFTW_MPI_TRANSPOSED_OUT/IN plans
+    !> fftw_mpi_transpose avoids spurious mpi_alltoall call for each
+    !> fftw_mpi_exec call. (initially fftw_mpi_exec call mpi_alltoall two
+    !> times to perform global data transposition along y and z axis back and
+    !> forth)
+    !> The second mpi_alltoall is ommited when using fftw_mpi_transpose.
+    !> Hence fftw_mpi_exec is faster when using transposed plans
+    !> But the user should keep in mind that fourier fields are not transposed
+    !> back to have the same sizes as real fields since z and y axis are now
+    !> switched.
+
+    !> Block matrixes are also transposed conveniently  during init_gpstd when
+    !> using transposed plans
+    !> A similar optimization is possible when using p3dfft (p3dfft_stride =
+    !.TRUE.) but z and x axis are then transposed 
+
     IF(fftw_mpi_transpose) THEN
       planner_flag_1 = IOR(FFTW_MEASURE,FFTW_MPI_TRANSPOSED_OUT)
       planner_flag_2 = IOR(FFTW_MEASURE,FFTW_MPI_TRANSPOSED_IN)
@@ -99,7 +113,7 @@ MODULE fourier_psaotd
         plan_c2r_mpi = fftw_mpi_plan_dft_c2r_2d(nz_cint,nx_cint, exf,ex_r,   &
         comm, planner_flag_2)
       ENDIF
-    ELSE
+    ELSE 
       nz_cint = nz_group
       ny_cint = ny_group
       nx_cint = nx_group
@@ -270,7 +284,7 @@ MODULE fourier_psaotd
  !> and without MPI groups 
  !> N.B: this routine is deprecated and will be integrally replaced by get_Ffields_mpi_lb 
  !> in the future 
- !> 
+ !>  
  !> @author
  !> Henri Vincenti
  !
@@ -976,14 +990,29 @@ MODULE fourier_psaotd
       nfftz=nz+2*nzguards
 #endif
     ENDIF
+    !> Init matrix blocks for psatd
     CALL init_gpstd()
+
+    !> If g_spectral == .TRUE. then exf is not initialized in mpi_routine.F90
+    !> Instead, vector blocks structures are used to store fourier fields
+    !> and multiply_mat_vector(GPSTD.F90) is used to push fields in Fourier
+    !> space 
+    !> exf only points to vold(nmatrixes)%block_vector(1)%block3dc to initialize
+    !> fftw plans
+    !> If g_spectral == .FALSE. then exf is already allocated 
+
     IF(g_spectral) THEN
       exf => vold(nmatrixes)%block_vector(1)%block3dc
     ENDIF      
+    !> Init fftw plans if used
+    !> NB: if p3dfft is used, then the init is performed in mpi_routines during
+    !> p3dfft_setup
     IF(.NOT. p3dfft_flag ) THEN
       IF(rank==0) WRITE(0, *) 'INIT GPSTD MATRIX DONE'
+      !> if fftw_with_mpi perform fftw_init_plans in the following routine
       IF (fftw_with_mpi) THEN
         CALL init_plans_fourier_mpi(nopenmp)
+      !> If local psatd, plans are initialized here
       ELSE IF(.NOT. fftw_with_mpi) THEN
         IF(c_dim ==3) THEN
           CALL fast_fftw_create_plan_r2c_3d_dft(nopenmp, nfftx, nffty, nfftz,ex_r, exf,  &
