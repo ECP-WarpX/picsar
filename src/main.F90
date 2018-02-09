@@ -32,12 +32,13 @@
 !
 ! INCLUDES:
 ! - Arbitrary order field solver (Maxwell.F90)
-! - High order current deposition/field gathering routines (current_deposition.F90, field_gathering.F90)
+! - High order current deposition/field gathering routines (current_deposition.F90, 
+! - field_gathering.F90)
 ! - MPI-domain decomposition (mpi_subtype_control.F90, mpi_routines.F90, boundary.F90)
 ! - Tiling of particles for better memory locality (tiling.F90)
-! - OpenMP Hybrid Parallelization (current_deposition.F90, field_gathering.F90, particle_push.F90, Maxwell.F90)
+! - OpenMP Hybrid Parallelization (current_deposition.F90, field_gathering.F90, 
+! - particle_push.F90, Maxwell.F90)
 ! - MPI-IO outputs
-
 ! ________________________________________________________________________________________
 
 
@@ -51,6 +52,7 @@ PROGRAM main
   USE control_file
   USE time_stat
   USE diagnostics
+  USE mem_status, ONLY : global_grid_mem, global_grid_tiles_mem, global_part_tiles_mem
 #if defined(FFTW)
   USE mpi_fftw3
   USE fourier
@@ -157,7 +159,7 @@ PROGRAM main
   								avetimes(12), avetimes(13), avetimes(9),              &
   								avetimes(18), avetimes(19), avetimes(20)
   	! Total memory used in the case 
-  	WRITE(str7,'(15(E12.5))') global_grid_mem, global_grid_tiles_mem ,                &
+  	WRITE(str7,'(15(E12.5))') global_grid_mem, global_grid_tiles_mem,                 &
   	global_part_tiles_mem 
 
   	! All time are put in the file on a single line
