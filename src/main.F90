@@ -70,7 +70,7 @@ PROGRAM main
   IMPLICIT NONE
   LOGICAL :: exist
   CHARACTER(len=250) :: str1, str2, str3
-  CHARACTER(len=250) :: str4, str5, str6
+  CHARACTER(len=250) :: str4, str5, str6, str7
 ! Intel Design Forward project
 #if defined(DFP)
   CALL DFP_INIT_START
@@ -128,7 +128,8 @@ PROGRAM main
   CALL step(nsteps)
 
   IF (rank .EQ. 0) endsim=MPI_WTIME()
-  IF (rank .EQ. 0) WRITE(0,*)  "Total runtime on ",nproc," CPUS =", endsim-startsim,"CPU AVERG TIME PER IT",(endsim-startsim)/nsteps
+  IF (rank .EQ. 0) WRITE(0,*)  "Total runtime on ",nproc," CPUS =",                   &
+  endsim-startsim,"CPU AVERG TIME PER IT",(endsim-startsim)/nsteps
 
 
   ! Time statistics for the different processes of the PIC step
@@ -137,10 +138,10 @@ PROGRAM main
   IF (rank .EQ. 0) THEN 
 	  INQUIRE(file="output_statistics_gb.out", exist=exist)
   	IF (exist) THEN 
-  		OPEN (unit=12,file="output_statistics_gb.out", &
+  		OPEN (unit=12,file="output_statistics.out", &
   		action="write",position="append", status="old")
   	ELSE
-  		OPEN (unit=12,file="output_statistics_gb.out",  &
+  		OPEN (unit=12,file="output_statistics.out",  &
   		  action="write",status="new")
   	ENDIF 
   	WRITE(str1,*) nx_global; WRITE(str2,*) ny_global
@@ -148,16 +149,22 @@ PROGRAM main
   	! total simulation time
   	WRITE(str5,*) endsim-startsim
   	! Average time spent in different steps of the PIC loop
-  	WRITE(str6,'(15(E12.5))') avetimes(1),avetimes(2),avetimes(11), &
-  								avetimes(3),avetimes(4),avetimes(5), &
-  								avetimes(6),avetimes(7),avetimes(8), &
-  								avetimes(9),avetimes(10),avetimes(12), &
-  								avetimes(13)  
+  	WRITE(str6,'(15(E12.5))') avetimes(1),avetimes(14),avetimes(2),avetimes(11),      &
+  								avetimes(3),avetimes(4),avetimes(5),                  &
+  								avetimes(6),avetimes(7),avetimes(21),                 &
+  								avetimes(22),avetimes(23),avetimes(24), avetimes(25), &
+  								avetimes(8),avetimes(10),                             &
+  								avetimes(12), avetimes(13), avetimes(9),              &
+  								avetimes(18), avetimes(19), avetimes(20)
+  	! Total memory used in the case 
+  	WRITE(str7,'(15(E12.5))') global_grid_mem, global_grid_tiles_mem ,                &
+  	global_part_tiles_mem 
 
   	! All time are put in the file on a single line
-  	WRITE(12, '(512A)')  trim(adjustl(str1))//" "//trim(adjustl(str2))//" "// &
-  				  trim(adjustl(str3))//" "//trim(adjustl(str4))//" "// &
-  				  trim(adjustl(str5))//" "//trim(adjustl(str6))
+  	WRITE(12, '(512A)')  trim(adjustl(str1))//" "//trim(adjustl(str2))//" "//         &
+  				  trim(adjustl(str3))//" "//trim(adjustl(str4))//" "//                &
+  				  trim(adjustl(str5))//" "//trim(adjustl(str6))//                     &
+  				  " "//trim(adjustl(str7))
   	CLOSE(12)
   ENDIF 
 
