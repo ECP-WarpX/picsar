@@ -371,6 +371,7 @@ MODULE control_file
         CALL GETARG(i+1, buffer)
         READ(buffer, *) nzguards
         nzjguards=nzguards
+#if defined(FFTW)
       ELSE IF (INDEX(buffer, 'nggroup_x') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) nxg_group
@@ -380,6 +381,7 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'nggroup_z') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) nzg_group
+#endif
 #if defined(FFTW)
       ELSE IF (INDEX(buffer, 'nb_group_z') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
