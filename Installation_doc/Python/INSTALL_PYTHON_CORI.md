@@ -103,7 +103,7 @@ To compile and test, invoke the rule "all":
 ```
 make -f Makefile_Forthon all
 ```
-Then `cd` into the directory `python_module` and run `python setup.py install --user`.
+Then `cd` into the directory `python_module` and run `python setup.py install --user` to install the PICSAR python library into your home. If you want to install it in a custom directory, use `python setup.py install --home path/to/my/directory` instead.
 
 
 ## **6. Python import**
