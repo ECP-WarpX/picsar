@@ -1104,11 +1104,7 @@ MODULE tiling
     IMPLICIT NONE
     REAL(num), DIMENSION(:), ALLOCATABLE, INTENT(IN OUT) :: arr
     REAL(num), DIMENSION(:), ALLOCATABLE :: temp
-    INTEGER(idp) :: old_size, new_size, ncheck
-
-    ! - Sanity check (If old/new dimensions are identical - Return)
-    ncheck = (old_size-new_size)
-    IF (ncheck .EQ. 0_idp) RETURN 
+    INTEGER(idp) :: old_size, new_size
 
     IF (ALLOCATED(arr)) THEN
       ! - Allocate temporary array for copying arr before its de-allocation/re-allocation
@@ -1144,13 +1140,9 @@ MODULE tiling
     IMPLICIT NONE
     REAL(num), DIMENSION(:, :), ALLOCATABLE, INTENT(IN OUT) :: arr
     INTEGER(idp), INTENT(IN) :: nx_old, ny_old, nx_new, ny_new
-    INTEGER(idp)            :: nx_temp, ny_temp, ncheck
+    INTEGER(idp)            :: nx_temp, ny_temp
     REAL(num), DIMENSION(:, :), ALLOCATABLE :: temp
 
-    ! - Sanity check (If old/new dimensions are identical - Return)
-    ncheck = (nx_new-nx_old)+(ny_new-ny_old)
-    IF (ncheck .EQ. 0_idp) RETURN
- 
     IF (ALLOCATED(arr)) THEN 
       ! - Allocate temporary array for copying arr before its de-allocation/re-allocation
       ALLOCATE(temp(1:nx_new, 1:ny_new))
@@ -1192,13 +1184,9 @@ MODULE tiling
     IMPLICIT NONE
     REAL(num), DIMENSION(:, :, :), ALLOCATABLE, INTENT(IN OUT) :: arr
     INTEGER(idp), INTENT(IN) :: nx_old, ny_old, nz_old, nx_new, ny_new, nz_new
-    INTEGER(idp)            :: nx_temp, ny_temp, nz_temp, ncheck
+    INTEGER(idp)            :: nx_temp, ny_temp, nz_temp
     REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: temp
  
-    ! - Sanity check (If old/new dimensions are identical - Return)
-    ncheck = (nx_new-nx_old)+(ny_new-ny_old)+(nz_new-nz_old)
-    IF (ncheck .EQ. 0_idp) RETURN 
-    
     IF (ALLOCATED(arr)) THEN 
       ! - Allocate temporary array for copying arr before its de-allocation/re-allocation
       ALLOCATE(temp(1:nx_new, 1:ny_new, 1:nz_new))
