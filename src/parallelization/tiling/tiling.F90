@@ -1106,23 +1106,18 @@ MODULE tiling
     REAL(num), DIMENSION(:), ALLOCATABLE :: temp
     INTEGER(idp) :: old_size, new_size
 
-    IF (ALLOCATED(arr)) THEN
-      ! - Allocate temporary array for copying arr before its de-allocation/re-allocation
-      ALLOCATE(temp(1:new_size))
-      ! reshape array
-      IF (new_size .GT. old_size) THEN
-        temp(1:old_size)=arr(1:old_size)
-      ELSE
-        temp(1:new_size)=arr(1:new_size)
-      ENDIF
-      DEALLOCATE(arr)
-      ALLOCATE(arr(1:new_size))
-      arr=temp
-      DEALLOCATE(temp)
+    ! - Allocate temporary array for copying arr before its de-allocation/re-allocation
+    ALLOCATE(temp(1:new_size))
+    ! reshape array
+    IF (new_size .GT. old_size) THEN
+	  temp(1:old_size)=arr(1:old_size)
     ELSE
-	  ! - Just allocate array arr without copying its old values 
-      ALLOCATE(arr(1:new_size))
+	  temp(1:new_size)=arr(1:new_size)
     ENDIF
+    DEALLOCATE(arr)
+    ALLOCATE(arr(1:new_size))
+    arr=temp
+    DEALLOCATE(temp)
   END SUBROUTINE resize_1D_array_real
 
   ! ______________________________________________________________________________________
@@ -1143,29 +1138,24 @@ MODULE tiling
     INTEGER(idp)            :: nx_temp, ny_temp
     REAL(num), DIMENSION(:, :), ALLOCATABLE :: temp
 
-    IF (ALLOCATED(arr)) THEN 
-      ! - Allocate temporary array for copying arr before its de-allocation/re-allocation
-      ALLOCATE(temp(1:nx_new, 1:ny_new))
-      ! reshape array
-      IF (nx_new .GT. nx_old) THEN
-        nx_temp=nx_old
-      ELSE
-        nx_temp=nx_new
-      ENDIF
-      IF (ny_new .GT. ny_old) THEN
-        ny_temp=ny_old
-      ELSE
-        ny_temp=ny_new
-      ENDIF
-      temp(1:nx_temp, 1:ny_temp)= arr(1:nx_temp, 1:ny_temp)
-      DEALLOCATE(arr)
-      ALLOCATE(arr(1:nx_new, 1:ny_new))
-      arr=temp
-      DEALLOCATE(temp)
-    ELSE 
-	  ! - Just allocate array arr without copying its old values 
-      ALLOCATE(arr(1:nx_new, 1:ny_new))    
-    ENDIF 
+    ! - Allocate temporary array for copying arr before its de-allocation/re-allocation
+    ALLOCATE(temp(1:nx_new, 1:ny_new))
+    ! reshape array
+    IF (nx_new .GT. nx_old) THEN
+	  nx_temp=nx_old
+    ELSE
+	  nx_temp=nx_new
+    ENDIF
+    IF (ny_new .GT. ny_old) THEN
+	  ny_temp=ny_old
+    ELSE
+	  ny_temp=ny_new
+    ENDIF
+    temp(1:nx_temp, 1:ny_temp)= arr(1:nx_temp, 1:ny_temp)
+    DEALLOCATE(arr)
+    ALLOCATE(arr(1:nx_new, 1:ny_new))
+    arr=temp
+    DEALLOCATE(temp)
   END SUBROUTINE resize_2D_array_real
 
   ! ______________________________________________________________________________________
@@ -1187,35 +1177,29 @@ MODULE tiling
     INTEGER(idp)            :: nx_temp, ny_temp, nz_temp
     REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: temp
  
-    IF (ALLOCATED(arr)) THEN 
-      ! - Allocate temporary array for copying arr before its de-allocation/re-allocation
-      ALLOCATE(temp(1:nx_new, 1:ny_new, 1:nz_new))
-      ! reshape array
-      IF (nx_new .GT. nx_old) THEN
-        nx_temp=nx_old
-      ELSE
-        nx_temp=nx_new
-      ENDIF
-      IF (ny_new .GT. ny_old) THEN
-        ny_temp=ny_old
-      ELSE
-        ny_temp=ny_new
-      ENDIF
-      IF (nz_new .GT. nz_old) THEN
-        nz_temp=nz_old
-      ELSE
-        nz_temp=nz_new
-      ENDIF
-      temp(1:nx_temp, 1:ny_temp, 1:nz_temp)= arr(1:nx_temp, 1:ny_temp, 1:nz_temp)
-      DEALLOCATE(arr)
-
-      ALLOCATE(arr(1:nx_new, 1:ny_new, 1:nz_new))
-      arr=temp
-      DEALLOCATE(temp)
-    ELSE 
-	  ! - Just allocate array arr without copying its old values 
-      ALLOCATE(arr(1:nx_new, 1:ny_new, 1:nz_new))
+    ! - Allocate temporary array for copying arr before its de-allocation/re-allocation
+    ALLOCATE(temp(1:nx_new, 1:ny_new, 1:nz_new))
+    ! reshape array
+    IF (nx_new .GT. nx_old) THEN
+      nx_temp=nx_old
+    ELSE
+      nx_temp=nx_new
     ENDIF
+    IF (ny_new .GT. ny_old) THEN
+      ny_temp=ny_old
+    ELSE
+      ny_temp=ny_new
+    ENDIF
+    IF (nz_new .GT. nz_old) THEN
+      nz_temp=nz_old
+    ELSE
+      nz_temp=nz_new
+    ENDIF
+    temp(1:nx_temp, 1:ny_temp, 1:nz_temp)= arr(1:nx_temp, 1:ny_temp, 1:nz_temp)
+    DEALLOCATE(arr)
+    ALLOCATE(arr(1:nx_new, 1:ny_new, 1:nz_new))
+    arr=temp
+    DEALLOCATE(temp)
   END SUBROUTINE resize_3D_array_real
 
   ! ____________________________________________________________________________________
