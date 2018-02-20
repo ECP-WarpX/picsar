@@ -106,13 +106,26 @@ SUBROUTINE step(nst)
   IF (c_dim.eq.3) THEN
     rhoold=0.0_num
     rho = 0.0_num
+    IF(absorbing_bcs) THEN
+      exy = 0.5_num * ex
+      exz = 0.5_num * ex
+      eyx = 0.5_num * ey
+      eyz = 0.5_num * ey
+      ezx = 0.5_num * ez
+      ezy = 0.5_num * ez
+      bxy = 0.5_num * bx
+      bxz = 0.5_num * bx
+      byx = 0.5_num * by
+      byz = 0.5_num * by
+      bzx = 0.5_num * bz
+      bzy = 0.5_num * bz
+    ENDIF
     DO i=1, nst
       IF (rank .EQ. 0) startit=MPI_WTIME()
 
       !!! --- Init iteration variables
       pushtime=0._num
       divE_computed = .False.
-
       IF (l_plasma) THEN
         !!! --- Field gather & particle push
         !IF (rank .EQ. 0) PRINT *, "#1"
@@ -146,12 +159,58 @@ SUBROUTINE step(nst)
       ENDIF
 #if defined(FFTW)
       IF (l_spectral) THEN
+      !if(it==35 .AND. x_coords==0_idp) THEN
+      !        exy=0.0
+      !        exz=0.0
+      !        eyx=0.0
+      !        eyz=0.0
+      !        ezx=0.0
+      !        ezy=0.0
+      !        bxy=0.0
+      !        bxz=0.0
+      !        byx=0.0
+      !        byz=0.0
+      !        bzx=0.0
+      !        bzy=0.0
+      !  endif
+      !  if(it==35) THEN
+      !  call efield_bcs
+      !  call bfield_bcs
+      !  endif
+      !  if (it .GE. 35) THEN
+      !          jx=0
+      !          jy=0
+      !          jz=0
+      !          rho=0
+      !          rhoold=0
+      !  endif
+
+        IF(absorbing_bcs) THEN
+          CALL field_damping_bcs()
+          IF(.NOT. fftw_hybrid) THEN
+            CALL efield_bcs 
+            CALL bfield_bcs
+          ENDIF
+        ENDIF
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
         CALL push_psatd_ebfield_3d
+        IF(absorbing_bcs) THEN
+          CALL field_damping_bcs()
+        ENDIF
         !IF (rank .EQ. 0) PRINT *, "#0"
         !!! --- Boundary conditions for E AND B
         CALL efield_bcs
         CALL bfield_bcs
+        !IF (rank .EQ. 0) PRINT *, "#0"
+        !!! --- Boundary conditions for E AND B
+        IF (absorbing_bcs) THEN
+          ex = exy + exz
+          ey = eyx + eyz
+          ez = ezx + ezy
+          bx = bxy + bxz
+          by = byx + byz
+          bz = bzx + bzy
+        ENDIF
       ELSE
 #endif
         !IF (rank .EQ. 0) PRINT *, "#6"
@@ -232,12 +291,30 @@ SUBROUTINE step(nst)
 
 #if defined(FFTW)
       IF (l_spectral) THEN
+        IF(absorbing_bcs) THEN
+          CALL field_damping_bcs()
+          IF(.NOT. fftw_hybrid) THEN
+            CALL efield_bcs
+            CALL bfield_bcs
+          ENDIF
+        ENDIF
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
         CALL push_psatd_ebfield_2d
+        IF (absorbing_bcs) THEN
+          CALL field_damping_bcs()
+        ENDIF
         !IF (rank .EQ. 0) PRINT *, "#0"
         !!! --- Boundary conditions for E AND B
         CALL efield_bcs
         CALL bfield_bcs
+        IF(absorbing_bcs) THEN
+          ex = exy + exz
+          ey = eyx + eyz
+          ez = ezx + ezy
+          bx = bxy + bxz
+          by = byx + byz
+          bz = bzx + bzy
+        ENDIF
       ELSE
 #endif
         !IF (rank .EQ. 0) PRINT *, "#6"
@@ -307,6 +384,97 @@ SUBROUTINE step(nst)
   CALL final_output_time_statistics
 
 END SUBROUTINE step
+! ________________________________________________________________________________________
+!> @brief
+!> init pml arrays
+!
+!> @author
+!> Haithem Kallala
+!
+!> @date
+!> Creation 2018
+
+SUBROUTINE init_pml_arrays
+  USE fields
+  USE shared_data
+  USE constants  
+  USE params, ONLY : dt 
+
+  LOGICAL(lp)  :: is_intersection_x, is_intersection_y, is_intersection_z
+  INTEGER(idp) :: ix,iy,iz,ixx,iyy,izz,pow
+  REAL(num)    :: coeff,b_offset
+  
+  coeff = 0.050_num
+  b_offset =0.5_num
+  pow = 3_idp
+  ALLOCATE(sigma_x_e(0:nx-1,0:ny-1,0:nz-1)); sigma_x_e = 0.0_num
+  ALLOCATE(sigma_y_e(0:nx-1,0:ny-1,0:nz-1)); sigma_y_e = 0.0_num
+  ALLOCATE(sigma_z_e(0:nx-1,0:ny-1,0:nz-1)); sigma_z_e = 0.0_num
+  ALLOCATE(sigma_x_b(0:nx-1,0:ny-1,0:nz-1)); sigma_x_b = 0.0_num
+  ALLOCATE(sigma_y_b(0:nx-1,0:ny-1,0:nz-1)); sigma_y_b = 0.0_num
+  ALLOCATE(sigma_z_b(0:nx-1,0:ny-1,0:nz-1)); sigma_z_b = 0.0_num
+  DO iz = 0,nz-1
+    DO iy = 0,ny-1 
+      DO ix = cell_x_min(x_coords+1), nx_pml-1
+        ixx = ix - cell_x_min(x_coords+1)
+        sigma_x_e(ixx,iy,iz) =  coeff*clight/dx*(nx_pml-ix)**pow
+        sigma_x_b(ixx,iy,iz) =  coeff*clight/dx*(nx_pml - ix - b_offset)**pow
+
+      ENDDO
+    ENDDO
+  ENDDO
+  DO iz = 0, nz-1
+    DO iy = 0,ny-1
+      DO ix = cell_x_max(x_coords+1), nx_global-nx_pml,-1
+        ixx = ix - cell_x_min(x_coords+1)
+        sigma_x_e(ixx,iy,iz) = coeff*clight/dx *(ix-(nx_global-nx_pml)+1.0_num)**pow
+        sigma_x_b(ixx,iy,iz) = coeff*clight/dx *(ix-(nx_global-nx_pml)+1.0_num+b_offset)**pow
+      ENDDO
+    ENDDO
+  ENDDO
+  DO iz = 0,nz-1
+    DO iy = cell_y_min(y_coords+1), ny_pml-1
+      DO ix = 0,nx-1
+        iyy = iy - cell_y_min(y_coords+1)
+        sigma_y_e(ix,iyy,iz) =  coeff*clight/dy*(ny_pml-iy)**pow
+        sigma_y_b(ix,iyy,iz) =  coeff*clight/dy*(ny_pml - iy - b_offset)**pow
+      ENDDO
+    ENDDO
+  ENDDO
+  DO iz = 0, nz-1
+    DO iy = cell_y_max(y_coords+1), ny_global-ny_pml,-1
+      DO ix = 0,nx-1
+        iyy = iy - cell_z_min(y_coords+1)
+        sigma_y_e(ix,iyy,iz) = coeff*clight/dy*(iy-(ny_global-ny_pml)+1.0_num)**pow
+        sigma_y_b(ix,iyy,iz) = coeff*clight/dy*(iy-(ny_global-ny_pml)+1.0_num+b_offset)**pow
+      ENDDO
+    ENDDO
+  ENDDO
+  DO iz = cell_z_min(z_coords+1), nz_pml-1
+    DO iy = 0,ny-1
+      DO ix = 0,nx-1
+        izz = iz - cell_z_min(z_coords+1)
+        sigma_z_e(ix,iy,izz) =  coeff*clight/dz*(nz_pml-iz)**pow
+        sigma_z_b(ix,iy,izz) =  coeff*clight/dz*(nz_pml - iz - b_offset)**pow
+      ENDDO
+    ENDDO
+  ENDDO
+  DO iz = cell_z_max(z_coords+1), nz_global-nz_pml,-1
+    DO iy = 0, ny-1
+      DO ix = 0,nx-1
+        izz = iz - cell_z_min(z_coords+1)
+        sigma_z_e(ix,iy,izz) = coeff*clight/dz *(iz-(nz_global-nz_pml)+1.0_num)**2
+        sigma_z_b(ix,iy,izz) = coeff*clight/dz *(iz-(nz_global-nz_pml)+1.0_num+b_offset)**2
+      ENDDO
+    ENDDO
+  ENDDO
+  sigma_x_e = EXP(-sigma_x_e*dt/2.0_num)
+  sigma_y_e = EXP(-sigma_y_e*dt/2.0_num)
+  sigma_z_e = EXP(-sigma_z_e*dt/2.0_num)
+  sigma_x_b = EXP(-sigma_x_b*dt/2.0_num)
+  sigma_y_b = EXP(-sigma_y_b*dt/2.0_num)
+  sigma_z_b = EXP(-sigma_z_b*dt/2.0_num)
+END SUBROUTINE init_pml_arrays
 
 ! ________________________________________________________________________________________
 !> @brief
@@ -556,6 +724,9 @@ SUBROUTINE initall
   IF (rank .EQ. 0) write(0, *) "Creation of the particles: done"
 
   init_localtimes(1) = MPI_WTIME() - tdeb
+  IF(absorbing_bcs) THEN
+    CALL init_pml_arrays
+  ENDIF
 
 #if defined(FFTW)
   ! -Init Fourier

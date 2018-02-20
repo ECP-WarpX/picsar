@@ -120,7 +120,6 @@ PROGRAM main
    CALL DFP_INIT_STOP
 #endif
 
-
   !----------------------------------------------
   ! THIS IS THE PIC ALGORITHM TIME LOOP
   !----------------------------------------------

@@ -1488,11 +1488,17 @@ END SUBROUTINE get_2Dintersection
       ! -- area near the opposite edge of the domain
       ! - In that case, we have to take into account simulation domain boundaries
       ! in  MPI exchanges (periodic, reflective, PML etc.) 
-      index_ff = MODULO(iz2min,n_global)
-      index_fl = MODULO(iz2max,n_global)
-      size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + &
-      1_idp, 0_idp)
-      first_cell_send = MAX(index_rf,index_ff) - index_rf
+      IF(absorbing_bcs) THEN
+        size_to_exchange_send = 0_idp ! if absorbing_bcs then don't check
+                                      ! intersection outside the simulation
+                                      ! domain
+      ELSE IF(.NOT. absorbing_bcs) THEN
+        index_ff = MODULO(iz2min,n_global)
+        index_fl = MODULO(iz2max,n_global)
+        size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + &
+        1_idp, 0_idp)
+        first_cell_send = MAX(index_rf,index_ff) - index_rf
+      ENDIF
    !  -- The next two cases correspond to a global field partially lapping
    !  -- domain boundary ghost region
    !  -- In this case only a portion of global field indexes are flipped to the
@@ -1502,11 +1508,16 @@ END SUBROUTINE get_2Dintersection
 
    ELSE IF (select_case ==2) THEN
      ! -- First half intersection  
-      index_ff = MODULO(iz2min,n_global)
-      index_fl = n_global - 1_idp
-      size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + &
-      1_idp, 0_idp)
-      first_cell_send = MAX(index_rf,index_ff) - index_rf
+      IF(absorbing_bcs) THEN
+        size_to_exchange_send = 0_idp ! if absorbing bcs then don't check
+                                      ! intersection outside the simulation domain 
+      ELSE IF(.NOT. absorbing_bcs) THEN
+        index_ff = MODULO(iz2min,n_global)
+        index_fl = n_global - 1_idp
+        size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + &
+        1_idp, 0_idp)
+        first_cell_send = MAX(index_rf,index_ff) - index_rf
+      ENDIF
       ! -- If first half intersection returns 0 check if the rest of the global
       ! -- field intersects 
   
@@ -1518,21 +1529,26 @@ END SUBROUTINE get_2Dintersection
         1_idp, 0_idp)
         first_cell_send = MAX(index_rf,index_ff) - index_rf
       ENDIF
+
     ELSE IF (select_case == 3) THEN
-      index_ff = iz2min
-      index_fl = n_global - 1_idp
-        size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + &
-        1_idp, 0_idp)
-        first_cell_send = MAX(index_rf,index_ff) - index_rf
-      ! -- If first half intersection returns 0 check if the rest of the global
-      ! -- field intersects 
-      ! -- Second half intersection
-      IF (size_to_exchange_send .EQ. 0_idp) THEN
+      IF(absorbing_bcs) THEN
+        size_to_exchange_send = 0_idp 
+      ELSE IF(.NOT. absorbing_bcs) THEN  
         index_ff = 0_idp
         index_fl = MODULO(iz2max,n_global)
         size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + &
         1_idp, 0_idp)
-        first_cell_send = MAX(index_rf,index_ff) - index_rf 
+        first_cell_send = MAX(index_rf,index_ff) - index_rf
+      ENDIF
+      ! -- If first half intersection returns 0 check if the rest of the global
+      ! -- field intersects 
+      ! -- Second half intersection
+      IF (size_to_exchange_send .EQ. 0_idp) THEN
+        index_ff = iz2min
+        index_fl = n_global - 1_idp
+        size_to_exchange_send = MAX(MIN(index_rl,index_fl) -MAX(index_rf,index_ff) + &
+        1_idp, 0_idp)
+        first_cell_send = MAX(index_rf,index_ff) - index_rf
       ENDIF
     ENDIF
     ! -- first cell send need to be set to a value contained in lower_b and
@@ -1629,20 +1645,32 @@ SUBROUTINE compute_send_recv_sizes_and_index_g2l_copies                         
        1_idp,0_idp)
       first_cell_recv = MAX(index_ff,index_rf) - index_ff + 1
     ELSE IF(select_case == 1_idp) THEN
-      index_ff = MODULO(iz1min,n_global) ! This treats the case of periodic bc 
-      index_fl = MODULO(iz1max,n_global) ! This treats the case of periodic bc
-      size_to_exchange_recv = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) +   &
-      1_idp,0_idp) ! - Yields 0 if no intersection 
-      first_cell_recv = MAX(index_ff,index_rf) - index_ff + 1 
+      IF(absorbing_bcs) THEN
+        size_to_exchange_recv = 0_idp ! if absorbing bcs then don't check
+                                      ! intersection outside the simulation
+                                      ! domain
+      ELSE IF(.NOT. absorbing_bcs) THEN
+        index_ff = MODULO(iz1min,n_global) ! This treats the case of periodic bc 
+        index_fl = MODULO(iz1max,n_global) ! This treats the case of periodic bc
+        size_to_exchange_recv = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) +   &
+        1_idp,0_idp) ! - Yields 0 if no intersection 
+        first_cell_recv = MAX(index_ff,index_rf) - index_ff + 1 
+      ENDIF
     ELSE IF(select_case == 2) THEN
+      IF(absorbing_bcs) THEN
+        size_to_exchange_recv = 0_idp  ! if absorbing bcs then don't check
+                                       ! intersection outside the simulation
+                                       ! domain
+      ELSE IF(.NOT. absorbing_bcs) THEN 
       ! - First compute intersection of part outside the simulation domain 
-      index_ff = MODULO(iz1min,n_global) ! - This assume periodic bc 
-      index_fl = n_global - 1_idp        ! - This assume periodic bc 
-      size_to_exchange_recv = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) +   &
-      1_idp,0_idp) !- Yields 0 if no intersection 
-      first_cell_recv = MAX(index_ff,index_rf) - index_ff + 1 
+        index_ff = MODULO(iz1min,n_global) ! - This assume periodic bc 
+        index_fl = n_global - 1_idp        ! - This assume periodic bc 
+        size_to_exchange_recv = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) +   &
+        1_idp,0_idp) !- Yields 0 if no intersection 
+        first_cell_recv = MAX(index_ff,index_rf) - index_ff + 1 
+      ENDIF
       ! - If intersection of this part is none --> Check intersection with the part 
-      ! - located exclusively in the simulation domain 
+      ! - located exclusively inside the simulation domain 
       IF(size_to_exchange_recv .EQ. 0_idp) THEN
         index_ff = 0_idp 
         index_fl = iz1max
@@ -1651,20 +1679,26 @@ SUBROUTINE compute_send_recv_sizes_and_index_g2l_copies                         
         first_cell_recv = MAX(index_ff,index_rf) - index_ff + 1 - iz1min 
       ENDIF
     ELSE IF(select_case == 3) THEN
-      ! - First compute intersection inside the simulation domain 
+      IF(absorbing_bcs) THEN
+        size_to_exchange_recv = 0_idp  ! if absorbing bcs then don't check
+                                       ! intersection outside the simulation domain 
+      ELSE IF(.NOT. absorbing_bcs) THEN
+      ! - First compute intersection outside the simulation domain 
+        index_ff = 0_idp
+        index_fl = MODULO(iz1max,n_global)
+        size_to_exchange_recv = MAX(MIN(index_rl,index_fl) -MAX(index_rf,index_ff) +&
+         1_idp,0_idp) ! - Yields 0 if no intersection 
+        first_cell_recv = MAX(index_ff,index_rf) - index_ff + 1 + (n_global -iz1min)
+      ENDIF
+      ! - If intersection of this part is none --> Check intersection with the part 
+      ! - located exclusively inside the simulation domain 
+      IF(size_to_exchange_recv .EQ. 0_idp) THEN
       index_ff = iz1min
       index_fl = n_global - 1_idp
-      size_to_exchange_recv = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) +&
+      size_to_exchange_recv = MAX(MIN(index_rl,index_fl) -MAX(index_rf,index_ff) +&
        1_idp,0_idp) ! - Yields 0 if no intersection 
-      first_cell_recv = MAX(index_ff,index_rf) - index_ff + 1 
-      ! - If intersection of this part is none --> Check intersection with the part 
-      ! - located exclusively outside the simulation domain 
-      IF(size_to_exchange_recv .EQ. 0_idp) THEN
-        index_ff = 0_idp 
-        index_fl = MODULO(iz1max,n_global)
-        size_to_exchange_recv = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) +&
-         1_idp,0_idp) ! - Yields 0 if no intersection 
-        first_cell_recv = MAX(index_ff,index_rf) - index_ff + 1 + (n_global - iz1min)
+      first_cell_recv = MAX(index_ff,index_rf) - index_ff + 1
+
       ENDIF
     ENDIF 
     ! -- first cell recv need to be set to a value contained in lower_b and

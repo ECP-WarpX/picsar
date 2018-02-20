@@ -205,7 +205,7 @@ MODULE fourier_psaotd
     USE field_boundary
 
     IMPLICIT NONE
-    INTEGER(idp) :: ix, iy, iz
+    INTEGER(idp) :: ix, iy, iz,ixx,iyy,izz
     REAL(num)    :: tmptime
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
@@ -214,58 +214,139 @@ MODULE fourier_psaotd
     ! Performs copies of overlapping portions of local arrays (ex,ey,ez, etc.) 
     ! and FFT arrays (ex_r,ey_r,ez_r etc.) - non overlapping portions requires 
     ! MPI exchanges that are performed further below in this subroutine 
-    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-    DO iz=1,size_exchanges_l2g_recv_z(1)
-      DO iy =1,size_exchanges_l2g_recv_y(1)
-        DO ix =ix_min_r,ix_max_r
-           ex_r(ix,iy-1+g_first_cell_to_recv_y(1)                                      &
-           ,iz-1+g_first_cell_to_recv_z(1))=                                           &
-                 ex(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
-                 iz-1+l_first_cell_to_send_z(1))
-           ey_r(ix,iy-1+g_first_cell_to_recv_y(1)                                      &
-           ,iz-1+g_first_cell_to_recv_z(1))=                                           &
-                 ey(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
-                 iz-1+l_first_cell_to_send_z(1))
-           ez_r(ix,iy-1+g_first_cell_to_recv_y(1)                                      &
-           ,iz-1+g_first_cell_to_recv_z(1))=                                           &
-                 ez(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
-                 iz-1+l_first_cell_to_send_z(1))
-           bx_r(ix,iy-1+g_first_cell_to_recv_y(1)                                      &
-           ,iz-1+g_first_cell_to_recv_z(1))=                                           &
-                 bx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
-                 iz-1+l_first_cell_to_send_z(1))
-           by_r(ix,iy-1+g_first_cell_to_recv_y(1)                                      & 
-           ,iz-1+g_first_cell_to_recv_z(1))=                                           &
-                 by(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
-                 iz-1+l_first_cell_to_send_z(1))
-           bz_r(ix,iy-1+g_first_cell_to_recv_y(1)                                      &
-           ,iz-1+g_first_cell_to_recv_z(1))=                                           &
-                 bz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
-                 iz-1+l_first_cell_to_send_z(1))
-           jx_r(ix,iy-1+g_first_cell_to_recv_y(1)                                      &
-           ,iz-1+g_first_cell_to_recv_z(1))=                                           &
-                 jx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
-                 iz-1+l_first_cell_to_send_z(1))
-           jy_r(ix,iy-1+g_first_cell_to_recv_y(1)                                      &
-           ,iz-1+g_first_cell_to_recv_z(1))=                                           &
-                 jy(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
-                 iz-1+l_first_cell_to_send_z(1))
-           jz_r(ix,iy-1+g_first_cell_to_recv_y(1)                                      &
-           ,iz-1+g_first_cell_to_recv_z(1))=                                           &
-                 jz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),               &
-                 iz-1+l_first_cell_to_send_z(1))
-           rho_r(ix,iy-1+g_first_cell_to_recv_y(1)                                     &
-           ,iz-1+g_first_cell_to_recv_z(1))=                                           &
-                 rho(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),              &
-                 iz-1+l_first_cell_to_send_z(1))
-           rhoold_r(ix,iy-1+g_first_cell_to_recv_y(1)                                  &
-           ,iz-1+g_first_cell_to_recv_z(1))=                                           &
-                 rhoold(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),           &
-                 iz-1+l_first_cell_to_send_z(1))
+    IF(.NOT. absorbing_bcs) THEN 
+      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+      DO iz=1,size_exchanges_l2g_recv_z(1)
+        DO iy =1,size_exchanges_l2g_recv_y(1)
+          DO ix =ix_min_r,ix_max_r
+             ex_r(ix,iy-1+g_first_cell_to_recv_y(1)                                    &
+             ,iz-1+g_first_cell_to_recv_z(1))=                                         &
+                   ex(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),             &
+                   iz-1+l_first_cell_to_send_z(1))
+             ey_r(ix,iy-1+g_first_cell_to_recv_y(1)                                    &
+             ,iz-1+g_first_cell_to_recv_z(1))=                                         &
+                   ey(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),             &
+                   iz-1+l_first_cell_to_send_z(1))
+             ez_r(ix,iy-1+g_first_cell_to_recv_y(1)                                    &
+             ,iz-1+g_first_cell_to_recv_z(1))=                                         &
+                   ez(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),             &
+                   iz-1+l_first_cell_to_send_z(1))
+             bx_r(ix,iy-1+g_first_cell_to_recv_y(1)                                    &
+             ,iz-1+g_first_cell_to_recv_z(1))=                                         &
+                   bx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),             &
+                   iz-1+l_first_cell_to_send_z(1))
+             by_r(ix,iy-1+g_first_cell_to_recv_y(1)                                    &
+             ,iz-1+g_first_cell_to_recv_z(1))=                                         &
+                   by(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),             &
+                   iz-1+l_first_cell_to_send_z(1))
+             bz_r(ix,iy-1+g_first_cell_to_recv_y(1)                                    &
+             ,iz-1+g_first_cell_to_recv_z(1))=                                         &
+                   bz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),             &
+                   iz-1+l_first_cell_to_send_z(1))
+             jx_r(ix,iy-1+g_first_cell_to_recv_y(1)                                    &
+             ,iz-1+g_first_cell_to_recv_z(1))=                                         &
+                   jx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),             &
+                   iz-1+l_first_cell_to_send_z(1))
+             jy_r(ix,iy-1+g_first_cell_to_recv_y(1)                                    &
+             ,iz-1+g_first_cell_to_recv_z(1))=                                         &
+                   jy(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),             &
+                   iz-1+l_first_cell_to_send_z(1))
+             jz_r(ix,iy-1+g_first_cell_to_recv_y(1)                                    &
+             ,iz-1+g_first_cell_to_recv_z(1))=                                         &
+                   jz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),             &
+                   iz-1+l_first_cell_to_send_z(1))
+             rho_r(ix,iy-1+g_first_cell_to_recv_y(1)                                   &
+             ,iz-1+g_first_cell_to_recv_z(1))=                                         &
+                   rho(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),            &
+                   iz-1+l_first_cell_to_send_z(1))
+             rhoold_r(ix,iy-1+g_first_cell_to_recv_y(1)                                &
+             ,iz-1+g_first_cell_to_recv_z(1))=                                         &
+                   rhoold(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),         &
+                   iz-1+l_first_cell_to_send_z(1))
+          ENDDO
         ENDDO
       ENDDO
-    ENDDO
-    !$OMP END PARALLEL DO
+      !$OMP END PARALLEL DO
+    ELSE IF(absorbing_bcs) THEN
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+     DO iz=1,size_exchanges_l2g_recv_z(1)
+       DO iy =1,size_exchanges_l2g_recv_y(1)
+         DO ix =ix_min_r,ix_max_r
+            exy_r(ix,iy-1+g_first_cell_to_recv_y(1)                                   &
+            ,iz-1+g_first_cell_to_recv_z(1))=                                        &
+                  exy(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),            &
+                  iz-1+l_first_cell_to_send_z(1))
+            eyx_r(ix,iy-1+g_first_cell_to_recv_y(1)                                   &
+            ,iz-1+g_first_cell_to_recv_z(1))=                                        &
+                  eyx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),            &
+                  iz-1+l_first_cell_to_send_z(1))
+            ezx_r(ix,iy-1+g_first_cell_to_recv_y(1)                                   &
+            ,iz-1+g_first_cell_to_recv_z(1))=                                        &
+                  ezx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),            &
+                  iz-1+l_first_cell_to_send_z(1))
+            exz_r(ix,iy-1+g_first_cell_to_recv_y(1)                                   &
+            ,iz-1+g_first_cell_to_recv_z(1))=                                        &
+                  exz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),            &
+                  iz-1+l_first_cell_to_send_z(1))
+            eyz_r(ix,iy-1+g_first_cell_to_recv_y(1)                                   &
+            ,iz-1+g_first_cell_to_recv_z(1))=                                        &
+                  eyz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),            &
+                  iz-1+l_first_cell_to_send_z(1))
+            ezy_r(ix,iy-1+g_first_cell_to_recv_y(1)                                   &
+            ,iz-1+g_first_cell_to_recv_z(1))=                                        &
+                  ezy(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),            &
+                  iz-1+l_first_cell_to_send_z(1))
+            bxy_r(ix,iy-1+g_first_cell_to_recv_y(1)                                   &
+            ,iz-1+g_first_cell_to_recv_z(1))=                                        &
+                  bxy(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),            &
+                  iz-1+l_first_cell_to_send_z(1))
+            byx_r(ix,iy-1+g_first_cell_to_recv_y(1)                                   &
+            ,iz-1+g_first_cell_to_recv_z(1))=                                        &
+                  byx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),            &
+                  iz-1+l_first_cell_to_send_z(1))
+            bzx_r(ix,iy-1+g_first_cell_to_recv_y(1)                                   &
+            ,iz-1+g_first_cell_to_recv_z(1))=                                        &
+                  bzx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),            &
+                  iz-1+l_first_cell_to_send_z(1))
+            bxz_r(ix,iy-1+g_first_cell_to_recv_y(1)                                   &
+            ,iz-1+g_first_cell_to_recv_z(1))=                                        &
+                  bxz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),            &
+                  iz-1+l_first_cell_to_send_z(1))
+            byz_r(ix,iy-1+g_first_cell_to_recv_y(1)                                   &
+            ,iz-1+g_first_cell_to_recv_z(1))=                                        &
+                  byz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),            &
+                  iz-1+l_first_cell_to_send_z(1))
+            bzy_r(ix,iy-1+g_first_cell_to_recv_y(1)                                   &
+            ,iz-1+g_first_cell_to_recv_z(1))=                                        &
+                  bzy(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),            &
+                  iz-1+l_first_cell_to_send_z(1))
+            jx_r(ix,iy-1+g_first_cell_to_recv_y(1)                                   &
+            ,iz-1+g_first_cell_to_recv_z(1))=                                        &
+                  jx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),            &
+                  iz-1+l_first_cell_to_send_z(1))
+            jy_r(ix,iy-1+g_first_cell_to_recv_y(1)                                   &
+            ,iz-1+g_first_cell_to_recv_z(1))=                                        &
+                  jy(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),            &
+                  iz-1+l_first_cell_to_send_z(1))
+            jz_r(ix,iy-1+g_first_cell_to_recv_y(1)                                   &
+            ,iz-1+g_first_cell_to_recv_z(1))=                                        &
+                  jz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),            &
+                  iz-1+l_first_cell_to_send_z(1))
+            rho_r(ix,iy-1+g_first_cell_to_recv_y(1)                                  &
+            ,iz-1+g_first_cell_to_recv_z(1))=                                        &
+                  rho(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),           &
+                  iz-1+l_first_cell_to_send_z(1))
+            rhoold_r(ix,iy-1+g_first_cell_to_recv_y(1)                               &
+            ,iz-1+g_first_cell_to_recv_z(1))=                                        &
+                  rhoold(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),        &
+                  iz-1+l_first_cell_to_send_z(1))
+         ENDDO
+       ENDDO
+     ENDDO
+     !$OMP END PARALLEL DO
+     ENDIF
+
+
     ! Timers 
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
@@ -273,8 +354,111 @@ MODULE fourier_psaotd
 
     ! Performs MPI exchanges for non-overlapping portions of local and FFT ARRAYS 
     CALL generalized_comms_group_l2g()
-    
-    ! Perform distributed R2C FFTs of all grid arrays (including fields, currents, charge)
+    IF(absorbing_bcs) THEN 
+    ! reflective bcs after pml
+      IF(is_group_x_boundary_min) THEN
+        DO ix = cell_x_min_g(x_coords+1),-nxg_group-1
+          ixx = ix-cell_x_min_g(x_coords+1)+1_idp
+          exy_r(ixx,:,:) = 0.0_num
+          exz_r(ixx,:,:) = 0.0_num
+          eyx_r(ixx,:,:) = 0.0_num
+          eyz_r(ixx,:,:) = 0.0_num
+          ezx_r(ixx,:,:) = 0.0_num  
+          ezy_r(ixx,:,:) = 0.0_num
+          bxy_r(ixx,:,:) = 0.0_num
+          bxz_r(ixx,:,:) = 0.0_num
+          byx_r(ixx,:,:) = 0.0_num
+          byz_r(ixx,:,:) = 0.0_num
+          bzx_r(ixx,:,:) = 0.0_num
+          bzy_r(ixx,:,:) = 0.0_num
+        ENDDO
+      ENDIF
+      IF(is_group_x_boundary_max) THEN
+        DO ix=nx_global + nxg_group,cell_x_max_g(x_coords+1) 
+          ixx = ix - cell_x_min_g(x_coords+1)+1_idp 
+          exy_r(ixx,:,:) = 0.0_num
+          exz_r(ixx,:,:) = 0.0_num
+          eyx_r(ixx,:,:) = 0.0_num
+          eyz_r(ixx,:,:) = 0.0_num
+          ezx_r(ixx,:,:) = 0.0_num
+          ezy_r(ixx,:,:) = 0.0_num
+          bxy_r(ixx,:,:) = 0.0_num
+          bxz_r(ixx,:,:) = 0.0_num
+          byx_r(ixx,:,:) = 0.0_num
+          byz_r(ixx,:,:) = 0.0_num
+          bzx_r(ixx,:,:) = 0.0_num
+          bzy_r(ixx,:,:) = 0.0_num
+        ENDDO
+      ENDIF
+      IF(is_group_y_boundary_min) THEN
+        DO iy = cell_y_min_g(y_coords+1),-nyg_group-1
+          iyy = iy-cell_y_min_g(y_coords+1)+1_idp
+          exy_r(:,iyy,:) = 0.0_num
+          exz_r(:,iyy,:) = 0.0_num
+          eyx_r(:,iyy,:) = 0.0_num
+          eyz_r(:,iyy,:) = 0.0_num
+          ezx_r(:,iyy,:) = 0.0_num
+          ezy_r(:,iyy,:) = 0.0_num
+          bxy_r(:,iyy,:) = 0.0_num
+          bxz_r(:,iyy,:) = 0.0_num
+          byx_r(:,iyy,:) = 0.0_num
+          byz_r(:,iyy,:) = 0.0_num
+          bzx_r(:,iyy,:) = 0.0_num
+          bzy_r(:,iyy,:) = 0.0_num
+        ENDDO
+      ENDIF
+      IF(is_group_y_boundary_max) THEN
+        DO iy=ny_global + nyg_group,cell_y_max_g(y_coords+1)  
+          iyy = iy - cell_y_min_g(y_coords+1)+1_idp 
+          exy_r(:,iyy,:) = 0.0_num
+          exz_r(:,iyy,:) = 0.0_num
+          eyx_r(:,iyy,:) = 0.0_num
+          eyz_r(:,iyy,:) = 0.0_num
+          ezx_r(:,iyy,:) = 0.0_num
+          ezy_r(:,iyy,:) = 0.0_num
+          bxy_r(:,iyy,:) = 0.0_num
+          bxz_r(:,iyy,:) = 0.0_num
+          byx_r(:,iyy,:) = 0.0_num
+          byz_r(:,iyy,:) = 0.0_num
+          bzx_r(:,iyy,:) = 0.0_num
+          bzy_r(:,iyy,:) = 0.0_num
+        ENDDO
+      ENDIF
+      IF(is_group_z_boundary_min) THEN
+        DO iz = cell_z_min_g(z_coords+1),-nzg_group-1
+          izz = iz-cell_z_min_g(z_coords+1)+1_idp
+          exy_r(:,:,izz) = 0.0_num
+          exz_r(:,:,izz) = 0.0_num
+          eyx_r(:,:,izz) = 0.0_num
+          eyz_r(:,:,izz) = 0.0_num
+          ezx_r(:,:,izz) = 0.0_num
+          ezy_r(:,:,izz) = 0.0_num
+          bxy_r(:,:,izz) = 0.0_num
+          bxz_r(:,:,izz) = 0.0_num
+          byx_r(:,:,izz) = 0.0_num
+          byz_r(:,:,izz) = 0.0_num
+          bzx_r(:,:,izz) = 0.0_num
+          bzy_r(:,:,izz) = 0.0_num
+        ENDDO
+      ENDIF
+      IF(is_group_z_boundary_max) THEN
+        DO iz=nz_global + nzg_group,cell_z_max_g(z_coords+1)  
+          izz = iz - cell_z_min_g(z_coords+1)+1_idp 
+          exy_r(:,:,izz) = 0.0_num
+          exz_r(:,:,izz) = 0.0_num
+          eyx_r(:,:,izz) = 0.0_num
+          eyz_r(:,:,izz) = 0.0_num
+          ezx_r(:,:,izz) = 0.0_num
+          ezy_r(:,:,izz) = 0.0_num
+          bxy_r(:,:,izz) = 0.0_num
+          bxz_r(:,:,izz) = 0.0_num
+          byx_r(:,:,izz) = 0.0_num
+          byz_r(:,:,izz) = 0.0_num
+          bzx_r(:,:,izz) = 0.0_num
+          bzy_r(:,:,izz) = 0.0_num
+        ENDDO
+      ENDIF
+    ENDIF
     CALL fft_forward_r2c_hybrid() 
   END SUBROUTINE get_Ffields_mpi_lb 
 
@@ -306,7 +490,6 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
-
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
     DO iz=iz_min_r, iz_max_r
       DO iy=iy_min_r, iy_max_r
@@ -464,43 +647,113 @@ MODULE fourier_psaotd
     ! Performs copies of overlapping portions of FFT arrays (ex_r,ey_r,ez_r, etc.) 
     ! and local arrays (ex,ey,ez etc.) - non overlapping portions requires 
     ! MPI exchanges that are performed further below in this subroutine
-    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-    DO iz=1,size_exchanges_g2l_recv_z(1)
-      DO iy=1,size_exchanges_g2l_recv_y(1)
-        DO ix=ix_min_r, ix_max_r
-          ex(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
-          iz-1+l_first_cell_to_recv_z(1)) =                                            &
-                 ex_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
-                 ,iz-1+g_first_cell_to_send_z(1))
+    IF(.NOT. absorbing_bcs) THEN
+      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+      DO iz=1,size_exchanges_g2l_recv_z(1)
+        DO iy=1,size_exchanges_g2l_recv_y(1)
+          DO ix=ix_min_r, ix_max_r
+            ex(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
+            iz-1+l_first_cell_to_recv_z(1)) =                                            &
+                   ex_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                   ,iz-1+g_first_cell_to_send_z(1))
 
-          ey(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
-          iz-1+l_first_cell_to_recv_z(1))=                                             &
-                 ey_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
-                 ,iz-1+g_first_cell_to_send_z(1))
+            ey(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
+            iz-1+l_first_cell_to_recv_z(1))=                                             &
+                   ey_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                   ,iz-1+g_first_cell_to_send_z(1))
 
-          ez(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
-          iz-1+l_first_cell_to_recv_z(1))=                                             &
-                 ez_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
-                 ,iz-1+g_first_cell_to_send_z(1))
+            ez(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
+            iz-1+l_first_cell_to_recv_z(1))=                                             &
+                   ez_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                   ,iz-1+g_first_cell_to_send_z(1))
 
-          bx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
-          iz-1+l_first_cell_to_recv_z(1))=                                             &
-                 bx_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
-                 ,iz-1+g_first_cell_to_send_z(1))
+            bx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
+            iz-1+l_first_cell_to_recv_z(1))=                                             &
+                   bx_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                   ,iz-1+g_first_cell_to_send_z(1))
 
-          by(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
-          iz-1+l_first_cell_to_recv_z(1))=                                             &
-                 by_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
-                 ,iz-1+g_first_cell_to_send_z(1))
+            by(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
+            iz-1+l_first_cell_to_recv_z(1))=                                             &
+                   by_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                   ,iz-1+g_first_cell_to_send_z(1))
 
-          bz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
-          iz-1+l_first_cell_to_recv_z(1))=                                             &
-                 bz_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
-                ,iz-1+g_first_cell_to_send_z(1))
+            bz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
+            iz-1+l_first_cell_to_recv_z(1))=                                             &
+                   bz_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                  ,iz-1+g_first_cell_to_send_z(1))
+          END DO
         END DO
       END DO
-    END DO
-    !$OMP END PARALLEL DO
+      !$OMP END PARALLEL DO
+    ELSE IF(absorbing_bcs) THEN
+      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+      DO iz=1,size_exchanges_g2l_recv_z(1)
+        DO iy=1,size_exchanges_g2l_recv_y(1)
+          DO ix=ix_min_r, ix_max_r
+            exy(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
+            iz-1+l_first_cell_to_recv_z(1)) =                                            &
+                   exy_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                   ,iz-1+g_first_cell_to_send_z(1))
+
+            eyx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
+            iz-1+l_first_cell_to_recv_z(1))=                                             &
+                   eyx_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                   ,iz-1+g_first_cell_to_send_z(1))
+
+            ezx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
+            iz-1+l_first_cell_to_recv_z(1))=                                             &
+                   ezx_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                   ,iz-1+g_first_cell_to_send_z(1))
+
+            bxy(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
+            iz-1+l_first_cell_to_recv_z(1))=                                             &
+                   bxy_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                   ,iz-1+g_first_cell_to_send_z(1))
+
+            byx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
+            iz-1+l_first_cell_to_recv_z(1))=                                             &
+                   byx_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                   ,iz-1+g_first_cell_to_send_z(1))
+
+            bzx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
+            iz-1+l_first_cell_to_recv_z(1))=                                             &
+                   bzx_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                  ,iz-1+g_first_cell_to_send_z(1))
+            exz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
+            iz-1+l_first_cell_to_recv_z(1)) =                                            &
+                   exz_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                   ,iz-1+g_first_cell_to_send_z(1))
+
+            eyz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
+            iz-1+l_first_cell_to_recv_z(1))=                                             &
+                   eyz_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                   ,iz-1+g_first_cell_to_send_z(1))
+
+            ezy(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
+            iz-1+l_first_cell_to_recv_z(1))=                                             &
+                   ezy_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                   ,iz-1+g_first_cell_to_send_z(1))
+
+            bxz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
+            iz-1+l_first_cell_to_recv_z(1))=                                             &
+                   bxz_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                   ,iz-1+g_first_cell_to_send_z(1))
+
+            byz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
+            iz-1+l_first_cell_to_recv_z(1))=                                             &
+                   byz_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                   ,iz-1+g_first_cell_to_send_z(1))
+
+            bzy(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
+            iz-1+l_first_cell_to_recv_z(1))=                                             &
+                   bzy_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                  ,iz-1+g_first_cell_to_send_z(1))
+          END DO
+        END DO
+      END DO
+      !$OMP END PARALLEL DO
+    ENDIF
+
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
@@ -522,28 +775,65 @@ MODULE fourier_psaotd
       tmptime = MPI_WTIME()
     ENDIF
     IF(g_spectral) THEN
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ex_r,                        &
-         vold(nmatrixes)%block_vector(1)%block3dc, plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ey_r,                        &
-        vold(nmatrixes)%block_vector(2)%block3dc, plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ez_r,                        &
-        vold(nmatrixes)%block_vector(3)%block3dc , plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bx_r,                        &
-        vold(nmatrixes)%block_vector(4)%block3dc , plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, by_r,                        &
-        vold(nmatrixes)%block_vector(5)%block3dc , plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bz_r,                        &  
-        vold(nmatrixes)%block_vector(6)%block3dc , plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jx_r,                        &
-        vold(nmatrixes)%block_vector(7)%block3dc , plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jy_r,                        &
-        vold(nmatrixes)%block_vector(8)%block3dc, plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jz_r,                        &
-        vold(nmatrixes)%block_vector(9)%block3dc, plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rhoold_r,                    &
-        vold(nmatrixes)%block_vector(10)%block3dc,plan_r2c)
-    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rho_r,                       &
-        vold(nmatrixes)%block_vector(11)%block3dc, plan_r2c)
+      IF(.NOT. absorbing_bcs) THEN
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ex_r,                      &
+             vold(nmatrixes)%block_vector(1)%block3dc, plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ey_r,                      &
+            vold(nmatrixes)%block_vector(2)%block3dc, plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ez_r,                      &
+            vold(nmatrixes)%block_vector(3)%block3dc , plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bx_r,                      &
+            vold(nmatrixes)%block_vector(4)%block3dc , plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, by_r,                      &
+            vold(nmatrixes)%block_vector(5)%block3dc , plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bz_r,                      &  
+            vold(nmatrixes)%block_vector(6)%block3dc , plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jx_r,                      &
+            vold(nmatrixes)%block_vector(7)%block3dc , plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jy_r,                      &
+            vold(nmatrixes)%block_vector(8)%block3dc, plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jz_r,                      &
+            vold(nmatrixes)%block_vector(9)%block3dc, plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rhoold_r,                  &
+            vold(nmatrixes)%block_vector(10)%block3dc,plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rho_r,                     &
+            vold(nmatrixes)%block_vector(11)%block3dc, plan_r2c)
+      ELSE IF(absorbing_bcs) THEN
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, exy_r,                      & 
+             vold(nmatrixes)%block_vector(1)%block3dc, plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, exz_r,                      & 
+            vold(nmatrixes)%block_vector(2)%block3dc, plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, eyx_r,                      & 
+            vold(nmatrixes)%block_vector(3)%block3dc , plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, eyz_r,                      & 
+            vold(nmatrixes)%block_vector(4)%block3dc , plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ezx_r,                      & 
+            vold(nmatrixes)%block_vector(5)%block3dc , plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ezy_r,                      &  
+            vold(nmatrixes)%block_vector(6)%block3dc , plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bxy_r,                      & 
+             vold(nmatrixes)%block_vector(7)%block3dc, plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bxz_r,                      & 
+            vold(nmatrixes)%block_vector(8)%block3dc, plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, byx_r,                      & 
+            vold(nmatrixes)%block_vector(9)%block3dc , plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, byz_r,                      & 
+            vold(nmatrixes)%block_vector(10)%block3dc , plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bzx_r,                      & 
+            vold(nmatrixes)%block_vector(11)%block3dc , plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bzy_r,                      &  
+            vold(nmatrixes)%block_vector(12)%block3dc , plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jx_r,                      & 
+            vold(nmatrixes)%block_vector(13)%block3dc , plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jy_r,                      & 
+            vold(nmatrixes)%block_vector(14)%block3dc, plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jz_r,                      & 
+            vold(nmatrixes)%block_vector(15)%block3dc, plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rhoold_r,                  & 
+            vold(nmatrixes)%block_vector(16)%block3dc,plan_r2c)
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rho_r,                     & 
+            vold(nmatrixes)%block_vector(17)%block3dc, plan_r2c) 
+      ENDIF
     ELSE IF (.NOT. g_spectral) THEN
       CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ex_r, exf, plan_r2c)
       CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ey_r, eyf, plan_r2c)
@@ -582,41 +872,98 @@ MODULE fourier_psaotd
 #if defined(P3DFFT)
       IF(.NOT. p3dfft_flag) THEN
 #endif
-        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ex_r,                             &
-           vold(nmatrixes)%block_vector(1)%block3dc)
-        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ey_r,                             &
-           vold(nmatrixes)%block_vector(2)%block3dc)
-        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ez_r,                             &
-           vold(nmatrixes)%block_vector(3)%block3dc)
-        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bx_r,                             &
-           vold(nmatrixes)%block_vector(4)%block3dc)
-        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, by_r,                             &
-           vold(nmatrixes)%block_vector(5)%block3dc)
-        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bz_r,                             &
-           vold(nmatrixes)%block_vector(6)%block3dc)
-        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jx_r,                             &
-           vold(nmatrixes)%block_vector(7)%block3dc)
-        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jy_r,                             &
-           vold(nmatrixes)%block_vector(8)%block3dc)
-        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jz_r,                             &
-           vold(nmatrixes)%block_vector(9)%block3dc)
-        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rhoold_r,                         &
-           vold(nmatrixes)%block_vector(10)%block3dc)
-        CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rho_r,                            &
-           vold(nmatrixes)%block_vector(11)%block3dc)
+       IF(absorbing_bcs) THEN
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, exy_r,&
+            vold(nmatrixes)%block_vector(1)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, exz_r,&
+            vold(nmatrixes)%block_vector(2)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, eyx_r,&
+            vold(nmatrixes)%block_vector(3)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, eyz_r,&
+            vold(nmatrixes)%block_vector(4)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ezx_r,&
+            vold(nmatrixes)%block_vector(5)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ezy_r,&
+            vold(nmatrixes)%block_vector(6)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bxy_r,&
+            vold(nmatrixes)%block_vector(7)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bxz_r,&
+            vold(nmatrixes)%block_vector(8)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, byx_r,&
+            vold(nmatrixes)%block_vector(9)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, byz_r,&
+            vold(nmatrixes)%block_vector(10)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bzx_r,&
+            vold(nmatrixes)%block_vector(11)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bzy_r,&
+            vold(nmatrixes)%block_vector(12)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jx_r,&
+            vold(nmatrixes)%block_vector(13)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jy_r,&
+            vold(nmatrixes)%block_vector(14)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jz_r,&
+            vold(nmatrixes)%block_vector(15)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rhoold_r,&
+            vold(nmatrixes)%block_vector(16)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rho_r,&
+            vold(nmatrixes)%block_vector(17)%block3dc)
+       ELSE IF(.NOT. absorbing_bcs) THEN
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ex_r,                           &
+            vold(nmatrixes)%block_vector(1)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ey_r,                           &
+            vold(nmatrixes)%block_vector(2)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ez_r,                           &
+            vold(nmatrixes)%block_vector(3)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bx_r,                           &
+            vold(nmatrixes)%block_vector(4)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, by_r,                           &
+            vold(nmatrixes)%block_vector(5)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bz_r,                           &
+            vold(nmatrixes)%block_vector(6)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jx_r,                           &
+            vold(nmatrixes)%block_vector(7)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jy_r,                           &
+            vold(nmatrixes)%block_vector(8)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jz_r,                           &
+            vold(nmatrixes)%block_vector(9)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rhoold_r,                       &
+            vold(nmatrixes)%block_vector(10)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rho_r,                          &
+            vold(nmatrixes)%block_vector(11)%block3dc)
+       ENDIF
 #if defined(P3DFFT)
       ELSE IF(p3dfft_flag) THEN
-        CALL p3dfft_ftran_r2c (ex_r,vold(nmatrixes)%block_vector(1)%block3dc,'fft')
-        CALL p3dfft_ftran_r2c (ey_r,vold(nmatrixes)%block_vector(2)%block3dc,'fft')
-        CALL p3dfft_ftran_r2c (ez_r,vold(nmatrixes)%block_vector(3)%block3dc,'fft')
-        CALL p3dfft_ftran_r2c (bx_r,vold(nmatrixes)%block_vector(4)%block3dc,'fft')
-        CALL p3dfft_ftran_r2c (by_r,vold(nmatrixes)%block_vector(5)%block3dc,'fft')
-        CALL p3dfft_ftran_r2c (bz_r,vold(nmatrixes)%block_vector(6)%block3dc,'fft')
-        CALL p3dfft_ftran_r2c (jx_r,vold(nmatrixes)%block_vector(7)%block3dc,'fft')
-        CALL p3dfft_ftran_r2c (jy_r,vold(nmatrixes)%block_vector(8)%block3dc,'fft')
-        CALL p3dfft_ftran_r2c (jz_r,vold(nmatrixes)%block_vector(9)%block3dc,'fft')
-        CALL p3dfft_ftran_r2c(rhoold_r,vold(nmatrixes)%block_vector(10)%block3dc,'fft')
-        CALL p3dfft_ftran_r2c(rho_r,vold(nmatrixes)%block_vector(11)%block3dc,'fft')
+        IF(.NOT. absorbing_bcs) THEN
+          CALL p3dfft_ftran_r2c (ex_r,vold(nmatrixes)%block_vector(1)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (ey_r,vold(nmatrixes)%block_vector(2)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (ez_r,vold(nmatrixes)%block_vector(3)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (bx_r,vold(nmatrixes)%block_vector(4)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (by_r,vold(nmatrixes)%block_vector(5)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (bz_r,vold(nmatrixes)%block_vector(6)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (jx_r,vold(nmatrixes)%block_vector(7)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (jy_r,vold(nmatrixes)%block_vector(8)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (jz_r,vold(nmatrixes)%block_vector(9)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c(rhoold_r,vold(nmatrixes)%block_vector(10)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c(rho_r,vold(nmatrixes)%block_vector(11)%block3dc,'fft')
+        ELSE IF (absorbing_bcs) THEN
+          CALL p3dfft_ftran_r2c (exy_r,vold(nmatrixes)%block_vector(1)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (exz_r,vold(nmatrixes)%block_vector(2)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (eyx_r,vold(nmatrixes)%block_vector(3)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (eyz_r,vold(nmatrixes)%block_vector(4)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (ezx_r,vold(nmatrixes)%block_vector(5)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (ezy_r,vold(nmatrixes)%block_vector(6)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (bxy_r,vold(nmatrixes)%block_vector(7)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (bxz_r,vold(nmatrixes)%block_vector(8)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (byx_r,vold(nmatrixes)%block_vector(9)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (byz_r,vold(nmatrixes)%block_vector(10)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (bzx_r,vold(nmatrixes)%block_vector(11)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (bzy_r,vold(nmatrixes)%block_vector(12)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (jx_r,vold(nmatrixes)%block_vector(13)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (jy_r,vold(nmatrixes)%block_vector(14)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (jz_r,vold(nmatrixes)%block_vector(15)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c(rhoold_r,vold(nmatrixes)%block_vector(16)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c(rho_r,vold(nmatrixes)%block_vector(17)%block3dc,'fft')
+        ENDIF
       ENDIF
 #endif
     ELSE IF(.NOT. g_spectral) THEN
@@ -678,18 +1025,45 @@ MODULE fourier_psaotd
       CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, bzf, bz_r, plan_c2r)
 
     ELSE IF(g_spectral) THEN
-      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                              &
-      vnew(nmatrixes)%block_vector(1)%block3dc, ex_r, plan_c2r)
-      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                              &
-      vnew(nmatrixes)%block_vector(2)%block3dc, ey_r, plan_c2r)
-      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                              & 
-      vnew(nmatrixes)%block_vector(3)%block3dc, ez_r, plan_c2r)
-      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                              &
-      vnew(nmatrixes)%block_vector(4)%block3dc, bx_r, plan_c2r)
-      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                              &
-      vnew(nmatrixes)%block_vector(5)%block3dc, by_r, plan_c2r)
-      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                              &
-      vnew(nmatrixes)%block_vector(6)%block3dc, bz_r, plan_c2r)
+      IF(absorbing_bcs) THEN
+        CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           & 
+        vnew(nmatrixes)%block_vector(1)%block3dc, exy_r, plan_c2r)
+        CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
+        vnew(nmatrixes)%block_vector(2)%block3dc, exz_r, plan_c2r)
+        CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
+        vnew(nmatrixes)%block_vector(3)%block3dc, eyx_r, plan_c2r)
+        CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
+        vnew(nmatrixes)%block_vector(4)%block3dc, eyz_r, plan_c2r)
+        CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
+        vnew(nmatrixes)%block_vector(5)%block3dc, ezx_r, plan_c2r)
+        CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
+        vnew(nmatrixes)%block_vector(6)%block3dc, ezy_r, plan_c2r)
+        CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
+        vnew(nmatrixes)%block_vector(7)%block3dc, bxy_r, plan_c2r)
+        CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
+        vnew(nmatrixes)%block_vector(8)%block3dc, bxz_r, plan_c2r)
+        CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
+        vnew(nmatrixes)%block_vector(9)%block3dc, byx_r, plan_c2r)
+        CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
+        vnew(nmatrixes)%block_vector(10)%block3dc, byz_r, plan_c2r)
+        CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
+        vnew(nmatrixes)%block_vector(11)%block3dc, bzx_r, plan_c2r)
+        CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
+        vnew(nmatrixes)%block_vector(12)%block3dc, bzy_r, plan_c2r)
+      ELSE IF(.NOT. absorbing_bcs) THEN
+        CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
+        vnew(nmatrixes)%block_vector(1)%block3dc, ex_r, plan_c2r)
+        CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
+        vnew(nmatrixes)%block_vector(2)%block3dc, ey_r, plan_c2r)
+        CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           & 
+        vnew(nmatrixes)%block_vector(3)%block3dc, ez_r, plan_c2r)
+        CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
+        vnew(nmatrixes)%block_vector(4)%block3dc, bx_r, plan_c2r)
+        CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
+        vnew(nmatrixes)%block_vector(5)%block3dc, by_r, plan_c2r)
+        CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
+        vnew(nmatrixes)%block_vector(6)%block3dc, bz_r, plan_c2r)
+      ENDIF
     ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
@@ -737,26 +1111,69 @@ MODULE fourier_psaotd
 #if defined(P3DFFT)
       IF(.NOT. p3dfft_flag) THEN
 #endif
-        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
-        vnew(nmatrixes)%block_vector(1)%block3dc,ex_r)
-        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
-        vnew(nmatrixes)%block_vector(2)%block3dc,ey_r)
-        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
-        vnew(nmatrixes)%block_vector(3)%block3dc,ez_r)
-        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
-        vnew(nmatrixes)%block_vector(4)%block3dc,bx_r)
-        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
-        vnew(nmatrixes)%block_vector(5)%block3dc,by_r)
-        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
-        vnew(nmatrixes)%block_vector(6)%block3dc,bz_r)
+        IF(.NOT. absorbing_bcs) THEN
+          CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
+          vnew(nmatrixes)%block_vector(1)%block3dc,ex_r)
+          CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
+          vnew(nmatrixes)%block_vector(2)%block3dc,ey_r)
+          CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
+          vnew(nmatrixes)%block_vector(3)%block3dc,ez_r)
+          CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
+          vnew(nmatrixes)%block_vector(4)%block3dc,bx_r)
+          CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
+          vnew(nmatrixes)%block_vector(5)%block3dc,by_r)
+          CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
+          vnew(nmatrixes)%block_vector(6)%block3dc,bz_r)
+        ELSE IF (absorbing_bcs) THEN
+          CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
+          vnew(nmatrixes)%block_vector(1)%block3dc,exy_r)
+          CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
+          vnew(nmatrixes)%block_vector(2)%block3dc,exz_r)
+          CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
+          vnew(nmatrixes)%block_vector(3)%block3dc,eyx_r)
+          CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
+          vnew(nmatrixes)%block_vector(4)%block3dc,eyz_r)
+          CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
+          vnew(nmatrixes)%block_vector(5)%block3dc,ezx_r)
+          CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
+          vnew(nmatrixes)%block_vector(6)%block3dc,ezy_r)
+          CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
+          vnew(nmatrixes)%block_vector(7)%block3dc,bxy_r)
+          CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
+          vnew(nmatrixes)%block_vector(8)%block3dc,bxz_r)
+          CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
+          vnew(nmatrixes)%block_vector(9)%block3dc,byx_r)
+          CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
+          vnew(nmatrixes)%block_vector(10)%block3dc,byz_r)
+          CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
+          vnew(nmatrixes)%block_vector(11)%block3dc,bzx_r)
+          CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
+          vnew(nmatrixes)%block_vector(12)%block3dc,bzy_r)
+        ENDIF
 #if defined(P3DFFT)
       ELSE IF(p3dfft_flag) THEN
-        CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(1)%block3dc,ex_r,'tff')
-        CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(2)%block3dc,ey_r,'tff')
-        CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(3)%block3dc,ez_r,'tff')
-        CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(4)%block3dc,bx_r,'tff')
-        CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(5)%block3dc,by_r,'tff')
-        CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(6)%block3dc,bz_r,'tff')
+        IF (.NOT. absorbing_bcs) THEN
+          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(1)%block3dc,ex_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(2)%block3dc,ey_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(3)%block3dc,ez_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(4)%block3dc,bx_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(5)%block3dc,by_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(6)%block3dc,bz_r,'tff')
+        ELSE IF(absorbing_bcs) THEN
+          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(1)%block3dc,exy_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(2)%block3dc,exz_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(3)%block3dc,eyx_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(4)%block3dc,eyz_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(5)%block3dc,ezx_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(6)%block3dc,ezy_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(7)%block3dc,bxy_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(8)%block3dc,bxz_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(9)%block3dc,byx_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(10)%block3dc,byz_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(11)%block3dc,bzx_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(12)%block3dc,bzy_r,'tff')
+        ENDIF
+
       ENDIF
 #endif
     ENDIF
@@ -1003,6 +1420,9 @@ MODULE fourier_psaotd
 
     IF(g_spectral) THEN
       exf => vold(nmatrixes)%block_vector(1)%block3dc
+      IF(absorbing_bcs) THEN
+        ex_r => exy_r
+      ENDIF
     ENDIF      
     !> Init fftw plans if used
     !> NB: if p3dfft is used, then the init is performed in mpi_routines during

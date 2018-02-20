@@ -121,6 +121,169 @@ SUBROUTINE compute_em_energy
   electromagn_energy_total= electro_energy_total+magneto_energy_total
 END SUBROUTINE
 
+
+! ________________________________________________________________________________________
+!> @brief
+!> PML damping in pml region
+!
+!> @author
+!> Haithem Kallala
+!
+!> @date
+!> Creation 2018
+! ________________________________________________________________________________________
+
+SUBROUTINE field_damping_bcs
+  USE fields
+  USE shared_data
+  USE constants
+  USE omp_lib
+  INTEGER(idp)  :: ix,iy,iz
+  !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+  DO ix = 0,nx-1
+    DO iy = 0,ny-1
+      DO iz = 0,nz-1 
+        exy(ix,iy,iz) = sigma_y_e(ix,iy,iz) *exy(ix,iy,iz)
+        exz(ix,iy,iz) = sigma_z_e(ix,iy,iz) *exz(ix,iy,iz)
+        eyx(ix,iy,iz) = sigma_x_e(ix,iy,iz) *eyx(ix,iy,iz)
+        eyz(ix,iy,iz) = sigma_z_e(ix,iy,iz) *eyz(ix,iy,iz)
+        ezx(ix,iy,iz) = sigma_x_e(ix,iy,iz) *ezx(ix,iy,iz)
+        ezy(ix,iy,iz) = sigma_y_e(ix,iy,iz) *ezy(ix,iy,iz)
+        bxy(ix,iy,iz) = sigma_y_b(ix,iy,iz) *bxy(ix,iy,iz)
+        bxz(ix,iy,iz) = sigma_z_b(ix,iy,iz) *bxz(ix,iy,iz)
+        byx(ix,iy,iz) = sigma_x_b(ix,iy,iz) *byx(ix,iy,iz)
+        byz(ix,iy,iz) = sigma_z_b(ix,iy,iz) *byz(ix,iy,iz)
+        bzx(ix,iy,iz) = sigma_x_b(ix,iy,iz) *bzx(ix,iy,iz)
+        bzy(ix,iy,iz) = sigma_y_b(ix,iy,iz) *bzy(ix,iy,iz)
+      ENDDO
+    ENDDO
+  ENDDO
+  !$OMP END PARALLEL DO
+  IF(x_min_boundary) THEN 
+    DO iz = -nzguards,nz+nzguards
+      DO iy = -nyguards,ny+nyguards
+        DO ix = -nxguards,-1
+          exy(ix,iy,iz) = 0.0_num 
+          exz(ix,iy,iz) = 0.0_num 
+          eyx(ix,iy,iz) = 0.0_num 
+          eyz(ix,iy,iz) = 0.0_num 
+          ezx(ix,iy,iz) = 0.0_num 
+          ezy(ix,iy,iz) = 0.0_num 
+          bxy(ix,iy,iz) = 0.0_num 
+          bxz(ix,iy,iz) = 0.0_num 
+          byx(ix,iy,iz) = 0.0_num 
+          byz(ix,iy,iz) = 0.0_num 
+          bzx(ix,iy,iz) = 0.0_num 
+          bzy(ix,iy,iz) = 0.0_num 
+        ENDDO
+      ENDDO
+    ENDDO 
+  ENDIF
+  IF(x_max_boundary) THEN
+    DO iz = -nzguards,nz+nzguards
+      DO iy = -nyguards,ny+nyguards
+        DO ix = nx, nx+nxguards-1 
+          exy(ix,iy,iz) = 0.0_num
+          exz(ix,iy,iz) = 0.0_num
+          eyx(ix,iy,iz) = 0.0_num
+          eyz(ix,iy,iz) = 0.0_num
+          ezx(ix,iy,iz) = 0.0_num
+          ezy(ix,iy,iz) = 0.0_num
+          bxy(ix,iy,iz) = 0.0_num
+          bxz(ix,iy,iz) = 0.0_num
+          byx(ix,iy,iz) = 0.0_num
+          byz(ix,iy,iz) = 0.0_num
+          bzx(ix,iy,iz) = 0.0_num
+          bzy(ix,iy,iz) = 0.0_num
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDIF
+  IF(y_min_boundary) THEN
+    DO iz = -nzguards,nz+nzguards
+      DO iy = -nyguards,-1
+        DO ix = -nxguards,nx+nxguards
+          exy(ix,iy,iz) = 0.0_num
+          exz(ix,iy,iz) = 0.0_num
+          eyx(ix,iy,iz) = 0.0_num
+          eyz(ix,iy,iz) = 0.0_num
+          ezx(ix,iy,iz) = 0.0_num
+          ezy(ix,iy,iz) = 0.0_num
+          bxy(ix,iy,iz) = 0.0_num
+          bxz(ix,iy,iz) = 0.0_num
+          byx(ix,iy,iz) = 0.0_num
+          byz(ix,iy,iz) = 0.0_num
+          bzx(ix,iy,iz) = 0.0_num
+          bzy(ix,iy,iz) = 0.0_num
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDIF
+  IF(y_max_boundary) THEN
+    DO iz = -nzguards,nz+nzguards
+      DO iy = ny,ny+nyguards-1
+        DO ix = -nxguards, nx+nxguards
+          exy(ix,iy,iz) = 0.0_num
+          exz(ix,iy,iz) = 0.0_num
+          eyx(ix,iy,iz) = 0.0_num
+          eyz(ix,iy,iz) = 0.0_num
+          ezx(ix,iy,iz) = 0.0_num
+          ezy(ix,iy,iz) = 0.0_num
+          bxy(ix,iy,iz) = 0.0_num
+          bxz(ix,iy,iz) = 0.0_num
+          byx(ix,iy,iz) = 0.0_num
+          byz(ix,iy,iz) = 0.0_num
+          bzx(ix,iy,iz) = 0.0_num
+          bzy(ix,iy,iz) = 0.0_num
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDIF
+  IF(z_min_boundary) THEN
+    DO iz = -nzguards,-1
+      DO iy = -nyguards,ny+nyguards
+        DO ix = -nxguards,nx+nxguards
+          exy(ix,iy,iz) = 0.0_num
+          exz(ix,iy,iz) = 0.0_num
+          eyx(ix,iy,iz) = 0.0_num
+          eyz(ix,iy,iz) = 0.0_num
+          ezx(ix,iy,iz) = 0.0_num
+          ezy(ix,iy,iz) = 0.0_num
+          bxy(ix,iy,iz) = 0.0_num
+          bxz(ix,iy,iz) = 0.0_num
+          byx(ix,iy,iz) = 0.0_num
+          byz(ix,iy,iz) = 0.0_num
+          bzx(ix,iy,iz) = 0.0_num
+          bzy(ix,iy,iz) = 0.0_num
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDIF
+  IF(z_max_boundary) THEN
+    DO iz = nz,nz+nzguards-1
+      DO iy = -nyguards,ny+nyguards
+        DO ix = -nxguards, nx+nxguards
+          exy(ix,iy,iz) = 0.0_num
+          exz(ix,iy,iz) = 0.0_num
+          eyx(ix,iy,iz) = 0.0_num
+          eyz(ix,iy,iz) = 0.0_num
+          ezx(ix,iy,iz) = 0.0_num
+          ezy(ix,iy,iz) = 0.0_num
+          bxy(ix,iy,iz) = 0.0_num
+          bxz(ix,iy,iz) = 0.0_num
+          byx(ix,iy,iz) = 0.0_num
+          byz(ix,iy,iz) = 0.0_num
+          bzx(ix,iy,iz) = 0.0_num
+          bzy(ix,iy,iz) = 0.0_num
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDIF
+
+
+
+  
+END subroutine field_damping_bcs
 ! ________________________________________________________________________________________
 !> @brief
 !> PUSH E field a full  time step

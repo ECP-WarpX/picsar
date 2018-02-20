@@ -144,6 +144,12 @@ MODULE fields
   INTEGER(idp):: nordery
   !> order in z of the FDTD Maxwell solver
   INTEGER(idp):: norderz
+  !> n_pml in x direction 
+  INTEGER(idp):: nx_pml
+  !> n_pml in y direction 
+  INTEGER(idp):: ny_pml
+  !> n_pml in z direction 
+  INTEGER(idp):: nz_pml
   !> Number of guard cells in x
   INTEGER(idp):: nxguards
   !> Number of guard cells in y
@@ -219,6 +225,14 @@ MODULE fields
   REAL(num), POINTER, DIMENSION(:, :, :) :: rho_r
   !> MPI-domain current grid in z - Fourier space
   REAL(num), POINTER, DIMENSION(:, :, :) :: rhoold_r
+
+  !> MPI-domain splitted EM fields for PML
+  REAL(num), POINTER, DIMENSIOn(:,:,:) :: exy_r, exz_r, eyx_r, eyz_r, ezx_r,&
+  ezy_r, bxy_r, bxz_r, byx_r, byz_r, bzx_r, bzy_r
+  REAL(num) , POINTER, DIMENSION(:,:,:) :: exy,exz,eyx,eyz,ezx,ezy, &
+        bxy,bxz,byx,byz,bzx,bzy
+  REAL(num) ,ALLOCATABLE, DIMENSION(:,:,:) :: sigma_x_e, sigma_y_e, sigma_z_e, &
+        sigma_x_b, sigma_y_b, sigma_z_b
   !> MPI-domain electric field grid in x - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: exf
   !> MPI-domain electric field grid in y - Fourier space
@@ -656,7 +670,7 @@ END MODULE particles
 MODULE params
   USE constants
   !> iteration number
-  INTEGER(idp)         :: it
+  INTEGER(idp)         :: it=0_idp
   !> Total number of steps
   INTEGER(idp)         :: nsteps
   !> Initial frame Gamma factor (in the case of a moving frame)
@@ -1120,8 +1134,10 @@ MODULE group_parameters!#do not parse
 
   !> Cell domain for load balancing general case (taking into account
   !--guardcells)
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: cell_z_min_g, cell_z_max_g
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: cell_y_min_g, cell_y_max_g
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: cell_z_min_g, cell_z_max_g, &
+  cell_x_min_g
+  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: cell_y_min_g, cell_y_max_g, &
+  cell_x_max_g
   INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: size_exchanges_l2g_recv_z, size_exchanges_g2l_recv_z
   INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: size_exchanges_g2l_send_z,size_exchanges_l2g_send_z 
   INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: g_first_cell_to_recv_z,l_first_cell_to_recv_z
@@ -1159,6 +1175,17 @@ MODULE group_parameters!#do not parse
   !done by each mpi in mpi comms group during l->g and g->l communications respectively
   INTEGER(idp)  :: nb_comms_g2l,nb_comms_l2g
   INTEGER(isp) , DIMENSION(3) :: p3d_istart, p3d_iend , p3d_fstart,p3d_fend, p3d_fsize, p3d_isize
+
+  !> Tells if current group is on z axis domain boundary
+  LOGICAL(lp)    :: is_group_z_boundary_max, is_group_z_boundary_min
+  !> Tells if current group is on y axis domain boundary
+  LOGICAL(lp)    :: is_group_y_boundary_max, is_group_y_boundary_min
+  !> Tells if current group is on x axis domain boundary
+  LOGICAL(lp)    :: is_group_x_boundary_max, is_group_x_boundary_min
+  !> Is current group containing a Perfectly Matched Layer region
+  !> True if group on domain boundary and absorbing bcs true
+  LOGICAL(lp)    :: is_group_pml
+
 END MODULE
 
 #endif
@@ -1177,6 +1204,7 @@ MODULE shared_data
   LOGICAL(idp) :: fftw_with_mpi, fftw_mpi_transpose, fftw_threads_ok, fftw_hybrid
   LOGICAL(lp)   :: p3dfft_flag=.FALSE.
   LOGICAL(lp)   :: p3dfft_stride
+  LOGICAL(lp)   :: absorbing_bcs
   !> First and last indexes of real data in group (only z is relevant for now)
   INTEGER(idp)  ::   iz_min_r, iz_max_r, iy_min_r, iy_max_r, ix_min_r, ix_max_r
 

@@ -781,14 +781,21 @@ MODULE gpstd_solver
 
     INTEGER(idp)           :: i, j
     COMPLEX(cpx)           :: ii
-    INTEGER(idp)           :: nfftx, nffty, nfftz,nfftxr
+    INTEGER(idp)           :: nfftx, nffty, nfftz,nfftxr, nbloc_ccmat, nbloc_vnew
     LOGICAL(lp)            :: switch
     REAL(num)              :: coeff_norm
     TYPE(C_PTR)            :: cdata
-
+ 
+    IF(absorbing_bcs) THEN
+      nbloc_ccmat = 17_idp
+      nbloc_vnew = 12_idp
+    ELSE IF(.NOT. absorbing_bcs) THEN
+      nbloc_ccmat = 11_idp
+      nbloc_vnew = 6_idp
+    ENDIF
     CALL select_case_dims_local(nfftx, nffty, nfftz)
     ii=DCMPLX(0.0_num, 1.0_num)
-    CALL allocate_new_matrix_vector(11_idp)
+    CALL allocate_new_matrix_vector(nbloc_ccmat)
     nfftxr = nfftx/2+1
     IF(p3dfft_flag) nfftxr = nfftx
     CALL init_kspace
@@ -799,8 +806,8 @@ MODULE gpstd_solver
     !> for psatd implementation there is 11 field components 
     !> cc_mat blocks are initally as an 11x11 block matrix 
     !> At the end of the routine, useless blcoks are deleted  
-    DO i=1_idp, 11_idp
-      DO j=1_idp, 11_idp
+    DO i=1_idp, nbloc_ccmat
+      DO j=1_idp, nbloc_ccmat
         ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(nfftxr, nffty,    &
         nfftz))
         cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = nfftxr
@@ -817,40 +824,40 @@ MODULE gpstd_solver
 
     IF(g_spectral) THEN
       IF(p3dfft_flag) THEN  ! hybrid with p3dfft
-        DO i = 1,11
+        DO i = 1,nbloc_ccmat
           ALLOCATE(vold(nmatrixes)%block_vector(i)%block3dc(nkx,nky,nkz))
         ENDDO
-        DO i = 1,6
+        DO i = 1,nbloc_vnew
           ALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc(nkx,nky,nkz))
         ENDDO
       ELSE IF(fftw_with_mpi) THEN ! hybrid or global with fftw
-        DO i =1,11
+        DO i =1,nbloc_ccmat
           cdata = fftw_alloc_complex(alloc_local)
           CALL c_f_pointer(cdata, vold(nmatrixes)%block_vector(i)%block3dc, [nkx, nky, nkz])
         ENDDO
-        DO i=1,6
+        DO i=1,nbloc_vnew
           cdata = fftw_alloc_complex(alloc_local)
           CALL c_f_pointer(cdata, vnew(nmatrixes)%block_vector(i)%block3dc,[nkx, nky, nkz])
         ENDDO
       ELSE IF(.NOT. fftw_with_mpi) THEN ! local psatd
-        DO i = 1,11
+        DO i = 1,nbloc_ccmat
           ALLOCATE(vold(nmatrixes)%block_vector(i)%block3dc(nkx,nky,nkz))
         ENDDO
-        DO i = 1,6
+        DO i = 1,nbloc_vnew
           ALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc(nkx,nky,nkz))
         ENDDO
       ENDIF
-      DO i = 1,11
+      DO i = 1,nbloc_ccmat
         vold(nmatrixes)%block_vector(i)%nx = nfftxr
         vold(nmatrixes)%block_vector(i)%ny = nffty
         vold(nmatrixes)%block_vector(i)%nz = nfftz
       ENDDO
-      DO i=1,6
+      DO i=1,nbloc_vnew
         vnew(nmatrixes)%block_vector(i)%nx = nfftxr
         vnew(nmatrixes)%block_vector(i)%ny = nffty
         vnew(nmatrixes)%block_vector(i)%nz = nfftz
       ENDDO
-      DO i=7,11
+      DO i=nbloc_vnew + 1_idp,nbloc_ccmat
         ALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc(1,1,1))
         vnew(nmatrixes)%block_vector(i)%nx = 1
         vnew(nmatrixes)%block_vector(i)%ny = 1
@@ -859,11 +866,302 @@ MODULE gpstd_solver
     ENDIF
 
     !> Init all blocks to 0.0
-    DO i = 1,11
-      DO j=1,11
+    DO i = 1,nbloc_ccmat
+      DO j=1,nbloc_ccmat
         cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc = CMPLX(0.0_num,0.0_num)
       ENDDO
     ENDDO
+
+    IF (absorbing_bcs) THEN
+      CALL compute_cc_mat_splitted_fields()
+    ELSE IF(.NOT. absorbing_bcs) THEN  
+      CALL compute_cc_mat_merged_fields()
+    ENDIF
+  
+ 
+    !> Renormalize cc_mat blocks
+    !> Because fftw_r2c and followed by fftw_c2r multiplies fields by 
+    !> nfftx*nffty*nfftz 
+    !> This way, no need to normalize fields in a separate step
+
+
+    ! Introduce fft normalisation factor in mat bloc mult
+    CALL select_case_dims_global(nfftx,nffty,nfftz)
+    coeff_norm = 1.0_num/(nfftx*nffty*nfftz)
+
+    DO i=1,nbloc_ccmat
+      DO j=1,nbloc_ccmat
+          cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc =                            &
+          coeff_norm*cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc
+      ENDDO
+    ENDDO
+
+    !> Delete uninitialized blocks
+    DO i=1,nbloc_ccmat
+      DO j=1,nbloc_ccmat
+        IF(sum(abs(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc))                   &
+        /size(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc)  == 0.0_num) THEN
+          DEALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc)
+          ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc(1,1,1))
+          cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc(1,1,1) = (0._num,0._num)
+          cc_mat(nmatrixes)%block_matrix2d(i,j)%nx = 1
+          cc_mat(nmatrixes)%block_matrix2d(i,j)%ny = 1
+          cc_mat(nmatrixes)%block_matrix2d(i,j)%nz = 1
+        ENDIF
+      ENDDO
+    ENDDO
+
+    !> Delete kspace and at_op blocks
+    !> Might not delete these blocks if current filtering or field correction is
+    !> needed in Fourier space
+    CALL delete_k_space
+  END SUBROUTINE init_gpstd
+
+
+  SUBROUTINE compute_cc_mat_splitted_fields()
+    USE shared_data
+    USE matrix_coefficients
+    USE constants
+    USE params, ONLY : dt
+    INTEGER(idp) :: i,j,k
+    COMPLEX(cpx) ::  ii
+    LOGICAL(lp)            :: switch
+
+    !> cc_mat_(nmatrixes)block_matrix2d(i,j) components are sorted using the
+    !>following nomenclature 
+    !> 1-> exyf; 2->exzf; 3->eyxf; 4->byzf; 5->ezxf; 6->ezyf
+    !> 7-> bxyf; 8->bxzf; 9->byxf; 10->byzf; 11->bzxf; 12->bzyf
+    !> 13-> jxf; 14->jyf; 15->jzf; 16->rhooldf; 17->rhof
+    !> cc_mat_(nmatrixes)block_matrix2d(i,j) is the contribution of the j-th
+    !> scalar field to the i-th scalar field 
+
+    ii=DCMPLX(0.0_num, 1.0_num)
+
+    !> Contribution of E field to E field and B field to B field
+    DO i=1, 12
+     cc_mat(nmatrixes)%block_matrix2d(i, i)%block3dc =&
+     AT_OP(nmatrixes2)%block_vector(2)%block3dc
+    ENDDO
+     ! contribution of current to elec field 
+     ! by convention, current will only contribute to exy, eyx, ezx 
+    DO i = 1, 3
+      j = 2*(i-1) + 1
+      k = i+12
+      cc_mat(nmatrixes)%block_matrix2d(j,k)%block3dc = &
+      (-1._num)*clight*mu0*AT_OP(nmatrixes2)%block_vector(1)%block3dc
+    ENDDO
+
+    !contribution rho old by convention only contributes to exy ,eyx ezx
+    switch = .FALSE.
+    IF(ABS(Kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)) .EQ. 0.0_num)    THEN
+      Kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1) = (1.0_num, 0.0_num)
+      switch = .TRUE.
+    ENDIF
+    ! Contribution of rhooldf to E
+    DO i = 1, 3
+      j = 2*(i-1)+1
+      cc_mat(nmatrixes)%block_matrix2d(j, 16_idp)%block3dc = DCMPLX(0.,&
+      1.)*(AT_OP(nmatrixes2)%block_vector(2)%block3dc&
+      -1./(clight*dt)*AT_OP(nmatrixes2)%block_vector(1)%block3dc)&
+      /Kspace(nmatrixes2)%block_vector(10)%block3dc**2
+      cc_mat(nmatrixes)%block_matrix2d(j, 16_idp)%block3dc =&
+      cc_mat(nmatrixes)%block_matrix2d(j, 16_idp)%block3dc&
+      *Kspace(nmatrixes2)%block_vector(3*i-1)%block3dc  
+     IF(switch) THEN
+        cc_mat(nmatrixes)%block_matrix2d(j, 16_idp)%block3dc(1, 1, 1) =&
+        -1.0_num/3.0_num*(0.0_num, 1.0_num)*(clight*dt)**2    
+     ENDIF
+
+      !> If current mpi task contains null frequency then performs Taylor
+      !expansion for cc_mat(nmatrixes)%block_matrix2d(i, 16_idp)%block3dc(1, 1,
+      !1)
+      cc_mat(nmatrixes)%block_matrix2d(j, 16_idp)%block3dc = 1.0_num/eps0&
+      *cc_mat(nmatrixes)%block_matrix2d(j, 16_idp)%block3dc
+    ENDDO
+    !> End contribution rhooldf to E
+    IF(switch) THEN
+      Kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1) = DCMPLX(0.0_num,&
+      0.0_num)
+    ENDIF
+    
+    !> Begin contribution rhof to E
+    DO i = 1, 3
+      j = 2*(i-1)+1
+      cc_mat(nmatrixes)%block_matrix2d(j, 17_idp)%block3dc = DCMPLX(0.,&
+      1.)*(1./(clight*dt)* AT_OP(nmatrixes2)%block_vector(1)%block3dc-DCMPLX(1.,     &
+      0.))/Kspace(nmatrixes2)%block_vector(10)%block3dc**2
+      cc_mat(nmatrixes)%block_matrix2d(j, 17_idp)%block3dc =&
+      cc_mat(nmatrixes)%block_matrix2d(j, 17_idp)%block3dc&
+      *Kspace(nmatrixes2)%block_vector(3*i-1)%block3dc
+      IF(switch) THEN
+        cc_mat(nmatrixes)%block_matrix2d(j, 17_idp)%block3dc(1, 1, 1) =&
+        -1.0_num/6.0_num*(0.0_num, 1.0_num)*(clight*dt)**2
+      ENDIF
+
+      !> If current mpi task contains null frequency then performs Taylor
+      !expansion for cc_mat(nmatrixes)%block_matrix2d(i, 17_idp)%block3dc(1, 1,
+      !1)
+      cc_mat(nmatrixes)%block_matrix2d(j, 17_idp)%block3dc = 1.0_num/eps0 *&
+      cc_mat(nmatrixes)%block_matrix2d(j, 17_idp)%block3dc
+    ENDDO
+    !> END contribution rhof to E    
+    IF(switch) THEN
+      Kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)   = DCMPLX(0., 0.)
+    ENDIF
+
+    !>  Begin Contribution of j to B
+    cc_mat(nmatrixes)%block_matrix2d(7, 14)%block3dc = - mu0*&
+    ii*Kspace(nmatrixes2)%block_vector(8)%block3dc*&
+    AT_OP(nmatrixes2)%block_vector(3)%block3dc
+
+
+    cc_mat(nmatrixes)%block_matrix2d(7, 15)%block3dc = -&
+    mu0*(-ii)*Kspace(nmatrixes2)%block_vector(5)%block3dc*&
+    AT_OP(nmatrixes2)%block_vector(3)%block3dc
+
+
+
+    cc_mat(nmatrixes)%block_matrix2d(9, 13)%block3dc = -&
+    mu0*(-ii)*Kspace(nmatrixes2)%block_vector(8)%block3dc*&
+    AT_OP(nmatrixes2)%block_vector(3)%block3dc
+
+
+    cc_mat(nmatrixes)%block_matrix2d(9, 15)%block3dc = - mu0*&
+    ii*Kspace(nmatrixes2)%block_vector(2)%block3dc*&
+    AT_OP(nmatrixes2)%block_vector(3)%block3dc
+
+
+    cc_mat(nmatrixes)%block_matrix2d(11, 13)%block3dc = - mu0*&
+    ii*Kspace(nmatrixes2)%block_vector(5)%block3dc*&
+    AT_OP(nmatrixes2)%block_vector(3)%block3dc
+
+
+    cc_mat(nmatrixes)%block_matrix2d(11, 14)%block3dc =&
+    -mu0*(-ii)*Kspace(nmatrixes2)%block_vector(2)%block3dc*&
+    AT_OP(nmatrixes2)%block_vector(3)%block3dc
+    !> End contribution J to B
+
+    !> Begin contribution of B to E
+
+    cc_mat(nmatrixes)%block_matrix2d(2,9)%block3dc = -&
+    ii*Kspace(nmatrixes2)%block_vector(7)%block3dc*clight&
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+
+    cc_mat(nmatrixes)%block_matrix2d(2,10)%block3dc = -&
+    ii*Kspace(nmatrixes2)%block_vector(7)%block3dc*clight&
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+
+    cc_mat(nmatrixes)%block_matrix2d(1, 11)%block3dc =&
+    ii*Kspace(nmatrixes2)%block_vector(4)%block3dc*clight&
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+
+    cc_mat(nmatrixes)%block_matrix2d(1, 12)%block3dc =&
+    ii*Kspace(nmatrixes2)%block_vector(4)%block3dc*clight&
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+
+
+    cc_mat(nmatrixes)%block_matrix2d(4, 7)%block3dc =&
+    ii*Kspace(nmatrixes2)%block_vector(7)%block3dc*clight&
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+
+    cc_mat(nmatrixes)%block_matrix2d(4, 8)%block3dc =&
+    ii*Kspace(nmatrixes2)%block_vector(7)%block3dc*clight&
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+
+
+    cc_mat(nmatrixes)%block_matrix2d(3, 11)%block3dc =&
+    -ii*Kspace(nmatrixes2)%block_vector(1)%block3dc*clight&
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+
+    cc_mat(nmatrixes)%block_matrix2d(3, 12)%block3dc =&
+    -ii*Kspace(nmatrixes2)%block_vector(1)%block3dc*clight&
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+
+
+
+    cc_mat(nmatrixes)%block_matrix2d(6, 7)%block3dc = -&
+    ii*Kspace(nmatrixes2)%block_vector(4)%block3dc*clight&
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+
+    cc_mat(nmatrixes)%block_matrix2d(6, 8)%block3dc = -&
+    ii*Kspace(nmatrixes2)%block_vector(4)%block3dc*clight&
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+
+
+    cc_mat(nmatrixes)%block_matrix2d(5, 9)%block3dc =&
+    ii*Kspace(nmatrixes2)%block_vector(1)%block3dc*clight&
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+
+    cc_mat(nmatrixes)%block_matrix2d(5, 10)%block3dc =&
+    ii*Kspace(nmatrixes2)%block_vector(1)%block3dc*clight&
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+
+    !> End contribution of B to E
+ 
+    !> Begin contribution E to B
+ 
+    cc_mat(nmatrixes)%block_matrix2d(8, 4)%block3dc =&
+    ii*Kspace(nmatrixes2)%block_vector(8)%block3dc/clight&
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+
+    cc_mat(nmatrixes)%block_matrix2d(8, 3)%block3dc =&
+    ii*Kspace(nmatrixes2)%block_vector(8)%block3dc/clight&
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+
+    cc_mat(nmatrixes)%block_matrix2d(7, 5)%block3dc =&
+    -ii*Kspace(nmatrixes2)%block_vector(5)%block3dc/clight&
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+
+    cc_mat(nmatrixes)%block_matrix2d(7, 6)%block3dc =&
+    -ii*Kspace(nmatrixes2)%block_vector(5)%block3dc/clight&
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+
+    cc_mat(nmatrixes)%block_matrix2d(10, 1)%block3dc =&
+    -ii*Kspace(nmatrixes2)%block_vector(8)%block3dc/clight&
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+   
+   
+    cc_mat(nmatrixes)%block_matrix2d(10, 2)%block3dc =&
+    -ii*Kspace(nmatrixes2)%block_vector(8)%block3dc/clight&
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+   
+    cc_mat(nmatrixes)%block_matrix2d(9, 5)%block3dc =&
+    ii*Kspace(nmatrixes2)%block_vector(2)%block3dc/clight&
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+   
+    cc_mat(nmatrixes)%block_matrix2d(9, 6)%block3dc =&
+    ii*Kspace(nmatrixes2)%block_vector(2)%block3dc/clight&
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+   
+   
+    cc_mat(nmatrixes)%block_matrix2d(12, 1)%block3dc =&
+    ii*Kspace(nmatrixes2)%block_vector(5)%block3dc/clight&
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+   
+    cc_mat(nmatrixes)%block_matrix2d(12, 2)%block3dc =&
+    ii*Kspace(nmatrixes2)%block_vector(5)%block3dc/clight&
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+   
+    cc_mat(nmatrixes)%block_matrix2d(11, 3)%block3dc =&
+    -ii*Kspace(nmatrixes2)%block_vector(2)%block3dc/clight&
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+   
+    cc_mat(nmatrixes)%block_matrix2d(11, 4)%block3dc =&
+    -ii*Kspace(nmatrixes2)%block_vector(2)%block3dc/clight&
+    *AT_OP(nmatrixes2)%block_vector(1)%block3dc
+    !> End contribution E to B
+    END SUBROUTINE compute_cc_mat_splitted_fields
+
+
+    SUBROUTINE compute_cc_mat_merged_fields()
+    USE shared_data
+    USE matrix_coefficients
+    USE constants
+    USE params, ONLY : dt
+    INTEGER(idp)  :: i,j   
+    COMPLEX(cpx) ::  ii
+    LOGICAL(lp)            :: switch
+    ii=DCMPLX(0.0_num, 1.0_num)
 
     !> cc_mat_(nmatrixes)block_matrix2d(i,j) components are sorted using the
     !>following nomenclature 
@@ -1035,44 +1333,7 @@ MODULE gpstd_solver
       kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)   = DCMPLX(0., 0.)
     ENDIF
     !> End contribution of rho field to E field   
- 
-    !> Renormalize cc_mat blocks
-    !> Because fftw_r2c and followed by fftw_c2r multiplies fields by 
-    !> nfftx*nffty*nfftz 
-    !> This way, no need to normalize fields in a separate step
-
-
-    ! Introduce fft normalisation factor in mat bloc mult
-    CALL select_case_dims_global(nfftx,nffty,nfftz)
-    coeff_norm = 1.0_num/(nfftx*nffty*nfftz)
-
-    DO i=1,11
-      DO j=1,11
-          cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc =                            &
-          coeff_norm*cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc
-      ENDDO
-    ENDDO
-
-    !> Delete uninitialized blocks
-    DO i=1,11
-      DO j=1,11
-        IF(sum(abs(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc))                   &
-        /size(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc)  == 0.0_num) THEN
-          DEALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc)
-          ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc(1,1,1))
-          cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc(1,1,1) = (0._num,0._num)
-          cc_mat(nmatrixes)%block_matrix2d(i,j)%nx = 1
-          cc_mat(nmatrixes)%block_matrix2d(i,j)%ny = 1
-          cc_mat(nmatrixes)%block_matrix2d(i,j)%nz = 1
-        ENDIF
-      ENDDO
-    ENDDO
-
-    !> Delete kspace and at_op blocks
-    !> Might not delete these blocks if current filtering or field correction is
-    !> needed in Fourier space
-    CALL delete_k_space
-  END SUBROUTINE init_gpstd
+    END SUBROUTINE compute_cc_mat_merged_fields
 
   ! ______________________________________________________________________________________
   !> @brief
@@ -1174,26 +1435,54 @@ MODULE gpstd_solver
     USE shared_data
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz
-
-    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-    DO iz=-nzguards, nz+nzguards-1
-      DO iy=-nyguards,ny+nyguards-1
-        DO ix=-nxguards,nx+nxguards-1
-          ex_r(ix, iy, iz)=ex(ix, iy, iz)
-          ey_r(ix, iy, iz)=ey(ix, iy, iz)
-          ez_r(ix, iy, iz)=ez(ix, iy, iz)
-          bx_r(ix, iy, iz)=bx(ix, iy, iz)
-          by_r(ix, iy, iz)=by(ix, iy, iz)
-          bz_r(ix, iy, iz)=bz(ix, iy, iz)
-          jx_r(ix, iy, iz)=jx(ix, iy, iz)
-          jy_r(ix, iy, iz)=jy(ix, iy, iz)
-          jz_r(ix, iy, iz)=jz(ix, iy, iz)
-          rho_r(ix, iy, iz)=rho(ix, iy, iz)
-          rhoold_r(ix, iy, iz)=rhoold(ix, iy, iz)
+    
+    IF(.NOT. absorbing_bcs) THEN
+      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+      DO iz=-nzguards, nz+nzguards-1
+        DO iy=-nyguards,ny+nyguards-1
+          DO ix=-nxguards,nx+nxguards-1
+            ex_r(ix, iy, iz)=ex(ix, iy, iz)
+            ey_r(ix, iy, iz)=ey(ix, iy, iz)
+            ez_r(ix, iy, iz)=ez(ix, iy, iz)
+            bx_r(ix, iy, iz)=bx(ix, iy, iz)
+            by_r(ix, iy, iz)=by(ix, iy, iz)
+            bz_r(ix, iy, iz)=bz(ix, iy, iz)
+            jx_r(ix, iy, iz)=jx(ix, iy, iz)
+            jy_r(ix, iy, iz)=jy(ix, iy, iz)
+            jz_r(ix, iy, iz)=jz(ix, iy, iz)
+            rho_r(ix, iy, iz)=rho(ix, iy, iz)
+            rhoold_r(ix, iy, iz)=rhoold(ix, iy, iz)
+          END DO
         END DO
       END DO
-    END DO
-    !$OMP END PARALLEL DO
+      !$OMP END PARALLEL DO
+    ELSE IF(absorbing_bcs) THEN
+      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+      DO iz=-nzguards, nz+nzguards-1
+        DO iy=-nyguards,ny+nyguards-1
+          DO ix=-nxguards,nx+nxguards-1
+            exy_r(ix, iy, iz)=exy(ix, iy, iz)
+            eyx_r(ix, iy, iz)=eyx(ix, iy, iz)
+            ezx_r(ix, iy, iz)=ezx(ix, iy, iz)
+            bxy_r(ix, iy, iz)=bxy(ix, iy, iz)
+            byx_r(ix, iy, iz)=byx(ix, iy, iz)
+            bzx_r(ix, iy, iz)=bzx(ix, iy, iz)
+            exz_r(ix, iy, iz)=exz(ix, iy, iz)
+            eyz_r(ix, iy, iz)=eyz(ix, iy, iz)
+            ezy_r(ix, iy, iz)=ezy(ix, iy, iz)
+            bxz_r(ix, iy, iz)=bxz(ix, iy, iz)
+            byz_r(ix, iy, iz)=byz(ix, iy, iz)
+            bzy_r(ix, iy, iz)=bzy(ix, iy, iz)
+            jx_r(ix, iy, iz)=jx(ix, iy, iz)
+            jy_r(ix, iy, iz)=jy(ix, iy, iz)
+            jz_r(ix, iy, iz)=jz(ix, iy, iz)
+            rho_r(ix, iy, iz)=rho(ix, iy, iz)
+            rhoold_r(ix, iy, iz)=rhoold(ix, iy, iz)
+          END DO
+        END DO
+      END DO
+      !$OMP END PARALLEL DO  
+    ENDIF
   END SUBROUTINE copy_field_forward
 
   SUBROUTINE copy_field_backward()
@@ -1203,21 +1492,43 @@ MODULE gpstd_solver
     USE shared_data
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz
-
-    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-    DO iz=-nzguards, nz+nzguards-1
-      DO iy=-nyguards,ny+nyguards-1
-        DO ix=-nxguards,nx+nxguards-1
-          ex(ix, iy, iz)=ex_r(ix, iy, iz)
-          ey(ix, iy, iz)=ey_r(ix, iy, iz)
-          ez(ix, iy, iz)=ez_r(ix, iy, iz)
-          bx(ix, iy, iz)=bx_r(ix, iy, iz)
-          by(ix, iy, iz)=by_r(ix, iy, iz)
-          bz(ix, iy, iz)=bz_r(ix, iy, iz)
+    IF(.NOT. absorbing_bcs) THEN
+      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+      DO iz=-nzguards, nz+nzguards-1
+        DO iy=-nyguards,ny+nyguards-1
+          DO ix=-nxguards,nx+nxguards-1
+            ex(ix, iy, iz)=ex_r(ix, iy, iz)
+            ey(ix, iy, iz)=ey_r(ix, iy, iz)
+            ez(ix, iy, iz)=ez_r(ix, iy, iz)
+            bx(ix, iy, iz)=bx_r(ix, iy, iz)
+            by(ix, iy, iz)=by_r(ix, iy, iz)
+            bz(ix, iy, iz)=bz_r(ix, iy, iz)
+          END DO
         END DO
       END DO
-    END DO
-    !$OMP END PARALLEL DO
+      !$OMP END PARALLEL DO
+    ELSE IF(absorbing_bcs) THEN
+      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+      DO iz=-nzguards, nz+nzguards-1
+        DO iy=-nyguards,ny+nyguards-1
+          DO ix=-nxguards,nx+nxguards-1
+            exy(ix, iy, iz)=exy_r(ix, iy, iz)
+            eyx(ix, iy, iz)=eyx_r(ix, iy, iz)
+            ezx(ix, iy, iz)=ezx_r(ix, iy, iz)
+            bxy(ix, iy, iz)=bxy_r(ix, iy, iz)
+            byx(ix, iy, iz)=byx_r(ix, iy, iz)
+            bzx(ix, iy, iz)=bzx_r(ix, iy, iz)
+            exz(ix, iy, iz)=exz_r(ix, iy, iz)
+            eyz(ix, iy, iz)=eyz_r(ix, iy, iz)
+            ezy(ix, iy, iz)=ezy_r(ix, iy, iz)
+            bxz(ix, iy, iz)=bxz_r(ix, iy, iz)
+            byz(ix, iy, iz)=byz_r(ix, iy, iz)
+            bzy(ix, iy, iz)=bzy_r(ix, iy, iz)
+          END DO
+        END DO
+      END DO
+      !$OMP END PARALLEL DO
+    ENDIF
   END SUBROUTINE copy_field_backward
 
 #endif

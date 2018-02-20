@@ -535,51 +535,128 @@ MODULE field_boundary
     nyy = local_ny
     nzz = local_nz
     IF(mpicom_curr == 1) THEN
-      CALL sendrecv_l2g_generalized(ex,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      ex_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized(ey,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      ey_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized(ez,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      ez_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized(bx,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      bx_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized(by,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      by_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized(bz,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      bz_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized(jx,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      jx_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized(jy,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      jy_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized(jz,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      jz_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized(rho,nx,nxguards,ny,nyguards,nz,nzguards,           &
-      rho_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized(rhoold,nx,nxguards,ny,nyguards,nz,nzguards,        &
-      rhoold_r,nxx,nyy,nzz)
+      IF(.NOT. absorbing_bcs) THEN
+        CALL sendrecv_l2g_generalized(ex,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        ex_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(ey,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        ey_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(ez,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        ez_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(bx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(by,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        by_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(bz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(jx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        jx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(jy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        jy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(jz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        jz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(rho,nx,nxguards,ny,nyguards,nz,nzguards,         &
+        rho_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(rhoold,nx,nxguards,ny,nyguards,nz,nzguards,      &
+        rhoold_r,nxx,nyy,nzz)
+      ELSE IF (absorbing_bcs) THEN
+        CALL sendrecv_l2g_generalized(exy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        exy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(eyx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        eyx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(ezx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        ezx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(bxy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bxy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(byx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        byx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(bzx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bzx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(exz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        exz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(eyz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        eyz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(ezy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        ezy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(bxz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bxz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(byz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        byz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(bzy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bzy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(jx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        jx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(jy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        jy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(jz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        jz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(rho,nx,nxguards,ny,nyguards,nz,nzguards,         &
+        rho_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(rhoold,nx,nxguards,ny,nyguards,nz,nzguards,      &
+        rhoold_r,nxx,nyy,nzz)
+      ENDIF
+
+      
     ELSE 
-      CALL sendrecv_l2g_generalized_non_blocking(ex,nx,nxguards,ny,nyguards,nz,        &
-      nzguards,ex_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized_non_blocking(ey,nx,nxguards,ny,nyguards,nz,        &
-      nzguards,ey_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized_non_blocking(ez,nx,nxguards,ny,nyguards,nz,        &
-      nzguards,ez_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized_non_blocking(bx,nx,nxguards,ny,nyguards,nz,        &
-      nzguards,bx_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized_non_blocking(by,nx,nxguards,ny,nyguards,nz,        &
-      nzguards,by_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized_non_blocking(bz,nx,nxguards,ny,nyguards,nz,        &
-      nzguards,bz_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized_non_blocking(jx,nx,nxguards,ny,nyguards,nz,        &
-      nzguards,jx_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized_non_blocking(jy,nx,nxguards,ny,nyguards,nz,        &
-      nzguards,jy_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized_non_blocking(jz,nx,nxguards,ny,nyguards,nz,        &
-      nzguards,jz_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized_non_blocking(rho,nx,nxguards,ny,nyguards,nz,       &
-      nzguards,rho_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized_non_blocking(rhoold,nx,nxguards,ny,nyguards,nz,    &
-      nzguards,rhoold_r,nxx,nyy,nzz)
+      IF(.NOT. absorbing_bcs) THEN
+        CALL sendrecv_l2g_generalized_non_blocking(ex,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,ex_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(ey,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,ey_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(ez,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,ez_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(bx,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,bx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(by,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,by_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(bz,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,bz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(jx,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,jx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(jy,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,jy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(jz,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,jz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(rho,nx,nxguards,ny,nyguards,nz,     &
+        nzguards,rho_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(rhoold,nx,nxguards,ny,nyguards,nz,  &
+        nzguards,rhoold_r,nxx,nyy,nzz)
+      ELSE IF (absorbing_bcs) THEN
+        CALL sendrecv_l2g_generalized_non_blocking(exy,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,exy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(eyx,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,eyx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(ezx,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,ezx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(bxy,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,bxy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(byx,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,byx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(bzx,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,bzx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(exz,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,exz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(eyz,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,eyz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(ezy,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,ezy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(bxz,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,bxz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(byz,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,byz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(bzy,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,bzy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(jx,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,jx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(jy,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,jy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(jz,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,jz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(rho,nx,nxguards,ny,nyguards,nz,     &
+        nzguards,rho_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(rhoold,nx,nxguards,ny,nyguards,nz,  &
+        nzguards,rhoold_r,nxx,nyy,nzz)
+      ENDIF
+
     ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
@@ -744,32 +821,86 @@ MODULE field_boundary
     nyy = local_ny
     nzz = local_nz
     IF(mpicom_curr ==1) THEN
-      CALL sendrecv_g2l_generalized(ex,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      ex_r,nxx,nyy,nzz)
-      CALL sendrecv_g2l_generalized(ey,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      ey_r,nxx,nyy,nzz)
-      CALL sendrecv_g2l_generalized(ez,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      ez_r,nxx,nyy,nzz)
-      CALL sendrecv_g2l_generalized(bx,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      bx_r,nxx,nyy,nzz)
-      CALL sendrecv_g2l_generalized(by,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      by_r,nxx,nyy,nzz)
-      CALL sendrecv_g2l_generalized(bz,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      bz_r,nxx,nyy,nzz)
-
+      IF(.NOT. absorbing_bcs) THEN
+        CALL sendrecv_g2l_generalized(ex,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        ex_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(ey,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        ey_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(ez,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        ez_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(bx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bx_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(by,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        by_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(bz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bz_r,nxx,nyy,nzz)
+      ELSE IF(absorbing_bcs) THEN
+        CALL sendrecv_g2l_generalized(exy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        exy_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(eyx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        eyx_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(ezx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        ezx_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(bxy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bxy_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(byx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        byx_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(bzx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bzx_r,nxx,nyy,nzz) 
+        CALL sendrecv_g2l_generalized(exz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        exz_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(eyz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        eyz_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(ezy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        ezy_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(bxz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bxz_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(byz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        byz_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(bzy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bzy_r,nxx,nyy,nzz)
+      ENDIF
     ELSE 
-      CALL sendrecv_g2l_generalized_non_blocking(ex,nx,nxguards,ny,nyguards,           &
-      nz,nzguards,ex_r,nxx,nyy,nzz)
-      CALL sendrecv_g2l_generalized_non_blocking(ey,nx,nxguards,ny,nyguards,           &
-      nz,nzguards,ey_r,nxx,nyy,nzz)
-      CALL sendrecv_g2l_generalized_non_blocking(ez,nx,nxguards,ny,nyguards,           &
-      nz,nzguards,ez_r,nxx,nyy,nzz)
-      CALL sendrecv_g2l_generalized_non_blocking(bx,nx,nxguards,ny,nyguards,           &
-      nz,nzguards,bx_r,nxx,nyy,nzz)
-      CALL sendrecv_g2l_generalized_non_blocking(by,nx,nxguards,ny,nyguards,           &
-      nz,nzguards,by_r,nxx,nyy,nzz)
-      CALL sendrecv_g2l_generalized_non_blocking(bz,nx,nxguards,ny,nyguards,           &
-      nz,nzguards,bz_r,nxx,nyy,nzz)
+      IF (.NOT. absorbing_bcs) THEN
+        CALL sendrecv_g2l_generalized_non_blocking(ex,nx,nxguards,ny,nyguards,         &
+        nz,nzguards,ex_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(ey,nx,nxguards,ny,nyguards,         &
+        nz,nzguards,ey_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(ez,nx,nxguards,ny,nyguards,         &
+        nz,nzguards,ez_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(bx,nx,nxguards,ny,nyguards,         &
+        nz,nzguards,bx_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(by,nx,nxguards,ny,nyguards,         &
+        nz,nzguards,by_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(bz,nx,nxguards,ny,nyguards,         &
+        nz,nzguards,bz_r,nxx,nyy,nzz)
+      ELSE IF(absorbing_bcs) THEN
+        CALL sendrecv_g2l_generalized_non_blocking(exy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        exy_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(eyx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        eyx_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(ezx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        ezx_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(bxy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bxy_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(byx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        byx_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(bzx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bzx_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(exz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        exz_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(eyz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        eyz_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(ezy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        ezy_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(bxz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bxz_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(byz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        byz_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(bzy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bzy_r,nxx,nyy,nzz)
+
+      ENDIF
     ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
@@ -1547,9 +1678,18 @@ MODULE field_boundary
       tmptime = MPI_WTIME()
     ENDIF
     ! Electric field MPI exchange between subdomains
-    CALL field_bc(ex, nxguards, nyguards, nzguards, nx, ny, nz)
-    CALL field_bc(ey, nxguards, nyguards, nzguards, nx, ny, nz)
-    CALL field_bc(ez, nxguards, nyguards, nzguards, nx, ny, nz)
+    IF(.NOT. absorbing_bcs) THEN
+      CALL field_bc(ex, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(ey, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(ez, nxguards, nyguards, nzguards, nx, ny, nz)
+    ELSE IF(absorbing_bcs) THEN
+      CALL field_bc(exy, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(exz, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(eyx, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(eyz, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(ezx, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(ezy, nxguards, nyguards, nzguards, nx, ny, nz)
+    ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(8) = localtimes(8) + (MPI_WTIME() - tmptime)
     ENDIF
@@ -1579,9 +1719,18 @@ MODULE field_boundary
       tmptime = MPI_WTIME()
     ENDIF
     ! Magnetic field MPI exchange between subdomains
-    CALL field_bc(bx, nxguards, nyguards, nzguards, nx, ny, nz)
-    CALL field_bc(by, nxguards, nyguards, nzguards, nx, ny, nz)
-    CALL field_bc(bz, nxguards, nyguards, nzguards, nx, ny, nz)
+    IF(.NOT. absorbing_bcs) THEN 
+      CALL field_bc(bx, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(by, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(bz, nxguards, nyguards, nzguards, nx, ny, nz)
+    ELSE IF(absorbing_bcs) THEN
+      CALL field_bc(bxy, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(bxz, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(byx, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(byz, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(bzx, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(bzy, nxguards, nyguards, nzguards, nx, ny, nz)
+    ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(6) = localtimes(6) + (MPI_WTIME() - tmptime)
     ENDIF
