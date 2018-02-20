@@ -1,5 +1,5 @@
 ! ________________________________________________________________________________________
-!
+
 ! *** Copyright Notice ***
 !
 ! “Particle In Cell Scalable Application Resource (PICSAR) v2”, Copyright (c) 2016,
@@ -363,7 +363,7 @@ MODULE fourier_psaotd
     IF(absorbing_bcs) THEN 
     ! reflective bcs after pml
       IF(is_group_x_boundary_min) THEN
-        DO ix = cell_x_min_g(x_coords+1),-nxg_group-1
+        DO ix = cell_x_min_g(x_coords+1),-1
           ixx = ix-cell_x_min_g(x_coords+1)+1_idp
           exy_r(ixx,:,:) = 0.0_num
           exz_r(ixx,:,:) = 0.0_num
@@ -380,7 +380,7 @@ MODULE fourier_psaotd
         ENDDO
       ENDIF
       IF(is_group_x_boundary_max) THEN
-        DO ix=nx_global + nxg_group,cell_x_max_g(x_coords+1) 
+        DO ix=nx_global ,cell_x_max_g(x_coords+1) 
           ixx = ix - cell_x_min_g(x_coords+1)+1_idp 
           exy_r(ixx,:,:) = 0.0_num
           exz_r(ixx,:,:) = 0.0_num
@@ -397,7 +397,7 @@ MODULE fourier_psaotd
         ENDDO
       ENDIF
       IF(is_group_y_boundary_min) THEN
-        DO iy = cell_y_min_g(y_coords+1),-nyg_group-1
+        DO iy = cell_y_min_g(y_coords+1),-1
           iyy = iy-cell_y_min_g(y_coords+1)+1_idp
           exy_r(:,iyy,:) = 0.0_num
           exz_r(:,iyy,:) = 0.0_num
@@ -414,7 +414,7 @@ MODULE fourier_psaotd
         ENDDO
       ENDIF
       IF(is_group_y_boundary_max) THEN
-        DO iy=ny_global + nyg_group,cell_y_max_g(y_coords+1)  
+        DO iy=ny_global ,cell_y_max_g(y_coords+1)  
           iyy = iy - cell_y_min_g(y_coords+1)+1_idp 
           exy_r(:,iyy,:) = 0.0_num
           exz_r(:,iyy,:) = 0.0_num
@@ -431,7 +431,7 @@ MODULE fourier_psaotd
         ENDDO
       ENDIF
       IF(is_group_z_boundary_min) THEN
-        DO iz = cell_z_min_g(z_coords+1),-nzg_group-1
+        DO iz = cell_z_min_g(z_coords+1),-1
           izz = iz-cell_z_min_g(z_coords+1)+1_idp
           exy_r(:,:,izz) = 0.0_num
           exz_r(:,:,izz) = 0.0_num
@@ -448,7 +448,7 @@ MODULE fourier_psaotd
         ENDDO
       ENDIF
       IF(is_group_z_boundary_max) THEN
-        DO iz=nz_global + nzg_group,cell_z_max_g(z_coords+1)  
+        DO iz=nz_global ,cell_z_max_g(z_coords+1)  
           izz = iz - cell_z_min_g(z_coords+1)+1_idp 
           exy_r(:,:,izz) = 0.0_num
           exz_r(:,:,izz) = 0.0_num
