@@ -364,7 +364,7 @@ SUBROUTINE init_pml_arrays
   INTEGER(idp) :: ix,iy,iz,ixx,iyy,izz,pow
   REAL(num)    :: coeff,b_offset, e_offset
   
-  coeff = 0.050_num
+  coeff = 0.10_num
   b_offset = 0._num
   e_offset = -0.5_num
   pow = 3_idp
@@ -455,14 +455,15 @@ SUBROUTINE init_pml_arrays
   !> axis
   !> Need more straightforward way to do this
   DO iz = cell_z_max(z_coords+1), nz_global-nz_pml,-1
-    DO iy = 0, ny-1
-      DO ix = 0,nx-1
+    DO iy = 0,ny-1
+      DO ix = 0, nx-1
         izz = iz - cell_z_min(z_coords+1)
-        sigma_z_e(ix,iy,izz) = coeff*clight/dz *(iz-(nz_global-nz_pml)+1.0_num)**2
-        sigma_z_b(ix,iy,izz) = coeff*clight/dz *(iz-(nz_global-nz_pml)+1.0_num+b_offset)**2
+        sigma_z_e(ix,iy,izz) = coeff*clight/dz*(iz-(nz_global-nz_pml)+1.0_num+e_offset)**pow
+        sigma_z_b(ix,iy,izz) = coeff*clight/dz*(iz-(nz_global-nz_pml)+1.0_num+b_offset)**pow
       ENDDO
     ENDDO
   ENDDO
+
  
   !> sigma=exp(-sigma*dt/2) 
  
@@ -472,7 +473,6 @@ SUBROUTINE init_pml_arrays
   sigma_x_b = EXP(-sigma_x_b*dt/2.0_num)
   sigma_y_b = EXP(-sigma_y_b*dt/2.0_num)
   sigma_z_b = EXP(-sigma_z_b*dt/2.0_num)
-
   !> exchange sigma arrays, so that a pml region can cover many mpi domains
   !> mpis with inside-domain  guardcells maiy contain pml coefficients too 
   !> Having pml  coefficients  in interior guardcells enables to avoid to
@@ -514,7 +514,6 @@ SUBROUTINE init_pml_arrays
       sigma_y_e(:,iy,:) = 0.0_num
       sigma_y_b(:,iy,:) = 0.0_num
     ENDDO
-  ENDIF
 
   IF(z_min_boundary) THEN
     DO iz = -nzguards,-1
@@ -525,10 +524,13 @@ SUBROUTINE init_pml_arrays
 
   IF(z_max_boundary) THEN
     DO iz = nz,nz+nzguards
-      sigma_z_e(:,iz,:) = 0.0_num
-      sigma_z_b(:,iz,:) = 0.0_num
+      sigma_z_e(:,:,iz) = 0.0_num
+      sigma_z_b(:,:,iz) = 0.0_num
     ENDDO
   ENDIF
+  ENDIF
+
+
 
 END SUBROUTINE init_pml_arrays
 

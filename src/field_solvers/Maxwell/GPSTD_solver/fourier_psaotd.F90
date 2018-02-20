@@ -358,6 +358,8 @@ MODULE fourier_psaotd
 
     ! Performs MPI exchanges for non-overlapping portions of local and FFT ARRAYS 
     CALL generalized_comms_group_l2g()
+    !> Set splitted fields to 0 in the guardcells next to pml region to act as a
+    !> reflective mirrorr
     IF(absorbing_bcs) THEN 
     ! reflective bcs after pml
       IF(is_group_x_boundary_min) THEN
