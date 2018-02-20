@@ -1640,6 +1640,7 @@ ALLOCATE(ez(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards)
 ALLOCATE(bx(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 ALLOCATE(by(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 ALLOCATE(bz(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+! > When using absorbing_bcs , allocate splitted fields 
 IF(absorbing_bcs) THEN
   ALLOCATE(exy(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
   ALLOCATE(exz(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
@@ -1680,6 +1681,7 @@ bz_p => bz
 #if defined(FFTW)
 ! ---  Allocate grid quantities in Fourier space
 IF (l_spectral) THEN
+
   ! - Case when fftw_with_mpi is .TRUE. (distributed FFT)
   IF (fftw_with_mpi) THEN
     ! - FFT arrays dimensions in Fourier space along X,Y,Z
@@ -1735,6 +1737,10 @@ IF (l_spectral) THEN
     nzz = local_nz
     ! - Case when p3dfft_flag is .TRUE. (p3dfft is used for distributed FFT)
     IF(.NOT. p3dfft_flag) THEN
+    ! - When using absorbing_bcs, merged fields are not allocated in fourier space
+    ! - neither ex_r,ey_r ... components
+    ! - In this case only splitted fields are allocated  
+    ! - The merge is done using local fields (ex = exy+exz )
      IF(.NOT. absorbing_bcs) THEN
        cin = fftw_alloc_real(2 * alloc_local);
        CALL c_f_pointer(cin, ex_r, [nxx, nyy, nzz])
@@ -1798,6 +1804,10 @@ IF (l_spectral) THEN
       ENDIF
     ! - Case when FFTW is used for the distributed FFT
     ELSE IF(p3dfft_flag) THEN
+    ! - When using absorbing_bcs, merged fields are not allocated in fourier space
+    ! - neither ex_r,ey_r ... components
+    ! - In this case only splitted fields are allocated  
+    ! - The merge is done using local fields (ex = exy+exz )
       IF(.NOT. absorbing_bcs) THEN
         ALLOCATE(ex_r(nxx,nyy,nzz))
         ALLOCATE(ey_r(nxx,nyy,nzz))
@@ -1854,6 +1864,10 @@ IF (l_spectral) THEN
     jmn=-nyguards;jmx=ny+nyguards-1
     kmn=-nzguards;kmx=nz+nzguards-1
     IF (.NOT. absorbing_bcs) THEN
+    ! - When using absorbing_bcs, merged fields are not allocated in fourier space
+    ! - neither ex_r,ey_r ... components
+    ! - In this case only splitted fields are allocated  
+    ! - The merge is done using local fields (ex = exy+exz )
       ALLOCATE(ex_r(imn:imx, jmn:jmx, kmn:kmx))
       ALLOCATE(ey_r(imn:imx, jmn:jmx, kmn:kmx))
       ALLOCATE(ez_r(imn:imx, jmn:jmx, kmn:kmx))

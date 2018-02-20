@@ -462,7 +462,10 @@ SUBROUTINE init_pml_arrays
   sigma_z_b = EXP(-sigma_z_b*dt/2.0_num)
 
   !> exchange sigma arrays, so that a pml region can cover many mpi domains
-  !> mpis with inside-domain  guardcells maiy contain pml coefficients too 
+  !> mpis with inside-domain  guardcells may contain pml coefficients too 
+  !> In this case, the pml coefficients may cover the guardcell, so field_bcs
+  !> will fill it.
+
   !> Having pml  coefficients  in interior guardcells enables to avoid to
   !> exchange fields after field damping
   CALL field_bc(sigma_x_e,nxguards,nyguards,nzguards,nx,ny,nz)
@@ -501,6 +504,7 @@ SUBROUTINE init_pml_arrays
       sigma_y_e(:,iy,:) = 0.0_num
       sigma_y_b(:,iy,:) = 0.0_num
     ENDDO
+  ENDIF
 
   IF(z_min_boundary) THEN
     DO iz = -nzguards,-1
@@ -514,7 +518,6 @@ SUBROUTINE init_pml_arrays
       sigma_z_e(:,:,iz) = 0.0_num
       sigma_z_b(:,:,iz) = 0.0_num
     ENDDO
-  ENDIF
   ENDIF
 
 
