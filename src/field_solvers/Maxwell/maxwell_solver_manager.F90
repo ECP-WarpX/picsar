@@ -124,8 +124,9 @@ END SUBROUTINE
 
 ! ________________________________________________________________________________________
 !> @brief
-!> PML damping in pml region
-!
+!> Field damping in pml region
+!> Damps fields in pml region
+!> if vaccum then does nothing
 !> @author
 !> Haithem Kallala
 !
@@ -159,131 +160,40 @@ SUBROUTINE field_damping_bcs
     ENDDO
   ENDDO
   !$OMP END PARALLEL DO
-  !IF(x_min_boundary) THEN 
-  !  DO iz = -nzguards,nz+nzguards
-  !    DO iy = -nyguards,ny+nyguards
-  !      DO ix = -nxguards,-1
-  !        exy(ix,iy,iz) = 0.0_num 
-  !        exz(ix,iy,iz) = 0.0_num 
-  !        eyx(ix,iy,iz) = 0.0_num 
-  !        eyz(ix,iy,iz) = 0.0_num 
-  !        ezx(ix,iy,iz) = 0.0_num 
-  !        ezy(ix,iy,iz) = 0.0_num 
-  !        bxy(ix,iy,iz) = 0.0_num 
-  !        bxz(ix,iy,iz) = 0.0_num 
-  !        byx(ix,iy,iz) = 0.0_num 
-  !        byz(ix,iy,iz) = 0.0_num 
-  !        bzx(ix,iy,iz) = 0.0_num 
-  !        bzy(ix,iy,iz) = 0.0_num 
-  !      ENDDO
-  !    ENDDO
-  !  ENDDO 
-  !ENDIF
-  !IF(x_max_boundary) THEN
-  !  DO iz = -nzguards,nz+nzguards
-  !    DO iy = -nyguards,ny+nyguards
-  !      DO ix = nx, nx+nxguards-1 
-  !        exy(ix,iy,iz) = 0.0_num
-  !        exz(ix,iy,iz) = 0.0_num
-  !        eyx(ix,iy,iz) = 0.0_num
-  !        eyz(ix,iy,iz) = 0.0_num
-  !        ezx(ix,iy,iz) = 0.0_num
-  !        ezy(ix,iy,iz) = 0.0_num
-  !        bxy(ix,iy,iz) = 0.0_num
-  !        bxz(ix,iy,iz) = 0.0_num
-  !        byx(ix,iy,iz) = 0.0_num
-  !        byz(ix,iy,iz) = 0.0_num
-  !        bzx(ix,iy,iz) = 0.0_num
-  !        bzy(ix,iy,iz) = 0.0_num
-  !      ENDDO
-  !    ENDDO
-  !  ENDDO
-  !ENDIF
-  !IF(y_min_boundary) THEN
-  !  DO iz = -nzguards,nz+nzguards
-  !    DO iy = -nyguards,-1
-  !      DO ix = -nxguards,nx+nxguards
-  !        exy(ix,iy,iz) = 0.0_num
-  !        exz(ix,iy,iz) = 0.0_num
-  !        eyx(ix,iy,iz) = 0.0_num
-  !        eyz(ix,iy,iz) = 0.0_num
-  !        ezx(ix,iy,iz) = 0.0_num
-  !        ezy(ix,iy,iz) = 0.0_num
-  !        bxy(ix,iy,iz) = 0.0_num
-  !        bxz(ix,iy,iz) = 0.0_num
-  !        byx(ix,iy,iz) = 0.0_num
-  !        byz(ix,iy,iz) = 0.0_num
-  !        bzx(ix,iy,iz) = 0.0_num
-  !        bzy(ix,iy,iz) = 0.0_num
-  !      ENDDO
-  !    ENDDO
-  !  ENDDO
-  !ENDIF
-  !IF(y_max_boundary) THEN
-  !  DO iz = -nzguards,nz+nzguards
-  !    DO iy = ny,ny+nyguards-1
-  !      DO ix = -nxguards, nx+nxguards
-  !        exy(ix,iy,iz) = 0.0_num
-  !        exz(ix,iy,iz) = 0.0_num
-  !        eyx(ix,iy,iz) = 0.0_num
-  !        eyz(ix,iy,iz) = 0.0_num
-  !        ezx(ix,iy,iz) = 0.0_num
-  !        ezy(ix,iy,iz) = 0.0_num
-  !        bxy(ix,iy,iz) = 0.0_num
-  !        bxz(ix,iy,iz) = 0.0_num
-  !        byx(ix,iy,iz) = 0.0_num
-  !        byz(ix,iy,iz) = 0.0_num
-  !        bzx(ix,iy,iz) = 0.0_num
-  !        bzy(ix,iy,iz) = 0.0_num
-  !      ENDDO
-  !    ENDDO
-  !  ENDDO
-  !ENDIF
-  !IF(z_min_boundary) THEN
-  !  DO iz = -nzguards,-1
-  !    DO iy = -nyguards,ny+nyguards
-  !      DO ix = -nxguards,nx+nxguards
-  !        exy(ix,iy,iz) = 0.0_num
-  !        exz(ix,iy,iz) = 0.0_num
-  !        eyx(ix,iy,iz) = 0.0_num
-  !        eyz(ix,iy,iz) = 0.0_num
-  !        ezx(ix,iy,iz) = 0.0_num
-  !        ezy(ix,iy,iz) = 0.0_num
-  !        bxy(ix,iy,iz) = 0.0_num
-  !        bxz(ix,iy,iz) = 0.0_num
-  !        byx(ix,iy,iz) = 0.0_num
-  !        byz(ix,iy,iz) = 0.0_num
-  !        bzx(ix,iy,iz) = 0.0_num
-  !        bzy(ix,iy,iz) = 0.0_num
-  !      ENDDO
-  !    ENDDO
-  !  ENDDO
-  !ENDIF
-  !IF(z_max_boundary) THEN
-  !  DO iz = nz,nz+nzguards-1
-  !    DO iy = -nyguards,ny+nyguards
-  !      DO ix = -nxguards, nx+nxguards
-  !        exy(ix,iy,iz) = 0.0_num
-  !        exz(ix,iy,iz) = 0.0_num
-  !        eyx(ix,iy,iz) = 0.0_num
-  !        eyz(ix,iy,iz) = 0.0_num
-  !        ezx(ix,iy,iz) = 0.0_num
-  !        ezy(ix,iy,iz) = 0.0_num
-  !        bxy(ix,iy,iz) = 0.0_num
-  !        bxz(ix,iy,iz) = 0.0_num
-  !        byx(ix,iy,iz) = 0.0_num
-  !        byz(ix,iy,iz) = 0.0_num
-  !        bzx(ix,iy,iz) = 0.0_num
-  !        bzy(ix,iy,iz) = 0.0_num
-  !      ENDDO
-  !    ENDDO
-  !  ENDDO
-  !ENDIF
-
-
-
-  
 END subroutine field_damping_bcs
+
+
+! ________________________________________________________________________________________
+!> @brief
+!> Mege splitted fields of when using absorbing_bcs to compute real EM field
+!> @author
+!> Haithem Kallala
+!
+!> @date
+!> Creation 2018
+! ________________________________________________________________________________________
+
+SUBROUTINE merge_fields()
+  USE fields
+  USE shared_data
+  USE omp_lib
+  INTEGER(idp)  :: ix,iy,iz
+  !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+  DO ix = -nxguards,nx+nxguards
+    DO iy = -nyguards,ny+nyguards
+      DO iz = -nzguards,nz+nzguards
+        ex(ix,iy,iz) = exy(ix,iy,iz) + exz(ix,iy,iz)
+        ey(ix,iy,iz) = eyx(ix,iy,iz) + eyz(ix,iy,iz)
+        ez(ix,iy,iz) = ezx(ix,iy,iz) + ezy(ix,iy,iz)
+        bx(ix,iy,iz) = bxy(ix,iy,iz) + bxz(ix,iy,iz)
+        by(ix,iy,iz) = byx(ix,iy,iz) + byz(ix,iy,iz)
+        bz(ix,iy,iz) = bzx(ix,iy,iz) + bzy(ix,iy,iz)
+      ENDDO
+    ENDDO
+  ENDDO
+  !$OMP END PARALLEL DO
+END subroutine merge_fields
+   
 ! ________________________________________________________________________________________
 !> @brief
 !> PUSH E field a full  time step

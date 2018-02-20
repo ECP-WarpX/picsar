@@ -159,31 +159,6 @@ SUBROUTINE step(nst)
       ENDIF
 #if defined(FFTW)
       IF (l_spectral) THEN
-      !if(it==35 .AND. x_coords==0_idp) THEN
-      !        exy=0.0
-      !        exz=0.0
-      !        eyx=0.0
-      !        eyz=0.0
-      !        ezx=0.0
-      !        ezy=0.0
-      !        bxy=0.0
-      !        bxz=0.0
-      !        byx=0.0
-      !        byz=0.0
-      !        bzx=0.0
-      !        bzy=0.0
-      !  endif
-      !  if(it==35) THEN
-      !  call efield_bcs
-      !  call bfield_bcs
-      !  endif
-      !  if (it .GE. 35) THEN
-      !          jx=0
-      !          jy=0
-      !          jz=0
-      !          rho=0
-      !          rhoold=0
-      !  endif
 
         IF(absorbing_bcs) THEN
           CALL field_damping_bcs()
@@ -198,14 +173,9 @@ SUBROUTINE step(nst)
         CALL efield_bcs
         CALL bfield_bcs
         !IF (rank .EQ. 0) PRINT *, "#0"
-        !!! --- Boundary conditions for E AND B
-        IF (absorbing_bcs) THEN
-          ex = exy + exz
-          ey = eyx + eyz
-          ez = ezx + ezy
-          bx = bxy + bxz
-          by = byx + byz
-          bz = bzx + bzy
+        !!! --- Damp fields in pml region 
+        IF(absorbing_bcs) THEN
+          CALL merge_fields()
         ENDIF
       ELSE
 #endif
@@ -289,10 +259,6 @@ SUBROUTINE step(nst)
       IF (l_spectral) THEN
         IF(absorbing_bcs) THEN
           CALL field_damping_bcs()
-        !  IF(.NOT. fftw_hybrid) THEN
-        !    CALL efield_bcs
-        !    CALL bfield_bcs
-        !  ENDIF
         ENDIF
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
         CALL push_psatd_ebfield_2d
@@ -303,13 +269,10 @@ SUBROUTINE step(nst)
         !!! --- Boundary conditions for E AND B
         CALL efield_bcs
         CALL bfield_bcs
+        !IF (rank .EQ. 0) PRINT *, "#0"
+        !!! --- Damp fields in pml region
         IF(absorbing_bcs) THEN
-          ex = exy + exz
-          ey = eyx + eyz
-          ez = ezx + ezy
-          bx = bxy + bxz
-          by = byx + byz
-          bz = bzx + bzy
+          CALL merge_fields()
         ENDIF
       ELSE
 #endif
@@ -382,7 +345,7 @@ SUBROUTINE step(nst)
 END SUBROUTINE step
 ! ________________________________________________________________________________________
 !> @brief
-!> init pml arrays
+!> init pml arrays 
 !
 !> @author
 !> Haithem Kallala
@@ -404,6 +367,11 @@ SUBROUTINE init_pml_arrays
   coeff = 0.050_num
   b_offset =0.5_num
   pow = 3_idp
+
+  !> Inits pml arrays of the same size as ex fields
+  !> Pml arrays are initializd to 0.0_num because exp(0.0_num) = 1.0
+  !> So in case of no pml region inside the mpi domain, pml acts as vaccum
+
   ALLOCATE(sigma_x_e(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards));
   sigma_x_e = 0.0_num
   ALLOCATE(sigma_y_e(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards));
@@ -416,16 +384,23 @@ SUBROUTINE init_pml_arrays
   sigma_y_b = 0.0_num
   ALLOCATE(sigma_z_b(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards));
   sigma_z_b = 0.0_num
+
+  ! > Inits sigma_x_e and sigma_x_b in the lower bound of the domain along x
+  !> axis
+  !> Need more straightforward way to do this
   DO iz = 0,nz-1
     DO iy = 0,ny-1 
       DO ix = cell_x_min(x_coords+1), nx_pml-1
         ixx = ix - cell_x_min(x_coords+1)
         sigma_x_e(ixx,iy,iz) =  coeff*clight/dx*(nx_pml-ix)**pow
         sigma_x_b(ixx,iy,iz) =  coeff*clight/dx*(nx_pml - ix - b_offset)**pow
-
       ENDDO
     ENDDO
   ENDDO
+
+  ! > Inits sigma_x_e and sigma_x_b in the upper bound of the domain along x
+  !> axis
+  !> Need more straightforward way to do this
   DO iz = 0, nz-1
     DO iy = 0,ny-1
       DO ix = cell_x_max(x_coords+1), nx_global-nx_pml,-1
@@ -435,6 +410,10 @@ SUBROUTINE init_pml_arrays
       ENDDO
     ENDDO
   ENDDO
+
+  ! > Inits sigma_y_e and sigma_y_b in the lower bound of the domain along y
+  !> axis
+  !> Need more straightforward way to do this
   DO iz = 0,nz-1
     DO iy = cell_y_min(y_coords+1), ny_pml-1
       DO ix = 0,nx-1
@@ -444,6 +423,10 @@ SUBROUTINE init_pml_arrays
       ENDDO
     ENDDO
   ENDDO
+
+  ! > Inits sigma_y_e and sigma_y_b in the upper bound of the domain along y
+  !> axis
+  !> Need more straightforward way to do this
   DO iz = 0, nz-1
     DO iy = cell_y_max(y_coords+1), ny_global-ny_pml,-1
       DO ix = 0,nx-1
@@ -453,6 +436,10 @@ SUBROUTINE init_pml_arrays
       ENDDO
     ENDDO
   ENDDO
+
+  ! > Inits sigma_z_e and sigma_z_b in the lower bound of the domain along z
+  !> axis
+  !> Need more straightforward way to do this
   DO iz = cell_z_min(z_coords+1), nz_pml-1
     DO iy = 0,ny-1
       DO ix = 0,nx-1
@@ -462,6 +449,10 @@ SUBROUTINE init_pml_arrays
       ENDDO
     ENDDO
   ENDDO
+
+  ! > Inits sigma_z_e and sigma_z_b in the upper bound of the domain along z
+  !> axis
+  !> Need more straightforward way to do this
   DO iz = cell_z_max(z_coords+1), nz_global-nz_pml,-1
     DO iy = 0, ny-1
       DO ix = 0,nx-1
@@ -471,27 +462,38 @@ SUBROUTINE init_pml_arrays
       ENDDO
     ENDDO
   ENDDO
+ 
+  !> sigma=exp(-sigma*dt/2) 
+ 
   sigma_x_e = EXP(-sigma_x_e*dt/2.0_num)
   sigma_y_e = EXP(-sigma_y_e*dt/2.0_num)
   sigma_z_e = EXP(-sigma_z_e*dt/2.0_num)
   sigma_x_b = EXP(-sigma_x_b*dt/2.0_num)
   sigma_y_b = EXP(-sigma_y_b*dt/2.0_num)
   sigma_z_b = EXP(-sigma_z_b*dt/2.0_num)
-   print*,"kkk"
+
+  !> exchange sigma arrays, so that a pml region can cover many mpi domains
+  !> mpis with inside-domain  guardcells maiy contain pml coefficients too 
+  !> Having pml  coefficients  in interior guardcells enables to avoid to
+  !> exchange fields after field damping
+
   CALL field_bc(sigma_x_e,nxguards,nyguards,nzguards,nx,ny,nz)
-print*,"mlmm"
   CALL field_bc(sigma_y_e,nxguards,nyguards,nzguards,nx,ny,nz)
   CALL field_bc(sigma_z_e,nxguards,nyguards,nzguards,nx,ny,nz)
   CALL field_bc(sigma_x_b,nxguards,nyguards,nzguards,nx,ny,nz)
   CALL field_bc(sigma_y_b,nxguards,nyguards,nzguards,nx,ny,nz)
   CALL field_bc(sigma_z_b,nxguards,nyguards,nzguards,nx,ny,nz)
 
+  !> If mpi is on edge then its guardcell acts as a reflective mirror after the
+  !> pml.  This leads to a reflective wave at the end of the pml, which will
+  !> propagate inside the pml and be damped again
   IF(x_min_boundary) THEN
     DO ix = -nxguards,-1
       sigma_x_e(ix,:,:) = 0.0_num
       sigma_x_b(ix,:,:) = 0.0_num
     ENDDO
   ENDIF
+
   IF(x_max_boundary) THEN
     DO ix = nx,nx+nxguards
       sigma_x_e(ix,:,:) = 0.0_num
@@ -505,6 +507,7 @@ print*,"mlmm"
       sigma_y_b(:,iy,:) = 0.0_num
     ENDDO
   ENDIF
+
   IF(y_max_boundary) THEN
     DO iy = ny,ny+nyguards
       sigma_y_e(:,iy,:) = 0.0_num
@@ -518,6 +521,7 @@ print*,"mlmm"
       sigma_z_b(:,:,iz) = 0.0_num
     ENDDO
   ENDIF
+
   IF(z_max_boundary) THEN
     DO iz = nz,nz+nzguards
       sigma_z_e(:,iz,:) = 0.0_num
@@ -775,6 +779,8 @@ SUBROUTINE initall
   IF (rank .EQ. 0) write(0, *) "Creation of the particles: done"
 
   init_localtimes(1) = MPI_WTIME() - tdeb
+
+  ! - If absorbing bcs then init pml arrays
   IF(absorbing_bcs) THEN
     CALL init_pml_arrays
   ENDIF

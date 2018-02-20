@@ -760,7 +760,7 @@ MODULE gpstd_solver
 
   ! ______________________________________________________________________________________
   !> @brief
-  !> This subroutine constructs gpstd_blocks and puts them into cc_mat operator
+  !> This subroutine allocated block matrixes  
   !
   !> @author
   !> Haithem Kallala
@@ -787,9 +787,11 @@ MODULE gpstd_solver
     TYPE(C_PTR)            :: cdata
  
     IF(absorbing_bcs) THEN
+      !> When using pmls, cc_mat is a 12x17 matrix
       nbloc_ccmat = 17_idp
       nbloc_vnew = 12_idp
     ELSE IF(.NOT. absorbing_bcs) THEN
+      !> When using peridic bcs, cc_mat is a 6x11 matrix
       nbloc_ccmat = 11_idp
       nbloc_vnew = 6_idp
     ENDIF
@@ -803,8 +805,7 @@ MODULE gpstd_solver
     nky = nffty
     nkz = nfftz
     !> Allocates cc_mat  block matrix
-    !> for psatd implementation there is 11 field components 
-    !> cc_mat blocks are initally as an 11x11 block matrix 
+    !> cc_mat blocks are initally as an nbloc_ccmat x nbloc_ccmat block matrix 
     !> At the end of the routine, useless blcoks are deleted  
     DO i=1_idp, nbloc_ccmat
       DO j=1_idp, nbloc_ccmat
@@ -822,6 +823,7 @@ MODULE gpstd_solver
     !> else if g_spectral == false these arrays are not allocated, and
     !> push_psaotd_ebfields_3d/2d is used to perform the maxwell push in Fourier space
 
+    !> When using absorbing_bcs, g_spectral = .TRUE. is needed
     IF(g_spectral) THEN
       IF(p3dfft_flag) THEN  ! hybrid with p3dfft
         DO i = 1,nbloc_ccmat
@@ -873,8 +875,21 @@ MODULE gpstd_solver
     ENDDO
 
     IF (absorbing_bcs) THEN
+      !> When using pmls, splitted fields EM equations are solved
+      !> The following routine solved these pushes fourier splitted fields in
+      !> fourier space
+      !> ex = exy + exz
+      !> ey = eyx + eyz  ...
+
+      !> Current contribution to EM acts only on the first half component of the
+      !> field component
+      !> Thus current and density contributions only acts influences
+      !> exy , eyx , ezx, bxy, byx, bzx
+      !> Hence, contribution of J to exz is null
       CALL compute_cc_mat_splitted_fields()
     ELSE IF(.NOT. absorbing_bcs) THEN  
+      !> When not using absorbing bcs, standard EM equations are solved in
+      ! fourier space
       CALL compute_cc_mat_merged_fields()
     ENDIF
   
@@ -917,6 +932,18 @@ MODULE gpstd_solver
     CALL delete_k_space
   END SUBROUTINE init_gpstd
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine inits block matrixes with splitted fields EM equations when
+  !> using PMLs
+  !
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
+
 
   SUBROUTINE compute_cc_mat_splitted_fields()
     USE shared_data
@@ -925,11 +952,12 @@ MODULE gpstd_solver
     USE params, ONLY : dt
     INTEGER(idp) :: i,j,k
     COMPLEX(cpx) ::  ii
-    LOGICAL(lp)            :: switch
+    LOGICAL(lp)  :: switch
 
     !> cc_mat_(nmatrixes)block_matrix2d(i,j) components are sorted using the
     !>following nomenclature 
-    !> 1-> exyf; 2->exzf; 3->eyxf; 4->byzf; 5->ezxf; 6->ezyf
+    !> In this case cc_mat is a 12x17 block matrix
+    !> 1-> exyf; 2->exzf; 3->eyxf; 4->eyzf; 5->ezxf; 6->ezyf
     !> 7-> bxyf; 8->bxzf; 9->byxf; 10->byzf; 11->bzxf; 12->bzyf
     !> 13-> jxf; 14->jyf; 15->jzf; 16->rhooldf; 17->rhof
     !> cc_mat_(nmatrixes)block_matrix2d(i,j) is the contribution of the j-th
@@ -953,6 +981,8 @@ MODULE gpstd_solver
 
     !contribution rho old by convention only contributes to exy ,eyx ezx
     switch = .FALSE.
+
+    !> Spots mpis that contain null frequency to perform Taylor expansion later
     IF(ABS(Kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)) .EQ. 0.0_num)    THEN
       Kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1) = (1.0_num, 0.0_num)
       switch = .TRUE.
@@ -1152,8 +1182,20 @@ MODULE gpstd_solver
     !> End contribution E to B
     END SUBROUTINE compute_cc_mat_splitted_fields
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine inits block matrixes with standard fields EM equations when
+  !> NOT using PMLs
+  !
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
 
-    SUBROUTINE compute_cc_mat_merged_fields()
+
+  SUBROUTINE compute_cc_mat_merged_fields()
     USE shared_data
     USE matrix_coefficients
     USE constants
@@ -1165,6 +1207,7 @@ MODULE gpstd_solver
 
     !> cc_mat_(nmatrixes)block_matrix2d(i,j) components are sorted using the
     !>following nomenclature 
+    !> In this case cc_mat is a 6x11 block matrix
     !> 1-> exf; 2->eyf; 3->ezf; 4->bxf; 5->byf; 6->bzf
     !> 7->jxf; 8->jyf; 9->jzf; 10-> rhooldf; 11->rhof
     !> cc_mat_(nmatrixes)block_matrix2d(i,j) is the contribution of the j-th
@@ -1279,6 +1322,7 @@ MODULE gpstd_solver
     !> for certain blocks
 
     switch = .FALSE.
+    !> Spots mpis that contain null frequency to perform Taylor expansion later
     IF(ABS(kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)) .EQ. 0.0_num) THEN
       kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1) = (1.0_num, 0.0_num)
       switch = .TRUE.
@@ -1333,7 +1377,7 @@ MODULE gpstd_solver
       kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)   = DCMPLX(0., 0.)
     ENDIF
     !> End contribution of rho field to E field   
-    END SUBROUTINE compute_cc_mat_merged_fields
+  END SUBROUTINE compute_cc_mat_merged_fields
 
   ! ______________________________________________________________________________________
   !> @brief
