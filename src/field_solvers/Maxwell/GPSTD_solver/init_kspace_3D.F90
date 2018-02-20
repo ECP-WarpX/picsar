@@ -971,7 +971,7 @@ MODULE gpstd_solver
      AT_OP(nmatrixes2)%block_vector(2)%block3dc
     ENDDO
      ! contribution of current to elec field 
-     ! by convention, current will only contribute to exy, eyx, ezx 
+     ! by convention, j will only contribute to exy, eyx, ezx 
     DO i = 1, 3
       j = 2*(i-1) + 1
       k = i+12
@@ -988,6 +988,8 @@ MODULE gpstd_solver
       switch = .TRUE.
     ENDIF
     ! Contribution of rhooldf to E
+    !> rhoold only contributes to bxy, byx, bzx
+
     DO i = 1, 3
       j = 2*(i-1)+1
       cc_mat(nmatrixes)%block_matrix2d(j, 16_idp)%block3dc = DCMPLX(0.,&
@@ -1015,6 +1017,8 @@ MODULE gpstd_solver
     ENDIF
     
     !> Begin contribution rhof to E
+    !> rho only contributes to bxy, byx, bzx
+
     DO i = 1, 3
       j = 2*(i-1)+1
       cc_mat(nmatrixes)%block_matrix2d(j, 17_idp)%block3dc = DCMPLX(0.,&
@@ -1040,6 +1044,7 @@ MODULE gpstd_solver
     ENDIF
 
     !>  Begin Contribution of j to B
+    !> j only contributes to bxy, byx, bzx
     cc_mat(nmatrixes)%block_matrix2d(7, 14)%block3dc = - mu0*&
     ii*Kspace(nmatrixes2)%block_vector(8)%block3dc*&
     AT_OP(nmatrixes2)%block_vector(3)%block3dc
@@ -1479,6 +1484,9 @@ MODULE gpstd_solver
     USE shared_data
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz
+
+    ! When using periodic bcs, standard EM fields are communicated 
+    ! Else, when using absorbing bcs, splitted EM fields are communicated 
     
     IF(.NOT. absorbing_bcs) THEN
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
@@ -1501,6 +1509,7 @@ MODULE gpstd_solver
       END DO
       !$OMP END PARALLEL DO
     ELSE IF(absorbing_bcs) THEN
+
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
       DO iz=-nzguards, nz+nzguards-1
         DO iy=-nyguards,ny+nyguards-1
@@ -1536,6 +1545,10 @@ MODULE gpstd_solver
     USE shared_data
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz
+
+    ! When using periodic bcs, standard EM fields are communicated 
+    ! Else, when using absorbing bcs, splitted EM fields are communicated 
+
     IF(.NOT. absorbing_bcs) THEN
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
       DO iz=-nzguards, nz+nzguards-1

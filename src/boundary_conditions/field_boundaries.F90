@@ -536,6 +536,10 @@ MODULE field_boundary
     nzz = local_nz
     IF(mpicom_curr == 1) THEN
       IF(.NOT. absorbing_bcs) THEN
+
+        !> When using period bcs for fields, standard EM equations are solved
+        !> Standard EM fields are exchanged between hybrid and local fields
+
         CALL sendrecv_l2g_generalized(ex,nx,nxguards,ny,nyguards,nz,nzguards,          &
         ex_r,nxx,nyy,nzz)
         CALL sendrecv_l2g_generalized(ey,nx,nxguards,ny,nyguards,nz,nzguards,          &
@@ -559,6 +563,11 @@ MODULE field_boundary
         CALL sendrecv_l2g_generalized(rhoold,nx,nxguards,ny,nyguards,nz,nzguards,      &
         rhoold_r,nxx,nyy,nzz)
       ELSE IF (absorbing_bcs) THEN
+
+        !> When using absorbing bcs for fields,splitted fields EM equations are
+        !solved
+        !> Splitted EM fields are exchanged between hybrid and local fields
+
         CALL sendrecv_l2g_generalized(exy,nx,nxguards,ny,nyguards,nz,nzguards,          &
         exy_r,nxx,nyy,nzz)
         CALL sendrecv_l2g_generalized(eyx,nx,nxguards,ny,nyguards,nz,nzguards,          &
@@ -594,10 +603,12 @@ MODULE field_boundary
         CALL sendrecv_l2g_generalized(rhoold,nx,nxguards,ny,nyguards,nz,nzguards,      &
         rhoold_r,nxx,nyy,nzz)
       ENDIF
-
-      
     ELSE 
       IF(.NOT. absorbing_bcs) THEN
+
+        !> When using period bcs for fields, standard EM equations are solved
+        !> Standard EM fields are exchanged between hybrid and local fields
+
         CALL sendrecv_l2g_generalized_non_blocking(ex,nx,nxguards,ny,nyguards,nz,      &
         nzguards,ex_r,nxx,nyy,nzz)
         CALL sendrecv_l2g_generalized_non_blocking(ey,nx,nxguards,ny,nyguards,nz,      &
@@ -621,6 +632,10 @@ MODULE field_boundary
         CALL sendrecv_l2g_generalized_non_blocking(rhoold,nx,nxguards,ny,nyguards,nz,  &
         nzguards,rhoold_r,nxx,nyy,nzz)
       ELSE IF (absorbing_bcs) THEN
+
+        !> When using absorbing bcs for fields,splitted fields EM equations are solved
+        !> Splitted EM fields are exchanged between hybrid and local fields
+
         CALL sendrecv_l2g_generalized_non_blocking(exy,nx,nxguards,ny,nyguards,nz,      &
         nzguards,exy_r,nxx,nyy,nzz)
         CALL sendrecv_l2g_generalized_non_blocking(eyx,nx,nxguards,ny,nyguards,nz,      &
@@ -822,6 +837,10 @@ MODULE field_boundary
     nzz = local_nz
     IF(mpicom_curr ==1) THEN
       IF(.NOT. absorbing_bcs) THEN
+
+        !> When using period bcs for fields, standard EM equations are solved
+        !> Standard EM fields are exchanged between hybrid and local fields
+
         CALL sendrecv_g2l_generalized(ex,nx,nxguards,ny,nyguards,nz,nzguards,          &
         ex_r,nxx,nyy,nzz)
         CALL sendrecv_g2l_generalized(ey,nx,nxguards,ny,nyguards,nz,nzguards,          &
@@ -835,6 +854,11 @@ MODULE field_boundary
         CALL sendrecv_g2l_generalized(bz,nx,nxguards,ny,nyguards,nz,nzguards,          &
         bz_r,nxx,nyy,nzz)
       ELSE IF(absorbing_bcs) THEN
+
+        !> When using absorbing bcs for fields,splitted fields EM equations are
+        !solved
+        !> Splitted EM fields are exchanged between hybrid and local fields
+
         CALL sendrecv_g2l_generalized(exy,nx,nxguards,ny,nyguards,nz,nzguards,          &
         exy_r,nxx,nyy,nzz)
         CALL sendrecv_g2l_generalized(eyx,nx,nxguards,ny,nyguards,nz,nzguards,          &
@@ -862,6 +886,10 @@ MODULE field_boundary
       ENDIF
     ELSE 
       IF (.NOT. absorbing_bcs) THEN
+
+        !> When using period bcs for fields, standard EM equations are solved
+        !> Standard EM fields are exchanged between hybrid and local fields
+
         CALL sendrecv_g2l_generalized_non_blocking(ex,nx,nxguards,ny,nyguards,         &
         nz,nzguards,ex_r,nxx,nyy,nzz)
         CALL sendrecv_g2l_generalized_non_blocking(ey,nx,nxguards,ny,nyguards,         &
@@ -875,6 +903,11 @@ MODULE field_boundary
         CALL sendrecv_g2l_generalized_non_blocking(bz,nx,nxguards,ny,nyguards,         &
         nz,nzguards,bz_r,nxx,nyy,nzz)
       ELSE IF(absorbing_bcs) THEN
+
+        !> When using absorbing bcs for fields,splitted fields EM equations are
+        !solved
+        !> Splitted EM fields are exchanged between hybrid and local fields
+
         CALL sendrecv_g2l_generalized_non_blocking(exy,nx,nxguards,ny,nyguards,nz,nzguards,          &
         exy_r,nxx,nyy,nzz)
         CALL sendrecv_g2l_generalized_non_blocking(eyx,nx,nxguards,ny,nyguards,nz,nzguards,          &
@@ -1679,10 +1712,16 @@ MODULE field_boundary
     ENDIF
     ! Electric field MPI exchange between subdomains
     IF(.NOT. absorbing_bcs) THEN
+    
+      !> When using periodic bcs, exchange standard EM fields
+
       CALL field_bc(ex, nxguards, nyguards, nzguards, nx, ny, nz)
       CALL field_bc(ey, nxguards, nyguards, nzguards, nx, ny, nz)
       CALL field_bc(ez, nxguards, nyguards, nzguards, nx, ny, nz)
     ELSE IF(absorbing_bcs) THEN
+
+      !> When using absorbing bcs, exchange splitted EM fields
+
       CALL field_bc(exy, nxguards, nyguards, nzguards, nx, ny, nz)
       CALL field_bc(exz, nxguards, nyguards, nzguards, nx, ny, nz)
       CALL field_bc(eyx, nxguards, nyguards, nzguards, nx, ny, nz)
@@ -1720,10 +1759,16 @@ MODULE field_boundary
     ENDIF
     ! Magnetic field MPI exchange between subdomains
     IF(.NOT. absorbing_bcs) THEN 
+
+      !> When using periodic bcs, exchange standard EM fields
+
       CALL field_bc(bx, nxguards, nyguards, nzguards, nx, ny, nz)
       CALL field_bc(by, nxguards, nyguards, nzguards, nx, ny, nz)
       CALL field_bc(bz, nxguards, nyguards, nzguards, nx, ny, nz)
     ELSE IF(absorbing_bcs) THEN
+
+      !> When using absorbing bcs, exchange splitted EM fields
+
       CALL field_bc(bxy, nxguards, nyguards, nzguards, nx, ny, nz)
       CALL field_bc(bxz, nxguards, nyguards, nzguards, nx, ny, nz)
       CALL field_bc(byx, nxguards, nyguards, nzguards, nx, ny, nz)

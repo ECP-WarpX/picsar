@@ -165,13 +165,13 @@ SUBROUTINE step(nst)
         ENDIF
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
         CALL push_psatd_ebfield_3d
-        IF(absorbing_bcs) THEN
-          CALL field_damping_bcs()
-        ENDIF
         !IF (rank .EQ. 0) PRINT *, "#0"
         !!! --- Boundary conditions for E AND B
         CALL efield_bcs
         CALL bfield_bcs
+        IF(absorbing_bcs) THEN
+          CALL field_damping_bcs()
+        ENDIF
         !IF (rank .EQ. 0) PRINT *, "#0"
         !!! --- Damp fields in pml region 
         IF(absorbing_bcs) THEN
@@ -262,13 +262,13 @@ SUBROUTINE step(nst)
         ENDIF
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
         CALL push_psatd_ebfield_2d
-        IF (absorbing_bcs) THEN
-          CALL field_damping_bcs()
-        ENDIF
         !IF (rank .EQ. 0) PRINT *, "#0"
         !!! --- Boundary conditions for E AND B
         CALL efield_bcs
         CALL bfield_bcs
+        IF (absorbing_bcs) THEN
+          CALL field_damping_bcs()
+        ENDIF
         !IF (rank .EQ. 0) PRINT *, "#0"
         !!! --- Damp fields in pml region
         IF(absorbing_bcs) THEN
@@ -362,10 +362,11 @@ SUBROUTINE init_pml_arrays
 
   LOGICAL(lp)  :: is_intersection_x, is_intersection_y, is_intersection_z
   INTEGER(idp) :: ix,iy,iz,ixx,iyy,izz,pow
-  REAL(num)    :: coeff,b_offset
+  REAL(num)    :: coeff,b_offset, e_offset
   
   coeff = 0.050_num
-  b_offset =0.5_num
+  b_offset = 0._num
+  e_offset = -0.5_num
   pow = 3_idp
 
   !> Inits pml arrays of the same size as ex fields
@@ -392,7 +393,7 @@ SUBROUTINE init_pml_arrays
     DO iy = 0,ny-1 
       DO ix = cell_x_min(x_coords+1), nx_pml-1
         ixx = ix - cell_x_min(x_coords+1)
-        sigma_x_e(ixx,iy,iz) =  coeff*clight/dx*(nx_pml-ix)**pow
+        sigma_x_e(ixx,iy,iz) =  coeff*clight/dx*(nx_pml-ix-e_offset)**pow
         sigma_x_b(ixx,iy,iz) =  coeff*clight/dx*(nx_pml - ix - b_offset)**pow
       ENDDO
     ENDDO
@@ -405,7 +406,7 @@ SUBROUTINE init_pml_arrays
     DO iy = 0,ny-1
       DO ix = cell_x_max(x_coords+1), nx_global-nx_pml,-1
         ixx = ix - cell_x_min(x_coords+1)
-        sigma_x_e(ixx,iy,iz) = coeff*clight/dx *(ix-(nx_global-nx_pml)+1.0_num)**pow
+        sigma_x_e(ixx,iy,iz) = coeff*clight/dx *(ix-(nx_global-nx_pml)+1.0_num+e_offset)**pow
         sigma_x_b(ixx,iy,iz) = coeff*clight/dx *(ix-(nx_global-nx_pml)+1.0_num+b_offset)**pow
       ENDDO
     ENDDO
@@ -418,7 +419,7 @@ SUBROUTINE init_pml_arrays
     DO iy = cell_y_min(y_coords+1), ny_pml-1
       DO ix = 0,nx-1
         iyy = iy - cell_y_min(y_coords+1)
-        sigma_y_e(ix,iyy,iz) =  coeff*clight/dy*(ny_pml-iy)**pow
+        sigma_y_e(ix,iyy,iz) =  coeff*clight/dy*(ny_pml-iy-e_offset)**pow
         sigma_y_b(ix,iyy,iz) =  coeff*clight/dy*(ny_pml - iy - b_offset)**pow
       ENDDO
     ENDDO
@@ -431,7 +432,7 @@ SUBROUTINE init_pml_arrays
     DO iy = cell_y_max(y_coords+1), ny_global-ny_pml,-1
       DO ix = 0,nx-1
         iyy = iy - cell_z_min(y_coords+1)
-        sigma_y_e(ix,iyy,iz) = coeff*clight/dy*(iy-(ny_global-ny_pml)+1.0_num)**pow
+        sigma_y_e(ix,iyy,iz) = coeff*clight/dy*(iy-(ny_global-ny_pml)+1.0_num+e_offset)**pow
         sigma_y_b(ix,iyy,iz) = coeff*clight/dy*(iy-(ny_global-ny_pml)+1.0_num+b_offset)**pow
       ENDDO
     ENDDO
@@ -444,7 +445,7 @@ SUBROUTINE init_pml_arrays
     DO iy = 0,ny-1
       DO ix = 0,nx-1
         izz = iz - cell_z_min(z_coords+1)
-        sigma_z_e(ix,iy,izz) =  coeff*clight/dz*(nz_pml-iz)**pow
+        sigma_z_e(ix,iy,izz) =  coeff*clight/dz*(nz_pml-iz-e_offset)**pow
         sigma_z_b(ix,iy,izz) =  coeff*clight/dz*(nz_pml - iz - b_offset)**pow
       ENDDO
     ENDDO

@@ -214,6 +214,10 @@ MODULE fourier_psaotd
     ! Performs copies of overlapping portions of local arrays (ex,ey,ez, etc.) 
     ! and FFT arrays (ex_r,ey_r,ez_r etc.) - non overlapping portions requires 
     ! MPI exchanges that are performed further below in this subroutine 
+
+    ! When using periodic bcs, standard EM fields are communicated between local
+    ! and hybrid grids
+    ! Else, when using absorbing bcs, splitted EM fields are communicated 
     IF(.NOT. absorbing_bcs) THEN 
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
       DO iz=1,size_exchanges_l2g_recv_z(1)
@@ -647,6 +651,10 @@ MODULE fourier_psaotd
     ! Performs copies of overlapping portions of FFT arrays (ex_r,ey_r,ez_r, etc.) 
     ! and local arrays (ex,ey,ez etc.) - non overlapping portions requires 
     ! MPI exchanges that are performed further below in this subroutine
+
+    ! When using periodic bcs, standard EM fields are communicated between local
+    ! and hybrid grids
+    ! Else, when using absorbing bcs, splitted EM fields are communicated 
     IF(.NOT. absorbing_bcs) THEN
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
       DO iz=1,size_exchanges_g2l_recv_z(1)
