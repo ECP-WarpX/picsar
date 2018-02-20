@@ -123,6 +123,7 @@ PROGRAM main
   !----------------------------------------------
   ! THIS IS THE PIC ALGORITHM TIME LOOP
   !----------------------------------------------
+
   IF (rank .EQ. 0) startsim=MPI_WTIME()
   CALL step(nsteps)
 

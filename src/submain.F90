@@ -187,10 +187,6 @@ SUBROUTINE step(nst)
 
         IF(absorbing_bcs) THEN
           CALL field_damping_bcs()
-          IF(.NOT. fftw_hybrid) THEN
-            CALL efield_bcs 
-            CALL bfield_bcs
-          ENDIF
         ENDIF
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
         CALL push_psatd_ebfield_3d
@@ -293,10 +289,10 @@ SUBROUTINE step(nst)
       IF (l_spectral) THEN
         IF(absorbing_bcs) THEN
           CALL field_damping_bcs()
-          IF(.NOT. fftw_hybrid) THEN
-            CALL efield_bcs
-            CALL bfield_bcs
-          ENDIF
+        !  IF(.NOT. fftw_hybrid) THEN
+        !    CALL efield_bcs
+        !    CALL bfield_bcs
+        !  ENDIF
         ENDIF
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
         CALL push_psatd_ebfield_2d
@@ -395,6 +391,7 @@ END SUBROUTINE step
 !> Creation 2018
 
 SUBROUTINE init_pml_arrays
+  USE field_boundary
   USE fields
   USE shared_data
   USE constants  
@@ -407,12 +404,18 @@ SUBROUTINE init_pml_arrays
   coeff = 0.050_num
   b_offset =0.5_num
   pow = 3_idp
-  ALLOCATE(sigma_x_e(0:nx-1,0:ny-1,0:nz-1)); sigma_x_e = 0.0_num
-  ALLOCATE(sigma_y_e(0:nx-1,0:ny-1,0:nz-1)); sigma_y_e = 0.0_num
-  ALLOCATE(sigma_z_e(0:nx-1,0:ny-1,0:nz-1)); sigma_z_e = 0.0_num
-  ALLOCATE(sigma_x_b(0:nx-1,0:ny-1,0:nz-1)); sigma_x_b = 0.0_num
-  ALLOCATE(sigma_y_b(0:nx-1,0:ny-1,0:nz-1)); sigma_y_b = 0.0_num
-  ALLOCATE(sigma_z_b(0:nx-1,0:ny-1,0:nz-1)); sigma_z_b = 0.0_num
+  ALLOCATE(sigma_x_e(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards));
+  sigma_x_e = 0.0_num
+  ALLOCATE(sigma_y_e(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards));
+  sigma_y_e = 0.0_num
+  ALLOCATE(sigma_z_e(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards));
+  sigma_z_e = 0.0_num
+  ALLOCATE(sigma_x_b(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards));
+  sigma_x_b = 0.0_num
+  ALLOCATE(sigma_y_b(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards));
+  sigma_y_b = 0.0_num
+  ALLOCATE(sigma_z_b(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards));
+  sigma_z_b = 0.0_num
   DO iz = 0,nz-1
     DO iy = 0,ny-1 
       DO ix = cell_x_min(x_coords+1), nx_pml-1
@@ -474,6 +477,54 @@ SUBROUTINE init_pml_arrays
   sigma_x_b = EXP(-sigma_x_b*dt/2.0_num)
   sigma_y_b = EXP(-sigma_y_b*dt/2.0_num)
   sigma_z_b = EXP(-sigma_z_b*dt/2.0_num)
+   print*,"kkk"
+  CALL field_bc(sigma_x_e,nxguards,nyguards,nzguards,nx,ny,nz)
+print*,"mlmm"
+  CALL field_bc(sigma_y_e,nxguards,nyguards,nzguards,nx,ny,nz)
+  CALL field_bc(sigma_z_e,nxguards,nyguards,nzguards,nx,ny,nz)
+  CALL field_bc(sigma_x_b,nxguards,nyguards,nzguards,nx,ny,nz)
+  CALL field_bc(sigma_y_b,nxguards,nyguards,nzguards,nx,ny,nz)
+  CALL field_bc(sigma_z_b,nxguards,nyguards,nzguards,nx,ny,nz)
+
+  IF(x_min_boundary) THEN
+    DO ix = -nxguards,-1
+      sigma_x_e(ix,:,:) = 0.0_num
+      sigma_x_b(ix,:,:) = 0.0_num
+    ENDDO
+  ENDIF
+  IF(x_max_boundary) THEN
+    DO ix = nx,nx+nxguards
+      sigma_x_e(ix,:,:) = 0.0_num
+      sigma_x_b(ix,:,:) = 0.0_num
+    ENDDO
+  ENDIF
+
+  IF(y_min_boundary) THEN
+    DO iy = -nyguards,-1
+      sigma_y_e(:,iy,:) = 0.0_num
+      sigma_y_b(:,iy,:) = 0.0_num
+    ENDDO
+  ENDIF
+  IF(y_max_boundary) THEN
+    DO iy = ny,ny+nyguards
+      sigma_y_e(:,iy,:) = 0.0_num
+      sigma_y_b(:,iy,:) = 0.0_num
+    ENDDO
+  ENDIF
+
+  IF(z_min_boundary) THEN
+    DO iz = -nzguards,-1
+      sigma_z_e(:,:,iz) = 0.0_num
+      sigma_z_b(:,:,iz) = 0.0_num
+    ENDDO
+  ENDIF
+  IF(z_max_boundary) THEN
+    DO iz = nz,nz+nzguards
+      sigma_z_e(:,iz,:) = 0.0_num
+      sigma_z_b(:,iz,:) = 0.0_num
+    ENDDO
+  ENDIF
+
 END SUBROUTINE init_pml_arrays
 
 ! ________________________________________________________________________________________
