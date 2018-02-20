@@ -1761,29 +1761,30 @@ IF (l_spectral) THEN
        cin = fftw_alloc_real(2 * alloc_local);
      ELSE IF(absorbing_bcs) THEN
        cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, exy_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, exz_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
        CALL c_f_pointer(cin, eyx_r, [nxx, nyy, nzz])
        cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, eyz_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
        CALL c_f_pointer(cin, ezx_r, [nxx, nyy, nzz])
-       cin = fftw_alloc_real(2 * alloc_local);
-       CALL c_f_pointer(cin, byx_r, [nxx, nyy, nzz])
-       cin = fftw_alloc_real(2 * alloc_local);
-       CALL c_f_pointer(cin, bzx_r, [nxx, nyy, nzz])
-       cin = fftw_alloc_real(2 * alloc_local);
-       CALL c_f_pointer(cin, exy_r, [nxx, nyy, nzz])
        cin = fftw_alloc_real(2 * alloc_local);
        CALL c_f_pointer(cin, ezy_r, [nxx, nyy, nzz])
        cin = fftw_alloc_real(2 * alloc_local);
        CALL c_f_pointer(cin, bxy_r, [nxx, nyy, nzz])
        cin = fftw_alloc_real(2 * alloc_local);
-       CALL c_f_pointer(cin, bzy_r, [nxx, nyy, nzz])
-       cin = fftw_alloc_real(2 * alloc_local);
-       CALL c_f_pointer(cin, exz_r, [nxx, nyy, nzz])
-       cin = fftw_alloc_real(2 * alloc_local);
-       CALL c_f_pointer(cin, eyz_r, [nxx, nyy, nzz])
-       cin = fftw_alloc_real(2 * alloc_local);
        CALL c_f_pointer(cin, bxz_r, [nxx, nyy, nzz])
        cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, byx_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
        CALL c_f_pointer(cin, byz_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, bzx_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, bzy_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
        CALL c_f_pointer(cin, jx_r, [nxx, nyy, nzz])
        cin = fftw_alloc_real(2 * alloc_local);
        CALL c_f_pointer(cin, jy_r, [nxx, nyy, nzz])
@@ -1810,18 +1811,18 @@ IF (l_spectral) THEN
         ALLOCATE(rho_r(nxx,nyy,nzz))
         ALLOCATE(rhoold_r(nxx,nyy,nzz))
       ELSE IF(absorbing_bcs) THEN
-        ALLOCATE(eyx_r(nxx,nyy,nzz))
-        ALLOCATE(ezx_r(nxx,nyy,nzz))
-        ALLOCATE(byx_r(nxx,nyy,nzz))
-        ALLOCATE(bzx_r(nxx,nyy,nzz))
         ALLOCATE(exy_r(nxx,nyy,nzz))
+        ALLOCATE(exz_r(nxx,nyy,nzz))
+        ALLOCATE(eyx_r(nxx,nyy,nzz))
+        ALLOCATE(eyz_r(nxx,nyy,nzz))
+        ALLOCATE(ezx_r(nxx,nyy,nzz))
         ALLOCATE(ezy_r(nxx,nyy,nzz))
         ALLOCATE(bxy_r(nxx,nyy,nzz))
-        ALLOCATE(bzy_r(nxx,nyy,nzz))
-        ALLOCATE(exz_r(nxx,nyy,nzz))
-        ALLOCATE(eyz_r(nxx,nyy,nzz))
         ALLOCATE(bxz_r(nxx,nyy,nzz))
+        ALLOCATE(byx_r(nxx,nyy,nzz))
         ALLOCATE(byz_r(nxx,nyy,nzz))
+        ALLOCATE(bzx_r(nxx,nyy,nzz))
+        ALLOCATE(bzy_r(nxx,nyy,nzz))
         ALLOCATE(jx_r(nxx,nyy,nzz))
         ALLOCATE(jy_r(nxx,nyy,nzz))
         ALLOCATE(jz_r(nxx,nyy,nzz))
@@ -1866,16 +1867,16 @@ IF (l_spectral) THEN
       ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
     ELSE IF(absorbing_bcs) THEN
       ALLOCATE(exy_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(eyx_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(ezx_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(bxy_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(byx_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(bzx_r(imn:imx, jmn:jmx, kmn:kmx))
       ALLOCATE(exz_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(eyx_r(imn:imx, jmn:jmx, kmn:kmx))
       ALLOCATE(eyz_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(ezx_r(imn:imx, jmn:jmx, kmn:kmx))
       ALLOCATE(ezy_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(bxy_r(imn:imx, jmn:jmx, kmn:kmx))
       ALLOCATE(bxz_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(byx_r(imn:imx, jmn:jmx, kmn:kmx))
       ALLOCATE(byz_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(bzx_r(imn:imx, jmn:jmx, kmn:kmx))
       ALLOCATE(bzy_r(imn:imx, jmn:jmx, kmn:kmx))
       ALLOCATE(jx_r(imn:imx, jmn:jmx, kmn:kmx))
       ALLOCATE(jy_r(imn:imx, jmn:jmx, kmn:kmx))
