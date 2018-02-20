@@ -106,20 +106,6 @@ SUBROUTINE step(nst)
   IF (c_dim.eq.3) THEN
     rhoold=0.0_num
     rho = 0.0_num
-    IF(absorbing_bcs) THEN
-      exy = 0.5_num * ex
-      exz = 0.5_num * ex
-      eyx = 0.5_num * ey
-      eyz = 0.5_num * ey
-      ezx = 0.5_num * ez
-      ezy = 0.5_num * ez
-      bxy = 0.5_num * bx
-      bxz = 0.5_num * bx
-      byx = 0.5_num * by
-      byz = 0.5_num * by
-      bzx = 0.5_num * bz
-      bzy = 0.5_num * bz
-    ENDIF
     DO i=1, nst
       IF (rank .EQ. 0) startit=MPI_WTIME()
 
@@ -803,6 +789,20 @@ SUBROUTINE initall
   ex=0.0_num;ey=0.0_num;ez=0.0_num
   bx=0.0_num;by=0.0_num;bz=0.0_num
   jx=0.0_num;jy=0.0_num;jz=0.0_num
+  IF(absorbing_bcs) THEN
+    exy = 0.5_num * ex
+    exz = 0.5_num * ex
+    eyx = 0.5_num * ey
+    eyz = 0.5_num * ey
+    ezx = 0.5_num * ez
+    ezy = 0.5_num * ez
+    bxy = 0.5_num * bx
+    bxz = 0.5_num * bx
+    byx = 0.5_num * by
+    byz = 0.5_num * by
+    bzx = 0.5_num * bz
+    bzy = 0.5_num * bz
+  ENDIF
 END SUBROUTINE initall
 
 ! ________________________________________________________________________________________
