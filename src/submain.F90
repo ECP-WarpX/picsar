@@ -365,8 +365,8 @@ SUBROUTINE init_pml_arrays
   REAL(num)    :: coeff,b_offset, e_offset
   
   coeff = 0.10_num
-  b_offset = 0._num
-  e_offset = -0.5_num
+  b_offset = 0.5_num
+  e_offset = 0._num
   pow = 3_idp
 
   !> Inits pml arrays of the same size as ex fields
@@ -406,8 +406,8 @@ SUBROUTINE init_pml_arrays
     DO iy = 0,ny-1
       DO ix = cell_x_max(x_coords+1), nx_global-nx_pml,-1
         ixx = ix - cell_x_min(x_coords+1)
-        sigma_x_e(ixx,iy,iz) = coeff*clight/dx *(ix-(nx_global-nx_pml)+1.0_num+e_offset)**pow
-        sigma_x_b(ixx,iy,iz) = coeff*clight/dx *(ix-(nx_global-nx_pml)+1.0_num+b_offset)**pow
+        sigma_x_e(ixx,iy,iz) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+e_offset)**pow
+        sigma_x_b(ixx,iy,iz) = coeff*clight/dx *(ix-(nx_global-nx_pml)+b_offset)**pow
       ENDDO
     ENDDO
   ENDDO
@@ -432,8 +432,8 @@ SUBROUTINE init_pml_arrays
     DO iy = cell_y_max(y_coords+1), ny_global-ny_pml,-1
       DO ix = 0,nx-1
         iyy = iy - cell_z_min(y_coords+1)
-        sigma_y_e(ix,iyy,iz) = coeff*clight/dy*(iy-(ny_global-ny_pml)+1.0_num+e_offset)**pow
-        sigma_y_b(ix,iyy,iz) = coeff*clight/dy*(iy-(ny_global-ny_pml)+1.0_num+b_offset)**pow
+        sigma_y_e(ix,iyy,iz) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+e_offset)**pow
+        sigma_y_b(ix,iyy,iz) = coeff*clight/dy*(iy-(ny_global-ny_pml)+b_offset)**pow
       ENDDO
     ENDDO
   ENDDO
@@ -458,8 +458,9 @@ SUBROUTINE init_pml_arrays
     DO iy = 0,ny-1
       DO ix = 0, nx-1
         izz = iz - cell_z_min(z_coords+1)
-        sigma_z_e(ix,iy,izz) = coeff*clight/dz*(iz-(nz_global-nz_pml)+1.0_num+e_offset)**pow
-        sigma_z_b(ix,iy,izz) = coeff*clight/dz*(iz-(nz_global-nz_pml)+1.0_num+b_offset)**pow
+
+        sigma_z_e(ix,iy,izz) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)-e_offset)**pow
+        sigma_z_b(ix,iy,izz) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+b_offset)**pow
       ENDDO
     ENDDO
   ENDDO
@@ -473,11 +474,11 @@ SUBROUTINE init_pml_arrays
   sigma_x_b = EXP(-sigma_x_b*dt/2.0_num)
   sigma_y_b = EXP(-sigma_y_b*dt/2.0_num)
   sigma_z_b = EXP(-sigma_z_b*dt/2.0_num)
+
   !> exchange sigma arrays, so that a pml region can cover many mpi domains
   !> mpis with inside-domain  guardcells maiy contain pml coefficients too 
   !> Having pml  coefficients  in interior guardcells enables to avoid to
   !> exchange fields after field damping
-
   CALL field_bc(sigma_x_e,nxguards,nyguards,nzguards,nx,ny,nz)
   CALL field_bc(sigma_y_e,nxguards,nyguards,nzguards,nx,ny,nz)
   CALL field_bc(sigma_z_e,nxguards,nyguards,nzguards,nx,ny,nz)
@@ -529,7 +530,6 @@ SUBROUTINE init_pml_arrays
     ENDDO
   ENDIF
   ENDIF
-
 
 
 END SUBROUTINE init_pml_arrays
