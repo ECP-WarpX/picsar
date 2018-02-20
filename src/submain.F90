@@ -146,9 +146,6 @@ SUBROUTINE step(nst)
 #if defined(FFTW)
       IF (l_spectral) THEN
 
-        IF(absorbing_bcs) THEN
-          CALL field_damping_bcs()
-        ENDIF
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
         CALL push_psatd_ebfield_3d
         !IF (rank .EQ. 0) PRINT *, "#0"
@@ -157,10 +154,6 @@ SUBROUTINE step(nst)
         CALL bfield_bcs
         IF(absorbing_bcs) THEN
           CALL field_damping_bcs()
-        ENDIF
-        !IF (rank .EQ. 0) PRINT *, "#0"
-        !!! --- Damp fields in pml region 
-        IF(absorbing_bcs) THEN
           CALL merge_fields()
         ENDIF
       ELSE
@@ -243,9 +236,6 @@ SUBROUTINE step(nst)
 
 #if defined(FFTW)
       IF (l_spectral) THEN
-        IF(absorbing_bcs) THEN
-          CALL field_damping_bcs()
-        ENDIF
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
         CALL push_psatd_ebfield_2d
         !IF (rank .EQ. 0) PRINT *, "#0"
@@ -254,10 +244,6 @@ SUBROUTINE step(nst)
         CALL bfield_bcs
         IF (absorbing_bcs) THEN
           CALL field_damping_bcs()
-        ENDIF
-        !IF (rank .EQ. 0) PRINT *, "#0"
-        !!! --- Damp fields in pml region
-        IF(absorbing_bcs) THEN
           CALL merge_fields()
         ENDIF
       ELSE
@@ -454,12 +440,12 @@ SUBROUTINE init_pml_arrays
  
   !> sigma=exp(-sigma*dt/2) 
  
-  sigma_x_e = EXP(-sigma_x_e*dt/2.0_num)
-  sigma_y_e = EXP(-sigma_y_e*dt/2.0_num)
-  sigma_z_e = EXP(-sigma_z_e*dt/2.0_num)
-  sigma_x_b = EXP(-sigma_x_b*dt/2.0_num)
-  sigma_y_b = EXP(-sigma_y_b*dt/2.0_num)
-  sigma_z_b = EXP(-sigma_z_b*dt/2.0_num)
+  sigma_x_e = EXP(-sigma_x_e*dt)
+  sigma_y_e = EXP(-sigma_y_e*dt)
+  sigma_z_e = EXP(-sigma_z_e*dt)
+  sigma_x_b = EXP(-sigma_x_b*dt)
+  sigma_y_b = EXP(-sigma_y_b*dt)
+  sigma_z_b = EXP(-sigma_z_b*dt)
 
   !> exchange sigma arrays, so that a pml region can cover many mpi domains
   !> mpis with inside-domain  guardcells may contain pml coefficients too 
