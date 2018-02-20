@@ -139,7 +139,14 @@ SUBROUTINE field_damping_bcs
   USE shared_data
   USE constants
   USE omp_lib
+  USE time_stat
   INTEGER(idp)  :: ix,iy,iz
+  REAL(num)     :: tmptime
+
+  IF (it.ge.timestat_itstart) THEN
+    tmptime = MPI_WTIME()
+  ENDIF
+
   !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
   DO ix = -nxguards,nx+nxguards
     DO iy = -nyguards,ny+nyguards
@@ -160,6 +167,10 @@ SUBROUTINE field_damping_bcs
     ENDDO
   ENDDO
   !$OMP END PARALLEL DO
+  IF (it.ge.timestat_itstart) THEN
+    localtimes(26) = localtimes(26) + (MPI_WTIME() - tmptime)
+  ENDIF
+
 END subroutine field_damping_bcs
 
 
@@ -177,7 +188,16 @@ SUBROUTINE merge_fields()
   USE fields
   USE shared_data
   USE omp_lib
+  USE time_stat
+ 
   INTEGER(idp)  :: ix,iy,iz
+  REAL(num)     :: tmptime
+
+  IF (it.ge.timestat_itstart) THEN
+    tmptime = MPI_WTIME()
+  ENDIF
+
+
   !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
   DO ix = -nxguards,nx+nxguards
     DO iy = -nyguards,ny+nyguards
@@ -192,6 +212,10 @@ SUBROUTINE merge_fields()
     ENDDO
   ENDDO
   !$OMP END PARALLEL DO
+  IF (it.ge.timestat_itstart) THEN
+    localtimes(26) = localtimes(26) + (MPI_WTIME() - tmptime)
+  ENDIF
+
 END subroutine merge_fields
    
 ! ________________________________________________________________________________________

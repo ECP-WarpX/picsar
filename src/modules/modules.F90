@@ -905,10 +905,10 @@ MODULE time_stat!#do not parse
   !> MPI local times for the initialization
   REAL(num), dimension(5)                :: init_localtimes
   !> MPI local times for the main loop
-  REAL(num), dimension(25)               :: localtimes
-  REAL(num), DIMENSION(25)               :: mintimes, init_mintimes
-  REAL(num), DIMENSION(25)               :: maxtimes, init_maxtimes
-  REAL(num), DIMENSION(25)               :: avetimes, init_avetimes
+  REAL(num), dimension(26)               :: localtimes
+  REAL(num), DIMENSION(26)               :: mintimes, init_mintimes
+  REAL(num), DIMENSION(26)               :: maxtimes, init_maxtimes
+  REAL(num), DIMENSION(26)               :: avetimes, init_avetimes
   !> Buffer for the output
   REAL(num), DIMENSION(:, :), POINTER     :: buffer_timestat
   INTEGER(idp)                           :: itimestat

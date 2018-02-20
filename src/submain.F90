@@ -682,6 +682,11 @@ SUBROUTINE initall
     nz_grid
     write(0, '(" Guard cells:", I5, X, I5, X, I5)') nxguards, nyguards, nzguards
     write(0, *) ''
+    IF(absorbing_bcs) THEN
+      write(0, '(" Absorbing field bcs with n_pml =:", I5, X, I5, X, I5)') nx_pml, ny_pml,nz_pml
+    ELSE 
+      write(0, '(" Periodic field bcs")')
+    ENDIF
     write(0, '(" FFTW - parameters ")')
 #if defined(FFTW)
     IF (l_spectral)    write(0, '(" PSATD Maxwell Solver")')
