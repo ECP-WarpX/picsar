@@ -407,7 +407,7 @@ SUBROUTINE init_pml_arrays
       DO ix = cell_x_max(x_coords+1), nx_global-nx_pml,-1
         ixx = ix - cell_x_min(x_coords+1)
         sigma_x_e(ixx,iy,iz) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+e_offset)**pow
-        sigma_x_b(ixx,iy,iz) = coeff*clight/dx *(ix-(nx_global-nx_pml)+b_offset)**pow
+        sigma_x_b(ixx,iy,iz) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+b_offset)**pow
       ENDDO
     ENDDO
   ENDDO
@@ -433,7 +433,7 @@ SUBROUTINE init_pml_arrays
       DO ix = 0,nx-1
         iyy = iy - cell_z_min(y_coords+1)
         sigma_y_e(ix,iyy,iz) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+e_offset)**pow
-        sigma_y_b(ix,iyy,iz) = coeff*clight/dy*(iy-(ny_global-ny_pml)+b_offset)**pow
+        sigma_y_b(ix,iyy,iz) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+b_offset)**pow
       ENDDO
     ENDDO
   ENDDO
@@ -459,7 +459,7 @@ SUBROUTINE init_pml_arrays
       DO ix = 0, nx-1
         izz = iz - cell_z_min(z_coords+1)
 
-        sigma_z_e(ix,iy,izz) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)-e_offset)**pow
+        sigma_z_e(ix,iy,izz) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+e_offset)**pow
         sigma_z_b(ix,iy,izz) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+b_offset)**pow
       ENDDO
     ENDDO
