@@ -194,7 +194,7 @@ SUBROUTINE field_damping_bcs
   !$OMP END PARALLEL 
 
   IF (it.ge.timestat_itstart) THEN
-    localtimes(10) = localtimes(10) + (MPI_WTIME() - tmptime)
+    localtimes(26) = localtimes(26) + (MPI_WTIME() - tmptime)
   ENDIF
 
 END SUBROUTINE field_damping_bcs
