@@ -339,14 +339,25 @@ SUBROUTINE init_pml_arrays
   REAL(num)    :: coeff,b_offset, e_offset
   INTEGER(idp) :: type_id  
   REAL(num)    , ALLOCATABLE, DIMENSION(:) :: temp
-  coeff = 0.20_num
+  coeff = 1.80_num
   b_offset = 0.5_num
   e_offset = 0._num
-  pow = 3_idp
+  pow = 4_idp
 
-  !> Inits pml arrays of the same size as ex fields
-  !> Pml arrays are initializd to 0.0_num because exp(0.0_num) = 1.0
+  !> Inits pml arrays of the same size as ex fields in the daming direction!
+  !> sigmas are 1d arrray to economize memory
+  
+  !> Pml arrays are initializd to 0.0_num because exp(0.0_num) = 1.0!
   !> So in case of no pml region inside the mpi domain, pml acts as vaccum
+
+  !> first each proc allocates sigma as an array of size n_global + 2*ng +1
+  !> then each proc will compute sigma in the whole domain and will then extract
+  !> the relevent part to its domain decomposition
+  !> Note that a pml region can overlap many procs even with local psatd !
+  !> In this case (when pml overlaps many procs) field guardcells can act as a
+  !> pml region too (imagine nx_pml = 15 and  nx_local = 10, then 5 cells of
+  !> proc number 2 will be pml regions. Say that we have 3 nxguards, then the 3
+  !> guardcells and 2 physical cells are pmls
 
   ALLOCATE(sigma_x_e(-nxguards:nx_global+nxguards));
   sigma_x_e = 0.0_num
@@ -361,8 +372,9 @@ SUBROUTINE init_pml_arrays
   ALLOCATE(sigma_z_b(-nzguards:nz_global+nzguards));
   sigma_z_b = 0.0_num
 
-  ! > Inits sigma_x_e and sigma_x_b in the lower bound of the domain along x
+  !> Inits sigma_x_e and sigma_x_b in the lower bound of the domain along x
   !> axis
+  !> first, each proc will compute sigma in the whole domain
   !> Need more straightforward way to do this
   DO ix = 0,nx_pml-1
     sigma_x_e(ix) =  coeff*clight/dx*(nx_pml-ix-e_offset)**pow
@@ -371,11 +383,14 @@ SUBROUTINE init_pml_arrays
 
   ! > Inits sigma_x_e and sigma_x_b in the upper bound of the domain along x
   !> axis
+  !> first, each proc will compute sigma in the whole domain
   !> Need more straightforward way to do this
   DO ix = nx_global-nx_pml, nx_global-1
     sigma_x_e(ix) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+e_offset)**pow
     sigma_x_b(ix) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+b_offset)**pow
   ENDDO
+
+  !> Each proc extracts the relevent part of sigma 
   ALLOCATE(temp(-nxguards:nx_global+nxguards)) 
   temp = sigma_x_e
   DEALLOCATE(sigma_x_e); ALLOCATE(sigma_x_e(-nxguards:nx+nxguards))
@@ -388,6 +403,7 @@ SUBROUTINE init_pml_arrays
  
   ! > Inits sigma_y_e and sigma_y_b in the lower bound of the domain along y
   !> axis
+  !> first, each proc will compute sigma in the whole domain
   !> Need more straightforward way to do this
   DO iy = 0 , ny_pml-1
     sigma_y_e(iy) =  coeff*clight/dy*(ny_pml-iy-e_offset)**pow
@@ -396,12 +412,14 @@ SUBROUTINE init_pml_arrays
 
   ! > Inits sigma_y_e and sigma_y_b in the upper bound of the domain along y
   !> axis
+  !> first, each proc will compute sigma in the whole domain
   !> Need more straightforward way to do this
   DO iy = ny_global-ny_pml,ny_global-1
     sigma_y_e(iy) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+e_offset)**pow
     sigma_y_b(iy) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+b_offset)**pow
   ENDDO
   
+  !> Each proc extracts the relevent part of sigma 
   ALLOCATE(temp(-nyguards:ny_global+nyguards)) 
   temp = sigma_y_e
   DEALLOCATE(sigma_y_e); ALLOCATE(sigma_y_e(-nyguards:ny+nyguards))
@@ -413,6 +431,7 @@ SUBROUTINE init_pml_arrays
 
   ! > Inits sigma_z_e and sigma_z_b in the lower bound of the domain along z
   !> axis
+  !> first, each proc will compute sigma in the whole domain
   !> Need more straightforward way to do this
   DO iz =0 , nz_pml-1
     sigma_z_e(iz) =  coeff*clight/dz*(nz_pml-iz-e_offset)**pow
@@ -421,12 +440,14 @@ SUBROUTINE init_pml_arrays
 
   ! > Inits sigma_z_e and sigma_z_b in the upper bound of the domain along z
   !> axis
+  !> first, each proc will compute sigma in the whole domain
   !> Need more straightforward way to do this
   DO iz =  nz_global-nz_pml,nz_global-1 
      sigma_z_e(iz) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+e_offset)**pow
      sigma_z_b(iz) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+b_offset)**pow
   ENDDO
 
+  !> Each proc extracts the relevent part of sigma 
   ALLOCATE(temp(-nzguards:nz_global+nzguards))
   temp = sigma_z_e
   DEALLOCATE(sigma_z_e); ALLOCATE(sigma_z_e(-nzguards:nz+nzguards))
@@ -436,11 +457,11 @@ SUBROUTINE init_pml_arrays
   DEALLOCATE(sigma_z_b); ALLOCATE(sigma_z_b(-nzguards:nz+nzguards))
   sigma_z_b = temp(cell_z_min(z_coords+1)-nzguards:cell_z_max(z_coords+1)+1+nzguards)
   DEALLOCATE(temp)
-
- 
  
   !> sigma=exp(-sigma*dt) 
- 
+  !> Uses an exact formulation to damp fields :
+  !> dE/dt = -sigma * E => E(n)=exp(-sigma*dt)*E(n-1)
+  !> Note that fdtd pml solving requires field time centering
   sigma_x_e = EXP(-sigma_x_e*dt)
   sigma_y_e = EXP(-sigma_y_e*dt)
   sigma_z_e = EXP(-sigma_z_e*dt)

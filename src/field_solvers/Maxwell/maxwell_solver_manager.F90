@@ -147,31 +147,57 @@ SUBROUTINE field_damping_bcs
     tmptime = MPI_WTIME()
   ENDIF
 
-  !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+  !> Damps splitted Em in the relevent direction
+  !> Since damping operation is local (ie no derivatives, damping fields
+  !> guardcells is straighforward and does not need to be communicated between
+  !> procs
+  !> This way, fields are damped AFTER fields_bcs!
+  !> So after this operation, fields in guardcells are correct!
+  !> for the next time iteration, these fields(even fields in guardcells)  are correct
+  !> (propagated + damped) and can be used in solve maxwell.
+  !> Note that a pml region can overlap many procs even with local psatd 
+  !> Thanks to what I explained before, damping does not require extra fields
+  !> comms
+  
+  !> Note that damping is computed over real fields (used to compute field
+  !> gathering etc ... )
+  !> It is the most versatile way to do this. Fields are
+  !> damped after maxwell propagation and field exchange. 
+  !> When using hybrid_psatd, these fields are ready to be communicated to
+  !> hybrid fields to solve maxwell again (local to global comms)
+  !> The same goes to local psatd
+ 
+  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(ix, iy, iz)
+  !$OMP DO COLLAPSE(1)
   DO ix = -nxguards,nx+nxguards
-    DO iy = -nyguards,ny+nyguards
-      DO iz = -nzguards,nz+nzguards
-        exy(ix,iy,iz) = sigma_y_e(iy) *exy(ix,iy,iz)
-        exz(ix,iy,iz) = sigma_z_e(iz) *exz(ix,iy,iz)
-        eyx(ix,iy,iz) = sigma_x_e(ix) *eyx(ix,iy,iz)
-        eyz(ix,iy,iz) = sigma_z_e(iz) *eyz(ix,iy,iz)
-        ezx(ix,iy,iz) = sigma_x_e(ix) *ezx(ix,iy,iz)
-        ezy(ix,iy,iz) = sigma_y_e(iy) *ezy(ix,iy,iz)
-        bxy(ix,iy,iz) = sigma_y_b(iy) *bxy(ix,iy,iz)
-        bxz(ix,iy,iz) = sigma_z_b(iz) *bxz(ix,iy,iz)
-        byx(ix,iy,iz) = sigma_x_b(ix) *byx(ix,iy,iz)
-        byz(ix,iy,iz) = sigma_z_b(iz) *byz(ix,iy,iz)
-        bzx(ix,iy,iz) = sigma_x_b(ix) *bzx(ix,iy,iz)
-        bzy(ix,iy,iz) = sigma_y_b(iy) *bzy(ix,iy,iz)
-      ENDDO
-    ENDDO
+    eyx(ix,:,:) = sigma_x_e(ix) *eyx(ix,:,:)
+    ezx(ix,:,:) = sigma_x_e(ix) *ezx(ix,:,:)
+    byx(ix,:,:) = sigma_x_b(ix) *byx(ix,:,:)
+    bzx(ix,:,:) = sigma_x_b(ix) *bzx(ix,:,:)
   ENDDO
-  !$OMP END PARALLEL DO
+  !$OMP END DO
+  !$OMP DO COLLAPSE(1)
+    DO iy = -nyguards,ny+nyguards
+        exy(:,iy,:) = sigma_y_e(iy) *exy(:,iy,:)
+        eyz(:,iy,:) = sigma_y_e(iy) *ezy(:,iy,:)
+        bxy(:,iy,:) = sigma_y_b(iy) *bxy(:,iy,:)
+        bzy(:,iy,:) = sigma_y_b(iy) *bzy(:,iy,:)
+      ENDDO
+  !$OMP DO COLLAPSE(1)
+  DO iz = -nzguards,nz+nzguards
+    exz(:,:,iz) = sigma_z_e(iy) *exz(:,:,iz)
+    eyz(:,:,iz) = sigma_z_e(iz) *eyz(:,:,iz)
+    bxz(:,:,iz) = sigma_z_b(iy) *bxz(:,:,iz)
+    byz(:,:,iz) = sigma_z_b(iz) *byz(:,:,iz)
+  ENDDO
+  !$OMP END DO
+  !$OMP END PARALLEL 
+
   IF (it.ge.timestat_itstart) THEN
-    localtimes(26) = localtimes(26) + (MPI_WTIME() - tmptime)
+    localtimes(10) = localtimes(10) + (MPI_WTIME() - tmptime)
   ENDIF
 
-END subroutine field_damping_bcs
+END SUBROUTINE field_damping_bcs
 
 
 ! ________________________________________________________________________________________
@@ -196,7 +222,6 @@ SUBROUTINE merge_fields()
   IF (it.ge.timestat_itstart) THEN
     tmptime = MPI_WTIME()
   ENDIF
-
 
   !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
   DO ix = -nxguards,nx+nxguards
