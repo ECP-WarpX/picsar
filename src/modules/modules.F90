@@ -231,7 +231,7 @@ MODULE fields
   ezy_r, bxy_r, bxz_r, byx_r, byz_r, bzx_r, bzy_r
   REAL(num) , POINTER, DIMENSION(:,:,:) :: exy,exz,eyx,eyz,ezx,ezy, &
         bxy,bxz,byx,byz,bzx,bzy
-  REAL(num) ,ALLOCATABLE, DIMENSION(:,:,:) :: sigma_x_e, sigma_y_e, sigma_z_e, &
+  REAL(num) , POINTER, DIMENSION(:,:,:) :: sigma_x_e, sigma_y_e, sigma_z_e, &
         sigma_x_b, sigma_y_b, sigma_z_b
   !> MPI-domain electric field grid in x - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: exf
