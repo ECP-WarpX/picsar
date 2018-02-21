@@ -339,10 +339,10 @@ SUBROUTINE init_pml_arrays
   REAL(num)    :: coeff,b_offset, e_offset
   INTEGER(idp) :: type_id  
   REAL(num)    , ALLOCATABLE, DIMENSION(:) :: temp
-  coeff = 1.80_num
+  coeff = 10_num
   b_offset = 0.5_num
   e_offset = 0._num
-  pow = 4_idp
+  pow = 3_idp
 
   !> Inits pml arrays of the same size as ex fields in the daming direction!
   !> sigmas are 1d arrray to economize memory
@@ -377,8 +377,8 @@ SUBROUTINE init_pml_arrays
   !> first, each proc will compute sigma in the whole domain
   !> Need more straightforward way to do this
   DO ix = 0,nx_pml-1
-    sigma_x_e(ix) =  coeff*clight/dx*(nx_pml-ix-e_offset)**pow
-    sigma_x_b(ix) =  coeff*clight/dx*(nx_pml-ix-b_offset)**pow
+    sigma_x_e(ix) = coeff*clight/dx*(nx_pml-ix-e_offset)**pow
+    sigma_x_b(ix) = coeff*clight/dx*(nx_pml-ix-b_offset)**pow
   ENDDO
 
   ! > Inits sigma_x_e and sigma_x_b in the upper bound of the domain along x
@@ -469,7 +469,49 @@ SUBROUTINE init_pml_arrays
   sigma_y_b = EXP(-sigma_y_b*dt)
   sigma_z_b = EXP(-sigma_z_b*dt)
 
+  !> Setting domain boundaries as perfect mirror 
+  IF(x_min_boundary) THEN
+    DO ix = -nxguards,-1
+      sigma_x_e(ix) = 0.0_num
+      sigma_x_b(ix) = 0.0_num
+    ENDDO
+  ENDIF
+  IF(x_max_boundary) THEN
+    DO ix = nx,nx+nxguards
+      sigma_x_e(ix) = 0.0_num
+      sigma_x_b(ix) = 0.0_num
+    ENDDO
+  ENDIF
 
+  IF(y_min_boundary) THEN
+    DO iy = -nyguards,-1
+      sigma_y_e(iy) = 0.0_num
+      sigma_y_b(iy) = 0.0_num
+    ENDDO
+  ENDIF
+  IF(y_max_boundary) THEN
+    DO iy = ny,ny+nyguards
+      sigma_y_e(iy) = 0.0_num
+      sigma_y_b(iy) = 0.0_num
+    ENDDO
+  ENDIF 
+  IF(z_min_boundary) THEN
+    DO iz = -nzguards,-1
+      sigma_z_e(iz) = 0.0_num
+      sigma_z_b(iz) = 0.0_num
+    ENDDO
+  ENDIF
+
+  IF(z_max_boundary) THEN
+    DO iz = nz,nz+nzguards
+      sigma_z_e(iz) = 0.0_num
+      sigma_z_b(iz) = 0.0_num
+    ENDDO
+  ENDIF 
+  IF(c_dim == 2) THEN
+    sigma_y_b = 1.0_num
+    sigma_y_e = 1.0_num
+  ENDIF
 END SUBROUTINE init_pml_arrays
 
 ! ________________________________________________________________________________________
