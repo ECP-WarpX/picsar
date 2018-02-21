@@ -177,12 +177,12 @@ SUBROUTINE field_damping_bcs
   ENDDO
   !$OMP END DO
   !$OMP DO COLLAPSE(1)
-    DO iy = -nyguards,ny+nyguards
-        exy(:,iy,:) = sigma_y_e(iy) *exy(:,iy,:)
-        eyz(:,iy,:) = sigma_y_e(iy) *ezy(:,iy,:)
-        bxy(:,iy,:) = sigma_y_b(iy) *bxy(:,iy,:)
-        bzy(:,iy,:) = sigma_y_b(iy) *bzy(:,iy,:)
-      ENDDO
+  DO iy = -nyguards,ny+nyguards
+    exy(:,iy,:) = sigma_y_e(iy) *exy(:,iy,:)
+    ezy(:,iy,:) = sigma_y_e(iy) *ezy(:,iy,:)
+    bxy(:,iy,:) = sigma_y_b(iy) *bxy(:,iy,:)
+    bzy(:,iy,:) = sigma_y_b(iy) *bzy(:,iy,:)
+  ENDDO
   !$OMP DO COLLAPSE(1)
   DO iz = -nzguards,nz+nzguards
     exz(:,:,iz) = sigma_z_e(iy) *exz(:,:,iz)
