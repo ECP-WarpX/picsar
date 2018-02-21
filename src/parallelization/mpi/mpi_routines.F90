@@ -1665,16 +1665,10 @@ ALLOCATE(rho(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                  
 -nzjguards:nz+nzjguards))
 ALLOCATE(rhoold(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                 &
 -nzjguards:nz+nzjguards))
-IF(c_output_divj==1) THEN
-  ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards,                       &
+ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards,                       &
 -nzguards:nz+nzguards))
-ENDIF
-IF(c_output_divj==1) THEN
-  ALLOCATE(divj(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-ENDIF
-IF(c_output_divb==1) THEN
-  ALLOCATE(divb(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-ENDIF
+ALLOCATE(divj(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+ALLOCATE(divb(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 ! --- Initialize auxiliary field arrays for gather to particles
 ex_p => ex
 ey_p => ey
