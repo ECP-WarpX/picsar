@@ -151,18 +151,18 @@ SUBROUTINE field_damping_bcs
   DO ix = -nxguards,nx+nxguards
     DO iy = -nyguards,ny+nyguards
       DO iz = -nzguards,nz+nzguards
-        exy(ix,iy,iz) = sigma_y_e(ix,iy,iz) *exy(ix,iy,iz)
-        exz(ix,iy,iz) = sigma_z_e(ix,iy,iz) *exz(ix,iy,iz)
-        eyx(ix,iy,iz) = sigma_x_e(ix,iy,iz) *eyx(ix,iy,iz)
-        eyz(ix,iy,iz) = sigma_z_e(ix,iy,iz) *eyz(ix,iy,iz)
-        ezx(ix,iy,iz) = sigma_x_e(ix,iy,iz) *ezx(ix,iy,iz)
-        ezy(ix,iy,iz) = sigma_y_e(ix,iy,iz) *ezy(ix,iy,iz)
-        bxy(ix,iy,iz) = sigma_y_b(ix,iy,iz) *bxy(ix,iy,iz)
-        bxz(ix,iy,iz) = sigma_z_b(ix,iy,iz) *bxz(ix,iy,iz)
-        byx(ix,iy,iz) = sigma_x_b(ix,iy,iz) *byx(ix,iy,iz)
-        byz(ix,iy,iz) = sigma_z_b(ix,iy,iz) *byz(ix,iy,iz)
-        bzx(ix,iy,iz) = sigma_x_b(ix,iy,iz) *bzx(ix,iy,iz)
-        bzy(ix,iy,iz) = sigma_y_b(ix,iy,iz) *bzy(ix,iy,iz)
+        exy(ix,iy,iz) = sigma_y_e(iy) *exy(ix,iy,iz)
+        exz(ix,iy,iz) = sigma_z_e(iz) *exz(ix,iy,iz)
+        eyx(ix,iy,iz) = sigma_x_e(ix) *eyx(ix,iy,iz)
+        eyz(ix,iy,iz) = sigma_z_e(iz) *eyz(ix,iy,iz)
+        ezx(ix,iy,iz) = sigma_x_e(ix) *ezx(ix,iy,iz)
+        ezy(ix,iy,iz) = sigma_y_e(iy) *ezy(ix,iy,iz)
+        bxy(ix,iy,iz) = sigma_y_b(iy) *bxy(ix,iy,iz)
+        bxz(ix,iy,iz) = sigma_z_b(iz) *bxz(ix,iy,iz)
+        byx(ix,iy,iz) = sigma_x_b(ix) *byx(ix,iy,iz)
+        byz(ix,iy,iz) = sigma_z_b(iz) *byz(ix,iy,iz)
+        bzx(ix,iy,iz) = sigma_x_b(ix) *bzx(ix,iy,iz)
+        bzy(ix,iy,iz) = sigma_y_b(iy) *bzy(ix,iy,iz)
       ENDDO
     ENDDO
   ENDDO
