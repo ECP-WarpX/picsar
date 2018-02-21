@@ -148,9 +148,9 @@ SUBROUTINE field_damping_bcs
   ENDIF
 
   !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-  DO ix = -nxguards,nx+nxguards
-    DO iy = -nyguards,ny+nyguards
-      DO iz = -nzguards,nz+nzguards
+  DO ix = -nxguards,nx+nxguards-1
+    DO iy = -nyguards,ny+nyguards-1
+      DO iz = -nzguards,nz+nzguards-1
         exy(ix,iy,iz) = sigma_y_e(iy) *exy(ix,iy,iz)
         exz(ix,iy,iz) = sigma_z_e(iz) *exz(ix,iy,iz)
         eyx(ix,iy,iz) = sigma_x_e(ix) *eyx(ix,iy,iz)

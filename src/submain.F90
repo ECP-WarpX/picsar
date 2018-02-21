@@ -339,8 +339,8 @@ SUBROUTINE init_pml_arrays
   REAL(num)    :: coeff,b_offset, e_offset
   INTEGER(idp) :: type_id  
   REAL(num)    , ALLOCATABLE, DIMENSION(:) :: temp
-  coeff = 10_num
-  b_offset = 0.5_num
+  coeff = .50_num
+  b_offset = .50_num
   e_offset = 0._num
   pow = 3_idp
 
@@ -359,17 +359,17 @@ SUBROUTINE init_pml_arrays
   !> proc number 2 will be pml regions. Say that we have 3 nxguards, then the 3
   !> guardcells and 2 physical cells are pmls
 
-  ALLOCATE(sigma_x_e(-nxguards:nx_global+nxguards));
+  ALLOCATE(sigma_x_e(-nxguards:nx_global+nxguards-1));
   sigma_x_e = 0.0_num
-  ALLOCATE(sigma_x_b(-nxguards:nx_global+nxguards));
+  ALLOCATE(sigma_x_b(-nxguards:nx_global+nxguards-1));
   sigma_x_b = 0.0_num
-  ALLOCATE(sigma_y_e(-nyguards:ny_global+nyguards));
+  ALLOCATE(sigma_y_e(-nyguards:ny_global+nyguards-1));
   sigma_y_e = 0.0_num
-  ALLOCATE(sigma_y_b(-nyguards:ny_global+nyguards));
+  ALLOCATE(sigma_y_b(-nyguards:ny_global+nyguards-1));
   sigma_y_b = 0.0_num
-  ALLOCATE(sigma_z_e(-nzguards:nz_global+nzguards));
+  ALLOCATE(sigma_z_e(-nzguards:nz_global+nzguards-1));
   sigma_z_e = 0.0_num
-  ALLOCATE(sigma_z_b(-nzguards:nz_global+nzguards));
+  ALLOCATE(sigma_z_b(-nzguards:nz_global+nzguards-1));
   sigma_z_b = 0.0_num
 
   !> Inits sigma_x_e and sigma_x_b in the lower bound of the domain along x
@@ -387,18 +387,18 @@ SUBROUTINE init_pml_arrays
   !> Need more straightforward way to do this
   DO ix = nx_global-nx_pml, nx_global-1
     sigma_x_e(ix) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+e_offset)**pow
-    sigma_x_b(ix) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+b_offset)**pow
+    sigma_x_b(ix-1) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+b_offset-1)**pow
   ENDDO
 
   !> Each proc extracts the relevent part of sigma 
   ALLOCATE(temp(-nxguards:nx_global+nxguards)) 
   temp = sigma_x_e
-  DEALLOCATE(sigma_x_e); ALLOCATE(sigma_x_e(-nxguards:nx+nxguards))
-  sigma_x_e = temp(cell_x_min(x_coords+1)-nxguards:cell_x_max(x_coords+1)+1+nxguards)
+  DEALLOCATE(sigma_x_e); ALLOCATE(sigma_x_e(-nxguards:nx+nxguards-1))
+  sigma_x_e = temp(cell_x_min(x_coords+1)-nxguards:cell_x_max(x_coords+1)+nxguards)
  
   temp = sigma_x_b
-  DEALLOCATE(sigma_x_b); ALLOCATE(sigma_x_b(-nxguards:nx+nxguards))
-  sigma_x_b = temp(cell_x_min(x_coords+1)-nxguards:cell_x_max(x_coords+1)+1+nxguards)
+  DEALLOCATE(sigma_x_b); ALLOCATE(sigma_x_b(-nxguards:nx+nxguards-1))
+  sigma_x_b = temp(cell_x_min(x_coords+1)-nxguards:cell_x_max(x_coords+1)+nxguards)
   DEALLOCATE(temp)
  
   ! > Inits sigma_y_e and sigma_y_b in the lower bound of the domain along y
@@ -416,17 +416,17 @@ SUBROUTINE init_pml_arrays
   !> Need more straightforward way to do this
   DO iy = ny_global-ny_pml,ny_global-1
     sigma_y_e(iy) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+e_offset)**pow
-    sigma_y_b(iy) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+b_offset)**pow
+    sigma_y_b(iy-1) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+b_offset-1)**pow
   ENDDO
   
   !> Each proc extracts the relevent part of sigma 
   ALLOCATE(temp(-nyguards:ny_global+nyguards)) 
   temp = sigma_y_e
-  DEALLOCATE(sigma_y_e); ALLOCATE(sigma_y_e(-nyguards:ny+nyguards))
-  sigma_y_e = temp(cell_y_min(y_coords+1)-nyguards:cell_y_max(y_coords+1)+1+nyguards)
+  DEALLOCATE(sigma_y_e); ALLOCATE(sigma_y_e(-nyguards:ny+nyguards-1))
+  sigma_y_e = temp(cell_y_min(y_coords+1)-nyguards:cell_y_max(y_coords+1)+nyguards)
   temp = sigma_y_b
-  DEALLOCATE(sigma_y_b); ALLOCATE(sigma_y_b(-nyguards:ny+nyguards))
-  sigma_y_b = temp(cell_y_min(y_coords+1)-nyguards:cell_y_max(y_coords+1)+1+nyguards)
+  DEALLOCATE(sigma_y_b); ALLOCATE(sigma_y_b(-nyguards:ny+nyguards-1))
+  sigma_y_b = temp(cell_y_min(y_coords+1)-nyguards:cell_y_max(y_coords+1)+nyguards)
   DEALLOCATE(temp)
 
   ! > Inits sigma_z_e and sigma_z_b in the lower bound of the domain along z
@@ -444,18 +444,18 @@ SUBROUTINE init_pml_arrays
   !> Need more straightforward way to do this
   DO iz =  nz_global-nz_pml,nz_global-1 
      sigma_z_e(iz) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+e_offset)**pow
-     sigma_z_b(iz) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+b_offset)**pow
+     sigma_z_b(iz-1) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+b_offset-1)**pow
   ENDDO
 
   !> Each proc extracts the relevent part of sigma 
   ALLOCATE(temp(-nzguards:nz_global+nzguards))
   temp = sigma_z_e
-  DEALLOCATE(sigma_z_e); ALLOCATE(sigma_z_e(-nzguards:nz+nzguards))
-  sigma_z_e = temp(cell_z_min(z_coords+1)-nzguards:cell_z_max(z_coords+1)+1+nzguards)
+  DEALLOCATE(sigma_z_e); ALLOCATE(sigma_z_e(-nzguards:nz+nzguards-1))
+  sigma_z_e = temp(cell_z_min(z_coords+1)-nzguards:cell_z_max(z_coords+1)+nzguards)
 
   temp = sigma_z_b 
-  DEALLOCATE(sigma_z_b); ALLOCATE(sigma_z_b(-nzguards:nz+nzguards))
-  sigma_z_b = temp(cell_z_min(z_coords+1)-nzguards:cell_z_max(z_coords+1)+1+nzguards)
+  DEALLOCATE(sigma_z_b); ALLOCATE(sigma_z_b(-nzguards:nz+nzguards-1))
+  sigma_z_b = temp(cell_z_min(z_coords+1)-nzguards:cell_z_max(z_coords+1)+nzguards)
   DEALLOCATE(temp)
  
   !> sigma=exp(-sigma*dt) 
@@ -477,10 +477,11 @@ SUBROUTINE init_pml_arrays
     ENDDO
   ENDIF
   IF(x_max_boundary) THEN
-    DO ix = nx,nx+nxguards
+    DO ix = nx,nx+nxguards-1
       sigma_x_e(ix) = 0.0_num
-      sigma_x_b(ix) = 0.0_num
+      sigma_x_b(ix-1) = 0.0_num
     ENDDO
+    sigma_x_b(nx+nxguards-1) = 0.0_num
   ENDIF
 
   IF(y_min_boundary) THEN
@@ -490,10 +491,11 @@ SUBROUTINE init_pml_arrays
     ENDDO
   ENDIF
   IF(y_max_boundary) THEN
-    DO iy = ny,ny+nyguards
+    DO iy = ny,ny+nyguards-1
       sigma_y_e(iy) = 0.0_num
-      sigma_y_b(iy) = 0.0_num
+      sigma_y_b(iy-1) = 0.0_num
     ENDDO
+    sigma_y_b(ny+nyguards-1) = 0.0_num
   ENDIF 
   IF(z_min_boundary) THEN
     DO iz = -nzguards,-1
@@ -503,15 +505,19 @@ SUBROUTINE init_pml_arrays
   ENDIF
 
   IF(z_max_boundary) THEN
-    DO iz = nz,nz+nzguards
+    DO iz = nz,nz+nzguards-1
       sigma_z_e(iz) = 0.0_num
-      sigma_z_b(iz) = 0.0_num
+      sigma_z_b(iz-1) = 0.0_num
     ENDDO
+    sigma_z_b(nz+nzguards-1) = 0.0_num
   ENDIF 
   IF(c_dim == 2) THEN
     sigma_y_b = 1.0_num
     sigma_y_e = 1.0_num
   ENDIF
+!if(rank==0)print*,"sb",sigma_z_b
+!if(rank==0)print*,"se",sigma_z_e
+
 END SUBROUTINE init_pml_arrays
 
 ! ________________________________________________________________________________________
