@@ -336,7 +336,7 @@ SUBROUTINE init_pml_arrays
   INTEGER(idp) :: ix,iy,iz,ixx,iyy,izz,pow
   REAL(num)    :: coeff,b_offset, e_offset
   
-  coeff = 0.10_num
+  coeff = 0.20_num
   b_offset = 0.5_num
   e_offset = 0._num
   pow = 3_idp
@@ -430,7 +430,6 @@ SUBROUTINE init_pml_arrays
     DO iy = 0,ny-1
       DO ix = 0, nx-1
         izz = iz - cell_z_min(z_coords+1)
-
         sigma_z_e(ix,iy,izz) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+e_offset)**pow
         sigma_z_b(ix,iy,izz) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+b_offset)**pow
       ENDDO
@@ -617,9 +616,11 @@ SUBROUTINE initall
   dys2 = dy*0.5_num
   dzs2 = dz*0.5_num
 
-  ! - Init stencil coefficients
-  CALL init_stencil_coefficients()
+  ! - Init stencil coefficients for FDTD
 
+  IF(.NOT. l_spectral) THEN
+    CALL init_stencil_coefficients()
+  ENDIF
   ! Summary
   IF (rank .EQ. 0) THEN
     write(0, *) ''
@@ -646,7 +647,9 @@ SUBROUTINE initall
       write(0, '(" Pusher: Boris algorithm (particle_pusher=", I1, ")")')             &
       particle_pusher
     ENDIF
-    write(0, *) 'Maxwell derivative coeff:', xcoeffs
+    IF(.NOT. l_spectral) THEN
+      write(0, *) 'Maxwell derivative coeff:', xcoeffs
+    ENDIF
     write(0, *) 'MPI buffer size:', mpi_buf_size
     WRITE(0, *) ''
     WRITE(0, *) 'Vector length current deposition', lvec_curr_depo
