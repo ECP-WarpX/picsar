@@ -157,6 +157,7 @@ MODULE fourier_psaotd
 
     IMPLICIT NONE
     INTEGER(idp) :: nfftx, nffty, nfftz, nxx, nyy, nzz
+    INTEGER(idp) :: ix,iy,iz
     REAL(num)    :: tmptime
     nxx=nx+2*nxguards+1; nyy=ny+2*nyguards+1; nzz=nz+2*nzguards+1;
 #if defined(LIBRARY)
@@ -175,6 +176,119 @@ MODULE fourier_psaotd
 #if !defined(LIBRARY)
      CALL copy_field_forward()
 #endif
+    IF(absorbing_bcs) THEN 
+    ! reflective bcs after pml
+      IF(x_min_boundary) THEN
+        DO ix = -nxguards,-1
+          exy_r(ix,:,:) = 0.0_num
+          exz_r(ix,:,:) = 0.0_num
+          eyx_r(ix,:,:) = 0.0_num
+          eyz_r(ix,:,:) = 0.0_num
+          ezx_r(ix,:,:) = 0.0_num  
+          ezy_r(ix,:,:) = 0.0_num
+          bxy_r(ix,:,:) = 0.0_num
+          bxz_r(ix,:,:) = 0.0_num
+          byx_r(ix,:,:) = 0.0_num
+          byz_r(ix,:,:) = 0.0_num
+          bzx_r(ix,:,:) = 0.0_num
+          bzy_r(ix,:,:) = 0.0_num
+        ENDDO
+      ENDIF
+      IF(x_max_boundary) THEN
+        DO ix=nx,nx+nxguards-1 
+          exy_r(ix,:,:) = 0.0_num
+          exz_r(ix,:,:) = 0.0_num
+          eyx_r(ix,:,:) = 0.0_num
+          eyz_r(ix,:,:) = 0.0_num
+          ezx_r(ix,:,:) = 0.0_num
+          ezy_r(ix,:,:) = 0.0_num
+          bxy_r(ix,:,:) = 0.0_num
+          bxz_r(ix,:,:) = 0.0_num
+          byx_r(ix-1,:,:) = 0.0_num
+          byz_r(ix-1,:,:) = 0.0_num
+          bzx_r(ix-1,:,:) = 0.0_num
+          bzy_r(ix-1,:,:) = 0.0_num
+        ENDDO
+        byx_r(nx+nxguards-1,:,:) = 0.0_num
+        byz_r(nx+nxguards-1,:,:) = 0.0_num
+        bzx_r(nx+nxguards-1,:,:) = 0.0_num
+        bzy_r(nx+nxguards-1,:,:) = 0.0_num
+      ENDIF
+      IF(c_dim == 3) THEN 
+        IF(y_min_boundary) THEN
+          DO iy = -nyguards,-1
+            exy_r(:,iy,:) = 0.0_num
+            exz_r(:,iy,:) = 0.0_num
+            eyx_r(:,iy,:) = 0.0_num
+            eyz_r(:,iy,:) = 0.0_num
+            ezx_r(:,iy,:) = 0.0_num
+            ezy_r(:,iy,:) = 0.0_num
+            bxy_r(:,iy,:) = 0.0_num
+            bxz_r(:,iy,:) = 0.0_num
+            byx_r(:,iy,:) = 0.0_num
+            byz_r(:,iy,:) = 0.0_num
+            bzx_r(:,iy,:) = 0.0_num
+            bzy_r(:,iy,:) = 0.0_num
+          ENDDO
+        ENDIF
+        IF(y_max_boundary) THEN
+          DO iy=ny,ny+nyguards-1  
+            exy_r(:,iy,:) = 0.0_num
+            exz_r(:,iy,:) = 0.0_num
+            eyx_r(:,iy,:) = 0.0_num
+            eyz_r(:,iy,:) = 0.0_num
+            ezx_r(:,iy,:) = 0.0_num
+            ezy_r(:,iy,:) = 0.0_num
+            bxy_r(:,iy-1,:) = 0.0_num
+            bxz_r(:,iy-1,:) = 0.0_num
+            byx_r(:,iy,:) = 0.0_num
+            byz_r(:,iy,:) = 0.0_num
+            bzx_r(:,iy-1,:) = 0.0_num
+            bzy_r(:,iy-1,:) = 0.0_num
+          ENDDO
+          bxy_r(:,ny+nyguards-1,:) = 0.0_num
+          bxz_r(:,ny+nyguards-1,:) = 0.0_num
+          bzx_r(:,ny+nyguards-1,:) = 0.0_num
+          bzy_r(:,ny+nyguards-1,:) = 0.0_num
+        ENDIF
+      ENDIF
+      IF(z_min_boundary) THEN
+        DO iz = -nzguards,-1
+          exy_r(:,:,iz) = 0.0_num
+          exz_r(:,:,iz) = 0.0_num
+          eyx_r(:,:,iz) = 0.0_num
+          eyz_r(:,:,iz) = 0.0_num
+          ezx_r(:,:,iz) = 0.0_num
+          ezy_r(:,:,iz) = 0.0_num
+          bxy_r(:,:,iz) = 0.0_num
+          bxz_r(:,:,iz) = 0.0_num
+          byx_r(:,:,iz) = 0.0_num
+          byz_r(:,:,iz) = 0.0_num
+          bzx_r(:,:,iz) = 0.0_num
+          bzy_r(:,:,iz) = 0.0_num
+        ENDDO
+      ENDIF
+      IF(z_max_boundary) THEN
+        DO iz=nz ,nz+nzguards-1  
+          exy_r(:,:,iz) = 0.0_num
+          exz_r(:,:,iz) = 0.0_num
+          eyx_r(:,:,iz) = 0.0_num
+          eyz_r(:,:,iz) = 0.0_num
+          ezx_r(:,:,iz) = 0.0_num
+          ezy_r(:,:,iz) = 0.0_num
+          bxy_r(:,:,iz-1) = 0.0_num
+          bxz_r(:,:,iz-1) = 0.0_num
+          byx_r(:,:,iz-1) = 0.0_num
+          byz_r(:,:,iz-1) = 0.0_num
+          bzx_r(:,:,iz) = 0.0_num
+          bzy_r(:,:,iz) = 0.0_num
+        ENDDO
+        bxy_r(:,:,nz+nzguards-1) = 0.0_num
+        bxz_r(:,:,nz+nzguards-1) = 0.0_num
+        byx_r(:,:,nz+nzguards-1) = 0.0_num
+        byz_r(:,:,nz+nzguards-1) = 0.0_num
+      ENDIF
+    ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
@@ -395,40 +509,54 @@ MODULE fourier_psaotd
           bzx_r(ixx-1,:,:) = 0.0_num
           bzy_r(ixx-1,:,:) = 0.0_num
         ENDDO
+        IF(x_max_boundary) THEN
+          byx_r(ixx,:,:) = 0.0_num
+          byz_r(ixx,:,:) = 0.0_num
+          bzx_r(ixx,:,:) = 0.0_num
+          bzy_r(ixx,:,:) = 0.0_num
+        ENDIF        
       ENDIF
-      IF(is_group_y_boundary_min) THEN
-        DO iy = cell_y_min_g(y_coords+1),-1
-          iyy = iy-cell_y_min_g(y_coords+1)+1_idp
-          exy_r(:,iyy,:) = 0.0_num
-          exz_r(:,iyy,:) = 0.0_num
-          eyx_r(:,iyy,:) = 0.0_num
-          eyz_r(:,iyy,:) = 0.0_num
-          ezx_r(:,iyy,:) = 0.0_num
-          ezy_r(:,iyy,:) = 0.0_num
-          bxy_r(:,iyy,:) = 0.0_num
-          bxz_r(:,iyy,:) = 0.0_num
-          byx_r(:,iyy,:) = 0.0_num
-          byz_r(:,iyy,:) = 0.0_num
-          bzx_r(:,iyy,:) = 0.0_num
-          bzy_r(:,iyy,:) = 0.0_num
-        ENDDO
-      ENDIF
-      IF(is_group_y_boundary_max) THEN
-        DO iy=ny_global ,cell_y_max_g(y_coords+1)  
-          iyy = iy - cell_y_min_g(y_coords+1)+1_idp 
-          exy_r(:,iyy,:) = 0.0_num
-          exz_r(:,iyy,:) = 0.0_num
-          eyx_r(:,iyy,:) = 0.0_num
-          eyz_r(:,iyy,:) = 0.0_num
-          ezx_r(:,iyy,:) = 0.0_num
-          ezy_r(:,iyy,:) = 0.0_num
-          bxy_r(:,iyy-1,:) = 0.0_num
-          bxz_r(:,iyy-1,:) = 0.0_num
-          byx_r(:,iyy,:) = 0.0_num
-          byz_r(:,iyy,:) = 0.0_num
-          bzx_r(:,iyy-1,:) = 0.0_num
-          bzy_r(:,iyy-1,:) = 0.0_num
-        ENDDO
+      IF(c_dim == 3_idp) THEN
+        IF(is_group_y_boundary_min) THEN
+          DO iy = cell_y_min_g(y_coords+1),-1
+            iyy = iy-cell_y_min_g(y_coords+1)+1_idp
+            exy_r(:,iyy,:) = 0.0_num
+            exz_r(:,iyy,:) = 0.0_num
+            eyx_r(:,iyy,:) = 0.0_num
+            eyz_r(:,iyy,:) = 0.0_num
+            ezx_r(:,iyy,:) = 0.0_num
+            ezy_r(:,iyy,:) = 0.0_num
+            bxy_r(:,iyy,:) = 0.0_num
+            bxz_r(:,iyy,:) = 0.0_num
+            byx_r(:,iyy,:) = 0.0_num
+            byz_r(:,iyy,:) = 0.0_num
+            bzx_r(:,iyy,:) = 0.0_num
+            bzy_r(:,iyy,:) = 0.0_num
+          ENDDO
+        ENDIF
+        IF(is_group_y_boundary_max) THEN
+          DO iy=ny_global ,cell_y_max_g(y_coords+1)  
+            iyy = iy - cell_y_min_g(y_coords+1)+1_idp 
+            exy_r(:,iyy,:) = 0.0_num
+            exz_r(:,iyy,:) = 0.0_num
+            eyx_r(:,iyy,:) = 0.0_num
+            eyz_r(:,iyy,:) = 0.0_num
+            ezx_r(:,iyy,:) = 0.0_num
+            ezy_r(:,iyy,:) = 0.0_num
+            bxy_r(:,iyy-1,:) = 0.0_num
+            bxz_r(:,iyy-1,:) = 0.0_num
+            byx_r(:,iyy,:) = 0.0_num
+            byz_r(:,iyy,:) = 0.0_num
+            bzx_r(:,iyy-1,:) = 0.0_num
+            bzy_r(:,iyy-1,:) = 0.0_num
+          ENDDO
+          IF(y_max_boundary) THEN
+            bxy_r(:,iyy,:) = 0.0_num
+            bxz_r(:,iyy,:) = 0.0_num
+            bzx_r(:,iyy,:) = 0.0_num
+            bzy_r(:,iyy,:) = 0.0_num
+          ENDIF
+        ENDIF
       ENDIF
       IF(is_group_z_boundary_min) THEN
         DO iz = cell_z_min_g(z_coords+1),-1
@@ -463,6 +591,12 @@ MODULE fourier_psaotd
           bzx_r(:,:,izz) = 0.0_num
           bzy_r(:,:,izz) = 0.0_num
         ENDDO
+        IF(z_max_boundary) THEN
+          bxy_r(:,:,izz) = 0.0_num
+          bxz_r(:,:,izz) = 0.0_num
+          byx_r(:,:,izz) = 0.0_num
+          byz_r(:,:,izz) = 0.0_num
+        ENDIF 
       ENDIF
     ENDIF
     CALL fft_forward_r2c_hybrid() 

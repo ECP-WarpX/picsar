@@ -521,11 +521,6 @@ SUBROUTINE init_pml_arrays
     sigma_y_b = 1.0_num
     sigma_y_e = 1.0_num
   ENDIF
-if(rank==0)print*,"sb0",sigma_z_b
-if(rank==0)print*,"se0",sigma_z_e
-if(rank==1)print*,"sb1",sigma_z_b
-if(rank==1)print*,"se1",sigma_z_e
-
 
 END SUBROUTINE init_pml_arrays
 
