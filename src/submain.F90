@@ -356,9 +356,9 @@ SUBROUTINE init_pml_arrays
   !> Pml arrays are initializd to 0.0_num because exp(0.0_num) = 1.0!
   !> So in case of no pml region inside the mpi domain, pml acts as vaccum
 
-  !> first each proc allocates sigma as an array of size n_global + 2*ng +1
+  !> first each proc allocates sigma as a 1d array of size n_global + 2*ng 
   !> then each proc will compute sigma in the whole domain and will then extract
-  !> the relevent part to its domain decomposition
+  !> the relevent part for its subdomain
   !> Note that a pml region can overlap many procs even with local psatd !
   !> In this case (when pml overlaps many procs) field guardcells can act as a
   !> pml region too (imagine nx_pml = 15 and  nx_local = 10, then 5 cells of
@@ -381,7 +381,6 @@ SUBROUTINE init_pml_arrays
   !> Inits sigma_x_e and sigma_x_b in the lower bound of the domain along x
   !> axis
   !> first, each proc will compute sigma in the whole domain
-  !> Need more straightforward way to do this
   DO ix = 0,nx_pml-1
     sigma_x_e(ix) = coeff*clight/dx*(nx_pml-ix-e_offset)**pow
     sigma_x_b(ix) = coeff*clight/dx*(nx_pml-ix-b_offset)**pow
@@ -390,7 +389,6 @@ SUBROUTINE init_pml_arrays
   ! > Inits sigma_x_e and sigma_x_b in the upper bound of the domain along x
   !> axis
   !> first, each proc will compute sigma in the whole domain
-  !> Need more straightforward way to do this
   DO ix = nx_global-nx_pml, nx_global-1
     sigma_x_e(ix) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+e_offset)**pow
     sigma_x_b(ix-1) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+b_offset-1)**pow
@@ -410,7 +408,6 @@ SUBROUTINE init_pml_arrays
   ! > Inits sigma_y_e and sigma_y_b in the lower bound of the domain along y
   !> axis
   !> first, each proc will compute sigma in the whole domain
-  !> Need more straightforward way to do this
   DO iy = 0 , ny_pml-1
     sigma_y_e(iy) =  coeff*clight/dy*(ny_pml-iy-e_offset)**pow
     sigma_y_b(iy) =  coeff*clight/dy*(ny_pml-iy-b_offset)**pow
@@ -419,7 +416,6 @@ SUBROUTINE init_pml_arrays
   ! > Inits sigma_y_e and sigma_y_b in the upper bound of the domain along y
   !> axis
   !> first, each proc will compute sigma in the whole domain
-  !> Need more straightforward way to do this
   DO iy = ny_global-ny_pml,ny_global-1
     sigma_y_e(iy) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+e_offset)**pow
     sigma_y_b(iy-1) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+b_offset-1)**pow
@@ -468,12 +464,12 @@ SUBROUTINE init_pml_arrays
   !> Uses an exact formulation to damp fields :
   !> dE/dt = -sigma * E => E(n)=exp(-sigma*dt)*E(n-1)
   !> Note that fdtd pml solving requires field time centering
-  sigma_x_e = EXP(-sigma_x_e*dt*2.0_num)
-  sigma_y_e = EXP(-sigma_y_e*dt*2.0_num)
-  sigma_z_e = EXP(-sigma_z_e*dt*2.0_num)
-  sigma_x_b = EXP(-sigma_x_b*dt*2.0_num)
-  sigma_y_b = EXP(-sigma_y_b*dt*2.0_num)
-  sigma_z_b = EXP(-sigma_z_b*dt*2.0_num)
+  sigma_x_e = EXP(-sigma_x_e*dt/2.0_num)
+  sigma_y_e = EXP(-sigma_y_e*dt/2.0_num)
+  sigma_z_e = EXP(-sigma_z_e*dt/2.0_num)
+  sigma_x_b = EXP(-sigma_x_b*dt/2.0_num)
+  sigma_y_b = EXP(-sigma_y_b*dt/2.0_num)
+  sigma_z_b = EXP(-sigma_z_b*dt/2.0_num)
 
   !> Setting domain boundaries as perfect mirror 
   IF(x_min_boundary) THEN
