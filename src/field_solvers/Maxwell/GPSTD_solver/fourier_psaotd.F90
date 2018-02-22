@@ -390,10 +390,10 @@ MODULE fourier_psaotd
           ezy_r(ixx,:,:) = 0.0_num
           bxy_r(ixx,:,:) = 0.0_num
           bxz_r(ixx,:,:) = 0.0_num
-          byx_r(ixx,:,:) = 0.0_num
-          byz_r(ixx,:,:) = 0.0_num
-          bzx_r(ixx,:,:) = 0.0_num
-          bzy_r(ixx,:,:) = 0.0_num
+          byx_r(ixx-1,:,:) = 0.0_num
+          byz_r(ixx-1,:,:) = 0.0_num
+          bzx_r(ixx-1,:,:) = 0.0_num
+          bzy_r(ixx-1,:,:) = 0.0_num
         ENDDO
       ENDIF
       IF(is_group_y_boundary_min) THEN
@@ -422,12 +422,12 @@ MODULE fourier_psaotd
           eyz_r(:,iyy,:) = 0.0_num
           ezx_r(:,iyy,:) = 0.0_num
           ezy_r(:,iyy,:) = 0.0_num
-          bxy_r(:,iyy,:) = 0.0_num
-          bxz_r(:,iyy,:) = 0.0_num
+          bxy_r(:,iyy-1,:) = 0.0_num
+          bxz_r(:,iyy-1,:) = 0.0_num
           byx_r(:,iyy,:) = 0.0_num
           byz_r(:,iyy,:) = 0.0_num
-          bzx_r(:,iyy,:) = 0.0_num
-          bzy_r(:,iyy,:) = 0.0_num
+          bzx_r(:,iyy-1,:) = 0.0_num
+          bzy_r(:,iyy-1,:) = 0.0_num
         ENDDO
       ENDIF
       IF(is_group_z_boundary_min) THEN
@@ -456,10 +456,10 @@ MODULE fourier_psaotd
           eyz_r(:,:,izz) = 0.0_num
           ezx_r(:,:,izz) = 0.0_num
           ezy_r(:,:,izz) = 0.0_num
-          bxy_r(:,:,izz) = 0.0_num
-          bxz_r(:,:,izz) = 0.0_num
-          byx_r(:,:,izz) = 0.0_num
-          byz_r(:,:,izz) = 0.0_num
+          bxy_r(:,:,izz-1) = 0.0_num
+          bxz_r(:,:,izz-1) = 0.0_num
+          byx_r(:,:,izz-1) = 0.0_num
+          byz_r(:,:,izz-1) = 0.0_num
           bzx_r(:,:,izz) = 0.0_num
           bzy_r(:,:,izz) = 0.0_num
         ENDDO

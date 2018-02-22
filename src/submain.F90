@@ -147,6 +147,9 @@ SUBROUTINE step(nst)
       IF (l_spectral) THEN
 
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
+        IF (absorbing_bcs) THEN
+          CALL field_damping_bcs()
+        ENDIF
         CALL push_psatd_ebfield_3d
         !IF (rank .EQ. 0) PRINT *, "#0"
         !!! --- Boundary conditions for E AND B
@@ -237,6 +240,9 @@ SUBROUTINE step(nst)
 #if defined(FFTW)
       IF (l_spectral) THEN
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
+        IF (absorbing_bcs) THEN
+          CALL field_damping_bcs()
+        ENDIF
         CALL push_psatd_ebfield_2d
         !IF (rank .EQ. 0) PRINT *, "#0"
         !!! --- Boundary conditions for E AND B
@@ -339,7 +345,7 @@ SUBROUTINE init_pml_arrays
   REAL(num)    :: coeff,b_offset, e_offset
   INTEGER(idp) :: type_id  
   REAL(num)    , ALLOCATABLE, DIMENSION(:) :: temp
-  coeff = .50_num
+  coeff = .10_num
   b_offset = .50_num
   e_offset = 0._num
   pow = 3_idp
@@ -462,12 +468,12 @@ SUBROUTINE init_pml_arrays
   !> Uses an exact formulation to damp fields :
   !> dE/dt = -sigma * E => E(n)=exp(-sigma*dt)*E(n-1)
   !> Note that fdtd pml solving requires field time centering
-  sigma_x_e = EXP(-sigma_x_e*dt)
-  sigma_y_e = EXP(-sigma_y_e*dt)
-  sigma_z_e = EXP(-sigma_z_e*dt)
-  sigma_x_b = EXP(-sigma_x_b*dt)
-  sigma_y_b = EXP(-sigma_y_b*dt)
-  sigma_z_b = EXP(-sigma_z_b*dt)
+  sigma_x_e = EXP(-sigma_x_e*dt*2.0_num)
+  sigma_y_e = EXP(-sigma_y_e*dt*2.0_num)
+  sigma_z_e = EXP(-sigma_z_e*dt*2.0_num)
+  sigma_x_b = EXP(-sigma_x_b*dt*2.0_num)
+  sigma_y_b = EXP(-sigma_y_b*dt*2.0_num)
+  sigma_z_b = EXP(-sigma_z_b*dt*2.0_num)
 
   !> Setting domain boundaries as perfect mirror 
   IF(x_min_boundary) THEN
@@ -515,8 +521,11 @@ SUBROUTINE init_pml_arrays
     sigma_y_b = 1.0_num
     sigma_y_e = 1.0_num
   ENDIF
-!if(rank==0)print*,"sb",sigma_z_b
-!if(rank==0)print*,"se",sigma_z_e
+if(rank==0)print*,"sb0",sigma_z_b
+if(rank==0)print*,"se0",sigma_z_e
+if(rank==1)print*,"sb1",sigma_z_b
+if(rank==1)print*,"se1",sigma_z_e
+
 
 END SUBROUTINE init_pml_arrays
 
