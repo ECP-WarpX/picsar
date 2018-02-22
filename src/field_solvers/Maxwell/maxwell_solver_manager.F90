@@ -140,6 +140,9 @@ SUBROUTINE field_damping_bcs
   USE constants
   USE omp_lib
   USE time_stat
+  USE params
+
+  IMPLICIT NONE
   INTEGER(idp)  :: ix,iy,iz
   REAL(num)     :: tmptime
 
@@ -264,7 +267,9 @@ SUBROUTINE merge_fields()
   USE shared_data
   USE omp_lib
   USE time_stat
- 
+  USE params
+
+  IMPLICIT NONE 
   INTEGER(idp)  :: ix,iy,iz
   REAL(num)     :: tmptime
 
