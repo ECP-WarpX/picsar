@@ -709,6 +709,7 @@ END SUBROUTINE get_2Dintersection
     INTEGER(idp)                     :: cell_min_group_z , cell_min_group_y
     INTEGER(idp)                     :: cell_max_group_z , cell_max_group_y
     INTEGER(idp)                     :: group_rank
+    INTEGER(idp)    , ALLOCATABLE, DIMENSION(:) :: nbz_group_temp, nby_group_temp
 #if defined(FFTW)
 
     ! -- Array allocation 
@@ -723,10 +724,19 @@ END SUBROUTINE get_2Dintersection
     ! -- Get min and max cell indices of current rank 
     iz1min = cell_z_min_g(z_coords+1) 
     iz1max = cell_z_max_g(z_coords+1)
+    ALLOCATE(nbz_group_temp(nb_group_z))
+    DO i=1,nb_group_z
+      nbz_group_temp(i) = nz_group_global_array((i-1)*nb_group_x*nb_group_y+1)
+    ENDDO
+    ALLOCATE(nby_group_temp(nb_group_y))
+    DO i=1,nb_group_y
+      nby_group_temp(i) = ny_group_global_array((i-1)*nb_group_x+1)
+    ENDDO
+
     ! -- Boolean variables to check if current rank is at group boundaries along Z
     cell_min_group_z = 0
-    cell_min_group_z = SUM(nz_group_global_array(1:z_group_coords))
-    cell_max_group_z = cell_min_group_z + nz_group_global_array(1+z_group_coords) -1
+    cell_min_group_z = SUM(nbz_group_temp(1:z_group_coords))
+    cell_max_group_z = cell_min_group_z + nbz_group_temp(1+z_group_coords) -1
     ! -- Determine Z intersection of current rank with all other ranks along Z direction 
     DO i = 1,nprocz
       iz2min = cell_z_min(i)
@@ -748,9 +758,8 @@ END SUBROUTINE get_2Dintersection
       iy1min = cell_y_min_g(y_coords+1) 
       iy1max = cell_y_max_g(y_coords+1)  
       cell_min_group_y = 0
-      cell_min_group_y = SUM(nz_group_global_array(1:y_group_coords))
-      cell_max_group_y = cell_min_group_y + ny_group_global_array(1+y_group_coords) -1
-
+      cell_min_group_y = SUM(nby_group_temp(1:y_group_coords))
+      cell_max_group_y = cell_min_group_y + nby_group_temp(1+y_group_coords) -1
       DO i = 1 , nprocy
          iy2min = cell_y_min(i)
          iy2max = cell_y_max(i) 
@@ -785,8 +794,8 @@ END SUBROUTINE get_2Dintersection
       iz2max = cell_z_max_g(i) 
       group_rank = (i-1)/nb_proc_per_group_z
       cell_min_group_z = 0
-      cell_min_group_z = SUM(nz_group_global_array(1:group_rank))
-      cell_max_group_z =cell_min_group_z + nz_group_global_array(1+group_rank)-1
+      cell_min_group_z = SUM(nbz_group_temp(1:group_rank))
+      cell_max_group_z =cell_min_group_z + nbz_group_temp(1+group_rank)-1
 
       !-- computes domain intersection in z direction to compute r_indexes
       CALL compute_send_recv_sizes_and_index_l2g_copies(iz1min, iz1max, iz2min,     &
@@ -807,9 +816,8 @@ END SUBROUTINE get_2Dintersection
         iy2max = cell_y_max_g(i) 
         group_rank = (i-1)/nb_proc_per_group_y
         cell_min_group_y = 0
-        cell_min_group_y = SUM(ny_group_global_array(1:group_rank))
-        cell_max_group_y = cell_min_group_y + ny_group_global_array(1+group_rank)-1
-
+        cell_min_group_y = SUM(nby_group_temp(1:group_rank))
+        cell_max_group_y = cell_min_group_y + nby_group_temp(1+group_rank)-1
        !-- when using p3dfft computes domain intersection in y direction to compute
        !-- r_indexes
         CALL compute_send_recv_sizes_and_index_l2g_copies(iy1min, iy1max, iy2min,   &
@@ -846,6 +854,7 @@ END SUBROUTINE get_2Dintersection
      g_first_cell_to_send_z(z_coords+1) = 1
      l_first_cell_to_send_z(z_coords+1) = -nzguards
     ENDIF
+    DEALLOCATE(nbz_group_temp,nby_group_temp)
     IF(nprocy==nb_group_y) THEN
     !-- coorects a bug that occurs when a group contains 1 mpi in 
     !-- y direction (since  each processor intersects itself twice
