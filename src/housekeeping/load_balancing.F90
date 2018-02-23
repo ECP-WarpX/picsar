@@ -705,8 +705,10 @@ END SUBROUTINE get_2Dintersection
     INTEGER(idp)                   :: iz1min,iz1max,iz2min,iz2max, iy1min,              &
     iy1max,iy2min,iy2max  
     INTEGER(isp)                   :: ierr
-    LOGICAL(lp)                      :: is_grp_min, is_grp_max
     INTEGER(idp)                     :: nb_proc_per_group_z,nb_proc_per_group_y
+    INTEGER(idp)                     :: cell_min_group_z , cell_min_group_y
+    INTEGER(idp)                     :: cell_max_group_z , cell_max_group_y
+    INTEGER(idp)                     :: group_rank
 #if defined(FFTW)
 
     ! -- Array allocation 
@@ -722,17 +724,18 @@ END SUBROUTINE get_2Dintersection
     iz1min = cell_z_min_g(z_coords+1) 
     iz1max = cell_z_max_g(z_coords+1)
     ! -- Boolean variables to check if current rank is at group boundaries along Z
-    is_grp_min = group_z_min_boundary
-    is_grp_max = group_z_max_boundary
+    cell_min_group_z = 0
+    cell_min_group_z = SUM(nz_group_global_array(1:z_group_coords))
+    cell_max_group_z = cell_min_group_z + nz_group_global_array(1+z_group_coords) -1
     ! -- Determine Z intersection of current rank with all other ranks along Z direction 
     DO i = 1,nprocz
       iz2min = cell_z_min(i)
       iz2max = cell_z_max(i)  
       ! Computes domain intersection along z axis to compute g_indexes
       CALL compute_send_recv_sizes_and_index_g2l_copies(iz1min, iz1max, iz2min,     &
-      iz2max, size_exchanges_l2g_recv_z(i), g_first_cell_to_recv_z(i),                  &
-      size_exchanges_g2l_send_z(i), g_first_cell_to_send_z(i),is_grp_min,is_grp_max,    &
-      nz_global,nzg_group)
+      iz2max, size_exchanges_l2g_recv_z(i), g_first_cell_to_recv_z(i),              &
+      size_exchanges_g2l_send_z(i), g_first_cell_to_send_z(i),cell_min_group_z,     &
+      cell_max_group_z, nz_global,nzg_group)
     ENDDO
       ALLOCATE(size_exchanges_l2g_recv_y(nprocy)); size_exchanges_l2g_recv_y = 0_idp
       ALLOCATE(g_first_cell_to_recv_y(nprocy)); g_first_cell_to_recv_y = 1_idp
@@ -744,16 +747,18 @@ END SUBROUTINE get_2Dintersection
       ! f_indexes
       iy1min = cell_y_min_g(y_coords+1) 
       iy1max = cell_y_max_g(y_coords+1)  
-      is_grp_min = group_y_min_boundary
-      is_grp_max = group_y_max_boundary
+      cell_min_group_y = 0
+      cell_min_group_y = SUM(nz_group_global_array(1:y_group_coords))
+      cell_max_group_y = cell_min_group_y + ny_group_global_array(1+y_group_coords) -1
+
       DO i = 1 , nprocy
          iy2min = cell_y_min(i)
          iy2max = cell_y_max(i) 
          CALL compute_send_recv_sizes_and_index_g2l_copies(iy1min, iy1max,         & 
          iy2min,iy2max,size_exchanges_l2g_recv_y(i),                                   &
          g_first_cell_to_recv_y(i),                                                    &
-         size_exchanges_g2l_send_y(i), g_first_cell_to_send_y(i),is_grp_min,is_grp_max,&
-         ny_global,nyg_group)
+         size_exchanges_g2l_send_y(i), g_first_cell_to_send_y(i),cell_min_group_y,&
+         cell_max_group_y,ny_global,nyg_group)
       ENDDO
     ELSE 
        !if not using p3dfft then f_indexes are set manually to contain guardcells (in
@@ -778,22 +783,16 @@ END SUBROUTINE get_2Dintersection
     DO i=1,nprocz
       iz2min = cell_z_min_g(i)
       iz2max = cell_z_max_g(i) 
-      IF(MODULO(i-1_idp,nb_proc_per_group_z) ==0) THEN
-        is_grp_min = .TRUE.
-      ELSE 
-        is_grp_min = .FALSE.
-      ENDIF
-      IF(MODULO(i,nb_proc_per_group_z) == 0) THEN
-        is_grp_max = .TRUE.
-      ELSE 
-        is_grp_max = .FALSE.
-      ENDIF
+      group_rank = (i-1)/nb_proc_per_group_z
+      cell_min_group_z = 0
+      cell_min_group_z = SUM(nz_group_global_array(1:group_rank))
+      cell_max_group_z =cell_min_group_z + nz_group_global_array(1+group_rank)-1
 
       !-- computes domain intersection in z direction to compute r_indexes
       CALL compute_send_recv_sizes_and_index_l2g_copies(iz1min, iz1max, iz2min,     &
       iz2max,size_exchanges_g2l_recv_z(i), l_first_cell_to_recv_z(i),                  &
       size_exchanges_l2g_send_z(i), l_first_cell_to_send_z(i),                         &
-      is_grp_min,is_grp_max,nz_global,nzg_group)
+      cell_min_group_z,cell_max_group_z,nz_global,nzg_group)
     ENDDO
       ALLOCATE(size_exchanges_g2l_recv_y(nprocy));size_exchanges_g2l_recv_y = 0_idp
       ALLOCATE(l_first_cell_to_recv_y(nprocy));l_first_cell_to_recv_y = 0_idp
@@ -806,22 +805,17 @@ END SUBROUTINE get_2Dintersection
       DO i=1,nprocy
         iy2min = cell_y_min_g(i)
         iy2max = cell_y_max_g(i) 
-        IF(MODULO(i-1_idp,nb_proc_per_group_y) ==0) THEN
-          is_grp_min = .TRUE.
-        ELSE 
-          is_grp_min = .FALSE.
-        ENDIF
-        IF(MODULO(i,nb_proc_per_group_y) == 0) THEN
-          is_grp_max = .TRUE.
-        ELSE 
-          is_grp_max = .FALSE.
-        ENDIF
+        group_rank = (i-1)/nb_proc_per_group_y
+        cell_min_group_y = 0
+        cell_min_group_y = SUM(ny_group_global_array(1:group_rank))
+        cell_max_group_y = cell_min_group_y + ny_group_global_array(1+group_rank)-1
+
        !-- when using p3dfft computes domain intersection in y direction to compute
        !-- r_indexes
         CALL compute_send_recv_sizes_and_index_l2g_copies(iy1min, iy1max, iy2min,   &
         iy2max,size_exchanges_g2l_recv_y(i), l_first_cell_to_recv_y(i),                &
         size_exchanges_l2g_send_y(i), l_first_cell_to_send_y(i),                       &
-        is_grp_min,is_grp_max,ny_global,nyg_group)
+        cell_min_group_y,cell_max_group_y,ny_global,nyg_group)
       ENDDO
     ELSE 
       !-- when not using p3dfft r_indexes in y direction are set manually to perform
@@ -873,7 +867,6 @@ END SUBROUTINE get_2Dintersection
      g_first_cell_to_send_y(y_coords+1) = 1
      l_first_cell_to_send_y(y_coords+1) = -nyguards
     ENDIF
-    
     !-- Creates derived types for communications
     CALL create_derived_types_groups()
     !-- Compresses arrays for communications (deletes useless send recv targets and
@@ -1397,8 +1390,10 @@ END SUBROUTINE get_2Dintersection
   !> @param[in] iz1max INTEGER(idp) - max index of current rank along axis (X,Y or Z)
   !> @param[in] iz2min INTEGER(idp) - min index of other rank along axis (X,Y or Z)
   !> @param[in] iz2max INTEGER8(idp) - max index of other rank along axis (X,Y or Z)
-  !> @param[in] is_grp_min LOGICAL(lp) - .TRUE. if current rank on a group min boundary
-  !> @param[in] is_grp_max LOGICAL(lp) - .TRUE. if current rank on a group max boundary
+  !> @param[in] cell_g_min INTEGER(idp) - index of first cell of group (without
+  !> guards cells)
+  !> @param[in] cell_g_max INTEGER(idp) - index of last cell of group (without
+  !> guardcells)
   !> @param[in,out] size_to_exchange_recv INTEGER(idp) - size of data to be received 
   !> from the FFT array of other rank 
   !> @param[in,out] first_cell_recv INTEGER(idp) - position in local array where data 
@@ -1417,7 +1412,7 @@ END SUBROUTINE get_2Dintersection
   SUBROUTINE compute_send_recv_sizes_and_index_l2g_copies                     &
         (iz1min ,iz1max ,iz2min ,iz2max,                                      &
         size_to_exchange_recv, first_cell_recv,                               &
-        size_to_exchange_send,first_cell_send,is_grp_min,is_grp_max,n_global, &
+        size_to_exchange_send,first_cell_send,cell_g_min,cell_g_max,n_global, &
         n_guards)
     USE picsar_precision
     INTEGER(idp) , INTENT(IN)  :: iz1min, iz1max, iz2min, iz2max
@@ -1425,14 +1420,12 @@ END SUBROUTINE get_2Dintersection
     INTEGER(idp) , INTENT(INOUT)  ::   size_to_exchange_send, first_cell_send
     INTEGER(idp)                  :: index_rf, index_ff, index_rl, index_fl
     INTEGER(idp)                  :: select_case
-    LOGICAL(lp) , INTENT(IN)      :: is_grp_min,is_grp_max
+    INTEGER(idp) , INTENT(IN)     :: cell_g_max,cell_g_min
     INTEGER(idp) , INTENT(IN)     :: n_global, n_guards
 
 #if defined(FFTW)    
-    index_ff = iz2min
-    index_fl = iz2max
-    IF(is_grp_min) index_ff = index_ff + n_guards
-    IF(is_grp_max) index_fl = index_fl - n_guards
+    index_ff = MAX(iz2min, cell_g_min)
+    index_fl = MIN(iz2max, cell_g_max)
     index_rf = iz1min
     index_rl = iz1max
 
@@ -1576,8 +1569,10 @@ END SUBROUTINE get_2Dintersection
   !> @param[in] iz1max INTEGER(idp) - max index of current rank along axis (X,Y or Z)
   !> @param[in] iz2min INTEGER(idp) - min index of other rank along axis (X,Y or Z)
   !> @param[in] iz2max INTEGER8(idp) - max index of other rank along axis (X,Y or Z)
-  !> @param[in] is_grp_min LOGICAL(lp) - .TRUE. if current rank on a group min boundary
-  !> @param[in] is_grp_max LOGICAL(lp) - .TRUE. if current rank on a group max boundary
+  !> @param[in] cell_g_min INTEGER(idp) - index of first cell of group (without
+  !> guards cells)
+  !> @param[in] cell_g_max INTEGER(idp) - index of last cell of group (without
+  !> guardcells)
   !> @param[in,out] size_to_exchange_recv INTEGER(idp) - size of data to be received 
   !> from the FFT array of other rank 
   !> @param[in,out] first_cell_recv INTEGER(idp) - position in local array where data 
@@ -1596,7 +1591,7 @@ END SUBROUTINE get_2Dintersection
 SUBROUTINE compute_send_recv_sizes_and_index_g2l_copies                           &
         (iz1min,iz1max,iz2min,iz2max,                                             &
         size_to_exchange_recv,first_cell_recv,                                    &
-        size_to_exchange_send,first_cell_send,is_group_min,is_group_max,n_global, &
+        size_to_exchange_send,first_cell_send,cell_g_min,cell_g_max,n_global, &
         n_guards)
     USE picsar_precision
     INTEGER(idp) , INTENT(IN)  :: iz1min, iz1max, iz2min, iz2max
@@ -1605,7 +1600,7 @@ SUBROUTINE compute_send_recv_sizes_and_index_g2l_copies                         
     size_to_exchange_send,first_cell_send
     INTEGER(idp)                  :: index_rf, index_ff, index_rl, index_fl
     INTEGER(idp)                  :: select_case
-    LOGICAL(lp) ,INTENT(IN)       :: is_group_min,is_group_max
+    INTEGER(idp) ,INTENT(IN)      :: cell_g_min, cell_g_max
     INTEGER(idp), INTENT(IN)      :: n_global,n_guards
 
 #if defined(FFTW)
@@ -1710,22 +1705,17 @@ SUBROUTINE compute_send_recv_sizes_and_index_g2l_copies                         
     index_rf = iz2min
     index_rl = iz2max 
 
-    index_ff = iz1min
-    index_fl = iz1max
-    IF(is_group_min) index_ff = index_ff + n_guards
-    IF(is_group_max) index_fl = index_fl - n_guards
+    index_ff = MAX(iz1min,cell_g_min)
+    index_fl = MIN(iz1max,cell_g_max)    
+    size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp,0) 
 
-   index_ff= Max(index_ff,0)
-   index_fl=MIN(index_fl,n_global-1)
+    first_cell_send = MAX(index_ff,index_rf) - iz1min + 1
+    IF(select_case == 1_idp) size_to_exchange_send = 0_idp
+    IF(index_ff .GT. index_fl) size_to_exchange_send = 0_idp
 
-   size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + 1_idp,0) 
-   first_cell_send = MAX(index_ff,index_rf) - iz1min + 1
-   IF(select_case == 1_idp) size_to_exchange_send = 0_idp
-   IF(index_ff .GT. index_fl) size_to_exchange_send = 0_idp
-
-    ! -- first cell recv need to be set to a value contained in lower_b and
-    ! -- upper_b of hybrid field even if no exchanges are performed
-   IF(size_to_exchange_send==0_idp) first_cell_send = 1_idp
+     ! -- first cell recv need to be set to a value contained in lower_b and
+     ! -- upper_b of hybrid field even if no exchanges are performed
+    IF(size_to_exchange_send==0_idp) first_cell_send = 1_idp
 #endif
   END SUBROUTINE compute_send_recv_sizes_and_index_g2l_copies
  
