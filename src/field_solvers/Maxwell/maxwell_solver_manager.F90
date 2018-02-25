@@ -484,7 +484,7 @@ SUBROUTINE push_psatd_ebfield_3d() bind(C, name='push_psatd_ebfield_3d_')
     IF (it.ge.timestat_itstart) THEN
       tmptime_m = MPI_WTIME()
     ENDIF
-    CALL multiply_mat_vector(nmatrixes)
+    CALL multiply_mat_vector(1)
     IF (it.ge.timestat_itstart) THEN
       localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime_m)
     ENDIF
@@ -565,7 +565,7 @@ SUBROUTINE push_psatd_ebfield_2d() bind(C, name='push_psatd_ebfield_2d_')
       tmptime_m = MPI_WTIME()
     ENDIF
 
-    CALL multiply_mat_vector(nmatrixes)
+    CALL multiply_mat_vector(1)
 
     IF (it.ge.timestat_itstart) THEN
       localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime_m)

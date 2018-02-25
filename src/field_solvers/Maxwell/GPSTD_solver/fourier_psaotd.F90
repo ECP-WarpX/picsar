@@ -137,6 +137,163 @@ MODULE fourier_psaotd
 
   ! ______________________________________________________________________________________
   !> @brief
+  !> This subroutine computes current correction k k space with local psatd
+  !>algorithm 
+  !
+  !> @author
+  !> H. Vincenti 
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2018
+  ! ______________________________________________________________________________________
+  SUBROUTINE curr_correction_local()
+    USE shared_data
+    USE fastfft
+    USE time_stat
+    USE params
+    USE field_boundary
+    USE fourier
+
+    IMPLICIT NONE
+    INTEGER(idp) :: nfftx, nffty, nfftz, nxx, nyy, nzz
+    INTEGER(idp) :: ix,iy,iz,mat_id
+    REAL(num)    :: tmptime
+
+    nxx=nx+2*nxguards+1; nyy=ny+2*nyguards+1; nzz=nz+2*nzguards+1;
+#if defined(LIBRARY)
+    nfftx=nx+2*nxguards+1
+    nffty=ny+2*nyguards+1
+    nfftz=nz+2*nzguards+1
+#else
+    nfftx=nx+2*nxguards
+    nffty=ny+2*nyguards
+    nfftz=nz+2*nzguards
+#endif
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jx_r,&
+        vold(2_idp)%block_vector(1)%block3dc , plan_r2c)
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jy_r,&
+        vold(2_idp)%block_vector(2)%block3dc, plan_r2c)
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jz_r,&
+        vold(2_idp)%block_vector(3)%block3dc, plan_r2c)
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rhoold_r,&
+        vold(2_idp)%block_vector(4)%block3dc,plan_r2c)
+    CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rho_r,&
+        vold(2_idp)%block_vector(5)%block3dc, plan_r2c)
+    IF(c_dim ==2) THEN
+      iy=1
+     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iz) COLLAPSE(2) 
+     DO iz=1,nkz
+       DO ix=1,nkx
+         vnew(2_idp)%block_vector(1)%block3dc(ix,iy,iz) = &
+         vold(2_idp)%block_vector(1)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(1,1)%block3dc(ix,iy,iz)    +  &
+         vold(2_idp)%block_vector(3)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(1,3)%block3dc(ix,iy,iz)    +  &
+         vold(2_idp)%block_vector(4)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(1,4)%block3dc(ix,iy,iz)    +  &
+         vold(2_idp)%block_vector(5)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(1,5)%block3dc(ix,iy,iz)
+
+         vnew(2_idp)%block_vector(2)%block3dc(ix,iy,iz) = &
+         vold(2_idp)%block_vector(2)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(2,2)%block3dc(ix,iy,iz)
+
+         vnew(2_idp)%block_vector(3)%block3dc(ix,iy,iz) = &
+         vold(2_idp)%block_vector(1)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(3,1)%block3dc(ix,iy,iz)    +  &
+         vold(2_idp)%block_vector(3)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(3,3)%block3dc(ix,iy,iz)    +  &
+         vold(2_idp)%block_vector(4)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(3,4)%block3dc(ix,iy,iz)    +  &
+         vold(2_idp)%block_vector(5)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(3,5)%block3dc(ix,iy,iz)
+       ENDDO
+     ENDDO
+     !$OMP END PARALLEL DO
+     ELSE IF(c_dim==3) THEN
+
+     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy, iz) COLLAPSE(3) 
+     DO iz=1,nkz
+       DO iy=1,nky
+         DO ix=1,nkx
+           vnew(2_idp)%block_vector(1)%block3dc(ix,iy,iz) = &
+           vold(2_idp)%block_vector(1)%block3dc(ix,iy,iz)*  &
+           cc_mat(2_idp)%block_matrix2d(1,1)%block3dc(ix,iy,iz)    +  &
+           vold(2_idp)%block_vector(2)%block3dc(ix,iy,iz)*  &
+           cc_mat(2_idp)%block_matrix2d(1,2)%block3dc(ix,iy,iz)    +  &
+           vold(2_idp)%block_vector(3)%block3dc(ix,iy,iz)*  &
+           cc_mat(2_idp)%block_matrix2d(1,3)%block3dc(ix,iy,iz)    +  &
+           vold(2_idp)%block_vector(4)%block3dc(ix,iy,iz)*  &
+           cc_mat(2_idp)%block_matrix2d(1,4)%block3dc(ix,iy,iz)    +  &
+           vold(2_idp)%block_vector(5)%block3dc(ix,iy,iz)*  &
+           cc_mat(2_idp)%block_matrix2d(1,5)%block3dc(ix,iy,iz)
+
+           vnew(2_idp)%block_vector(2)%block3dc(ix,iy,iz) = &
+           vold(2_idp)%block_vector(1)%block3dc(ix,iy,iz)*  &
+           cc_mat(2_idp)%block_matrix2d(2,1)%block3dc(ix,iy,iz)    +  &
+           vold(2_idp)%block_vector(2)%block3dc(ix,iy,iz)*  &
+           cc_mat(2_idp)%block_matrix2d(2,2)%block3dc(ix,iy,iz)    +  &
+           vold(2_idp)%block_vector(3)%block3dc(ix,iy,iz)*  &
+           cc_mat(2_idp)%block_matrix2d(2,3)%block3dc(ix,iy,iz)    +  &
+           vold(2_idp)%block_vector(4)%block3dc(ix,iy,iz)*  &
+           cc_mat(2_idp)%block_matrix2d(2,4)%block3dc(ix,iy,iz)    +  &
+           vold(2_idp)%block_vector(5)%block3dc(ix,iy,iz)*  &
+           cc_mat(2_idp)%block_matrix2d(2,5)%block3dc(ix,iy,iz)
+
+
+           vnew(2_idp)%block_vector(3)%block3dc(ix,iy,iz) = &
+           vold(2_idp)%block_vector(1)%block3dc(ix,iy,iz)*  &
+           cc_mat(2_idp)%block_matrix2d(3,1)%block3dc(ix,iy,iz)    +  &
+           vold(2_idp)%block_vector(2)%block3dc(ix,iy,iz)*  &
+           cc_mat(2_idp)%block_matrix2d(3,2)%block3dc(ix,iy,iz)    +  &
+           vold(2_idp)%block_vector(3)%block3dc(ix,iy,iz)*  &
+           cc_mat(2_idp)%block_matrix2d(3,3)%block3dc(ix,iy,iz)    +  &
+           vold(2_idp)%block_vector(4)%block3dc(ix,iy,iz)*  &
+           cc_mat(2_idp)%block_matrix2d(3,4)%block3dc(ix,iy,iz)    +  &
+           vold(2_idp)%block_vector(5)%block3dc(ix,iy,iz)*  &
+           cc_mat(2_idp)%block_matrix2d(3,5)%block3dc(ix,iy,iz)
+         ENDDO
+       ENDDO
+     ENDDO
+     !$OMP END PARALLEL DO
+     ENDIF
+
+      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,&
+      vnew(2_idp)%block_vector(1)%block3dc, jx_r, plan_c2r)
+      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,&
+      vnew(2_idp)%block_vector(2)%block3dc, jy_r, plan_c2r)
+      CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,&
+      vnew(2_idp)%block_vector(3)%block3dc, jz_r, plan_c2r)
+      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+      DO iz=-nzguards, nz+nzguards-1
+        DO iy=-nyguards,ny+nyguards-1
+          DO ix=-nxguards,nx+nxguards-1
+            jx(ix, iy, iz)=jx_r(ix, iy, iz)
+            jy(ix, iy, iz)=jy_r(ix, iy, iz)
+            jz(ix, iy, iz)=jz_r(ix, iy, iz)
+          END DO
+        END DO
+      END DO
+      !$OMP END PARALLEL DO
+      CALL field_bc(jx, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(jy, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(jz, nxguards, nyguards, nzguards, nx, ny, nz)
+      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+      DO iz=-nzguards, nz+nzguards-1
+        DO iy=-nyguards,ny+nyguards-1
+          DO ix=-nxguards,nx+nxguards-1
+            jx_r(ix, iy, iz)=jx(ix, iy, iz)
+            jy_r(ix, iy, iz)=jy(ix, iy, iz)
+            jz_r(ix, iy, iz)=jz(ix, iy, iz)
+          END DO
+        END DO
+      END DO
+      !$OMP END PARALLEL DO
+
+  END SUBROUTINE curr_correction_local
+  ! ______________________________________________________________________________________
+  !> @brief
   !> This subroutine computes forward  R2Clocal FFTs - concerns only the local 
   !> pseudo-spectral solver
   !
@@ -154,10 +311,11 @@ MODULE fourier_psaotd
     USE fastfft
     USE time_stat
     USE params
+    USE field_boundary
 
     IMPLICIT NONE
     INTEGER(idp) :: nfftx, nffty, nfftz, nxx, nyy, nzz
-    INTEGER(idp) :: ix,iy,iz
+    INTEGER(idp) :: ix,iy,iz,mat_id
     REAL(num)    :: tmptime
     nxx=nx+2*nxguards+1; nyy=ny+2*nyguards+1; nzz=nz+2*nzguards+1;
 #if defined(LIBRARY)
@@ -176,6 +334,10 @@ MODULE fourier_psaotd
 #if !defined(LIBRARY)
      CALL copy_field_forward()
 #endif
+    IF(current_correction) THEN
+      CALL curr_correction_local()
+    ENDIF
+
     IF(absorbing_bcs) THEN 
     ! reflective bcs after pml
       IF(x_min_boundary) THEN
@@ -297,6 +459,214 @@ MODULE fourier_psaotd
     CALL fft_forward_r2c_local(nfftx,nffty,nfftz)
 
   END SUBROUTINE get_Ffields
+
+
+  SUBROUTINE curr_correction_hybrid()
+    USE fields
+    USE params
+    USE shared_data
+    USE field_boundary
+    USE fastfft
+    USE mpi_fftw3
+    USE fastfft
+    USE group_parameters
+#if defined(P3DFFT)
+    USE p3dfft
+#endif
+
+    IMPLICIT NONE
+    INTEGER(idp) :: ix, iy, iz,ixx,iyy,izz,nxx,nyy,nzz
+
+
+  IF(p3dfft_flag) THEN
+#if defined(P3DFFT)
+        CALL p3dfft_ftran_r2c(jx_r,vold(2_idp)%block_vector(1)%block3dc,'fft')
+        CALL p3dfft_ftran_r2c(jy_r,vold(2_idp)%block_vector(2)%block3dc,'fft')
+        CALL p3dfft_ftran_r2c(jz_r,vold(2_idp)%block_vector(3)%block3dc,'fft')
+        CALL p3dfft_ftran_r2c(rhoold_r,vold(2_idp)%block_vector(4)%block3dc,'fft')
+        CALL p3dfft_ftran_r2c(rho_r,vold(2_idp)%block_vector(5)%block3dc,'fft')
+#endif
+      ELSE IF(.NOT. p3dfft_flag) THEN
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jx_r,&
+            vold(2_idp)%block_vector(1)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jy_r,&
+            vold(2_idp)%block_vector(2)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jz_r,&
+            vold(2_idp)%block_vector(3)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rhoold_r,&
+            vold(2_idp)%block_vector(4)%block3dc)
+         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rho_r,&
+            vold(2_idp)%block_vector(5)%block3dc)
+      ENDIF
+      IF(c_dim ==2) THEN
+      iy=1
+     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iz) COLLAPSE(2) 
+     DO iz=1,nkz
+       DO ix=1,nkx
+         vnew(2_idp)%block_vector(1)%block3dc(ix,iy,iz) = &
+         vold(2_idp)%block_vector(1)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(1,1)%block3dc(ix,iy,iz)    +  &
+         vold(2_idp)%block_vector(3)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(1,3)%block3dc(ix,iy,iz)    +  &
+         vold(2_idp)%block_vector(4)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(1,4)%block3dc(ix,iy,iz)    +  &
+         vold(2_idp)%block_vector(5)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(1,5)%block3dc(ix,iy,iz)
+
+         vnew(2_idp)%block_vector(2)%block3dc(ix,iy,iz) = &
+         vold(2_idp)%block_vector(2)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(2,2)%block3dc(ix,iy,iz)
+
+         vnew(2_idp)%block_vector(3)%block3dc(ix,iy,iz) = &
+         vold(2_idp)%block_vector(1)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(3,1)%block3dc(ix,iy,iz)    +  &
+         vold(2_idp)%block_vector(3)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(3,3)%block3dc(ix,iy,iz)    +  &
+         vold(2_idp)%block_vector(4)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(3,4)%block3dc(ix,iy,iz)    +  &
+         vold(2_idp)%block_vector(5)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(3,5)%block3dc(ix,iy,iz)
+       ENDDO
+     ENDDO
+     !$OMP END PARALLEL DO
+     ELSE IF(c_dim==3) THEN
+
+     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,iy, iz) COLLAPSE(3) 
+     DO iz=1,nkz
+       DO iy=1,nky
+       DO ix=1,nkx
+         vnew(2_idp)%block_vector(1)%block3dc(ix,iy,iz) = &
+         vold(2_idp)%block_vector(1)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(1,1)%block3dc(ix,iy,iz)    +  &
+         vold(2_idp)%block_vector(2)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(1,2)%block3dc(ix,iy,iz)    +  &
+         vold(2_idp)%block_vector(3)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(1,3)%block3dc(ix,iy,iz)    +  &
+         vold(2_idp)%block_vector(4)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(1,4)%block3dc(ix,iy,iz)    +  &
+         vold(2_idp)%block_vector(5)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(1,5)%block3dc(ix,iy,iz)
+
+         vnew(2_idp)%block_vector(2)%block3dc(ix,iy,iz) = &
+         vold(2_idp)%block_vector(1)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(2,1)%block3dc(ix,iy,iz)    +  &
+         vold(2_idp)%block_vector(2)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(2,2)%block3dc(ix,iy,iz)    +  &
+         vold(2_idp)%block_vector(3)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(2,3)%block3dc(ix,iy,iz)    +  &
+         vold(2_idp)%block_vector(4)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(2,4)%block3dc(ix,iy,iz)    +  &
+         vold(2_idp)%block_vector(5)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(2,5)%block3dc(ix,iy,iz)
+
+
+         vnew(2_idp)%block_vector(3)%block3dc(ix,iy,iz) = &
+         vold(2_idp)%block_vector(1)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(3,1)%block3dc(ix,iy,iz)    +  &
+         vold(2_idp)%block_vector(2)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(3,2)%block3dc(ix,iy,iz)    +  &
+         vold(2_idp)%block_vector(3)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(3,3)%block3dc(ix,iy,iz)    +  &
+         vold(2_idp)%block_vector(4)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(3,4)%block3dc(ix,iy,iz)    +  &
+         vold(2_idp)%block_vector(5)%block3dc(ix,iy,iz)*  &
+         cc_mat(2_idp)%block_matrix2d(3,5)%block3dc(ix,iy,iz)
+       ENDDO
+     ENDDO
+     ENDDO
+     !$OMP END PARALLEL DO
+     ENDIF
+      IF(p3dfft_flag) THEN
+#if defined(P3DFFT)
+        CALL p3dfft_btran_c2r (vnew(2_idp)%block_vector(1)%block3dc,jx_r,'tff')
+        CALL p3dfft_btran_c2r (vnew(2_idp)%block_vector(2)%block3dc,jy_r,'tff')
+        CALL p3dfft_btran_c2r (vnew(2_idp)%block_vector(2)%block3dc,jz_r,'tff')
+#endif
+      ELSE IF(.NOT. p3dfft_flag) THEN
+        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,&
+        vnew(2_idp)%block_vector(1)%block3dc,jx_r)
+        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,&
+        vnew(2_idp)%block_vector(2)%block3dc,jy_r)
+        CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,&
+        vnew(2_idp)%block_vector(3)%block3dc,jz_r)
+      ENDIF
+      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+      DO iz=1,size_exchanges_g2l_recv_z(1)
+        DO iy=1,size_exchanges_g2l_recv_y(1)
+          DO ix=ix_min_r, ix_max_r
+            jx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
+            iz-1+l_first_cell_to_recv_z(1)) =                                            &
+                   jx_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                   ,iz-1+g_first_cell_to_send_z(1))
+            jy(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
+            iz-1+l_first_cell_to_recv_z(1))=                                             &
+                   jy_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                    ,iz-1+g_first_cell_to_send_z(1))
+            jz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
+            iz-1+l_first_cell_to_recv_z(1))=                                             &
+                   jz_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
+                   ,iz-1+g_first_cell_to_send_z(1))
+          END DO
+        END DO
+      END DO
+      !$OMP END PARALLEL DO
+      nxx = local_nx
+      nyy = local_ny
+      nzz = local_nz
+      IF(mpicom_curr == 1) THEN
+        CALL sendrecv_g2l_generalized(jx,nx,nxguards,ny,nyguards,nz,nzguards,&
+        jx_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(jy,nx,nxguards,ny,nyguards,nz,nzguards,&
+        jy_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(jz,nx,nxguards,ny,nyguards,nz,nzguards,&
+        jz_r,nxx,nyy,nzz)
+      ELSE 
+        CALL sendrecv_g2l_generalized_non_blocking(jx,nx,nxguards,ny,nyguards,nz,nzguards,&
+        jx_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(jy,nx,nxguards,ny,nyguards,nz,nzguards,&
+        jy_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(jz,nx,nxguards,ny,nyguards,nz,nzguards,&
+        jz_r,nxx,nyy,nzz)
+      ENDIF
+      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+      DO iz=1,size_exchanges_l2g_recv_z(1)
+        DO iy =1,size_exchanges_l2g_recv_y(1)
+          DO ix =ix_min_r,ix_max_r
+            jx_r(ix,iy-1+g_first_cell_to_recv_y(1)&
+            ,iz-1+g_first_cell_to_recv_z(1))=&
+                  jx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),&
+                  iz-1+l_first_cell_to_send_z(1))
+            jy_r(ix,iy-1+g_first_cell_to_recv_y(1)&
+            ,iz-1+g_first_cell_to_recv_z(1))=&
+                  jy(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),&
+                  iz-1+l_first_cell_to_send_z(1))
+            jz_r(ix,iy-1+g_first_cell_to_recv_y(1)&
+            ,iz-1+g_first_cell_to_recv_z(1))=&
+                  jz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),&
+                  iz-1+l_first_cell_to_send_z(1))
+          ENDDO
+        ENDDO
+      ENDDO
+      !$OMP END PARALLEL DO
+      IF(mpicom_curr == 1) THEN
+        CALL sendrecv_g2l_generalized(jx,nx,nxguards,ny,nyguards,nz,nzguards,&
+        jx_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(jy,nx,nxguards,ny,nyguards,nz,nzguards,&
+        jy_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(jz,nx,nxguards,ny,nyguards,nz,nzguards,&
+        jz_r,nxx,nyy,nzz)
+      ELSE
+        CALL sendrecv_l2g_generalized_non_blocking(jx,nx,nxguards,ny,nyguards,nz,nzguards,&
+        jx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(jy,nx,nxguards,ny,nyguards,nz,nzguards,&
+        jy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(jz,nx,nxguards,ny,nyguards,nz,nzguards,&
+        jz_r,nxx,nyy,nzz)
+      ENDIF
+    
+
+
+    END SUBROUTINE curr_correction_hybrid
  
   ! ______________________________________________________________________________________
   !> @brief
@@ -317,9 +687,12 @@ MODULE fourier_psaotd
     USE params
     USE group_parameters
     USE field_boundary
+#if defined(P3DFFT) 
+    USE p3dfft
+#endif
 
     IMPLICIT NONE
-    INTEGER(idp) :: ix, iy, iz,ixx,iyy,izz
+    INTEGER(idp) :: ix, iy, iz,ixx,iyy,izz,nxx,nyy,nzz
     REAL(num)    :: tmptime
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
@@ -463,8 +836,6 @@ MODULE fourier_psaotd
      ENDDO
      !$OMP END PARALLEL DO
      ENDIF
-
-
     ! Timers 
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
@@ -472,6 +843,12 @@ MODULE fourier_psaotd
 
     ! Performs MPI exchanges for non-overlapping portions of local and FFT ARRAYS 
     CALL generalized_comms_group_l2g()
+    ! Compute current correction
+    IF(current_correction) THEN
+      CALL curr_correction_hybrid()
+    ENDIF
+    !> End current correction
+   
     !> Set splitted fields to 0 in the guardcells next to pml region to act as a
     !> reflective mirrorr
     IF(absorbing_bcs) THEN 
@@ -921,62 +1298,66 @@ MODULE fourier_psaotd
     IF(g_spectral) THEN
       IF(.NOT. absorbing_bcs) THEN
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ex_r,                      &
-             vold(nmatrixes)%block_vector(1)%block3dc, plan_r2c)
+             vold(1_idp)%block_vector(1)%block3dc, plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ey_r,                      &
-            vold(nmatrixes)%block_vector(2)%block3dc, plan_r2c)
+            vold(1_idp)%block_vector(2)%block3dc, plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ez_r,                      &
-            vold(nmatrixes)%block_vector(3)%block3dc , plan_r2c)
+            vold(1_idp)%block_vector(3)%block3dc , plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bx_r,                      &
-            vold(nmatrixes)%block_vector(4)%block3dc , plan_r2c)
+            vold(1_idp)%block_vector(4)%block3dc , plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, by_r,                      &
-            vold(nmatrixes)%block_vector(5)%block3dc , plan_r2c)
+            vold(1_idp)%block_vector(5)%block3dc , plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bz_r,                      &  
-            vold(nmatrixes)%block_vector(6)%block3dc , plan_r2c)
+            vold(1_idp)%block_vector(6)%block3dc , plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jx_r,                      &
-            vold(nmatrixes)%block_vector(7)%block3dc , plan_r2c)
+            vold(1_idp)%block_vector(7)%block3dc , plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jy_r,                      &
-            vold(nmatrixes)%block_vector(8)%block3dc, plan_r2c)
+            vold(1_idp)%block_vector(8)%block3dc, plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jz_r,                      &
-            vold(nmatrixes)%block_vector(9)%block3dc, plan_r2c)
-        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rhoold_r,                  &
-            vold(nmatrixes)%block_vector(10)%block3dc,plan_r2c)
-        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rho_r,                     &
-            vold(nmatrixes)%block_vector(11)%block3dc, plan_r2c)
+            vold(1_idp)%block_vector(9)%block3dc, plan_r2c)
+        IF(.NOT. current_correction) THEN
+          CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rhoold_r,                  &
+              vold(1_idp)%block_vector(10)%block3dc,plan_r2c)
+          CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rho_r,                     &
+              vold(1_idp)%block_vector(11)%block3dc, plan_r2c)
+        ENDIF
       ELSE IF(absorbing_bcs) THEN
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, exy_r,                      & 
-             vold(nmatrixes)%block_vector(1)%block3dc, plan_r2c)
+             vold(1_idp)%block_vector(1)%block3dc, plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, exz_r,                      & 
-            vold(nmatrixes)%block_vector(2)%block3dc, plan_r2c)
+            vold(1_idp)%block_vector(2)%block3dc, plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, eyx_r,                      & 
-            vold(nmatrixes)%block_vector(3)%block3dc , plan_r2c)
+            vold(1_idp)%block_vector(3)%block3dc , plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, eyz_r,                      & 
-            vold(nmatrixes)%block_vector(4)%block3dc , plan_r2c)
+            vold(1_idp)%block_vector(4)%block3dc , plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ezx_r,                      & 
-            vold(nmatrixes)%block_vector(5)%block3dc , plan_r2c)
+            vold(1_idp)%block_vector(5)%block3dc , plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ezy_r,                      &  
-            vold(nmatrixes)%block_vector(6)%block3dc , plan_r2c)
+            vold(1_idp)%block_vector(6)%block3dc , plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bxy_r,                      & 
-             vold(nmatrixes)%block_vector(7)%block3dc, plan_r2c)
+             vold(1_idp)%block_vector(7)%block3dc, plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bxz_r,                      & 
-            vold(nmatrixes)%block_vector(8)%block3dc, plan_r2c)
+            vold(1_idp)%block_vector(8)%block3dc, plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, byx_r,                      & 
-            vold(nmatrixes)%block_vector(9)%block3dc , plan_r2c)
+            vold(1_idp)%block_vector(9)%block3dc , plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, byz_r,                      & 
-            vold(nmatrixes)%block_vector(10)%block3dc , plan_r2c)
+            vold(1_idp)%block_vector(10)%block3dc , plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bzx_r,                      & 
-            vold(nmatrixes)%block_vector(11)%block3dc , plan_r2c)
+            vold(1_idp)%block_vector(11)%block3dc , plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bzy_r,                      &  
-            vold(nmatrixes)%block_vector(12)%block3dc , plan_r2c)
+            vold(1_idp)%block_vector(12)%block3dc , plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jx_r,                      & 
-            vold(nmatrixes)%block_vector(13)%block3dc , plan_r2c)
+            vold(1_idp)%block_vector(13)%block3dc , plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jy_r,                      & 
-            vold(nmatrixes)%block_vector(14)%block3dc, plan_r2c)
+            vold(1_idp)%block_vector(14)%block3dc, plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jz_r,                      & 
-            vold(nmatrixes)%block_vector(15)%block3dc, plan_r2c)
-        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rhoold_r,                  & 
-            vold(nmatrixes)%block_vector(16)%block3dc,plan_r2c)
-        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rho_r,                     & 
-            vold(nmatrixes)%block_vector(17)%block3dc, plan_r2c) 
+            vold(1_idp)%block_vector(15)%block3dc, plan_r2c)
+        IF(.NOT. current_correction) THEN
+          CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rhoold_r,                  & 
+              vold(1_idp)%block_vector(16)%block3dc,plan_r2c)
+          CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rho_r,                     & 
+              vold(1_idp)%block_vector(17)%block3dc, plan_r2c) 
+        ENDIF
       ENDIF
     ELSE IF (.NOT. g_spectral) THEN
       CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ex_r, exf, plan_r2c)
@@ -1018,95 +1399,103 @@ MODULE fourier_psaotd
 #endif
        IF(absorbing_bcs) THEN
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, exy_r,&
-            vold(nmatrixes)%block_vector(1)%block3dc)
+            vold(1_idp)%block_vector(1)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, exz_r,&
-            vold(nmatrixes)%block_vector(2)%block3dc)
+            vold(1_idp)%block_vector(2)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, eyx_r,&
-            vold(nmatrixes)%block_vector(3)%block3dc)
+            vold(1_idp)%block_vector(3)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, eyz_r,&
-            vold(nmatrixes)%block_vector(4)%block3dc)
+            vold(1_idp)%block_vector(4)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ezx_r,&
-            vold(nmatrixes)%block_vector(5)%block3dc)
+            vold(1_idp)%block_vector(5)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ezy_r,&
-            vold(nmatrixes)%block_vector(6)%block3dc)
+            vold(1_idp)%block_vector(6)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bxy_r,&
-            vold(nmatrixes)%block_vector(7)%block3dc)
+            vold(1_idp)%block_vector(7)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bxz_r,&
-            vold(nmatrixes)%block_vector(8)%block3dc)
+            vold(1_idp)%block_vector(8)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, byx_r,&
-            vold(nmatrixes)%block_vector(9)%block3dc)
+            vold(1_idp)%block_vector(9)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, byz_r,&
-            vold(nmatrixes)%block_vector(10)%block3dc)
+            vold(1_idp)%block_vector(10)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bzx_r,&
-            vold(nmatrixes)%block_vector(11)%block3dc)
+            vold(1_idp)%block_vector(11)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bzy_r,&
-            vold(nmatrixes)%block_vector(12)%block3dc)
+            vold(1_idp)%block_vector(12)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jx_r,&
-            vold(nmatrixes)%block_vector(13)%block3dc)
+            vold(1_idp)%block_vector(13)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jy_r,&
-            vold(nmatrixes)%block_vector(14)%block3dc)
+            vold(1_idp)%block_vector(14)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jz_r,&
-            vold(nmatrixes)%block_vector(15)%block3dc)
-         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rhoold_r,&
-            vold(nmatrixes)%block_vector(16)%block3dc)
-         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rho_r,&
-            vold(nmatrixes)%block_vector(17)%block3dc)
+            vold(1_idp)%block_vector(15)%block3dc)
+         IF(.NOT. current_correction) THEN
+           CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rhoold_r,&
+              vold(1_idp)%block_vector(16)%block3dc)
+           CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rho_r,&
+              vold(1_idp)%block_vector(17)%block3dc)
+         ENDIF
        ELSE IF(.NOT. absorbing_bcs) THEN
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ex_r,                           &
-            vold(nmatrixes)%block_vector(1)%block3dc)
+            vold(1_idp)%block_vector(1)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ey_r,                           &
-            vold(nmatrixes)%block_vector(2)%block3dc)
+            vold(1_idp)%block_vector(2)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ez_r,                           &
-            vold(nmatrixes)%block_vector(3)%block3dc)
+            vold(1_idp)%block_vector(3)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bx_r,                           &
-            vold(nmatrixes)%block_vector(4)%block3dc)
+            vold(1_idp)%block_vector(4)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, by_r,                           &
-            vold(nmatrixes)%block_vector(5)%block3dc)
+            vold(1_idp)%block_vector(5)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bz_r,                           &
-            vold(nmatrixes)%block_vector(6)%block3dc)
+            vold(1_idp)%block_vector(6)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jx_r,                           &
-            vold(nmatrixes)%block_vector(7)%block3dc)
+            vold(1_idp)%block_vector(7)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jy_r,                           &
-            vold(nmatrixes)%block_vector(8)%block3dc)
+            vold(1_idp)%block_vector(8)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jz_r,                           &
-            vold(nmatrixes)%block_vector(9)%block3dc)
-         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rhoold_r,                       &
-            vold(nmatrixes)%block_vector(10)%block3dc)
-         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rho_r,                          &
-            vold(nmatrixes)%block_vector(11)%block3dc)
+            vold(1_idp)%block_vector(9)%block3dc)
+         IF(.NOT. current_correction) THEN
+           CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rhoold_r,                       &
+              vold(1_idp)%block_vector(10)%block3dc)
+           CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rho_r,                          &
+              vold(1_idp)%block_vector(11)%block3dc)
+         ENDIF
        ENDIF
 #if defined(P3DFFT)
       ELSE IF(p3dfft_flag) THEN
         IF(.NOT. absorbing_bcs) THEN
-          CALL p3dfft_ftran_r2c (ex_r,vold(nmatrixes)%block_vector(1)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c (ey_r,vold(nmatrixes)%block_vector(2)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c (ez_r,vold(nmatrixes)%block_vector(3)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c (bx_r,vold(nmatrixes)%block_vector(4)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c (by_r,vold(nmatrixes)%block_vector(5)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c (bz_r,vold(nmatrixes)%block_vector(6)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c (jx_r,vold(nmatrixes)%block_vector(7)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c (jy_r,vold(nmatrixes)%block_vector(8)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c (jz_r,vold(nmatrixes)%block_vector(9)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c(rhoold_r,vold(nmatrixes)%block_vector(10)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c(rho_r,vold(nmatrixes)%block_vector(11)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (ex_r,vold(1_idp)%block_vector(1)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (ey_r,vold(1_idp)%block_vector(2)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (ez_r,vold(1_idp)%block_vector(3)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (bx_r,vold(1_idp)%block_vector(4)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (by_r,vold(1_idp)%block_vector(5)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (bz_r,vold(1_idp)%block_vector(6)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (jx_r,vold(1_idp)%block_vector(7)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (jy_r,vold(1_idp)%block_vector(8)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (jz_r,vold(1_idp)%block_vector(9)%block3dc,'fft')
+          IF(.NOT. current_correction) THEN
+            CALL p3dfft_ftran_r2c(rhoold_r,vold(1_idp)%block_vector(10)%block3dc,'fft')
+            CALL p3dfft_ftran_r2c(rho_r,vold(1_idp)%block_vector(11)%block3dc,'fft')
+          ENDIF
         ELSE IF (absorbing_bcs) THEN
-          CALL p3dfft_ftran_r2c (exy_r,vold(nmatrixes)%block_vector(1)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c (exz_r,vold(nmatrixes)%block_vector(2)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c (eyx_r,vold(nmatrixes)%block_vector(3)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c (eyz_r,vold(nmatrixes)%block_vector(4)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c (ezx_r,vold(nmatrixes)%block_vector(5)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c (ezy_r,vold(nmatrixes)%block_vector(6)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c (bxy_r,vold(nmatrixes)%block_vector(7)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c (bxz_r,vold(nmatrixes)%block_vector(8)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c (byx_r,vold(nmatrixes)%block_vector(9)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c (byz_r,vold(nmatrixes)%block_vector(10)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c (bzx_r,vold(nmatrixes)%block_vector(11)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c (bzy_r,vold(nmatrixes)%block_vector(12)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c (jx_r,vold(nmatrixes)%block_vector(13)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c (jy_r,vold(nmatrixes)%block_vector(14)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c (jz_r,vold(nmatrixes)%block_vector(15)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c(rhoold_r,vold(nmatrixes)%block_vector(16)%block3dc,'fft')
-          CALL p3dfft_ftran_r2c(rho_r,vold(nmatrixes)%block_vector(17)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (exy_r,vold(1_idp)%block_vector(1)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (exz_r,vold(1_idp)%block_vector(2)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (eyx_r,vold(1_idp)%block_vector(3)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (eyz_r,vold(1_idp)%block_vector(4)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (ezx_r,vold(1_idp)%block_vector(5)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (ezy_r,vold(1_idp)%block_vector(6)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (bxy_r,vold(1_idp)%block_vector(7)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (bxz_r,vold(1_idp)%block_vector(8)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (byx_r,vold(1_idp)%block_vector(9)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (byz_r,vold(1_idp)%block_vector(10)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (bzx_r,vold(1_idp)%block_vector(11)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (bzy_r,vold(1_idp)%block_vector(12)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (jx_r,vold(1_idp)%block_vector(13)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (jy_r,vold(1_idp)%block_vector(14)%block3dc,'fft')
+          CALL p3dfft_ftran_r2c (jz_r,vold(1_idp)%block_vector(15)%block3dc,'fft')
+          IF(.NOT. current_correction) THEN
+            CALL p3dfft_ftran_r2c(rhoold_r,vold(1_idp)%block_vector(16)%block3dc,'fft')
+            CALL p3dfft_ftran_r2c(rho_r,vold(1_idp)%block_vector(17)%block3dc,'fft')
+          ENDIF
         ENDIF
       ENDIF
 #endif
@@ -1171,42 +1560,42 @@ MODULE fourier_psaotd
     ELSE IF(g_spectral) THEN
       IF(absorbing_bcs) THEN
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           & 
-        vnew(nmatrixes)%block_vector(1)%block3dc, exy_r, plan_c2r)
+        vnew(1_idp)%block_vector(1)%block3dc, exy_r, plan_c2r)
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
-        vnew(nmatrixes)%block_vector(2)%block3dc, exz_r, plan_c2r)
+        vnew(1_idp)%block_vector(2)%block3dc, exz_r, plan_c2r)
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
-        vnew(nmatrixes)%block_vector(3)%block3dc, eyx_r, plan_c2r)
+        vnew(1_idp)%block_vector(3)%block3dc, eyx_r, plan_c2r)
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
-        vnew(nmatrixes)%block_vector(4)%block3dc, eyz_r, plan_c2r)
+        vnew(1_idp)%block_vector(4)%block3dc, eyz_r, plan_c2r)
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
-        vnew(nmatrixes)%block_vector(5)%block3dc, ezx_r, plan_c2r)
+        vnew(1_idp)%block_vector(5)%block3dc, ezx_r, plan_c2r)
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
-        vnew(nmatrixes)%block_vector(6)%block3dc, ezy_r, plan_c2r)
+        vnew(1_idp)%block_vector(6)%block3dc, ezy_r, plan_c2r)
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
-        vnew(nmatrixes)%block_vector(7)%block3dc, bxy_r, plan_c2r)
+        vnew(1_idp)%block_vector(7)%block3dc, bxy_r, plan_c2r)
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
-        vnew(nmatrixes)%block_vector(8)%block3dc, bxz_r, plan_c2r)
+        vnew(1_idp)%block_vector(8)%block3dc, bxz_r, plan_c2r)
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
-        vnew(nmatrixes)%block_vector(9)%block3dc, byx_r, plan_c2r)
+        vnew(1_idp)%block_vector(9)%block3dc, byx_r, plan_c2r)
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
-        vnew(nmatrixes)%block_vector(10)%block3dc, byz_r, plan_c2r)
+        vnew(1_idp)%block_vector(10)%block3dc, byz_r, plan_c2r)
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
-        vnew(nmatrixes)%block_vector(11)%block3dc, bzx_r, plan_c2r)
+        vnew(1_idp)%block_vector(11)%block3dc, bzx_r, plan_c2r)
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
-        vnew(nmatrixes)%block_vector(12)%block3dc, bzy_r, plan_c2r)
+        vnew(1_idp)%block_vector(12)%block3dc, bzy_r, plan_c2r)
       ELSE IF(.NOT. absorbing_bcs) THEN
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
-        vnew(nmatrixes)%block_vector(1)%block3dc, ex_r, plan_c2r)
+        vnew(1_idp)%block_vector(1)%block3dc, ex_r, plan_c2r)
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
-        vnew(nmatrixes)%block_vector(2)%block3dc, ey_r, plan_c2r)
+        vnew(1_idp)%block_vector(2)%block3dc, ey_r, plan_c2r)
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           & 
-        vnew(nmatrixes)%block_vector(3)%block3dc, ez_r, plan_c2r)
+        vnew(1_idp)%block_vector(3)%block3dc, ez_r, plan_c2r)
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
-        vnew(nmatrixes)%block_vector(4)%block3dc, bx_r, plan_c2r)
+        vnew(1_idp)%block_vector(4)%block3dc, bx_r, plan_c2r)
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
-        vnew(nmatrixes)%block_vector(5)%block3dc, by_r, plan_c2r)
+        vnew(1_idp)%block_vector(5)%block3dc, by_r, plan_c2r)
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
-        vnew(nmatrixes)%block_vector(6)%block3dc, bz_r, plan_c2r)
+        vnew(1_idp)%block_vector(6)%block3dc, bz_r, plan_c2r)
       ENDIF
     ENDIF
     IF (it.ge.timestat_itstart) THEN
@@ -1257,65 +1646,65 @@ MODULE fourier_psaotd
 #endif
         IF(.NOT. absorbing_bcs) THEN
           CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
-          vnew(nmatrixes)%block_vector(1)%block3dc,ex_r)
+          vnew(1_idp)%block_vector(1)%block3dc,ex_r)
           CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
-          vnew(nmatrixes)%block_vector(2)%block3dc,ey_r)
+          vnew(1_idp)%block_vector(2)%block3dc,ey_r)
           CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
-          vnew(nmatrixes)%block_vector(3)%block3dc,ez_r)
+          vnew(1_idp)%block_vector(3)%block3dc,ez_r)
           CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
-          vnew(nmatrixes)%block_vector(4)%block3dc,bx_r)
+          vnew(1_idp)%block_vector(4)%block3dc,bx_r)
           CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
-          vnew(nmatrixes)%block_vector(5)%block3dc,by_r)
+          vnew(1_idp)%block_vector(5)%block3dc,by_r)
           CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
-          vnew(nmatrixes)%block_vector(6)%block3dc,bz_r)
+          vnew(1_idp)%block_vector(6)%block3dc,bz_r)
         ELSE IF (absorbing_bcs) THEN
           CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
-          vnew(nmatrixes)%block_vector(1)%block3dc,exy_r)
+          vnew(1_idp)%block_vector(1)%block3dc,exy_r)
           CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
-          vnew(nmatrixes)%block_vector(2)%block3dc,exz_r)
+          vnew(1_idp)%block_vector(2)%block3dc,exz_r)
           CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
-          vnew(nmatrixes)%block_vector(3)%block3dc,eyx_r)
+          vnew(1_idp)%block_vector(3)%block3dc,eyx_r)
           CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
-          vnew(nmatrixes)%block_vector(4)%block3dc,eyz_r)
+          vnew(1_idp)%block_vector(4)%block3dc,eyz_r)
           CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
-          vnew(nmatrixes)%block_vector(5)%block3dc,ezx_r)
+          vnew(1_idp)%block_vector(5)%block3dc,ezx_r)
           CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
-          vnew(nmatrixes)%block_vector(6)%block3dc,ezy_r)
+          vnew(1_idp)%block_vector(6)%block3dc,ezy_r)
           CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
-          vnew(nmatrixes)%block_vector(7)%block3dc,bxy_r)
+          vnew(1_idp)%block_vector(7)%block3dc,bxy_r)
           CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
-          vnew(nmatrixes)%block_vector(8)%block3dc,bxz_r)
+          vnew(1_idp)%block_vector(8)%block3dc,bxz_r)
           CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
-          vnew(nmatrixes)%block_vector(9)%block3dc,byx_r)
+          vnew(1_idp)%block_vector(9)%block3dc,byx_r)
           CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
-          vnew(nmatrixes)%block_vector(10)%block3dc,byz_r)
+          vnew(1_idp)%block_vector(10)%block3dc,byz_r)
           CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
-          vnew(nmatrixes)%block_vector(11)%block3dc,bzx_r)
+          vnew(1_idp)%block_vector(11)%block3dc,bzx_r)
           CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
-          vnew(nmatrixes)%block_vector(12)%block3dc,bzy_r)
+          vnew(1_idp)%block_vector(12)%block3dc,bzy_r)
         ENDIF
 #if defined(P3DFFT)
       ELSE IF(p3dfft_flag) THEN
         IF (.NOT. absorbing_bcs) THEN
-          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(1)%block3dc,ex_r,'tff')
-          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(2)%block3dc,ey_r,'tff')
-          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(3)%block3dc,ez_r,'tff')
-          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(4)%block3dc,bx_r,'tff')
-          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(5)%block3dc,by_r,'tff')
-          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(6)%block3dc,bz_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(1_idp)%block_vector(1)%block3dc,ex_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(1_idp)%block_vector(2)%block3dc,ey_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(1_idp)%block_vector(3)%block3dc,ez_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(1_idp)%block_vector(4)%block3dc,bx_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(1_idp)%block_vector(5)%block3dc,by_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(1_idp)%block_vector(6)%block3dc,bz_r,'tff')
         ELSE IF(absorbing_bcs) THEN
-          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(1)%block3dc,exy_r,'tff')
-          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(2)%block3dc,exz_r,'tff')
-          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(3)%block3dc,eyx_r,'tff')
-          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(4)%block3dc,eyz_r,'tff')
-          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(5)%block3dc,ezx_r,'tff')
-          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(6)%block3dc,ezy_r,'tff')
-          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(7)%block3dc,bxy_r,'tff')
-          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(8)%block3dc,bxz_r,'tff')
-          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(9)%block3dc,byx_r,'tff')
-          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(10)%block3dc,byz_r,'tff')
-          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(11)%block3dc,bzx_r,'tff')
-          CALL p3dfft_btran_c2r (vnew(nmatrixes)%block_vector(12)%block3dc,bzy_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(1_idp)%block_vector(1)%block3dc,exy_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(1_idp)%block_vector(2)%block3dc,exz_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(1_idp)%block_vector(3)%block3dc,eyx_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(1_idp)%block_vector(4)%block3dc,eyz_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(1_idp)%block_vector(5)%block3dc,ezx_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(1_idp)%block_vector(6)%block3dc,ezy_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(1_idp)%block_vector(7)%block3dc,bxy_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(1_idp)%block_vector(8)%block3dc,bxz_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(1_idp)%block_vector(9)%block3dc,byx_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(1_idp)%block_vector(10)%block3dc,byz_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(1_idp)%block_vector(11)%block3dc,bzx_r,'tff')
+          CALL p3dfft_btran_c2r (vnew(1_idp)%block_vector(12)%block3dc,bzy_r,'tff')
         ENDIF
 
       ENDIF
@@ -1357,51 +1746,51 @@ MODULE fourier_psaotd
           byfold=byf(ix, iy, iz)
           bzfold=bzf(ix, iy, iz)
 
-          bxf(ix, iy, iz) = cc_mat(nmatrixes)%block_matrix2d(4, 4)%block3dc(ix, iy,   &
-          iz)*bxfold + cc_mat(nmatrixes)%block_matrix2d(4, 2)%block3dc(ix, iy,        &
-          iz)*eyfold + cc_mat(nmatrixes)%block_matrix2d(4, 8)%block3dc(ix, iy,        &
+          bxf(ix, iy, iz) = cc_mat(1_idp)%block_matrix2d(4, 4)%block3dc(ix, iy,   &
+          iz)*bxfold + cc_mat(1_idp)%block_matrix2d(4, 2)%block3dc(ix, iy,        &
+          iz)*eyfold + cc_mat(1_idp)%block_matrix2d(4, 8)%block3dc(ix, iy,        &
           iz)*jyf(ix, iy, iz)  
           ! - By
-          byf(ix, iy, iz) = cc_mat(nmatrixes)%block_matrix2d(5, 5)%block3dc(ix, iy,   &
-          iz)*byfold + cc_mat(nmatrixes)%block_matrix2d(5, 1)%block3dc(ix, iy,        &
-          iz)*exfold + cc_mat(nmatrixes)%block_matrix2d(5, 3)%block3dc(ix, iy,        &
-          iz)*ezfold + cc_mat(nmatrixes)%block_matrix2d(5, 7)%block3dc(ix, iy,        &
-          iz)*jxf(ix, iy, iz) + cc_mat(nmatrixes)%block_matrix2d(5, 9)%block3dc(ix,   &
+          byf(ix, iy, iz) = cc_mat(1_idp)%block_matrix2d(5, 5)%block3dc(ix, iy,   &
+          iz)*byfold + cc_mat(1_idp)%block_matrix2d(5, 1)%block3dc(ix, iy,        &
+          iz)*exfold + cc_mat(1_idp)%block_matrix2d(5, 3)%block3dc(ix, iy,        &
+          iz)*ezfold + cc_mat(1_idp)%block_matrix2d(5, 7)%block3dc(ix, iy,        &
+          iz)*jxf(ix, iy, iz) + cc_mat(1_idp)%block_matrix2d(5, 9)%block3dc(ix,   &
           iy, iz)*jzf(ix, iy, iz)
 
 
           ! - Bz
-          bzf(ix, iy, iz) = cc_mat(nmatrixes)%block_matrix2d(6, 6)%block3dc(ix, iy,   &
-          iz)*bzfold + cc_mat(nmatrixes)%block_matrix2d(6, 2)%block3dc(ix, iy,        &
-          iz)*eyfold +         cc_mat(nmatrixes)%block_matrix2d(6, 8)%block3dc(ix,    &
+          bzf(ix, iy, iz) = cc_mat(1_idp)%block_matrix2d(6, 6)%block3dc(ix, iy,   &
+          iz)*bzfold + cc_mat(1_idp)%block_matrix2d(6, 2)%block3dc(ix, iy,        &
+          iz)*eyfold +         cc_mat(1_idp)%block_matrix2d(6, 8)%block3dc(ix,    &
           iy, iz)*jyf(ix, iy, iz)
 
           ! Push E a full time step
           ! - Ex
-          exf(ix, iy, iz) = cc_mat(nmatrixes)%block_matrix2d(1, 1)%block3dc(ix, iy,   &
-          iz)*exfold + cc_mat(nmatrixes)%block_matrix2d(1, 5)%block3dc(ix, iy,        &
-          iz)*byfold + cc_mat(nmatrixes)%block_matrix2d(1, 7)%block3dc(ix, iy,        &
-          iz)*jxf(ix, iy, iz)     + cc_mat(nmatrixes)%block_matrix2d(1,               &
+          exf(ix, iy, iz) = cc_mat(1_idp)%block_matrix2d(1, 1)%block3dc(ix, iy,   &
+          iz)*exfold + cc_mat(1_idp)%block_matrix2d(1, 5)%block3dc(ix, iy,        &
+          iz)*byfold + cc_mat(1_idp)%block_matrix2d(1, 7)%block3dc(ix, iy,        &
+          iz)*jxf(ix, iy, iz)     + cc_mat(1_idp)%block_matrix2d(1,               &
           11)%block3dc(ix, iy, iz)*rhof(ix, iy, iz) +                                 &
-          cc_mat(nmatrixes)%block_matrix2d(1, 10)%block3dc(ix, iy, iz)*rhooldf(ix,    &
+          cc_mat(1_idp)%block_matrix2d(1, 10)%block3dc(ix, iy, iz)*rhooldf(ix,    &
           iy, iz)
 
           ! - Ey
-          eyf(ix, iy, iz) = cc_mat(nmatrixes)%block_matrix2d(2, 2)%block3dc(ix, iy,   &
-          iz)*eyfold + cc_mat(nmatrixes)%block_matrix2d(2, 4)%block3dc(ix, iy,        &
-          iz)*bxfold  + cc_mat(nmatrixes)%block_matrix2d(2, 6)%block3dc(ix, iy,       &
-          iz)*bzfold  + cc_mat(nmatrixes)%block_matrix2d(2, 8)%block3dc(ix, iy,       &
-          iz)*jyf(ix, iy, iz) + cc_mat(nmatrixes)%block_matrix2d(2, 11)%block3dc(ix,  &
-          iy, iz)*rhof(ix, iy, iz) + cc_mat(nmatrixes)%block_matrix2d(2,              &
+          eyf(ix, iy, iz) = cc_mat(1_idp)%block_matrix2d(2, 2)%block3dc(ix, iy,   &
+          iz)*eyfold + cc_mat(1_idp)%block_matrix2d(2, 4)%block3dc(ix, iy,        &
+          iz)*bxfold  + cc_mat(1_idp)%block_matrix2d(2, 6)%block3dc(ix, iy,       &
+          iz)*bzfold  + cc_mat(1_idp)%block_matrix2d(2, 8)%block3dc(ix, iy,       &
+          iz)*jyf(ix, iy, iz) + cc_mat(1_idp)%block_matrix2d(2, 11)%block3dc(ix,  &
+          iy, iz)*rhof(ix, iy, iz) + cc_mat(1_idp)%block_matrix2d(2,              &
           10)%block3dc(ix, iy, iz)*rhooldf(ix, iy, iz)
 
 
           ! - Ez
-          ezf(ix, iy, iz) = cc_mat(nmatrixes)%block_matrix2d(3, 3)%block3dc(ix, iy,   &
-          iz)*ezfold + cc_mat(nmatrixes)%block_matrix2d(3, 5)%block3dc(ix, iy,        &
-          iz)*byfold + cc_mat(nmatrixes)%block_matrix2d(3, 9)%block3dc(ix, iy,        &
-          iz)*jzf(ix, iy, iz) + cc_mat(nmatrixes)%block_matrix2d(3, 11)%block3dc(ix,  &
-          iy, iz)*rhof(ix, iy, iz) + cc_mat(nmatrixes)%block_matrix2d(3,              &
+          ezf(ix, iy, iz) = cc_mat(1_idp)%block_matrix2d(3, 3)%block3dc(ix, iy,   &
+          iz)*ezfold + cc_mat(1_idp)%block_matrix2d(3, 5)%block3dc(ix, iy,        &
+          iz)*byfold + cc_mat(1_idp)%block_matrix2d(3, 9)%block3dc(ix, iy,        &
+          iz)*jzf(ix, iy, iz) + cc_mat(1_idp)%block_matrix2d(3, 11)%block3dc(ix,  &
+          iy, iz)*rhof(ix, iy, iz) + cc_mat(1_idp)%block_matrix2d(3,              &
           10)%block3dc(ix, iy, iz)*rhooldf(ix, iy, iz)
 
 
@@ -1454,62 +1843,62 @@ MODULE fourier_psaotd
 
 
           bxf(ix, iy, iz) =                                                           &
-          cc_mat(nmatrixes)%block_matrix2d(4, 4)%block3dc(ix, iy,                     &
-          iz)*bxfold + cc_mat(nmatrixes)%block_matrix2d(4, 2)%block3dc(ix, iy,        &
-          iz)*eyfold + cc_mat(nmatrixes)%block_matrix2d(4, 3)%block3dc(ix, iy,        &
-          iz)*ezfold + cc_mat(nmatrixes)%block_matrix2d(4, 8)%block3dc(ix, iy,        &
-          iz)*jyfold + cc_mat(nmatrixes)%block_matrix2d(4, 9)%block3dc(ix,            &
+          cc_mat(1_idp)%block_matrix2d(4, 4)%block3dc(ix, iy,                     &
+          iz)*bxfold + cc_mat(1_idp)%block_matrix2d(4, 2)%block3dc(ix, iy,        &
+          iz)*eyfold + cc_mat(1_idp)%block_matrix2d(4, 3)%block3dc(ix, iy,        &
+          iz)*ezfold + cc_mat(1_idp)%block_matrix2d(4, 8)%block3dc(ix, iy,        &
+          iz)*jyfold + cc_mat(1_idp)%block_matrix2d(4, 9)%block3dc(ix,            &
           iy, iz)*jzfold
 
           ! - By
           byf(ix, iy, iz) =                                                           &
-          cc_mat(nmatrixes)%block_matrix2d(5, 5)%block3dc(ix, iy,                     &
-          iz)*byfold + cc_mat(nmatrixes)%block_matrix2d(5, 1)%block3dc(ix, iy,        &
-          iz)*exfold + cc_mat(nmatrixes)%block_matrix2d(5, 3)%block3dc(ix, iy,        &
-          iz)*ezfold + cc_mat(nmatrixes)%block_matrix2d(5, 7)%block3dc(ix, iy,        &
-          iz)*jxfold + cc_mat(nmatrixes)%block_matrix2d(5, 9)%block3dc(ix,            &
+          cc_mat(1_idp)%block_matrix2d(5, 5)%block3dc(ix, iy,                     &
+          iz)*byfold + cc_mat(1_idp)%block_matrix2d(5, 1)%block3dc(ix, iy,        &
+          iz)*exfold + cc_mat(1_idp)%block_matrix2d(5, 3)%block3dc(ix, iy,        &
+          iz)*ezfold + cc_mat(1_idp)%block_matrix2d(5, 7)%block3dc(ix, iy,        &
+          iz)*jxfold + cc_mat(1_idp)%block_matrix2d(5, 9)%block3dc(ix,            &
           iy, iz)*jzfold
 
 
           ! - Bz
           bzf(ix, iy, iz) =                                                           &
-          cc_mat(nmatrixes)%block_matrix2d(6, 6)%block3dc(ix, iy,                     &
-          iz)*bzfold + cc_mat(nmatrixes)%block_matrix2d(6, 1)%block3dc(ix, iy,        &
-          iz)*exfold+ cc_mat(nmatrixes)%block_matrix2d(6, 2)%block3dc(ix, iy,         &
-          iz)*eyfold+ cc_mat(nmatrixes)%block_matrix2d(6, 7)%block3dc(ix, iy,         &
-          iz)*jxfold+ cc_mat(nmatrixes)%block_matrix2d(6, 8)%block3dc(ix,             &
+          cc_mat(1_idp)%block_matrix2d(6, 6)%block3dc(ix, iy,                     &
+          iz)*bzfold + cc_mat(1_idp)%block_matrix2d(6, 1)%block3dc(ix, iy,        &
+          iz)*exfold+ cc_mat(1_idp)%block_matrix2d(6, 2)%block3dc(ix, iy,         &
+          iz)*eyfold+ cc_mat(1_idp)%block_matrix2d(6, 7)%block3dc(ix, iy,         &
+          iz)*jxfold+ cc_mat(1_idp)%block_matrix2d(6, 8)%block3dc(ix,             &
           iy, iz)*jyfold
 
           ! Push E a full time step
           ! - Ex
           exf(ix, iy, iz) =                                                           &
-          cc_mat(nmatrixes)%block_matrix2d(1, 1)%block3dc(ix, iy,                     &
-          iz)*exfold + cc_mat(nmatrixes)%block_matrix2d(1, 5)%block3dc(ix, iy,        &
-          iz)*byfold + cc_mat(nmatrixes)%block_matrix2d(1, 6)%block3dc(ix, iy,        &
-          iz)*bzfold + cc_mat(nmatrixes)%block_matrix2d(1, 7)%block3dc(ix, iy,        &
-          iz)*jxfold     + cc_mat(nmatrixes)%block_matrix2d(1,                        &
+          cc_mat(1_idp)%block_matrix2d(1, 1)%block3dc(ix, iy,                     &
+          iz)*exfold + cc_mat(1_idp)%block_matrix2d(1, 5)%block3dc(ix, iy,        &
+          iz)*byfold + cc_mat(1_idp)%block_matrix2d(1, 6)%block3dc(ix, iy,        &
+          iz)*bzfold + cc_mat(1_idp)%block_matrix2d(1, 7)%block3dc(ix, iy,        &
+          iz)*jxfold     + cc_mat(1_idp)%block_matrix2d(1,                        &
           11)%block3dc(ix, iy, iz)*rhofold       +                                    &
-          cc_mat(nmatrixes)%block_matrix2d(1, 10)%block3dc(ix, iy, iz)*rhooldfold
+          cc_mat(1_idp)%block_matrix2d(1, 10)%block3dc(ix, iy, iz)*rhooldfold
 
           ! - Ey
           eyf(ix, iy, iz) =                                                           &
-          cc_mat(nmatrixes)%block_matrix2d(2, 2)%block3dc(ix, iy,                     &
-          iz)*eyfold + cc_mat(nmatrixes)%block_matrix2d(2, 4)%block3dc(ix, iy,        &
-          iz)*bxfold  + cc_mat(nmatrixes)%block_matrix2d(2, 6)%block3dc(ix, iy,       &
-          iz)*bzfold  + cc_mat(nmatrixes)%block_matrix2d(2, 8)%block3dc(ix, iy,       &
-          iz)*jyfold + cc_mat(nmatrixes)%block_matrix2d(2, 11)%block3dc(ix,           &
-          iy, iz)*rhofold + cc_mat(nmatrixes)%block_matrix2d(2,                       &
+          cc_mat(1_idp)%block_matrix2d(2, 2)%block3dc(ix, iy,                     &
+          iz)*eyfold + cc_mat(1_idp)%block_matrix2d(2, 4)%block3dc(ix, iy,        &
+          iz)*bxfold  + cc_mat(1_idp)%block_matrix2d(2, 6)%block3dc(ix, iy,       &
+          iz)*bzfold  + cc_mat(1_idp)%block_matrix2d(2, 8)%block3dc(ix, iy,       &
+          iz)*jyfold + cc_mat(1_idp)%block_matrix2d(2, 11)%block3dc(ix,           &
+          iy, iz)*rhofold + cc_mat(1_idp)%block_matrix2d(2,                       &
           10)%block3dc(ix, iy, iz)*rhooldfold
 
 
           ! - Ez
           ezf(ix, iy, iz) =                                                           &
-          cc_mat(nmatrixes)%block_matrix2d(3, 3)%block3dc(ix, iy,                     &
-          iz)*ezfold + cc_mat(nmatrixes)%block_matrix2d(3, 4)%block3dc(ix, iy,        &
-          iz)*bxfold + cc_mat(nmatrixes)%block_matrix2d(3, 5)%block3dc(ix, iy,        &
-          iz)*byfold + cc_mat(nmatrixes)%block_matrix2d(3, 9)%block3dc(ix, iy,        &
-          iz)*jzfold + cc_mat(nmatrixes)%block_matrix2d(3, 11)%block3dc(ix,           &
-          iy, iz)*rhofold + cc_mat(nmatrixes)%block_matrix2d(3,                       &
+          cc_mat(1_idp)%block_matrix2d(3, 3)%block3dc(ix, iy,                     &
+          iz)*ezfold + cc_mat(1_idp)%block_matrix2d(3, 4)%block3dc(ix, iy,        &
+          iz)*bxfold + cc_mat(1_idp)%block_matrix2d(3, 5)%block3dc(ix, iy,        &
+          iz)*byfold + cc_mat(1_idp)%block_matrix2d(3, 9)%block3dc(ix, iy,        &
+          iz)*jzfold + cc_mat(1_idp)%block_matrix2d(3, 11)%block3dc(ix,           &
+          iy, iz)*rhofold + cc_mat(1_idp)%block_matrix2d(3,                       &
           10)%block3dc(ix, iy, iz)*rhooldfold
         END DO
       END DO
@@ -1558,12 +1947,12 @@ MODULE fourier_psaotd
     !> Instead, vector blocks structures are used to store fourier fields
     !> and multiply_mat_vector(GPSTD.F90) is used to push fields in Fourier
     !> space 
-    !> exf only points to vold(nmatrixes)%block_vector(1)%block3dc to initialize
+    !> exf only points to vold(1_idp)%block_vector(1)%block3dc to initialize
     !> fftw plans
     !> If g_spectral == .FALSE. then exf is already allocated 
 
     IF(g_spectral) THEN
-      exf => vold(nmatrixes)%block_vector(1)%block3dc
+      exf => vold(1_idp)%block_vector(1)%block3dc
       IF(absorbing_bcs) THEN
         ex_r => exy_r
       ENDIF

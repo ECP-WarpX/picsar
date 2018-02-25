@@ -1202,6 +1202,8 @@ MODULE shared_data
   !----------------------------------------------------------------------------
   !> FFTW distributed
   LOGICAL(idp) :: fftw_with_mpi, fftw_mpi_transpose, fftw_threads_ok, fftw_hybrid
+  !> Flag: use to correct current in fourier space (to conserve continuity eq)
+  LOGICAL(lp) :: current_correction
   LOGICAL(lp)   :: p3dfft_flag=.FALSE.
   LOGICAL(lp)   :: p3dfft_stride
   LOGICAL(lp)   :: absorbing_bcs

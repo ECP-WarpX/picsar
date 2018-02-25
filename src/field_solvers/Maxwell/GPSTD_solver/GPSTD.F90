@@ -292,7 +292,6 @@ SUBROUTINE allocate_new_matrix_vector(nvar)
   cc_mat(nmatrixes)%nblocks=nvar
   vold(nmatrixes)%nblocks=nvar
   vnew(nmatrixes)%nblocks=nvar
-
 END SUBROUTINE allocate_new_matrix_vector
 
 ! ________________________________________________________________________________________
@@ -354,7 +353,12 @@ SUBROUTINE multiply_mat_vector(matrix_index)
     pvec_new%block3dc=0.
     DO icol=1, ncol
       pvec_old=>vold(matrix_index)%block_vector(icol)
+!print*,"y matrix",sum(abs(cc_mat(2_idp)%block_matrix2d(2,2)%block3dc)),&
+!sum(abs(vold(2_idp)%block_vector(2)%block3dc))
       p_mat=>cc_mat(matrix_index)%block_matrix2d(irow, icol)
+!if(matrix_index==2_idp .AND.&
+!(icol-2)*(irow-2)==0)print*,"kk",sum(abs(p_mat%block3dc)),sum(abs(pvec_old%block3dc))&
+!,sum(abs(pvec_new%block3dc))
       n1vec=pvec_old%nx
       n2vec=pvec_old%ny
       n3vec=pvec_old%nz

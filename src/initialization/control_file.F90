@@ -95,6 +95,7 @@ MODULE control_file
     l_spectral = .FALSE.! (no spectral solver by default)
     g_spectral = .FALSE.! (no spectral sovler by default)
     l_staggered = .TRUE.! (staggered scheme by default )
+    current_correction = .FALSE. ! (current correction in fourier space)
 #if defined(FFTW)
     nb_group_x = 1
     nb_group_y = 1
@@ -330,6 +331,9 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'l_spectral') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) l_spectral
+      ELSE IF (INDEX(buffer, 'current_correction') .GT. 0) THEN
+        CALL GETARG(i+1, buffer)
+        READ(buffer, *) current_correction
       ELSE IF (INDEX(buffer, 'absorbing_bcs') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) absorbing_bcs
@@ -604,6 +608,9 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'l_spectral') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) l_spectral
+      ELSE IF (INDEX(buffer, 'current_correction') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) current_correction
       ELSE IF (INDEX(buffer, 'absorbing_bcs') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) absorbing_bcs

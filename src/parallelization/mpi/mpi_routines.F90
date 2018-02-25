@@ -1423,6 +1423,9 @@ IF(absorbing_bcs .AND. l_spectral) THEN
   g_spectral = .TRUE. ! absorbing_bcs push only available with mult_mat_vec
                         ! routine
 ENDIF
+IF(current_correction .AND. l_spectral) THEN
+  g_spectral = .TRUE.
+ENDIF
 IF(absorbing_bcs .AND. .NOT. l_spectral) THEN
  IF(rank==0)  WRITE(*, *),'ERROR , pmls are not available yet with FDTD'
  STOP
