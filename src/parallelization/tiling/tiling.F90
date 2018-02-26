@@ -1104,20 +1104,29 @@ MODULE tiling
     IMPLICIT NONE
     REAL(num), DIMENSION(:), ALLOCATABLE, INTENT(IN OUT) :: arr
     REAL(num), DIMENSION(:), ALLOCATABLE :: temp
-    INTEGER(idp) :: old_size, new_size
+    INTEGER(idp) :: old_size, new_size, ncheck
 
-    ! - Allocate temporary array for copying arr before its de-allocation/re-allocation
-    ALLOCATE(temp(1:new_size))
-    ! reshape array
-    IF (new_size .GT. old_size) THEN
-	  temp(1:old_size)=arr(1:old_size)
+    ! - Sanity check (If old/new dimensions are identical - Return)
+    ncheck = (old_size-new_size)
+    IF (ncheck .EQ. 0_idp) RETURN 
+
+    IF (ALLOCATED(arr)) THEN
+      ! - Allocate temporary array for copying arr before its de-allocation/re-allocation
+      ALLOCATE(temp(1:new_size))
+      ! reshape array
+      IF (new_size .GT. old_size) THEN
+        temp(1:old_size)=arr(1:old_size)
+      ELSE
+        temp(1:new_size)=arr(1:new_size)
+      ENDIF
+      DEALLOCATE(arr)
+      ALLOCATE(arr(1:new_size))
+      arr=temp
+      DEALLOCATE(temp)
     ELSE
-	  temp(1:new_size)=arr(1:new_size)
+	  ! - Just allocate array arr without copying its old values 
+      ALLOCATE(arr(1:new_size))
     ENDIF
-    DEALLOCATE(arr)
-    ALLOCATE(arr(1:new_size))
-    arr=temp
-    DEALLOCATE(temp)
   END SUBROUTINE resize_1D_array_real
 
   ! ______________________________________________________________________________________
@@ -1135,27 +1144,36 @@ MODULE tiling
     IMPLICIT NONE
     REAL(num), DIMENSION(:, :), ALLOCATABLE, INTENT(IN OUT) :: arr
     INTEGER(idp), INTENT(IN) :: nx_old, ny_old, nx_new, ny_new
-    INTEGER(idp)            :: nx_temp, ny_temp
+    INTEGER(idp)            :: nx_temp, ny_temp, ncheck
     REAL(num), DIMENSION(:, :), ALLOCATABLE :: temp
 
-    ! - Allocate temporary array for copying arr before its de-allocation/re-allocation
-    ALLOCATE(temp(1:nx_new, 1:ny_new))
-    ! reshape array
-    IF (nx_new .GT. nx_old) THEN
-	  nx_temp=nx_old
-    ELSE
-	  nx_temp=nx_new
-    ENDIF
-    IF (ny_new .GT. ny_old) THEN
-	  ny_temp=ny_old
-    ELSE
-	  ny_temp=ny_new
-    ENDIF
-    temp(1:nx_temp, 1:ny_temp)= arr(1:nx_temp, 1:ny_temp)
-    DEALLOCATE(arr)
-    ALLOCATE(arr(1:nx_new, 1:ny_new))
-    arr=temp
-    DEALLOCATE(temp)
+    ! - Sanity check (If old/new dimensions are identical - Return)
+    ncheck = (nx_new-nx_old)+(ny_new-ny_old)
+    IF (ncheck .EQ. 0_idp) RETURN
+ 
+    IF (ALLOCATED(arr)) THEN 
+      ! - Allocate temporary array for copying arr before its de-allocation/re-allocation
+      ALLOCATE(temp(1:nx_new, 1:ny_new))
+      ! reshape array
+      IF (nx_new .GT. nx_old) THEN
+        nx_temp=nx_old
+      ELSE
+        nx_temp=nx_new
+      ENDIF
+      IF (ny_new .GT. ny_old) THEN
+        ny_temp=ny_old
+      ELSE
+        ny_temp=ny_new
+      ENDIF
+      temp(1:nx_temp, 1:ny_temp)= arr(1:nx_temp, 1:ny_temp)
+      DEALLOCATE(arr)
+      ALLOCATE(arr(1:nx_new, 1:ny_new))
+      arr=temp
+      DEALLOCATE(temp)
+    ELSE 
+	  ! - Just allocate array arr without copying its old values 
+      ALLOCATE(arr(1:nx_new, 1:ny_new))    
+    ENDIF 
   END SUBROUTINE resize_2D_array_real
 
   ! ______________________________________________________________________________________
@@ -1174,32 +1192,42 @@ MODULE tiling
     IMPLICIT NONE
     REAL(num), DIMENSION(:, :, :), ALLOCATABLE, INTENT(IN OUT) :: arr
     INTEGER(idp), INTENT(IN) :: nx_old, ny_old, nz_old, nx_new, ny_new, nz_new
-    INTEGER(idp)            :: nx_temp, ny_temp, nz_temp
+    INTEGER(idp)            :: nx_temp, ny_temp, nz_temp, ncheck
     REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: temp
  
-    ! - Allocate temporary array for copying arr before its de-allocation/re-allocation
-    ALLOCATE(temp(1:nx_new, 1:ny_new, 1:nz_new))
-    ! reshape array
-    IF (nx_new .GT. nx_old) THEN
-      nx_temp=nx_old
-    ELSE
-      nx_temp=nx_new
+    ! - Sanity check (If old/new dimensions are identical - Return)
+    ncheck = (nx_new-nx_old)+(ny_new-ny_old)+(nz_new-nz_old)
+    IF (ncheck .EQ. 0_idp) RETURN 
+    
+    IF (ALLOCATED(arr)) THEN 
+      ! - Allocate temporary array for copying arr before its de-allocation/re-allocation
+      ALLOCATE(temp(1:nx_new, 1:ny_new, 1:nz_new))
+      ! reshape array
+      IF (nx_new .GT. nx_old) THEN
+        nx_temp=nx_old
+      ELSE
+        nx_temp=nx_new
+      ENDIF
+      IF (ny_new .GT. ny_old) THEN
+        ny_temp=ny_old
+      ELSE
+        ny_temp=ny_new
+      ENDIF
+      IF (nz_new .GT. nz_old) THEN
+        nz_temp=nz_old
+      ELSE
+        nz_temp=nz_new
+      ENDIF
+      temp(1:nx_temp, 1:ny_temp, 1:nz_temp)= arr(1:nx_temp, 1:ny_temp, 1:nz_temp)
+      DEALLOCATE(arr)
+
+      ALLOCATE(arr(1:nx_new, 1:ny_new, 1:nz_new))
+      arr=temp
+      DEALLOCATE(temp)
+    ELSE 
+	  ! - Just allocate array arr without copying its old values 
+      ALLOCATE(arr(1:nx_new, 1:ny_new, 1:nz_new))
     ENDIF
-    IF (ny_new .GT. ny_old) THEN
-      ny_temp=ny_old
-    ELSE
-      ny_temp=ny_new
-    ENDIF
-    IF (nz_new .GT. nz_old) THEN
-      nz_temp=nz_old
-    ELSE
-      nz_temp=nz_new
-    ENDIF
-    temp(1:nx_temp, 1:ny_temp, 1:nz_temp)= arr(1:nx_temp, 1:ny_temp, 1:nz_temp)
-    DEALLOCATE(arr)
-    ALLOCATE(arr(1:nx_new, 1:ny_new, 1:nz_new))
-    arr=temp
-    DEALLOCATE(temp)
   END SUBROUTINE resize_3D_array_real
 
   ! ____________________________________________________________________________________
@@ -1732,9 +1760,9 @@ MODULE tiling
     pos = (/0._num, 0._num, 0._num/)
     spot=(/laser%spot_x, laser%spot_y, laser%spot_z/)
     IF(c_dim == 3) THEN
-      weight_laser=2.0_num*eps0*laser%Emax/(0.01_num)*dx*dy
+      weight_laser=eps0*laser%Emax/(0.01_num)*dx*dy
     ELSE IF(c_dim == 2) THEN 
-       weight_laser=2.0_num*eps0*laser%Emax/(0.01_num)*dx
+       weight_laser=eps0*laser%Emax/(0.01_num)*dx
     ENDIF  
     DO l=1, lmax
       pos(i2) = (mins(i2)+(l-1)*dst(i2))+(dst(i2))/2.0_num
@@ -1768,7 +1796,7 @@ MODULE tiling
           ENDIF
       ENDDO
     ENDDO
-    IF(RANK .EQ. 0) THEN
+    IF(RANK .EQ. 0 .AND. laser%charge==1.0_num) THEN
       IF(c_dim == 3) THEN
         WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dy**2+dz**2)
       ELSE IF(c_dim == 2) THEN
@@ -1788,7 +1816,7 @@ MODULE tiling
       ELSE IF(c_dim ==2) THEN
         WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dz**2)
       ENDIF
-      WRITE(0,*) 'LASER EMAX',laser%Emax, laser%Emax_laser_1,laser%Emax_laser_2
+      WRITE(0,*) 'LASER EMAX',laser%Emax*2.0_num, laser%Emax_laser_1*2.0_num,laser%Emax_laser_2*2.0_num
    ENDIF
   END SUBROUTINE load_laser_species
 
@@ -1797,7 +1825,9 @@ MODULE tiling
     INTEGER(idp) :: ispecies
     DO ispecies=1, nspecies
       curr=>species_parray(ispecies)
-      IF (curr%is_antenna) CALL load_laser_species(curr)
+      IF (curr%is_antenna) THEN 
+        CALL load_laser_species(curr)
+      ENDIF
     END DO
   END SUBROUTINE load_laser
 
