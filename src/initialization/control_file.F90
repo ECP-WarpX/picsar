@@ -87,15 +87,10 @@ MODULE control_file
     norderx = 2
     nordery = 2
     norderz = 2
-    nx_pml = 0_idp 
-    ny_pml = 0_idp 
-    nz_pml = 0_idp
-    absorbing_bcs = .FALSE.
     l_nodalgrid = .FALSE.
     l_spectral = .FALSE.! (no spectral solver by default)
     g_spectral = .FALSE.! (no spectral sovler by default)
     l_staggered = .TRUE.! (staggered scheme by default )
-    current_correction = .FALSE. ! (current correction in fourier space)
 #if defined(FFTW)
     nb_group_x = 1
     nb_group_y = 1
@@ -331,12 +326,6 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'l_spectral') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) l_spectral
-      ELSE IF (INDEX(buffer, 'current_correction') .GT. 0) THEN
-        CALL GETARG(i+1, buffer)
-        READ(buffer, *) current_correction
-      ELSE IF (INDEX(buffer, 'absorbing_bcs') .GT. 0) THEN
-        CALL GETARG(i+1, buffer)
-        READ(buffer, *) absorbing_bcs
       ELSE IF (INDEX(buffer, 'g_spectral') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) g_spectral
@@ -576,15 +565,6 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'nox') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') nox
-      ELSE IF (INDEX(buffer, 'nx_pml') .GT. 0) THEN
-        ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), '(i10)') nx_pml
-      ELSE IF (INDEX(buffer, 'ny_pml') .GT. 0) THEN
-        ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), '(i10)') ny_pml
-      ELSE IF (INDEX(buffer, 'nz_pml') .GT. 0) THEN
-        ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), '(i10)') nz_pml
       ELSE IF (INDEX(buffer, 'noy') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') noy
@@ -608,12 +588,6 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'l_spectral') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) l_spectral
-      ELSE IF (INDEX(buffer, 'current_correction') .GT. 0) THEN
-        ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), *) current_correction
-      ELSE IF (INDEX(buffer, 'absorbing_bcs') .GT. 0) THEN
-        ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), *) absorbing_bcs
       ELSE IF (INDEX(buffer, 'g_spectral') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) g_spectral
