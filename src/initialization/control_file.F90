@@ -1251,7 +1251,6 @@ MODULE control_file
       ALLOCATE(species_parray(1:nspecies_max))
       l_species_allocated=.TRUE.
     ENDIF
-    end_section = .FALSE.
     nspecies = nspecies+1
     curr => species_parray(nspecies)
     ! minimal init for species attributes
