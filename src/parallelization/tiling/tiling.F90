@@ -1796,7 +1796,7 @@ MODULE tiling
           ENDIF
       ENDDO
     ENDDO
-    IF(RANK .EQ. 0 .AND. laser%charge==1.0_num) THEN
+    IF(RANK .EQ. 0 .AND. curr%charge==1.0_num) THEN
       IF(c_dim == 3) THEN
         WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dy**2+dz**2)
       ELSE IF(c_dim == 2) THEN
