@@ -359,6 +359,29 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'nsteps') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) nsteps
+      ELSE IF (INDEX(buffer, 'nguardsx') .GT. 0) THEN
+        CALL GETARG(i+1, buffer)
+        READ(buffer, *) nxguards
+        nxjguards=nxguards
+      ELSE IF (INDEX(buffer, 'nguardsy') .GT. 0) THEN
+        CALL GETARG(i+1, buffer)
+        READ(buffer, *) nyguards
+        nyjguards=nyguards
+      ELSE IF (INDEX(buffer, 'nguardsz') .GT. 0) THEN
+        CALL GETARG(i+1, buffer)
+        READ(buffer, *) nzguards
+        nzjguards=nzguards
+#if defined(FFTW)
+      ELSE IF (INDEX(buffer, 'nggroup_x') .GT. 0) THEN
+        CALL GETARG(i+1, buffer)
+        READ(buffer, *) nxg_group
+      ELSE IF (INDEX(buffer, 'nggroup_y') .GT. 0) THEN
+        CALL GETARG(i+1, buffer)
+        READ(buffer, *) nyg_group
+      ELSE IF (INDEX(buffer, 'nggroup_z') .GT. 0) THEN
+        CALL GETARG(i+1, buffer)
+        READ(buffer, *) nzg_group
+#endif
 #if defined(FFTW)
       ELSE IF (INDEX(buffer, 'nb_group_z') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
