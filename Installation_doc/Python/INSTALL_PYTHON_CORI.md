@@ -63,7 +63,7 @@ knl architecture. The corresponding flags are `--compiler gnu`/`--compiler intel
 and `--architecture cpu`/`--architecture knl`.
 
 For example, if you want to use `picsar` on the knl architecture with the intel
-compiler, juste type `./configure --compiler intel --architecture knl`.
+compiler, juste type `./configure --compiler intel --architecture knl`. Make sure you have the `craype-haswell` module loaded to compile on haswell, and `craype-mic-knl` module loaded to compile on KNL.
 This step should return 'Configure succeeded'. Then, a file  `Makefile_Forthon` must have been generated and must look like:
 
 ```
@@ -103,7 +103,7 @@ To compile and test, invoke the rule "all":
 ```
 make -f Makefile_Forthon all
 ```
-Then `cd` into the directory `python_module` and run `python setup.py install --user`.
+Then `cd` into the directory `python_module` and run `python setup.py install --user` to install the PICSAR python library into your home. If you want to install it in a custom directory, use `python setup.py install --home path/to/my/directory` instead.
 
 
 ## **6. Python import**

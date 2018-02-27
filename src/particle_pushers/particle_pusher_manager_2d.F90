@@ -102,17 +102,18 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, 
 #if PROFILING==3
   CALL start_collection()
 #endif
-  nxt_o=0_idp
-  nyt_o=0_idp
-  nzt_o=0_idp
-  !$OMP PARALLEL DO COLLAPSE(2) SCHEDULE(runtime) DEFAULT(NONE) SHARED(ntilex,        &
+  !$OMP PARALLEL DEFAULT(NONE) SHARED(ntilex,                                         &
   !$OMP ntiley, ntilez, nspecies, species_parray, aofgrid_tiles, nxjguard, nyjguard,  &
   !$OMP nzjguard, nxguard, nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg, dxx, dyy,  &
   !$OMP dzz, dtt, noxx, noyy, nozz, c_dim, fieldgathe, LVEC_fieldgathe) PRIVATE(ix,   &
   !$OMP iy, iz, ispecies, curr, curr_tile, count, jmin, jmax, kmin, kmax,             &
   !$OMP lmin, lmax, nxc, nyc, nzc, ipmin, ipmax, ip, nxjg, nzjg, isgathered,          &
-  !$OMP extile, eytile, eztile, bxtile, bytile, bztile, nxt, nyt, nzt)                &
-  !$OMP FIRSTPRIVATE(nxt_o, nyt_o, nzt_o)                                           
+  !$OMP extile, eytile, eztile, bxtile, bytile, bztile, nxt, nyt, nzt, nxt_o, nyt_o,  &
+  !$OMP nzt_o)      
+  nxt_o=0_idp
+  nyt_o=0_idp
+  nzt_o=0_idp    
+  !$OMP DO COLLAPSE(2) SCHEDULE(runtime)                           
   DO iz=1, ntilez! LOOP ON TILES
     DO ix=1, ntilex
       curr=>species_parray(1)
@@ -142,12 +143,24 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, 
         ! - i.e (nxt!=nxt_o or nyt!= nyt_o or nzt!=nzt_o)
         ! - If tile array not allocated yet, allocate tile array with sizes nxt, nyt,
         ! - nzt
-        CALL resize_3D_array_real(extile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
-        CALL resize_3D_array_real(eytile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
-        CALL resize_3D_array_real(eztile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
-        CALL resize_3D_array_real(bxtile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
-        CALL resize_3D_array_real(bytile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
-        CALL resize_3D_array_real(bztile, nxt_o, nxt, nyt_o, nyt, nzt_o, nzt)
+        IF (.NOT. ALLOCATED(extile)) THEN
+          ALLOCATE(extile(nxt,nyt,nzt))
+          ALLOCATE(eytile(nxt,nyt,nzt))
+          ALLOCATE(eztile(nxt,nyt,nzt))
+          ALLOCATE(bxtile(nxt,nyt,nzt))
+          ALLOCATE(bytile(nxt,nyt,nzt))
+          ALLOCATE(bztile(nxt,nyt,nzt))
+        ELSE
+          IF ((nxt .NE. nxt_o) .OR. (nyt .NE. nyt_o) .OR. (nzt .NE. nzt_o)) THEN
+            DEALLOCATE(extile,eytile,eztile,bxtile,bytile,bztile)
+            ALLOCATE(extile(nxt,nyt,nzt))
+            ALLOCATE(eytile(nxt,nyt,nzt))
+            ALLOCATE(eztile(nxt,nyt,nzt))
+            ALLOCATE(bxtile(nxt,nyt,nzt))
+            ALLOCATE(bytile(nxt,nyt,nzt))
+            ALLOCATE(bztile(nxt,nyt,nzt))
+          ENDIF
+        ENDIF
         nxt_o=nxt
         nyt_o=nyt
         nzt_o=nzt
@@ -213,8 +226,12 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, 
       ENDIF
     END DO
   END DO! END LOOP ON TILES
-  !$OMP END PARALLEL DO
-
+  !$OMP END DO
+  IF (ALLOCATED(extile)) THEN ! Deallocation of tile arrays 
+    DEALLOCATE(extile,eytile,eztile,bxtile,bytile,bztile)
+  ENDIF
+  !$OMP END PARALLEL 
+  
 #if PROFILING==3
   CALL stop_collection()
 #endif
