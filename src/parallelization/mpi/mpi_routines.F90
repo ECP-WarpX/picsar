@@ -960,7 +960,7 @@ INTEGER(isp)                              :: key, key_roots,color_roots
        ! Set up P3DFFT plans and decomp
        CALL p3dfft_setup(pdims,INT(nx_group,isp),INT(ny_group,isp),INT(nz_group,isp),&
           mpi_comm_group_id(i),INT(nx_group,isp),INT(ny_group,isp),INT(nz_group,isp),&
-          .FALSE.)
+          .TRUE.)
        ! - Get local dimensions/starting indices of FFT arrays in real space
        CALL p3dfft_get_dims(p3d_istart,p3d_iend,p3d_isize,1_isp)
        ! - Get local dimensions/starting indices of FFT arrays in Fourier space
@@ -1405,7 +1405,7 @@ IF(fftw_with_mpi) THEN
     !!! --- it is computed differently by distributed FFT libraries)
     CALL adjust_grid_mpi_global
     IF(nz .NE. cell_z_max(z_coords+1) - cell_z_min(z_coords+1)+1) THEN
-      WRITE(*, *), 'ERROR IN AJUSTING THE GRID 1'
+      WRITE(0, *) 'ERROR IN AJUSTING THE GRID 1'
       STOP
     ENDIF
   ENDIF
@@ -1424,7 +1424,7 @@ IF(absorbing_bcs .AND. l_spectral) THEN
                         ! routine
 ENDIF
 IF(absorbing_bcs .AND. .NOT. l_spectral) THEN
- IF(rank==0)  WRITE(*, *),'ERROR , pmls are not available yet with FDTD'
+ IF(rank==0)  WRITE(0, *)'ERROR , pmls are not available yet with FDTD'
  STOP
 ENDIF
 

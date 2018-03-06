@@ -710,6 +710,11 @@ END SUBROUTINE get_2Dintersection
     INTEGER(idp)                     :: cell_max_group_z , cell_max_group_y
     INTEGER(idp)                     :: group_rank
     INTEGER(idp)    , ALLOCATABLE, DIMENSION(:) :: nbz_group_temp, nby_group_temp
+    INTEGER(idp)       :: myself_exchange_l2g_send_z , myself_exchange_l2g_recv_z ,      &
+    myself_exchange_g2l_send_z , myself_exchange_g2l_recv_z     ,                        &
+    myself_exchange_l2g_send_y , myself_exchange_l2g_recv_y     ,                        &
+    myself_exchange_g2l_send_y , myself_exchange_g2l_recv_y
+
 #if defined(FFTW)
 
     ! -- Array allocation 
@@ -747,6 +752,11 @@ END SUBROUTINE get_2Dintersection
       size_exchanges_g2l_send_z(i), g_first_cell_to_send_z(i),cell_min_group_z,     &
       cell_max_group_z, nz_global,nzg_group)
     ENDDO
+      myself_exchange_g2l_send_z = size_exchanges_g2l_send_z(z_coords+1)
+      myself_exchange_l2g_recv_z =  size_exchanges_l2g_recv_z(z_coords+1)
+      size_exchanges_g2l_send_z(z_coords+1) = 1_idp
+      size_exchanges_l2g_recv_z(z_coords+1) = 1_idp
+
       ALLOCATE(size_exchanges_l2g_recv_y(nprocy)); size_exchanges_l2g_recv_y = 0_idp
       ALLOCATE(g_first_cell_to_recv_y(nprocy)); g_first_cell_to_recv_y = 1_idp
       ALLOCATE(size_exchanges_g2l_send_y(nprocy)); size_exchanges_g2l_send_y = 0_idp
@@ -778,6 +788,11 @@ END SUBROUTINE get_2Dintersection
        g_first_cell_to_send_y(y_coords+1) = 1
        g_first_cell_to_recv_y(y_coords+1) = 1
     ENDIF
+    myself_exchange_g2l_send_y = size_exchanges_g2l_send_y(y_coords+1)
+    myself_exchange_l2g_recv_y =  size_exchanges_l2g_recv_y(y_coords+1)
+    size_exchanges_l2g_recv_y(y_coords+1) = 1_idp
+    size_exchanges_g2l_send_y(y_coords+1) = 1_idp
+
     !END OF Field_f perspective, begin field perspective
 
     !begin field perspective by computing indexes OF ex to exchange with ex_r
@@ -803,6 +818,10 @@ END SUBROUTINE get_2Dintersection
       size_exchanges_l2g_send_z(i), l_first_cell_to_send_z(i),                         &
       cell_min_group_z,cell_max_group_z,nz_global,nzg_group)
     ENDDO
+    myself_exchange_g2l_recv_z = size_exchanges_g2l_recv_z(z_coords+1)
+    myself_exchange_l2g_send_z =  size_exchanges_l2g_send_z(z_coords+1)
+    size_exchanges_g2l_recv_z(z_coords+1) = 1_idp
+    size_exchanges_l2g_send_z(z_coords+1) = 1_idp
       ALLOCATE(size_exchanges_g2l_recv_y(nprocy));size_exchanges_g2l_recv_y = 0_idp
       ALLOCATE(l_first_cell_to_recv_y(nprocy));l_first_cell_to_recv_y = 0_idp
       ALLOCATE(size_exchanges_l2g_send_y(nprocy));size_exchanges_l2g_send_y = 0_idp 
@@ -833,6 +852,10 @@ END SUBROUTINE get_2Dintersection
       l_first_cell_to_recv_y(y_coords+1) = -nyguards
       l_first_cell_to_send_y(y_coords+1) = -nyguards 
     ENDIF
+    myself_exchange_g2l_recv_y = size_exchanges_g2l_recv_y(y_coords+1)
+    myself_exchange_l2g_send_y =  size_exchanges_l2g_send_y(y_coords+1)
+    size_exchanges_g2l_recv_y(y_coords+1) = 1_idp
+    size_exchanges_l2g_send_y(y_coords+1) = 1_idp
     IF(nprocz==nb_group_z) THEN
     !-- corrects a bug that occurs when a group contains 1 mpi in z 
     !-- direction (since each processor intersects itself twice in this case)
@@ -881,6 +904,15 @@ END SUBROUTINE get_2Dintersection
     !-- Compresses arrays for communications (deletes useless send recv targets and
     !-- types etc ....)
     CALL compute_effective_communication_setup()
+    size_exchanges_g2l_recv_y(1) = myself_exchange_g2l_recv_y
+    size_exchanges_g2l_send_y(1) = myself_exchange_g2l_send_y
+    size_exchanges_l2g_recv_y(1) = myself_exchange_l2g_recv_y
+    size_exchanges_l2g_send_y(1) = myself_exchange_l2g_send_y
+    size_exchanges_g2l_recv_z(1) = myself_exchange_g2l_recv_z
+    size_exchanges_g2l_send_z(1) = myself_exchange_g2l_send_z
+    size_exchanges_l2g_recv_z(1) = myself_exchange_l2g_recv_z
+    size_exchanges_l2g_send_z(1) = myself_exchange_l2g_send_z
+
 #endif
   END SUBROUTINE get2D_intersection_group_mpi
 

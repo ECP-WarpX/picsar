@@ -70,11 +70,11 @@ MODULE fourier_psaotd
     INTEGER(idp)        :: i
     INTEGER(isp)        :: planner_flag_1, planner_flag_2
     nopenmp_cint=nopenmp
-
-    IF  (fftw_threads_ok) THEN
-      CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
+    IF(.NOT. p3dfft_flag) THEN
+      IF  (fftw_threads_ok) THEN
+        CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
+      ENDIF
     ENDIF
-
     !> If fftw_mpi_transpose then use FFTW_MPI_TRANSPOSED_OUT/IN plans
     !> fftw_mpi_transpose avoids spurious mpi_alltoall call for each
     !> fftw_mpi_exec call. (initially fftw_mpi_exec call mpi_alltoall two
@@ -463,7 +463,6 @@ MODULE fourier_psaotd
      ENDDO
      !$OMP END PARALLEL DO
      ENDIF
-
 
     ! Timers 
     IF (it.ge.timestat_itstart) THEN
