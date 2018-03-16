@@ -135,7 +135,8 @@ SUBROUTINE field_gathering_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
   !$OMP ntiley, ntilez, nspecies, species_parray, aofgrid_tiles, nxjguard, nyjguard,  &
   !$OMP nzjguard, nxguard, nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg, dxx, dyy,  &
   !$OMP dzz, dtt, noxx, noyy, nozz, c_dim, l_lower_order_in_v_in, fieldgathe,         &
-  !$OMP LVEC_fieldgathe) PRIVATE(ix, iy, iz, ispecies, curr, curr_tile, count,        &
+  !$OMP LVEC_fieldgathe, Ex0, Ey0, Ez0, Bx0, By0, Bz0)                                &
+  !$OMP PRIVATE(ix, iy, iz, ispecies, curr, curr_tile, count,                         &
   !$OMP extile, eytile, eztile, bxtile, bytile, bztile, nxt, nyt, nzt,                &
   !$OMP jmin, jmax, kmin, kmax, lmin, lmax, nxc, nyc, nzc, nxjg, nyjg, nzjg,          &
   !$OMP isgathered, nxt_o, nyt_o, nzt_o)      
@@ -211,12 +212,12 @@ SUBROUTINE field_gathering_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
             curr_tile=>curr%array_of_tiles(ix, iy, iz)
             count=curr_tile%np_tile(1)
             IF (count .EQ. 0) CYCLE
-            curr_tile%part_ex(1:count) = 0.0_num
-            curr_tile%part_ey(1:count) = 0.0_num
-            curr_tile%part_ez(1:count) = 0.0_num
-            curr_tile%part_bx(1:count)=0.0_num
-            curr_tile%part_by(1:count)=0.0_num
-            curr_tile%part_bz(1:count)=0.0_num
+            curr_tile%part_ex(1:count) = Ex0
+            curr_tile%part_ey(1:count) = Ey0
+            curr_tile%part_ez(1:count) = Ez0
+            curr_tile%part_bx(1:count) = Bx0
+            curr_tile%part_by(1:count) = By0
+            curr_tile%part_bz(1:count) = Bz0
             !!! ---- Loop by blocks over particles in a tile (blocking)
             !!! --- Gather electric field on particles
 

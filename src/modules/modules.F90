@@ -260,6 +260,20 @@ MODULE fields
   REAL(num)                        :: magneto_energy_total
   !> Total ElectroMagnetic energy
   REAL(num)                        :: electromagn_energy_total
+
+  !> External uniform electric field along x (added to field gathered on particles):
+  REAL(num)                        :: Ex0
+  !> External uniform electric field along y (added to field gathered on particles):
+  REAL(num)                        :: Ey0
+  !> External uniform electric field along z (added to field gathered on particles):
+  REAL(num)                        :: Ez0
+  !> External uniform magnetic field along x (added to field gathered on particles):
+  REAL(num)                        :: Bx0
+  !> External uniform magnetic field along y (added to field gathered on particles):
+  REAL(num)                        :: By0
+  !> External uniform magnetic field along z (added to field gathered on particles):
+  REAL(num)                        :: Bz0
+
 END MODULE fields
 
 ! ________________________________________________________________________________________
