@@ -105,8 +105,9 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, 
   !$OMP PARALLEL DEFAULT(NONE) SHARED(ntilex,                                         &
   !$OMP ntiley, ntilez, nspecies, species_parray, aofgrid_tiles, nxjguard, nyjguard,  &
   !$OMP nzjguard, nxguard, nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg, dxx, dyy,  &
-  !$OMP dzz, dtt, noxx, noyy, nozz, c_dim, fieldgathe, LVEC_fieldgathe) PRIVATE(ix,   &
-  !$OMP iy, iz, ispecies, curr, curr_tile, count, jmin, jmax, kmin, kmax,             &
+  !$OMP dzz, dtt, noxx, noyy, nozz, c_dim, fieldgathe, LVEC_fieldgathe,               &
+  !$OMP Ex0, Ey0, Ez0, Bx0, By0, Bz0)                                                 &
+  !$OMP PRIVATE(ix,iy, iz, ispecies, curr, curr_tile, count, jmin, jmax, kmin, kmax,  &
   !$OMP lmin, lmax, nxc, nyc, nzc, ipmin, ipmax, ip, nxjg, nzjg, isgathered,          &
   !$OMP extile, eytile, eztile, bxtile, bytile, bztile, nxt, nyt, nzt, nxt_o, nyt_o,  &
   !$OMP nzt_o)      
@@ -180,12 +181,12 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, 
           count=curr_tile%np_tile(1)
           IF (count .EQ. 0) CYCLE
           IF (fieldgathe.gt.-1) then
-            curr_tile%part_ex(1:count) = 0.0_num
-            curr_tile%part_ey(1:count) = 0.0_num
-            curr_tile%part_ez(1:count) = 0.0_num
-            curr_tile%part_bx(1:count)=0.0_num
-            curr_tile%part_by(1:count)=0.0_num
-            curr_tile%part_bz(1:count)=0.0_num
+            curr_tile%part_ex(1:count) = Ex0
+            curr_tile%part_ey(1:count) = Ey0
+            curr_tile%part_ez(1:count) = Ez0
+            curr_tile%part_bx(1:count) = Bx0
+            curr_tile%part_by(1:count) = By0
+            curr_tile%part_bz(1:count) = Bz0
             !!! ---- Loop by blocks over particles in a tile (blocking)
             !!! --- Gather electric field on particles
             !!! --- Gather electric and magnetic fields on particles
