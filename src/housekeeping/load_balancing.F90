@@ -752,10 +752,6 @@ END SUBROUTINE get_2Dintersection
       size_exchanges_g2l_send_z(i), g_first_cell_to_send_z(i),cell_min_group_z,     &
       cell_max_group_z, nz_global,nzg_group)
     ENDDO
-      myself_exchange_g2l_send_z = size_exchanges_g2l_send_z(z_coords+1)
-      myself_exchange_l2g_recv_z =  size_exchanges_l2g_recv_z(z_coords+1)
-      size_exchanges_g2l_send_z(z_coords+1) = 1_idp
-      size_exchanges_l2g_recv_z(z_coords+1) = 1_idp
 
       ALLOCATE(size_exchanges_l2g_recv_y(nprocy)); size_exchanges_l2g_recv_y = 0_idp
       ALLOCATE(g_first_cell_to_recv_y(nprocy)); g_first_cell_to_recv_y = 1_idp
@@ -788,10 +784,6 @@ END SUBROUTINE get_2Dintersection
        g_first_cell_to_send_y(y_coords+1) = 1
        g_first_cell_to_recv_y(y_coords+1) = 1
     ENDIF
-    myself_exchange_g2l_send_y = size_exchanges_g2l_send_y(y_coords+1)
-    myself_exchange_l2g_recv_y =  size_exchanges_l2g_recv_y(y_coords+1)
-    size_exchanges_l2g_recv_y(y_coords+1) = 1_idp
-    size_exchanges_g2l_send_y(y_coords+1) = 1_idp
 
     !END OF Field_f perspective, begin field perspective
 
@@ -818,10 +810,6 @@ END SUBROUTINE get_2Dintersection
       size_exchanges_l2g_send_z(i), l_first_cell_to_send_z(i),                         &
       cell_min_group_z,cell_max_group_z,nz_global,nzg_group)
     ENDDO
-    myself_exchange_g2l_recv_z = size_exchanges_g2l_recv_z(z_coords+1)
-    myself_exchange_l2g_send_z =  size_exchanges_l2g_send_z(z_coords+1)
-    size_exchanges_g2l_recv_z(z_coords+1) = 1_idp
-    size_exchanges_l2g_send_z(z_coords+1) = 1_idp
       ALLOCATE(size_exchanges_g2l_recv_y(nprocy));size_exchanges_g2l_recv_y = 0_idp
       ALLOCATE(l_first_cell_to_recv_y(nprocy));l_first_cell_to_recv_y = 0_idp
       ALLOCATE(size_exchanges_l2g_send_y(nprocy));size_exchanges_l2g_send_y = 0_idp 
@@ -852,10 +840,6 @@ END SUBROUTINE get_2Dintersection
       l_first_cell_to_recv_y(y_coords+1) = -nyguards
       l_first_cell_to_send_y(y_coords+1) = -nyguards 
     ENDIF
-    myself_exchange_g2l_recv_y = size_exchanges_g2l_recv_y(y_coords+1)
-    myself_exchange_l2g_send_y =  size_exchanges_l2g_send_y(y_coords+1)
-    size_exchanges_g2l_recv_y(y_coords+1) = 1_idp
-    size_exchanges_l2g_send_y(y_coords+1) = 1_idp
     IF(nprocz==nb_group_z) THEN
     !-- corrects a bug that occurs when a group contains 1 mpi in z 
     !-- direction (since each processor intersects itself twice in this case)
@@ -901,6 +885,25 @@ END SUBROUTINE get_2Dintersection
     ENDIF
     !-- Creates derived types for communications
     CALL create_derived_types_groups()
+    ! -- Saves value of size_exchanges_g2l_send_z(z_coords+1) and sets it to 1 to avoid a bug in case this is 0
+    myself_exchange_g2l_send_z = size_exchanges_g2l_send_z(z_coords+1)
+    myself_exchange_l2g_recv_z =  size_exchanges_l2g_recv_z(z_coords+1)
+    size_exchanges_g2l_send_z(z_coords+1) = 1_idp
+    size_exchanges_l2g_recv_z(z_coords+1) = 1_idp
+    myself_exchange_g2l_recv_z = size_exchanges_g2l_recv_z(z_coords+1)
+    myself_exchange_l2g_send_z =  size_exchanges_l2g_send_z(z_coords+1)
+    size_exchanges_g2l_recv_z(z_coords+1) = 1_idp
+    size_exchanges_l2g_send_z(z_coords+1) = 1_idp
+
+    myself_exchange_g2l_send_y = size_exchanges_g2l_send_y(y_coords+1)
+    myself_exchange_l2g_recv_y =  size_exchanges_l2g_recv_y(y_coords+1)
+    size_exchanges_g2l_send_y(y_coords+1) = 1_idp
+    size_exchanges_l2g_recv_y(y_coords+1) = 1_idp
+    myself_exchange_g2l_recv_y = size_exchanges_g2l_recv_y(y_coords+1)
+    myself_exchange_l2g_send_y =  size_exchanges_l2g_send_y(y_coords+1)
+    size_exchanges_g2l_recv_y(y_coords+1) = 1_idp
+    size_exchanges_l2g_send_y(y_coords+1) = 1_idp
+
     !-- Compresses arrays for communications (deletes useless send recv targets and
     !-- types etc ....)
     CALL compute_effective_communication_setup()
@@ -912,6 +915,7 @@ END SUBROUTINE get_2Dintersection
     size_exchanges_g2l_send_z(1) = myself_exchange_g2l_send_z
     size_exchanges_l2g_recv_z(1) = myself_exchange_l2g_recv_z
     size_exchanges_l2g_send_z(1) = myself_exchange_l2g_send_z
+print*,"kk",size_exchanges_l2g_recv_z
 
 #endif
   END SUBROUTINE get2D_intersection_group_mpi
