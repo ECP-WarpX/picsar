@@ -11,7 +11,107 @@
 !> @date
 !> Creation 2017
 ! ________________________________________________________________________________________
+
+MODULE math_tools !#do not parse 
+
+  USE PICSAR_PRECISION
+  IMPLICIT NONE
+  CONTAINS 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This function computes SINC value of an array of real
+  !
+  !> @author
+  !> H. Kallala
+  !
+  !> @params[in] block - array of REAL(num)
+  !> @params[in] n1 - INTEGER(idp) - size of array block along dimension 1
+  !> @params[in] n2 - INTEGER(idp) - size of array block along dimension 2
+  !> @params[in] n3 - INTEGER(idp) - size of array block along dimension 3
+  !> @params[out] sinc_block - array of REAL(num) - SINC of input array
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
+  FUNCTION sinc_block(n1, n2, n3, block)
+    INTEGER(idp), INTENT(IN)                     :: n1, n2, n3
+    REAL(num), DIMENSION(:, :, :), INTENT(in)  :: block
+    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: sinc_block
+    INTEGER(idp)       :: i, j, k
+
+    ALLOCATE(sinc_block(n1, n2, n3))
+    DO k=1, n3
+      DO j = 1, n2
+        DO i = 1, n1
+          sinc_block(i, j, k)=sinc(block(i, j, k))
+        ENDDO
+      ENDDO
+    ENDDO
+    RETURN
+  END FUNCTION sinc_block
+  ! - Computes factorial of n
+  FUNCTION factorial(n)
+    IMPLICIT NONE
+    INTEGER(idp), INTENT(IN) :: n
+    INTEGER(idp) :: factorial
+    INTEGER(idp) :: i, ans
+
+    ans = 1
+    DO i = 1, n
+      ans = ans * i
+    END DO
+    factorial = ans
+  END FUNCTION factorial
+
+  FUNCTION logfactorial(n)! returns log(n!)
+    INTEGER(idp), INTENT(IN)  :: n
+    REAL(num)                 :: logfactorial, x
+    INTEGER(idp)              :: k
+
+    IF(n.EQ.0_idp) THEN
+      logfactorial=0.0_num
+    ELSE
+      x=log(1.0_num*n)
+      logfactorial=x
+      DO k=2, n-1
+        x=log(1.0_num*k)
+        logfactorial=logfactorial+x
+      ENDDO
+    ENDIF
+    RETURN
+  END FUNCTION logfactorial
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This function computes SINC value of a REAL(num)
+  !  sinc(x) = sin(x)/x if x != 0 else sinc(x) = 1.0
+  !> @author
+  !> H. Kallala
+  !
+  !> @params[in] x -  REAL(num)
+  !> @params[out] sinc - REAL(num) - returns SINC of input variable
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
+
+  FUNCTION sinc (x)
+    USE picsar_precision
+    IMPLICIT NONE
+    REAL(num) :: sinc
+    REAL(num), INTENT(IN) ::x
+
+    IF (x .ne. 0.0_num) THEN
+      sinc=sin(x)/x
+    ELSE
+      sinc=1.0_num
+    ENDIF
+    RETURN
+  END FUNCTION sinc
+END MODULE math_tools
+
+
 MODULE gpstd_solver
+  USE math_tools
   USE PICSAR_PRECISION
   IMPLICIT NONE
   COMPLEX(cpx), DIMENSION(:), ALLOCATABLE :: kxc, kxb, kxf, kyc, kyb, kyf, kzc, kzb,  &
@@ -628,6 +728,7 @@ MODULE gpstd_solver
        DO i=1_idp, norder/2
          kvec=kvec+2.0_num/d*FD(i)*SIN((i*2.0_num-1.0_num)*PI*ones/nfft)
        ENDDO
+       DEALLOCATE(FD)
      ELSE
        !> If norder == 0 then computes the exact wave vector
        !> with an infinite stencil
@@ -645,7 +746,7 @@ MODULE gpstd_solver
        kvecf=kvec
      ENDIF
 
-     DEALLOCATE(onesp,ones,FD)
+     DEALLOCATE(onesp,ones)
   END SUBROUTINE compute_k_1d
 
   ! ______________________________________________________________________________________
@@ -663,12 +764,13 @@ MODULE gpstd_solver
   !> @date
   !> Creation 2017
   ! ______________________________________________________________________________________
+
   SUBROUTINE fftfreq(nxx, kxx, dxx)
     USE constants
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN)                    :: nxx
     REAL(num), INTENT(IN)                    :: dxx
-    COMPLEX(cpx), INTENT(OUT), DIMENSION(:)  :: kxx
+    COMPLEX(cpx), INTENT(OUT), DIMENSION(nxx)  :: kxx
     INTEGER(idp) :: i, n
     REAL(num) :: fe
 
@@ -698,65 +800,6 @@ MODULE gpstd_solver
     ENDIF
     kxx=kxx/(dxx*nxx)/2.0_num*PI
   END SUBROUTINE fftfreq
-
-  ! ______________________________________________________________________________________
-  !> @brief
-  !> This function computes SINC value of an array of real
-  !
-  !> @author
-  !> H. Kallala
-  !
-  !> @params[in] block - array of REAL(num)
-  !> @params[in] n1 - INTEGER(idp) - size of array block along dimension 1
-  !> @params[in] n2 - INTEGER(idp) - size of array block along dimension 2
-  !> @params[in] n3 - INTEGER(idp) - size of array block along dimension 3
-  !> @params[out] sinc_block - array of REAL(num) - SINC of input array
-  !
-  !> @date
-  !> Creation 2017
-  ! ______________________________________________________________________________________
-  FUNCTION sinc_block(n1, n2, n3, block)
-    USE  constants
-    INTEGER(idp), INTENT(IN)                     :: n1, n2, n3
-    REAL(num), DIMENSION(:, :, :), INTENT(in)  :: block
-    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: sinc_block
-    INTEGER(idp)       :: i, j, k
-    ALLOCATE(sinc_block(n1, n2, n3))
-    DO k=1, n3
-      DO j = 1, n2
-        DO i = 1, n1
-          sinc_block(i, j, k)=sinc(block(i, j, k))
-        ENDDO
-      ENDDO
-    ENDDO
-    RETURN
-  END FUNCTION sinc_block
-
-  ! ______________________________________________________________________________________
-  !> @brief
-  !> This function computes SINC value of a REAL(num)
-  !  sinc(x) = sin(x)/x if x != 0 else sinc(x) = 1.0
-  !> @author
-  !> H. Kallala
-  !
-  !> @params[in] x -  REAL(num)
-  !> @params[out] sinc - REAL(num) - returns SINC of input variable
-  !
-  !> @date
-  !> Creation 2017
-  ! ______________________________________________________________________________________
-  FUNCTION sinc (x)
-    USE picsar_precision
-    IMPLICIT NONE
-    REAL(num) :: sinc
-    REAL(num), INTENT(IN) ::x
-    IF (x .ne. 0.0_num) THEN
-      sinc=sin(x)/x
-    ELSE
-      sinc=1.0_num
-    ENDIF
-    RETURN
-  END FUNCTION sinc
 
   ! ______________________________________________________________________________________
   !> @brief
@@ -1425,38 +1468,6 @@ MODULE gpstd_solver
       w(i) = (-1.0_num)**(l+1)*EXP(lognumer-logdenom)
     END DO
   END SUBROUTINE FD_weights_hvincenti
-
-  ! - Computes factorial of n
-  FUNCTION factorial(n)
-    USE constants
-    IMPLICIT NONE
-    INTEGER(idp), INTENT(IN) :: n
-    INTEGER(idp) :: factorial
-    INTEGER(idp) :: i, ans
-    ans = 1
-    DO i = 1, n
-      ans = ans * i
-    END DO
-    factorial = ans
-  END FUNCTION factorial
-
-  FUNCTION logfactorial(n)! returns log(n!)
-    use PICSAR_PRECISION
-    INTEGER(idp), INTENT(IN)  :: n
-    REAL(num)                 :: logfactorial, x
-    INTEGER(idp)              :: k
-    IF(n.EQ.0_idp) THEN
-      logfactorial=0.0_num
-    ELSE
-      x=log(1.0_num*n)
-      logfactorial=x
-      DO k=2, n-1
-        x=log(1.0_num*k)
-        logfactorial=logfactorial+x
-      ENDDO
-    ENDIF
-    RETURN
-  END FUNCTION logfactorial
 
   SUBROUTINE copy_field(ex_out, n1, n2, n3, ex_in, nxx, nyy, nzz)
     USE PICSAR_precision

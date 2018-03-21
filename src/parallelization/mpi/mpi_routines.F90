@@ -585,6 +585,7 @@ INTEGER(isp)                            :: pdims(2)
 INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
 INTEGER(isp) :: color
 INTEGER(isp)                              :: key, key_roots,color_roots
+LOGICAL(isp)                               :: is_in_place
 
 #if defined(FFTW)
 #if defined(DEBUG)
@@ -958,9 +959,10 @@ INTEGER(isp)                              :: key, key_roots,color_roots
        pdims(1) = INT(nprocy/nb_group_y,isp)
        pdims(2) = INT(nprocz/nb_group_z,isp)
        ! Set up P3DFFT plans and decomp
+       is_in_place = .TRUE.
        CALL p3dfft_setup(pdims,INT(nx_group,isp),INT(ny_group,isp),INT(nz_group,isp),&
           mpi_comm_group_id(i),INT(nx_group,isp),INT(ny_group,isp),INT(nz_group,isp),&
-          .TRUE.)
+          is_in_place)
        ! - Get local dimensions/starting indices of FFT arrays in real space
        CALL p3dfft_get_dims(p3d_istart,p3d_iend,p3d_isize,1_isp)
        ! - Get local dimensions/starting indices of FFT arrays in Fourier space

@@ -39,7 +39,7 @@
 
 ! Module that defines parameters and function interfaces
 ! For FFTW Fortran wrapping
-MODULE fftw3_fortran
+MODULE fftw3_fortran !#do not parse
   use, intrinsic :: iso_c_binding
   use PICSAR_precision 
   include 'fftw3.f03'
@@ -49,7 +49,7 @@ MODULE fftw3_fortran
   integer(C_INT) :: nplan=0
 END MODULE fftw3_fortran
 
-MODULE mpi_fftw3
+MODULE mpi_fftw3 !#do not parse
   use, intrinsic :: iso_c_binding
   use PICSAR_precision 
   include 'fftw3-mpi.f03'
@@ -78,7 +78,7 @@ END MODULE mpi_fftw3
 !* C2C, R2C and C2R
 !**********************************************
 
-MODULE fastfft
+MODULE fastfft !# do not parse
 
 IMPLICIT NONE 
 
@@ -401,7 +401,8 @@ END SUBROUTINE fast_fftw_create_plan_c2r_1d_dft
 !**********************************************
 
 ! --------- 3D ROUTINES
-! Subroutine that perform 3D Complex to Complex DFT along previously defined strategy "plan"
+! Subroutine that perform 3D Complex to Complex
+! DFT along previously defined strategy "plan"
 SUBROUTINE fast_fftw3d_with_plan(nx,ny,nz,array_in, array_out, plan)
     USE omp_lib
     USE fftw3_fortran
@@ -416,7 +417,8 @@ SUBROUTINE fast_fftw3d_with_plan(nx,ny,nz,array_in, array_out, plan)
 
 END SUBROUTINE fast_fftw3d_with_plan
 
-! Subroutine that perform 3D Real to Complex DFT along previously defined strategy "plan"
+! Subroutine that perform 3D Real 
+! to Complex DFT along previously defined strategy "plan"
 SUBROUTINE fast_fftw3d_r2c_with_plan(nx,ny,nz,array_in, array_out, plan)
     USE omp_lib
     USE fftw3_fortran
@@ -431,7 +433,8 @@ SUBROUTINE fast_fftw3d_r2c_with_plan(nx,ny,nz,array_in, array_out, plan)
 
 END SUBROUTINE fast_fftw3d_r2c_with_plan
 
-! Subroutine that perform 3D Real to Complex DFT along previously defined strategy "plan"
+! Subroutine that perform 3D Real to Complex DFT along
+! previously defined strategy "plan"
 SUBROUTINE fast_fftw3d_c2r_with_plan(nx,ny,nz,array_in, array_out, plan)
     USE omp_lib
     USE fftw3_fortran
@@ -448,7 +451,8 @@ END SUBROUTINE fast_fftw3d_c2r_with_plan
 
 
 ! --------- 2D ROUTINES
-! Subroutine that perform 2D Complex to Complex DFT along previously defined strategy "plan"
+! Subroutine that perform 2D Complex to Complex DFT
+! along previously defined strategy "plan"
 SUBROUTINE fast_fftw2d_with_plan(nx,nz,array_in, array_out, plan)
     USE omp_lib
     USE fftw3_fortran
@@ -464,7 +468,8 @@ SUBROUTINE fast_fftw2d_with_plan(nx,nz,array_in, array_out, plan)
 END SUBROUTINE fast_fftw2d_with_plan
 
 
-! Subroutine that perform 2D Real to Complex DFT along previously defined strategy "plan"
+! Subroutine that perform 2D Real to Complex 
+! DFT along previously defined strategy "plan"
 SUBROUTINE fast_fftw2d_r2c_with_plan(nx,nz,array_in, array_out, plan)
     USE omp_lib
     USE fftw3_fortran
@@ -479,7 +484,8 @@ SUBROUTINE fast_fftw2d_r2c_with_plan(nx,nz,array_in, array_out, plan)
 
 END SUBROUTINE fast_fftw2d_r2c_with_plan
 
-! Subroutine that perform 2D Real to Complex DFT along previously defined strategy "plan"
+! Subroutine that perform 2D Real to Complex 
+! DFT along previously defined strategy "plan"
 SUBROUTINE fast_fftw2d_c2r_with_plan(nx,nz,array_in, array_out, plan)
     USE omp_lib
     USE fftw3_fortran
@@ -496,7 +502,8 @@ END SUBROUTINE fast_fftw2d_c2r_with_plan
 
 
 ! --------- 1D ROUTINES
-! Subroutine that perform 1D Complex to Complex DFT along previously defined strategy "plan"
+! Subroutine that perform 1D Complex to Complex 
+! DFT along previously defined strategy "plan"
 SUBROUTINE fast_fftw1d_with_plan(nx,array_in, array_out, plan)
     USE omp_lib
     USE fftw3_fortran
@@ -511,7 +518,8 @@ SUBROUTINE fast_fftw1d_with_plan(nx,array_in, array_out, plan)
 
 END SUBROUTINE fast_fftw1d_with_plan
 
-! Subroutine that perform 1D Real to Complex DFT along previously defined strategy "plan"
+! Subroutine that perform 1D Real to Complex DFT
+! along previously defined strategy "plan"
 SUBROUTINE fast_fftw1d_r2c_with_plan(nx,array_in, array_out, plan)
     USE omp_lib
     USE fftw3_fortran
@@ -526,7 +534,8 @@ SUBROUTINE fast_fftw1d_r2c_with_plan(nx,array_in, array_out, plan)
 
 END SUBROUTINE fast_fftw1d_r2c_with_plan
 
-! Subroutine that perform 1D Real to Complex DFT along previously defined strategy "plan"
+! Subroutine that perform 1D Real to Complex DFT
+! along previously defined strategy "plan"
 SUBROUTINE fast_fftw1d_c2r_with_plan(nx,array_in, array_out, plan)
     USE omp_lib
     USE fftw3_fortran
@@ -544,7 +553,8 @@ END SUBROUTINE fast_fftw1d_c2r_with_plan
 !* SECTION 4: plan destruction (1D,2D,3D)
 !**********************************************
 
-! Subroutine that destroys previously build plan (1D/2D/3D)
+! Subroutine that destroys 
+!previously build plan (1D/2D/3D)
 SUBROUTINE fast_fftw_destroy_plan_dft(plan)
     USE fftw3_fortran
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
