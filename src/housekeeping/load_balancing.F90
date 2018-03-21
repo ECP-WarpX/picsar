@@ -915,7 +915,6 @@ END SUBROUTINE get_2Dintersection
     size_exchanges_g2l_send_z(1) = myself_exchange_g2l_send_z
     size_exchanges_l2g_recv_z(1) = myself_exchange_l2g_recv_z
     size_exchanges_l2g_send_z(1) = myself_exchange_l2g_send_z
-print*,"kk",size_exchanges_l2g_recv_z
 
 #endif
   END SUBROUTINE get2D_intersection_group_mpi

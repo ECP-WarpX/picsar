@@ -1390,10 +1390,7 @@ MODULE fourier_psaotd
           iz)*eyfold + cc_mat(nmatrixes)%block_matrix2d(2, 4)%block3dc(ix, iy,        &
           iz)*bxfold  + cc_mat(nmatrixes)%block_matrix2d(2, 6)%block3dc(ix, iy,       &
           iz)*bzfold  + cc_mat(nmatrixes)%block_matrix2d(2, 8)%block3dc(ix, iy,       &
-          iz)*jyf(ix, iy, iz) + cc_mat(nmatrixes)%block_matrix2d(2, 11)%block3dc(ix,  &
-          iy, iz)*rhof(ix, iy, iz) + cc_mat(nmatrixes)%block_matrix2d(2,              &
-          10)%block3dc(ix, iy, iz)*rhooldf(ix, iy, iz)
-
+          iz)*jyf(ix, iy, iz) 
 
           ! - Ez
           ezf(ix, iy, iz) = cc_mat(nmatrixes)%block_matrix2d(3, 3)%block3dc(ix, iy,   &
