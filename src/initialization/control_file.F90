@@ -87,10 +87,6 @@ MODULE control_file
     norderx = 2
     nordery = 2
     norderz = 2
-    nx_pml = 0_idp 
-    ny_pml = 0_idp 
-    nz_pml = 0_idp
-    absorbing_bcs = .FALSE.
     l_nodalgrid = .FALSE.
     l_spectral = .FALSE.! (no spectral solver by default)
     g_spectral = .FALSE.! (no spectral sovler by default)
@@ -330,9 +326,6 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'l_spectral') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) l_spectral
-      ELSE IF (INDEX(buffer, 'absorbing_bcs') .GT. 0) THEN
-        CALL GETARG(i+1, buffer)
-        READ(buffer, *) absorbing_bcs
       ELSE IF (INDEX(buffer, 'g_spectral') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) g_spectral
@@ -595,15 +588,6 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'nox') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') nox
-      ELSE IF (INDEX(buffer, 'nx_pml') .GT. 0) THEN
-        ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), '(i10)') nx_pml
-      ELSE IF (INDEX(buffer, 'ny_pml') .GT. 0) THEN
-        ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), '(i10)') ny_pml
-      ELSE IF (INDEX(buffer, 'nz_pml') .GT. 0) THEN
-        ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), '(i10)') nz_pml
       ELSE IF (INDEX(buffer, 'noy') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') noy
@@ -627,9 +611,6 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'l_spectral') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) l_spectral
-      ELSE IF (INDEX(buffer, 'absorbing_bcs') .GT. 0) THEN
-        ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), *) absorbing_bcs
       ELSE IF (INDEX(buffer, 'g_spectral') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) g_spectral
@@ -1264,7 +1245,7 @@ MODULE control_file
   SUBROUTINE read_antenna_section
     INTEGER :: ix = 0
     LOGICAL(lp)  :: end_section = .FALSE.
-    TYPE(particle_species), POINTER :: curr
+    TYPE(particle_species), POINTER :: curr,curr1
     IF (.NOT. l_species_allocated) THEN
       nspecies=0
       ALLOCATE(species_parray(1:nspecies_max))
@@ -1273,7 +1254,7 @@ MODULE control_file
     nspecies = nspecies+1
     curr => species_parray(nspecies)
     ! minimal init for species attributes
-    curr%charge = 1
+    curr%charge = 1.0_num
     curr%mass = emass
     curr%name='laser_antenna'
     curr%nppcell = 1
@@ -1318,7 +1299,9 @@ MODULE control_file
     curr%antenna_params%focal_length = 0._num
     curr%antenna_params%t_peak = 0._num
     curr%antenna_params%time_window = 0_idp
+
     DO WHILE((.NOT. end_section) .AND. (ios==0))
+
       READ(fh_input, '(A)', iostat=ios) buffer
       IF (INDEX(buffer, '#') .GT. 0) THEN
         CYCLE
@@ -1393,6 +1376,54 @@ MODULE control_file
         end_section =.TRUE.
       ENDIF
     ENDDO
+    ! -- Inits second species for antenna 
+    nspecies = nspecies + 1
+    curr1 => species_parray(nspecies)
+    curr1%charge = -curr%charge
+    curr1%mass = curr%mass
+    curr1%name='laser_antenna'
+    curr1%nppcell = curr%nppcell
+    curr1%x_min = curr%x_min
+    curr1%x_max = curr%x_max
+    curr1%y_min = curr%y_min
+    curr1%y_max = curr%y_max
+    curr1%z_min = curr%z_min 
+    curr1%z_max = curr%z_max
+    curr1%vdrift_x =curr%vdrift_x
+    curr1%vdrift_y =curr%vdrift_y
+    curr1%vdrift_z =curr%vdrift_z
+    curr1%vth_x = curr%vth_x
+    curr1%vth_y =curr%vth_y
+    curr1%vth_z =curr%vth_z
+    curr1%sorting_period = curr%sorting_period
+    curr1%sorting_start = curr%sorting_start
+    curr1%species_npart=curr%species_npart
+    curr1%ldodepos = curr%ldodepos
+    ! --- Init default value for antenna params
+    curr1%is_antenna=.TRUE.
+    curr1%antenna_params%is_lens=curr%antenna_params%is_lens
+    curr1%antenna_params%laser_z0 = curr%antenna_params%laser_z0
+    curr1%antenna_params%polangle = curr%antenna_params%polangle
+    curr1%antenna_params%vector_x = curr%antenna_params%vector_x 
+    curr1%antenna_params%vector_y = curr%antenna_params%vector_y 
+    curr1%antenna_params%vector_z = curr%antenna_params%vector_z
+    curr1%antenna_params%spot_x = curr%antenna_params%spot_x
+    curr1%antenna_params%spot_y = curr%antenna_params%spot_y
+    curr1%antenna_params%spot_z = curr%antenna_params%spot_z
+    curr1%antenna_params%lambda_laser = curr%antenna_params%lambda_laser
+    curr1%antenna_params%pvec_x = curr%antenna_params%pvec_x
+    curr1%antenna_params%pvec_y = curr%antenna_params%pvec_y
+    curr1%antenna_params%pvec_z = curr%antenna_params%pvec_z
+    curr1%antenna_params%laser_ctau =curr%antenna_params%laser_ctau 
+    curr1%antenna_params%laser_a_1 = curr%antenna_params%laser_a_1
+    curr1%antenna_params%laser_a_2 = curr%antenna_params%laser_a_2
+    curr1%antenna_params%laser_w0 = curr%antenna_params%laser_w0
+    curr1%antenna_params%temporal_order = curr%antenna_params%temporal_order
+    curr1%antenna_params%is_lens = curr%antenna_params%is_lens
+    curr1%antenna_params%laser_zf = curr%antenna_params%laser_zf
+    curr1%antenna_params%focal_length = curr%antenna_params%focal_length
+    curr1%antenna_params%t_peak = curr%antenna_params%t_peak
+    curr1%antenna_params%time_window = curr%antenna_params%time_window
     RETURN
   END SUBROUTINE read_antenna_section
   ! ______________________________________________________________________________________

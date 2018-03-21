@@ -1732,9 +1732,9 @@ MODULE tiling
     pos = (/0._num, 0._num, 0._num/)
     spot=(/laser%spot_x, laser%spot_y, laser%spot_z/)
     IF(c_dim == 3) THEN
-      weight_laser=2.0_num*eps0*laser%Emax/(0.01_num)*dx*dy
+      weight_laser=eps0*laser%Emax/(0.01_num)*dx*dy
     ELSE IF(c_dim == 2) THEN 
-       weight_laser=2.0_num*eps0*laser%Emax/(0.01_num)*dx
+       weight_laser=eps0*laser%Emax/(0.01_num)*dx
     ENDIF  
     DO l=1, lmax
       pos(i2) = (mins(i2)+(l-1)*dst(i2))+(dst(i2))/2.0_num
@@ -1768,7 +1768,7 @@ MODULE tiling
           ENDIF
       ENDDO
     ENDDO
-    IF(RANK .EQ. 0) THEN
+    IF(RANK .EQ. 0 .AND. curr%charge == 1.0_num ) THEN
       IF(c_dim == 3) THEN
         WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dy**2+dz**2)
       ELSE IF(c_dim == 2) THEN
@@ -1788,7 +1788,7 @@ MODULE tiling
       ELSE IF(c_dim ==2) THEN
         WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dz**2)
       ENDIF
-      WRITE(0,*) 'LASER EMAX',laser%Emax, laser%Emax_laser_1,laser%Emax_laser_2
+      WRITE(0,*) 'LASER EMAX',laser%Emax*2.0_num, laser%Emax_laser_1*2.0_num,laser%Emax_laser_2*2.0_num
    ENDIF
   END SUBROUTINE load_laser_species
 
