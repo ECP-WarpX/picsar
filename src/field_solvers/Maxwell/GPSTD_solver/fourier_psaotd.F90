@@ -1326,7 +1326,7 @@ MODULE fourier_psaotd
 
   END SUBROUTINE fft_backward_c2r_hybrid
 
-  SUBROUTINE push_psaotd_ebfielfs_2d() bind(C, name='push_psaotd_ebfields_2d')
+  SUBROUTINE push_psaotd_ebfielfs_2d() 
     USE shared_data
     USE fields
     USE fourier
@@ -1410,7 +1410,7 @@ MODULE fourier_psaotd
   END SUBROUTINE push_psaotd_ebfielfs_2d
 
 
-  SUBROUTINE push_psaotd_ebfielfs() bind(C, name='push_psaotd_ebfields')
+  SUBROUTINE push_psaotd_ebfielfs()
     USE shared_data
     USE fields
     USE fourier
@@ -1516,7 +1516,7 @@ MODULE fourier_psaotd
     ENDIF
   END SUBROUTINE push_psaotd_ebfielfs
 
-  SUBROUTINE init_plans_blocks() bind(C, name='init_plans_blocks_pxr')
+  SUBROUTINE init_plans_blocks() 
     USE shared_data
     USE fastfft
     Use fourier

@@ -34,7 +34,7 @@ args = parser.parse_args()
 
 if(args.full_pxr=='True'):
     fftw_lib = '/home/kallala/develop/install_fftw/lib'
-    p3dfft_lib = '/home/kallala/develop/install_p3dfft/lib'
+    p3dfft_lib = ''
     
 # Check if we are on Edison or Cori, at NERSC
 if host.startswith('edison') or host.startswith('cori'):
@@ -63,7 +63,7 @@ else:
     if(args.full_pxr=='False'):
         fargs = '"-O3 -fopenmp -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0"'
     else:
-        fargs = '"-O3 -fopenmp -D FFTW=1 -D P3DFFT=1 -I /home/kallala/develop/install_fftw/include -I /home/kallala/develop/install_p3dfft/include -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0"'
+        fargs = '"-O3 -fopenmp -D FFTW=1  -I /home/kallala/develop/install_fftw/include -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0  "'
     # Parse the result of mpif90 -show
     parsed_mpi = True   # By default ; errors modify this flag
     try:
@@ -90,14 +90,13 @@ else:
             libs = ''
         else:
             libs = ' '.join([ '-l%s' %flag for flag in flag_list ])
-            libs += ' -lgomp'
+            libs += ' -lgomp '
             print('MPI flags: %s' %libs)
 
 
 if(args.full_pxr=='True'):
     libdir_list.append(fftw_lib)
-    libdir_list.append(p3dfft_lib)
-    libs += '/home/kallala/develop/install_p3dfft/lib/libp3dfft.a  -lfftw3 -lfftw3_omp -lfftw3_mpi '
+    libs += ' -lfftw3 -lfftw3_omp -lfftw3_mpi '
 
 # Read the file Makefile_Forthon.in
 with open('Makefile_Forthon.in') as f:

@@ -811,7 +811,7 @@ MODULE gpstd_solver
   !> @date
   !> Creation 2017
   ! ______________________________________________________________________________________
-  SUBROUTINE init_gpstd() bind(C, name='init_gpstd_pxr')
+  SUBROUTINE init_gpstd() 
     USE matrix_coefficients
     USE PICSAR_PRECISION
     USE CONSTANTS
