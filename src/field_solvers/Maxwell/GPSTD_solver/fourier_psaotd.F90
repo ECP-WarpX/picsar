@@ -1410,7 +1410,7 @@ MODULE fourier_psaotd
   END SUBROUTINE push_psaotd_ebfielfs_2d
 
 
-  SUBROUTINE push_psaotd_ebfielfs()
+  SUBROUTINE push_psaotd_ebfielfs_3d()
     USE shared_data
     USE fields
     USE fourier
@@ -1514,7 +1514,7 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime)
     ENDIF
-  END SUBROUTINE push_psaotd_ebfielfs
+  END SUBROUTINE push_psaotd_ebfielfs_3d
 
   SUBROUTINE init_plans_blocks() 
     USE shared_data

@@ -150,7 +150,7 @@ SUBROUTINE step(nst)
         IF (absorbing_bcs) THEN
           CALL field_damping_bcs()
         ENDIF
-        CALL push_psatd_ebfield_3d
+        CALL push_psatd_ebfield
         !IF (rank .EQ. 0) PRINT *, "#0"
         !!! --- Boundary conditions for E AND B
         CALL efield_bcs
@@ -243,7 +243,7 @@ SUBROUTINE step(nst)
         IF (absorbing_bcs) THEN
           CALL field_damping_bcs()
         ENDIF
-        CALL push_psatd_ebfield_2d
+        CALL push_psatd_ebfield
         !IF (rank .EQ. 0) PRINT *, "#0"
         !!! --- Boundary conditions for E AND B
         CALL efield_bcs
@@ -801,20 +801,27 @@ SUBROUTINE initall
   bx=0.0_num;by=0.0_num;bz=0.0_num
   jx=0.0_num;jy=0.0_num;jz=0.0_num
   IF(absorbing_bcs) THEN
-    exy = 0.5_num * ex
-    exz = 0.5_num * ex
-    eyx = 0.5_num * ey
-    eyz = 0.5_num * ey
-    ezx = 0.5_num * ez
-    ezy = 0.5_num * ez
-    bxy = 0.5_num * bx
-    bxz = 0.5_num * bx
-    byx = 0.5_num * by
-    byz = 0.5_num * by
-    bzx = 0.5_num * bz
-    bzy = 0.5_num * bz
+    CALL init_splitted_fields_random()
   ENDIF
 END SUBROUTINE initall
+
+
+SUBROUTINE init_splitted_fields_random()
+  USE fields
+  exy = 0.5_num * ex
+  exz = 0.5_num * ex
+  eyx = 0.5_num * ey
+  eyz = 0.5_num * ey
+  ezx = 0.5_num * ez
+  ezy = 0.5_num * ez
+  bxy = 0.5_num * bx
+  bxz = 0.5_num * bx
+  byx = 0.5_num * by
+  byz = 0.5_num * by
+  bzx = 0.5_num * bz
+  bzy = 0.5_num * bz
+
+END SUBROUTINE init_splitted_fields_random
 
 ! ________________________________________________________________________________________
 !> @brief

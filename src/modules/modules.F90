@@ -1072,12 +1072,10 @@ END MODULE output_data
 
 !MODULE FOR GROUP params
 #if defined(FFTW)
-MODULE group_parameters!#do not parse
+MODULE group_parameters !#do not parse
   USE mpi_type_constants
   USE picsar_precision
 
-  !> number of groups (this is a parameter in the input file
-  INTEGER(idp)    ::  nb_group, nb_group_z, nb_group_y, nb_group_x 
   !> group sizes of of all groups
   INTEGER(idp), DIMENSION(3) :: group_sizes
   !> To which group this mpi task belongs
@@ -1092,7 +1090,7 @@ MODULE group_parameters!#do not parse
   INTEGER(isp)    :: mpi_world_group
   !> ARRAY of  MPI_GROUP associated to each mpi task (!= mpi_group_null or
   !mpi_comm_null if and  only if i == which group + 1
-  INTEGER(isp), DIMENSION(:), ALLOCATABLE :: mpi_group_id, mpi_comm_group_id
+  INTEGER(isp) ,DIMENSION(:), POINTER :: mpi_group_id, mpi_comm_group_id
   !>  MPI_COMM for local roots group and MPI_GROUP for local  roots and roots
   !ranks in the mpi_root_comm
   INTEGER(isp)  :: mpi_root_comm, mpi_root_group, root_rank, root_size
@@ -1100,7 +1098,7 @@ MODULE group_parameters!#do not parse
   INTEGER(isp)  :: mpi_ordered_comm_world
   !> Field cell  sizes in groups without guardcells
   INTEGER(idp)  :: nx_group_global, ny_group_global, nz_group_global
-  INTEGER(idp) , DIMENSION(:), ALLOCATABLE ::  nz_group_global_array, ny_group_global_array, nx_group_global_array
+  INTEGER(idp) , DIMENSION(:), POINTER ::  nz_group_global_array, ny_group_global_array, nx_group_global_array
   !> Field grid sizes in groups whithout guardcells
   INTEGER(idp)  :: nx_group_global_grid, ny_group_global_grid, nz_group_global_grid
   !> Field cell  sizes in groups with guardcells
@@ -1108,8 +1106,6 @@ MODULE group_parameters!#do not parse
   !> Field grid sizes in groups with guardcells
   INTEGER(idp)  :: nx_group_grid, ny_group_grid, nz_group_grid
 
-  !> Group guard cells in : (only nzg_group is relevant for now)
-  INTEGER(idp)  :: nzg_group, nyg_group, nxg_group
   !> Nz grid min max group index
   INTEGER(idp)  ::   nz_grid_min_grp, nz_grid_max_grp, nz_grid_grp
   !> This flag is true if MPI task is on the edge of its group (so need
@@ -1134,43 +1130,43 @@ MODULE group_parameters!#do not parse
 
   !> Cell domain for load balancing general case (taking into account
   !--guardcells)
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: cell_z_min_g, cell_z_max_g, &
+  INTEGER(idp)  , DIMENSION(:) , POINTER :: cell_z_min_g, cell_z_max_g, &
   cell_x_min_g
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: cell_y_min_g, cell_y_max_g, &
+  INTEGER(idp)  , DIMENSION(:) , POINTER :: cell_y_min_g, cell_y_max_g, &
   cell_x_max_g
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: size_exchanges_l2g_recv_z, size_exchanges_g2l_recv_z
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: size_exchanges_g2l_send_z,size_exchanges_l2g_send_z 
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: g_first_cell_to_recv_z,l_first_cell_to_recv_z
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: g_first_cell_to_send_z,l_first_cell_to_send_z
+  INTEGER(idp)  , DIMENSION(:) , POINTER :: size_exchanges_l2g_recv_z, size_exchanges_g2l_recv_z
+  INTEGER(idp)  , DIMENSION(:) , POINTER :: size_exchanges_g2l_send_z,size_exchanges_l2g_send_z 
+  INTEGER(idp)  , DIMENSION(:) , POINTER :: g_first_cell_to_recv_z,l_first_cell_to_recv_z
+  INTEGER(idp)  , DIMENSION(:) , POINTER :: g_first_cell_to_send_z,l_first_cell_to_send_z
 
-  INTEGER(idp)  , DIMENSION(:,:) , ALLOCATABLE :: size_exchanges_l2g_recv,size_exchanges_g2l_recv
-  INTEGER(idp)  , DIMENSION(:,:) , ALLOCATABLE :: size_exchanges_g2l_send,size_exchanges_l2g_send
+  INTEGER(idp)  , DIMENSION(:,:) , POINTER :: size_exchanges_l2g_recv,size_exchanges_g2l_recv
+  INTEGER(idp)  , DIMENSION(:,:) , POINTER :: size_exchanges_g2l_send,size_exchanges_l2g_send
 
 
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: size_exchanges_l2g_recv_y,size_exchanges_g2l_recv_y
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: size_exchanges_g2l_send_y,size_exchanges_l2g_send_y
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: g_first_cell_to_recv_y,l_first_cell_to_recv_y
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: g_first_cell_to_send_y,l_first_cell_to_send_y
+  INTEGER(idp)  , DIMENSION(:) , POINTER :: size_exchanges_l2g_recv_y,size_exchanges_g2l_recv_y
+  INTEGER(idp)  , DIMENSION(:) , POINTER :: size_exchanges_g2l_send_y,size_exchanges_l2g_send_y
+  INTEGER(idp)  , DIMENSION(:) , POINTER :: g_first_cell_to_recv_y,l_first_cell_to_recv_y
+  INTEGER(idp)  , DIMENSION(:) , POINTER :: g_first_cell_to_send_y,l_first_cell_to_send_y
 
 
   !> TYPE IN WHICH ex_r will be recieving
-  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: recv_type_g   
+  INTEGER(isp)  , DIMENSION(:) , POINTER :: recv_type_g   
   !> TYPE IN WHICH ex_r will be sending
-  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: send_type_g
+  INTEGER(isp)  , DIMENSION(:) , POINTER :: send_type_g
   !> TYPE IN WHICH ex will be recieving
-  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: recv_type_l
+  INTEGER(isp)  , DIMENSION(:) , POINTER :: recv_type_l
   !> TYPE IN WHICH ex will be sending
-  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: send_type_l
-  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: array_of_ranks_to_send_to,array_of_ranks_to_send_to_l2g,    &
+  INTEGER(isp)  , DIMENSION(:) , POINTER :: send_type_l
+  INTEGER(isp)  , DIMENSION(:) , POINTER :: array_of_ranks_to_send_to,array_of_ranks_to_send_to_l2g,    &
         array_of_ranks_to_send_to_g2l
-  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: array_of_ranks_to_recv_from,array_of_ranks_to_recv_from_l2g,&
+  INTEGER(isp)  , DIMENSION(:) , POINTER :: array_of_ranks_to_recv_from,array_of_ranks_to_recv_from_l2g,&
   array_of_ranks_to_recv_from_g2l
-  INTEGER(isp)  , DIMENSION(:) , ALLOCATABLE :: requests_l2g, requests_g2l
+  INTEGER(isp)  , DIMENSION(:) , POINTER :: requests_l2g, requests_g2l
   !> Work_array_g2l and Work_array_l2g contain are arrays of sizes nb_comms_g2l and nb_comms_g2l
   !> respectively.
   !> each cell of arrays encode the localization of array with which
   !> communication is performed 
-  INTEGER(idp)  , DIMENSION(:) , ALLOCATABLE :: work_array_g2l, work_array_l2g
+  INTEGER(idp)  , DIMENSION(:) , POINTER :: work_array_g2l, work_array_l2g
   !> Nb_comms_g2l and nb_comms_l2g are equal to the number of send + recv calls
   !done by each mpi in mpi comms group during l->g and g->l communications respectively
   INTEGER(idp)  :: nb_comms_g2l,nb_comms_l2g
@@ -1184,7 +1180,6 @@ MODULE group_parameters!#do not parse
   LOGICAL(lp)    :: is_group_x_boundary_max, is_group_x_boundary_min
   !> Is current group containing a Perfectly Matched Layer region
   !> True if group on domain boundary and absorbing bcs true
-  LOGICAL(lp)    :: is_group_pml
 
 END MODULE
 
@@ -1202,6 +1197,12 @@ MODULE shared_data
   !----------------------------------------------------------------------------
   !> FFTW distributed
   LOGICAL(idp) :: fftw_with_mpi, fftw_mpi_transpose, fftw_threads_ok, fftw_hybrid
+  !> Number of groups (this is a parameter in the input file)
+  INTEGER(idp)    ::  nb_group
+  !> Number of groups in each direction
+  INTEGER(idp) :: nb_group_z, nb_group_y, nb_group_x
+  !> Group guard cells in : (only nzg_group  and nyg_group are relevant for now)
+  INTEGER(idp)  :: nzg_group, nyg_group, nxg_group
   LOGICAL(lp)   :: p3dfft_flag=.FALSE.
   LOGICAL(lp)   :: p3dfft_stride
   LOGICAL(lp)   :: absorbing_bcs

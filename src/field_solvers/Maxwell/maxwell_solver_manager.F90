@@ -447,7 +447,7 @@ END SUBROUTINE push_efield_2d
 !> @date
 !> Creation March 29 2017
 ! ________________________________________________________________________________________
-SUBROUTINE push_psatd_ebfield_3d() 
+SUBROUTINE push_psatd_ebfield() 
   USE constants
   USE time_stat
   USE params
@@ -489,7 +489,11 @@ SUBROUTINE push_psatd_ebfield_3d()
       localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime_m)
     ENDIF
   ELSE 
-    CALL push_psaotd_ebfielfs! - PUSH PSATD
+    IF(c_dim == 3) THEN
+      CALL push_psaotd_ebfielfs_3d! - PUSH PSATD
+    ELSE IF(c_dim == 2) THEN
+      CALL push_psaotd_ebfielfs_2d
+    ENDIF
   ENDIF
   ! - Inverse Fourier Transform C2R
   IF (fftw_with_mpi) THEN
@@ -507,92 +511,9 @@ SUBROUTINE push_psatd_ebfield_3d()
   ENDIF
 
 #if defined(DEBUG)
-  WRITE(0, *) "push psatd ebfield 3d: end"
+  WRITE(0, *) "push psatd ebfield: end"
 #endif
 
-END SUBROUTINE
-
-!> @brief
-!> PUSH E, B PSAOTD a full time step
-!> This subroutine pushes the electric and the magnetic fields using
-!> the PSATD solver.
-!
-!> @details
-!
-!> @author
-!> Henri Vincenti
-!> Mathieu Lobet
-!
-!> @date
-!> Creation March 29 2017
-! ________________________________________________________________________________________
-SUBROUTINE push_psatd_ebfield_2d() 
-  USE constants
-  USE time_stat
-  USE params
-  USE shared_data
-  USE fields
-#if defined(FFTW)
-  USE fourier_psaotd
-  USE matrix_coefficients
-#endif
-  IMPLICIT NONE
-
-  REAL(num) :: tmptime, tmptime_m
-
-#if defined(DEBUG)
-  WRITE(0, *) "push psatd ebfield 2d: start"
-#endif
-
-  IF (it.ge.timestat_itstart) THEN
-    tmptime = MPI_WTIME()
-  ENDIF
-#if defined(FFTW)
-  ! - Fourier Transform R2C
-  IF (fftw_with_mpi) THEN
-    IF(fftw_hybrid) THEN
-      CALL get_Ffields_mpi_lb ! -global-hybrid balanced FFT
-    ELSE
-      CALL get_Ffields_mpi! - global-hybrid FFT
-    ENDIF
-
-  ELSE
-    CALL get_Ffields! - local FFT
-  ENDIF
-
-  IF(g_spectral) THEN
-    IF (it.ge.timestat_itstart) THEN
-      tmptime_m = MPI_WTIME()
-    ENDIF
-
-    CALL multiply_mat_vector(nmatrixes)
-
-    IF (it.ge.timestat_itstart) THEN
-      localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime_m)
-    ENDIF
-
-  ELSE
-    CALL push_psaotd_ebfielfs_2d! - PUSH PSATD
-  ENDIF
-  ! - Inverse Fourier Transform C2R
-  IF (fftw_with_mpi) THEN
-    IF(fftw_hybrid) THEN
-      CALL get_fields_mpi_lb! global-hybrid balanced IFFT
-    ELSE
-      CALL get_fields_mpi! global-hybrid IFFT
-    ENDIF
-  ELSE
-    CALL get_fields! local IFFT
-  ENDIF
-#endif
-  IF (it.ge.timestat_itstart) THEN
-    localtimes(24) = localtimes(24) + (MPI_WTIME() - tmptime)
-  ENDIF
-
-#if defined(DEBUG)
-  WRITE(0, *) "push psatd ebfield 2d: end"
-#endif
-
-END SUBROUTINE
+END SUBROUTINE push_psatd_ebfield
 
 

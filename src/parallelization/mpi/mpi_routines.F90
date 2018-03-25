@@ -539,17 +539,31 @@ ELSE
   ENDDO
 
 ENDIF
-
 IF(absorbing_bcs) THEN
+  CALL get_non_periodic_mpi_bcs()
+ENDIF
+
+END SUBROUTINE setup_communicator
+
+! ______________________________________________________________________________________
+!> @brief
+!> This routine subroutine sets proc_x/y/z_min/max to  MPI_PROC_NULL for mpi at the edge 
+!> of the domain when using absorbing_bcs
+!> @ author
+!> H. Kallala
+!> H. Vincenti
+!> 2018
+! ______________________________________________________________________________________
+SUBROUTINE get_non_periodic_mpi_bcs()
+
   IF(x_min_boundary) proc_x_min = MPI_PROC_NULL
   IF(x_max_boundary) proc_x_max = MPI_PROC_NULL
   IF(y_min_boundary) proc_y_min = MPI_PROC_NULL
   IF(y_max_boundary) proc_y_max = MPI_PROC_NULL
   IF(z_min_boundary) proc_z_min = MPI_PROC_NULL
   IF(z_max_boundary) proc_z_max = MPI_PROC_NULL
-ENDIF
 
-END SUBROUTINE setup_communicator
+END SUBROUTINE get_non_periodic_mpi_bcs
 
 ! ______________________________________________________________________________________
 !> @brief
@@ -1101,14 +1115,12 @@ LOGICAL(isp)                               :: is_in_place
   IF(z_group_coords==0_idp) is_group_z_boundary_min = .TRUE.
   IF(z_group_coords==nb_group_z-1_idp)  is_group_z_boundary_max = .TRUE.
 
-  is_group_pml = .FALSE.
   !> If current group is on one boundary and sorbing_bcs .TRUE. then current
   !> group contains a pml region
   IF(absorbing_bcs) THEN
     IF(is_group_x_boundary_min .OR. is_group_x_boundary_max .OR. &
        is_group_y_boundary_min .OR. is_group_y_boundary_max .OR. &
        is_group_z_boundary_min .OR. is_group_z_boundary_max) THEN
-          is_group_pml = .TRUE.
      ENDIF
   ENDIF
   ALLOCATE(cell_x_min_g(nprocx),cell_x_max_g(nprocx))
