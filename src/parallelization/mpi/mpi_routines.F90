@@ -129,6 +129,30 @@ MODULE mpi_routines
 
   END SUBROUTINE mpi_minimal_init_python
 
+
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Get mpi topology when using warpp.
+  !
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2018
+  ! ______________________________________________________________________________________
+  SUBROUTINE get_neighbours_python
+
+
+  
+    proc_x_min = MODULO(x_coords-1,nprocx) + y_coords*nprocx +z_coords*nprocx*nprocy
+    proc_x_max = MODULO(x_coords+1,nprocx) + y_coords*nprocx +z_coords*nprocx*nprocy
+    proc_y_min = x_coords + MODULO(y_coords-1,nprocy)*nprocx +z_coords*nprocx*nprocy
+    proc_y_max = x_coords + MODULO(y_coords+1,nprocy)*nprocx +z_coords*nprocx*nprocy
+    proc_z_min = x_coords + y_coords*nprocx +MODULO(z_coords-1,nprocz)*nprocx*nprocy
+    proc_z_max = x_coords + y_coords*nprocx +MODULO(z_coords+1,nprocz)*nprocx*nprocy
+
+  END SUBROUTINE get_neighbours_python
+
   ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine creates the MPI process decomposition
