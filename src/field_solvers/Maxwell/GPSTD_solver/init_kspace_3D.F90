@@ -1477,6 +1477,7 @@ MODULE gpstd_solver
     REAL(num), DIMENSION(nxx, nyy, nzz), INTENT(IN OUT) :: ex_in
     REAL(num), DIMENSION(n1, n2, n3), INTENT(IN OUT) :: ex_out
     INTEGER(idp) :: ix, iy, iz
+
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
     DO iz=1, MIN(nzz, n3)
       DO iy=1, MIN(nyy, n2)
@@ -1494,54 +1495,82 @@ MODULE gpstd_solver
     USE fields
     USE shared_data
     IMPLICIT NONE
-    INTEGER(idp) :: ix, iy, iz
+    INTEGER(idp) :: ix, iy, iz, ixx, iyy, izz, ixxx, iyyy, izzz
+    INTEGER(idp) , dimension(3) :: lbound_r, ubound_r, lbound_p ,ubound_p,lbound_s, ubound_s
 
+    IF(absorbing_bcs) THEN 
+       lbound_r = LBOUND(exy_r)
+       lbound_p = LBOUND(exy)
+       ubound_r = UBOUND(exy_r)
+       ubound_p = UBOUND(exy)
+       lbound_s = LBOUND(jx)
+       ubound_s = UBOUND(jx)
+    ELSE
+       lbound_r = LBOUND(ex_r)
+       lbound_p = LBOUND(ex)
+       ubound_r = UBOUND(ex_r)
+       ubound_p = UBOUND(ex)
+       lbound_s = LBOUND(jx)
+       ubound_s = UBOUND(jx)
+    ENDIF
     ! When using periodic bcs, standard EM fields are communicated 
     ! Else, when using absorbing bcs, splitted EM fields are communicated 
-    
     IF(.NOT. absorbing_bcs) THEN
-      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-      DO iz=-nzguards, nz+nzguards-1
-        DO iy=-nyguards,ny+nyguards-1
-          DO ix=-nxguards,nx+nxguards-1
-            ex_r(ix, iy, iz)=ex(ix, iy, iz)
-            ey_r(ix, iy, iz)=ey(ix, iy, iz)
-            ez_r(ix, iy, iz)=ez(ix, iy, iz)
-            bx_r(ix, iy, iz)=bx(ix, iy, iz)
-            by_r(ix, iy, iz)=by(ix, iy, iz)
-            bz_r(ix, iy, iz)=bz(ix, iy, iz)
-            jx_r(ix, iy, iz)=jx(ix, iy, iz)
-            jy_r(ix, iy, iz)=jy(ix, iy, iz)
-            jz_r(ix, iy, iz)=jz(ix, iy, iz)
-            rho_r(ix, iy, iz)=rho(ix, iy, iz)
-            rhoold_r(ix, iy, iz)=rhoold(ix, iy, iz)
+      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx, iyy ,izz,ixxx,iyyy,izzz) COLLAPSE(3)
+      DO iz=lbound_r(3),ubound_r(3)
+        DO iy=lbound_r(2),ubound_r(2)
+          DO ix=lbound_r(1),ubound_r(1)
+            ixx = ix - lbound_r(1) +lbound_p(1)
+            iyy = iy - lbound_r(2) +lbound_p(2)
+            izz = iz - lbound_r(3) +lbound_p(3)
+            ixxx = ix - lbound_r(1) +lbound_s(1)
+            iyyy = iy - lbound_r(2) +lbound_s(2)
+            izzz = iz - lbound_r(3) +lbound_s(3)
+
+            ex_r(ix, iy, iz)=ex(ixx, iyy, izz)
+            ey_r(ix, iy, iz)=ey(ixx, iyy, izz)
+            ez_r(ix, iy, iz)=ez(ixx, iyy, izz)
+            bx_r(ix, iy, iz)=bx(ixx, iyy, izz)
+            by_r(ix, iy, iz)=by(ixx, iyy, izz)
+            bz_r(ix, iy, iz)=bz(ixx, iyy, izz)
+            jx_r(ix, iy, iz)=jx(ixxx, iyyy, izzz)
+            jy_r(ix, iy, iz)=jy(ixxx, iyyy, izzz)
+            jz_r(ix, iy, iz)=jz(ixxx, iyyy, izzz)
+            rho_r(ix, iy, iz)=rho(ixxx, iyyy, izzz)
+            rhoold_r(ix, iy, iz)=rhoold(ixxx, iyyy, izzz)
           END DO
         END DO
       END DO
       !$OMP END PARALLEL DO
     ELSE IF(absorbing_bcs) THEN
 
-      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-      DO iz=-nzguards, nz+nzguards-1
-        DO iy=-nyguards,ny+nyguards-1
-          DO ix=-nxguards,nx+nxguards-1
-            exy_r(ix, iy, iz)=exy(ix, iy, iz)
-            eyx_r(ix, iy, iz)=eyx(ix, iy, iz)
-            ezx_r(ix, iy, iz)=ezx(ix, iy, iz)
-            bxy_r(ix, iy, iz)=bxy(ix, iy, iz)
-            byx_r(ix, iy, iz)=byx(ix, iy, iz)
-            bzx_r(ix, iy, iz)=bzx(ix, iy, iz)
-            exz_r(ix, iy, iz)=exz(ix, iy, iz)
-            eyz_r(ix, iy, iz)=eyz(ix, iy, iz)
-            ezy_r(ix, iy, iz)=ezy(ix, iy, iz)
-            bxz_r(ix, iy, iz)=bxz(ix, iy, iz)
-            byz_r(ix, iy, iz)=byz(ix, iy, iz)
-            bzy_r(ix, iy, iz)=bzy(ix, iy, iz)
-            jx_r(ix, iy, iz)=jx(ix, iy, iz)
-            jy_r(ix, iy, iz)=jy(ix, iy, iz)
-            jz_r(ix, iy, iz)=jz(ix, iy, iz)
-            rho_r(ix, iy, iz)=rho(ix, iy, iz)
-            rhoold_r(ix, iy, iz)=rhoold(ix, iy, iz)
+      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx, iyy , izz, ixxx, iyyy , izzz) COLLAPSE(3)
+      DO iz=lbound_r(3),ubound_r(3)
+        DO iy=lbound_r(2),ubound_r(2)
+          DO ix=lbound_r(1),ubound_r(1)
+            ixx = ix - lbound_r(1) + lbound_p(1)
+            iyy = iy - lbound_r(2) + lbound_p(2)
+            izz = iz - lbound_r(3) + lbound_p(3)
+            ixxx = ix - lbound_r(1) + lbound_s(1)
+            iyyy = iy - lbound_r(2) + lbound_s(2)
+            izzz = iz - lbound_r(3) + lbound_s(3)
+            exy_r(ix, iy, iz)=exy(ixx, iyy, izz)
+            eyx_r(ix, iy, iz)=eyx(ixx, iyy, izz)
+            ezx_r(ix, iy, iz)=ezx(ixx, iyy, izz)
+            bxy_r(ix, iy, iz)=bxy(ixx, iyy, izz)
+            byx_r(ix, iy, iz)=byx(ixx, iyy, izz)
+            bzx_r(ix, iy, iz)=bzx(ixx, iyy, izz)
+            exz_r(ix, iy, iz)=exz(ixx, iyy, izz)
+            eyz_r(ix, iy, iz)=eyz(ixx, iyy, izz)
+            ezy_r(ix, iy, iz)=ezy(ixx, iyy, izz)
+            bxz_r(ix, iy, iz)=bxz(ixx, iyy, izz)
+            byz_r(ix, iy, iz)=byz(ixx, iyy, izz)
+            bzy_r(ix, iy, iz)=bzy(ixx, iyy, izz)
+            jx_r(ix, iy, iz)=jx(ixxx, iyyy, izzz)
+            jy_r(ix, iy, iz)=jy(ixxx, iyyy, izzz)
+            jz_r(ix, iy, iz)=jz(ixxx, iyyy, izzz)
+            rho_r(ix, iy, iz)=rho(ixxx, iyyy, izzz)
+            rhoold_r(ix, iy, iz)=rhoold(ixxx, iyyy, izzz)
           END DO
         END DO
       END DO
@@ -1555,43 +1584,61 @@ MODULE gpstd_solver
     USE fields
     USE shared_data
     IMPLICIT NONE
-    INTEGER(idp) :: ix, iy, iz
+    INTEGER(idp) :: ix, iy, iz, ixx ,iyy , izz
+    INTEGER(idp) , dimension(3) :: lbound_r, ubound_r, lbound_p ,ubound_p
+
+    IF(absorbing_bcs) THEN
+       lbound_r = LBOUND(exy_r)
+       lbound_p = LBOUND(exy)
+       ubound_r = UBOUND(exy_r)
+       ubound_p = UBOUND(exy)
+    ELSE
+       lbound_r = LBOUND(ex_r)
+       lbound_p = LBOUND(ex)
+       ubound_r = UBOUND(ex_r)
+       ubound_p = UBOUND(ex)
+    ENDIF
 
     ! When using periodic bcs, standard EM fields are communicated 
     ! Else, when using absorbing bcs, splitted EM fields are communicated 
-
     IF(.NOT. absorbing_bcs) THEN
-      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-      DO iz=-nzguards, nz+nzguards-1
-        DO iy=-nyguards,ny+nyguards-1
-          DO ix=-nxguards,nx+nxguards-1
-            ex(ix, iy, iz)=ex_r(ix, iy, iz)
-            ey(ix, iy, iz)=ey_r(ix, iy, iz)
-            ez(ix, iy, iz)=ez_r(ix, iy, iz)
-            bx(ix, iy, iz)=bx_r(ix, iy, iz)
-            by(ix, iy, iz)=by_r(ix, iy, iz)
-            bz(ix, iy, iz)=bz_r(ix, iy, iz)
+      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx , iyy ,izz) COLLAPSE(3)
+      DO iz=lbound_r(3),ubound_r(3)
+        DO iy=lbound_r(2),ubound_r(2)
+          DO ix=lbound_r(1),ubound_r(1)
+            ixx = ix - lbound_r(1) +lbound_p(1)
+            iyy = iy - lbound_r(2) +lbound_p(2)
+            izz = iz - lbound_r(3) +lbound_p(3)
+            ex(ixx, iyy, izz)=ex_r(ix, iy, iz)
+            ey(ixx, iyy, izz)=ey_r(ix, iy, iz)
+            ez(ixx, iyy, izz)=ez_r(ix, iy, iz)
+            bx(ixx, iyy, izz)=bx_r(ix, iy, iz)
+            by(ixx, iyy, izz)=by_r(ix, iy, iz)
+            bz(ixx, iyy, izz)=bz_r(ix, iy, iz)
           END DO
         END DO
       END DO
       !$OMP END PARALLEL DO
     ELSE IF(absorbing_bcs) THEN
-      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-      DO iz=-nzguards, nz+nzguards-1
-        DO iy=-nyguards,ny+nyguards-1
-          DO ix=-nxguards,nx+nxguards-1
-            exy(ix, iy, iz)=exy_r(ix, iy, iz)
-            eyx(ix, iy, iz)=eyx_r(ix, iy, iz)
-            ezx(ix, iy, iz)=ezx_r(ix, iy, iz)
-            bxy(ix, iy, iz)=bxy_r(ix, iy, iz)
-            byx(ix, iy, iz)=byx_r(ix, iy, iz)
-            bzx(ix, iy, iz)=bzx_r(ix, iy, iz)
-            exz(ix, iy, iz)=exz_r(ix, iy, iz)
-            eyz(ix, iy, iz)=eyz_r(ix, iy, iz)
-            ezy(ix, iy, iz)=ezy_r(ix, iy, iz)
-            bxz(ix, iy, iz)=bxz_r(ix, iy, iz)
-            byz(ix, iy, iz)=byz_r(ix, iy, iz)
-            bzy(ix, iy, iz)=bzy_r(ix, iy, iz)
+      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx, iyy , izz) COLLAPSE(3)
+      DO iz=lbound_r(3),ubound_r(3)
+        DO iy=lbound_r(2),ubound_r(2)
+          DO ix=lbound_r(1),ubound_r(1)
+            ixx = ix - lbound_r(1) +lbound_p(1)
+            iyy = iy - lbound_r(2) +lbound_p(2)
+            izz = iz - lbound_r(3) +lbound_p(3)
+            exy(ixx, iyy, izz)=exy_r(ix, iy, iz)
+            eyx(ixx, iyy, izz)=eyx_r(ix, iy, iz)
+            ezx(ixx, iyy, izz)=ezx_r(ix, iy, iz)
+            bxy(ixx, iyy, izz)=bxy_r(ix, iy, iz)
+            byx(ixx, iyy, izz)=byx_r(ix, iy, iz)
+            bzx(ixx, iyy, izz)=bzx_r(ix, iy, iz)
+            exz(ixx, iyy, izz)=exz_r(ix, iy, iz)
+            eyz(ixx, iyy, izz)=eyz_r(ix, iy, iz)
+            ezy(ixx, iyy, izz)=ezy_r(ix, iy, iz)
+            bxz(ixx, iyy, izz)=bxz_r(ix, iy, iz)
+            byz(ixx, iyy, izz)=byz_r(ix, iy, iz)
+            bzy(ixx, iyy, izz)=bzy_r(ix, iy, iz)
           END DO
         END DO
       END DO

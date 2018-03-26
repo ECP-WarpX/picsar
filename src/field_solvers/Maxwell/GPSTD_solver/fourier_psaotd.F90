@@ -320,10 +320,14 @@ MODULE fourier_psaotd
 
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz,ixx,iyy,izz
+    INTEGER(idp) , DIMENSION(3) :: ubound_w , lbound_w
     REAL(num)    :: tmptime
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
+
+    ubound_w = UBOUND(jx)
+    lbound_w = LBOUND(jx)
 
     ! Performs copies of overlapping portions of local arrays (ex,ey,ez, etc.) 
     ! and FFT arrays (ex_r,ey_r,ez_r etc.) - non overlapping portions requires 
@@ -339,48 +343,54 @@ MODULE fourier_psaotd
           DO ix =ix_min_r,ix_max_r
              ex_r(ix,iy-1+g_first_cell_to_recv_y(1)                                    &
              ,iz-1+g_first_cell_to_recv_z(1))=                                         &
-                   ex(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),             &
-                   iz-1+l_first_cell_to_send_z(1))
+                   ex(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
+                   iz-1+l_first_cell_to_send_z(1)+lbound_w(3)+nzguards)
              ey_r(ix,iy-1+g_first_cell_to_recv_y(1)                                    &
              ,iz-1+g_first_cell_to_recv_z(1))=                                         &
-                   ey(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),             &
-                   iz-1+l_first_cell_to_send_z(1))
+                   ey(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
+                   iz-1+l_first_cell_to_send_z(1)+lbound_w(3)+nzguards)
              ez_r(ix,iy-1+g_first_cell_to_recv_y(1)                                    &
              ,iz-1+g_first_cell_to_recv_z(1))=                                         &
-                   ez(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),             &
-                   iz-1+l_first_cell_to_send_z(1))
+                   ez(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
+                   iz-1+l_first_cell_to_send_z(1)+lbound_w(3)+nzguards)
+
              bx_r(ix,iy-1+g_first_cell_to_recv_y(1)                                    &
              ,iz-1+g_first_cell_to_recv_z(1))=                                         &
-                   bx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),             &
-                   iz-1+l_first_cell_to_send_z(1))
+                   bx(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
+                   iz-1+l_first_cell_to_send_z(1)+lbound_w(3)+nzguards)
              by_r(ix,iy-1+g_first_cell_to_recv_y(1)                                    &
              ,iz-1+g_first_cell_to_recv_z(1))=                                         &
-                   by(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),             &
-                   iz-1+l_first_cell_to_send_z(1))
+                   by(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
+                   iz-1+l_first_cell_to_send_z(1)+lbound_w(3)+nzguards)
              bz_r(ix,iy-1+g_first_cell_to_recv_y(1)                                    &
              ,iz-1+g_first_cell_to_recv_z(1))=                                         &
-                   bz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),             &
-                   iz-1+l_first_cell_to_send_z(1))
+                   bz(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
+                   iz-1+l_first_cell_to_send_z(1)+lbound_w(3)+nzguards)
+
+
              jx_r(ix,iy-1+g_first_cell_to_recv_y(1)                                    &
              ,iz-1+g_first_cell_to_recv_z(1))=                                         &
-                   jx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),             &
-                   iz-1+l_first_cell_to_send_z(1))
+                   jx(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
+                   iz-1+l_first_cell_to_send_z(1)+lbound_w(3)+nzguards)
              jy_r(ix,iy-1+g_first_cell_to_recv_y(1)                                    &
              ,iz-1+g_first_cell_to_recv_z(1))=                                         &
-                   jy(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),             &
-                   iz-1+l_first_cell_to_send_z(1))
+                   jy(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
+                   iz-1+l_first_cell_to_send_z(1)+lbound_w(3)+nzguards)
              jz_r(ix,iy-1+g_first_cell_to_recv_y(1)                                    &
              ,iz-1+g_first_cell_to_recv_z(1))=                                         &
-                   jz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),             &
-                   iz-1+l_first_cell_to_send_z(1))
+                   jz(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
+                   iz-1+l_first_cell_to_send_z(1)+lbound_w(3)+nzguards)
+
              rho_r(ix,iy-1+g_first_cell_to_recv_y(1)                                   &
              ,iz-1+g_first_cell_to_recv_z(1))=                                         &
-                   rho(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),            &
-                   iz-1+l_first_cell_to_send_z(1))
+                   rho(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
+                   iz-1+l_first_cell_to_send_z(1)+lbound_w(3)+nzguards)
+
              rhoold_r(ix,iy-1+g_first_cell_to_recv_y(1)                                &
              ,iz-1+g_first_cell_to_recv_z(1))=                                         &
-                   rhoold(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),         &
-                   iz-1+l_first_cell_to_send_z(1))
+                   rhoold(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
+                   iz-1+l_first_cell_to_send_z(1)+lbound_w(3)+nzguards)
+
           ENDDO
         ENDDO
       ENDDO
@@ -438,26 +448,29 @@ MODULE fourier_psaotd
             ,iz-1+g_first_cell_to_recv_z(1))=                                        &
                   bzy(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),            &
                   iz-1+l_first_cell_to_send_z(1))
-            jx_r(ix,iy-1+g_first_cell_to_recv_y(1)                                   &
-            ,iz-1+g_first_cell_to_recv_z(1))=                                        &
-                  jx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),            &
-                  iz-1+l_first_cell_to_send_z(1))
-            jy_r(ix,iy-1+g_first_cell_to_recv_y(1)                                   &
-            ,iz-1+g_first_cell_to_recv_z(1))=                                        &
-                  jy(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),            &
-                  iz-1+l_first_cell_to_send_z(1))
-            jz_r(ix,iy-1+g_first_cell_to_recv_y(1)                                   &
-            ,iz-1+g_first_cell_to_recv_z(1))=                                        &
-                  jz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),            &
-                  iz-1+l_first_cell_to_send_z(1))
-            rho_r(ix,iy-1+g_first_cell_to_recv_y(1)                                  &
-            ,iz-1+g_first_cell_to_recv_z(1))=                                        &
-                  rho(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),           &
-                  iz-1+l_first_cell_to_send_z(1))
-            rhoold_r(ix,iy-1+g_first_cell_to_recv_y(1)                               &
-            ,iz-1+g_first_cell_to_recv_z(1))=                                        &
-                  rhoold(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_send_y(1),        &
-                  iz-1+l_first_cell_to_send_z(1))
+             jx_r(ix,iy-1+g_first_cell_to_recv_y(1)                                    &
+             ,iz-1+g_first_cell_to_recv_z(1))=                                         &
+                   jx(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
+                   iz-1+l_first_cell_to_send_z(1)+lbound_w(3)+nzguards)
+             jy_r(ix,iy-1+g_first_cell_to_recv_y(1)                                    &
+             ,iz-1+g_first_cell_to_recv_z(1))=                                         &
+                   jy(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
+                   iz-1+l_first_cell_to_send_z(1)+lbound_w(3)+nzguards)
+             jz_r(ix,iy-1+g_first_cell_to_recv_y(1)                                    &
+             ,iz-1+g_first_cell_to_recv_z(1))=                                         &
+                   jz(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
+                   iz-1+l_first_cell_to_send_z(1)+lbound_w(3)+nzguards)
+
+             rho_r(ix,iy-1+g_first_cell_to_recv_y(1)                                   &
+             ,iz-1+g_first_cell_to_recv_z(1))=                                         &
+                   rho(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
+                   iz-1+l_first_cell_to_send_z(1)+lbound_w(3)+nzguards)
+
+             rhoold_r(ix,iy-1+g_first_cell_to_recv_y(1)                                &
+             ,iz-1+g_first_cell_to_recv_z(1))=                                         &
+                   rhoold(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
+                   iz-1+l_first_cell_to_send_z(1)+lbound_w(3)+nzguards)
+
          ENDDO
        ENDDO
      ENDDO
@@ -765,7 +778,7 @@ MODULE fourier_psaotd
   !> @date
   !> Creation 2017
   ! ______________________________________________________________________________________
-  SUBROUTINE get_fields_mpi_lb
+   SUBROUTINE get_fields_mpi_lb
     USE shared_data
     USE fields
     USE mpi_fftw3
@@ -776,6 +789,7 @@ MODULE fourier_psaotd
     IMPLICIT NONE
     REAL(num) ::  tmptime
     INTEGER(idp) :: ix, iy, iz
+    INTEGER(idp) , DIMENSION(3) :: lbound_w , ubound_w
     
     ! Perform distributed C2R FFTs of all grid arrays (including fields, currents, charge)
     CALL fft_backward_c2r_hybrid
@@ -791,37 +805,39 @@ MODULE fourier_psaotd
     ! and hybrid grids
     ! Else, when using absorbing bcs, splitted EM fields are communicated 
     IF(.NOT. absorbing_bcs) THEN
+      ubound_w = UBOUND(ex)
+      lbound_w = LBOUND(ex)
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
       DO iz=1,size_exchanges_g2l_recv_z(1)
         DO iy=1,size_exchanges_g2l_recv_y(1)
           DO ix=ix_min_r, ix_max_r
-            ex(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
-            iz-1+l_first_cell_to_recv_z(1)) =                                            &
+            ex(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards) =                                            &
                    ex_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            ey(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
-            iz-1+l_first_cell_to_recv_z(1))=                                             &
+            ey(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    ey_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            ez(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
-            iz-1+l_first_cell_to_recv_z(1))=                                             &
+            ez(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    ez_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            bx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
-            iz-1+l_first_cell_to_recv_z(1))=                                             &
+            bx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    bx_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            by(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
-            iz-1+l_first_cell_to_recv_z(1))=                                             &
+            by(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    by_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            bz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
-            iz-1+l_first_cell_to_recv_z(1))=                                             &
+            bz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    bz_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                   ,iz-1+g_first_cell_to_send_z(1))
           END DO
@@ -829,66 +845,69 @@ MODULE fourier_psaotd
       END DO
       !$OMP END PARALLEL DO
     ELSE IF(absorbing_bcs) THEN
+      ubound_w = UBOUND(exy)
+      lbound_w = LBOUND(exy)
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
       DO iz=1,size_exchanges_g2l_recv_z(1)
         DO iy=1,size_exchanges_g2l_recv_y(1)
           DO ix=ix_min_r, ix_max_r
-            exy(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
-            iz-1+l_first_cell_to_recv_z(1)) =                                            &
+
+            exy(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards) =                                            &
                    exy_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            eyx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
-            iz-1+l_first_cell_to_recv_z(1))=                                             &
+            eyx(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    eyx_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            ezx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
-            iz-1+l_first_cell_to_recv_z(1))=                                             &
+            ezx(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    ezx_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            bxy(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
-            iz-1+l_first_cell_to_recv_z(1))=                                             &
+            bxy(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    bxy_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            byx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
-            iz-1+l_first_cell_to_recv_z(1))=                                             &
+            byx(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    byx_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            bzx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
-            iz-1+l_first_cell_to_recv_z(1))=                                             &
+            bzx(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    bzx_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                   ,iz-1+g_first_cell_to_send_z(1))
-            exz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
-            iz-1+l_first_cell_to_recv_z(1)) =                                            &
+            exz(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards) =                                            &
                    exz_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            eyz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
-            iz-1+l_first_cell_to_recv_z(1))=                                             &
+            eyz(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    eyz_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            ezy(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
-            iz-1+l_first_cell_to_recv_z(1))=                                             &
+            ezy(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    ezy_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            bxz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
-            iz-1+l_first_cell_to_recv_z(1))=                                             &
+            bxz(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    bxz_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            byz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
-            iz-1+l_first_cell_to_recv_z(1))=                                             &
+            byz(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    byz_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            bzy(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1),                      &
-            iz-1+l_first_cell_to_recv_z(1))=                                             &
+            bzy(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    bzy_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                   ,iz-1+g_first_cell_to_send_z(1))
           END DO

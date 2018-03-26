@@ -1701,6 +1701,9 @@ IF (l_spectral) THEN
     nkx=local_nx_tr
     nky=local_ny_tr
     nkz=local_nz_tr
+    IF(c_dim == 2) THEN
+      nky = 1_idp
+    ENDIF
     ! - Allocate complex FFT arrays
     ! - Case when p3dfft_flag is .TRUE. (p3dfft is used for distributed FFT)
     IF(p3dfft_flag) THEN
@@ -1748,6 +1751,9 @@ IF (l_spectral) THEN
     nxx = local_nx
     nyy = local_ny
     nzz = local_nz
+    IF(c_dim == 2) THEN
+      nyy = 1_idp
+    ENDIF
     ! - Case when p3dfft_flag is .TRUE. (p3dfft is used for distributed FFT)
     IF(.NOT. p3dfft_flag) THEN
     ! - When using absorbing_bcs, merged fields are not allocated in fourier space
@@ -1858,6 +1864,9 @@ IF (l_spectral) THEN
     nkx=(2*nxguards+nx)/2+1! Real To Complex Transform
     nky=(2*nyguards+ny)
     nkz=(2*nzguards+nz)
+    IF(c_dim == 2) THEN
+      nky =1_idp
+    ENDIF
     IF(.NOT. g_spectral) THEN
     ! - Allocate complex FFT arrays
       ALLOCATE(exf(nkx, nky, nkz))
@@ -1876,6 +1885,10 @@ IF (l_spectral) THEN
     imn=-nxguards; imx=nx+nxguards-1
     jmn=-nyguards;jmx=ny+nyguards-1
     kmn=-nzguards;kmx=nz+nzguards-1
+    IF(c_dim == 2) THEN
+      jmn = 0
+      jmx = 0
+    ENDIF
     IF (.NOT. absorbing_bcs) THEN
     ! - When using absorbing_bcs, merged fields are not allocated in fourier space
     ! - neither ex_r,ey_r ... components

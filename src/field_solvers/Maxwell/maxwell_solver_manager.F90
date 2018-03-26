@@ -270,24 +270,34 @@ SUBROUTINE merge_fields()
   USE params
 
   IMPLICIT NONE 
-  INTEGER(idp)  :: ix,iy,iz
+  INTEGER(idp)  :: ix,iy,iz,ixx,iyy,izz,&
+  ubound_s(3), ubound_f(3), lbound_s(3), lbound_f(3)
   REAL(num)     :: tmptime
 
   IF (it.ge.timestat_itstart) THEN
     tmptime = MPI_WTIME()
   ENDIF
 
+  ubound_s = UBOUND(exy)
+  lbound_s = LBOUND(exy)
+  ubound_f = UBOUND(ex)
+  lbound_f = LBOUND(ex)
 
-  !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-  DO ix = -nxguards,nx+nxguards
-    DO iy = -nyguards,ny+nyguards
-      DO iz = -nzguards,nz+nzguards
-        ex(ix,iy,iz) = exy(ix,iy,iz) + exz(ix,iy,iz)
-        ey(ix,iy,iz) = eyx(ix,iy,iz) + eyz(ix,iy,iz)
-        ez(ix,iy,iz) = ezx(ix,iy,iz) + ezy(ix,iy,iz)
-        bx(ix,iy,iz) = bxy(ix,iy,iz) + bxz(ix,iy,iz)
-        by(ix,iy,iz) = byx(ix,iy,iz) + byz(ix,iy,iz)
-        bz(ix,iy,iz) = bzx(ix,iy,iz) + bzy(ix,iy,iz)
+
+  !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz,ixx ,iyy, izz) COLLAPSE(3)
+  DO ix = ubound_f(1),lbound_f(1)
+    DO iy = ubound_f(2),lbound_f(2)
+      DO iz = ubound_f(3),lbound_f(3)
+        ixx = ix - ubound_f(1) + ubound_s(1)
+        iyy = iy - ubound_f(2) + ubound_s(2)
+        izz = iz - ubound_f(3) + ubound_s(3)
+
+        ex(ix,iy,iz) = exy(ixx,iyy,iz) + exz(ixx,iyy,izz)
+        ey(ix,iy,iz) = eyx(ixx,iyy,iz) + eyz(ixx,iyy,izz)
+        ez(ix,iy,iz) = ezx(ixx,iyy,iz) + ezy(ixx,iyy,izz)
+        bx(ix,iy,iz) = bxy(ixx,iyy,iz) + bxz(ixx,iyy,izz)
+        by(ix,iy,iz) = byx(ixx,iyy,iz) + byz(ixx,iyy,izz)
+        bz(ix,iy,iz) = bzx(ixx,iyy,iz) + bzy(ixx,iyy,izz)
       ENDDO
     ENDDO
   ENDDO
