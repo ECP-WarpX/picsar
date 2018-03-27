@@ -325,41 +325,42 @@ MODULE field_boundary
     ! NEED TO WAIT BEFORE EXCHANGING ALONG Y (DIAGONAL TERMS)
     CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
 
-    ! MOVE EDGES ALONG Y
-    subsizes(1) = sizes(1)
-    subsizes(2) = nyg+1
-    subsizes(3) = sizes(3)
-
-    IF (is_dtype_init(5)) THEN
-      mpi_dtypes(5) = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
-      is_dtype_init(5) = .FALSE.
-    ENDIF
-
-    ! --- +Y
-    CALL MPI_ISEND(field(-nxg, 0, -nzg), 1_isp, mpi_dtypes(5), INT(proc_y_min, isp),  &
-    tag, comm, requests(1), errcode)
-    CALL MPI_IRECV(field(-nxg, ny_local, -nzg), 1_isp, mpi_dtypes(5), INT(proc_y_max, &
-    isp), tag, comm, requests(2), errcode)
-
-    ! --- Need to wait here to avoid modifying buffer at field(nx_local) and field(0)
-    CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
-
-    ! --- -Y
-    CALL MPI_ISEND(field(-nxg, ny_local-nyg, -nzg), 1_isp, mpi_dtypes(5),             &
-    INT(proc_y_max, isp), tag, comm, requests(1), errcode)
-    CALL MPI_IRECV(field(-nxg, -nyg, -nzg), 1_isp, mpi_dtypes(5), INT(proc_y_min,     &
-    isp), tag, comm, requests(2), errcode)
-
-    ! NEED TO WAIT BEFORE EXCHANGING ALONG Z (DIAGONAL TERMS)
-    CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
-
+    IF(c_dim == 3) THEN
+      ! MOVE EDGES ALONG Y
+      subsizes(1) = sizes(1)
+      subsizes(2) = nyg+1
+      subsizes(3) = sizes(3)
+  
+      IF (is_dtype_init(5)) THEN
+        mpi_dtypes(5) = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
+        is_dtype_init(5) = .FALSE.
+      ENDIF
+  
+      ! --- +Y
+      CALL MPI_ISEND(field(-nxg, 0, -nzg), 1_isp, mpi_dtypes(5), INT(proc_y_min, isp),  &
+      tag, comm, requests(1), errcode)
+      CALL MPI_IRECV(field(-nxg, ny_local, -nzg), 1_isp, mpi_dtypes(5), INT(proc_y_max, &
+      isp), tag, comm, requests(2), errcode)
+  
+      ! --- Need to wait here to avoid modifying buffer at field(nx_local) and field(0)
+      CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
+  
+      ! --- -Y
+      CALL MPI_ISEND(field(-nxg, ny_local-nyg, -nzg), 1_isp, mpi_dtypes(5),             &
+      INT(proc_y_max, isp), tag, comm, requests(1), errcode)
+      CALL MPI_IRECV(field(-nxg, -nyg, -nzg), 1_isp, mpi_dtypes(5), INT(proc_y_min,     &
+      isp), tag, comm, requests(2), errcode)
+  
+      ! NEED TO WAIT BEFORE EXCHANGING ALONG Z (DIAGONAL TERMS)
+      CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
+    ENDIF  
     ! MOVE EDGES ALONG Z
     subsizes(1) = sizes(1)
     subsizes(2) = sizes(2)
     subsizes(3) = nzg+1
-
+  
     sz = subsizes(1) * subsizes(2) * subsizes(3)
-
+  
     IF (is_dtype_init(6)) THEN
       mpi_dtypes(6) = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
       is_dtype_init(6) = .FALSE.
@@ -438,35 +439,35 @@ MODULE field_boundary
     array(nn-nxg:nn, :, :) = array(nn-nxg:nn, :, :) + temp
 
     DEALLOCATE(temp)
+    IF(c_dim == 3) THEN
+      !! -- Summation along Y- direction
+      subsizes(1) = sizes(1)
+      subsizes(2) = nyg+1
+      subsizes(3) = sizes(3)
+      nn =  ny_local
 
-    !! -- Summation along Y- direction
-    subsizes(1) = sizes(1)
-    subsizes(2) = nyg+1
-    subsizes(3) = sizes(3)
-    nn =  ny_local
+      IF (is_dtype_init(8)) THEN
+        mpi_dtypes(8) = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
+        is_dtype_init(8) = .FALSE.
+      ENDIF
 
-    IF (is_dtype_init(8)) THEN
-      mpi_dtypes(8) = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
-      is_dtype_init(8) = .FALSE.
+      sz = subsizes(1) * subsizes(2) * subsizes(3)
+      ALLOCATE(temp(subsizes(1), subsizes(2), subsizes(3)))
+
+      temp = 0.0_num
+      CALL MPI_SENDRECV(array(-nxg, nn, -nzg), 1_isp, mpi_dtypes(8), INT(neighbour(0,   &
+      1, 0), isp), tag, temp, sz, mpidbl, INT(neighbour(0, -1, 0), isp), tag, comm,     &
+      status, errcode)
+      array(:, 0:nyg, :) = array(:, 0:nyg, :) + temp
+
+      temp = 0.0_num
+      CALL MPI_SENDRECV(array(-nxg, -nyg, -nzg), 1_isp, mpi_dtypes(8), INT(neighbour(0, &
+      -1, 0), isp), tag, temp, sz, mpidbl, INT(neighbour(0, 1, 0), isp), tag, comm,     &
+      status, errcode)
+      array(:, nn-nyg:nn, :) = array(:, nn-nyg:nn, :) + temp
+    
+      DEALLOCATE(temp)
     ENDIF
-
-    sz = subsizes(1) * subsizes(2) * subsizes(3)
-    ALLOCATE(temp(subsizes(1), subsizes(2), subsizes(3)))
-
-    temp = 0.0_num
-    CALL MPI_SENDRECV(array(-nxg, nn, -nzg), 1_isp, mpi_dtypes(8), INT(neighbour(0,   &
-    1, 0), isp), tag, temp, sz, mpidbl, INT(neighbour(0, -1, 0), isp), tag, comm,     &
-    status, errcode)
-    array(:, 0:nyg, :) = array(:, 0:nyg, :) + temp
-
-    temp = 0.0_num
-    CALL MPI_SENDRECV(array(-nxg, -nyg, -nzg), 1_isp, mpi_dtypes(8), INT(neighbour(0, &
-    -1, 0), isp), tag, temp, sz, mpidbl, INT(neighbour(0, 1, 0), isp), tag, comm,     &
-    status, errcode)
-    array(:, nn-nyg:nn, :) = array(:, nn-nyg:nn, :) + temp
-
-    DEALLOCATE(temp)
-
     !! -- Summation along Z- direction
     subsizes(1) = sizes(1)
     subsizes(2) = sizes(2)
@@ -1129,39 +1130,39 @@ MODULE field_boundary
     array(nn-nxg:nn, :, :) = array(nn-nxg:nn, :, :) + temp2
 
     DEALLOCATE(temp1, temp2)
-
-    !! -- Summation along Y- direction
-    subsizes(1) = sizes(1)
-    subsizes(2) = nyg+1
-    subsizes(3) = sizes(3)
-    nn = ny_local
-
-    IF (is_dtype_init(11)) THEN
-      mpi_dtypes(11) = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
-      is_dtype_init(11) = .FALSE.
+    IF(c_dim == 3) THEN
+      !! -- Summation along Y- direction
+      subsizes(1) = sizes(1)
+      subsizes(2) = nyg+1
+      subsizes(3) = sizes(3)
+      nn = ny_local
+  
+      IF (is_dtype_init(11)) THEN
+        mpi_dtypes(11) = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
+        is_dtype_init(11) = .FALSE.
+      ENDIF
+  
+      sz = subsizes(1) * subsizes(2) * subsizes(3)
+      ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)), temp2(subsizes(1),         &
+      subsizes(2), subsizes(3)))
+  
+      temp1  = 0.0_num
+      temp2 = 0.0_num
+      CALL MPI_ISEND(array(-nxg, nn, -nzg), 1_isp, mpi_dtypes(11), INT(proc_y_max,      &
+      isp), tag, comm, requests(1), errcode)
+      CALL MPI_IRECV(temp1, sz, mpidbl, INT(proc_y_min, isp), tag, comm, requests(2),   &
+      errcode)
+      CALL MPI_ISEND(array(-nxg, -nyg, -nzg), 1_isp, mpi_dtypes(11), INT(proc_y_min,    &
+      isp), tag, comm, requests(3), errcode)
+      CALL MPI_IRECV(temp2, sz, mpidbl, INT(proc_y_max, isp), tag, comm, requests(4),   &
+      errcode)
+      CALL MPI_WAITALL(4_isp, requests, MPI_STATUSES_IGNORE, errcode)
+  
+      array(:, 0:nyg, :) = array(:, 0:nyg, :) + temp1
+      array(:, nn-nyg:nn, :) = array(:, nn-nyg:nn, :) + temp2
+  
+      DEALLOCATE(temp1, temp2)
     ENDIF
-
-    sz = subsizes(1) * subsizes(2) * subsizes(3)
-    ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)), temp2(subsizes(1),         &
-    subsizes(2), subsizes(3)))
-
-    temp1  = 0.0_num
-    temp2 = 0.0_num
-    CALL MPI_ISEND(array(-nxg, nn, -nzg), 1_isp, mpi_dtypes(11), INT(proc_y_max,      &
-    isp), tag, comm, requests(1), errcode)
-    CALL MPI_IRECV(temp1, sz, mpidbl, INT(proc_y_min, isp), tag, comm, requests(2),   &
-    errcode)
-    CALL MPI_ISEND(array(-nxg, -nyg, -nzg), 1_isp, mpi_dtypes(11), INT(proc_y_min,    &
-    isp), tag, comm, requests(3), errcode)
-    CALL MPI_IRECV(temp2, sz, mpidbl, INT(proc_y_max, isp), tag, comm, requests(4),   &
-    errcode)
-    CALL MPI_WAITALL(4_isp, requests, MPI_STATUSES_IGNORE, errcode)
-
-    array(:, 0:nyg, :) = array(:, 0:nyg, :) + temp1
-    array(:, nn-nyg:nn, :) = array(:, nn-nyg:nn, :) + temp2
-
-    DEALLOCATE(temp1, temp2)
-
     !! -- Summation along Z- direction
     subsizes(1) = sizes(1)
     subsizes(2) = sizes(2)
