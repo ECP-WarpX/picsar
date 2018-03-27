@@ -333,15 +333,15 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'absorbing_bcs') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) absorbing_bcs
-      ELSE IF (INDEX(buffer, 'nx_pml') .GT. 0) THEN
+      ELSE IF (INDEX(buffer, 'nxpml') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
-        READ(buffer, *) nx_pml
-      ELSE IF (INDEX(buffer, 'ny_pml') .GT. 0) THEN
+        READ(buffer, '(i10)') nx_pml
+      ELSE IF (INDEX(buffer, 'nypml') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
-        READ(buffer, *) ny_pml
-      ELSE IF (INDEX(buffer, 'nz_pml') .GT. 0) THEN
+        READ(buffer, '(i10)') ny_pml
+      ELSE IF (INDEX(buffer, 'nzpml') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
-        READ(buffer, *) nz_pml
+        READ(buffer, '(i10)') nz_pml
       ELSE IF (INDEX(buffer, 'g_spectral') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) g_spectral
