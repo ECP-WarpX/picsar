@@ -838,15 +838,15 @@ MODULE tiling
   REAL(num) :: t1,t2 ,a
   
   if(lx == 0.0_num) then
-   t1=1.0_num
+   t1=0.0_num
   else
-   t1=exp(-x/lx)
+   t1=1-.0_num-exp(-x/lx)
   endif
 
   if(lz == 0.0_num) then 
-   t2=1.0_num
+   t2=0.0_num
   else
-   t2=exp(-z/lz)
+   t2=1-.0_num-exp(-z/lz)
   endif
   a=t1*t2
 
