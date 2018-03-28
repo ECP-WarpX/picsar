@@ -574,6 +574,7 @@ MODULE particle_speciesmodule!#do not parse
     !> Array indicating if a tile has been reallocated.
     !> Used for interfacing WARP and PXR
     INTEGER(idp), DIMENSION(:, :, :), ALLOCATABLE :: are_tiles_reallocated
+    REAL(num) :: exp_param_x, exp_param_y,exp_param_z
   END TYPE
 END MODULE particle_speciesmodule
 

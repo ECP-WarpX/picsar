@@ -477,9 +477,9 @@ ELSE IF (topology == 1) THEN
   ! Default topology - Cartesian topology
 ELSE
   ! Set boundary to be periodic in x, y, z for particles and fields by default
-  periods(c_ndims) = .TRUE.
-  periods(c_ndims-1) = .TRUE.
-  periods(c_ndims-2) = .TRUE.
+  periods(c_ndims) = .FALSE. 
+  periods(c_ndims-1) = .FALSE.
+  periods(c_ndims-2) = .FALSE.
 
   ! Create an array of rank corresponding to the current topology
   !ALLOCATE(rank_array(nprocs))

@@ -833,6 +833,25 @@ MODULE tiling
     END DO! END LOOP ON TILES
   END SUBROUTINE init_tile_arrays_for_species
 
+  FUNCTION density_profile(x,z,lx,lz) result(a)
+  REAL(num), INTENT(IN) :: x,z,lx,lz
+  REAL(num) :: t1,t2 ,a
+  
+  if(lx == 0.0_num) then
+   t1=1.0_num
+  else
+   t1=exp(-x/lx)
+  endif
+
+  if(lz == 0.0_num) then 
+   t2=1.0_num
+  else
+   t2=exp(-z/lz)
+  endif
+  a=t1*t2
+
+  
+  END FUNCTION
   ! ______________________________________________________________________________________
   !> @brief
   !> Initialize the particle properties (positions and velocities) according to
@@ -919,7 +938,9 @@ MODULE tiling
                 ! Sets positions and weight
                 partx = x_min_local+j*dx+dx/curr%nppcell*(ipart-1)
                 partz = z_min_local+l*dz+dz/curr%nppcell*(ipart-1)
-                partpid(wpid) = nc*dx*dz/(curr%nppcell)
+                
+                partpid(wpid) = nc*dx*dz/(curr%nppcell)*&
+                density_profile(partx-curr%x_min,partz-curr%z_min,curr%exp_param_x,curr%exp_param_z)
                 ! Sets velocity
                 CALL RANDOM_NUMBER(rng(1:3))
                 v=MAX(1e-10_num, rng(1))
