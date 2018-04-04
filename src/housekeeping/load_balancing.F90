@@ -883,6 +883,16 @@ END SUBROUTINE get_2Dintersection
      g_first_cell_to_send_y(y_coords+1) = 1
      l_first_cell_to_send_y(y_coords+1) = -nyguards
     ENDIF
+    IF(c_dim == 2) THEN
+      size_exchanges_l2g_send_y(y_coords+1) = 1
+      size_exchanges_l2g_recv_y(y_coords+1) = 1
+      size_exchanges_g2l_recv_y(y_coords+1) = 1
+      size_exchanges_g2l_send_y(y_coords+1) = 1
+      l_first_cell_to_recv_y(y_coords+1) = 0
+      g_first_cell_to_recv_y(y_coords+1) = 1 
+      g_first_cell_to_send_y(y_coords+1) = 1
+      l_first_cell_to_send_y(y_coords+1) = 0
+    ENDIF
     !-- Creates derived types for communications
     CALL create_derived_types_groups()
     ! -- Saves value of size_exchanges_g2l_send_z(z_coords+1) and sets it to 1 to avoid a bug in case this is 0

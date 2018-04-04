@@ -125,10 +125,21 @@ MODULE fourier_psaotd
             plan_c2r_mpi = fftw_mpi_plan_dft_c2r_3d(nz_cint, ny_cint, nx_cint, exf,     &
             ex_r, MPI_COMM_GROUP_ID(i), planner_flag_2)
           ELSE IF(c_dim == 2) THEN
-            plan_r2c_mpi = fftw_mpi_plan_dft_r2c_2d(nz_cint, nx_cint,ex_r,    &
-            exf, MPI_COMM_GROUP_ID(i), planner_flag_1)
-            plan_c2r_mpi = fftw_mpi_plan_dft_c2r_2d(nz_cint, nx_cint,exf,     &
-            ex_r, MPI_COMM_GROUP_ID(i), planner_flag_2)
+            IF(absorbing_bcs .EQV. .FALSE.) THEN
+              plan_r2c_mpi = fftw_mpi_plan_dft_r2c_2d(nz_cint, nx_cint,ex_r,    &
+              exf, MPI_COMM_GROUP_ID(i), planner_flag_1)
+              plan_c2r_mpi = fftw_mpi_plan_dft_c2r_2d(nz_cint, nx_cint,exf,     &
+              ex_r, MPI_COMM_GROUP_ID(i), planner_flag_2)
+            ELSE IF(absorbing_bcs) THEN
+write(*,*)"check fftw plan init",nz_cint,nx_cint,nx_group,nz_group
+              plan_r2c_mpi = fftw_mpi_plan_dft_r2c_2d(nz_cint, nx_cint,exy_r,    &
+              exf, MPI_COMM_GROUP_ID(i), planner_flag_1)
+write(*,*)"suces",shape(exf)
+              plan_c2r_mpi = fftw_mpi_plan_dft_c2r_2d(nz_cint, nx_cint, exf,     &
+              exy_r, MPI_COMM_GROUP_ID(i), planner_flag_2)
+write(*,*)"check fftw plan init finish",rank,plan_c2r_mpi,plan_r2c_mpi
+
+            ENDIF
           ENDIF
         ENDIF
       ENDDO
@@ -320,7 +331,7 @@ MODULE fourier_psaotd
 
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz,ixx,iyy,izz
-    INTEGER(idp) , DIMENSION(3) :: ubound_w , lbound_w
+    INTEGER(idp) , DIMENSION(3) :: ubound_w , lbound_w, ubound_e,lbound_e
     REAL(num)    :: tmptime
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
@@ -328,7 +339,13 @@ MODULE fourier_psaotd
 
     ubound_w = UBOUND(jx)
     lbound_w = LBOUND(jx)
-
+    IF(absorbing_bcs) THEN
+      ubound_e = UBOUND(exy)
+      lbound_e = LBOUND(exy)
+    ELSE
+      ubound_e = UBOUND(ex)
+      lbound_e = LBOUND(ex)
+    ENDIF
     ! Performs copies of overlapping portions of local arrays (ex,ey,ez, etc.) 
     ! and FFT arrays (ex_r,ey_r,ez_r etc.) - non overlapping portions requires 
     ! MPI exchanges that are performed further below in this subroutine 
@@ -396,6 +413,24 @@ MODULE fourier_psaotd
       ENDDO
       !$OMP END PARALLEL DO
     ELSE IF(absorbing_bcs) THEN
+write(*,*)"shape exy_r",shape(exy_r),"rank",rank
+write(*,*)"shape exy",shape(exy),"rank",rank
+call mpi_barrier(comm,errcode)
+write(*,*)"lboud exy_r",lbound(exy_r),"rank",rank
+write(*,*)"lboud exy",lbound(exy),"rank",rank
+call mpi_barrier(comm,errcode)
+write(*,*)"size_exchanges_l2g_recv_z",size_exchanges_l2g_recv_z(1),"rank",rank
+write(*,*)"size_exchanges_l2g_recv_y",size_exchanges_l2g_recv_y(1),"rank",rank
+call mpi_barrier(comm,errcode)
+
+write(*,*)"g_first_cell_to_recv_y",g_first_cell_to_recv_y(1),"rank",rank
+write(*,*)"g_first_cell_to_recv_z",g_first_cell_to_recv_z(1),"rank",rank
+call mpi_barrier(comm,errcode)
+
+write(*,*)"l_first_cell_to_send_y",l_first_cell_to_send_y(1),"rank",rank
+write(*,*)"l_first_cell_to_send_z",l_first_cell_to_send_z(1),"rank",rank
+call mpi_barrier(comm,errcode)
+
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
      DO iz=1,size_exchanges_l2g_recv_z(1)
        DO iy =1,size_exchanges_l2g_recv_y(1)
@@ -450,25 +485,25 @@ MODULE fourier_psaotd
                   iz-1+l_first_cell_to_send_z(1))
              jx_r(ix,iy-1+g_first_cell_to_recv_y(1)                                    &
              ,iz-1+g_first_cell_to_recv_z(1))=                                         &
-                   jx(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
+                   jx(ix-ix_min_r+lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
                    iz-1+l_first_cell_to_send_z(1)+lbound_w(3)+nzguards)
              jy_r(ix,iy-1+g_first_cell_to_recv_y(1)                                    &
              ,iz-1+g_first_cell_to_recv_z(1))=                                         &
-                   jy(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
+                   jy(ix-ix_min_r+lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
                    iz-1+l_first_cell_to_send_z(1)+lbound_w(3)+nzguards)
              jz_r(ix,iy-1+g_first_cell_to_recv_y(1)                                    &
              ,iz-1+g_first_cell_to_recv_z(1))=                                         &
-                   jz(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
+                   jz(ix-ix_min_r+lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
                    iz-1+l_first_cell_to_send_z(1)+lbound_w(3)+nzguards)
 
              rho_r(ix,iy-1+g_first_cell_to_recv_y(1)                                   &
              ,iz-1+g_first_cell_to_recv_z(1))=                                         &
-                   rho(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
+                   rho(ix-ix_min_r+lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
                    iz-1+l_first_cell_to_send_z(1)+lbound_w(3)+nzguards)
 
              rhoold_r(ix,iy-1+g_first_cell_to_recv_y(1)                                &
              ,iz-1+g_first_cell_to_recv_z(1))=                                         &
-                   rhoold(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
+                   rhoold(ix-ix_min_r+lbound_w(1),iy-1+l_first_cell_to_send_y(1)+lbound_w(2)+nyguards,             &
                    iz-1+l_first_cell_to_send_z(1)+lbound_w(3)+nzguards)
 
          ENDDO
@@ -476,7 +511,8 @@ MODULE fourier_psaotd
      ENDDO
      !$OMP END PARALLEL DO
      ENDIF
-
+call mpi_barrier(comm,errcode)
+write(*,*),"after local exchange",rank
     ! Timers 
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
@@ -484,6 +520,8 @@ MODULE fourier_psaotd
 
     ! Performs MPI exchanges for non-overlapping portions of local and FFT ARRAYS 
     CALL generalized_comms_group_l2g()
+write(*,*),"after global exchange",rank
+
     !> Set splitted fields to 0 in the guardcells next to pml region to act as a
     !> reflective mirrorr
     IF(absorbing_bcs) THEN 
@@ -611,7 +649,16 @@ MODULE fourier_psaotd
         ENDIF 
       ENDIF
     ENDIF
+write(*,*),"after reflective mirror cds",rank
+
+call mpi_barrier(comm,errcode)
     CALL fft_forward_r2c_hybrid() 
+call mpi_barrier(comm,errcode)
+write(*,*),"after fft_forward_r2c_hybrids",rank
+call mpi_barrier(comm,errcode)
+
+
+
   END SUBROUTINE get_Ffields_mpi_lb 
 
  ! _______________________________________________________________________________________
@@ -792,7 +839,7 @@ MODULE fourier_psaotd
     INTEGER(idp) , DIMENSION(3) :: lbound_w , ubound_w
     
     ! Perform distributed C2R FFTs of all grid arrays (including fields, currents, charge)
-    CALL fft_backward_c2r_hybrid
+    !CALL fft_backward_c2r_hybrid
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
@@ -847,66 +894,68 @@ MODULE fourier_psaotd
     ELSE IF(absorbing_bcs) THEN
       ubound_w = UBOUND(exy)
       lbound_w = LBOUND(exy)
+write(*,*)"begin pxr.get_fields_mpi_lb"
+call mpi_barrier(comm,errcode)
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
       DO iz=1,size_exchanges_g2l_recv_z(1)
         DO iy=1,size_exchanges_g2l_recv_y(1)
           DO ix=ix_min_r, ix_max_r
 
-            exy(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            exy(ix-ix_min_r+lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
             iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards) =                                            &
                    exy_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            eyx(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            eyx(ix-ix_min_r+lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
             iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    eyx_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            ezx(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            ezx(ix-ix_min_r+lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
             iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    ezx_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            bxy(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            bxy(ix-ix_min_r+lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
             iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    bxy_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            byx(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            byx(ix-ix_min_r+lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
             iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    byx_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            bzx(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            bzx(ix-ix_min_r+lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
             iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    bzx_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                   ,iz-1+g_first_cell_to_send_z(1))
-            exz(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            exz(ix-ix_min_r+lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
             iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards) =                                            &
                    exz_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            eyz(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            eyz(ix-ix_min_r+lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
             iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    eyz_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            ezy(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            ezy(ix-ix_min_r+lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
             iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    ezy_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            bxz(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            bxz(ix-ix_min_r+lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
             iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    bxz_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            byz(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            byz(ix-ix_min_r+lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
             iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    byz_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            bzy(ix-ix_min_r-lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            bzy(ix-ix_min_r+lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
             iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    bzy_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                   ,iz-1+g_first_cell_to_send_z(1))
@@ -915,7 +964,7 @@ MODULE fourier_psaotd
       END DO
       !$OMP END PARALLEL DO
     ENDIF
-
+write(*,*)"end pxr.get_fields_mpi_lb"
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
@@ -1035,12 +1084,25 @@ MODULE fourier_psaotd
       IF(.NOT. p3dfft_flag) THEN
 #endif
        IF(absorbing_bcs) THEN
+write(*,*),"shape vold",shape(exf),shape( vold(nmatrixes)%block_vector(1)%block3dc)
+call mpi_barrier(comm,errcode)
+write(*,*)"begin first fft",which_group
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, exy_r,&
             vold(nmatrixes)%block_vector(1)%block3dc)
+!call mpi_barrier(comm,errcode)
+write(*,*)"finish first ff",rank
+call mpi_barrier(comm,errcode)
+
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, exz_r,&
             vold(nmatrixes)%block_vector(2)%block3dc)
+call mpi_barrier(comm,errcode)
+write(*,*)"finish 2 ff",rank
+
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, eyx_r,&
             vold(nmatrixes)%block_vector(3)%block3dc)
+call mpi_barrier(comm,errcode)
+write(*,*)"finish 3 ff",rank
+
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, eyz_r,&
             vold(nmatrixes)%block_vector(4)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ezx_r,&
@@ -1059,16 +1121,28 @@ MODULE fourier_psaotd
             vold(nmatrixes)%block_vector(11)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, bzy_r,&
             vold(nmatrixes)%block_vector(12)%block3dc)
+call mpi_barrier(comm,errcode)
+write(*,*)"finish 4 ff",rank
+
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jx_r,&
             vold(nmatrixes)%block_vector(13)%block3dc)
+call mpi_barrier(comm,errcode)
+write(*,*)"finish 5 ff",rank
+
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jy_r,&
             vold(nmatrixes)%block_vector(14)%block3dc)
+call mpi_barrier(comm,errcode)
+write(*,*)"finish 7 ff",rank
+
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jz_r,&
             vold(nmatrixes)%block_vector(15)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rhoold_r,&
             vold(nmatrixes)%block_vector(16)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rho_r,&
             vold(nmatrixes)%block_vector(17)%block3dc)
+call mpi_barrier(comm,errcode)
+write(*,*)"finish 9 ff",rank
+
        ELSE IF(.NOT. absorbing_bcs) THEN
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ex_r,                           &
             vold(nmatrixes)%block_vector(1)%block3dc)

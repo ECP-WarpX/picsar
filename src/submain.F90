@@ -404,33 +404,33 @@ SUBROUTINE init_pml_arrays
   DEALLOCATE(sigma_x_b); ALLOCATE(sigma_x_b(-nxguards:nx+nxguards-1))
   sigma_x_b = temp(cell_x_min(x_coords+1)-nxguards:cell_x_max(x_coords+1)+nxguards)
   DEALLOCATE(temp)
- 
-  ! > Inits sigma_y_e and sigma_y_b in the lower bound of the domain along y
-  !> axis
-  !> first, each proc will compute sigma in the whole domain
-  DO iy = 0 , ny_pml-1
-    sigma_y_e(iy) =  coeff*clight/dy*(ny_pml-iy-e_offset)**pow
-    sigma_y_b(iy) =  coeff*clight/dy*(ny_pml-iy-b_offset)**pow
-  ENDDO
-
-  ! > Inits sigma_y_e and sigma_y_b in the upper bound of the domain along y
-  !> axis
-  !> first, each proc will compute sigma in the whole domain
-  DO iy = ny_global-ny_pml,ny_global-1
-    sigma_y_e(iy) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+e_offset)**pow
-    sigma_y_b(iy-1) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+b_offset-1)**pow
-  ENDDO
+  IF(c_dim == 3) THEN 
+    ! > Inits sigma_y_e and sigma_y_b in the lower bound of the domain along y
+    !> axis
+    !> first, each proc will compute sigma in the whole domain
+    DO iy = 0 , ny_pml-1
+      sigma_y_e(iy) =  coeff*clight/dy*(ny_pml-iy-e_offset)**pow
+      sigma_y_b(iy) =  coeff*clight/dy*(ny_pml-iy-b_offset)**pow
+    ENDDO
   
-  !> Each proc extracts the relevent part of sigma 
-  ALLOCATE(temp(-nyguards:ny_global+nyguards)) 
-  temp = sigma_y_e
-  DEALLOCATE(sigma_y_e); ALLOCATE(sigma_y_e(-nyguards:ny+nyguards-1))
-  sigma_y_e = temp(cell_y_min(y_coords+1)-nyguards:cell_y_max(y_coords+1)+nyguards)
-  temp = sigma_y_b
-  DEALLOCATE(sigma_y_b); ALLOCATE(sigma_y_b(-nyguards:ny+nyguards-1))
-  sigma_y_b = temp(cell_y_min(y_coords+1)-nyguards:cell_y_max(y_coords+1)+nyguards)
-  DEALLOCATE(temp)
-
+    ! > Inits sigma_y_e and sigma_y_b in the upper bound of the domain along y
+    !> axis
+    !> first, each proc will compute sigma in the whole domain
+    DO iy = ny_global-ny_pml,ny_global-1
+      sigma_y_e(iy) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+e_offset)**pow
+      sigma_y_b(iy-1) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+b_offset-1)**pow
+    ENDDO
+    
+    !> Each proc extracts the relevent part of sigma 
+    ALLOCATE(temp(-nyguards:ny_global+nyguards)) 
+    temp = sigma_y_e
+    DEALLOCATE(sigma_y_e); ALLOCATE(sigma_y_e(-nyguards:ny+nyguards-1))
+    sigma_y_e = temp(cell_y_min(y_coords+1)-nyguards:cell_y_max(y_coords+1)+nyguards)
+    temp = sigma_y_b
+    DEALLOCATE(sigma_y_b); ALLOCATE(sigma_y_b(-nyguards:ny+nyguards-1))
+    sigma_y_b = temp(cell_y_min(y_coords+1)-nyguards:cell_y_max(y_coords+1)+nyguards)
+    DEALLOCATE(temp)
+  ENDIF
   ! > Inits sigma_z_e and sigma_z_b in the lower bound of the domain along z
   !> axis
   !> first, each proc will compute sigma in the whole domain
@@ -472,51 +472,51 @@ SUBROUTINE init_pml_arrays
   sigma_z_b = EXP(-sigma_z_b*dt/2.0_num)
 
   !> Setting domain boundaries as perfect mirror 
-  IF(x_min_boundary) THEN
-    DO ix = -nxguards,-1
-      sigma_x_e(ix) = 0.0_num
-      sigma_x_b(ix) = 0.0_num
-    ENDDO
-  ENDIF
-  IF(x_max_boundary) THEN
-    DO ix = nx,nx+nxguards-1
-      sigma_x_e(ix) = 0.0_num
-      sigma_x_b(ix-1) = 0.0_num
-    ENDDO
-    sigma_x_b(nx+nxguards-1) = 0.0_num
-  ENDIF
-
-  IF(y_min_boundary) THEN
-    DO iy = -nyguards,-1
-      sigma_y_e(iy) = 0.0_num
-      sigma_y_b(iy) = 0.0_num
-    ENDDO
-  ENDIF
-  IF(y_max_boundary) THEN
-    DO iy = ny,ny+nyguards-1
-      sigma_y_e(iy) = 0.0_num
-      sigma_y_b(iy-1) = 0.0_num
-    ENDDO
-    sigma_y_b(ny+nyguards-1) = 0.0_num
-  ENDIF 
-  IF(z_min_boundary) THEN
-    DO iz = -nzguards,-1
-      sigma_z_e(iz) = 0.0_num
-      sigma_z_b(iz) = 0.0_num
-    ENDDO
-  ENDIF
-
-  IF(z_max_boundary) THEN
-    DO iz = nz,nz+nzguards-1
-      sigma_z_e(iz) = 0.0_num
-      sigma_z_b(iz-1) = 0.0_num
-    ENDDO
-    sigma_z_b(nz+nzguards-1) = 0.0_num
-  ENDIF 
-  IF(c_dim == 2) THEN
-    sigma_y_b = 1.0_num
-    sigma_y_e = 1.0_num
-  ENDIF
+!!  IF(x_min_boundary) THEN
+!!    DO ix = -nxguards,-1
+!!      sigma_x_e(ix) = 0.0_num
+!!      sigma_x_b(ix) = 0.0_num
+!!    ENDDO
+!!  ENDIF
+!!  IF(x_max_boundary) THEN
+!!    DO ix = nx,nx+nxguards-1
+!!      sigma_x_e(ix) = 0.0_num
+!!      sigma_x_b(ix-1) = 0.0_num
+!!    ENDDO
+!!    sigma_x_b(nx+nxguards-1) = 0.0_num
+!!  ENDIF
+!!
+!!  IF(y_min_boundary) THEN
+!!    DO iy = -nyguards,-1
+!!      sigma_y_e(iy) = 0.0_num
+!!      sigma_y_b(iy) = 0.0_num
+!!    ENDDO
+!!  ENDIF
+!!  IF(y_max_boundary) THEN
+!!    DO iy = ny,ny+nyguards-1
+!!      sigma_y_e(iy) = 0.0_num
+!!      sigma_y_b(iy-1) = 0.0_num
+!!    ENDDO
+!!    sigma_y_b(ny+nyguards-1) = 0.0_num
+!!  ENDIF 
+!!  IF(z_min_boundary) THEN
+!!    DO iz = -nzguards,-1
+!!      sigma_z_e(iz) = 0.0_num
+!!      sigma_z_b(iz) = 0.0_num
+!!    ENDDO
+!!  ENDIF
+!!
+!!  IF(z_max_boundary) THEN
+!!    DO iz = nz,nz+nzguards-1
+!!      sigma_z_e(iz) = 0.0_num
+!!      sigma_z_b(iz-1) = 0.0_num
+!!    ENDDO
+!!    sigma_z_b(nz+nzguards-1) = 0.0_num
+!!  ENDIF 
+!!  IF(c_dim == 2) THEN
+!!    sigma_y_b = 1.0_num
+!!    sigma_y_e = 1.0_num
+!!  ENDIF
 
 END SUBROUTINE init_pml_arrays
 

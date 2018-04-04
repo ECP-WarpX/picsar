@@ -630,6 +630,12 @@ LOGICAL(isp)                               :: is_in_place
   WRITE(0, *) "setup_groups : start"
 #endif
 
+  IF(c_dim == 2) THEN
+    ny_global = 1_idp
+    nyguards = 0_idp
+    nyjguards = 0_idp
+  ENDIF
+
   ! - Create the base group upon which all other groups are defined
   CALL MPI_COMM_GROUP(comm, mpi_world_group, errcode)
 
@@ -755,6 +761,7 @@ LOGICAL(isp)                               :: is_in_place
   ! -- Duplicate old communicators to the variables mpi_comm_group_id,
   ! -- mpi_group_id
   DO i = 1, nb_group
+
     IF (grp_comm(i) .NE. MPI_COMM_NULL) THEN
       CALL MPI_COMM_DUP(grp_comm(i),mpi_comm_group_id(i),errcode)
       ! -- Create a MPI group associated to the local MPI communicator
@@ -944,7 +951,7 @@ LOGICAL(isp)                               :: is_in_place
             local_y0_tr=0
             local_ny_tr=nz_group
           ! Fourier arrays have same dimensions than real arrays
-          ELSE 
+          ELSE  
             alloc_local = FFTW_MPI_LOCAL_SIZE_3D(nz_group, ny_group, nx_group/2+1,      &
             mpi_comm_group_id(i), local_nz, local_z0)
             IF(local_nz .EQ. 0_idp ) THEN
@@ -970,6 +977,7 @@ LOGICAL(isp)                               :: is_in_place
           ! - Init FFT
           alloc_local = FFTW_MPI_LOCAL_SIZE_2D(nz_group, nx_group/2+1,                  &
           MPI_COMM_GROUP_ID(i), local_nz, local_z0)
+
           ! - Sanity check: if local_nz<nprocz in group, this can lead to
           ! - local_nz=0 --> Abort
           IF(local_nz .EQ. 0_idp ) THEN
@@ -1109,12 +1117,18 @@ LOGICAL(isp)                               :: is_in_place
   INT(1,isp), MPI_INTEGER8, mpi_ordered_comm_world, errcode)
 
   ! -- Store min and max indices along y in 1D arrays
+  IF (c_dim==3) THEN
   DO i=1, nprocy
     cell_y_min_g(i) = all_iy_min_global(x_coords+(i-1)*nprocx+ & 
     z_coords*nprocx*nprocy+1_idp)
     cell_y_max_g(i) = all_iy_max_global(x_coords+(i-1)*nprocx+ &
     z_coords*nprocx*nprocy+1_idp)
   ENDDO
+  ELSE
+    cell_y_min_g(1)=0
+    cell_y_max_g(1)=0 
+  ENDIF
+  
   DEALLOCATE(all_iy_max_global,all_iy_min_global)
   
   ! -- upper/lower x-boundaries of group 
@@ -1150,6 +1164,7 @@ LOGICAL(isp)                               :: is_in_place
   ALLOCATE(cell_x_min_g(nprocx),cell_x_max_g(nprocx))
   cell_x_min_g = cell_x_min - nxguards
   cell_x_max_g = cell_x_max + nxguards
+     
 
 #if defined(DEBUG)
   WRITE(0, *) "setup_groups : end"
@@ -1714,6 +1729,7 @@ ez_p => ez
 bx_p => bx
 by_p => by
 bz_p => bz
+
 
 #if defined(FFTW)
 ! ---  Allocate grid quantities in Fourier space
