@@ -109,13 +109,19 @@ MODULE mpi_routines
   !> Creation 2015
   ! ______________________________________________________________________________________
   SUBROUTINE mpi_minimal_init_python(comm_in)
+#if defined(FFTW)
+    USE mpi_fftw3
+#endif
     LOGICAL(isp) :: isinitialized
     INTEGER(isp) :: nproc_comm, rank_in_comm
     INTEGER(idp), OPTIONAL, INTENT(IN) :: comm_in
+    INTEGER(isp) :: iret
 
     CALL MPI_INITIALIZED(isinitialized, errcode)
-    IF (.NOT. isinitialized) CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE, provided,        &
-    errcode)
+    IF (.NOT. isinitialized) THEN
+      CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE, provided,  errcode)
+    ENDIF
+
     IF (present(comm_in) .AND. comm_in .GE. 0) THEN
       CALL MPI_COMM_DUP(INT(comm_in, isp), comm, errcode)
     ELSE
@@ -126,6 +132,15 @@ MODULE mpi_routines
 
     CALL MPI_COMM_RANK(comm, rank_in_comm, errcode)
     rank=INT(rank_in_comm, idp)
+#if defined(FFTW)
+    IF (.NOT. p3dfft_flag) THEN
+      CALL DFFTW_INIT_THREADS(iret)
+      IF( fftw_with_mpi) THEN
+        CALL FFTW_MPI_INIT()
+      ENDIF
+    ENDIF
+#endif
+
 
   END SUBROUTINE mpi_minimal_init_python
 
