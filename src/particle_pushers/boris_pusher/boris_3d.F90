@@ -252,7 +252,10 @@ SUBROUTINE pxr_boris_push_u_3d_block(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, 
   ENDDO
 END SUBROUTINE
 
+SUBROUTINE pxr_boris_push_u_3d_block_rr
 
+
+END SUBROUTINE 
 ! ________________________________________________________________________________________
 !> @brief
 !> Advance particle positions
