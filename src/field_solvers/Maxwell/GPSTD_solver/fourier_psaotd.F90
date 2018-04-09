@@ -492,7 +492,6 @@ MODULE fourier_psaotd
 
     ! Performs MPI exchanges for non-overlapping portions of local and FFT ARRAYS 
     CALL generalized_comms_group_l2g()
-
     !> Set splitted fields to 0 in the guardcells next to pml region to act as a
     !> reflective mirrorr
     IF(absorbing_bcs) THEN 
@@ -822,32 +821,32 @@ MODULE fourier_psaotd
       DO iz=1,size_exchanges_g2l_recv_z(1)
         DO iy=1,size_exchanges_g2l_recv_y(1)
           DO ix=ix_min_r, ix_max_r
-            ex(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            ex(ix-ix_min_r+lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
             iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards) =                                            &
                    ex_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            ey(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            ey(ix-ix_min_r+lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
             iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    ey_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            ez(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            ez(ix-ix_min_r+lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
             iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    ez_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            bx(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            bx(ix-ix_min_r+lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
             iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    bx_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            by(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            by(ix-ix_min_r+lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
             iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    by_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                    ,iz-1+g_first_cell_to_send_z(1))
 
-            bz(ix-ix_min_r-nxguards,iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
+            bz(ix-ix_min_r+lbound_w(1),iy-1+l_first_cell_to_recv_y(1) + lbound_w(2)+nyguards,                      &
             iz-1+l_first_cell_to_recv_z(1) + lbound_w(3)+nzguards)=                                             &
                    bz_r(ix,iy-1+g_first_cell_to_send_y(1)                                &
                   ,iz-1+g_first_cell_to_send_z(1))
@@ -1589,6 +1588,8 @@ MODULE fourier_psaotd
     ENDIF
     !> Init matrix blocks for psatd
     CALL init_gpstd()
+    IF(rank==0) WRITE(0, *) 'INIT GPSTD MATRIX DONE'
+
 
     !> If g_spectral == .TRUE. then exf is not initialized in mpi_routine.F90
     !> Instead, vector blocks structures are used to store fourier fields
@@ -1608,7 +1609,6 @@ MODULE fourier_psaotd
     !> NB: if p3dfft is used, then the init is performed in mpi_routines during
     !> p3dfft_setup
     IF(.NOT. p3dfft_flag ) THEN
-      IF(rank==0) WRITE(0, *) 'INIT GPSTD MATRIX DONE'
       !> if fftw_with_mpi perform fftw_init_plans in the following routine
       IF (fftw_with_mpi) THEN
         CALL init_plans_fourier_mpi(nopenmp)
