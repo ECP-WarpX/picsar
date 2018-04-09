@@ -134,7 +134,7 @@ MODULE fields
   !> Flag: use psatd with multiply_mat_vector_routine (not suited for prod)
   LOGICAL(lp) :: g_spectral = .FALSE.
   !> Flag: use of staggered grid
-  LOGICAL(lp) :: l_staggered
+  LOGICAL(lp) :: l_staggered = .TRUE.
   !> Flag: this flag needs a description, used in field gathering routines
   LOGICAL(lp) :: l4symtry
   INTEGER(idp):: nxs=0, nys=0, nzs=0

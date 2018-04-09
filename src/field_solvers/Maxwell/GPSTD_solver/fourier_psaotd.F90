@@ -943,6 +943,7 @@ MODULE fourier_psaotd
     REAL(num)   :: tmptime
     INTEGER(idp), INTENT(IN)    ::   nfftx,nffty,nfftz
     
+
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
@@ -1188,6 +1189,8 @@ MODULE fourier_psaotd
     REAL(num)   :: tmptime
     INTEGER(idp), INTENT(IN)     :: nfftx,nffty,nfftz
 
+
+
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
@@ -1243,6 +1246,8 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
     ENDIF
+
+
 
   END SUBROUTINE fft_backward_c2r_local
 
@@ -1422,7 +1427,7 @@ MODULE fourier_psaotd
 
           ! - Ey
           eyf(ix, iy, iz) = cc_mat(nmatrixes)%block_matrix2d(2, 2)%block3dc(ix, iy,   &
-          iz)*eyfold + cc_mat(nmatrixes)%block_matrix2d(2, 4)%block3dc(ix, iy,        &
+          iz)*eyfold  + cc_mat(nmatrixes)%block_matrix2d(2, 4)%block3dc(ix, iy,        &
           iz)*bxfold  + cc_mat(nmatrixes)%block_matrix2d(2, 6)%block3dc(ix, iy,       &
           iz)*bzfold  + cc_mat(nmatrixes)%block_matrix2d(2, 8)%block3dc(ix, iy,       &
           iz)*jyf(ix, iy, iz) 

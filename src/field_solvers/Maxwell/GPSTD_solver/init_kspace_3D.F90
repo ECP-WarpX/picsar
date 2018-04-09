@@ -294,8 +294,8 @@ MODULE gpstd_solver
     USE mpi_fftw3
     USE omp_lib
     USE shared_data
-    USE fields, ONLY : nxguards, nyguards, nzguards
-    USE fields, ONLY : norderx, nordery, norderz, l_staggered
+    USE fields, ONLY : nxguards, nyguards, nzguards, l_staggered
+    USE fields, ONLY : norderx, nordery, norderz
     USE params, ONLY : dt
     REAL(num), ALLOCATABLE, DIMENSION(:, :, :)    :: temp, temp2
     INTEGER(idp)                                  :: i, j, k
@@ -972,7 +972,7 @@ MODULE gpstd_solver
     !> Delete kspace and at_op blocks
     !> Might not delete these blocks if current filtering or field correction is
     !> needed in Fourier space
-    CALL delete_k_space
+    !CALL delete_k_space
   END SUBROUTINE init_gpstd
 
   ! ______________________________________________________________________________________
