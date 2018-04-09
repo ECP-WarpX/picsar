@@ -1,0 +1,30 @@
+# **Installation of the PICSAR Python full mode**
+
+In order to use highly scalable hybrid PSATD with WARP through PICSAR library, 
+you will need to install FFTW_MPI and P3DFFT library.
+
+
+P3DFFT library can be downloaded here:
+"https://www.p3dfft.net/"
+To install FFTW_MPI you can follow the instructions here :
+http://www.fftw.org/fftw2_doc/fftw_6.html
+
+
+
+## Editing configure file:
+
+In configure file line 36: 
+Set 
+fftw_lib="/path_to_fftw_directory/lib"
+p3dfft_lib="/path_to_p3dfft_directory/lib"
+
+Detect the architecture you are using (example : edison+knl+intel)
+
+You need to modify fargs variable that corresponds to your architechture by adding "-D FFTW=1" flag and the path to your fftw and p3dfft libraries
+Example: if you are using MIRA then fargs should look like this (line 49):
+fargs = '"-O3 -fopenmp -D FFTW=1 -I /path_to_fftw/include -I /path_to_p3dfft/include -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0  "'
+
+Finally type:
+python configure --full_pxr True --other_flags ...
+
+

@@ -55,7 +55,7 @@ Clone `picsar` where you want to install it.
 If you have already installed Warp,
 we recommend to put it in the same installation directory: `$SCRATCH/warp_install`.
 
-After `cd` in the `picsar` directory, use the command `./configure` to prepare
+After `cd` in the `picsar` directory, use the command `./configure` or 'python configure --full_pxr True' (to use Hybrid PSATD) to prepare
 the `Makefile`.
 In addition, you have the possibility to use either the GNU or
 the Intel compiler for an optimized compilation for either Haswell or

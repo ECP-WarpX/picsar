@@ -34,7 +34,7 @@ args = parser.parse_args()
 
 if(args.full_pxr=='True'):
     fftw_lib = '/home/kallala/develop/install_fftw/lib'
-    p3dfft_lib = ''
+    p3dfft_lib = ''   #does not work for now
     
 # Check if we are on Edison or Cori, at NERSC
 if host.startswith('edison') or host.startswith('cori'):
@@ -63,7 +63,7 @@ else:
     if(args.full_pxr=='False'):
         fargs = '"-O3 -fopenmp -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0"'
     else:
-        fargs = '"-O3 -fopenmp -D FFTW=1  -I /home/kallala/develop/install_fftw/include -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0  "'
+        fargs = '"-O3 -fopenmp -D FFTW=1 -I /home/kallala/develop/install_fftw/include -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0  "'
     # Parse the result of mpif90 -show
     parsed_mpi = True   # By default ; errors modify this flag
     try:
