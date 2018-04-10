@@ -61,7 +61,7 @@ else:
     comp = 'mpif90'
     fcomp = 'gfortran'
     if(args.full_pxr=='False'):
-        fargs = '"-O3 -fopenmp -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0"'
+        fargs = '"-O3 -fopenmp -D FFTW=1 -I /usr/include  -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0"'
     else:
         fargs = '"-O3 -fopenmp -D FFTW=1 -I /usr/include -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0  "'
     # Parse the result of mpif90 -show

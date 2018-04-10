@@ -1201,9 +1201,12 @@ MODULE shared_data
   INTEGER(idp) :: nb_group_z, nb_group_y, nb_group_x
   !> Group guard cells in : (only nzg_group  and nyg_group are relevant for now)
   INTEGER(idp)  :: nzg_group, nyg_group, nxg_group
-  LOGICAL(lp)   :: p3dfft_flag=.FALSE.
-  LOGICAL(lp)   :: p3dfft_stride=.FALSE.
-  LOGICAL(lp)   :: absorbing_bcs, absorbing_bcs_x , absorbing_bcs_y , absorbing_bcs_z
+  LOGICAL(lp)   :: p3dfft_flag     = .FALSE.
+  LOGICAL(lp)   :: p3dfft_stride   = .FALSE.
+  LOGICAL(lp)   :: absorbing_bcs   =   .FALSE.
+  LOGICAL(lp)   :: absorbing_bcs_x = .FALSE.
+  LOGICAL(lp)   :: absorbing_bcs_y = .FALSE.
+  LOGICAL(lp)   :: absorbing_bcs_z = .FALSE.
   !> First and last indexes of real data in group (only z is relevant for now)
   INTEGER(idp)  ::   iz_min_r, iz_max_r, iy_min_r, iy_max_r, ix_min_r, ix_max_r
 

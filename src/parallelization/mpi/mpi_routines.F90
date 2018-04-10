@@ -1672,10 +1672,15 @@ DO iproc = 1, nprocx
   x_grid_mins(iproc) = x_global(cell_x_min(iproc))
   x_grid_maxs(iproc) = x_global(cell_x_max(iproc)+1)
 ENDDO
-DO iproc = 1, nprocy
-  y_grid_mins(iproc) = y_global(cell_y_min(iproc))
-  y_grid_maxs(iproc) = y_global(cell_y_max(iproc)+1)
-ENDDO
+IF(c_dim == 3) THEN
+  DO iproc = 1, nprocy
+    y_grid_mins(iproc) = y_global(cell_y_min(iproc))
+    y_grid_maxs(iproc) = y_global(cell_y_max(iproc)+1)
+  ENDDO
+ELSE
+ y_grid_mins(1) = 0
+ y_grid_maxs(1) = 0
+ENDIF 
 DO iproc = 1, nprocz
   z_grid_mins(iproc) = z_global(cell_z_min(iproc))
   z_grid_maxs(iproc) = z_global(cell_z_max(iproc)+1)
