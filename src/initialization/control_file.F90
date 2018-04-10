@@ -91,6 +91,9 @@ MODULE control_file
     ny_pml = 0_idp 
     nz_pml = 0_idp
     absorbing_bcs = .FALSE.
+    absorbing_bcs_x = .FALSE.
+    absorbing_bcs_y = .FALSE.
+    absorbing_bcs_z = .FALSE.
     l_nodalgrid = .FALSE.
     l_spectral = .FALSE.! (no spectral solver by default)
     g_spectral = .FALSE.! (no spectral sovler by default)
@@ -330,9 +333,15 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'l_spectral') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) l_spectral
-      ELSE IF (INDEX(buffer, 'absorbing_bcs') .GT. 0) THEN
+      ELSE IF (INDEX(buffer, 'absorbing_bcs_x') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
-        READ(buffer, *) absorbing_bcs
+        READ(buffer, *) absorbing_bcs_x
+      ELSE IF (INDEX(buffer, 'absorbing_bcs_y') .GT. 0) THEN
+        CALL GETARG(i+1, buffer)
+        READ(buffer, *) absorbing_bcs_y
+      ELSE IF (INDEX(buffer, 'absorbing_bcs_z') .GT. 0) THEN
+        CALL GETARG(i+1, buffer)
+        READ(buffer, *) absorbing_bcs_z
       ELSE IF (INDEX(buffer, 'nxpml') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, '(i10)') nx_pml
@@ -410,9 +419,15 @@ MODULE control_file
 #endif
       ELSE IF (INDEX(buffer, 'c_dim') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
-        READ(buffer, *) c_dim
+        READ(buffer, *) c_dim 
+        IF(c_dim == 2) ny = 1_idp
       END IF
     END DO
+ 
+    ! > IF absorbing_bcs_i == .TRUE. then set absorbing_bcs = .TRUE. 
+    ! > to init splitted fields block matri
+    IF(absorbing_bcs_x .OR. absorbing_bcs_y .OR. absorbing_bcs_z) absorbing_bcs = .TRUE.
+
     RETURN
   END SUBROUTINE read_from_cl
 
@@ -526,6 +541,7 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'c_dim') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') c_dim
+        IF(c_dim == 2) ny = 1_idp
       ELSE IF (INDEX(buffer, 'end::cpusplit') .GT. 0) THEN
         end_section =.TRUE.
       END IF
@@ -636,9 +652,15 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'l_spectral') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) l_spectral
-      ELSE IF (INDEX(buffer, 'absorbing_bcs') .GT. 0) THEN
+      ELSE IF (INDEX(buffer, 'absorbing_bcs_x') .GT. 0) THEN
         ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), *) absorbing_bcs
+        READ(buffer(ix+1:string_length), *) absorbing_bcs_x
+      ELSE IF (INDEX(buffer, 'absorbing_bcs_y') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) absorbing_bcs_y
+      ELSE IF (INDEX(buffer, 'absorbing_bcs_z') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) absorbing_bcs_z
       ELSE IF (INDEX(buffer, 'g_spectral') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) g_spectral
@@ -677,6 +699,11 @@ MODULE control_file
         end_section =.TRUE.
       END IF
     END DO
+
+    ! > IF absorbing_bcs_i == .TRUE. then set absorbing_bcs = .TRUE. 
+    ! > to init splitted fields block matrixes
+    IF(absorbing_bcs_x .OR. absorbing_bcs_y .OR. absorbing_bcs_z) absorbing_bcs = .TRUE.
+
     RETURN
   END SUBROUTINE read_solver_section
 
