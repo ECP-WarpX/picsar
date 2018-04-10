@@ -33,7 +33,7 @@ args = parser.parse_args()
    
 
 if(args.full_pxr=='True'):
-    fftw_lib = ''
+    fftw_lib = '/usr/lib/x86_64-linux-gnu'
     p3dfft_lib = ''   #does not work for now
     
 # Check if we are on Edison or Cori, at NERSC
@@ -63,7 +63,7 @@ else:
     if(args.full_pxr=='False'):
         fargs = '"-O3 -fopenmp -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0"'
     else:
-        fargs = '"-O3 -fopenmp  -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0  "'
+        fargs = '"-O3 -fopenmp -D FFTW=1 -I /usr/include -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0  "'
     # Parse the result of mpif90 -show
     parsed_mpi = True   # By default ; errors modify this flag
     try:
@@ -96,7 +96,7 @@ else:
 
 if(args.full_pxr=='True'):
     libdir_list.append(fftw_lib)
-    libs += ''
+    libs += ' -lfftw3 -lfftw3_omp -lfftw3_mpi '
 
 # Read the file Makefile_Forthon.in
 with open('Makefile_Forthon.in') as f:
