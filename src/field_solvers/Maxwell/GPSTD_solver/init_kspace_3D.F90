@@ -1054,10 +1054,6 @@ MODULE gpstd_solver
       *cc_mat(nmatrixes)%block_matrix2d(j, 16_idp)%block3dc
     ENDDO
     !> End contribution rhooldf to E
-    IF(switch) THEN
-      Kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1) = DCMPLX(0.0_num,&
-      0.0_num)
-    ENDIF
     
     !> Begin contribution rhof to E
     !> rho only contributes to bxy, byx, bzx
@@ -1395,10 +1391,6 @@ MODULE gpstd_solver
       cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc = 1.0_num/eps0             &
       *cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc
     ENDDO
-    IF(switch) THEN
-      kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1) = DCMPLX(0.0_num,         &
-      0.0_num)
-    ENDIF
     !> End contribution of rhoold field to E field
   
     !> Contribution of rho field to E field
