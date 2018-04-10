@@ -578,6 +578,7 @@ ELSE
   ENDDO
 
 ENDIF
+
 IF(absorbing_bcs) THEN
   CALL get_non_periodic_mpi_bcs()
 ENDIF
@@ -594,14 +595,18 @@ END SUBROUTINE setup_communicator
 !> 2018
 ! ______________________________________________________________________________________
 SUBROUTINE get_non_periodic_mpi_bcs()
-
-  IF(x_min_boundary) proc_x_min = MPI_PROC_NULL
-  IF(x_max_boundary) proc_x_max = MPI_PROC_NULL
-  IF(y_min_boundary) proc_y_min = MPI_PROC_NULL
-  IF(y_max_boundary) proc_y_max = MPI_PROC_NULL
-  IF(z_min_boundary) proc_z_min = MPI_PROC_NULL
-  IF(z_max_boundary) proc_z_max = MPI_PROC_NULL
-
+  IF(absorbing_bcs_x) THEN
+    IF(x_min_boundary) proc_x_min = MPI_PROC_NULL
+    IF(x_max_boundary) proc_x_max = MPI_PROC_NULL
+  ENDIF
+  IF(absorbing_bcs_y) THEN
+    IF(y_min_boundary) proc_y_min = MPI_PROC_NULL
+    IF(y_max_boundary) proc_y_max = MPI_PROC_NULL
+  ENDIF
+  IF(absorbing_bcs_z) THEN
+    IF(z_min_boundary) proc_z_min = MPI_PROC_NULL
+    IF(z_max_boundary) proc_z_max = MPI_PROC_NULL
+  ENDIF
 END SUBROUTINE get_non_periodic_mpi_bcs
 
 ! ______________________________________________________________________________________
@@ -1304,6 +1309,9 @@ IF (l_smooth_compensate) THEN
   nyguards = nyguards + 1
   nzguards = nzguards + 1
 END IF
+
+! Init boundary conditions
+IF(absorbing_bcs_x .OR. absorbing_bcs_y .OR. absorbing_bcs_z) absorbing_bcs = .TRUE.
 
 CALL setup_communicator
 ALLOCATE(x_grid_mins(1:nprocx), x_grid_maxs(1:nprocx))

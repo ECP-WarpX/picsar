@@ -750,7 +750,7 @@ END SUBROUTINE get_2Dintersection
       CALL compute_send_recv_sizes_and_index_g2l_copies(iz1min, iz1max, iz2min,     &
       iz2max, size_exchanges_l2g_recv_z(i), g_first_cell_to_recv_z(i),              &
       size_exchanges_g2l_send_z(i), g_first_cell_to_send_z(i),cell_min_group_z,     &
-      cell_max_group_z, nz_global,nzg_group)
+      cell_max_group_z, nz_global,nzg_group,absorbing_bcs_z)
     ENDDO
 
       ALLOCATE(size_exchanges_l2g_recv_y(nprocy)); size_exchanges_l2g_recv_y = 0_idp
@@ -773,7 +773,7 @@ END SUBROUTINE get_2Dintersection
          iy2min,iy2max,size_exchanges_l2g_recv_y(i),                                   &
          g_first_cell_to_recv_y(i),                                                    &
          size_exchanges_g2l_send_y(i), g_first_cell_to_send_y(i),cell_min_group_y,&
-         cell_max_group_y,ny_global,nyg_group)
+         cell_max_group_y,ny_global,nyg_group,absorbing_bcs_y)
       ENDDO
     ELSE 
        !if not using p3dfft then f_indexes are set manually to contain guardcells (in
@@ -808,7 +808,7 @@ END SUBROUTINE get_2Dintersection
       CALL compute_send_recv_sizes_and_index_l2g_copies(iz1min, iz1max, iz2min,     &
       iz2max,size_exchanges_g2l_recv_z(i), l_first_cell_to_recv_z(i),                  &
       size_exchanges_l2g_send_z(i), l_first_cell_to_send_z(i),                         &
-      cell_min_group_z,cell_max_group_z,nz_global,nzg_group)
+      cell_min_group_z,cell_max_group_z,nz_global,nzg_group,absorbing_bcs_z)
     ENDDO
       ALLOCATE(size_exchanges_g2l_recv_y(nprocy));size_exchanges_g2l_recv_y = 0_idp
       ALLOCATE(l_first_cell_to_recv_y(nprocy));l_first_cell_to_recv_y = 0_idp
@@ -830,7 +830,7 @@ END SUBROUTINE get_2Dintersection
         CALL compute_send_recv_sizes_and_index_l2g_copies(iy1min, iy1max, iy2min,   &
         iy2max,size_exchanges_g2l_recv_y(i), l_first_cell_to_recv_y(i),                &
         size_exchanges_l2g_send_y(i), l_first_cell_to_send_y(i),                       &
-        cell_min_group_y,cell_max_group_y,ny_global,nyg_group)
+        cell_min_group_y,cell_max_group_y,ny_global,nyg_group,absorbing_bcs_y)
       ENDDO
     ELSE 
       !-- when not using p3dfft r_indexes in y direction are set manually to perform
@@ -1467,7 +1467,7 @@ END SUBROUTINE get_2Dintersection
         (iz1min ,iz1max ,iz2min ,iz2max,                                      &
         size_to_exchange_recv, first_cell_recv,                               &
         size_to_exchange_send,first_cell_send,cell_g_min,cell_g_max,n_global, &
-        n_guards)
+        n_guards,is_open_bc)
     USE picsar_precision
     INTEGER(idp) , INTENT(IN)  :: iz1min, iz1max, iz2min, iz2max
     INTEGER(idp) , INTENT(INOUT)  ::   size_to_exchange_recv, first_cell_recv
@@ -1476,6 +1476,7 @@ END SUBROUTINE get_2Dintersection
     INTEGER(idp)                  :: select_case
     INTEGER(idp) , INTENT(IN)     :: cell_g_max,cell_g_min
     INTEGER(idp) , INTENT(IN)     :: n_global, n_guards
+    LOGIcAL(lp)  , INTENT(IN)     :: is_open_bc
 
 #if defined(FFTW)    
     index_ff = MAX(iz2min, cell_g_min)
@@ -1535,11 +1536,11 @@ END SUBROUTINE get_2Dintersection
       ! -- area near the opposite edge of the domain
       ! - In that case, we have to take into account simulation domain boundaries
       ! in  MPI exchanges (periodic, reflective, PML etc.) 
-      IF(absorbing_bcs) THEN
+      IF(is_open_bc) THEN
         size_to_exchange_send = 0_idp ! if absorbing_bcs then don't check
                                       ! intersection outside the simulation
                                       ! domain
-      ELSE IF(.NOT. absorbing_bcs) THEN
+      ELSE IF(.NOT. is_open_bc) THEN
         index_ff = MODULO(iz2min,n_global)
         index_fl = MODULO(iz2max,n_global)
         size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + &
@@ -1555,10 +1556,10 @@ END SUBROUTINE get_2Dintersection
 
    ELSE IF (select_case ==2) THEN
      ! -- First half intersection  
-      IF(absorbing_bcs) THEN
+      IF(is_open_bc) THEN
         size_to_exchange_send = 0_idp ! if absorbing bcs then don't check
                                       ! intersection outside the simulation domain 
-      ELSE IF(.NOT. absorbing_bcs) THEN
+      ELSE IF(.NOT. is_open_bc) THEN
         index_ff = MODULO(iz2min,n_global)
         index_fl = n_global - 1_idp
         size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + &
@@ -1578,9 +1579,9 @@ END SUBROUTINE get_2Dintersection
       ENDIF
 
     ELSE IF (select_case == 3) THEN
-      IF(absorbing_bcs) THEN
+      IF(is_open_bc) THEN
         size_to_exchange_send = 0_idp 
-      ELSE IF(.NOT. absorbing_bcs) THEN  
+      ELSE IF(.NOT. is_open_bc) THEN  
         index_ff = 0_idp
         index_fl = MODULO(iz2max,n_global)
         size_to_exchange_send = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) + &
@@ -1646,7 +1647,7 @@ SUBROUTINE compute_send_recv_sizes_and_index_g2l_copies                         
         (iz1min,iz1max,iz2min,iz2max,                                             &
         size_to_exchange_recv,first_cell_recv,                                    &
         size_to_exchange_send,first_cell_send,cell_g_min,cell_g_max,n_global, &
-        n_guards)
+        n_guards,is_open_bc)
     USE picsar_precision
     INTEGER(idp) , INTENT(IN)  :: iz1min, iz1max, iz2min, iz2max
     INTEGER(idp)               :: iz1min_temp
@@ -1656,6 +1657,7 @@ SUBROUTINE compute_send_recv_sizes_and_index_g2l_copies                         
     INTEGER(idp)                  :: select_case
     INTEGER(idp) ,INTENT(IN)      :: cell_g_min, cell_g_max
     INTEGER(idp), INTENT(IN)      :: n_global,n_guards
+    LOGICAL(lp), INTENT(IN)       :: is_open_bc   
 
 #if defined(FFTW)
     !-- set a flag for different possible configurations for global field limits
@@ -1694,11 +1696,11 @@ SUBROUTINE compute_send_recv_sizes_and_index_g2l_copies                         
        1_idp,0_idp)
       first_cell_recv = MAX(index_ff,index_rf) - index_ff + 1
     ELSE IF(select_case == 1_idp) THEN
-      IF(absorbing_bcs) THEN
+      IF(is_open_bc) THEN
         size_to_exchange_recv = 0_idp ! if absorbing bcs then don't check
                                       ! intersection outside the simulation
                                       ! domain
-      ELSE IF(.NOT. absorbing_bcs) THEN
+      ELSE IF(.NOT. is_open_bc) THEN
         index_ff = MODULO(iz1min,n_global) ! This treats the case of periodic bc 
         index_fl = MODULO(iz1max,n_global) ! This treats the case of periodic bc
         size_to_exchange_recv = MAX(MIN(index_rl,index_fl) - MAX(index_rf,index_ff) +   &
@@ -1706,11 +1708,11 @@ SUBROUTINE compute_send_recv_sizes_and_index_g2l_copies                         
         first_cell_recv = MAX(index_ff,index_rf) - index_ff + 1 
       ENDIF
     ELSE IF(select_case == 2) THEN
-      IF(absorbing_bcs) THEN
+      IF(is_open_bc) THEN
         size_to_exchange_recv = 0_idp  ! if absorbing bcs then don't check
                                        ! intersection outside the simulation
                                        ! domain
-      ELSE IF(.NOT. absorbing_bcs) THEN 
+      ELSE IF(.NOT. is_open_bc) THEN 
       ! - First compute intersection of part outside the simulation domain 
         index_ff = MODULO(iz1min,n_global) ! - This assume periodic bc 
         index_fl = n_global - 1_idp        ! - This assume periodic bc 
@@ -1728,10 +1730,10 @@ SUBROUTINE compute_send_recv_sizes_and_index_g2l_copies                         
         first_cell_recv = MAX(index_ff,index_rf) - index_ff + 1 - iz1min 
       ENDIF
     ELSE IF(select_case == 3) THEN
-      IF(absorbing_bcs) THEN
+      IF(is_open_bc) THEN
         size_to_exchange_recv = 0_idp  ! if absorbing bcs then don't check
                                        ! intersection outside the simulation domain 
-      ELSE IF(.NOT. absorbing_bcs) THEN
+      ELSE IF(.NOT. is_open_bc) THEN
       ! - First compute intersection outside the simulation domain 
         index_ff = 0_idp
         index_fl = MODULO(iz1max,n_global)

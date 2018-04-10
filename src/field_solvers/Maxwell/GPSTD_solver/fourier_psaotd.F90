@@ -184,8 +184,8 @@ MODULE fourier_psaotd
 #if !defined(LIBRARY)
      CALL copy_field_forward()
 #endif
-    IF(absorbing_bcs) THEN 
-    ! reflective bcs after pml
+   ! reflective bcs after pml
+    IF(absorbing_bcs_x) THEN
       IF(x_min_boundary) THEN
         DO ix = -nxguards,-1
           exy_r(ix,:,:) = 0.0_num
@@ -222,7 +222,9 @@ MODULE fourier_psaotd
         bzx_r(nx+nxguards-1,:,:) = 0.0_num
         bzy_r(nx+nxguards-1,:,:) = 0.0_num
       ENDIF
-      IF(c_dim == 3) THEN 
+    ENDIF
+    IF(c_dim == 3) THEN 
+      IF(absorbing_bcs_y) THEN
         IF(y_min_boundary) THEN
           DO iy = -nyguards,-1
             exy_r(:,iy,:) = 0.0_num
@@ -260,6 +262,8 @@ MODULE fourier_psaotd
           bzy_r(:,ny+nyguards-1,:) = 0.0_num
         ENDIF
       ENDIF
+    ENDIF
+    IF(absorbing_bcs_z) THEN
       IF(z_min_boundary) THEN
         DO iz = -nzguards,-1
           exy_r(:,:,iz) = 0.0_num
@@ -496,127 +500,133 @@ MODULE fourier_psaotd
     !> reflective mirrorr
     IF(absorbing_bcs) THEN 
     ! reflective bcs after pml
-      IF(is_group_x_boundary_min) THEN
-        DO ix = cell_x_min_g(x_coords+1),-1
-          ixx = ix-cell_x_min_g(x_coords+1)+1_idp
-          exy_r(ixx,:,:) = 0.0_num
-          exz_r(ixx,:,:) = 0.0_num
-          eyx_r(ixx,:,:) = 0.0_num
-          eyz_r(ixx,:,:) = 0.0_num
-          ezx_r(ixx,:,:) = 0.0_num  
-          ezy_r(ixx,:,:) = 0.0_num
-          bxy_r(ixx,:,:) = 0.0_num
-          bxz_r(ixx,:,:) = 0.0_num
-          byx_r(ixx,:,:) = 0.0_num
-          byz_r(ixx,:,:) = 0.0_num
-          bzx_r(ixx,:,:) = 0.0_num
-          bzy_r(ixx,:,:) = 0.0_num
-        ENDDO
-      ENDIF
-      IF(is_group_x_boundary_max) THEN
-        DO ix=nx_global ,cell_x_max_g(x_coords+1) 
-          ixx = ix - cell_x_min_g(x_coords+1)+1_idp 
-          exy_r(ixx,:,:) = 0.0_num
-          exz_r(ixx,:,:) = 0.0_num
-          eyx_r(ixx,:,:) = 0.0_num
-          eyz_r(ixx,:,:) = 0.0_num
-          ezx_r(ixx,:,:) = 0.0_num
-          ezy_r(ixx,:,:) = 0.0_num
-          bxy_r(ixx,:,:) = 0.0_num
-          bxz_r(ixx,:,:) = 0.0_num
-          byx_r(ixx-1,:,:) = 0.0_num
-          byz_r(ixx-1,:,:) = 0.0_num
-          bzx_r(ixx-1,:,:) = 0.0_num
-          bzy_r(ixx-1,:,:) = 0.0_num
-        ENDDO
-        IF(x_max_boundary) THEN
-          byx_r(ixx,:,:) = 0.0_num
-          byz_r(ixx,:,:) = 0.0_num
-          bzx_r(ixx,:,:) = 0.0_num
-          bzy_r(ixx,:,:) = 0.0_num
-        ENDIF        
-      ENDIF
-      IF(c_dim == 3_idp) THEN
-        IF(is_group_y_boundary_min) THEN
-          DO iy = cell_y_min_g(y_coords+1),-1
-            iyy = iy-cell_y_min_g(y_coords+1)+1_idp
-            exy_r(:,iyy,:) = 0.0_num
-            exz_r(:,iyy,:) = 0.0_num
-            eyx_r(:,iyy,:) = 0.0_num
-            eyz_r(:,iyy,:) = 0.0_num
-            ezx_r(:,iyy,:) = 0.0_num
-            ezy_r(:,iyy,:) = 0.0_num
-            bxy_r(:,iyy,:) = 0.0_num
-            bxz_r(:,iyy,:) = 0.0_num
-            byx_r(:,iyy,:) = 0.0_num
-            byz_r(:,iyy,:) = 0.0_num
-            bzx_r(:,iyy,:) = 0.0_num
-            bzy_r(:,iyy,:) = 0.0_num
+      IF(absorbing_bcs_x) THEN
+        IF(is_group_x_boundary_min) THEN
+          DO ix = cell_x_min_g(x_coords+1),-1
+            ixx = ix-cell_x_min_g(x_coords+1)+1_idp
+            exy_r(ixx,:,:) = 0.0_num
+            exz_r(ixx,:,:) = 0.0_num
+            eyx_r(ixx,:,:) = 0.0_num
+            eyz_r(ixx,:,:) = 0.0_num
+            ezx_r(ixx,:,:) = 0.0_num  
+            ezy_r(ixx,:,:) = 0.0_num
+            bxy_r(ixx,:,:) = 0.0_num
+            bxz_r(ixx,:,:) = 0.0_num
+            byx_r(ixx,:,:) = 0.0_num
+            byz_r(ixx,:,:) = 0.0_num
+            bzx_r(ixx,:,:) = 0.0_num
+            bzy_r(ixx,:,:) = 0.0_num
           ENDDO
         ENDIF
-        IF(is_group_y_boundary_max) THEN
-          DO iy=ny_global ,cell_y_max_g(y_coords+1)  
-            iyy = iy - cell_y_min_g(y_coords+1)+1_idp 
-            exy_r(:,iyy,:) = 0.0_num
-            exz_r(:,iyy,:) = 0.0_num
-            eyx_r(:,iyy,:) = 0.0_num
-            eyz_r(:,iyy,:) = 0.0_num
-            ezx_r(:,iyy,:) = 0.0_num
-            ezy_r(:,iyy,:) = 0.0_num
-            bxy_r(:,iyy-1,:) = 0.0_num
-            bxz_r(:,iyy-1,:) = 0.0_num
-            byx_r(:,iyy,:) = 0.0_num
-            byz_r(:,iyy,:) = 0.0_num
-            bzx_r(:,iyy-1,:) = 0.0_num
-            bzy_r(:,iyy-1,:) = 0.0_num
+        IF(is_group_x_boundary_max) THEN
+          DO ix=nx_global ,cell_x_max_g(x_coords+1) 
+            ixx = ix - cell_x_min_g(x_coords+1)+1_idp 
+            exy_r(ixx,:,:) = 0.0_num
+            exz_r(ixx,:,:) = 0.0_num
+            eyx_r(ixx,:,:) = 0.0_num
+            eyz_r(ixx,:,:) = 0.0_num
+            ezx_r(ixx,:,:) = 0.0_num
+            ezy_r(ixx,:,:) = 0.0_num
+            bxy_r(ixx,:,:) = 0.0_num
+            bxz_r(ixx,:,:) = 0.0_num
+            byx_r(ixx-1,:,:) = 0.0_num
+            byz_r(ixx-1,:,:) = 0.0_num
+            bzx_r(ixx-1,:,:) = 0.0_num
+            bzy_r(ixx-1,:,:) = 0.0_num
           ENDDO
-          IF(y_max_boundary) THEN
-            bxy_r(:,iyy,:) = 0.0_num
-            bxz_r(:,iyy,:) = 0.0_num
-            bzx_r(:,iyy,:) = 0.0_num
-            bzy_r(:,iyy,:) = 0.0_num
+          IF(x_max_boundary) THEN
+            byx_r(ixx,:,:) = 0.0_num
+            byz_r(ixx,:,:) = 0.0_num
+            bzx_r(ixx,:,:) = 0.0_num
+            bzy_r(ixx,:,:) = 0.0_num
+          ENDIF        
+        ENDIF
+      ENDIF
+      IF(c_dim == 3_idp) THEN
+        IF(absorbing_bcs_y) THEN
+          IF(is_group_y_boundary_min) THEN
+            DO iy = cell_y_min_g(y_coords+1),-1
+              iyy = iy-cell_y_min_g(y_coords+1)+1_idp
+              exy_r(:,iyy,:) = 0.0_num
+              exz_r(:,iyy,:) = 0.0_num
+              eyx_r(:,iyy,:) = 0.0_num
+              eyz_r(:,iyy,:) = 0.0_num
+              ezx_r(:,iyy,:) = 0.0_num
+              ezy_r(:,iyy,:) = 0.0_num
+              bxy_r(:,iyy,:) = 0.0_num
+              bxz_r(:,iyy,:) = 0.0_num
+              byx_r(:,iyy,:) = 0.0_num
+              byz_r(:,iyy,:) = 0.0_num
+              bzx_r(:,iyy,:) = 0.0_num
+              bzy_r(:,iyy,:) = 0.0_num
+            ENDDO
+          ENDIF
+          IF(is_group_y_boundary_max) THEN
+            DO iy=ny_global ,cell_y_max_g(y_coords+1)  
+              iyy = iy - cell_y_min_g(y_coords+1)+1_idp 
+              exy_r(:,iyy,:) = 0.0_num
+              exz_r(:,iyy,:) = 0.0_num
+              eyx_r(:,iyy,:) = 0.0_num
+              eyz_r(:,iyy,:) = 0.0_num
+              ezx_r(:,iyy,:) = 0.0_num
+              ezy_r(:,iyy,:) = 0.0_num
+              bxy_r(:,iyy-1,:) = 0.0_num
+              bxz_r(:,iyy-1,:) = 0.0_num
+              byx_r(:,iyy,:) = 0.0_num
+              byz_r(:,iyy,:) = 0.0_num
+              bzx_r(:,iyy-1,:) = 0.0_num
+              bzy_r(:,iyy-1,:) = 0.0_num
+            ENDDO
+            IF(y_max_boundary) THEN
+              bxy_r(:,iyy,:) = 0.0_num
+              bxz_r(:,iyy,:) = 0.0_num
+              bzx_r(:,iyy,:) = 0.0_num
+              bzy_r(:,iyy,:) = 0.0_num
+            ENDIF
           ENDIF
         ENDIF
       ENDIF
-      IF(is_group_z_boundary_min) THEN
-        DO iz = cell_z_min_g(z_coords+1),-1
-          izz = iz-cell_z_min_g(z_coords+1)+1_idp
-          exy_r(:,:,izz) = 0.0_num
-          exz_r(:,:,izz) = 0.0_num
-          eyx_r(:,:,izz) = 0.0_num
-          eyz_r(:,:,izz) = 0.0_num
-          ezx_r(:,:,izz) = 0.0_num
-          ezy_r(:,:,izz) = 0.0_num
-          bxy_r(:,:,izz) = 0.0_num
-          bxz_r(:,:,izz) = 0.0_num
-          byx_r(:,:,izz) = 0.0_num
-          byz_r(:,:,izz) = 0.0_num
-          bzx_r(:,:,izz) = 0.0_num
-          bzy_r(:,:,izz) = 0.0_num
-        ENDDO
-      ENDIF
-      IF(is_group_z_boundary_max) THEN
-        DO iz=nz_global ,cell_z_max_g(z_coords+1)  
-          izz = iz - cell_z_min_g(z_coords+1)+1_idp 
-          exy_r(:,:,izz) = 0.0_num
-          exz_r(:,:,izz) = 0.0_num
-          eyx_r(:,:,izz) = 0.0_num
-          eyz_r(:,:,izz) = 0.0_num
-          ezx_r(:,:,izz) = 0.0_num
-          ezy_r(:,:,izz) = 0.0_num
-          bxy_r(:,:,izz-1) = 0.0_num
-          bxz_r(:,:,izz-1) = 0.0_num
-          byx_r(:,:,izz-1) = 0.0_num
-          byz_r(:,:,izz-1) = 0.0_num
-          bzx_r(:,:,izz) = 0.0_num
-          bzy_r(:,:,izz) = 0.0_num
-        ENDDO
-        IF(z_max_boundary) THEN
-          bxy_r(:,:,izz) = 0.0_num
-          bxz_r(:,:,izz) = 0.0_num
-          byx_r(:,:,izz) = 0.0_num
-          byz_r(:,:,izz) = 0.0_num
-        ENDIF 
+      IF(absorbing_bcs_z) THEN
+        IF(is_group_z_boundary_min) THEN
+          DO iz = cell_z_min_g(z_coords+1),-1
+            izz = iz-cell_z_min_g(z_coords+1)+1_idp
+            exy_r(:,:,izz) = 0.0_num
+            exz_r(:,:,izz) = 0.0_num
+            eyx_r(:,:,izz) = 0.0_num
+            eyz_r(:,:,izz) = 0.0_num
+            ezx_r(:,:,izz) = 0.0_num
+            ezy_r(:,:,izz) = 0.0_num
+            bxy_r(:,:,izz) = 0.0_num
+            bxz_r(:,:,izz) = 0.0_num
+            byx_r(:,:,izz) = 0.0_num
+            byz_r(:,:,izz) = 0.0_num
+            bzx_r(:,:,izz) = 0.0_num
+            bzy_r(:,:,izz) = 0.0_num
+          ENDDO
+        ENDIF
+        IF(is_group_z_boundary_max) THEN
+          DO iz=nz_global ,cell_z_max_g(z_coords+1)  
+            izz = iz - cell_z_min_g(z_coords+1)+1_idp 
+            exy_r(:,:,izz) = 0.0_num
+            exz_r(:,:,izz) = 0.0_num
+            eyx_r(:,:,izz) = 0.0_num
+            eyz_r(:,:,izz) = 0.0_num
+            ezx_r(:,:,izz) = 0.0_num
+            ezy_r(:,:,izz) = 0.0_num
+            bxy_r(:,:,izz-1) = 0.0_num
+            bxz_r(:,:,izz-1) = 0.0_num
+            byx_r(:,:,izz-1) = 0.0_num
+            byz_r(:,:,izz-1) = 0.0_num
+            bzx_r(:,:,izz) = 0.0_num
+            bzy_r(:,:,izz) = 0.0_num
+          ENDDO
+          IF(z_max_boundary) THEN
+            bxy_r(:,:,izz) = 0.0_num
+            bxz_r(:,:,izz) = 0.0_num
+            byx_r(:,:,izz) = 0.0_num
+            byz_r(:,:,izz) = 0.0_num
+          ENDIF 
+        ENDIF
       ENDIF
     ENDIF
     CALL fft_forward_r2c_hybrid() 

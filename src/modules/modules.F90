@@ -1178,8 +1178,6 @@ MODULE group_parameters !#do not parse
   LOGICAL(lp)    :: is_group_y_boundary_max, is_group_y_boundary_min
   !> Tells if current group is on x axis domain boundary
   LOGICAL(lp)    :: is_group_x_boundary_max, is_group_x_boundary_min
-  !> Is current group containing a Perfectly Matched Layer region
-  !> True if group on domain boundary and absorbing bcs true
 
 END MODULE
 
@@ -1205,7 +1203,7 @@ MODULE shared_data
   INTEGER(idp)  :: nzg_group, nyg_group, nxg_group
   LOGICAL(lp)   :: p3dfft_flag=.FALSE.
   LOGICAL(lp)   :: p3dfft_stride=.FALSE.
-  LOGICAL(lp)   :: absorbing_bcs
+  LOGICAL(lp)   :: absorbing_bcs, absorbing_bcs_x , absorbing_bcs_y , absorbing_bcs_z
   !> First and last indexes of real data in group (only z is relevant for now)
   INTEGER(idp)  ::   iz_min_r, iz_max_r, iy_min_r, iy_max_r, ix_min_r, ix_max_r
 
