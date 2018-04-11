@@ -263,14 +263,24 @@ IMPLICIT NONE
 
 CONTAINS
 
+! SUBROUTINE test(arg, arg2) bind(c, name='test')
+!   REAL(amrex_real), value, INTENT(IN)  :: arg
+!   REAL(amrex_real), INTENT(INOUT)      :: arg2(1)
+!   write(*,*) 'rrrrrrrrrr'
+!   write(*,*) arg
+!   arg2 = arg + 1.
+!   write(*,*) arg2
+!   write(*,*) 'rrrrrrrrrr'
+! END SUBROUTINE test
+
 SUBROUTINE init_godfrey_filter_coeffs(stencilz_ex, stencilz_by, nstencilz, cdtodz, l_lower_order_in_v) &
   bind(c, name='init_godfrey_filter_coeffs')
 !   USE godfrey_filter_coeffs
 !   USE constants
   INTEGER, value, INTENT(IN) :: nstencilz
+  REAL(amrex_real), value, INTENT(IN) :: cdtodz
+  LOGICAL, value, INTENT(IN) :: l_lower_order_in_v
   REAL(amrex_real), INTENT(IN OUT) :: stencilz_ex(nstencilz), stencilz_by(nstencilz)
-  REAL(amrex_real), INTENT(IN) :: cdtodz
-  LOGICAL, INTENT(IN) :: l_lower_order_in_v
   REAL(amrex_real), DIMENSION(0:3) :: prestencil_ex, prestencil_by
   INTEGER :: index, i, size_coeff_table
   REAL(amrex_real) :: weight_left
@@ -284,23 +294,21 @@ SUBROUTINE init_godfrey_filter_coeffs(stencilz_ex, stencilz_by, nstencilz, cdtod
        index = size_coeff_table+1
      ENDIF
      weight_left = cdtodz - (index-1)/size_coeff_table
-     DO i=0, nstencilz-1
+     DO i=0, 3
        prestencil_ex(i) = (1-weight_left)*coeff_ex_galerkin(index,i) + weight_left*coeff_ex_galerkin(index+1,i)
        prestencil_by(i) = (1-weight_left)*coeff_by_galerkin(index,i) + weight_left*coeff_by_galerkin(index+1,i)
      END DO
+    stencilz_ex(1) =  (256+128*prestencil_ex(0)+96*prestencil_ex(1)+80*prestencil_ex(2)+70*prestencil_ex(3))/256
+    stencilz_ex(2) = -(     64*prestencil_ex(0)+64*prestencil_ex(1)+60*prestencil_ex(2)+56*prestencil_ex(3))/256
+    stencilz_ex(3) =  (                         16*prestencil_ex(1)+24*prestencil_ex(2)+28*prestencil_ex(3))/256
+    stencilz_ex(4) = -(                                              4*prestencil_ex(2)+ 8*prestencil_ex(3))/256
+    stencilz_ex(5) =  (                                                                  1*prestencil_ex(3))/256
 
-      stencilz_ex(1) =  33.
-!     stencilz_ex(1) =  (256+128*prestencil_ex(0)+96*prestencil_ex(1)+80*prestencil_ex(2)+70*prestencil_ex(3))/256
-!     stencilz_ex(2) = -(     64*prestencil_ex(0)+64*prestencil_ex(1)+60*prestencil_ex(2)+56*prestencil_ex(3))/256
-!     stencilz_ex(3) =  (                         16*prestencil_ex(1)+24*prestencil_ex(2)+28*prestencil_ex(3))/256
-!     stencilz_ex(4) = -(                                              4*prestencil_ex(2)+ 8*prestencil_ex(3))/256
-!     stencilz_ex(5) =  (                                                                  1*prestencil_ex(3))/256
-! 
-!     stencilz_by(1) =  (256+128*prestencil_by(0)+96*prestencil_by(1)+80*prestencil_by(2)+70*prestencil_by(3))/256
-!     stencilz_by(2) = -(     64*prestencil_by(0)+64*prestencil_by(1)+60*prestencil_by(2)+56*prestencil_by(3))/256
-!     stencilz_by(3) =  (                         16*prestencil_by(1)+24*prestencil_by(2)+28*prestencil_by(3))/256
-!     stencilz_by(4) = -(                                              4*prestencil_by(2)+ 8*prestencil_by(3))/256
-!     stencilz_by(5) =  (                                                                  1*prestencil_by(3))/256
+    stencilz_by(1) =  (256+128*prestencil_by(0)+96*prestencil_by(1)+80*prestencil_by(2)+70*prestencil_by(3))/256
+    stencilz_by(2) = -(     64*prestencil_by(0)+64*prestencil_by(1)+60*prestencil_by(2)+56*prestencil_by(3))/256
+    stencilz_by(3) =  (                         16*prestencil_by(1)+24*prestencil_by(2)+28*prestencil_by(3))/256
+    stencilz_by(4) = -(                                              4*prestencil_by(2)+ 8*prestencil_by(3))/256
+    stencilz_by(5) =  (                                                                  1*prestencil_by(3))/256
   ENDIF
 END SUBROUTINE init_godfrey_filter_coeffs
 
@@ -346,18 +354,61 @@ END SUBROUTINE init_godfrey_filter_coeffs
 ! END SUBROUTINE init_godfrey_filter_coeffs
 
 
+! SUBROUTINE test(field) bind(c, name='test')
+! INTEGER, INTENT(IN) :: lo(2), hi(2)
+! real(amrex_real), intent(INOUT):: field(lo(1):hi(1),lo(2):hi(2))
+!   REAL(amrex_real), INTENT(IN) :: stencil(5)
+!   INTEGER :: i
+! END SUBROUTINE test
+
+! SUBROUTINE test2(lo, hi, stencil, field, exlo, exhi) bind(c, name='test2')
+! INTEGER, INTENT(IN) :: lo(2), hi(2)
+! REAL(amrex_real), INTENT(IN) :: stencil(5)
+! real(amrex_real), intent(INOUT):: field(exlo(1):hi(1),lo(2):hi(2))
+! write(*,*) lo(1), lo(2), hi(1), hi(2)
+! write(*,*) stencil(1), stencil(2), stencil(3), stencil(4), stencil(5)
+! END SUBROUTINE test2
+
+
+SUBROUTINE apply_filter_z_2d(field, flo, fhi, stencil, lo, hi, ngx, ngz, nz_stencil)  &
+  bind(c, name='apply_filter_z_2d')
+  INTEGER, value, INTENT(IN) :: nz_stencil, ngx, ngz
+  INTEGER, INTENT(IN) :: lo(2), hi(2)
+  INTEGER, INTENT(IN) :: flo(2), fhi(2)
+  real(amrex_real), intent(INOUT):: field(flo(1):fhi(1),flo(2):fhi(2))
+  REAL(amrex_real), INTENT(IN) :: stencil(nz_stencil)
+  REAL(amrex_real) :: field_tmp(flo(2):fhi(2))
+  INTEGER :: i, k, ks
+  write(*,*) flo, fhi
+  write(*,*) lo, hi
+  write(*,*) nz_stencil
+  write(*,*) stencil
+  DO i= lo(1), hi(1)
+    field_tmp = field(i, :)
+    DO k= lo(2)+ngx, hi(2)-ngx
+      field(i, k) = stencil(1)*field_tmp(k)
+      DO ks=2, nz_stencil
+!         field(i, k) = stencil(ks)
+        field(i, k) = field(i, k) + stencil(ks) * ( field_tmp(k-ks) + field_tmp(k+ks) )
+      ENDDO
+    ENDDO
+ ENDDO
+END SUBROUTINE apply_filter_z_2d
 
 
 
 
-! SUBROUTINE apply_filter_z_2d(field, stencil, nx, nz, nxguard, nzguard, nz_stencil)
-! 
-!   USE constants
-! 
+
+
+
+
+! TOUT POURRI
+! SUBROUTINE apply_filter_z_2d(field, stencil, nx, nz, nxguard, nzguard, nz_stencil)  &
+!   bind(c, name='apply_filter_z_2d')
 !   IMPLICIT NONE
-!   INTEGER(idp), INTENT(IN) :: nx, nz, nxguard, nzguard, nz_stencil
-!   REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nzguard:nz+nzguard) :: field
-!   REAL(num), INTENT(IN OUT), DIMENSION(nz_stencil) :: stencil
+!   INTEGER, value, INTENT(IN) :: nx, nz, nxguard, nzguard, nz_stencil
+!   REAL(amrex_real), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nzguard:nz+nzguard) :: field
+!   REAL(amrex_real), INTENT(IN), DIMENSION(nz_stencil) :: stencil
 !   REAL(num), DIMENSION(-nzguard:nz+nzguard) :: field_tmp
 !   INTEGER(idp) :: i, k, ks
 !   DO i=-nxguard, nx+nxguard
