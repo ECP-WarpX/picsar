@@ -176,7 +176,12 @@ SUBROUTINE pxr_boris_push_rr_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by,
   REAL(num)                :: uxold, uyold, uzold
   REAL(num)                :: flx, fly, flz
   REAL(num)                :: frx, fry, frz
-
+  REAL(num)                :: dux, duy, duz
+  REAL(num)                :: ddu
+  REAL(num)                :: dufl
+  REAL(num)                :: gamtmpsq
+  REAL(num)                :: tau0
+  REAL(num)                :: ufl
 
   ! Initialization
   const = q*dt*0.5_num/m
@@ -260,17 +265,34 @@ SUBROUTINE pxr_boris_push_rr_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by,
 
     ! Compute temporary Gamma
     usq = (uxp(ip)**2 + uyp(ip)**2+ uzp(ip)**2)*clghtisq
-    gaminvtmp = 1.0_num/sqrt(1.0_num + usq)
+    gamtmpsq=1.0_num + usq
+    gaminvtmp = 1.0_num/sqrt(gamtmpsq)
+
+    ! tau zero over emass
+    tau0=mu0*echarge**2/(6*pi*(emass**2)*clight)
+
+    ! u dot fl
+    ufl=uxp(ip)*flx+uyp(ip)*fly+uzp(ip)*flz
+    ! denominator of delta u
+    ddu=1.0_num/(1.0_num-tau0*clghtisq*ufl)
+
+    ! delta u
+    dux=ddu*(flx-clghtisq*ufl*uxp(ip))
+    duy=ddu*(fly-clghtisq*ufl*uyp(ip))
+    duz=ddu*(flz-clghtisq*ufl*uzp(ip))
+
+    ! delta u dot fl
+    dufl=dux*flx+duy*fly+duz*flz
 
     ! RR force
-    frx=
-    fry=
-    frz=
+    frx=echarge*(duy*bz(ip)-duz*by(ip))-clghtisq*gamtmpsq*dufl*uxp(ip)
+    fry=echarge*(duz*bx(ip)-dux*bz(ip))-clghtisq*gamtmpsq*dufl*uyp(ip)
+    frz=echarge*(dux*by(ip)-duy*bx(ip))-clghtisq*gamtmpsq*dufl*uzp(ip)
 
     ! Push using the RR force
-    uxp(ip) = uxp(ip)+dt*frx
-    uyp(ip) = uyp(ip)+dt*fry
-    uzp(ip) = uzp(ip)+dt*frz
+    uxp(ip) = uxold+dt*(frx+flx)
+    uyp(ip) = uyold+dt*(fry+fly)
+    uzp(ip) = uzold+dt*(frz+flz)
 
     ! Compute final Gamma
     usq = (uxp(ip)**2 + uyp(ip)**2+ uzp(ip)**2)*clghtisq
@@ -394,9 +416,7 @@ SUBROUTINE pxr_boris_push_u_3d_block(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, 
       uxp(nn) = uxp(nn) + ex(nn)*const
       uyp(nn) = uyp(nn) + ey(nn)*const
       uzp(nn) = uzp(nn) + ez(nn)*const
-      IF(..) 
-        flx
-      ENDIF
+ 
       ! Compute final Gamma
       usq = (uxp(nn)**2 + uyp(nn)**2+ uzp(nn)**2)*clghtisq
       gaminv(nn) = 1.0_num/sqrt(1.0_num + usq)
