@@ -186,6 +186,8 @@ SUBROUTINE pxr_boris_push_rr_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by,
   ! Initialization
   const = q*dt*0.5_num/m
   clghtisq = 1.0_num/clight**2
+  ! tau zero over emass
+  tau0=mu0*echarge**2/(6*pi*(emass**2)*clight)
 
   ! Loop over the particles
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
@@ -210,7 +212,7 @@ SUBROUTINE pxr_boris_push_rr_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by,
 #endif
   DO ip=1, np
 
-! Pushing with the Lorentz force
+    ! --- Pushing with the Lorentz force
 
     ! Save previous moments
     uxold=uxp(ip)
@@ -250,8 +252,7 @@ SUBROUTINE pxr_boris_push_rr_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by,
     usq = (uxp(ip)**2 + uyp(ip)**2+ uzp(ip)**2)*clghtisq
     gaminv(ip) = 1.0_num/sqrt(1.0_num + usq)
 
-
-! Pushing with the RR force
+    ! --- Pushing with the RR force
     
     ! Lorentz force
     flx=(uxp(ip)-uxold)/dt
@@ -259,20 +260,18 @@ SUBROUTINE pxr_boris_push_rr_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by,
     flz=(uzp(ip)-uzold)/dt
 
     ! Momentum at half step
-    uxp(ip) = (uxp(ip) + uxold)/2
-    uyp(ip) = (uyp(ip) + uyold)/2
-    uzp(ip) = (uzp(ip) + uzold)/2
+    uxp(ip) = (uxp(ip) + uxold)*0.5_num
+    uyp(ip) = (uyp(ip) + uyold)*0.5_num
+    uzp(ip) = (uzp(ip) + uzold)*0.5_num
 
     ! Compute temporary Gamma
     usq = (uxp(ip)**2 + uyp(ip)**2+ uzp(ip)**2)*clghtisq
     gamtmpsq=1.0_num + usq
     gaminvtmp = 1.0_num/sqrt(gamtmpsq)
 
-    ! tau zero over emass
-    tau0=mu0*echarge**2/(6*pi*(emass**2)*clight)
-
     ! u dot fl
     ufl=uxp(ip)*flx+uyp(ip)*fly+uzp(ip)*flz
+    
     ! denominator of delta u
     ddu=1.0_num/(1.0_num-tau0*clghtisq*ufl)
 
@@ -297,8 +296,6 @@ SUBROUTINE pxr_boris_push_rr_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by,
     ! Compute final Gamma
     usq = (uxp(ip)**2 + uyp(ip)**2+ uzp(ip)**2)*clghtisq
     gaminv(ip) = 1.0_num/sqrt(1.0_num + usq)
-    
-
   ENDDO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
