@@ -54,7 +54,7 @@ SUBROUTINE field_gathering_plus_particle_pusher
   USE particles
   USE time_stat
   IMPLICIT NONE
-
+  
 #if defined(DEBUG)
   WRITE(0, *) "Field gathering + Push_particles: start"
 #endif
@@ -319,7 +319,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg
               0_idp)
 
               !! Boris pusher with RR -- Full push
-	    CASE (2_idp)
+	        CASE (2_idp)
               CALL pxr_boris_push_rr_u_3d(count, curr_tile%part_ux, curr_tile%part_uy,&
               curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
               curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
@@ -767,7 +767,7 @@ SUBROUTINE particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
               0_idp)
 
               !! Boris pusher with RR -- Full push
-	    CASE (2_idp)
+	        CASE (2_idp)
               CALL pxr_boris_push_rr_u_3d(count, curr_tile%part_ux, curr_tile%part_uy,&
               curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
               curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
