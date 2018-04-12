@@ -149,27 +149,45 @@ SUBROUTINE field_damping_bcs
   IF (it.ge.timestat_itstart) THEN
     tmptime = MPI_WTIME()
   ENDIF
-
-  !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-  DO ix = -nxguards,nx+nxguards-1
-    DO iy = -nyguards,ny+nyguards-1
-      DO iz = -nzguards,nz+nzguards-1
-        exy(ix,iy,iz) = sigma_y_e(iy) *exy(ix,iy,iz)
-        exz(ix,iy,iz) = sigma_z_e(iz) *exz(ix,iy,iz)
-        eyx(ix,iy,iz) = sigma_x_e(ix) *eyx(ix,iy,iz)
-        eyz(ix,iy,iz) = sigma_z_e(iz) *eyz(ix,iy,iz)
-        ezx(ix,iy,iz) = sigma_x_e(ix) *ezx(ix,iy,iz)
-        ezy(ix,iy,iz) = sigma_y_e(iy) *ezy(ix,iy,iz)
-        bxy(ix,iy,iz) = sigma_y_b(iy) *bxy(ix,iy,iz)
-        bxz(ix,iy,iz) = sigma_z_b(iz) *bxz(ix,iy,iz)
-        byx(ix,iy,iz) = sigma_x_b(ix) *byx(ix,iy,iz)
-        byz(ix,iy,iz) = sigma_z_b(iz) *byz(ix,iy,iz)
-        bzx(ix,iy,iz) = sigma_x_b(ix) *bzx(ix,iy,iz)
-        bzy(ix,iy,iz) = sigma_y_b(iy) *bzy(ix,iy,iz)
+  IF(c_dim == 3) THEN 
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+    DO ix = -nxguards,nx+nxguards-1
+      DO iy = -nyguards,ny+nyguards-1
+        DO iz = -nzguards,nz+nzguards-1
+          exy(ix,iy,iz) = sigma_y_e(iy) *exy(ix,iy,iz)
+          exz(ix,iy,iz) = sigma_z_e(iz) *exz(ix,iy,iz)
+          eyx(ix,iy,iz) = sigma_x_e(ix) *eyx(ix,iy,iz)
+          eyz(ix,iy,iz) = sigma_z_e(iz) *eyz(ix,iy,iz)
+          ezx(ix,iy,iz) = sigma_x_e(ix) *ezx(ix,iy,iz)
+          ezy(ix,iy,iz) = sigma_y_e(iy) *ezy(ix,iy,iz)
+          bxy(ix,iy,iz) = sigma_y_b(iy) *bxy(ix,iy,iz)
+          bxz(ix,iy,iz) = sigma_z_b(iz) *bxz(ix,iy,iz)
+          byx(ix,iy,iz) = sigma_x_b(ix) *byx(ix,iy,iz)
+          byz(ix,iy,iz) = sigma_z_b(iz) *byz(ix,iy,iz)
+          bzx(ix,iy,iz) = sigma_x_b(ix) *bzx(ix,iy,iz)
+          bzy(ix,iy,iz) = sigma_y_b(iy) *bzy(ix,iy,iz)
+        ENDDO
       ENDDO
     ENDDO
-  ENDDO
-  !$OMP END PARALLEL DO
+    !$OMP END PARALLEL DO
+  ELSE IF(c_dim==2) THEN
+    iy=0_idp
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,  iz) COLLAPSE(2)
+    DO ix = -nxguards,nx+nxguards-1
+        DO iz = -nzguards,nz+nzguards-1
+          exz(ix,iy,iz) = sigma_z_e(iz) *exz(ix,iy,iz)
+          eyx(ix,iy,iz) = sigma_x_e(ix) *eyx(ix,iy,iz)
+          eyz(ix,iy,iz) = sigma_z_e(iz) *eyz(ix,iy,iz)
+          ezx(ix,iy,iz) = sigma_x_e(ix) *ezx(ix,iy,iz)
+          bxz(ix,iy,iz) = sigma_z_b(iz) *bxz(ix,iy,iz)
+          byx(ix,iy,iz) = sigma_x_b(ix) *byx(ix,iy,iz)
+          byz(ix,iy,iz) = sigma_z_b(iz) *byz(ix,iy,iz)
+          bzx(ix,iy,iz) = sigma_x_b(ix) *bzx(ix,iy,iz)
+        ENDDO
+      ENDDO
+    !$OMP END PARALLEL DO
+  ENDIF
+
    
   IF (it.ge.timestat_itstart) THEN
     localtimes(26) = localtimes(26) + (MPI_WTIME() - tmptime)
