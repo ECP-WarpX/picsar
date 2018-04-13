@@ -167,27 +167,27 @@ SUBROUTINE pxr_boris_push_rr_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by,
   REAL(num), INTENT(IN)    :: q, m, dt
   ! Local variables
   INTEGER(idp)             :: ip
-  REAL(num)                :: const
+  REAL(num)                :: const, dtinv
   REAL(num)                :: clghtisq, usq, tsqi
   REAL(num)                :: tx, ty, tz
   REAL(num)                :: sx, sy, sz
   REAL(num)                :: uxppr, uyppr, uzppr
-  REAL(num)                :: gaminvtmp
+  REAL(num)                :: gaminvtmp, gamtmp
   REAL(num)                :: uxold, uyold, uzold
-  REAL(num)                :: flx, fly, flz
-  REAL(num)                :: frx, fry, frz
-  REAL(num)                :: dux, duy, duz
-  REAL(num)                :: ddu
-  REAL(num)                :: dufl
-  REAL(num)                :: gamtmpsq
-  REAL(num)                :: tau0
-  REAL(num)                :: ufl
+  REAL(num)                :: alx, aly, alz
+  REAL(num)                :: urx, ury, urz
+  REAL(num)                :: dvx, dvy, dvz
+  REAL(num)                :: ddv
+  REAL(num)                :: dval
+  REAL(num)                :: tau0inv
+  REAL(num)                :: ual
 
   ! Initialization
   const = q*dt*0.5_num/m
+  dtinv=1_num/dt
   clghtisq = 1.0_num/clight**2
-  ! tau zero over emass
-  tau0=mu0*echarge**2/(6*pi*(emass**2)*clight)
+  ! tau zero
+  tau0inv=6_num*pi*m*clight/(mu0*q**2)
 
   ! Loop over the particles
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
@@ -210,6 +210,7 @@ SUBROUTINE pxr_boris_push_rr_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by,
 #elif defined __INTEL_COMPILER
   !DIR$ SIMD
 #endif
+
   DO ip=1, np
 
     ! --- Pushing with the Lorentz force
@@ -220,78 +221,78 @@ SUBROUTINE pxr_boris_push_rr_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by,
     uzold=uzp(ip)
 
     ! Push using the electric field
-    uxp(ip) = uxp(ip) + ex(ip)*const
-    uyp(ip) = uyp(ip) + ey(ip)*const
-    uzp(ip) = uzp(ip) + ez(ip)*const
+   uxp(ip) = uxp(ip) + ex(ip)*const
+   uyp(ip) = uyp(ip) + ey(ip)*const
+   uzp(ip) = uzp(ip) + ez(ip)*const
 
     ! Compute temporary Gamma
-    usq = (uxp(ip)**2 + uyp(ip)**2+ uzp(ip)**2)*clghtisq
-    gaminvtmp = 1.0_num/sqrt(1.0_num + usq)
+   usq = (uxp(ip)**2 + uyp(ip)**2+ uzp(ip)**2)*clghtisq
+   gaminvtmp = 1.0_num/sqrt(1.0_num + usq)
 
     ! Magnetic rotation
-    tx = gaminvtmp*bx(ip)*const
-    ty = gaminvtmp*by(ip)*const
-    tz = gaminvtmp*bz(ip)*const
-    tsqi = 2.0_num/(1.0_num + tx**2 + ty**2 + tz**2)
-    sx = tx*tsqi
-    sy = ty*tsqi
-    sz = tz*tsqi
-    uxppr = uxp(ip) + uyp(ip)*tz - uzp(ip)*ty
-    uyppr = uyp(ip) + uzp(ip)*tx - uxp(ip)*tz
-    uzppr = uzp(ip) + uxp(ip)*ty - uyp(ip)*tx
-    uxp(ip) = uxp(ip) + uyppr*sz - uzppr*sy
-    uyp(ip) = uyp(ip) + uzppr*sx - uxppr*sz
-    uzp(ip) = uzp(ip) + uxppr*sy - uyppr*sx
+   tx = gaminvtmp*bx(ip)*const
+   ty = gaminvtmp*by(ip)*const
+   tz = gaminvtmp*bz(ip)*const
+   tsqi = 2.0_num/(1.0_num + tx**2 + ty**2 + tz**2)
+   sx = tx*tsqi
+   sy = ty*tsqi
+   sz = tz*tsqi
+   uxppr = uxp(ip) + uyp(ip)*tz - uzp(ip)*ty
+   uyppr = uyp(ip) + uzp(ip)*tx - uxp(ip)*tz
+   uzppr = uzp(ip) + uxp(ip)*ty - uyp(ip)*tx
+   uxp(ip) = uxp(ip) + uyppr*sz - uzppr*sy
+   uyp(ip) = uyp(ip) + uzppr*sx - uxppr*sz
+   uzp(ip) = uzp(ip) + uxppr*sy - uyppr*sx
 
     ! Push using the electric field
-    uxp(ip) = uxp(ip) + ex(ip)*const
-    uyp(ip) = uyp(ip) + ey(ip)*const
-    uzp(ip) = uzp(ip) + ez(ip)*const
+   uxp(ip) = uxp(ip) + ex(ip)*const
+   uyp(ip) = uyp(ip) + ey(ip)*const
+   uzp(ip) = uzp(ip) + ez(ip)*const
 
     ! Compute final Gamma
-    usq = (uxp(ip)**2 + uyp(ip)**2+ uzp(ip)**2)*clghtisq
-    gaminv(ip) = 1.0_num/sqrt(1.0_num + usq)
+   usq = (uxp(ip)**2 + uyp(ip)**2+ uzp(ip)**2)*clghtisq
+   gaminv(ip) = 1.0_num/sqrt(1.0_num + usq)
 
     ! --- Pushing with the RR force
     
-    ! Lorentz force
-    flx=(uxp(ip)-uxold)/dt
-    fly=(uyp(ip)-uyold)/dt
-    flz=(uzp(ip)-uzold)/dt
+    ! Lorentz acceleration
+    alx=(uxp(ip)-uxold)*dtinv
+    aly=(uyp(ip)-uyold)*dtinv
+    alz=(uzp(ip)-uzold)*dtinv
 
-    ! Momentum at half step
+    ! Momentum/mass at half step
     uxp(ip) = (uxp(ip) + uxold)*0.5_num
     uyp(ip) = (uyp(ip) + uyold)*0.5_num
     uzp(ip) = (uzp(ip) + uzold)*0.5_num
 
     ! Compute temporary Gamma
     usq = (uxp(ip)**2 + uyp(ip)**2+ uzp(ip)**2)*clghtisq
-    gamtmpsq=1.0_num + usq
-    gaminvtmp = 1.0_num/sqrt(gamtmpsq)
+    gamtmp=sqrt(1.0_num + usq)
+    gaminvtmp = 1.0_num/gamtmp
 
-    ! u dot fl
-    ufl=uxp(ip)*flx+uyp(ip)*fly+uzp(ip)*flz
+    ! u dot al
+    ual=uxp(ip)*alx+uyp(ip)*aly+uzp(ip)*alz
     
     ! denominator of delta u
-    ddu=1.0_num/(1.0_num-tau0*clghtisq*ufl)
+    ddv=1.0_num/(tau0inv-clghtisq*gaminvtmp*ual)
 
-    ! delta u
-    dux=ddu*(flx-clghtisq*ufl*uxp(ip))
-    duy=ddu*(fly-clghtisq*ufl*uyp(ip))
-    duz=ddu*(flz-clghtisq*ufl*uzp(ip))
+    ! delta v
+    dvx=ddv*(alx-clghtisq*gaminvtmp**2*ual*uxp(ip))
+    dvy=ddv*(aly-clghtisq*gaminvtmp**2*ual*uyp(ip))
+    dvz=ddv*(alz-clghtisq*gaminvtmp**2*ual*uzp(ip))
 
-    ! delta u dot fl
-    dufl=dux*flx+duy*fly+duz*flz
+    ! delta v dot al
+    dval=dvx*alx+dvy*aly+dvz*alz
 
-    ! RR force
-    frx=echarge*(duy*bz(ip)-duz*by(ip))-clghtisq*gamtmpsq*dufl*uxp(ip)
-    fry=echarge*(duz*bx(ip)-dux*bz(ip))-clghtisq*gamtmpsq*dufl*uyp(ip)
-    frz=echarge*(dux*by(ip)-duy*bx(ip))-clghtisq*gamtmpsq*dufl*uzp(ip)
+    ! RR correction
+    urx=2*const*(dvy*bz(ip)-dvz*by(ip))-clghtisq*gamtmp*dval*uxp(ip)*dt
+    ury=2*const*(dvz*bx(ip)-dvx*bz(ip))-clghtisq*gamtmp*dval*uyp(ip)*dt
+    urz=2*const*(dvx*by(ip)-dvy*bx(ip))-clghtisq*gamtmp*dval*uzp(ip)*dt
 
     ! Push using the RR force
-    uxp(ip) = uxold+dt*(frx+flx)
-    uyp(ip) = uyold+dt*(fry+fly)
-    uzp(ip) = uzold+dt*(frz+flz)
+    uxp(ip) = uxold+urx+dt*alx
+    uyp(ip) = uyold+ury+dt*aly
+    uzp(ip) = uzold+urz+dt*alz
 
     ! Compute final Gamma
     usq = (uxp(ip)**2 + uyp(ip)**2+ uzp(ip)**2)*clghtisq
@@ -351,7 +352,6 @@ SUBROUTINE pxr_boris_push_u_3d_block(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, 
   ! Initialization
   const = q*dt*0.5_num/m
   clghtisq = 1.0_num/clight**2
-
 
   ! Loop over the particles
   DO ip=1, np, lvect
@@ -524,7 +524,6 @@ SUBROUTINE pxr_epush_v(np, uxp, uyp, uzp, ex, ey, ez, q, m, dt)
   REAL(num)    :: const
 
   const = q*dt/m
-
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
   !DIR$ ASSUME_ALIGNED uxp:64, uyp:64, uzp:64
   !DIR$ ASSUME_ALIGNED ex:64, ey:64, ez:64
