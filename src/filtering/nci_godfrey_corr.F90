@@ -22,7 +22,8 @@
 !
 ! Purpose:
 ! This file contains a module for the coefficients and the routines for corrector of 
-! Numerical Cherenkov Radiation in the Yee/Cole-Karkkainen solver.
+! Numerical Cherenkov Radiation in the Yee/Cole-Karkkainen solver. It assumes the plasma 
+! drifts along z with gamma >> 1
 ! See article Journal of Computational Physics 267 (2014) 1–6
 ! Suppressing the numerical Cherenkov instability in FDTD PIC codes
 ! BB Godfrey, JL Vay
@@ -37,9 +38,11 @@
 
 ! ________________________________________________________________________________________
 !> @brief
-!> Module for correction of Numerical Cherenkov Instability when using the the FDTD 
-!> solver.
-!
+!> Module containing tabulated stencil values for the corrector as well as 2 subroutines:
+!> init_godfrey_filter_coeffs to get the stencil value from the table
+!> apply_filter_z_2d to apply the filter at each timestep
+!> It assumes the plasma drifts along z with gamma >> 1
+!>
 !> @author
 !> Maxence Thevenet
 !> Henri Vincenti
@@ -48,12 +51,6 @@
 !> Creation 2018
 ! ________________________________________________________________________________________
 
-! ________________________________________________________________________________________
-!> @brief
-!> Module containing tabulated stencil values for the corrector as well as 2 subroutines:
-!> init_godfrey_filter_coeffs to get the stencil value from the table
-!> apply_filter_z_2d to apply the filter at each timestep
-! ________________________________________________________________________________________
 MODULE godfrey_filter_coeffs
   use iso_c_binding
   use amrex_fort_module, only : amrex_real
@@ -265,6 +262,23 @@ IMPLICIT NONE
 
 CONTAINS
 
+! ________________________________________________________________________________________
+!> @brief
+!> Subroutine to initialize stencils for the Godfrey FDTD NCI corrector, assuming the
+!> plasma is drifting at relativistic speed in the z direction. These coefficients
+!> only depend on vz*dt/dz, approximated by c*dt/dz
+!> 
+!> @param[in] stencilz_ex        stencil along z only for Ex, Ey, Bz
+!> @param[in] stencilz_by        stencil along z only for Ez, Bx, By
+!> @param[in] nstencilz          stencil order. 5 for this NCI corrector
+!> @param[in] cdtodz             c*dt/dz. determines the lines read in the table
+!> @param[in] l_lower_order_in_v boolean: current deposition performed with lower order?
+!
+!> @author
+!> Maxence Thevenet
+!> @date
+!> Creation 2018
+! ________________________________________________________________________________________
 SUBROUTINE init_godfrey_filter_coeffs(stencilz_ex, stencilz_by, nstencilz, cdtodz, l_lower_order_in_v) &
   bind(c, name='init_godfrey_filter_coeffs')
   INTEGER, value, INTENT(IN) :: nstencilz
@@ -302,6 +316,25 @@ SUBROUTINE init_godfrey_filter_coeffs(stencilz_ex, stencilz_by, nstencilz, cdtod
   ENDIF
 END SUBROUTINE init_godfrey_filter_coeffs
 
+! ________________________________________________________________________________________
+!> @brief
+!> Apply a stencil along z for a 2d array
+!> 
+!> @param[in] field      2d (x-z) array onto which the stencil is applied
+!> @param[in] flo        1d 2-element array: field lower bound in x and z
+!> @param[in] fhi        1d 2-element array: field upper bound in x and z
+!> @param[in] stencilz   stencil along z
+!> @param[in] lo         1d 2-element array: lower bounds for filter. Used for tiling
+!> @param[in] hi         1d 2-element array: upper bounds for filter. Used for tiling
+!> @param[in] ngx        number of guard cells along first dimension
+!> @param[in] ngz        number of guard cells along second dimension
+!> @param[in] nz_stencil stencil order. 5 for this NCI corrector
+!
+!> @author
+!> Maxence Thevenet
+!> @date
+!> Creation 2018
+! ________________________________________________________________________________________
 SUBROUTINE apply_filter_z_2d(field, flo, fhi, stencil, lo, hi, ngx, ngz, nz_stencil)  &
   bind(c, name='apply_filter_z_2d')
   INTEGER, value, INTENT(IN) :: nz_stencil, ngx, ngz
@@ -322,6 +355,26 @@ SUBROUTINE apply_filter_z_2d(field, flo, fhi, stencil, lo, hi, ngx, ngz, nz_sten
   ENDDO
 END SUBROUTINE apply_filter_z_2d
 
+! ________________________________________________________________________________________
+!> @brief
+!> Apply a stencil along z for a 3d array
+!> 
+!> @param[in] field      3d (x-y-z) array onto which the stencil is applied
+!> @param[in] flo        1d 3-element array: field lower bound in x, y and z
+!> @param[in] fhi        1d 3-element array: field upper bound in x, y and z
+!> @param[in] stencilz   stencil along z
+!> @param[in] lo         1d 3-element array: lower bounds for filter. Used for tiling
+!> @param[in] hi         1d 3-element array: upper bounds for filter. Used for tiling
+!> @param[in] ngx        number of guard cells along first dimension
+!> @param[in] ngy        number of guard cells along second dimension
+!> @param[in] ngz        number of guard cells along thirs dimension
+!> @param[in] nz_stencil stencil order. 5 for this NCI corrector
+!
+!> @author
+!> Maxence Thevenet
+!> @date
+!> Creation 2018
+! ________________________________________________________________________________________
 SUBROUTINE apply_filter_z_3d(field, flo, fhi, stencil, lo, hi, ngx, ngy, ngz, nz_stencil)  &
   bind(c, name='apply_filter_z_3d')
   INTEGER, value, INTENT(IN) :: nz_stencil, ngx, ngy, ngz
