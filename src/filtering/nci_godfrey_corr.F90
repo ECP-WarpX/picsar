@@ -310,12 +310,10 @@ SUBROUTINE apply_filter_z_2d(field, flo, fhi, stencil, lo, hi, ngx, ngz, nz_sten
   real(amrex_real), intent(INOUT):: field(flo(1):fhi(1),flo(2):fhi(2))
   REAL(amrex_real), INTENT(IN) :: stencil(0:nz_stencil-1)
   REAL(amrex_real) :: field_tmp(flo(2):fhi(2))
-  REAL(amrex_real) :: tmp
   INTEGER :: i, k, ks
   DO i= lo(1), hi(1)
     field_tmp = field(i, :)
-    DO k= lo(2)+4, hi(2)-4
-      tmp = field(i, k)
+    DO k= lo(2)+nz_stencil-1, hi(2)-nz_stencil+1
       field(i, k) = stencil(0)*field_tmp(k)
       DO ks=1, nz_stencil-1
         field(i, k) = field(i, k) + stencil(ks) * ( field_tmp(k-ks) + field_tmp(k+ks) ) 
@@ -323,5 +321,27 @@ SUBROUTINE apply_filter_z_2d(field, flo, fhi, stencil, lo, hi, ngx, ngz, nz_sten
     ENDDO
   ENDDO
 END SUBROUTINE apply_filter_z_2d
+
+SUBROUTINE apply_filter_z_3d(field, flo, fhi, stencil, lo, hi, ngx, ngy, ngz, nz_stencil)  &
+  bind(c, name='apply_filter_z_3d')
+  INTEGER, value, INTENT(IN) :: nz_stencil, ngx, ngy, ngz
+  INTEGER, INTENT(IN) :: lo(3), hi(3)
+  INTEGER, INTENT(IN) :: flo(3), fhi(3)
+  real(amrex_real), intent(INOUT):: field(flo(1):fhi(1),flo(2):fhi(2),flo(3):fhi(3))
+  REAL(amrex_real), INTENT(IN) :: stencil(0:nz_stencil-1)
+  REAL(amrex_real) :: field_tmp(flo(3):fhi(3))
+  INTEGER :: i, j, k, ks
+  DO j= lo(2), hi(2)
+    DO i= lo(1), hi(1)
+      field_tmp = field(i, j, :)
+      DO k= lo(3)+nz_stencil-1, hi(3)-nz_stencil+1
+        field(i, j, k) = stencil(0)*field_tmp(k)
+        DO ks=1, nz_stencil-1
+          field(i, j, k) = field(i, j, k) + stencil(ks) * ( field_tmp(k-ks) + field_tmp(k+ks) ) 
+        ENDDO 
+      ENDDO
+    ENDDO
+  ENDDO
+END SUBROUTINE apply_filter_z_3d
 
 END MODULE godfrey_filter_coeffs
