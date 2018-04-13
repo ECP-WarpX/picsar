@@ -37,23 +37,25 @@
 
 ! ________________________________________________________________________________________
 !> @brief
-!> Cherenkov instability corrector for 
+!> Module for correction of Numerical Cherenkov Instability when using the the FDTD 
+!> solver.
 !
 !> @author
 !> Maxence Thevenet
-!
+!> Henri Vincenti
+!> 
 !> @date
-!> Creation 2015
+!> Creation 2018
 ! ________________________________________________________________________________________
 
 ! ________________________________________________________________________________________
 !> @brief
-!> Module containing the Picsar constant parameters
+!> Module containing tabulated stencil values for the corrector as well as 2 subroutines:
+!> init_godfrey_filter_coeffs to get the stencil value from the table
+!> apply_filter_z_2d to apply the filter at each timestep
 ! ________________________________________________________________________________________
 MODULE godfrey_filter_coeffs
   use iso_c_binding
-!   USE PICSAR_precision
-!   USE constants
   use amrex_fort_module, only : amrex_real
 IMPLICIT NONE
   REAL(amrex_real), DIMENSION(4,100), PARAMETER :: coeff_ex_galerkin = reshape([&
@@ -265,8 +267,6 @@ CONTAINS
 
 SUBROUTINE init_godfrey_filter_coeffs(stencilz_ex, stencilz_by, nstencilz, cdtodz, l_lower_order_in_v) &
   bind(c, name='init_godfrey_filter_coeffs')
-!   USE godfrey_filter_coeffs
-!   USE constants
   INTEGER, value, INTENT(IN) :: nstencilz
   REAL(amrex_real), value, INTENT(IN) :: cdtodz
   LOGICAL, value, INTENT(IN) :: l_lower_order_in_v
@@ -275,21 +275,19 @@ SUBROUTINE init_godfrey_filter_coeffs(stencilz_ex, stencilz_by, nstencilz, cdtod
   INTEGER :: index, i, size_coeff_table
   REAL(amrex_real) :: weight_right
   IF (l_lower_order_in_v) THEN
-     size_coeff_table = SIZE(coeff_ex_galerkin, 2)
-     index = INT(size_coeff_table*cdtodz)+1
-     IF (index<1) THEN
-       index = 1
-     ENDIF
-     IF (index>size_coeff_table+1) THEN
-       index = size_coeff_table+1
-     ENDIF
-     weight_right = cdtodz - (index-1)/size_coeff_table
-!     write(*,*) 'size = ', shape(coeff_ex_galerkin)
-!     write(*,*) 'one line = ', coeff_ex_galerkin(:,1)
-     DO i=0, 3
-       prestencil_ex(i) = (1-weight_right)*coeff_ex_galerkin(i+1,index) + weight_right*coeff_ex_galerkin(i+1,index+1)
-       prestencil_by(i) = (1-weight_right)*coeff_by_galerkin(i+1,index) + weight_right*coeff_by_galerkin(i+1,index+1)
-     END DO
+    size_coeff_table = SIZE(coeff_ex_galerkin, 2)
+    index = INT(size_coeff_table*cdtodz)+1
+    IF (index<1) THEN
+      index = 1
+    ENDIF
+    IF (index>size_coeff_table+1) THEN
+      index = size_coeff_table+1
+    ENDIF
+    weight_right = cdtodz - (index-1)/size_coeff_table
+    DO i=0, 3
+      prestencil_ex(i) = (1-weight_right)*coeff_ex_galerkin(i+1,index) + weight_right*coeff_ex_galerkin(i+1,index+1)
+      prestencil_by(i) = (1-weight_right)*coeff_by_galerkin(i+1,index) + weight_right*coeff_by_galerkin(i+1,index+1)
+    END DO
     stencilz_ex(0) =  (256+128*prestencil_ex(0)+96*prestencil_ex(1)+80*prestencil_ex(2)+70*prestencil_ex(3))/256
     stencilz_ex(1) = -(     64*prestencil_ex(0)+64*prestencil_ex(1)+60*prestencil_ex(2)+56*prestencil_ex(3))/256
     stencilz_ex(2) =  (                         16*prestencil_ex(1)+24*prestencil_ex(2)+28*prestencil_ex(3))/256
@@ -302,70 +300,7 @@ SUBROUTINE init_godfrey_filter_coeffs(stencilz_ex, stencilz_by, nstencilz, cdtod
     stencilz_by(3) = -(                                              4*prestencil_by(2)+ 8*prestencil_by(3))/256
     stencilz_by(4) =  (                                                                  1*prestencil_by(3))/256
   ENDIF
-!   write(*,*) 'cdtodz = ', cdtodz
-!   write(*,*) 'prestencil_ex = ', prestencil_ex
-!   write(*,*) 'prestencil_by = ', prestencil_by
-!   write(*,*) 'stencilz_ex at calculation = ', stencilz_ex
-!   write(*,*) 'stencilz_by at calculation = ', stencilz_by
-
 END SUBROUTINE init_godfrey_filter_coeffs
-
-
-! SUBROUTINE init_godfrey_filter_coeffs(stencilz_ex, stencilz_by, nstencilz, cdtodz, l_lower_order_in_v) &
-!   bind(c, name='init_godfrey_filter_coeffs')
-! !   USE godfrey_filter_coeffs
-! !   USE constants
-!   REAL(rt), INTENT(IN OUT), DIMENSION(nstencilz) :: stencilz_ex, stencilz_by
-!   REAL(rt), DIMENSION(0:3) :: prestencil_ex, prestencil_by
-!   INTEGER(idp), INTENT(IN) :: nstencilz
-!   REAL(rt), INTENT(IN) :: cdtodz
-!   LOGICAL(lp), INTENT(IN) :: l_lower_order_in_v
-!   INTEGER(idp) :: index, i, size_coeff_table
-!   REAL(rt) :: weight_left
-! 
-!   IF (l_lower_order_in_v) THEN
-!     size_coeff_table = SIZE(coeff_ex_galerkin, 1)
-!     index = INT(size_coeff_table*cdtodz) + 1
-!     IF (index<1) THEN
-!       index = 1
-!     ENDIF
-!     IF (index>size_coeff_table+1) THEN
-!       index = size_coeff_table+1
-!     ENDIF
-!     weight_left = cdtodz - (index-1)/size_coeff_table
-!     DO i=0, nstencilz-1
-!       prestencil_ex(i) = (1-weight_left)*coeff_ex_galerkin(index,i) + weight_left*coeff_ex_galerkin(index+1,i)
-!       prestencil_by(i) = (1-weight_left)*coeff_by_galerkin(index,i) + weight_left*coeff_by_galerkin(index+1,i)
-!     END DO
-!     stencilz_ex(1) =  (256+128*prestencil_ex(0)+96*prestencil_ex(1)+80*prestencil_ex(2)+70*prestencil_ex(3))/256
-!     stencilz_ex(2) = -(     64*prestencil_ex(0)+64*prestencil_ex(1)+60*prestencil_ex(2)+56*prestencil_ex(3))/256
-!     stencilz_ex(3) =  (                         16*prestencil_ex(1)+24*prestencil_ex(2)+28*prestencil_ex(3))/256
-!     stencilz_ex(4) = -(                                              4*prestencil_ex(2)+ 8*prestencil_ex(3))/256
-!     stencilz_ex(5) =  (                                                                  1*prestencil_ex(3))/256
-! 
-!     stencilz_by(1) =  (256+128*prestencil_by(0)+96*prestencil_by(1)+80*prestencil_by(2)+70*prestencil_by(3))/256
-!     stencilz_by(2) = -(     64*prestencil_by(0)+64*prestencil_by(1)+60*prestencil_by(2)+56*prestencil_by(3))/256
-!     stencilz_by(3) =  (                         16*prestencil_by(1)+24*prestencil_by(2)+28*prestencil_by(3))/256
-!     stencilz_by(4) = -(                                              4*prestencil_by(2)+ 8*prestencil_by(3))/256
-!     stencilz_by(5) =  (                                                                  1*prestencil_by(3))/256
-!   ENDIF
-! END SUBROUTINE init_godfrey_filter_coeffs
-
-
-! SUBROUTINE test(field) bind(c, name='test')
-! INTEGER, INTENT(IN) :: lo(2), hi(2)
-! real(amrex_real), intent(INOUT):: field(lo(1):hi(1),lo(2):hi(2))
-!   REAL(amrex_real), INTENT(IN) :: stencil(5)
-!   INTEGER :: i
-! END SUBROUTINE test
-
-! SUBROUTINE test2(lo, hi, stencil, field, exlo, exhi) bind(c, name='test2')
-! INTEGER, INTENT(IN) :: lo(2), hi(2)
-! REAL(amrex_real), INTENT(IN) :: stencil(5)
-! real(amrex_real), intent(INOUT):: field(exlo(1):hi(1),lo(2):hi(2))
-! write(*,*) lo(1), lo(2), hi(1), hi(2)
-! write(*,*) stencil(1), stencil(2), stencil(3), stencil(4), stencil(5)
-! END SUBROUTINE test2
 
 SUBROUTINE apply_filter_z_2d(field, flo, fhi, stencil, lo, hi, ngx, ngz, nz_stencil)  &
   bind(c, name='apply_filter_z_2d')
@@ -377,73 +312,16 @@ SUBROUTINE apply_filter_z_2d(field, flo, fhi, stencil, lo, hi, ngx, ngz, nz_sten
   REAL(amrex_real) :: field_tmp(flo(2):fhi(2))
   REAL(amrex_real) :: tmp
   INTEGER :: i, k, ks
-!   write(*,*) flo, fhi
-!  write(*,*) lo, hi
-!  write(*,*) nz_stencil
-!   write(*,*) stencil
   DO i= lo(1), hi(1)
     field_tmp = field(i, :)
-!     write(*,*) 'MAX ', MAXVAL(field_tmp) 
-!     write(*,*) 'SHAPE ', SHAPE(field_tmp) 
-!     DO k= lo(2)+ngz, hi(2)-ngz
     DO k= lo(2)+4, hi(2)-4
       tmp = field(i, k)
       field(i, k) = stencil(0)*field_tmp(k)
       DO ks=1, nz_stencil-1
-        field(i, k) = field(i, k) + stencil(ks) * ( field_tmp(k-ks) + field_tmp(k+ks) )
+        field(i, k) = field(i, k) + stencil(ks) * ( field_tmp(k-ks) + field_tmp(k+ks) ) 
       ENDDO
-!       write(*,*) 'field(i, k), tmp', field(i, k), tmp
     ENDDO
- ENDDO
+  ENDDO
 END SUBROUTINE apply_filter_z_2d
 
-
-
-
-
-
-
-
-! TOUT POURRI
-! SUBROUTINE apply_filter_z_2d(field, stencil, nx, nz, nxguard, nzguard, nz_stencil)  &
-!   bind(c, name='apply_filter_z_2d')
-!   IMPLICIT NONE
-!   INTEGER, value, INTENT(IN) :: nx, nz, nxguard, nzguard, nz_stencil
-!   REAL(amrex_real), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nzguard:nz+nzguard) :: field
-!   REAL(amrex_real), INTENT(IN), DIMENSION(nz_stencil) :: stencil
-!   REAL(num), DIMENSION(-nzguard:nz+nzguard) :: field_tmp
-!   INTEGER(idp) :: i, k, ks
-!   DO i=-nxguard, nx+nxguard
-!     field_tmp = field(i, :)
-!     DO k=0, nz
-!       field(i, k) = stencil(1)*field_tmp(k)
-!       DO ks=2, nz_stencil
-!         field(i, k) = field(i, k) + stencil(ks) * ( field_tmp(k-ks) + field_tmp(k+ks) )
-!       ENDDO
-!     ENDDO
-!  ENDDO
-! END SUBROUTINE apply_filter_z_2d
-
-
-
-
 END MODULE godfrey_filter_coeffs
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
