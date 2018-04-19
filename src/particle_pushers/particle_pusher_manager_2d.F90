@@ -55,7 +55,7 @@
 !> @param[in] dtt time step
 ! ________________________________________________________________________________________
 SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, bzg,  &
-  nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy,   &
+  nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, &
   nozz, dxx, dyy, dzz, dtt)
   USE particles
   USE constants
@@ -206,13 +206,20 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, 
 		    curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
 		    curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt,      &
 		    0_idp)
-		  !! Boris pusher with RR -- Full push
+		  !! Boris pusher with RR (S09 model, according to VRANIC2016, https://doi.org/10.1016/j.cpc.2016.04.002) -- Full push
 		  CASE (2_idp)
-		    CALL pxr_boris_push_rr_u_3d(count, curr_tile%part_ux, curr_tile%part_uy,&
+		    CALL pxr_boris_push_rr_S09_u_3d(count, curr_tile%part_ux, curr_tile%part_uy,&
+		    curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
+		    curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
+		    curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt)
+		  !! Boris pusher with RR (B08 model, according to VRANIC2016, https://doi.org/10.1016/j.cpc.2016.04.002) -- Full push
+		  CASE (3_idp)
+		    CALL pxr_boris_push_rr_B08_u_3d(count, curr_tile%part_ux, curr_tile%part_uy,&
 		    curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
 		    curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
 		    curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt)
 		  !! Boris pusher -- Full push
+		  
 		  CASE DEFAULT
 		    !! Push momentum using the Boris method in a single subroutine
 		    CALL pxr_boris_push_u_3d(count, curr_tile%part_ux, curr_tile%part_uy,   &
