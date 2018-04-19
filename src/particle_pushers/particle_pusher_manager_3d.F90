@@ -318,13 +318,20 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg
               curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt,      &
               0_idp)
 
-              !! Boris pusher with RR -- Full push
+              !! Boris pusher with RR (S09 model, according to VRANIC2016, https://doi.org/10.1016/j.cpc.2016.04.002)-- Full push
 	        CASE (2_idp)
-              CALL pxr_boris_push_rr_u_3d(count, curr_tile%part_ux, curr_tile%part_uy,&
+              CALL pxr_boris_push_rr_S09_u_3d(count, curr_tile%part_ux, curr_tile%part_uy,&
               curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
               curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
               curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt)
 
+	      !! Boris pusher with RR (B08 model, according to VRANIC2016, https://doi.org/10.1016/j.cpc.2016.04.002)-- Full push
+	        CASE (3_idp)
+              CALL pxr_boris_push_rr_B08_u_3d(count, curr_tile%part_ux, curr_tile%part_uy,&
+              curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
+              curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
+              curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt)
+              
               !! Boris pusher -- Full push
             CASE DEFAULT
               !! Push momentum using the Boris method in a single subroutine
@@ -766,12 +773,20 @@ SUBROUTINE particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
               curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt,      &
               0_idp)
 
-              !! Boris pusher with RR -- Full push
-	        CASE (2_idp)
-              CALL pxr_boris_push_rr_u_3d(count, curr_tile%part_ux, curr_tile%part_uy,&
+              !! Boris pusher with RR (S09 model, according to VRANIC2016, https://doi.org/10.1016/j.cpc.2016.04.002)-- Full push
+	    CASE (2_idp)
+              CALL pxr_boris_push_rr_S09_u_3d(count, curr_tile%part_ux, curr_tile%part_uy,&
               curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
               curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
               curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt)
+
+              !! Boris pusher with RR (B08 model, according to VRANIC2016, https://doi.org/10.1016/j.cpc.2016.04.002)model-- Full push
+	    CASE (3_idp)
+              CALL pxr_boris_push_rr_B08_u_3d(count, curr_tile%part_ux, curr_tile%part_uy,&
+              curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
+              curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
+              curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt)
+
 
               !! Boris pusher -- Full push
             CASE DEFAULT
