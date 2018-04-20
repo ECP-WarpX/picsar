@@ -283,12 +283,12 @@ SUBROUTINE init_godfrey_filter_coeffs(stencilz_ex, stencilz_by, nstencilz, cdtod
   bind(c, name='init_godfrey_filter_coeffs')
   INTEGER, value, INTENT(IN) :: nstencilz
   REAL(amrex_real), value, INTENT(IN) :: cdtodz
-  LOGICAL, value, INTENT(IN) :: l_lower_order_in_v
+  INTEGER, value, INTENT(IN) :: l_lower_order_in_v
   REAL(amrex_real), INTENT(IN OUT) :: stencilz_ex(0:nstencilz-1), stencilz_by(0:nstencilz-1)
   REAL(amrex_real), DIMENSION(0:3) :: prestencil_ex, prestencil_by
   INTEGER :: index, i, size_coeff_table
   REAL(amrex_real) :: weight_right
-  IF (l_lower_order_in_v) THEN
+  IF (l_lower_order_in_v .ne. 0) THEN
     size_coeff_table = SIZE(coeff_ex_galerkin, 2)
     index = INT(size_coeff_table*cdtodz)+1
     IF (index<1) THEN
