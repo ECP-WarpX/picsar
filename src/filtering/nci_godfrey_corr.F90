@@ -387,8 +387,8 @@ SUBROUTINE apply_filter_z_3d(field, flo, fhi, stencil, lo, hi, ngx, ngy, ngz, no
   REAL(amrex_real), INTENT(IN) :: stencil(0:nz_stencil-1)
   REAL(amrex_real) :: field_tmp(flo(3):fhi(3))
   INTEGER :: i, j, k, ks
-  DO j= lo(2)+ngy-noy, hi(2)-ngy+noy
-    DO i= lo(1)+ngx-nox, hi(1)-ngx+nox
+  DO i= lo(1)+ngx-nox, hi(1)-ngx+nox
+    DO j= lo(2)+ngy-noy, hi(2)-ngy+noy
       field_tmp = field(i, j, :)
       DO k= lo(3)+nz_stencil-1, hi(3)-nz_stencil+1
         field(i, j, k) = stencil(0)*field_tmp(k)
