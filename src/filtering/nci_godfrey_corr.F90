@@ -53,9 +53,9 @@
 
 MODULE godfrey_filter_coeffs
   use iso_c_binding
-  use amrex_fort_module, only : amrex_real
+  use constants
 IMPLICIT NONE
-  REAL(amrex_real), DIMENSION(4,100), PARAMETER :: coeff_ex_galerkin = reshape([&
+  REAL(num), DIMENSION(4,100), PARAMETER :: coeff_ex_galerkin = reshape([&
     -2.47536,2.04288,-0.598163,0.0314711, & 
     -2.47536,2.04288,-0.598163,0.0314711, & 
     -2.47545,2.04309,-0.598307,0.0315029, & 
@@ -157,7 +157,7 @@ IMPLICIT NONE
     -2.97239,3.15953,-1.39055,0.203448, & 
     -2.97991,3.17632,-1.40234,0.205964, & 
     -2.98769,3.19374,-1.41463,0.208607 ], [4,100])
-  REAL(amrex_real), DIMENSION(4,100), PARAMETER :: coeff_by_galerkin = reshape([&
+  REAL(num), DIMENSION(4,100), PARAMETER :: coeff_by_galerkin = reshape([&
     -2.80862,2.80104,-1.14615,0.154077, & 
     -2.80862,2.80104,-1.14615,0.154077, & 
     -2.80851,2.80078,-1.14595,0.154027, & 
@@ -282,12 +282,12 @@ CONTAINS
 SUBROUTINE init_godfrey_filter_coeffs(stencilz_ex, stencilz_by, nstencilz, cdtodz, l_lower_order_in_v) &
   bind(c, name='init_godfrey_filter_coeffs')
   INTEGER, value, INTENT(IN) :: nstencilz
-  REAL(amrex_real), value, INTENT(IN) :: cdtodz
+  REAL(num), value, INTENT(IN) :: cdtodz
   INTEGER, value, INTENT(IN) :: l_lower_order_in_v
-  REAL(amrex_real), INTENT(IN OUT) :: stencilz_ex(0:nstencilz-1), stencilz_by(0:nstencilz-1)
-  REAL(amrex_real), DIMENSION(0:3) :: prestencil_ex, prestencil_by
+  REAL(num), INTENT(IN OUT) :: stencilz_ex(0:nstencilz-1), stencilz_by(0:nstencilz-1)
+  REAL(num), DIMENSION(0:3) :: prestencil_ex, prestencil_by
   INTEGER :: index, i, size_coeff_table
-  REAL(amrex_real) :: weight_right
+  REAL(num) :: weight_right
   IF (l_lower_order_in_v .ne. 0) THEN
     size_coeff_table = SIZE(coeff_ex_galerkin, 2)
     index = INT(size_coeff_table*cdtodz)+1
@@ -341,9 +341,9 @@ SUBROUTINE apply_filter_z_2d(field, flo, fhi, stencil, lo, hi, ngx, ngz, nox, nz
   INTEGER, value, INTENT(IN) :: nz_stencil, ngx, ngz, nox
   INTEGER, INTENT(IN) :: lo(2), hi(2)
   INTEGER, INTENT(IN) :: flo(2), fhi(2)
-  real(amrex_real), intent(INOUT):: field(flo(1):fhi(1),flo(2):fhi(2))
-  REAL(amrex_real), INTENT(IN) :: stencil(0:nz_stencil-1)
-  REAL(amrex_real) :: field_tmp(flo(2):fhi(2))
+  REAL(num), INTENT(INOUT):: field(flo(1):fhi(1),flo(2):fhi(2))
+  REAL(num), INTENT(IN) :: stencil(0:nz_stencil-1)
+  REAL(num) :: field_tmp(flo(2):fhi(2))
   INTEGER :: i, k, ks
   DO i= lo(1)+ngx-nox, hi(1)-ngx+nox
     field_tmp = field(i, :)
@@ -383,9 +383,9 @@ SUBROUTINE apply_filter_z_3d(field, flo, fhi, stencil, lo, hi, ngx, ngy, ngz, no
   INTEGER, value, INTENT(IN) :: nz_stencil, ngx, ngy, ngz, nox, noy
   INTEGER, INTENT(IN) :: lo(3), hi(3)
   INTEGER, INTENT(IN) :: flo(3), fhi(3)
-  real(amrex_real), intent(INOUT):: field(flo(1):fhi(1),flo(2):fhi(2),flo(3):fhi(3))
-  REAL(amrex_real), INTENT(IN) :: stencil(0:nz_stencil-1)
-  REAL(amrex_real) :: field_tmp(flo(3):fhi(3))
+  REAL(num), INTENT(INOUT):: field(flo(1):fhi(1),flo(2):fhi(2),flo(3):fhi(3))
+  REAL(num), INTENT(IN) :: stencil(0:nz_stencil-1)
+  REAL(num) :: field_tmp(flo(3):fhi(3))
   INTEGER :: i, j, k, ks
   DO i= lo(1)+ngx-nox, hi(1)-ngx+nox
     DO j= lo(2)+ngy-noy, hi(2)-ngy+noy
