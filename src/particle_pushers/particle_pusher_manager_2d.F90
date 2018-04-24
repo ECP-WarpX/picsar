@@ -218,6 +218,16 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, 
 		    curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
 		    curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
 		    curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt)
+		  !! Boris pusher with RR (B08 model, according to VRANIC2016, https://doi.org/10.1016/j.cpc.2016.04.002) -- Full push
+		  CASE (4_idp)
+		    CALL pxr_boris_push_rr_LL_u_3d(count, curr_tile%part_ux, 		    &
+		    curr_tile%part_uy, curr_tile%part_uz, curr_tile%part_gaminv, 	    &
+		    curr_tile%pid(1:count,4), curr_tile%pid(1:count,5),			    &
+		    curr_tile%pid(1:count,6), curr_tile%pid(1:count,7),			    &
+		    curr_tile%pid(1:count,8), curr_tile%pid(1:count,9), 		    &
+		    curr_tile%part_ex, curr_tile%part_ey, curr_tile%part_ez, 		    &
+		    curr_tile%part_bx, curr_tile%part_by, curr_tile%part_bz, 		    &
+		    curr%charge, curr%mass, dtt)		  				
 		  !! Boris pusher -- Full push
 		  
 		  CASE DEFAULT

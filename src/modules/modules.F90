@@ -587,7 +587,7 @@ MODULE particle_properties
   USE constants
   !> Number of elements per particle in the pid particle array
   !> Default is 1 i.e only particle weights are recorded
-  INTEGER(idp)  :: npid=3
+  INTEGER(idp)  :: npid=9
   !> Index in pid array corresponding to particle weights
   !> Beware: default is wpid=1. Use same in WARP when coupling WARP+PXR
   INTEGER(idp), PARAMETER :: wpid=1
