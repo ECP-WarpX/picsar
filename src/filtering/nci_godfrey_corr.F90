@@ -303,8 +303,8 @@ SUBROUTINE init_godfrey_filter_coeffs(stencilz_ex, stencilz_by, nstencilz, cdtod
     IF (index<1) THEN
       index = 1
     ENDIF
-    IF (index>size_coeff_table) THEN
-      index = size_coeff_table
+    IF (index>size_coeff_table-1) THEN
+      index = size_coeff_table-1
     ENDIF
     weight_right = cdtodz - (index-1)/size_coeff_table
     DO i=0, 3
