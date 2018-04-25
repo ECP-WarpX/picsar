@@ -268,12 +268,16 @@ CONTAINS
 !> plasma is drifting at relativistic speed in the z direction. These coefficients
 !> only depend on vz*dt/dz, approximated by c*dt/dz
 !> 
-!> @param[in] stencilz_ex        stencil along z only for Ex, Ey, Bz
-!> @param[in] stencilz_by        stencil along z only for Ez, Bx, By
+!> @param[inout] stencilz_ex     stencil along z only for Ex, Ey, Bz
+!> @param[inout] stencilz_by     stencil along z only for Ez, Bx, By
 !> @param[in] nstencilz          stencil order. 5 for this NCI corrector
 !> @param[in] cdtodz             c*dt/dz. determines the lines read in the table
-!> @param[in] l_lower_order_in_v boolean: current deposition performed with lower order?
-!
+!> @param[in] l_lower_order_in_v integer (0 or 1): current deposition performed with lower
+!>                                   order shape factor in the direction of each deposited 
+!>                                   component of J (i.e., Galerkin scheme). Other
+!>                                   schemes are not implemented for the moment, so
+!>                                   l_lower_order_in_v should be 1.
+!>
 !> @author
 !> Maxence Thevenet
 !> @date
@@ -284,18 +288,23 @@ SUBROUTINE init_godfrey_filter_coeffs(stencilz_ex, stencilz_by, nstencilz, cdtod
   INTEGER, value, INTENT(IN) :: nstencilz
   REAL(num), value, INTENT(IN) :: cdtodz
   INTEGER, value, INTENT(IN) :: l_lower_order_in_v
-  REAL(num), INTENT(IN OUT) :: stencilz_ex(0:nstencilz-1), stencilz_by(0:nstencilz-1)
+  REAL(num), INTENT(INOUT) :: stencilz_ex(0:nstencilz-1), stencilz_by(0:nstencilz-1)
   REAL(num), DIMENSION(0:3) :: prestencil_ex, prestencil_by
   INTEGER :: index, i, size_coeff_table
   REAL(num) :: weight_right
-  IF (l_lower_order_in_v .ne. 0) THEN
+  
+  IF (nstencilz .NE. 5) THEN
+    WRITE(*,*) "ERROR: NCI corrector must be initialized with nstencilz=5"
+    STOP  
+  ENDIF
+  IF (l_lower_order_in_v .NE. 0) THEN
     size_coeff_table = SIZE(coeff_ex_galerkin, 2)
     index = INT(size_coeff_table*cdtodz)+1
     IF (index<1) THEN
       index = 1
     ENDIF
-    IF (index>size_coeff_table+1) THEN
-      index = size_coeff_table+1
+    IF (index>size_coeff_table) THEN
+      index = size_coeff_table
     ENDIF
     weight_right = cdtodz - (index-1)/size_coeff_table
     DO i=0, 3
@@ -313,14 +322,18 @@ SUBROUTINE init_godfrey_filter_coeffs(stencilz_ex, stencilz_by, nstencilz, cdtod
     stencilz_by(2) =  (                         16*prestencil_by(1)+24*prestencil_by(2)+28*prestencil_by(3))/256
     stencilz_by(3) = -(                                              4*prestencil_by(2)+ 8*prestencil_by(3))/256
     stencilz_by(4) =  (                                                                  1*prestencil_by(3))/256
+  ELSE
+    WRITE(*,*) "ERROR: NCI corrector requires l_lower_order_in_v=1, i.e., Galerkin scheme"
+    STOP
   ENDIF
+  
 END SUBROUTINE init_godfrey_filter_coeffs
 
 ! ________________________________________________________________________________________
 !> @brief
 !> Apply a stencil along z for a 2d array
 !> 
-!> @param[in] field      2d (x-z) array onto which the stencil is applied
+!> @param[inout] field   2d (x-z) array onto which the stencil is applied
 !> @param[in] flo        1d 2-element array: field lower bound in x and z
 !> @param[in] fhi        1d 2-element array: field upper bound in x and z
 !> @param[in] stencilz   stencil along z
@@ -329,7 +342,7 @@ END SUBROUTINE init_godfrey_filter_coeffs
 !> @param[in] ngx        number of guard cells along first dimension
 !> @param[in] ngz        number of guard cells along second dimension
 !> @param[in] nox        gather stencil order in x
-!> @param[in] nz_stencil stencil order. 5 for this NCI corrector
+!> @param[in] nz_stencil stencil order.
 !
 !> @author
 !> Maxence Thevenet
@@ -360,7 +373,7 @@ END SUBROUTINE apply_filter_z_2d
 !> @brief
 !> Apply a stencil along z for a 3d array
 !> 
-!> @param[in] field      3d (x-y-z) array onto which the stencil is applied
+!> @param[inout] field   3d (x-y-z) array onto which the stencil is applied
 !> @param[in] flo        1d 3-element array: field lower bound in x, y and z
 !> @param[in] fhi        1d 3-element array: field upper bound in x, y and z
 !> @param[in] stencilz   stencil along z
@@ -371,7 +384,7 @@ END SUBROUTINE apply_filter_z_2d
 !> @param[in] ngz        number of guard cells along thirs dimension
 !> @param[in] nox        gather stencil order in x
 !> @param[in] noy        gather stencil order in y
-!> @param[in] nz_stencil stencil order. 5 for this NCI corrector
+!> @param[in] nz_stencil stencil order.
 !
 !> @author
 !> Maxence Thevenet
