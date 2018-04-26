@@ -70,6 +70,11 @@ F90EXE_sources += vay_3d.F90
 VPATH_LOCATIONS   += $(PICSAR_HOME)/src/particle_pushers/vay_pusher/
 INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/particle_pushers/vay_pusher/
 
+F90EXE_sources += nci_godfrey_corr.F90
+
+VPATH_LOCATIONS   += $(PICSAR_HOME)/src/filtering/
+INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/filtering/
+
 VPATH_LOCATIONS   += $(PICSAR_HOME)/src
 INCLUDE_LOCATIONS += $(PICSAR_HOME)/src
 
