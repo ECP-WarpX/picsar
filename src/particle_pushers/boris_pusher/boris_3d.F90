@@ -274,7 +274,7 @@ SUBROUTINE pxr_boris_push_rr_S09_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx,
     ual=uxp(ip)*alx+uyp(ip)*aly+uzp(ip)*alz
     
     ! denominator of delta u
-    ddv=1.0_num/(tau0inv-clghtisq*gaminvtmp*ual)
+    ddv=1.0_num/(tau0inv+clghtisq*gaminvtmp*ual)
 
     ! delta v
     dvx=ddv*(alx-clghtisq*gaminvtmp**2*ual*uxp(ip))
@@ -285,9 +285,9 @@ SUBROUTINE pxr_boris_push_rr_S09_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx,
     dval=dvx*alx+dvy*aly+dvz*alz
 
     ! RR correction
-    urx=2*const*(dvy*bz(ip)-dvz*by(ip))-clghtisq*gamtmp*dval*uxp(ip)*dt
-    ury=2*const*(dvz*bx(ip)-dvx*bz(ip))-clghtisq*gamtmp*dval*uyp(ip)*dt
-    urz=2*const*(dvx*by(ip)-dvy*bx(ip))-clghtisq*gamtmp*dval*uzp(ip)*dt
+    urx=2.0_num*const*(dvy*bz(ip)-dvz*by(ip))-clghtisq*gamtmp*dval*uxp(ip)*dt
+    ury=2.0_num*const*(dvz*bx(ip)-dvx*bz(ip))-clghtisq*gamtmp*dval*uyp(ip)*dt
+    urz=2.0_num*const*(dvx*by(ip)-dvy*bx(ip))-clghtisq*gamtmp*dval*uzp(ip)*dt
 
     ! Push using the RR force
     uxp(ip) = uxold+urx+dt*alx
@@ -667,15 +667,15 @@ SUBROUTINE pxr_boris_push_rr_LL_u_3d(np, uxp, uyp, uzp, gaminv, exold, eyold, ez
     !write(*,*)"check 1",by(ip),ex(ip)
     
     ! RR force 
-    urx= crr*(gamtmp*(dex+gaminvtmp*(uyp(ip)*dbz-uzp(ip)*dby))+			&
+    urx= crr*(-gamtmp*(dex+gaminvtmp*(uyp(ip)*dbz-uzp(ip)*dby))+		&
     qminv*((ebx-gaminvtmp*bubx+clghtisq*gaminvtmp*eup*ex(ip))-			&
     gamtmp*clghtisq*(fsq-gaminvtmp**2*clghtisq*(eup)**2)*uxp(ip)))       				
     
-    ury= crr*(gamtmp*(dey+gaminvtmp*(uzp(ip)*dbx-uxp(ip)*dbz))+			&
+    ury= crr*(-gamtmp*(dey+gaminvtmp*(uzp(ip)*dbx-uxp(ip)*dbz))+		&
     qminv*((eby-gaminvtmp*buby+clghtisq*gaminvtmp*eup*ey(ip))-			&
     gamtmp*clghtisq*(fsq-gaminvtmp**2*clghtisq*(eup)**2)*uyp(ip)))       							
     
-    urz= crr*(gamtmp*(dez+gaminvtmp*(uxp(ip)*dby-uyp(ip)*dbx))+			&
+    urz= crr*(-gamtmp*(dez+gaminvtmp*(uxp(ip)*dby-uyp(ip)*dbx))+		&
     qminv*((ebz-gaminvtmp*bubz+clghtisq*gaminvtmp*eup*ez(ip))-			&
     gamtmp*clghtisq*(fsq-gaminvtmp**2*clghtisq*(eup)**2)*uzp(ip)))       
     
