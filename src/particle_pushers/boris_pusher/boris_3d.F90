@@ -497,7 +497,7 @@ END SUBROUTINE
 !> Murad Abuzarli
 !
 !> @date
-!> Creation April 20 2018
+!> Creation April 27 2018
 !
 !> @param[in] np number of super-particles
 !> @param[in] uxp, uyp, uzp normalized momentum in each direction
@@ -667,15 +667,15 @@ SUBROUTINE pxr_boris_push_rr_LL_u_3d(np, uxp, uyp, uzp, gaminv, exold, eyold, ez
     !write(*,*)"check 1",by(ip),ex(ip)
     
     ! RR force 
-    urx= crr*(-gamtmp*(dex+gaminvtmp*(uyp(ip)*dbz-uzp(ip)*dby))+		&
+    urx= crr*(gamtmp*(dex+gaminvtmp*(uyp(ip)*dbz-uzp(ip)*dby))+		&
     qminv*((ebx-gaminvtmp*bubx+clghtisq*gaminvtmp*eup*ex(ip))-			&
     gamtmp*clghtisq*(fsq-gaminvtmp**2*clghtisq*(eup)**2)*uxp(ip)))       				
     
-    ury= crr*(-gamtmp*(dey+gaminvtmp*(uzp(ip)*dbx-uxp(ip)*dbz))+		&
+    ury= crr*(gamtmp*(dey+gaminvtmp*(uzp(ip)*dbx-uxp(ip)*dbz))+		&
     qminv*((eby-gaminvtmp*buby+clghtisq*gaminvtmp*eup*ey(ip))-			&
     gamtmp*clghtisq*(fsq-gaminvtmp**2*clghtisq*(eup)**2)*uyp(ip)))       							
     
-    urz= crr*(-gamtmp*(dez+gaminvtmp*(uxp(ip)*dby-uyp(ip)*dbx))+		&
+    urz= crr*(gamtmp*(dez+gaminvtmp*(uxp(ip)*dby-uyp(ip)*dbx))+		&
     qminv*((ebz-gaminvtmp*bubz+clghtisq*gaminvtmp*eup*ez(ip))-			&
     gamtmp*clghtisq*(fsq-gaminvtmp**2*clghtisq*(eup)**2)*uzp(ip)))       
     
