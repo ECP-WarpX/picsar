@@ -587,7 +587,7 @@ MODULE particle_properties
   USE constants
   !> Number of elements per particle in the pid particle array
   !> Default is 1 i.e only particle weights are recorded
-  INTEGER(idp)  :: npid=9
+  INTEGER(idp)  :: npid=3
   !> Index in pid array corresponding to particle weights
   !> Beware: default is wpid=1. Use same in WARP when coupling WARP+PXR
   INTEGER(idp), PARAMETER :: wpid=1
@@ -604,7 +604,19 @@ MODULE particle_properties
   !> Index in pid array corresponding to old y momentum of particles
   INTEGER(idp) :: uyoldpid
   !> Index in pid array corresponding to old z momentum of particles
-  INTEGER(idp) :: uzoldpid
+  INTEGER(idp) :: uzoldpid 
+  !> Index in pid array corresponding to old x positions of particles
+  INTEGER(idp)  :: exoldpid
+  !> Index in pid array corresponding to old y positions of particles
+  INTEGER(idp) :: eyoldpid
+  !> Index in pid array corresponding to old x positions of particles
+  INTEGER(idp) :: ezoldpid
+  !> Index in pid array corresponding to old x momentum of particles
+  INTEGER(idp) :: bxoldpid
+  !> Index in pid array corresponding to old y momentum of particles
+  INTEGER(idp) :: byoldpid
+  !> Index in pid array corresponding to old z momentum of particles
+  INTEGER(idp) :: bzoldpid  
   !> This flag seems to be unused
   LOGICAL(lp) :: l_initongrid = .FALSE.
   !> Flag to activate the use of weight for the particles
