@@ -413,4 +413,36 @@ SUBROUTINE apply_filter_z_3d(field, flo, fhi, stencil, lo, hi, ngx, ngy, ngz, no
   ENDDO
 END SUBROUTINE apply_filter_z_3d
 
+SUBROUTINE apply_godfrey_filter_z_2d (lo, hi, fou, olo, ohi, fin, ilo, ihi, sten, nsten) bind(c)
+  INTEGER, INTENT(in) :: lo(2), hi(2), olo(2), ohi(2), ilo(2), ihi(2), nsten
+  REAL(NUM), INTENT(INOUT) :: fou(olo(1):ohi(1),olo(2):ohi(2))
+  REAL(NUM), INTENT(IN   ) :: fin(ilo(1):ihi(1),ilo(2):ihi(2))
+  REAL(NUM), INTENT(IN   ) :: sten(0:nsten-1)
+  INTEGER :: i,k,ks
+  DO ks = 1, nsten-1
+     DO       k = lo(2), hi(2)
+        DO i = lo(1), hi(1)
+           fou(i,k) = sten(0)*fin(i,k) + sten(ks)*(fin(i,k-ks)+fin(i,k+ks))
+        END DO
+     END DO
+  END DO
+END SUBROUTINE apply_godfrey_filter_z_2d
+
+SUBROUTINE apply_godfrey_filter_z_3d (lo, hi, fou, olo, ohi, fin, ilo, ihi, sten, nsten) bind(c)
+  INTEGER, INTENT(in) :: lo(3), hi(3), olo(3), ohi(3), ilo(3), ihi(3), nsten
+  REAL(NUM), INTENT(INOUT) :: fou(olo(1):ohi(1),olo(2):ohi(2),olo(3):ohi(3))
+  REAL(NUM), INTENT(IN   ) :: fin(ilo(1):ihi(1),ilo(2):ihi(2),ilo(3):ihi(3))
+  REAL(NUM), INTENT(IN   ) :: sten(0:nsten-1)
+  INTEGER :: i,j,k,ks
+  DO ks = 1, nsten-1
+     DO       k = lo(3), hi(3)
+        DO    j = lo(2), hi(2)
+           DO i = lo(1), hi(1)
+              fou(i,j,k) = sten(0)*fin(i,j,k) + sten(ks)*(fin(i,j,k-ks)+fin(i,j,k+ks))
+           END DO
+        END DO
+     END DO
+  END DO
+END SUBROUTINE apply_godfrey_filter_z_3d
+
 END MODULE godfrey_filter_coeffs
