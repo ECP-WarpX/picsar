@@ -333,86 +333,20 @@ END SUBROUTINE init_godfrey_filter_coeffs
 !> @brief
 !> Apply a stencil along z for a 2d array
 !> 
-!> @param[inout] field   2d (x-z) array onto which the stencil is applied
-!> @param[in] flo        1d 2-element array: field lower bound in x and z
-!> @param[in] fhi        1d 2-element array: field upper bound in x and z
-!> @param[in] stencilz   stencil along z
-!> @param[in] lo         1d 2-element array: lower bounds for filter. Used for tiling
-!> @param[in] hi         1d 2-element array: upper bounds for filter. Used for tiling
-!> @param[in] ngx        number of guard cells along first dimension
-!> @param[in] ngz        number of guard cells along second dimension
-!> @param[in] nox        gather stencil order in x
-!> @param[in] nz_stencil stencil order.
-!
-!> @author
-!> Maxence Thevenet
+!> @param[in] lo, hi     1d, 2-element arrays: lowest and highest indices between which the 
+!>                       filter is applied
+!> @param[inout] fou     2d (x-z) array: Output filtered field
+!> @param[in] olo, ohi   1d, 2-element arrays: lower and upper bounds for the filtered 
+!>                       output field
+!> @param[in] fin        2d (x-z) array: Input field to filter
+!> @param[in] ilo, ihi   1d, 2-element arrays: lower and upper bounds for the input field 
+!>                       to filter
+!> @param[in] sten       1d stencil along z
+!> @param[in] nsten      stencil order
+!>
 !> @date
 !> Creation 2018
 ! ________________________________________________________________________________________
-SUBROUTINE apply_filter_z_2d(field, flo, fhi, stencil, lo, hi, ngx, ngz, nox, nz_stencil)  &
-  bind(c, name='apply_filter_z_2d')
-  INTEGER, value, INTENT(IN) :: nz_stencil, ngx, ngz, nox
-  INTEGER, INTENT(IN) :: lo(2), hi(2)
-  INTEGER, INTENT(IN) :: flo(2), fhi(2)
-  REAL(num), INTENT(INOUT):: field(flo(1):fhi(1),flo(2):fhi(2))
-  REAL(num), INTENT(IN) :: stencil(0:nz_stencil-1)
-  REAL(num) :: field_tmp(flo(2):fhi(2))
-  INTEGER :: i, k, ks
-  DO i= lo(1)+ngx-nox, hi(1)-ngx+nox
-    field_tmp = field(i, :)
-    DO k= lo(2)+nz_stencil-1, hi(2)-nz_stencil+1
-      field(i, k) = stencil(0)*field_tmp(k)
-      DO ks=1, nz_stencil-1
-        field(i, k) = field(i, k) + stencil(ks) * ( field_tmp(k-ks) + field_tmp(k+ks) ) 
-      ENDDO
-    ENDDO
-  ENDDO
-END SUBROUTINE apply_filter_z_2d
-
-! ________________________________________________________________________________________
-!> @brief
-!> Apply a stencil along z for a 3d array
-!> 
-!> @param[inout] field   3d (x-y-z) array onto which the stencil is applied
-!> @param[in] flo        1d 3-element array: field lower bound in x, y and z
-!> @param[in] fhi        1d 3-element array: field upper bound in x, y and z
-!> @param[in] stencilz   stencil along z
-!> @param[in] lo         1d 3-element array: lower bounds for filter. Used for tiling
-!> @param[in] hi         1d 3-element array: upper bounds for filter. Used for tiling
-!> @param[in] ngx        number of guard cells along first dimension
-!> @param[in] ngy        number of guard cells along second dimension
-!> @param[in] ngz        number of guard cells along thirs dimension
-!> @param[in] nox        gather stencil order in x
-!> @param[in] noy        gather stencil order in y
-!> @param[in] nz_stencil stencil order.
-!
-!> @author
-!> Maxence Thevenet
-!> @date
-!> Creation 2018
-! ________________________________________________________________________________________
-SUBROUTINE apply_filter_z_3d(field, flo, fhi, stencil, lo, hi, ngx, ngy, ngz, nox, noy, nz_stencil)  &
-  bind(c, name='apply_filter_z_3d')
-  INTEGER, value, INTENT(IN) :: nz_stencil, ngx, ngy, ngz, nox, noy
-  INTEGER, INTENT(IN) :: lo(3), hi(3)
-  INTEGER, INTENT(IN) :: flo(3), fhi(3)
-  REAL(num), INTENT(INOUT):: field(flo(1):fhi(1),flo(2):fhi(2),flo(3):fhi(3))
-  REAL(num), INTENT(IN) :: stencil(0:nz_stencil-1)
-  REAL(num) :: field_tmp(flo(3):fhi(3))
-  INTEGER :: i, j, k, ks
-  DO i= lo(1)+ngx-nox, hi(1)-ngx+nox
-    DO j= lo(2)+ngy-noy, hi(2)-ngy+noy
-      field_tmp = field(i, j, :)
-      DO k= lo(3)+nz_stencil-1, hi(3)-nz_stencil+1
-        field(i, j, k) = stencil(0)*field_tmp(k)
-        DO ks=1, nz_stencil-1
-          field(i, j, k) = field(i, j, k) + stencil(ks) * ( field_tmp(k-ks) + field_tmp(k+ks) ) 
-        ENDDO 
-      ENDDO
-    ENDDO
-  ENDDO
-END SUBROUTINE apply_filter_z_3d
-
 SUBROUTINE apply_godfrey_filter_z_2d (lo, hi, fou, olo, ohi, fin, ilo, ihi, sten, nsten) bind(c)
   INTEGER, INTENT(in) :: lo(2), hi(2), olo(2), ohi(2), ilo(2), ihi(2), nsten
   REAL(NUM), INTENT(INOUT) :: fou(olo(1):ohi(1),olo(2):ohi(2))
@@ -435,6 +369,24 @@ SUBROUTINE apply_godfrey_filter_z_2d (lo, hi, fou, olo, ohi, fin, ilo, ihi, sten
   END DO
 END SUBROUTINE apply_godfrey_filter_z_2d
 
+! ________________________________________________________________________________________
+!> @brief
+!> Apply a stencil along z for a 3d array
+!> 
+!> @param[in] lo, hi     1d, 3-element arrays: lowest and highest indices between which the 
+!>                       filter is applied
+!> @param[inout] fou     3d (x-y-z) array: Output filtered field
+!> @param[in] olo, ohi   1d, 3-element arrays: lower and upper bounds for the filtered 
+!>                       output field
+!> @param[in] fin        3d (x-y-z) array: Input field to filter
+!> @param[in] ilo, ihi   1d, 3-element arrays: lower and upper bounds for the input field 
+!>                       to filter
+!> @param[in] sten       1d stencil along z
+!> @param[in] nsten      stencil order
+!>
+!> @date
+!> Creation 2018
+! ________________________________________________________________________________________
 SUBROUTINE apply_godfrey_filter_z_3d (lo, hi, fou, olo, ohi, fin, ilo, ihi, sten, nsten) bind(c)
   INTEGER, INTENT(in) :: lo(3), hi(3), olo(3), ohi(3), ilo(3), ihi(3), nsten
   REAL(NUM), INTENT(INOUT) :: fou(olo(1):ohi(1),olo(2):ohi(2),olo(3):ohi(3))
