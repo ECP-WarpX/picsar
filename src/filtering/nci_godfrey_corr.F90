@@ -419,10 +419,17 @@ SUBROUTINE apply_godfrey_filter_z_2d (lo, hi, fou, olo, ohi, fin, ilo, ihi, sten
   REAL(NUM), INTENT(IN   ) :: fin(ilo(1):ihi(1),ilo(2):ihi(2))
   REAL(NUM), INTENT(IN   ) :: sten(0:nsten-1)
   INTEGER :: i,k,ks
+
+  DO    k = lo(2), hi(2)
+     DO i = lo(1), hi(1)
+        fou(i,k) = sten(0)*fin(i,k)
+     END DO
+  END DO
+
   DO ks = 1, nsten-1
-     DO       k = lo(2), hi(2)
+     DO    k = lo(2), hi(2)
         DO i = lo(1), hi(1)
-           fou(i,k) = sten(0)*fin(i,k) + sten(ks)*(fin(i,k-ks)+fin(i,k+ks))
+           fou(i,k) = fou(i,k) + sten(ks)*(fin(i,k-ks)+fin(i,k+ks))
         END DO
      END DO
   END DO
@@ -434,11 +441,20 @@ SUBROUTINE apply_godfrey_filter_z_3d (lo, hi, fou, olo, ohi, fin, ilo, ihi, sten
   REAL(NUM), INTENT(IN   ) :: fin(ilo(1):ihi(1),ilo(2):ihi(2),ilo(3):ihi(3))
   REAL(NUM), INTENT(IN   ) :: sten(0:nsten-1)
   INTEGER :: i,j,k,ks
+
+  DO       k = lo(3), hi(3)
+     DO    j = lo(2), hi(2)
+        DO i = lo(1), hi(1)
+           fou(i,j,k) = sten(0)*fin(i,j,k)
+        END DO
+     END DO
+  END DO
+  
   DO ks = 1, nsten-1
      DO       k = lo(3), hi(3)
         DO    j = lo(2), hi(2)
            DO i = lo(1), hi(1)
-              fou(i,j,k) = sten(0)*fin(i,j,k) + sten(ks)*(fin(i,j,k-ks)+fin(i,j,k+ks))
+              fou(i,j,k) = fou(i,j,k) + sten(ks)*(fin(i,j,k-ks)+fin(i,j,k+ks))
            END DO
         END DO
      END DO
