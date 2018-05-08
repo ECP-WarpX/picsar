@@ -1106,6 +1106,7 @@ remove_file(appname+".v")
 
 #LIST ALL .F90 or .F files in current directory
 listfiles=["modules/modules.F90", \
+           "field_solvers/Maxwell/GPSTD_solver/fastfft.F90",  \
            "housekeeping/sorting.F90", \
            "field_solvers/Maxwell/maxwell_solver_manager.F90", \
            "field_solvers/Maxwell/yee_solver/yee.F90", \
@@ -1135,6 +1136,8 @@ listfiles=["modules/modules.F90", \
            "field_gathering/energy_conserving/field_gathering_o3_2d.F90",\
            "parallelization/mpi/mpi_derived_types.F90",\
            "boundary_conditions/field_boundaries.F90", \
+           "field_solvers/Maxwell/GPSTD_solver/init_kspace_3D.F90",\
+	   "field_solvers/Maxwell/GPSTD_solver/fourier_psaotd.F90", \
            "boundary_conditions/particle_boundaries.F90", \
            "ios/simple_io.F90", \
            "particle_deposition/charge_deposition/charge_deposition_2d.F90", \
