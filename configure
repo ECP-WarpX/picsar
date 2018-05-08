@@ -27,14 +27,11 @@ parser.add_argument( '--compiler', choices=['gnu', 'intel'], default='gnu',
     help='which compiler to use (only used when compiling on Edison/Cori)')
 parser.add_argument( '--architecture', choices=['cpu', 'knl'], default='cpu',
     help='which architecture to cross-compile for (only used when compiling on Cori)')
-parser.add_argument( '--full_pxr', choices=['True', 'False'], default='False',
-    help='which picsar mode to use)') 
 args = parser.parse_args()
    
 
-if(args.full_pxr=='True'):
-    fftw_lib = '/usr/lib/x86_64-linux-gnu'
-    p3dfft_lib = ''   #does not work for now
+fftw_lib = '/usr/lib/x86_64-linux-gnu'
+p3dfft_lib = ''   #does not work for now
     
 # Check if we are on Edison or Cori, at NERSC
 if host.startswith('edison') or host.startswith('cori'):
@@ -60,10 +57,7 @@ if host.startswith('edison') or host.startswith('cori'):
 else:
     comp = 'mpif90'
     fcomp = 'gfortran'
-    if(args.full_pxr=='False'):
-        fargs = '"-O3 -fopenmp -D FFTW=1 -I /usr/include  -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0"'
-    else:
-        fargs = '"-O3 -fopenmp -D FFTW=1 -I /usr/include -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0  "'
+    fargs = '"-O3 -fopenmp -D FFTW=1 -I /usr/include  -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0"'
     # Parse the result of mpif90 -show
     parsed_mpi = True   # By default ; errors modify this flag
     try:
@@ -94,9 +88,8 @@ else:
             print('MPI flags: %s' %libs)
 
 
-if(args.full_pxr=='True'):
-    libdir_list.append(fftw_lib)
-    libs += ' -lfftw3 -lfftw3_omp -lfftw3_mpi '
+libdir_list.append(fftw_lib)
+libs += ' -lfftw3  -lfftw3_mpi '
 
 # Read the file Makefile_Forthon.in
 with open('Makefile_Forthon.in') as f:
