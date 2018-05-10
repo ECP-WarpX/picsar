@@ -198,7 +198,7 @@ SUBROUTINE step(nst)
 
       IF (rank .EQ. 0)  THEN
         WRITE(0, *) 'it = ', it, ' || time = ', it*dt, " || push/part (ns)= ",        &
-        pushtime*1e9_num/ntot, " || tot/part (ns)= ", (timeit-startit)*1e9_num/ntot
+        pushtime*1e9_num/MAX(ntot,1), " || tot/part (ns)= ", (timeit-startit)*1e9_num/MAX(ntot,1)
       END IF
     END DO
 
@@ -254,25 +254,36 @@ SUBROUTINE step(nst)
         ENDIF
       ELSE
 #endif
-        !IF (rank .EQ. 0) PRINT *, "#6"
-        !!! --- Push B field half a time step
-        !WRITE(0, *), 'push_bfield'
-        CALL push_bfield_2d
-        !IF (rank .EQ. 0) PRINT *, "#7"
-        !!! --- Boundary conditions for B
-        CALL bfield_bcs
-        !IF (rank .EQ. 0) PRINT *, "#8"
-        !!! --- Push E field  a full time step
-        CALL push_efield_2d
-        !IF (rank .EQ. 0) PRINT *, "#9"
-        !!! --- Boundary conditions for E
-        CALL efield_bcs
-        !IF (rank .EQ. 0) PRINT *, "#10"
-        !!! --- push B field half a time step
-        CALL push_bfield_2d
-        !IF (rank .EQ. 0) PRINT *, "#11"
-        !!! --- Boundary conditions for B
-        CALL bfield_bcs
+       !IF (rank .EQ. 0) PRINT *, "#6"
+       !!! --- Push B field half a time step
+       !WRITE(0, *), 'push_bfield'
+       IF(absorbing_bcs) THEN
+         CALL damp_b_field()
+       ENDIF
+       CALL push_bfield_2d
+       !IF (rank .EQ. 0) PRINT *, "#7"
+       !!! --- Boundary conditions for B
+       CALL bfield_bcs
+       !IF (rank .EQ. 0) PRINT *, "#8"
+       !!! --- Push E field  a full time step
+       IF(absorbing_bcs) THEN
+         CALL damp_e_field()
+       ENDIF
+
+       CALL push_efield_2d
+       !IF (rank .EQ. 0) PRINT *, "#9"
+       !!! --- Boundary conditions for E
+       CALL efield_bcs
+       !IF (rank .EQ. 0) PRINT *, "#10"
+       !!! --- push B field half a time step
+       IF(absorbing_bcs) THEN
+         CALL damp_b_field()
+       ENDIF
+       CALL push_bfield_2d
+       !IF (rank .EQ. 0) PRINT *, "#11"
+       !!! --- Boundary conditions for B
+       CALL bfield_bcs
+
 
 #if defined(FFTW)
       ENDIF
@@ -291,7 +302,7 @@ SUBROUTINE step(nst)
 
       IF (rank .EQ. 0)  THEN
         WRITE(0, *) 'it = ', it, ' || time = ', it*dt, " || push/part (ns)= ",        &
-        pushtime*1e9_num/ntot, " || tot/part (ns)= ", (timeit-startit)*1e9_num/ntot
+        pushtime*1e9_num/MAX(ntot,1), " || tot/part (ns)= ", (timeit-startit)*1e9_num/MAX(ntot,1)
       END IF
     END DO
 
@@ -345,10 +356,11 @@ SUBROUTINE init_pml_arrays
   REAL(num)    :: coeff,b_offset, e_offset
   INTEGER(idp) :: type_id  
   REAL(num)    , ALLOCATABLE, DIMENSION(:) :: temp
-  coeff = .10_num
+  coeff = 1.10_num
   b_offset = .50_num
   e_offset = 0._num
-  pow = 3_idp
+  pow = 2_idp
+  
 
   !> Inits pml arrays of the same size as ex fields in the daming direction!
   !> sigmas are 1d arrray to economize memory
@@ -485,6 +497,13 @@ SUBROUTINE init_pml_arrays
     sigma_z_e = 1.0_num
     sigma_z_b = 1.0_num
   ENDIF
+  IF(l_spectral .EQV. .FALSE.) THEN
+    sigma_x_e = sigma_x_e**2
+    sigma_y_e = sigma_y_e**2
+    sigma_z_e  = sigma_z_e**2
+  ENDIF
+print*,"sigma_x_e",sigma_x_e
+print*,"sigma_x_b",sigma_x_b
 END SUBROUTINE init_pml_arrays
 
 ! ________________________________________________________________________________________

@@ -198,6 +198,136 @@ END subroutine field_damping_bcs
 
 ! ________________________________________________________________________________________
 !> @brief
+!> Field damping in pml region
+!> Damps fields in pml region
+!> if vaccum then does nothing
+!> @author
+!> Haithem Kallala
+!
+!> @date
+!> Creation 2018
+! ________________________________________________________________________________________
+
+SUBROUTINE damp_e_field
+  USE fields
+  USE shared_data
+  USE constants
+  USE omp_lib
+  USE time_stat
+  USE params
+
+  IMPLICIT NONE
+  INTEGER(idp)  :: ix,iy,iz
+  REAL(num)     :: tmptime
+
+  IF (it.ge.timestat_itstart) THEN
+    tmptime = MPI_WTIME()
+  ENDIF
+  IF(c_dim == 3) THEN 
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+    DO ix = -nxguards,nx+nxguards-1
+      DO iy = -nyguards,ny+nyguards-1
+        DO iz = -nzguards,nz+nzguards-1
+          exy(ix,iy,iz) = sigma_y_e(iy) *exy(ix,iy,iz)
+          exz(ix,iy,iz) = sigma_z_e(iz) *exz(ix,iy,iz)
+          eyx(ix,iy,iz) = sigma_x_e(ix) *eyx(ix,iy,iz)
+          eyz(ix,iy,iz) = sigma_z_e(iz) *eyz(ix,iy,iz)
+          ezx(ix,iy,iz) = sigma_x_e(ix) *ezx(ix,iy,iz)
+          ezy(ix,iy,iz) = sigma_y_e(iy) *ezy(ix,iy,iz)
+
+        ENDDO
+      ENDDO
+    ENDDO
+    !$OMP END PARALLEL DO
+  ELSE IF(c_dim==2) THEN
+    iy=0_idp
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,  iz) COLLAPSE(2)
+    DO ix = -nxguards,nx+nxguards-1
+        DO iz = -nzguards,nz+nzguards-1
+          ex(ix,iy,iz) = sigma_z_e(iz) *ex(ix,iy,iz)
+          eyx(ix,iy,iz) = sigma_x_e(ix) *eyx(ix,iy,iz)
+          eyz(ix,iy,iz) = sigma_z_e(iz) *eyz(ix,iy,iz)
+          ez(ix,iy,iz) = sigma_x_e(ix) *ez(ix,iy,iz)
+
+        ENDDO
+      ENDDO
+    !$OMP END PARALLEL DO
+  ENDIF
+
+   
+  IF (it.ge.timestat_itstart) THEN
+    localtimes(26) = localtimes(26) + (MPI_WTIME() - tmptime)
+  ENDIF
+
+END subroutine damp_e_field
+
+! ________________________________________________________________________________________
+!> @brief
+!> Field damping in pml region
+!> Damps fields in pml region
+!> if vaccum then does nothing
+!> @author
+!> Haithem Kallala
+!
+!> @date
+!> Creation 2018
+! ________________________________________________________________________________________
+
+SUBROUTINE damp_b_field
+  USE fields
+  USE shared_data
+  USE constants
+  USE omp_lib
+  USE time_stat
+  USE params
+
+  IMPLICIT NONE
+  INTEGER(idp)  :: ix,iy,iz
+  REAL(num)     :: tmptime
+
+  IF (it.ge.timestat_itstart) THEN
+    tmptime = MPI_WTIME()
+  ENDIF
+  IF(c_dim == 3) THEN 
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+    DO ix = -nxguards,nx+nxguards-1
+      DO iy = -nyguards,ny+nyguards-1
+        DO iz = -nzguards,nz+nzguards-1
+          bxy(ix,iy,iz) = sigma_y_b(iy) *bxy(ix,iy,iz)
+          bxz(ix,iy,iz) = sigma_z_b(iz) *bxz(ix,iy,iz)
+          byx(ix,iy,iz) = sigma_x_b(ix) *byx(ix,iy,iz)
+          byz(ix,iy,iz) = sigma_z_b(iz) *byz(ix,iy,iz)
+          bzx(ix,iy,iz) = sigma_x_b(ix) *bzx(ix,iy,iz)
+          bzy(ix,iy,iz) = sigma_y_b(iy) *bzy(ix,iy,iz)
+        ENDDO
+      ENDDO
+    ENDDO
+    !$OMP END PARALLEL DO
+  ELSE IF(c_dim==2) THEN
+    iy=0_idp
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,  iz) COLLAPSE(2)
+    DO ix = -nxguards,nx+nxguards-1
+        DO iz = -nzguards,nz+nzguards-1
+          bx(ix,iy,iz) = sigma_z_b(iz) *bx(ix,iy,iz)
+          byx(ix,iy,iz) = sigma_x_b(ix) *byx(ix,iy,iz)
+          byz(ix,iy,iz) = sigma_z_b(iz) *byz(ix,iy,iz)
+          bz(ix,iy,iz) = sigma_x_b(ix) *bz(ix,iy,iz)
+        ENDDO
+      ENDDO
+    !$OMP END PARALLEL DO
+  ENDIF
+
+   
+  IF (it.ge.timestat_itstart) THEN
+    localtimes(26) = localtimes(26) + (MPI_WTIME() - tmptime)
+  ENDIF
+
+END subroutine damp_b_field
+
+
+
+! ________________________________________________________________________________________
+!> @brief
 !> Mege splitted fields of when using absorbing_bcs to compute real EM field
 !> @author
 !> Haithem Kallala
@@ -317,21 +447,26 @@ SUBROUTINE push_bfield_2d
   IF (it.ge.timestat_itstart) THEN
     tmptime = MPI_WTIME()
   ENDIF
-
-  ! Yee scheme at order 2
-  IF ((norderx.eq.2).AND.(norderz.eq.2)) then
-
-    CALL pxrpush_em2d_bvec(ex, ey, ez, bx, by, bz, 0.5_num*dt/dx, 0._num,             &
-    0.5_num*dt/dz, nx, ny, nz, nxguards, 0_idp, nzguards, nxs, 0_idp, nzs,         &
-    l_nodalgrid)
-
-    ! Yee scheme arbitrary order
+  IF(absorbing_bcs) THEN
+    CALL pxrpush_em_pml_2d_bvec(ex,ey,ez,bx,by,bz,exy,exz,eyx,eyz,bzx,bzy,bxy,bxz,byx,byz,bzx,bzy,           &
+    0.5_num*dt/dx, 0._num, 0.5_num*dt/dz, nx, ny, nz, nxguards, 0_idp, nzguards, nxs, & 
+    0_idp, nzs,   l_nodalgrid)
   ELSE
-
-    CALL pxrpush_em2d_bvec_norder(ex, ey, ez, bx, by, bz, 0.5_num*dt/dx*xcoeffs,      &
-    0.5_num*dt/dy*ycoeffs, 0.5_num*dt/dz*zcoeffs, nx, ny, nz, norderx, nordery,       &
-    norderz, nxguards, nyguards, nzguards, nxs, nys, nzs, l_nodalgrid)
-
+    ! Yee scheme at order 2
+    IF ((norderx.eq.2).AND.(norderz.eq.2)) then
+  
+      CALL pxrpush_em2d_bvec(ex, ey, ez, bx, by, bz, 0.5_num*dt/dx, 0._num,             &
+      0.5_num*dt/dz, nx, ny, nz, nxguards, 0_idp, nzguards, nxs, 0_idp, nzs,         &
+      l_nodalgrid)
+  
+      ! Yee scheme arbitrary order
+    ELSE
+  
+      CALL pxrpush_em2d_bvec_norder(ex, ey, ez, bx, by, bz, 0.5_num*dt/dx*xcoeffs,      &
+      0.5_num*dt/dy*ycoeffs, 0.5_num*dt/dz*zcoeffs, nx, ny, nz, norderx, nordery,       &
+      norderz, nxguards, nyguards, nzguards, nxs, nys, nzs, l_nodalgrid)
+  
+    ENDIF
   ENDIF
 
   IF (it.ge.timestat_itstart) THEN
@@ -364,23 +499,32 @@ SUBROUTINE push_efield_2d
     tmptime = MPI_WTIME()
   ENDIF
   mdt = mu0*clight**2*dt
-  ! Yee scheme at order 2
-  IF ((norderx.eq.2).AND.(norderz.eq.2)) then
-    CALL pxrpush_em2d_evec(ex, ey, ez, bx, by, bz,jx,jy,jz,mdt, clight**2*dt/dx,clight**2*dt/dy, &
+
+
+  IF(absorbing_bcs) THEN
+    CALL pxrpush_em_pml_2d_evec(ex,ey,ez,bx,by,bz,exy,exz,eyx, eyz,ezx, ezy, bxy, bxz,byx, byz, bzx, &
+    bzy ,jx,jy,jz,mdt, clight**2*dt/dx,clight**2*dt/dy, &
     clight**2*dt/dz, nx,ny,nz, nxguards, nyguards, nzguards,nxs,0_idp,nzs,&
     l_nodalgrid)
-
-    ! Yee scheme arbitrary order
   ELSE
-
-    CALL pxrpush_em2d_evec_norder(ex, ey, ez, bx, by, bz,jx,jy,jz,mdt, clight**2*dt/dx*xcoeffs,&
-    clight**2*dt/dy*ycoeffs, clight**2*dt/dz*zcoeffs, nx, ny, nz, norderx, nordery,&
-    norderz, nxguards, nyguards, nzguards, nxs, 0_idp, nzs, l_nodalgrid)
-
-  ENDIF
-
-  IF (it.ge.timestat_itstart) THEN
-    localtimes(7) = localtimes(7) + (MPI_WTIME() - tmptime)
+    ! Yee scheme at order 2
+    IF ((norderx.eq.2).AND.(norderz.eq.2)) then
+      CALL pxrpush_em2d_evec(ex, ey, ez, bx, by, bz,jx,jy,jz,mdt, clight**2*dt/dx,clight**2*dt/dy, &
+      clight**2*dt/dz, nx,ny,nz, nxguards, nyguards, nzguards,nxs,0_idp,nzs,&
+      l_nodalgrid)
+  
+      ! Yee scheme arbitrary order
+    ELSE
+  
+      CALL pxrpush_em2d_evec_norder(ex, ey, ez, bx, by, bz,jx,jy,jz,mdt, clight**2*dt/dx*xcoeffs,&
+      clight**2*dt/dy*ycoeffs, clight**2*dt/dz*zcoeffs, nx, ny, nz, norderx, nordery,&
+      norderz, nxguards, nyguards, nzguards, nxs, 0_idp, nzs, l_nodalgrid)
+  
+    ENDIF
+  
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(7) = localtimes(7) + (MPI_WTIME() - tmptime)
+    ENDIF
   ENDIF
 
 END SUBROUTINE push_efield_2d

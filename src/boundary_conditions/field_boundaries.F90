@@ -1707,7 +1707,6 @@ MODULE field_boundary
 #if defined(DEBUG)
     WRITE(0, *) "efield_bcs: start"
 #endif
-
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
@@ -1720,15 +1719,24 @@ MODULE field_boundary
       CALL field_bc(ey, nxguards, nyguards, nzguards, nx, ny, nz)
       CALL field_bc(ez, nxguards, nyguards, nzguards, nx, ny, nz)
     ELSE IF(absorbing_bcs) THEN
-
+      IF(l_spectral) THEN
       !> When using absorbing bcs, exchange splitted EM fields
 
-      CALL field_bc(exy, nxguards, nyguards, nzguards, nx, ny, nz)
-      CALL field_bc(exz, nxguards, nyguards, nzguards, nx, ny, nz)
-      CALL field_bc(eyx, nxguards, nyguards, nzguards, nx, ny, nz)
-      CALL field_bc(eyz, nxguards, nyguards, nzguards, nx, ny, nz)
-      CALL field_bc(ezx, nxguards, nyguards, nzguards, nx, ny, nz)
-      CALL field_bc(ezy, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(exy, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(exz, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(eyx, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(eyz, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(ezx, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(ezy, nxguards, nyguards, nzguards, nx, ny, nz)
+      ELSE IF(c_dim  == 2) THEN
+        CALL field_bc(ex, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(eyx, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(eyz, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(ez, nxguards, nyguards, nzguards, nx, ny, nz)
+        ey = eyx+eyz
+
+      ENDIF
+         
     ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(8) = localtimes(8) + (MPI_WTIME() - tmptime)
@@ -1767,15 +1775,23 @@ MODULE field_boundary
       CALL field_bc(by, nxguards, nyguards, nzguards, nx, ny, nz)
       CALL field_bc(bz, nxguards, nyguards, nzguards, nx, ny, nz)
     ELSE IF(absorbing_bcs) THEN
-
+      IF(l_spectral) THEN
       !> When using absorbing bcs, exchange splitted EM fields
 
-      CALL field_bc(bxy, nxguards, nyguards, nzguards, nx, ny, nz)
-      CALL field_bc(bxz, nxguards, nyguards, nzguards, nx, ny, nz)
-      CALL field_bc(byx, nxguards, nyguards, nzguards, nx, ny, nz)
-      CALL field_bc(byz, nxguards, nyguards, nzguards, nx, ny, nz)
-      CALL field_bc(bzx, nxguards, nyguards, nzguards, nx, ny, nz)
-      CALL field_bc(bzy, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(bxy, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(bxz, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(byx, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(byz, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(bzx, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(bzy, nxguards, nyguards, nzguards, nx, ny, nz)
+      ELSE IF(c_dim == 2) THEN 
+        
+        CALL field_bc(bx, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(byx, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(byz, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(bz, nxguards, nyguards, nzguards, nx, ny, nz)
+        by = byx + byz
+       ENDIF
     ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(6) = localtimes(6) + (MPI_WTIME() - tmptime)

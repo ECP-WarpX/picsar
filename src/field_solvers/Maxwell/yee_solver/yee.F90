@@ -264,6 +264,73 @@ END SUBROUTINE pxrpush_em2d_evec
 
 ! ________________________________________________________________________________________
 !> @brief
+!> Push electric field Yee 2D order 2
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2015
+! ________________________________________________________________________________________
+SUBROUTINE pxrpush_em_pml_2d_evec(ex,ey,ez,bx,by,bz,exy,exz,eyx, eyz,ezx, ezy, bxy, bxz,byx, byz, bzx, bzy,  &
+  jx, jy, jz, mudt, dtsdx, dtsdy,  &
+  dtsdz, nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)
+  USE constants
+  INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
+  REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
+  -nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz,exy,exz,eyx, eyz,ezx, ezy, bxy, bxz,byx, byz, bzx, bzy
+  REAL(num), INTENT(IN), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,          &
+  -nzguard:nz+nzguard)    :: Jx, Jy, Jz
+  REAL(num) , INTENT(IN)  :: mudt, dtsdx, dtsdy, dtsdz
+  INTEGER(idp) :: j, k, l, ist
+  LOGICAL(lp) ,INTENT(IN) :: l_nodalgrid
+  IF (l_nodalgrid) THEN
+    ist = 0
+  ELSE
+    ist = 1
+  END IF
+
+  k = 0_idp
+  ! advance Ex
+  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j)
+  !$OMP DO COLLAPSE(2)
+  DO l = -nzs, nz+nzs
+    DO j = -nxs, nx+nxs
+      Ex(j, k, l) = Ex(j, k, l) - mudt  * Jx(j, k, l)
+      Ex(j, k, l) = Ex(j, k, l) - dtsdz * (By(j, k, l+1-ist)   - By(j, k, l-1))
+    END DO
+  END DO
+  !$OMP END DO
+
+  ! advance Ey
+  !$OMP DO COLLAPSE(2)
+  DO l = -nzs, nz+nzs
+    DO j = -nxs, nx+nxs
+      Eyx(j, k, l) = Eyx(j, k, l) - mudt  * Jy(j, k, l)
+      Eyx(j, k, l) = Eyx(j, k, l) - dtsdx * (Bz(j+1-ist, k, l)   - Bz(j-1, k, l))
+      Eyz(j, k, l) = Eyz(j, k, l) + dtsdz * (Bx(j, k, l+1-ist)   - Bx(j, k, l-1))
+    END DO
+  END DO
+  !$OMP END DO
+
+  ! advance Ez
+  !$OMP DO COLLAPSE(2)
+  DO l = -nzs, nz+nzs
+    DO j = -nxs, nx+nxs
+      Ez(j, k, l) = Ez(j, k, l) - mudt  * Jz(j, k, l)
+      Ez(j, k, l) = Ez(j, k, l) + dtsdx * (By(j+1-ist, k, l) - By(j-1, k, l))
+    END DO
+  END DO
+  !$OMP END DO
+  !$OMP END PARALLEL
+  RETURN
+END SUBROUTINE pxrpush_em_pml_2d_evec
+
+
+
+
+! ________________________________________________________________________________________
+!> @brief
 !> Push electric field Yee 3D order 2
 !
 !> @author
@@ -531,6 +598,66 @@ SUBROUTINE pxrpush_em2d_bvec(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx, ny
   RETURN
 
 END SUBROUTINE pxrpush_em2d_bvec
+
+! ________________________________________________________________________________________
+!> @brief
+!> Push magnetic field Yee 2D order 2
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2015
+! ________________________________________________________________________________________
+SUBROUTINE pxrpush_em_pml_2d_bvec(ex,ey,ez,bx,by,bz,exy,exz,eyx,eyz,ezx,ezy,bxy,bxz,byx,byz,bzx,bzy,    &
+  dtsdx, dtsdy, dtsdz, nx, ny, nz, &
+  nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)
+  USE constants
+  INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
+  REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
+  -nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz,exy,exz,eyx,eyz,ezx,ezy,bxy,bxz,byx,byz,bzx,bzy
+  REAL(num), INTENT(IN) :: dtsdx, dtsdy, dtsdz
+  INTEGER(idp) :: j, k, l, ist
+  LOGICAL(lp)  :: l_nodalgrid
+  IF (l_nodalgrid) THEN
+    ist = 0
+  ELSE
+    ist = 1
+  END IF
+  k = 0_idp
+  ! advance Bx
+  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j)
+  !$OMP DO COLLAPSE(2)
+  DO l = -nzs, nz+nzs
+    DO j = -nxs, nx+nxs
+      Bx(j, 0, l) = Bx(j, 0, l) + dtsdz * (Ey(j, 0, l+1) - Ey(j, 0, l-1+ist))
+    END DO
+  END DO
+  !$OMP END DO
+  ! advance By
+  !$OMP DO COLLAPSE(2)
+  DO l = -nzs, nz+nzs
+    DO j = -nxs, nx+nxs
+      Byx(j, 0, l) = Byx(j, 0, l) + dtsdx * (Ez(j+1, 0, l  ) - Ez(j-1+ist, 0, l))
+      Byz(j, 0, l) = Byz(j, 0, l) - dtsdz * (Ex(j, 0, l+1) - Ex(j, 0, l-1+ist))
+    END DO
+  END DO
+  !$OMP END DO
+  ! advance Bz
+  !$OMP DO COLLAPSE(2)
+  DO l = -nzs, nz+nzs
+    DO j = -nxs, nx+nxs
+      Bz(j, 0, l) = Bz(j, 0, l) - dtsdx * (Ey(j+1, 0, l) - Ey(j-1+ist, 0, l))
+    END DO
+  END DO
+  !$OMP END DO
+  !$OMP END PARALLEL
+  
+
+  
+  RETURN
+
+END SUBROUTINE pxrpush_em_pml_2d_bvec
 
 ! ________________________________________________________________________________________
 !> @brief
