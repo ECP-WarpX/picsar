@@ -329,6 +329,100 @@ END SUBROUTINE pxrpush_em_pml_2d_evec
 
 
 
+
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2015
+! ________________________________________________________________________________________
+SUBROUTINE pxrpush_em_upml_2d_evec(dex,dey,dez,hx,hy,hz,ex,ey,ez,bx,by,bz,  &
+  jx, jy, jz,dtt, mudt, dtsdx, dtsdy,  &
+  dtsdz, nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)
+  USE constants
+  USE fields , ONLY : sigma_x_e,sigma_y_e,sigma_z_e
+  INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
+  REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
+  -nzguard:nz+nzguard) :: dex,dey,dez,ex,ey,ez,bx,by,bz,hx,hy,hz
+  REAL(num), INTENT(IN), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,          &
+  -nzguard:nz+nzguard)    :: Jx, Jy, Jz
+  REAL(num) , INTENT(IN)  :: mudt, dtsdx, dtsdy, dtsdz,dtt
+  INTEGER(idp) :: j, k, l, ist
+  LOGICAL(lp) ,INTENT(IN) :: l_nodalgrid
+  REAL(num) :: dexold, deyold ,dezold
+  IF (l_nodalgrid) THEN
+    ist = 0
+  ELSE
+    ist = 1
+  END IF
+  k = 0_idp
+  ! advance Ex
+  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j,dexold,deyold,dezold)
+  !$OMP DO COLLAPSE(2)
+  DO l = -nzs, nz+nzs
+    DO j = -nxs, nx+nxs
+      dexold = dex(j,k,l) 
+      dex(j,k,l) = dex(j,k,l) - dtsdz * (hy(j, k, l+1-ist)   - hy(j, k, l-1)) 
+
+
+!   ex(j,k,l ) = exp(-sigma_z_e(l)*dtt)*ex(j,k,l ) + &
+!    1.0_num/eps0*((1.0_num + sigma_x_e(j)*dtt)*dex(j,k,l) - (1.0_num - sigma_x_e(j)*dtt) * dexold) - mudt*jx(j,k,l) 
+
+      Ex(j, k, l) = (1.0_num-sigma_z_e(l)*dtt)/(1.0_num+sigma_z_e(l)*dtt)  &
+            *Ex(j, k, l) + &
+             (1.0_num/(1.0_num+sigma_z_e(l)*dtt)/eps0)* &
+             ((1.0_num + sigma_x_e(j)*dtt)*dex(j,k,l) - (1.0_num - sigma_x_e(j)*dtt) * dexold) - mudt*jx(j,k,l) 
+
+    END DO
+  END DO
+  !$OMP END DO
+
+  ! advance Ey
+  !$OMP DO COLLAPSE(2)
+  DO l = -nzs, nz+nzs
+    DO j = -nxs, nx+nxs
+      deyold = dey(j,k,l) 
+
+      dey(j,k,l) = (1.0_num/dtt-sigma_z_e(l))/(1.0_num/dtt+sigma_z_e(l)) * dey(j,k,l) + &  
+      1.0_num/(1.0_num/dtt+sigma_z_e(l))/dtt * & 
+      (dtsdz * (hx(j, k, l+1-ist)   - hx(j, k, l-1))   - dtsdx * (hz(j+1-ist, k, l)   - hz(j-1, k, l))) 
+
+!      dey(j,k,l) = exp(-sigma_z_e(l) * dtt) * dey(j,k,l) + &
+!      (dtsdz * (hx(j, k, l+1-ist)   - hx(j, k, l-1))   - dtsdx * (hz(j+1-ist, k, l)   - hz(j-1, k, l)))
+!      ey(j,k,l) = exp(-sigma_x_e(j) *dtt) * ey(j,k,l) - mudt*jy(j,k,l) +1.0_num/eps0 * (dey(j,k,l) -deyold)
+      
+      Ey(j,k,l) = (1.0_num - sigma_x_e(j)*dtt)/(1.0_num + sigma_x_e(j)*dtt) * ey(j,k,l)  + &
+      (1.0_num/(1.0_num+sigma_x_e(j)*dtt)/eps0) * (dey(j,k,l) -deyold) - mudt  * Jy(j, k, l)
+    END DO
+  END DO
+  !$OMP END DO
+
+  ! advance Ez
+  !$OMP DO COLLAPSE(2)
+  DO l = -nzs, nz+nzs
+    DO j = -nxs, nx+nxs
+   
+      dezold = dez(j,k,l) 
+      dez(j,k,l) = ( 1.0_num/dtt-sigma_x_e(j))/(1.0_num/dtt+sigma_x_e(j))  *  dez(j,k,l) &
+      + 1.0_num/(1.0_num/dtt+sigma_x_e(j)) *   dtsdx/dtt * (hy(j+1-ist, k, l) - hy(j-1, k, l))  
+       
+!       dez(j,k,l) = exp(-sigma_x_e(j) * dtt) * dez(j,k,l) +dtsdx*(hy(j+1-ist, k, l) - hy(j-1, k, l))  
+!       ez(j,k,l) = ez(j,k,l) 
+   
+       Ez(j,k,l ) = ez(j,k,l) +1.0_num/eps0*( (1.0_num + sigma_z_e(l)*dtt) *dez(j,k,l)  - (1.0_num - sigma_z_e(l)*dtt) * dezold) -&
+       mudt  * Jz(j, k, l)
+    END DO
+  END DO
+  !$OMP END DO
+  !$OMP END PARALLEL
+
+  RETURN
+END SUBROUTINE pxrpush_em_upml_2d_evec
+
+
+
+
+
 ! ________________________________________________________________________________________
 !> @brief
 !> Push electric field Yee 3D order 2
@@ -658,6 +752,98 @@ SUBROUTINE pxrpush_em_pml_2d_bvec(ex,ey,ez,bx,by,bz,exy,exz,eyx,eyz,ezx,ezy,bxy,
   RETURN
 
 END SUBROUTINE pxrpush_em_pml_2d_bvec
+
+
+
+
+! ________________________________________________________________________________________
+!> @brief
+!> Push magnetic field Yee 2D order 2
+!
+!> @author
+!> Henri Vincenti
+!
+!> @date
+!> Creation 2015
+! ________________________________________________________________________________________
+SUBROUTINE pxrpush_em_upml_2d_bvec(hx,hy,hz,ex,ey,ez,bx,by,bz,dtt,    &
+  dtsdx, dtsdy, dtsdz, nx, ny, nz, &
+  nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)
+  USE constants
+  USE fields , ONLY : sigma_x_b,sigma_y_b,sigma_z_b
+  INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
+  REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
+  -nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz,hx,hy,hz
+  REAL(num), INTENT(IN) :: dtsdx, dtsdy, dtsdz,dtt
+  INTEGER(idp) :: j, k, l, ist
+  LOGICAL(lp)  :: l_nodalgrid
+  REAL(num) :: bxold,byold, bzold
+  IF (l_nodalgrid) THEN
+    ist = 0
+  ELSE
+    ist = 1
+  END IF
+  k = 0_idp
+  ! advance Bx
+  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j,bxold,byold,bzold)
+  !$OMP DO COLLAPSE(2)
+  DO l = -nzs, nz-1+nzs
+    DO j = -nxs, nx+nxs
+      bxold = bx(j,k,l)
+      Bx(j, 0, l) = Bx(j, 0, l) + dtsdz * (Ey(j, 0, l+1) - Ey(j, 0, l-1+ist))
+      hx(j, 0, l) = (1.0_num -sigma_z_b(l)*dtt)/(1.0_num + sigma_z_b(l)*dtt) * hx(j,0,l) + &
+         (1.0_num / ((1.0_num+sigma_z_b(l)*dtt)*mu0))* &
+         ((1.0_num + sigma_x_b(j)*dtt) * bx(j,k,l) -( 1.0_num - sigma_x_b(j)*dtt)*bxold)
+   ! hx(j,k,l ) =exp(-sigma_z_b(l)*dtt) * hx(j,0,l) + &
+   ! imu0*((1.0_num + sigma_x_b(j)*dtt) * bx(j,k,l) -( 1.0_num - sigma_x_b(j)*dtt)*bxold)
+    END DO
+  END DO
+  !$OMP END DO
+  ! advance By
+  !$OMP DO COLLAPSE(2)
+  DO l = -nzs, nz-1+nzs
+    DO j = -nxs, nx-1+nxs
+      byold = by(j,0,l) 
+      
+     by(j,0,l) = (1.0_num/dtt - sigma_z_b(l))/(1.0_num/dtt+sigma_z_b(l))*by(j,0,l) - 1.0_num/(1.0_num/dtt + sigma_z_b(l))/dtt * &
+     (-dtsdx * (Ez(j+1, 0, l  ) - Ez(j-1+ist, 0, l)) +dtsdz * (Ex(j, 0, l+1) - Ex(j, 0, l-1+ist))) 
+ !        by(j,k,l ) = exp(-sigma_z_b(l) *dtt) * by(j,k,l) +dtsdx * (Ez(j+1, 0, l  ) &
+ !        - Ez(j-1+ist, 0, l)) - dtsdz * (Ex(j, 0, l+1) - Ex(j, 0, l-1+ist))
+
+ !      hy(j,0,l ) = exp(-sigma_x_b(j) *dtt) *hy(j,k,l) +(1.0_num / mu0)*(by(j,0,l) - byold)
+      hy(j,0,l) = (1.0_num - sigma_x_b(j)*dtt)/(1.0_num+sigma_x_b(j)*dtt) * hy(j,0,l) + &
+     (1.0_num / mu0)*(by(j,0,l) - byold)
+
+    END DO
+  END DO
+  !$OMP END DO
+  ! advance Bz
+  !$OMP DO COLLAPSE(2)
+  DO l = -nzs, nz+nzs
+    DO j = -nxs, nx-1+nxs
+      bzold = bz(j,0,l)
+      bz(j,0,l) = (1.0_num/dtt - sigma_x_b(j))/(1.0_num/dtt+sigma_x_b(j))*bz(j,0,l) -  &
+      (1.0_num/(1.0_num/dtt+sigma_x_b(j)))/dtt *dtsdx * (Ey(j+1, 0, l) - Ey(j-1+ist, 0, l)) 
+! bz(j,k,l )= exp(-sigma_x_b(j) *dtt) * bz(j,k,l) - dtsdx * (Ey(j+1, 0, l) - Ey(j-1+ist, 0, l))
+
+      hz(j,0,l) = hz(j,0,l) + 1.0_num/mu0*((1.0_num + sigma_z_b(l)* dtt )*bz(j,0,l) - (1.0_num - sigma_z_b(l)* dtt)*bzold)
+
+    END DO
+  END DO
+  !$OMP END DO
+  !$OMP END PARALLEL
+
+  
+  RETURN
+
+END SUBROUTINE pxrpush_em_upml_2d_bvec
+
+
+
+
+
+
+
 
 ! ________________________________________________________________________________________
 !> @brief

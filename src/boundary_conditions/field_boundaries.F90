@@ -1729,12 +1729,20 @@ MODULE field_boundary
         CALL field_bc(ezx, nxguards, nyguards, nzguards, nx, ny, nz)
         CALL field_bc(ezy, nxguards, nyguards, nzguards, nx, ny, nz)
       ELSE IF(c_dim  == 2) THEN
-        CALL field_bc(ex, nxguards, nyguards, nzguards, nx, ny, nz)
-        CALL field_bc(eyx, nxguards, nyguards, nzguards, nx, ny, nz)
-        CALL field_bc(eyz, nxguards, nyguards, nzguards, nx, ny, nz)
-        CALL field_bc(ez, nxguards, nyguards, nzguards, nx, ny, nz)
-        ey = eyx+eyz
-
+        IF(.NOT. u_pml) THEN
+          CALL field_bc(ex, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(eyx, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(eyz, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(ez, nxguards, nyguards, nzguards, nx, ny, nz)
+          ey = eyx+eyz
+        ELSE
+          CALL field_bc(ex, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(ey, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(ez, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(dex, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(dey, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(dez, nxguards, nyguards, nzguards, nx, ny, nz)
+        ENDIF 
       ENDIF
          
     ENDIF
@@ -1785,12 +1793,21 @@ MODULE field_boundary
         CALL field_bc(bzx, nxguards, nyguards, nzguards, nx, ny, nz)
         CALL field_bc(bzy, nxguards, nyguards, nzguards, nx, ny, nz)
       ELSE IF(c_dim == 2) THEN 
-        
-        CALL field_bc(bx, nxguards, nyguards, nzguards, nx, ny, nz)
-        CALL field_bc(byx, nxguards, nyguards, nzguards, nx, ny, nz)
-        CALL field_bc(byz, nxguards, nyguards, nzguards, nx, ny, nz)
-        CALL field_bc(bz, nxguards, nyguards, nzguards, nx, ny, nz)
+        If(.NOT. u_pml) THEN 
+          CALL field_bc(bx, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(byx, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(byz, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(bz, nxguards, nyguards, nzguards, nx, ny, nz)
         by = byx + byz
+        ELSE
+          CALL field_bc(bx, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(by, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(bz, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(hx, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(hy, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(hz, nxguards, nyguards, nzguards, nx, ny, nz)
+
+        ENDIF
        ENDIF
     ENDIF
     IF (it.ge.timestat_itstart) THEN

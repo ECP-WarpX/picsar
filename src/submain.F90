@@ -205,7 +205,7 @@ SUBROUTINE step(nst)
     ! ___________________________________________
     ! Loop in 2D
   ELSE IF (c_dim.eq.2) THEN
-
+!call init_gaussian_pulse_2d()
     DO i=1, nst
       IF (rank .EQ. 0) startit=MPI_WTIME()
 
@@ -227,6 +227,10 @@ SUBROUTINE step(nst)
 
       !!! --- Boundary conditions for currents
       CALL current_bcs
+call harris_pulse(dt*i,pi/4)
+!call efield_bcs
+CALL field_bc(jy, nxguards, nyguards, nzguards, nx, ny, nz)
+
 #if defined(FFTW)
         IF (l_spectral) THEN
           CALL  copy_field(rhoold, nx+2*nxguards+1, ny+2*nyguards+1,      &
@@ -254,35 +258,49 @@ SUBROUTINE step(nst)
         ENDIF
       ELSE
 #endif
-       !IF (rank .EQ. 0) PRINT *, "#6"
-       !!! --- Push B field half a time step
-       !WRITE(0, *), 'push_bfield'
        IF(absorbing_bcs) THEN
-         CALL damp_b_field()
-       ENDIF
-       CALL push_bfield_2d
-       !IF (rank .EQ. 0) PRINT *, "#7"
-       !!! --- Boundary conditions for B
-       CALL bfield_bcs
-       !IF (rank .EQ. 0) PRINT *, "#8"
-       !!! --- Push E field  a full time step
-       IF(absorbing_bcs) THEN
-         CALL damp_e_field()
+         IF(.NOT. u_pml) CALL damp_b_field()
        ENDIF
 
-       CALL push_efield_2d
-       !IF (rank .EQ. 0) PRINT *, "#9"
-       !!! --- Boundary conditions for E
-       CALL efield_bcs
-       !IF (rank .EQ. 0) PRINT *, "#10"
-       !!! --- push B field half a time step
+     call push_bfield_2d
+     call bfield_bcs
+
+     call push_efield_2d
        IF(absorbing_bcs) THEN
-         CALL damp_b_field()
+         IF(.NOT. u_pml)  CALL damp_e_field()
        ENDIF
-       CALL push_bfield_2d
-       !IF (rank .EQ. 0) PRINT *, "#11"
-       !!! --- Boundary conditions for B
-       CALL bfield_bcs
+
+     call efield_bcs()
+
+  !     !IF (rank .EQ. 0) PRINT *, "#6"
+  !     !!! --- Push B field half a time step
+  !     !WRITE(0, *), 'push_bfield'
+  !     IF(absorbing_bcs) THEN
+  !       IF(.NOT. u_pml) CALL damp_b_field()
+  !     ENDIF
+  !     CALL push_bfield_2d
+  !     !IF (rank .EQ. 0) PRINT *, "#7"
+  !     !!! --- Boundary conditions for B
+  !     CALL bfield_bcs
+  !     !IF (rank .EQ. 0) PRINT *, "#8"
+  !     !!! --- Push E field  a full time step
+  !     IF(absorbing_bcs) THEN
+  !       IF(.NOT. u_pml)  CALL damp_e_field()
+  !     ENDIF
+
+  !     CALL push_efield_2d
+  !     !IF (rank .EQ. 0) PRINT *, "#9"
+  !     !!! --- Boundary conditions for E
+  !     CALL efield_bcs
+  !     !IF (rank .EQ. 0) PRINT *, "#10"
+  !     !!! --- push B field half a time step
+  !     IF(absorbing_bcs) THEN
+  !       IF(.NOT. u_pml) CALL damp_b_field()
+  !     ENDIF
+  !     CALL push_bfield_2d
+  !     !IF (rank .EQ. 0) PRINT *, "#11"
+  !     !!! --- Boundary conditions for B
+  !     CALL bfield_bcs
 
 
 #if defined(FFTW)
@@ -355,11 +373,15 @@ SUBROUTINE init_pml_arrays
   INTEGER(idp) :: ix,iy,iz,pow
   REAL(num)    :: coeff,b_offset, e_offset
   INTEGER(idp) :: type_id  
+  INTEGER(idp) :: offset_spectral
   REAL(num)    , ALLOCATABLE, DIMENSION(:) :: temp
-  coeff = 1.10_num
+  coeff = .0050_num
   b_offset = .50_num
   e_offset = 0._num
   pow = 2_idp
+  
+  offset_spectral = 0_idp
+  IF(l_spectral) offset_spectral = 1_idp
   
 
   !> Inits pml arrays of the same size as ex fields in the daming direction!
@@ -403,7 +425,7 @@ SUBROUTINE init_pml_arrays
   !> first, each proc will compute sigma in the whole domain
   DO ix = nx_global-nx_pml, nx_global-1
     sigma_x_e(ix) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+e_offset)**pow
-    sigma_x_b(ix-1) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+b_offset-1)**pow
+    sigma_x_b(ix-offset_spectral) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+b_offset-offset_spectral)**pow
   ENDDO
 
   !> Each proc extracts the relevent part of sigma 
@@ -430,7 +452,7 @@ SUBROUTINE init_pml_arrays
     !> first, each proc will compute sigma in the whole domain
     DO iy = ny_global-ny_pml,ny_global-1
       sigma_y_e(iy) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+e_offset)**pow
-      sigma_y_b(iy-1) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+b_offset-1)**pow
+      sigma_y_b(iy-offset_spectral) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+b_offset-offset_spectral)**pow
     ENDDO
     
     !> Each proc extracts the relevent part of sigma 
@@ -458,7 +480,7 @@ SUBROUTINE init_pml_arrays
   !> Need more straightforward way to do this
   DO iz =  nz_global-nz_pml,nz_global-1 
      sigma_z_e(iz) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+e_offset)**pow
-     sigma_z_b(iz-1) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+b_offset-1)**pow
+     sigma_z_b(iz-offset_spectral) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+b_offset-offset_spectral)**pow
   ENDDO
 
   !> Each proc extracts the relevent part of sigma 
@@ -476,34 +498,62 @@ SUBROUTINE init_pml_arrays
   !> Uses an exact formulation to damp fields :
   !> dE/dt = -sigma * E => E(n)=exp(-sigma*dt)*E(n-1)
   !> Note that fdtd pml solving requires field time centering
+
   IF(absorbing_bcs_x) THEN 
-    sigma_x_e = EXP(-sigma_x_e*dt/2.0_num)
-    sigma_x_b = EXP(-sigma_x_b*dt/2.0_num)
+    IF(.NOT. u_pml) THEN
+      sigma_x_e = EXP(-sigma_x_e*dt*2.0_num)
+      sigma_x_b = EXP(-sigma_x_b*dt*2.0_num)
+    ENDIF
   ELSE 
-    sigma_x_e = 1.0_num
-    sigma_x_b = 1.0_num
+    IF(.NOT. u_pml) THEN
+      sigma_x_e = 1.0_num
+      sigma_x_b = 1.0_num
+    ELSE
+      sigma_x_e = .0_num
+      sigma_x_b = .0_num
+    ENDIF
   ENDIF
   IF(absorbing_bcs_y) THEN
-    sigma_y_e = EXP(-sigma_y_e*dt/2.0_num)
-    sigma_y_b = EXP(-sigma_y_b*dt/2.0_num)
+    IF(.NOT. u_pml) THEN
+      sigma_y_e = EXP(-sigma_y_e*dt*2.0_num)
+      sigma_y_b = EXP(-sigma_y_b*dt*2.0_num)
+    ENDIF
   ELSE
-    sigma_y_e = 1.0_num
-    sigma_y_b = 1.0_num
+    IF(.NOT. u_pml) THEN
+      sigma_y_e = 1.0_num
+      sigma_y_b = 1.0_num
+    ELSE
+      sigma_y_e = .0_num
+      sigma_y_b = .0_num
+    ENDIF
   ENDIF  
   IF(absorbing_bcs_z) THEN
-    sigma_z_e = EXP(-sigma_z_e*dt/2.0_num)
-    sigma_z_b = EXP(-sigma_z_b*dt/2.0_num)
+    IF(.NOT. u_pml) THEN
+      sigma_z_e = EXP(-sigma_z_e*dt*2._num)
+      sigma_z_b = EXP(-sigma_z_b*dt*2._num)
+    ENDIF
   ELSE 
-    sigma_z_e = 1.0_num
-    sigma_z_b = 1.0_num
+    IF(.NOT. u_pml) THEN
+      sigma_z_e = 1.0_num
+      sigma_z_b = 1.0_num
+    ELSE
+      sigma_z_e = .0_num
+      sigma_z_b = .0_num
+    ENDIF
   ENDIF
+  !sigma_z_e = 0
+  !sigma_x_e = 0
+  !sigma_y_e = 0
+  !sigma_z_b = 0
+  !sigma_y_b = 0
+  !sigma_x_b = 0
   IF(l_spectral .EQV. .FALSE.) THEN
-    sigma_x_e = sigma_x_e**2
-    sigma_y_e = sigma_y_e**2
-    sigma_z_e  = sigma_z_e**2
+    IF(.NOT. u_pml) THEN
+!      sigma_x_e = sigma_x_e**2
+!      sigma_y_e = sigma_y_e**2
+!      sigma_z_e = sigma_z_e**2
+    ENDIF
   ENDIF
-print*,"sigma_x_e",sigma_x_e
-print*,"sigma_x_b",sigma_x_b
 END SUBROUTINE init_pml_arrays
 
 ! ________________________________________________________________________________________
@@ -813,19 +863,28 @@ END SUBROUTINE initall
 
 SUBROUTINE init_splitted_fields_random()
   USE fields
-  exy = 0.5_num * ex
-  exz = 0.5_num * ex
-  eyx = 0.5_num * ey
-  eyz = 0.5_num * ey
-  ezx = 0.5_num * ez
-  ezy = 0.5_num * ez
-  bxy = 0.5_num * bx
-  bxz = 0.5_num * bx
-  byx = 0.5_num * by
-  byz = 0.5_num * by
-  bzx = 0.5_num * bz
-  bzy = 0.5_num * bz
-
+  USE shared_data
+  IF(u_pml) THEN
+    dex = 0.0_num
+    dey = 0.0_num
+    dez = 0.0_num
+    hx = 0.0_num
+    hy = 0.0_num
+    hz = 0.0_num
+  ELSE
+    exy = 0.5_num * ex
+    exz = 0.5_num * ex
+    eyx = 0.5_num * ey
+    eyz = 0.5_num * ey
+    ezx = 0.5_num * ez
+    ezy = 0.5_num * ez
+    bxy = 0.5_num * bx
+    bxz = 0.5_num * bx
+    byx = 0.5_num * by
+    byz = 0.5_num * by
+    bzx = 0.5_num * bz
+    bzy = 0.5_num * bz
+  ENDIF
 END SUBROUTINE init_splitted_fields_random
 
 ! ________________________________________________________________________________________
@@ -1030,5 +1089,61 @@ SUBROUTINE current_debug
   !jz(nx, ny, nz) = 0.5
   !!! --- End debug
 END SUBROUTINE current_debug
+
+subroutine init_gaussian_pulse_2d()
+use fields
+use shared_data
+use constants
+integer(idp) :: ix, iy, iz
+
+iy=0
+do ix = 0,nx-1
+do iz=0,nz-1
+ez(ix,iy,iz) = 1.e6*exp(-((ix-nx/2)/10.)**2)*exp(-((iz-nz/2)/10**7.)**2)
+dez(ix,iy,iz) =eps0*ex(ix,iy,iz)
+enddo
+enddo
+
+end subroutine  
+
+
+subroutine  harris_pulse(t,thetaa)
+use fields
+use shared_data
+use constants
+use params
+REAL(num) :: t_harris,arg,kz,freq,L,lambda
+integer(idp) :: i,j,k
+real(num)  :: t,thetaa
+
+L=.5*dx*nx
+t_harris = 0.4*nx*dx/clight
+arg = 0._num
+if(t .LE. t_harris)  then
+arg = pi*clight *t/(L)
+arg = 1./32 * ( 10. - 15. * cos(2.*arg) + 6. * cos (4. * arg) - cos(6. * arg) )
+else 
+arg = 0
+endif
+freq=1./(20*dt)
+kz = 2*pi/clight*(freq)
+lambda = L/7.
+kz=2*pi/lambda
+kz = kz*sin(thetaa)
+do i = -nzguards,nz+nzguards
+!if(u_pml )ey(nx/2,0,i) = sin(2*pi*freq*t +  kz*dz *i)*arg
+!if(.NOT. u_pml) eyz(nx/2,0,i) = sin(2*pi*freq*t +  kz*dz *i)*arg
+!if(u_pml) dey(nx/2,0,i) = eps0*ey(nx/2,0,i)
+jy(nx/2,0,i ) =sin(2*pi*freq*t +  kz*dz *i)*arg
+enddo
+
+
+
+
+end subroutine
+
+
+
+
 
 ! ______________________________________

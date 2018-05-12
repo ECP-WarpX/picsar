@@ -231,6 +231,9 @@ MODULE fields
   ezy_r, bxy_r, bxz_r, byx_r, byz_r, bzx_r, bzy_r
   REAL(num) , POINTER, DIMENSION(:,:,:) :: exy,exz,eyx,eyz,ezx,ezy, &
         bxy,bxz,byx,byz,bzx,bzy
+  ! U pml stuff
+  REAL(num) , POINTER, DIMENSION(:,:,:) :: dex, dey,dez,hx,hy,hz
+  
   REAL(num) , POINTER, DIMENSION(:) :: sigma_x_e, sigma_y_e, sigma_z_e, &
         sigma_x_b, sigma_y_b, sigma_z_b
   !> MPI-domain electric field grid in x - Fourier space
@@ -1207,6 +1210,7 @@ MODULE shared_data
   LOGICAL(lp)   :: absorbing_bcs_x = .FALSE.
   LOGICAL(lp)   :: absorbing_bcs_y = .FALSE.
   LOGICAL(lp)   :: absorbing_bcs_z = .FALSE.
+  LOGICAL(lp)   :: u_pml = .FALSE.
   !> First and last indexes of real data in group (only z is relevant for now)
   INTEGER(idp)  ::   iz_min_r, iz_max_r, iy_min_r, iy_max_r, ix_min_r, ix_max_r
 

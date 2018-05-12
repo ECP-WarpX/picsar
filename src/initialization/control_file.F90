@@ -94,6 +94,7 @@ MODULE control_file
     absorbing_bcs_x = .FALSE.
     absorbing_bcs_y = .FALSE.
     absorbing_bcs_z = .FALSE.
+    u_pml = .FALSE.
     l_nodalgrid = .FALSE.
     l_spectral = .FALSE.! (no spectral solver by default)
     g_spectral = .FALSE.! (no spectral sovler by default)
@@ -342,6 +343,9 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'absorbing_bcs_z') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) absorbing_bcs_z
+      ELSE IF (INDEX(buffer, 'u_pml') .GT. 0) THEN
+        CALL GETARG(i+1, buffer)
+        READ(buffer, *) u_pml
       ELSE IF (INDEX(buffer, 'nxpml') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, '(i10)') nx_pml
@@ -661,6 +665,9 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'absorbing_bcs_z') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) absorbing_bcs_z
+      ELSE IF (INDEX(buffer, 'u_pml') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) u_pml
       ELSE IF (INDEX(buffer, 'g_spectral') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) g_spectral

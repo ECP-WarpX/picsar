@@ -1719,18 +1719,28 @@ ALLOCATE(by(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards)
 ALLOCATE(bz(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 ! > When using absorbing_bcs , allocate splitted fields 
 IF(absorbing_bcs) THEN
-  ALLOCATE(exy(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
-  ALLOCATE(exz(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
-  ALLOCATE(eyx(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
-  ALLOCATE(eyz(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
-  ALLOCATE(ezx(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
-  ALLOCATE(ezy(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
-  ALLOCATE(bxy(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
-  ALLOCATE(bxz(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
-  ALLOCATE(byx(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
-  ALLOCATE(byz(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
-  ALLOCATE(bzx(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
-  ALLOCATE(bzy(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
+  IF(u_pml .EQV. .FALSE.) THEN
+    ALLOCATE(exy(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
+    ALLOCATE(exz(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
+    ALLOCATE(eyx(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
+    ALLOCATE(eyz(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
+    ALLOCATE(ezx(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
+    ALLOCATE(ezy(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
+    ALLOCATE(bxy(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
+    ALLOCATE(bxz(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
+    ALLOCATE(byx(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
+    ALLOCATE(byz(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
+    ALLOCATE(bzx(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
+    ALLOCATE(bzy(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
+  ELSE
+    ALLOCATE(dex(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+    ALLOCATE(dey(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+    ALLOCATE(dez(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+    ALLOCATE(hx(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+    ALLOCATE(hy(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+    ALLOCATE(hz(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+    
+  ENDIF
 ENDIF
 ALLOCATE(jx(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
 -nzjguards:nz+nzjguards))
