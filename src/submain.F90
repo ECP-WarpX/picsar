@@ -260,17 +260,18 @@ CALL harris_pulse(dt*i,pi/4)
 #endif
 
      CALL push_bfield_2d
-     CALL bfield_bcs
      IF(absorbing_bcs) THEN
        IF(.NOT. u_pml) CALL damp_b_field()
      ENDIF
-
+     CALL bfield_bcs
 
      CALL push_efield_2d
-     CALL efield_bcs()
      IF(absorbing_bcs) THEN
        IF(.NOT. u_pml)  CALL damp_e_field()
      ENDIF
+     CALL efield_bcs()
+
+       
 
 
   !     !IF (rank .EQ. 0) PRINT *, "#6"
@@ -383,6 +384,9 @@ SUBROUTINE init_pml_arrays
   
   offset_spectral = 0_idp
   IF(l_spectral) offset_spectral = 1_idp
+  offset_spectral = 1
+!  offset_spectral = 0_idp
+
 !  offset_spectral=1 
 
   !> Inits pml arrays of the same size as ex fields in the daming direction!
@@ -500,14 +504,14 @@ SUBROUTINE init_pml_arrays
   !> dE/dt = -sigma * E => E(n)=exp(-sigma*dt)*E(n-1)
   !> Note that fdtd pml solving requires field time centering
  
-  IF(.NOT. u_pml) THEN
-    sigma_x_e = 4._num * sigma_x_e
-    sigma_y_e = 4._num * sigma_y_e
-    sigma_z_e = 4._num * sigma_z_e
-    sigma_x_b = 4._num * sigma_x_b
-    sigma_y_b = 4._num * sigma_y_b
-    sigma_z_b = 4._num * sigma_z_b
-  ENDIF
+!  IF(.NOT. u_pml) THEN
+!    sigma_x_e = 4._num * sigma_x_e
+!    sigma_y_e = 4._num * sigma_y_e
+!    sigma_z_e = 4._num * sigma_z_e
+!    sigma_x_b = 4._num * sigma_x_b
+!    sigma_y_b = 4._num * sigma_y_b
+!    sigma_z_b = 4._num * sigma_z_b
+!  ENDIF
  
   IF(absorbing_bcs_x) THEN 
     IF(.NOT. u_pml) THEN
@@ -564,6 +568,8 @@ SUBROUTINE init_pml_arrays
 !      sigma_z_e = sigma_z_e**2
     ENDIF
   ENDIF
+print*,sigma_x_e
+print*,sigma_x_b
 END SUBROUTINE init_pml_arrays
 
 ! ________________________________________________________________________________________
@@ -633,12 +639,14 @@ SUBROUTINE initall
   IF (c_dim.eq.3) THEN
     IF (l_spectral) THEN
       dt=MIN(dx, dy, dz)/clight
+      dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
     ELSE
       dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
     ENDIF
   ELSE IF (c_dim.eq.2) THEN
     IF (l_spectral) THEN 
       dt=MIN(dx,dz)/clight
+      dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dz**2))
     ELSE
       dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dz**2))
     ENDIF
@@ -1157,8 +1165,11 @@ do i = -nzguards,nz+nzguards
 !if(.NOT. u_pml) eyz(nx/2,0,i) = sin(2*pi*freq*t +  kz*dz *i)*arg
 !if(u_pml) dey(nx/2,0,i) = eps0*ey(nx/2,0,i)
 jy(nx/2,0,i ) =sin(2*pi*freq*t +  kz*dz *i)*arg
+
+!eyx(nx/2,0,i ) =sin(2*pi*freq*t +  kz*dz *i)*arg
 enddo
 CALL field_bc(jy, nxguards, nyguards, nzguards, nx, ny, nz)
+!call efield_bcs
 
 
 
