@@ -787,7 +787,7 @@ SUBROUTINE pxrpush_em_upml_2d_bvec(hx,hy,hz,ex,ey,ez,bx,by,bz,dtt,    &
   ! advance Bx
   !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j,bxold,byold,bzold)
   !$OMP DO COLLAPSE(2)
-  DO l = -nzs, nz-1+nzs
+  DO l = -nzs, nz+nzs
     DO j = -nxs, nx+nxs
       bxold = bx(j,k,l)
       Bx(j, 0, l) = Bx(j, 0, l) + dtsdz * (Ey(j, 0, l+1) - Ey(j, 0, l-1+ist))
@@ -801,8 +801,8 @@ SUBROUTINE pxrpush_em_upml_2d_bvec(hx,hy,hz,ex,ey,ez,bx,by,bz,dtt,    &
   !$OMP END DO
   ! advance By
   !$OMP DO COLLAPSE(2)
-  DO l = -nzs, nz-1+nzs
-    DO j = -nxs, nx-1+nxs
+  DO l = -nzs, nz+nzs
+    DO j = -nxs, nx+nxs
       byold = by(j,0,l) 
       
      by(j,0,l) = (1.0_num/dtt - sigma_z_b(l))/(1.0_num/dtt+sigma_z_b(l))*by(j,0,l) - 1.0_num/(1.0_num/dtt + sigma_z_b(l))/dtt * &
@@ -820,7 +820,7 @@ SUBROUTINE pxrpush_em_upml_2d_bvec(hx,hy,hz,ex,ey,ez,bx,by,bz,dtt,    &
   ! advance Bz
   !$OMP DO COLLAPSE(2)
   DO l = -nzs, nz+nzs
-    DO j = -nxs, nx-1+nxs
+    DO j = -nxs, nx+nxs
       bzold = bz(j,0,l)
       bz(j,0,l) = (1.0_num/dtt - sigma_x_b(j))/(1.0_num/dtt+sigma_x_b(j))*bz(j,0,l) -  &
       (1.0_num/(1.0_num/dtt+sigma_x_b(j)))/dtt *dtsdx * (Ey(j+1, 0, l) - Ey(j-1+ist, 0, l)) 
