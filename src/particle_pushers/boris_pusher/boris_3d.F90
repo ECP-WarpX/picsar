@@ -489,7 +489,8 @@ END SUBROUTINE
 
 ! ________________________________________________________________________________________
 !> @brief
-!> This subroutine pushes the momentum to the next step using the Boris pusher taking into account the classical Radiation Reaction (RR) force (LL model).
+!> This subroutine pushes the momentum to the next step using the Boris pusher taking 
+!> into account the classical Radiation Reaction (RR) force (LL model).
 !
 !> @author
 !> Mathieu Lobet
@@ -509,8 +510,8 @@ END SUBROUTINE
 !> @param[in] dt time step
 !
 ! ________________________________________________________________________________________
-SUBROUTINE pxr_boris_push_rr_LL_u_3d(np, uxp, uyp, uzp, gaminv, exold, eyold, ezold, bxold, byold, bzold, ex, ey, ez, bx, by, bz, q,  &
-  m, dt)
+SUBROUTINE pxr_boris_push_rr_LL_u_3d(np, uxp, uyp, uzp, gaminv, exold, eyold, ezold, & 
+           bxold, byold, bzold, ex, ey, ez, bx, by, bz, q, m, dt)
   USE constants
   IMPLICIT NONE
   ! Input/Output parameters
