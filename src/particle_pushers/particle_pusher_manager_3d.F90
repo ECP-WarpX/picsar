@@ -311,7 +311,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg
             END SELECT
 
             SELECT CASE (particle_pusher)
-              !! Vay pusher -- Full push
+            !! Vay pusher -- Full push
             CASE (1_idp)
               CALL pxr_ebcancelpush3d(count, curr_tile%part_ux, curr_tile%part_uy,    &
               curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
@@ -319,39 +319,46 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg
               curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt,      &
               0_idp)
 
-              !! Boris pusher with RR (S09 model, according to VRANIC2016, https://doi.org/10.1016/j.cpc.2016.04.002)-- Full push
+            !! Boris pusher with RR (S09 model, according to VRANIC2016, 
+            !! https://doi.org/10.1016/j.cpc.2016.04.002)-- Full push
 	        CASE (2_idp)
-              CALL pxr_boris_push_rr_S09_u_3d(count, curr_tile%part_ux, curr_tile%part_uy,&
+              CALL pxr_boris_push_rr_S09_u_3d(count, curr_tile%part_ux,               &
+              curr_tile%part_uy,                                                      &
               curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
               curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
               curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt)
 
-	      !! Boris pusher with RR (B08 model, according to VRANIC2016, https://doi.org/10.1016/j.cpc.2016.04.002)-- Full push
+	        !! Boris pusher with RR (B08 model, according to VRANIC2016, 
+	        !! https://doi.org/10.1016/j.cpc.2016.04.002)-- Full push
 	        CASE (3_idp)
-              CALL pxr_boris_push_rr_B08_u_3d(count, curr_tile%part_ux, curr_tile%part_uy,&
+              CALL pxr_boris_push_rr_B08_u_3d(count, curr_tile%part_ux,               &
+              curr_tile%part_uy,                                                      &
               curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
               curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
               curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt)
               
-              !! Boris pusher with RR (LL model, according to VRANIC2016, https://doi.org/10.1016/j.cpc.2016.04.002)-- Full push
+            !! Boris pusher with RR (LL model, according to VRANIC2016, 
+            !! https://doi.org/10.1016/j.cpc.2016.04.002)-- Full push
 	        CASE (4_idp)
               CALL pxr_boris_push_rr_LL_u_3d(count, curr_tile%part_ux, 		      &
               curr_tile%part_uy, curr_tile%part_uz, curr_tile%part_gaminv, 	      &
-              curr_tile%pid(1:count,exoldpid), curr_tile%pid(1:count,eyoldpid),       &
-  	      curr_tile%pid(1:count,ezoldpid), curr_tile%pid(1:count,bxoldpid),	      &
-	      curr_tile%pid(1:count,byoldpid), curr_tile%pid(1:count,bzoldpid),       &
+              curr_tile%pid(1:count,exoldpid), curr_tile%pid(1:count,eyoldpid),   &
+  	          curr_tile%pid(1:count,ezoldpid), curr_tile%pid(1:count,bxoldpid),	  &
+	          curr_tile%pid(1:count,byoldpid), curr_tile%pid(1:count,bzoldpid),   &
               curr_tile%part_ex, curr_tile%part_ey, curr_tile%part_ez, 		      &
               curr_tile%part_bx, curr_tile%part_by, curr_tile%part_bz, 		      &
               curr%charge, curr%mass, dtt)      
-
-  	      curr_tile%pid(1:count,exoldpid) = curr_tile%part_ex
-	      curr_tile%pid(1:count,eyoldpid) = curr_tile%part_ey
-	      curr_tile%pid(1:count,ezoldpid) = curr_tile%part_ez
-	      curr_tile%pid(1:count,bxoldpid) = curr_tile%part_bx
-	      curr_tile%pid(1:count,byoldpid) = curr_tile%part_by
-	      curr_tile%pid(1:count,bzoldpid) = curr_tile%part_bz	  				
+			  
+			  ! Store fields on particle position for next step 
+			  ! to compute dE/dt and dB/dt terms in LL RR force 
+  	          curr_tile%pid(1:count,exoldpid) = curr_tile%part_ex
+	          curr_tile%pid(1:count,eyoldpid) = curr_tile%part_ey
+	          curr_tile%pid(1:count,ezoldpid) = curr_tile%part_ez
+	          curr_tile%pid(1:count,bxoldpid) = curr_tile%part_bx
+	          curr_tile%pid(1:count,byoldpid) = curr_tile%part_by
+	          curr_tile%pid(1:count,bzoldpid) = curr_tile%part_bz	  				
               
-              !! Boris pusher -- Full push
+            !! Boris pusher -- Full push
             CASE DEFAULT
               !! Push momentum using the Boris method in a single subroutine
               CALL pxr_boris_push_u_3d(count, curr_tile%part_ux, curr_tile%part_uy,   &

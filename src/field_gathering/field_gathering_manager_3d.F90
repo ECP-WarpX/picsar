@@ -211,12 +211,6 @@ SUBROUTINE field_gathering_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
             curr_tile=>curr%array_of_tiles(ix, iy, iz)
             count=curr_tile%np_tile(1)
             IF (count .EQ. 0) CYCLE
-            curr_tile%pid(1:count,4) =curr_tile%part_ex(1:count)
-            curr_tile%pid(1:count,5) =curr_tile%part_ey(1:count)
-            curr_tile%pid(1:count,6) =curr_tile%part_ez(1:count)
-            curr_tile%pid(1:count,7) =curr_tile%part_bx(1:count)
-            curr_tile%pid(1:count,8) =curr_tile%part_by(1:count)
-            curr_tile%pid(1:count,9) =curr_tile%part_bz(1:count)
             curr_tile%part_ex(1:count) = 0.0_num
             curr_tile%part_ey(1:count) = 0.0_num
             curr_tile%part_ez(1:count) = 0.0_num
