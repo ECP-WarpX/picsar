@@ -290,7 +290,7 @@ SUBROUTINE damp_b_field
   ENDIF
   IF(c_dim == 3) THEN 
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-    DO ix = -nxguards,nx+nxguards-1
+    DO ix = -nxguards,nx-nxguards-1
       DO iy = -nyguards,ny+nyguards-1
         DO iz = -nzguards,nz+nzguards-1
           bxy(ix,iy,iz) = sigma_y_b(iy) *bxy(ix,iy,iz)
@@ -323,6 +323,91 @@ SUBROUTINE damp_b_field
   ENDIF
 
 END subroutine damp_b_field
+
+SUBROUTINE set_b_to_0
+
+USE fields
+use shared_data
+
+bx(-nxguards:-1,:,:) = 0.0_num
+bx(nx+1:nx+nxguards,:,:) = 0.0_num
+
+by(:,-nyguards:-1,:) = 0.0_num
+by(:,ny+1:ny+nyguards,:) = 0.0_num
+
+bz(:,:,-nzguards:-1) = 0.0_num
+bz(:,:,nz+1:nz+nzguards) = 0.0_num
+if( u_pml) THEN
+hx(-nxguards:-1,:,:) = 0.0_num
+hx(nx+1:nx+nxguards,:,:) = 0.0_num
+hy(:,-nyguards:-1,:) = 0.0_num
+hy(:,ny+1:ny+nyguards,:) = 0.0_num
+hz(:,:,-nzguards:-1) = 0.0_num
+hz(:,:,nz+1:nz+nzguards) = 0.0_num
+else
+
+byx(:,-nyguards:-1,:) = 0.0_num
+byx(:,ny+1:ny+nyguards,:) = 0.0_num
+byz(:,-nyguards:-1,:) = 0.0_num
+byz(:,ny+1:ny+nyguards,:) = 0.0_num
+
+
+endif
+END SUBROUTINE set_b_to_0
+
+SUBROUTINE set_e_to_0
+
+USE fields
+USE shared_data
+
+ey(-nxguards:-1,:,:) = 0.0_num
+ey(nx+1:nx+nxguards,:,:) = 0.0_num
+
+ez(-nxguards:-1,:,:) = 0.0_num
+ez(nx+1:nx+nxguards,:,:) = 0.0_num
+
+ez(:,-nyguards:-1,:) = 0.0_num
+ez(:,ny+1:ny+nyguards,:) = 0.0_num
+
+ex(:,-nyguards:-1,:) = 0.0_num
+ex(:,ny+1:ny+nyguards,:) = 0.0_num
+
+ex(:,:,-nzguards:-1) = 0.0_num
+ex(:,:,nz+1:nz+nzguards) = 0.0_num
+
+ey(:,:,-nzguards:-1) = 0.0_num
+ey(:,:,nz+1:nz+nzguards) = 0.0_num
+
+if(u_pml) then
+dey(-nxguards:-1,:,:) = 0.0_num
+dey(nx+1:nx+nxguards,:,:) = 0.0_num
+dez(-nxguards:-1,:,:) = 0.0_num
+dez(nx+1:nx+nxguards,:,:) = 0.0_num
+dez(:,-nyguards:-1,:) = 0.0_num
+dez(:,ny+1:ny+nyguards,:) = 0.0_num
+dex(:,-nyguards:-1,:) = 0.0_num
+dex(:,ny+1:ny+nyguards,:) = 0.0_num
+dex(:,:,-nzguards:-1) = 0.0_num
+dex(:,:,nz+1:nz+nzguards) = 0.0_num
+dey(:,:,-nzguards:-1) = 0.0_num
+dey(:,:,nz+1:nz+nzguards) = 0.0_num
+else
+eyz(-nxguards:-1,:,:) = 0.0_num
+eyz(nx+1:nx+nxguards,:,:) = 0.0_num
+
+eyx(-nxguards:-1,:,:) = 0.0_num
+eyx(nx+1:nx+nxguards,:,:) = 0.0_num
+
+eyz(:,:,-nzguards:-1) = 0.0_num
+eyz(:,:,nz+1:nz+nzguards) = 0.0_num
+
+eyx(:,:,-nzguards:-1) = 0.0_num
+eyx(:,:,nz+1:nz+nzguards) = 0.0_num
+
+endif
+
+
+END SUBROUTINE set_e_to_0
 
 
 

@@ -365,8 +365,6 @@ SUBROUTINE pxrpush_em_upml_2d_evec(dex,dey,dez,hx,hy,hz,ex,ey,ez,bx,by,bz,  &
       dex(j,k,l) = dex(j,k,l) - dtsdz * (hy(j, k, l+1-ist)   - hy(j, k, l-1)) 
 
 
-!   ex(j,k,l ) = exp(-sigma_z_e(l)*dtt)*ex(j,k,l ) + &
-!    1.0_num/eps0*((1.0_num + sigma_x_e(j)*dtt)*dex(j,k,l) - (1.0_num - sigma_x_e(j)*dtt) * dexold) - mudt*jx(j,k,l) 
 
       Ex(j, k, l) = (1.0_num-sigma_z_e(l)*dtt)/(1.0_num+sigma_z_e(l)*dtt)  &
             *Ex(j, k, l) + &
@@ -387,9 +385,6 @@ SUBROUTINE pxrpush_em_upml_2d_evec(dex,dey,dez,hx,hy,hz,ex,ey,ez,bx,by,bz,  &
       1.0_num/(1.0_num/dtt+sigma_z_e(l))/dtt * & 
       (dtsdz * (hx(j, k, l+1-ist)   - hx(j, k, l-1))   - dtsdx * (hz(j+1-ist, k, l)   - hz(j-1, k, l))) 
 
-!      dey(j,k,l) = exp(-sigma_z_e(l) * dtt) * dey(j,k,l) + &
-!      (dtsdz * (hx(j, k, l+1-ist)   - hx(j, k, l-1))   - dtsdx * (hz(j+1-ist, k, l)   - hz(j-1, k, l)))
-!      ey(j,k,l) = exp(-sigma_x_e(j) *dtt) * ey(j,k,l) - mudt*jy(j,k,l) +1.0_num/eps0 * (dey(j,k,l) -deyold)
       
       Ey(j,k,l) = (1.0_num - sigma_x_e(j)*dtt)/(1.0_num + sigma_x_e(j)*dtt) * ey(j,k,l)  + &
       (1.0_num/(1.0_num+sigma_x_e(j)*dtt)/eps0) * (dey(j,k,l) -deyold) - mudt  * Jy(j, k, l)
@@ -406,8 +401,6 @@ SUBROUTINE pxrpush_em_upml_2d_evec(dex,dey,dez,hx,hy,hz,ex,ey,ez,bx,by,bz,  &
       dez(j,k,l) = ( 1.0_num/dtt-sigma_x_e(j))/(1.0_num/dtt+sigma_x_e(j))  *  dez(j,k,l) &
       + 1.0_num/(1.0_num/dtt+sigma_x_e(j)) *   dtsdx/dtt * (hy(j+1-ist, k, l) - hy(j-1, k, l))  
        
-!       dez(j,k,l) = exp(-sigma_x_e(j) * dtt) * dez(j,k,l) +dtsdx*(hy(j+1-ist, k, l) - hy(j-1, k, l))  
-!       ez(j,k,l) = ez(j,k,l) 
    
        Ez(j,k,l ) = ez(j,k,l) +1.0_num/eps0*( (1.0_num + sigma_z_e(l)*dtt) *dez(j,k,l)  - (1.0_num - sigma_z_e(l)*dtt) * dezold) -&
        mudt  * Jz(j, k, l)

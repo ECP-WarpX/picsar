@@ -227,9 +227,7 @@ SUBROUTINE step(nst)
 
       !!! --- Boundary conditions for currents
       CALL current_bcs
-CALL harris_pulse(dt*i,pi/4)
-!CALL field_bc(jy, nxguards, nyguards, nzguards, nx, ny, nz)
-!call efield_bcs()
+CALL harris_pulse(dt*i,pi/4._num,20_idp)
 
 #if defined(FFTW)
         IF (l_spectral) THEN
@@ -264,14 +262,17 @@ CALL harris_pulse(dt*i,pi/4)
        IF(.NOT. u_pml) CALL damp_b_field()
      ENDIF
      CALL bfield_bcs
-
+  !   CALL set_b_to_0()
      CALL push_efield_2d
      IF(absorbing_bcs) THEN
        IF(.NOT. u_pml)  CALL damp_e_field()
      ENDIF
-     CALL efield_bcs()
 
-       
+
+     CALL efield_bcs()
+   !  CALL set_e_to_0
+
+      
 
 
   !     !IF (rank .EQ. 0) PRINT *, "#6"
@@ -377,7 +378,7 @@ SUBROUTINE init_pml_arrays
   INTEGER(idp) :: type_id  
   INTEGER(idp) :: offset_spectral
   REAL(num)    , ALLOCATABLE, DIMENSION(:) :: temp
-  coeff = .0050_num
+  coeff = .00150_num
   b_offset = .50_num
   e_offset = 0._num
   pow = 2_idp
@@ -385,9 +386,6 @@ SUBROUTINE init_pml_arrays
   offset_spectral = 0_idp
   IF(l_spectral) offset_spectral = 1_idp
   offset_spectral = 1
-!  offset_spectral = 0_idp
-
-!  offset_spectral=1 
 
   !> Inits pml arrays of the same size as ex fields in the daming direction!
   !> sigmas are 1d arrray to economize memory
@@ -430,7 +428,7 @@ SUBROUTINE init_pml_arrays
   !> first, each proc will compute sigma in the whole domain
   DO ix = nx_global-nx_pml, nx_global-1
     sigma_x_e(ix) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+e_offset)**pow
-    sigma_x_b(ix-offset_spectral) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+b_offset-offset_spectral)**pow
+    sigma_x_b(ix-offset_spectral) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)-b_offset)**pow
   ENDDO
 
   !> Each proc extracts the relevent part of sigma 
@@ -457,7 +455,7 @@ SUBROUTINE init_pml_arrays
     !> first, each proc will compute sigma in the whole domain
     DO iy = ny_global-ny_pml,ny_global-1
       sigma_y_e(iy) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+e_offset)**pow
-      sigma_y_b(iy-offset_spectral) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+b_offset-offset_spectral)**pow
+      sigma_y_b(iy-offset_spectral) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)-b_offset)**pow
     ENDDO
     
     !> Each proc extracts the relevent part of sigma 
@@ -485,7 +483,7 @@ SUBROUTINE init_pml_arrays
   !> Need more straightforward way to do this
   DO iz =  nz_global-nz_pml,nz_global-1 
      sigma_z_e(iz) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+e_offset)**pow
-     sigma_z_b(iz-offset_spectral) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+b_offset-offset_spectral)**pow
+     sigma_z_b(iz-offset_spectral) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)-b_offset)**pow
   ENDDO
 
   !> Each proc extracts the relevent part of sigma 
@@ -568,8 +566,9 @@ SUBROUTINE init_pml_arrays
 !      sigma_z_e = sigma_z_e**2
     ENDIF
   ENDIF
-print*,sigma_x_e
-print*,sigma_x_b
+!do ix=-nxguards,nx+nxguards-1
+!print*,log(sigma_x_e(ix)),log(sigma_x_b(ix)),ix
+!enddo
 END SUBROUTINE init_pml_arrays
 
 ! ________________________________________________________________________________________
@@ -1127,17 +1126,17 @@ enddo
 end subroutine  
 
 
-subroutine  harris_pulse(t,thetaa)
+subroutine  harris_pulse(t,thetaa,n)
 use fields
 use shared_data
 use constants
 use params
 use field_boundary
-REAL(num) :: t_harris,arg,kz,freq,L,lambda
-integer(idp) :: i,j,k
+REAL(num) :: t_harris,arg,kz,freq,L,lambda,k,w_num
+integer(idp) :: i,j,n
 real(num)  :: t,thetaa
 
-L=.5*dx*(nx)
+L=0.5*dx*(nx)
 t_harris = 0.5*nx*dx/clight
 arg = 0._num
 if(t .LE. t_harris)  then
@@ -1146,35 +1145,48 @@ arg = 1./32 * ( 10. - 15. * cos(2.*arg) + 6. * cos (4. * arg) - cos(6. * arg) )
 else 
 arg = 0
 endif
-freq=1./(20*dt)
-kz = 2*pi/clight*(freq)
-lambda = L/7.071067811865475_num!/sin(thetaa)
-kz=2*pi/lambda
-freq = clight/lambda/sin(thetaa)
-!freq=clight*k/2./pi
-kz = kz*sin(thetaa)
-!print*,freq,clight/(2*pi/(kz/sin(thetaa)))
-!freq=clight/(2*pi/(kz))/sin(thetaa)
-!print*,freq
-!freq=3028361142.8626184!1498962290.0000000
-!freq=2967793920.0053654
-!freq = clight/(2*pi/(kz/sin(thetaa))) /sin(thetaa)
+arg=arg/mu0/dt/clight**2
+lambda = L/n/cos(thetaa)
+k=2*pi/lambda
+freq = clight/lambda/cos(thetaa)
+kx = k*cos(thetaa)
+kz=k*sin(thetaa)
+w_num = (1.0_num/dx*sin(kx*dx/2._num))**2+(1.0_num/dz*sin(kz*dz/2._num))**2
+w_num = w_num *clight**2*dt**2
 
+w_num = asin(sqrt(w_num))
+w_num = w_num *2._num/dt
+w_num  = w_num/cos(thetaa)
 do i = -nzguards,nz+nzguards
-!if(u_pml )ey(nx/2,0,i) = sin(2*pi*freq*t +  kz*dz *i)*arg
-!if(.NOT. u_pml) eyz(nx/2,0,i) = sin(2*pi*freq*t +  kz*dz *i)*arg
-!if(u_pml) dey(nx/2,0,i) = eps0*ey(nx/2,0,i)
-jy(nx/2,0,i ) =sin(2*pi*freq*t +  kz*dz *i)*arg
+jy(nx/2,0,i ) =sin(w_num*t +  k*dz *i*sin(thetaa)+k*dx*cos(thetaa))*arg
 
-!eyx(nx/2,0,i ) =sin(2*pi*freq*t +  kz*dz *i)*arg
 enddo
 CALL field_bc(jy, nxguards, nyguards, nzguards, nx, ny, nz)
-!call efield_bcs
 
-
-
-
-
+if(abs(max(it-10,1)*dt-t_harris) .LE. dt ) then
+ey(nx/2+1:nx+nxguards,:,:)=0.0_num
+bz(nx/2+1:nx+nxguards,:,:)=0.0_num
+bx(nx/2+1:nx+nxguards,:,:)=0.0_num
+if(l_spectral) THEN
+eyz(nx/2+1:nx+nxguards,:,:)=0.0_num
+eyx(nx/2+1:nx+nxguards,:,:)=0.0_num
+bzx(nx/2+1:nx+nxguards,:,:)=0.0_num
+bzy(nx/2+1:nx+nxguards,:,:)=0.0_num
+bxz(nx/2+1:nx+nxguards,:,:)=0.0_num
+bxy(nx/2+1:nx+nxguards,:,:)=0.0_num
+endif
+if(u_pml) then
+dey(nx/2+1:nx+nxguards,:,:)=0.0_num
+hz(nx/2+1:nx+nxguards,:,:)=0.0_num
+hx(nx/2+1:nx+nxguards,:,:)=0.0_num
+endif
+if(.NOT. u_pml) THEN
+eyx(nx/2+1:nx+nxguards,:,:)=0.0_num
+eyz(nx/2+1:nx+nxguards,:,:)=0.0_num
+byx(nx/2+1:nx+nxguards,:,:)=0.0_num
+byz(nx/2+1:nx+nxguards,:,:)=0.0_num
+endif
+endif
 
 end subroutine
 
