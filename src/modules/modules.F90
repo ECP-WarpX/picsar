@@ -604,7 +604,19 @@ MODULE particle_properties
   !> Index in pid array corresponding to old y momentum of particles
   INTEGER(idp) :: uyoldpid
   !> Index in pid array corresponding to old z momentum of particles
-  INTEGER(idp) :: uzoldpid
+  INTEGER(idp) :: uzoldpid 
+  !> Index in pid array corresponding to old x positions of particles
+  INTEGER(idp)  :: exoldpid
+  !> Index in pid array corresponding to old y positions of particles
+  INTEGER(idp) :: eyoldpid
+  !> Index in pid array corresponding to old x positions of particles
+  INTEGER(idp) :: ezoldpid
+  !> Index in pid array corresponding to old x momentum of particles
+  INTEGER(idp) :: bxoldpid
+  !> Index in pid array corresponding to old y momentum of particles
+  INTEGER(idp) :: byoldpid
+  !> Index in pid array corresponding to old z momentum of particles
+  INTEGER(idp) :: bzoldpid  
   !> This flag seems to be unused
   LOGICAL(lp) :: l_initongrid = .FALSE.
   !> Flag to activate the use of weight for the particles
