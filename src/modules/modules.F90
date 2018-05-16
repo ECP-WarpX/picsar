@@ -1175,6 +1175,7 @@ MODULE shared_data
   !----------------------------------------------------------------------------
   !> FFTW distributed
   LOGICAL(idp) :: fftw_with_mpi, fftw_mpi_transpose, fftw_threads_ok, fftw_hybrid
+  LOGICAL(idp) :: fftw_plan_measure=.TRUE.
   LOGICAL(lp)   :: p3dfft_flag=.FALSE.
   LOGICAL(lp)   :: p3dfft_stride
   !> First and last indexes of real data in group (only z is relevant for now)

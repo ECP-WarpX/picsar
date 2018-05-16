@@ -90,14 +90,19 @@ MODULE fourier_psaotd
     !> using transposed plans
     !> A similar optimization is possible when using p3dfft (p3dfft_stride =
     !.TRUE.) but z and x axis are then transposed 
-
-    IF(fftw_mpi_transpose) THEN
-      planner_flag_1 = IOR(FFTW_MEASURE,FFTW_MPI_TRANSPOSED_OUT)
-      planner_flag_2 = IOR(FFTW_MEASURE,FFTW_MPI_TRANSPOSED_IN)
+    IF(fftw_plan_measure) THEN
+       planner_flag_1 = FFTW_MEASURE
+       planner_flag_2 = FFTW_MEASURE
     ELSE
-      planner_flag_1 = FFTW_MEASURE
-      planner_flag_2 = FFTW_MEASURE
+       planner_flag_1 = FFTW_ESTIMATE
+       planner_flag_2 = FFTW_ESTIMATE
     ENDIF
+    
+    IF(fftw_mpi_transpose) THEN
+      planner_flag_1 = IOR(planner_flag_1,FFTW_MPI_TRANSPOSED_OUT)
+      planner_flag_2 = IOR(planner_flag_2,FFTW_MPI_TRANSPOSED_IN)
+    ENDIF
+
     IF(.NOT. fftw_hybrid) THEN
       nz_cint=nz_global
       ny_cint=ny_global
