@@ -534,9 +534,9 @@ SUBROUTINE push_bfield_2d
   ENDIF
   IF(absorbing_bcs) THEN
     IF(.NOT. u_pml) THEN
-      CALL pxrpush_em_pml_2d_bvec(ex,ey,ez,bx,by,bz,exy,exz,eyx,eyz,bzx,bzy,bxy,bxz,byx,byz,bzx,bzy,           &
-      dt/dx, 0._num, dt/dz, nx, ny, nz, nxguards, 0_idp, nzguards, nxs, & 
-      0_idp, nzs,   l_nodalgrid)
+        CALL pxrpush_em_standard_pml_2d_bvec(ex,ey,ez,bx,by,bz,exy,exz,eyx,eyz,bzx,bzy,bxy,bxz,byx,byz,bzx,bzy,           &
+        1._num/dx, 0._num, 1._num/dz, nx, ny, nz, nxguards, 0_idp, nzguards, nxs, & 
+        0_idp, nzs,   l_nodalgrid)
     ELSE
       CALL pxrpush_em_upml_2d_bvec(hx,hy,hz,ex,ey,ez,bx,by,bz,dt,   &
       dt/dx, 0._num, dt/dz, nx, ny, nz, nxguards, 0_idp, nzguards, nxs, &
@@ -594,10 +594,10 @@ SUBROUTINE push_efield_2d
 
   IF(absorbing_bcs) THEN
     IF(.NOT. u_pml) THEN
-      CALL pxrpush_em_pml_2d_evec(ex,ey,ez,bx,by,bz,exy,exz,eyx, eyz,ezx, ezy, bxy, bxz,byx, byz, bzx, &
-      bzy ,jx,jy,jz,mdt, clight**2*dt/dx,clight**2*dt/dy, &
-      clight**2*dt/dz, nx,ny,nz, nxguards, nyguards, nzguards,nxs,0_idp,nzs,&
-      l_nodalgrid)
+        CALL pxrpush_em_standard_pml_2d_evec(ex,ey,ez,bx,by,bz,exy,exz,eyx, eyz,ezx, ezy, bxy, bxz,byx, byz, bzx, &
+        bzy ,jx,jy,jz,mdt, clight**2*1._num/dx,clight**2*1._num/dy, &
+        clight**2*1._num/dz, nx,ny,nz, nxguards, nyguards, nzguards,nxs,0_idp,nzs,&
+        l_nodalgrid)
     ELSE
       CALL pxrpush_em_upml_2d_evec(dex,dey,dez,hx,hy,hz,&
       ex,ey,ez,bx,by,bz,jx,jy,jz,dt,mdt, dt/dx,dt/dy, &

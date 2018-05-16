@@ -227,7 +227,7 @@ SUBROUTINE step(nst)
 
       !!! --- Boundary conditions for currents
       CALL current_bcs
-CALL harris_pulse(dt*i,pi/4._num,20_idp)
+CALL harris_pulse(dt*i,pi/4._num,25_idp)
 
 #if defined(FFTW)
         IF (l_spectral) THEN
@@ -257,22 +257,18 @@ CALL harris_pulse(dt*i,pi/4._num,20_idp)
       ELSE
 #endif
 
-     CALL push_bfield_2d
-     IF(absorbing_bcs) THEN
-       IF(.NOT. u_pml) CALL damp_b_field()
-     ENDIF
-     CALL bfield_bcs
-  !   CALL set_b_to_0()
      CALL push_efield_2d
      IF(absorbing_bcs) THEN
-       IF(.NOT. u_pml)  CALL damp_e_field()
+  !     IF(.NOT. u_pml ) CALL damp_e_field()
+     ENDIF
+     CALL efield_bcs
+     CALL push_bfield_2d
+     IF(absorbing_bcs) THEN
+ !      IF(.NOT. u_pml )  CALL damp_b_field()
      ENDIF
 
 
-     CALL efield_bcs()
-   !  CALL set_e_to_0
-
-      
+     CALL bfield_bcs()
 
 
   !     !IF (rank .EQ. 0) PRINT *, "#6"
@@ -378,7 +374,7 @@ SUBROUTINE init_pml_arrays
   INTEGER(idp) :: type_id  
   INTEGER(idp) :: offset_spectral
   REAL(num)    , ALLOCATABLE, DIMENSION(:) :: temp
-  coeff = .00150_num
+  coeff = 4._num/25._num!.00150_num
   b_offset = .50_num
   e_offset = 0._num
   pow = 2_idp
@@ -502,22 +498,22 @@ SUBROUTINE init_pml_arrays
   !> dE/dt = -sigma * E => E(n)=exp(-sigma*dt)*E(n-1)
   !> Note that fdtd pml solving requires field time centering
  
-!  IF(.NOT. u_pml) THEN
-!    sigma_x_e = 4._num * sigma_x_e
-!    sigma_y_e = 4._num * sigma_y_e
-!    sigma_z_e = 4._num * sigma_z_e
-!    sigma_x_b = 4._num * sigma_x_b
-!    sigma_y_b = 4._num * sigma_y_b
-!    sigma_z_b = 4._num * sigma_z_b
-!  ENDIF
+  IF(.NOT. l_spectral ) THEN
+    sigma_x_e = .5_num * sigma_x_e
+    sigma_y_e = .5_num * sigma_y_e
+    sigma_z_e = .5_num * sigma_z_e
+    sigma_x_b = .5_num * sigma_x_b
+    sigma_y_b = .5_num * sigma_y_b
+    sigma_z_b = .5_num * sigma_z_b
+  ENDIF
  
   IF(absorbing_bcs_x) THEN 
-    IF(.NOT. u_pml) THEN
+    IF(l_spectral) THEN
       sigma_x_e = EXP(-sigma_x_e*dt)
       sigma_x_b = EXP(-sigma_x_b*dt)
     ENDIF
   ELSE 
-    IF(.NOT. u_pml) THEN
+    IF(l_spectral ) THEN
       sigma_x_e = 1.0_num
       sigma_x_b = 1.0_num
     ELSE
@@ -526,12 +522,12 @@ SUBROUTINE init_pml_arrays
     ENDIF
   ENDIF
   IF(absorbing_bcs_y) THEN
-    IF(.NOT. u_pml) THEN
+    IF(l_spectral ) THEN
       sigma_y_e = EXP(-sigma_y_e*dt)
       sigma_y_b = EXP(-sigma_y_b*dt)
     ENDIF
   ELSE
-    IF(.NOT. u_pml) THEN
+    IF(l_spectral ) THEN
       sigma_y_e = 1.0_num
       sigma_y_b = 1.0_num
     ELSE
@@ -539,13 +535,13 @@ SUBROUTINE init_pml_arrays
       sigma_y_b = .0_num
     ENDIF
   ENDIF  
-  IF(absorbing_bcs_z) THEN
-    IF(.NOT. u_pml) THEN
+  IF(absorbing_bcs_z  ) THEN
+    IF( l_spectral ) THEN
       sigma_z_e = EXP(-sigma_z_e*dt)
       sigma_z_b = EXP(-sigma_z_b*dt)
     ENDIF
   ELSE 
-    IF(.NOT. u_pml) THEN
+    IF(l_spectral  ) THEN
       sigma_z_e = 1.0_num
       sigma_z_b = 1.0_num
     ELSE
@@ -1148,6 +1144,7 @@ endif
 arg=arg/mu0/dt/clight**2
 lambda = L/n/cos(thetaa)
 k=2*pi/lambda
+print*,"lamn",lambda/dx
 freq = clight/lambda/cos(thetaa)
 kx = k*cos(thetaa)
 kz=k*sin(thetaa)
