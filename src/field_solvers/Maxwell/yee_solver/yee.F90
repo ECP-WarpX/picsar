@@ -402,7 +402,7 @@ SUBROUTINE pxrpush_em_upml_2d_evec(dex,dey,dez,hx,hy,hz,ex,ey,ez,bx,by,bz,  &
   jx, jy, jz,dtt, mudt, dtsdx, dtsdy,  &
   dtsdz, nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)
   USE constants
-  USE fields , ONLY : sigma_x_e,sigma_y_e,sigma_z_e
+  USE fields , ONLY : sigma_x_e,sigma_y_e,sigma_z_e, sigma_x_b, sigma_y_b, sigma_z_b
   INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
   REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
   -nzguard:nz+nzguard) :: dex,dey,dez,ex,ey,ez,bx,by,bz,hx,hy,hz
@@ -431,7 +431,7 @@ SUBROUTINE pxrpush_em_upml_2d_evec(dex,dey,dez,hx,hy,hz,ex,ey,ez,bx,by,bz,  &
       Ex(j, k, l) = (1.0_num-sigma_z_e(l)*dtt)/(1.0_num+sigma_z_e(l)*dtt)  &
             *Ex(j, k, l) + &
              (1.0_num/(1.0_num+sigma_z_e(l)*dtt)/eps0)* &
-             ((1.0_num + sigma_x_e(j)*dtt)*dex(j,k,l) - (1.0_num - sigma_x_e(j)*dtt) * dexold)  
+             ((1.0_num + sigma_x_b(j)*dtt)*dex(j,k,l) - (1.0_num - sigma_x_b(j)*dtt) * dexold)  
 
     END DO
   END DO
@@ -463,8 +463,7 @@ SUBROUTINE pxrpush_em_upml_2d_evec(dex,dey,dez,hx,hy,hz,ex,ey,ez,bx,by,bz,  &
       dez(j,k,l) = ( 1.0_num/dtt-sigma_x_e(j))/(1.0_num/dtt+sigma_x_e(j))  *  dez(j,k,l) &
       + 1.0_num/(1.0_num/dtt+sigma_x_e(j)) *   dtsdx/dtt * (hy(j+1-ist, k, l) - hy(j-1, k, l))  - eps0* mudt*jz(j,k,l)
        
-   
-       Ez(j,k,l ) = ez(j,k,l) +1.0_num/eps0*( (1.0_num + sigma_z_e(l)*dtt) *dez(j,k,l)  - (1.0_num - sigma_z_e(l)*dtt) * dezold)
+       Ez(j,k,l ) = ez(j,k,l) +1.0_num/eps0*( (1.0_num + sigma_z_b(l)*dtt) *dez(j,k,l)  - (1.0_num - sigma_z_b(l)*dtt) * dezold)
     END DO
   END DO
   !$OMP END DO
@@ -881,7 +880,7 @@ SUBROUTINE pxrpush_em_upml_2d_bvec(hx,hy,hz,ex,ey,ez,bx,by,bz,dtt,    &
   dtsdx, dtsdy, dtsdz, nx, ny, nz, &
   nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)
   USE constants
-  USE fields , ONLY : sigma_x_b,sigma_y_b,sigma_z_b
+  USE fields , ONLY : sigma_x_b,sigma_y_b,sigma_z_b, sigma_x_e, sigma_y_e, sigma_z_e
   INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
   REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
   -nzguard:nz+nzguard) :: ex,ey,ez,bx,by,bz,hx,hy,hz
@@ -902,9 +901,10 @@ SUBROUTINE pxrpush_em_upml_2d_bvec(hx,hy,hz,ex,ey,ez,bx,by,bz,dtt,    &
     DO j = -nxs, nx+nxs
       bxold = bx(j,k,l)
       Bx(j, 0, l) = Bx(j, 0, l) + dtsdz * (Ey(j, 0, l+1) - Ey(j, 0, l-1+ist))
+
       hx(j, 0, l) = (1.0_num -sigma_z_b(l)*dtt)/(1.0_num + sigma_z_b(l)*dtt) * hx(j,0,l) + &
          (1.0_num / ((1.0_num+sigma_z_b(l)*dtt)*mu0))* &
-         ((1.0_num + sigma_x_b(j)*dtt) * bx(j,k,l) -( 1.0_num - sigma_x_b(j)*dtt)*bxold)
+         ((1.0_num + sigma_x_e(j)*dtt) * bx(j,k,l) - ( 1.0_num - sigma_x_e(j)*dtt)*bxold)
     END DO
   END DO
   !$OMP END DO
@@ -916,8 +916,9 @@ SUBROUTINE pxrpush_em_upml_2d_bvec(hx,hy,hz,ex,ey,ez,bx,by,bz,dtt,    &
       
      by(j,0,l) = (1.0_num/dtt - sigma_z_b(l))/(1.0_num/dtt+sigma_z_b(l))*by(j,0,l) - 1.0_num/(1.0_num/dtt + sigma_z_b(l))/dtt * &
      (-dtsdx * (Ez(j+1, 0, l  ) - Ez(j-1+ist, 0, l)) +dtsdz * (Ex(j, 0, l+1) - Ex(j, 0, l-1+ist))) 
+
       hy(j,0,l) = (1.0_num - sigma_x_b(j)*dtt)/(1.0_num+sigma_x_b(j)*dtt) * hy(j,0,l) + &
-     (1.0_num / mu0)*(by(j,0,l) - byold)
+     (1.0_num /mu0)*(by(j,0,l) - byold)
 
     END DO
   END DO
@@ -930,8 +931,7 @@ SUBROUTINE pxrpush_em_upml_2d_bvec(hx,hy,hz,ex,ey,ez,bx,by,bz,dtt,    &
       bz(j,0,l) = (1.0_num/dtt - sigma_x_b(j))/(1.0_num/dtt+sigma_x_b(j))*bz(j,0,l) -  &
       (1.0_num/(1.0_num/dtt+sigma_x_b(j)))/dtt *dtsdx * (Ey(j+1, 0, l) - Ey(j-1+ist, 0, l)) 
 
-      hz(j,0,l) = hz(j,0,l) + 1.0_num/mu0*((1.0_num + sigma_z_b(l)* dtt )*bz(j,0,l) - (1.0_num - sigma_z_b(l)* dtt)*bzold)
-
+      hz(j,0,l) = hz(j,0,l) + 1.0_num/mu0*((1.0_num + sigma_z_e(l)* dtt )*bz(j,0,l) - (1.0_num - sigma_z_e(l)* dtt)*bzold)
     END DO
   END DO
   !$OMP END DO
