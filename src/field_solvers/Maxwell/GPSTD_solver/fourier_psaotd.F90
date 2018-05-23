@@ -331,6 +331,13 @@ MODULE fourier_psaotd
            bx_r(ix,:,:) = 0.0_num
            by_r(ix,:,:) = 0.0_num
            bz_r(ix,:,:) = 0.0_num
+           ex_r(ix,:,:) = 0.0_num
+           ey_r(ix,:,:) = 0.0_num
+           ez_r(ix,:,:) = 0.0_num
+           hx_r(ix,:,:) = 0.0_num
+           hy_r(ix,:,:) = 0.0_num
+           hz_r(ix,:,:) = 0.0_num
+
          ENDDO
        ENDIF
        IF(x_max_boundary) THEN
@@ -341,9 +348,19 @@ MODULE fourier_psaotd
            bx_r(ix,:,:) = 0.0_num
            by_r(ix-1,:,:) = 0.0_num
            bz_r(ix-1,:,:) = 0.0_num
+           dex_r(ix,:,:) = 0.0_num
+           dey_r(ix,:,:) = 0.0_num
+           dez_r(ix,:,:) = 0.0_num
+           hx_r(ix,:,:) = 0.0_num
+           hy_r(ix-1,:,:) = 0.0_num
+           hz_r(ix-1,:,:) = 0.0_num
+
          ENDDO
          by_r(nx+nxguards-1,:,:) = 0.0_num
          bz_r(nx+nxguards-1,:,:) = 0.0_num
+         hy_r(nx+nxguards-1,:,:) = 0.0_num
+         hz_r(nx+nxguards-1,:,:) = 0.0_num
+
        ENDIF
      ENDIF
      IF(c_dim == 3) THEN 
@@ -356,6 +373,13 @@ MODULE fourier_psaotd
              bx_r(:,iy,:) = 0.0_num
              by_r(:,iy,:) = 0.0_num
              bz_r(:,iy,:) = 0.0_num
+             ex_r(:,iy,:) = 0.0_num
+             ey_r(:,iy,:) = 0.0_num
+             ez_r(:,iy,:) = 0.0_num
+             hx_r(:,iy,:) = 0.0_num
+             hy_r(:,iy,:) = 0.0_num
+             hz_r(:,iy,:) = 0.0_num
+
            ENDDO
          ENDIF
          IF(y_max_boundary) THEN
@@ -366,9 +390,18 @@ MODULE fourier_psaotd
               bx_r(:,iy-1,:) = 0.0_num
               by_r(:,iy,:) = 0.0_num
               bz_r(:,iy-1,:) = 0.0_num
+              ex_r(:,iy,:) = 0.0_num
+              ey_r(:,iy,:) = 0.0_num
+              ez_r(:,iy,:) = 0.0_num
+              hx_r(:,iy-1,:) = 0.0_num
+              hy_r(:,iy,:) = 0.0_num
+              hz_r(:,iy-1,:) = 0.0_num
+
            ENDDO
            bx_r(:,ny+nyguards-1,:) = 0.0_num
            bz_r(:,ny+nyguards-1,:) = 0.0_num
+           hx_r(:,ny+nyguards-1,:) = 0.0_num
+           hz_r(:,ny+nyguards-1,:) = 0.0_num
          ENDIF
        ENDIF
      ENDIF
@@ -381,6 +414,13 @@ MODULE fourier_psaotd
            bx_r(:,:,iz) = 0.0_num
            by_r(:,:,iz) = 0.0_num
            bz_r(:,:,iz) = 0.0_num
+           ex_r(:,:,iz) = 0.0_num
+           ey_r(:,:,iz) = 0.0_num
+           ez_r(:,:,iz) = 0.0_num
+           hx_r(:,:,iz) = 0.0_num
+           hy_r(:,:,iz) = 0.0_num
+           hz_r(:,:,iz) = 0.0_num
+
          ENDDO
        ENDIF
      IF(z_max_boundary) THEN
@@ -391,9 +431,19 @@ MODULE fourier_psaotd
          bx_r(:,:,iz-1) = 0.0_num
          by_r(:,:,iz-1) = 0.0_num
          bz_r(:,:,iz) = 0.0_num
+         ex_r(:,:,iz) = 0.0_num
+         ey_r(:,:,iz) = 0.0_num
+         ez_r(:,:,iz) = 0.0_num
+         hx_r(:,:,iz-1) = 0.0_num
+         hy_r(:,:,iz-1) = 0.0_num
+         hz_r(:,:,iz) = 0.0_num
+
        ENDDO
        bx_r(:,:,nz+nzguards-1) = 0.0_num
        by_r(:,:,nz+nzguards-1) = 0.0_num
+       hx_r(:,:,nz+nzguards-1) = 0.0_num
+       hy_r(:,:,nz+nzguards-1) = 0.0_num
+
        ENDIF
      ENDIF
    ENDIF

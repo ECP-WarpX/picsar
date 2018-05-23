@@ -214,7 +214,6 @@ SUBROUTINE step(nst)
     ! ___________________________________________
     ! Loop in 2D
   ELSE IF (c_dim.eq.2) THEN
-CALL init_gaussian_pulse_2d()
     DO i=1, nst
       IF (rank .EQ. 0) startit=MPI_WTIME()
 
@@ -236,8 +235,7 @@ CALL init_gaussian_pulse_2d()
 
       !!! --- Boundary conditions for currents
       CALL current_bcs
-!CALL harris_pulse(dt*i,pi/4._num,25_idp)
-!ey= dey
+      CALL harris_pulse(dt*i,pi/4._num,10_idp)
 #if defined(FFTW)
         IF (l_spectral) THEN
           CALL  copy_field(rhoold, nx+2*nxguards+1, ny+2*nyguards+1,      &
@@ -272,14 +270,6 @@ CALL init_gaussian_pulse_2d()
             CALL field_damping_bcs()
           ENDIF
         ENDIF
-!If(u_pml) THEN
-!  ex=dex/eps0
-!  ey=dey/eps0
-!  ez=dez/eps0
-!  hx=bx/mu0
-!  hy=by/mu0
-!  hz=bz/mu0
-!Endif
       ELSE
 #endif
 
@@ -591,13 +581,6 @@ SUBROUTINE init_pml_arrays
     WHERE(sigma_z_b == 0.0_num) b_z_b = 1.0_num
   ENDIF
    
-
-!sigma_x_e=0.0
-!sigma_y_e=0.0
-!sigma_z_e=0.0
-!sigma_x_b=0.0
-!sigma_y_b=0.0
-!sigma_z_b=0.0
 
 END SUBROUTINE init_pml_arrays
 

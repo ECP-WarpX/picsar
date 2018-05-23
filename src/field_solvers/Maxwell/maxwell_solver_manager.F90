@@ -164,6 +164,8 @@ SUBROUTINE field_damping_bcs
   IF (it.ge.timestat_itstart) THEN
     tmptime = MPI_WTIME()
   ENDIF
+
+
   IF(.NOT. u_pml) THEN
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
     DO iz = lbound_e(3),ubound_e(3)
@@ -202,19 +204,17 @@ SUBROUTINE field_damping_bcs
           
           ! Compute E
           ex(ix,iy,iz) = a_z_e(iz)*ex(ix,iy,iz) + b_z_e(iz)/b_x_b(ix)*(dex(ix,iy,iz) - a_x_b(ix)*dexold(ix,iy,iz))*ieps0
-          ey(ix,iy,iz) = a_x_e(iz)*ey(ix,iy,iz) + b_x_e(iz)/b_y_b(iy)*(dey(ix,iy,iz) - a_y_b(iy)*deyold(ix,iy,iz))*ieps0
+          ey(ix,iy,iz) = a_x_e(ix)*ey(ix,iy,iz) + b_x_e(ix)/b_y_b(iy)*(dey(ix,iy,iz) - a_y_b(iy)*deyold(ix,iy,iz))*ieps0
           ez(ix,iy,iz) = a_y_e(iy)*ez(ix,iy,iz) + b_y_e(iy)/b_z_b(iz)*(dez(ix,iy,iz) - a_z_b(iz)*dezold(ix,iy,iz))*ieps0
           ! Compute H
           hx(ix,iy,iz) = a_z_b(iz)*hx(ix,iy,iz) + b_z_b(iz)/b_x_e(ix)*(bx(ix,iy,iz) - a_x_e(ix)*bxold(ix,iy,iz))*imu0
-          hy(ix,iy,iz) = a_x_b(iz)*hy(ix,iy,iz) + b_x_b(iz)/b_y_e(iy)*(by(ix,iy,iz) - a_y_e(iy)*byold(ix,iy,iz))*imu0
+          hy(ix,iy,iz) = a_x_b(ix)*hy(ix,iy,iz) + b_x_b(ix)/b_y_e(iy)*(by(ix,iy,iz) - a_y_e(iy)*byold(ix,iy,iz))*imu0
           hz(ix,iy,iz) = a_y_b(iy)*hz(ix,iy,iz) + b_y_b(iy)/b_z_e(iz)*(bz(ix,iy,iz) - a_z_e(iz)*bzold(ix,iy,iz))*imu0
 
         ENDDO
       ENDDO
     ENDDO
     !$OMP END PARALLEL DO
-
-      
 
   
   ENDIF 
