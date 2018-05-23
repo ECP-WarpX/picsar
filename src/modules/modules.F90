@@ -78,7 +78,7 @@ MODULE constants
   REAL(num), PARAMETER :: imu0    = 1._num!795774.715459_num
 #endif
   !> The famous pi value
-  REAL(num), PARAMETER :: pi      = 1._num!3.14159265358979323_num
+  REAL(num), PARAMETER :: pi      = 3.14159265358979323_num
   !> Dimension of the cartesian topology
   INTEGER(isp), PARAMETER :: c_ndims = 3
   ! direction parameters
