@@ -829,11 +829,16 @@ MODULE gpstd_solver
     REAL(num)              :: coeff_norm
     TYPE(C_PTR)            :: cdata
  
-    IF(absorbing_bcs) THEN
+    IF(absorbing_bcs ) THEN
+      IF(.NOT. u_pml) THEN
       !> When using pmls, cc_mat is a 12x17 matrix
-      nbloc_ccmat = 17_idp
-      nbloc_vnew = 12_idp
-    ELSE IF(.NOT. absorbing_bcs) THEN
+        nbloc_ccmat = 17_idp
+        nbloc_vnew = 12_idp
+      ELSE IF(u_pml) THEN
+        nbloc_ccmat = 17_idp
+        nbloc_vnew = 6_idp
+      ENDIF
+    ELSE IF(.NOT. absorbing_bcs ) THEN
       !> When using peridic bcs, cc_mat is a 6x11 matrix
       nbloc_ccmat = 11_idp
       nbloc_vnew = 6_idp
@@ -917,7 +922,7 @@ MODULE gpstd_solver
       ENDDO
     ENDDO
 
-    IF (absorbing_bcs) THEN
+    IF (absorbing_bcs ) THEN
       !> When using pmls, splitted fields EM equations are solved
       !> The following routine solved these pushes fourier splitted fields in
       !> fourier space
@@ -929,13 +934,16 @@ MODULE gpstd_solver
       !> Thus current and density contributions only acts influences
       !> exy , eyx , ezx, bxy, byx, bzx
       !> Hence, contribution of J to exz is null
-      CALL compute_cc_mat_splitted_fields()
-    ELSE IF(.NOT. absorbing_bcs) THEN  
+      IF( .NOT. u_pml) THEN
+        CALL compute_cc_mat_splitted_fields()
+      ELSE IF(u_pml) THEN
+        CALL compute_cc_mat_upml_fields()
+      ENDIF
+    ELSE IF(.NOT. absorbing_bcs ) THEN  
       !> When not using absorbing bcs, standard EM equations are solved in
       ! fourier space
       CALL compute_cc_mat_merged_fields()
     ENDIF
-  
  
     !> Renormalize cc_mat blocks
     !> Because fftw_r2c and followed by fftw_c2r multiplies fields by 
@@ -974,6 +982,8 @@ MODULE gpstd_solver
     !> needed in Fourier space
     !CALL delete_k_space
   END SUBROUTINE init_gpstd
+
+
 
   ! ______________________________________________________________________________________
   !> @brief
@@ -1225,6 +1235,192 @@ MODULE gpstd_solver
     *AT_OP(nmatrixes2)%block_vector(1)%block3dc
     !> End contribution E to B
     END SUBROUTINE compute_cc_mat_splitted_fields
+    
+    SUBROUTINE compute_cc_mat_upml_fields()
+      USE shared_data
+      USE matrix_coefficients
+      USE constants
+      USE params, ONLY : dt
+      INTEGER(idp)  :: i,j,off, off2
+      COMPLEX(cpx) ::  ii
+      LOGICAL(lp)            :: switch
+      ii=DCMPLX(0.0_num, 1.0_num)
+      off = 3_idp
+      off2 = 6_idp
+      !> cc_mat_(nmatrixes)block_matrix2d(i,j) components are sorted using the
+      !>following nomenclature 
+      !> In this case cc_mat is a 6x11 block matrix
+      !> 1-> exf; 2->eyf; 3->ezf; 4->bxf; 5->byf; 6->bzf
+      !> 7->jxf; 8->jyf; 9->jzf; 10-> rhooldf; 11->rhof
+      !> cc_mat_(nmatrixes)block_matrix2d(i,j) is the contribution of the j-th
+      !> scalar field to the i-th scalar field 
+      
+  
+    
+      !> Contribution of B field to E field update
+      cc_mat(nmatrixes)%block_matrix2d(1, 5+off2)%block3dc = -                               &
+      ii*kspace(nmatrixes2)%block_vector(7)%block3dc*clight                             &
+      *at_op(nmatrixes2)%block_vector(1)%block3dc/clight**2
+  
+      cc_mat(nmatrixes)%block_matrix2d(1, 6+off2)%block3dc =                                 &
+      ii*kspace(nmatrixes2)%block_vector(4)%block3dc*clight                             &
+      *at_op(nmatrixes2)%block_vector(1)%block3dc/clight**2
+
+      cc_mat(nmatrixes)%block_matrix2d(2, 4+off2)%block3dc =                                 &
+      ii*kspace(nmatrixes2)%block_vector(7)%block3dc*clight                             &
+      *at_op(nmatrixes2)%block_vector(1)%block3dc/clight**2
+  
+      cc_mat(nmatrixes)%block_matrix2d(2, 6+off2)%block3dc =                                 &
+      -ii*kspace(nmatrixes2)%block_vector(1)%block3dc*clight                            &
+      *at_op(nmatrixes2)%block_vector(1)%block3dc/clight**2
+  
+      cc_mat(nmatrixes)%block_matrix2d(3, 4+off2)%block3dc = -                               &
+      ii*kspace(nmatrixes2)%block_vector(4)%block3dc*clight                             &
+      *at_op(nmatrixes2)%block_vector(1)%block3dc/clight**2
+  
+      cc_mat(nmatrixes)%block_matrix2d(3, 5+off2)%block3dc =                                 &
+      ii*kspace(nmatrixes2)%block_vector(1)%block3dc*clight                             &
+      *at_op(nmatrixes2)%block_vector(1)%block3dc/clight**2
+      
+      !> End contribution B field to E field
+      
+      !> Contribution of E field to B field
+      cc_mat(nmatrixes)%block_matrix2d(4, 2+off2)%block3dc =                                 &
+      ii*kspace(nmatrixes2)%block_vector(8)%block3dc/clight                             &
+      *at_op(nmatrixes2)%block_vector(1)%block3dc
+  
+      cc_mat(nmatrixes)%block_matrix2d(4, 3+off2)%block3dc =                                 &
+      -ii*kspace(nmatrixes2)%block_vector(5)%block3dc/clight                            &
+      *at_op(nmatrixes2)%block_vector(1)%block3dc
+  
+      cc_mat(nmatrixes)%block_matrix2d(5, 1+off2)%block3dc =                                 &
+      -ii*kspace(nmatrixes2)%block_vector(8)%block3dc/clight                            &
+      *at_op(nmatrixes2)%block_vector(1)%block3dc
+  
+      cc_mat(nmatrixes)%block_matrix2d(5, 3+off2)%block3dc =                                 &
+      ii*kspace(nmatrixes2)%block_vector(2)%block3dc/clight                             &
+      *at_op(nmatrixes2)%block_vector(1)%block3dc
+  
+      cc_mat(nmatrixes)%block_matrix2d(6, 1+off2)%block3dc =                                 &
+      ii*kspace(nmatrixes2)%block_vector(5)%block3dc/clight                             &
+      *at_op(nmatrixes2)%block_vector(1)%block3dc
+  
+      cc_mat(nmatrixes)%block_matrix2d(6, 2+off2)%block3dc =                                 &
+      -ii*kspace(nmatrixes2)%block_vector(2)%block3dc/clight                            &
+      *at_op(nmatrixes2)%block_vector(1)%block3dc
+     
+      !> End contribiton E field to B field
+   
+      !> Contribution of E field to E field and B field to B field
+      DO i=1, 6
+        cc_mat(nmatrixes)%block_matrix2d(i, i)%block3dc =                               &
+        at_op(nmatrixes2)%block_vector(2)%block3dc
+      ENDDO
+
+
+      !> End contribution of E field To E field and B field to B field    
+  
+      !> Contribution of J field to E field
+      DO i = 1, 3
+        cc_mat(nmatrixes)%block_matrix2d(i, i+12)%block3dc =                             &
+        (-1._num)*clight*mu0*at_op(nmatrixes2)%block_vector(1)%block3dc*eps0
+      ENDDO
+
+      ! End contribution of J field to E field
+  
+      !> Contribution of J field to B field
+      cc_mat(nmatrixes)%block_matrix2d(4, 8+off2)%block3dc = - mu0*                          &
+      ii*kspace(nmatrixes2)%block_vector(8)%block3dc*                                   &
+      at_op(nmatrixes2)%block_vector(3)%block3dc
+  
+  
+      cc_mat(nmatrixes)%block_matrix2d(4, 9+off2)%block3dc = -                               &
+      mu0*(-ii)*kspace(nmatrixes2)%block_vector(5)%block3dc*                            &
+      at_op(nmatrixes2)%block_vector(3)%block3dc
+  
+  
+  
+      cc_mat(nmatrixes)%block_matrix2d(5, 7+off2)%block3dc = -                               &
+      mu0*(-ii)*kspace(nmatrixes2)%block_vector(8)%block3dc*                            &
+      at_op(nmatrixes2)%block_vector(3)%block3dc
+  
+  
+      cc_mat(nmatrixes)%block_matrix2d(5, 9+off2)%block3dc = - mu0*                          &
+      ii*kspace(nmatrixes2)%block_vector(2)%block3dc*                                   &
+      at_op(nmatrixes2)%block_vector(3)%block3dc
+  
+  
+      cc_mat(nmatrixes)%block_matrix2d(6, 7+off2)%block3dc = - mu0*                          &
+      ii*kspace(nmatrixes2)%block_vector(5)%block3dc*                                   &
+      at_op(nmatrixes2)%block_vector(3)%block3dc
+  
+  
+      cc_mat(nmatrixes)%block_matrix2d(6, 8+off2)%block3dc =                                 &
+      -mu0*(-ii)*kspace(nmatrixes2)%block_vector(2)%block3dc*                           &
+      at_op(nmatrixes2)%block_vector(3)%block3dc
+      
+      !> End contribution of J field to B field
+  
+      !> Contribution of rhoold field to E field
+  
+      !> if current mpi task contains the null frequency then this processor it
+      !> tagged by switch = .TRUE. in order perform Taylor expansion
+      !> for certain blocks
+  
+      switch = .FALSE.
+      !> Spots mpis that contain null frequency to perform Taylor expansion later
+      IF(ABS(kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)) .EQ. 0.0_num) THEN
+        kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1) = (1.0_num, 0.0_num)
+        switch = .TRUE.
+      ENDIF
+      DO i = 1, 3
+        cc_mat(nmatrixes)%block_matrix2d(i, 16_idp)%block3dc = DCMPLX(0.,               &
+        1.)*(at_op(nmatrixes2)%block_vector(2)%block3dc                                 &
+        -1./(clight*dt)*at_op(nmatrixes2)%block_vector(1)%block3dc)                     &
+        /kspace(nmatrixes2)%block_vector(10)%block3dc**2
+  
+        cc_mat(nmatrixes)%block_matrix2d(i, 16_idp)%block3dc =                          &
+        cc_mat(nmatrixes)%block_matrix2d(i, 16_idp)%block3dc                            &
+        *kspace(nmatrixes2)%block_vector(3*i-1)%block3dc
+  
+        !> If current mpi task contains null frequency then performs Taylor
+        !> expansion for cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc(1, 1,
+        !1)
+        IF(switch) THEN
+          cc_mat(nmatrixes)%block_matrix2d(i, 16_idp)%block3dc(1, 1, 1) =               &
+          -1.0_num/3.0_num*(0.0_num, 1.0_num)*(clight*dt)**2
+        ENDIF
+   !     cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc = 1.0_num/eps0             &
+   !     *cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc
+      ENDDO
+      !> End contribution of rhoold field to E field
+    
+      !> Contribution of rho field to E field
+      DO i = 1, 3
+        cc_mat(nmatrixes)%block_matrix2d(i, 17_idp)%block3dc = DCMPLX(0.,               &
+        1.)*(1./(clight*dt)* at_op(nmatrixes2)%block_vector(1)%block3dc -DCMPLX(1.,     &
+        0.))/kspace(nmatrixes2)%block_vector(10)%block3dc**2
+  
+        cc_mat(nmatrixes)%block_matrix2d(i, 17_idp)%block3dc =                          &
+        cc_mat(nmatrixes)%block_matrix2d(i, 17_idp)%block3dc                            &
+        *kspace(nmatrixes2)%block_vector(3*i-1)%block3dc
+  
+        !> If current mpi task contains null frequency then performs Taylor
+        !expansion for cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc(1, 1,
+        !1)
+        IF(switch) THEN
+          cc_mat(nmatrixes)%block_matrix2d(i, 17_idp)%block3dc(1, 1, 1) =               &
+          -1.0_num/6.0_num*(0.0_num, 1.0_num)*(clight*dt)**2
+        ENDIF
+!        cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc = 1.0_num/eps0 *           &
+ !       cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc
+      ENDDO
+      IF(switch) THEN
+        kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)   = DCMPLX(0., 0.)
+      ENDIF
+      !> End contribution of rho field to E field   
+    END SUBROUTINE compute_cc_mat_upml_fields    
+    
 
   ! ______________________________________________________________________________________
   !> @brief
@@ -1491,10 +1687,17 @@ MODULE gpstd_solver
     INTEGER(idp) , dimension(3) :: lbound_r, ubound_r, lbound_p ,ubound_p,lbound_s, ubound_s
 
     IF(absorbing_bcs) THEN 
-       lbound_r = LBOUND(exy_r)
-       lbound_p = LBOUND(exy)
-       ubound_r = UBOUND(exy_r)
-       ubound_p = UBOUND(exy)
+       IF(.NOT. u_pml) THEN 
+         lbound_r = LBOUND(exy_r)
+         lbound_p = LBOUND(exy)
+         ubound_r = UBOUND(exy_r)
+         ubound_p = UBOUND(exy)
+       ELSE IF(u_pml) THEN
+         lbound_r = LBOUND(dex_r)
+         lbound_p = LBOUND(dex)
+         ubound_r = UBOUND(dex_r)
+         ubound_p = UBOUND(dex)
+       ENDIF
        lbound_s = LBOUND(jx)
        ubound_s = UBOUND(jx)
     ELSE
@@ -1535,38 +1738,73 @@ MODULE gpstd_solver
       END DO
       !$OMP END PARALLEL DO
     ELSE IF(absorbing_bcs) THEN
+      IF(u_pml) tHEN
+        !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx, iyy ,izz,ixxx,iyyy,izzz) COLLAPSE(3)
+        DO iz=lbound_r(3),ubound_r(3)
+          DO iy=lbound_r(2),ubound_r(2)
+            DO ix=lbound_r(1),ubound_r(1)
+              ixx = ix - lbound_r(1) +lbound_p(1)
+              iyy = iy - lbound_r(2) +lbound_p(2)
+              izz = iz - lbound_r(3) +lbound_p(3)
+              ixxx = ix - lbound_r(1) +lbound_s(1)
+              iyyy = iy - lbound_r(2) +lbound_s(2)
+              izzz = iz - lbound_r(3) +lbound_s(3)
 
-      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx, iyy , izz, ixxx, iyyy , izzz) COLLAPSE(3)
-      DO iz=lbound_r(3),ubound_r(3)
-        DO iy=lbound_r(2),ubound_r(2)
-          DO ix=lbound_r(1),ubound_r(1)
-            ixx = ix - lbound_r(1) + lbound_p(1)
-            iyy = iy - lbound_r(2) + lbound_p(2)
-            izz = iz - lbound_r(3) + lbound_p(3)
-            ixxx = ix - lbound_r(1) + lbound_s(1)
-            iyyy = iy - lbound_r(2) + lbound_s(2)
-            izzz = iz - lbound_r(3) + lbound_s(3)
-            exy_r(ix, iy, iz)=exy(ixx, iyy, izz)
-            eyx_r(ix, iy, iz)=eyx(ixx, iyy, izz)
-            ezx_r(ix, iy, iz)=ezx(ixx, iyy, izz)
-            bxy_r(ix, iy, iz)=bxy(ixx, iyy, izz)
-            byx_r(ix, iy, iz)=byx(ixx, iyy, izz)
-            bzx_r(ix, iy, iz)=bzx(ixx, iyy, izz)
-            exz_r(ix, iy, iz)=exz(ixx, iyy, izz)
-            eyz_r(ix, iy, iz)=eyz(ixx, iyy, izz)
-            ezy_r(ix, iy, iz)=ezy(ixx, iyy, izz)
-            bxz_r(ix, iy, iz)=bxz(ixx, iyy, izz)
-            byz_r(ix, iy, iz)=byz(ixx, iyy, izz)
-            bzy_r(ix, iy, iz)=bzy(ixx, iyy, izz)
-            jx_r(ix, iy, iz)=jx(ixxx, iyyy, izzz)
-            jy_r(ix, iy, iz)=jy(ixxx, iyyy, izzz)
-            jz_r(ix, iy, iz)=jz(ixxx, iyyy, izzz)
-            rho_r(ix, iy, iz)=rho(ixxx, iyyy, izzz)
-            rhoold_r(ix, iy, iz)=rhoold(ixxx, iyyy, izzz)
+              ex_r(ix, iy, iz)=ex(ixx, iyy, izz)
+              ey_r(ix, iy, iz)=ey(ixx, iyy, izz)
+              ez_r(ix, iy, iz)=ez(ixx, iyy, izz)
+              bx_r(ix, iy, iz)=bx(ixx, iyy, izz)
+              by_r(ix, iy, iz)=by(ixx, iyy, izz)
+              bz_r(ix, iy, iz)=bz(ixx, iyy, izz)
+
+              dex_r(ix, iy, iz)=dex(ixx, iyy, izz)
+              dey_r(ix, iy, iz)=dey(ixx, iyy, izz)
+              dez_r(ix, iy, iz)=dez(ixx, iyy, izz)
+              hx_r(ix, iy, iz)=hx(ixx, iyy, izz)
+              hy_r(ix, iy, iz)=hy(ixx, iyy, izz)
+              hz_r(ix, iy, iz)=hz(ixx, iyy, izz)
+              jx_r(ix, iy, iz)=jx(ixxx, iyyy, izzz)
+              jy_r(ix, iy, iz)=jy(ixxx, iyyy, izzz)
+              jz_r(ix, iy, iz)=jz(ixxx, iyyy, izzz)
+              rho_r(ix, iy, iz)=rho(ixxx, iyyy, izzz)
+              rhoold_r(ix, iy, iz)=rhoold(ixxx, iyyy, izzz)
+            END DO
           END DO
         END DO
-      END DO
-      !$OMP END PARALLEL DO  
+        !$OMP END PARALLEL DO
+      ELSE IF(.NOT. u_pml) THEN
+        !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx, iyy , izz, ixxx, iyyy , izzz) COLLAPSE(3)
+        DO iz=lbound_r(3),ubound_r(3)
+          DO iy=lbound_r(2),ubound_r(2)
+            DO ix=lbound_r(1),ubound_r(1)
+              ixx = ix - lbound_r(1) + lbound_p(1)
+              iyy = iy - lbound_r(2) + lbound_p(2)
+              izz = iz - lbound_r(3) + lbound_p(3)
+              ixxx = ix - lbound_r(1) + lbound_s(1)
+              iyyy = iy - lbound_r(2) + lbound_s(2)
+              izzz = iz - lbound_r(3) + lbound_s(3)
+              exy_r(ix, iy, iz)=exy(ixx, iyy, izz)
+              eyx_r(ix, iy, iz)=eyx(ixx, iyy, izz)
+              ezx_r(ix, iy, iz)=ezx(ixx, iyy, izz)
+              bxy_r(ix, iy, iz)=bxy(ixx, iyy, izz)
+              byx_r(ix, iy, iz)=byx(ixx, iyy, izz)
+              bzx_r(ix, iy, iz)=bzx(ixx, iyy, izz)
+              exz_r(ix, iy, iz)=exz(ixx, iyy, izz)
+              eyz_r(ix, iy, iz)=eyz(ixx, iyy, izz)
+              ezy_r(ix, iy, iz)=ezy(ixx, iyy, izz)
+              bxz_r(ix, iy, iz)=bxz(ixx, iyy, izz)
+              byz_r(ix, iy, iz)=byz(ixx, iyy, izz)
+              bzy_r(ix, iy, iz)=bzy(ixx, iyy, izz)
+              jx_r(ix, iy, iz)=jx(ixxx, iyyy, izzz)
+              jy_r(ix, iy, iz)=jy(ixxx, iyyy, izzz)
+              jz_r(ix, iy, iz)=jz(ixxx, iyyy, izzz)
+              rho_r(ix, iy, iz)=rho(ixxx, iyyy, izzz)
+              rhoold_r(ix, iy, iz)=rhoold(ixxx, iyyy, izzz)
+            END DO
+          END DO
+        END DO
+        !$OMP END PARALLEL DO
+      ENDIF      
     ENDIF
   END SUBROUTINE copy_field_forward
 
@@ -1580,17 +1818,23 @@ MODULE gpstd_solver
     INTEGER(idp) , dimension(3) :: lbound_r, ubound_r, lbound_p ,ubound_p
 
     IF(absorbing_bcs) THEN
-       lbound_r = LBOUND(exy_r)
-       lbound_p = LBOUND(exy)
-       ubound_r = UBOUND(exy_r)
-       ubound_p = UBOUND(exy)
+      IF(.NOT. u_pml) THEN
+        lbound_r = LBOUND(exy_r)
+        lbound_p = LBOUND(exy)
+        ubound_r = UBOUND(exy_r)
+        ubound_p = UBOUND(exy)
+       ELSE IF(u_pml) THEN
+        lbound_r = LBOUND(dex_r)
+        lbound_p = LBOUND(dex)
+        ubound_r = UBOUND(dex_r)
+        ubound_p = UBOUND(dex)
+       ENDIF
     ELSE
-       lbound_r = LBOUND(ex_r)
-       lbound_p = LBOUND(ex)
-       ubound_r = UBOUND(ex_r)
-       ubound_p = UBOUND(ex)
+      lbound_r = LBOUND(ex_r)
+      lbound_p = LBOUND(ex)
+      ubound_r = UBOUND(ex_r)
+      ubound_p = UBOUND(ex)
     ENDIF
-
     ! When using periodic bcs, standard EM fields are communicated 
     ! Else, when using absorbing bcs, splitted EM fields are communicated 
     IF(.NOT. absorbing_bcs) THEN
@@ -1612,29 +1856,49 @@ MODULE gpstd_solver
       END DO
       !$OMP END PARALLEL DO
     ELSE IF(absorbing_bcs) THEN
-      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx, iyy , izz) COLLAPSE(3)
-      DO iz=lbound_r(3),ubound_r(3)
-        DO iy=lbound_r(2),ubound_r(2)
-          DO ix=lbound_r(1),ubound_r(1)
-            ixx = ix - lbound_r(1) +lbound_p(1)
-            iyy = iy - lbound_r(2) +lbound_p(2)
-            izz = iz - lbound_r(3) +lbound_p(3)
-            exy(ixx, iyy, izz)=exy_r(ix, iy, iz)
-            eyx(ixx, iyy, izz)=eyx_r(ix, iy, iz)
-            ezx(ixx, iyy, izz)=ezx_r(ix, iy, iz)
-            bxy(ixx, iyy, izz)=bxy_r(ix, iy, iz)
-            byx(ixx, iyy, izz)=byx_r(ix, iy, iz)
-            bzx(ixx, iyy, izz)=bzx_r(ix, iy, iz)
-            exz(ixx, iyy, izz)=exz_r(ix, iy, iz)
-            eyz(ixx, iyy, izz)=eyz_r(ix, iy, iz)
-            ezy(ixx, iyy, izz)=ezy_r(ix, iy, iz)
-            bxz(ixx, iyy, izz)=bxz_r(ix, iy, iz)
-            byz(ixx, iyy, izz)=byz_r(ix, iy, iz)
-            bzy(ixx, iyy, izz)=bzy_r(ix, iy, iz)
+      IF(.NOT. u_pml) THEN
+        !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx, iyy , izz) COLLAPSE(3)
+        DO iz=lbound_r(3),ubound_r(3)
+          DO iy=lbound_r(2),ubound_r(2)
+            DO ix=lbound_r(1),ubound_r(1)
+              ixx = ix - lbound_r(1) +lbound_p(1)
+              iyy = iy - lbound_r(2) +lbound_p(2)
+              izz = iz - lbound_r(3) +lbound_p(3)
+              exy(ixx, iyy, izz)=exy_r(ix, iy, iz)
+              eyx(ixx, iyy, izz)=eyx_r(ix, iy, iz)
+              ezx(ixx, iyy, izz)=ezx_r(ix, iy, iz)
+              bxy(ixx, iyy, izz)=bxy_r(ix, iy, iz)
+              byx(ixx, iyy, izz)=byx_r(ix, iy, iz)
+              bzx(ixx, iyy, izz)=bzx_r(ix, iy, iz)
+              exz(ixx, iyy, izz)=exz_r(ix, iy, iz)
+              eyz(ixx, iyy, izz)=eyz_r(ix, iy, iz)
+              ezy(ixx, iyy, izz)=ezy_r(ix, iy, iz)
+              bxz(ixx, iyy, izz)=bxz_r(ix, iy, iz)
+              byz(ixx, iyy, izz)=byz_r(ix, iy, iz)
+              bzy(ixx, iyy, izz)=bzy_r(ix, iy, iz)
+            END DO
           END DO
         END DO
-      END DO
-      !$OMP END PARALLEL DO
+        !$OMP END PARALLEL DO
+      ELSE IF(u_pml) THEN
+        !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx, iyy , izz) COLLAPSE(3)
+        DO iz=lbound_r(3),ubound_r(3)
+          DO iy=lbound_r(2),ubound_r(2)
+            DO ix=lbound_r(1),ubound_r(1)
+              ixx = ix - lbound_r(1) +lbound_p(1)
+              iyy = iy - lbound_r(2) +lbound_p(2)
+              izz = iz - lbound_r(3) +lbound_p(3)
+              dex(ixx, iyy, izz)=dex_r(ix, iy, iz)
+              dey(ixx, iyy, izz)=dey_r(ix, iy, iz)
+              dez(ixx, iyy, izz)=dez_r(ix, iy, iz)
+              bx(ixx, iyy, izz)=bx_r(ix, iy, iz)
+              by(ixx, iyy, izz)=by_r(ix, iy, iz)
+              bz(ixx, iyy, izz)=bz_r(ix, iy, iz)
+            END DO
+          END DO
+        END DO
+        !$OMP END PARALLEL DO
+      ENDIF
     ENDIF
   END SUBROUTINE copy_field_backward
 

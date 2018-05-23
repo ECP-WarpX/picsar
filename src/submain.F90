@@ -147,17 +147,26 @@ SUBROUTINE step(nst)
       IF (l_spectral) THEN
 
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
-    !    IF (absorbing_bcs) THEN
-    !      CALL field_damping_bcs()
-    !    ENDIF
+        IF(absorbing_bcs .AND. u_pml) THEN
+          dexold = dex
+          deyold = dey
+          dezold = dez 
+          bxold = bx
+          byold = by 
+          bzold = bz 
+        ENDIF
         CALL push_psatd_ebfield
         !IF (rank .EQ. 0) PRINT *, "#0"
         !!! --- Boundary conditions for E AND B
         CALL efield_bcs
         CALL bfield_bcs
         IF(absorbing_bcs) THEN
-          CALL field_damping_bcs()
-          CALL merge_fields()
+          IF(.NOT.  u_pml) THEN
+            CALL field_damping_bcs()
+            CALL merge_fields()
+          ELSE IF( u_pml) THEN
+            CALL field_damping_bcs()
+          ENDIF
         ENDIF
       ELSE
 #endif
@@ -205,7 +214,7 @@ SUBROUTINE step(nst)
     ! ___________________________________________
     ! Loop in 2D
   ELSE IF (c_dim.eq.2) THEN
-!CALL init_gaussian_pulse_2d()
+CALL init_gaussian_pulse_2d()
     DO i=1, nst
       IF (rank .EQ. 0) startit=MPI_WTIME()
 
@@ -227,8 +236,8 @@ SUBROUTINE step(nst)
 
       !!! --- Boundary conditions for currents
       CALL current_bcs
-CALL harris_pulse(dt*i,pi/4._num,25_idp)
-
+!CALL harris_pulse(dt*i,pi/4._num,25_idp)
+!ey= dey
 #if defined(FFTW)
         IF (l_spectral) THEN
           CALL  copy_field(rhoold, nx+2*nxguards+1, ny+2*nyguards+1,      &
@@ -242,33 +251,42 @@ CALL harris_pulse(dt*i,pi/4._num,25_idp)
 #if defined(FFTW)
       IF (l_spectral) THEN
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
-    !    IF (absorbing_bcs) THEN
-    !      CALL field_damping_bcs()
-    !    ENDIF
+        IF(absorbing_bcs .AND. u_pml) THEN
+          dexold = dex
+          deyold = dey
+          dezold = dez
+          bxold = bx
+          byold = by
+          bzold = bz
+        ENDIF
         CALL push_psatd_ebfield
         !IF (rank .EQ. 0) PRINT *, "#0"
         !!! --- Boundary conditions for E AND B
         CALL efield_bcs
         CALL bfield_bcs
-        IF (absorbing_bcs) THEN
-          CALL field_damping_bcs()
-          CALL merge_fields()
+        IF (absorbing_bcs ) THEN
+          IF(.NOT.  u_pml) THEN
+            CALL field_damping_bcs()
+            CALL merge_fields()
+          ELSE IF( u_pml) THEN
+            CALL field_damping_bcs()
+          ENDIF
         ENDIF
+!If(u_pml) THEN
+!  ex=dex/eps0
+!  ey=dey/eps0
+!  ez=dez/eps0
+!  hx=bx/mu0
+!  hy=by/mu0
+!  hz=bz/mu0
+!Endif
       ELSE
 #endif
 
-     CALL push_efield_2d
-     IF(absorbing_bcs) THEN
-  !     IF(.NOT. u_pml ) CALL damp_e_field()
-     ENDIF
-     CALL efield_bcs
      CALL push_bfield_2d
-     IF(absorbing_bcs) THEN
- !      IF(.NOT. u_pml )  CALL damp_b_field()
-     ENDIF
-
-
-     CALL bfield_bcs()
+     CALL bfield_bcs
+     CALL push_efield_2d
+     CALL efield_bcs()
 
 
   !     !IF (rank .EQ. 0) PRINT *, "#6"
@@ -316,7 +334,6 @@ CALL harris_pulse(dt*i,pi/4._num,25_idp)
       timeit=MPI_WTIME()
 
       CALL time_statistics_per_iteration
-
       IF (rank .EQ. 0)  THEN
         WRITE(0, *) 'it = ', it, ' || time = ', it*dt, " || push/part (ns)= ",        &
         pushtime*1e9_num/MAX(ntot,1), " || tot/part (ns)= ", (timeit-startit)*1e9_num/MAX(ntot,1)
@@ -402,10 +419,15 @@ SUBROUTINE init_pml_arrays
   sigma_x_e = 0.0_num
   ALLOCATE(sigma_x_b(-nxguards:nx_global+nxguards-1));
   sigma_x_b = 0.0_num
+  IF(c_dim == 3) THEN
   ALLOCATE(sigma_y_e(-nyguards:ny_global+nyguards-1));
   sigma_y_e = 0.0_num
   ALLOCATE(sigma_y_b(-nyguards:ny_global+nyguards-1));
-  sigma_y_b = 0.0_num
+    sigma_y_b = 0.0_num 
+  ELSE IF(c_dim ==2) THEN
+    ALLOCATE(sigma_y_e(0:0))
+    ALLOCATE(sigma_y_b(0:0))
+  ENDIf
   ALLOCATE(sigma_z_e(-nzguards:nz_global+nzguards-1));
   sigma_z_e = 0.0_num
   ALLOCATE(sigma_z_b(-nzguards:nz_global+nzguards-1));
@@ -507,64 +529,76 @@ SUBROUTINE init_pml_arrays
     sigma_z_b = .5_num * sigma_z_b
   ENDIF
  
-  IF(absorbing_bcs_x) THEN 
-    IF(l_spectral) THEN
-      sigma_x_e = EXP(-sigma_x_e*dt)
-      sigma_x_b = EXP(-sigma_x_b*dt)
-    ENDIF
+  IF(.NOT. absorbing_bcs_x) THEN 
+    sigma_x_e = .0_num
+    sigma_x_b = .0_num
+  ENDIF
+  IF(.NOT. absorbing_bcs_y ) THEN
+    sigma_y_e = .0_num
+    sigma_y_b = .0_num
+  ENDIF
+  IF(.NOT. absorbing_bcs_z  ) THEN
+    sigma_z_e = .0_num
+    sigma_z_b = .0_num
+  ENDIF
+  
+  ALLOCATE(a_x_e(-nxguards:nx+nxguards-1))
+  ALLOCATE(a_x_b(-nxguards:nx+nxguards-1))
+  ALLOCATE(a_z_e(-nzguards:nz+nzguards-1))
+  ALLOCATE(a_z_b(-nzguards:nz+nzguards-1))
+  IF(c_dim == 3) THEN 
+    ALLOCATE(a_y_e(-nzguards:ny+nyguards-1))
+    ALLOCATE(a_y_b(-nzguards:ny+nyguards-1))
   ELSE 
-    IF(l_spectral ) THEN
-      sigma_x_e = 1.0_num
-      sigma_x_b = 1.0_num
-    ELSE
-      sigma_x_e = .0_num
-      sigma_x_b = .0_num
-    ENDIF
+    ALLOCATE(a_y_e(0:0))
+    ALLOCATE(a_y_b(0:0))
   ENDIF
-  IF(absorbing_bcs_y) THEN
-    IF(l_spectral ) THEN
-      sigma_y_e = EXP(-sigma_y_e*dt)
-      sigma_y_b = EXP(-sigma_y_b*dt)
+  a_x_e = EXP(-sigma_x_e*dt)
+  a_y_e = EXP(-sigma_y_e*dt)
+  a_z_e = EXP(-sigma_z_e*dt)
+
+  a_x_b = EXP(-sigma_x_b*dt)
+  a_y_b = EXP(-sigma_y_b*dt)
+  a_z_b = EXP(-sigma_z_b*dt)
+
+
+
+  IF(u_pml) THEN
+    ALLOCATE(b_x_e(-nxguards:nx+nxguards-1))
+    ALLOCATE(b_x_b(-nxguards:nx+nxguards-1))
+    ALLOCATE(b_z_e(-nzguards:nz+nzguards-1))
+    ALLOCATE(b_z_b(-nzguards:nz+nzguards-1))
+    IF(c_dim == 3) THEN 
+      ALLOCATE(b_y_e(-nzguards:ny+nyguards-1))
+      ALLOCATE(b_y_b(-nzguards:ny+nyguards-1))
+    ELSE 
+      ALLOCATE(b_y_e(0:0))
+      ALLOCATE(b_y_b(0:0))
     ENDIF
-  ELSE
-    IF(l_spectral ) THEN
-      sigma_y_e = 1.0_num
-      sigma_y_b = 1.0_num
-    ELSE
-      sigma_y_e = .0_num
-      sigma_y_b = .0_num
-    ENDIF
-  ENDIF  
-  IF(absorbing_bcs_z  ) THEN
-    IF( l_spectral ) THEN
-      sigma_z_e = EXP(-sigma_z_e*dt)
-      sigma_z_b = EXP(-sigma_z_b*dt)
-    ENDIF
-  ELSE 
-    IF(l_spectral  ) THEN
-      sigma_z_e = 1.0_num
-      sigma_z_b = 1.0_num
-    ELSE
-      sigma_z_e = .0_num
-      sigma_z_b = .0_num
-    ENDIF
+    b_x_e = (1.0_num - a_x_e)/(sigma_x_e*dt)
+    b_y_e = (1.0_num - a_y_e)/(sigma_y_e*dt)
+    b_z_e = (1.0_num - a_z_e)/(sigma_z_e*dt)
+    b_x_b = (1.0_num - a_x_b)/(sigma_x_b*dt)
+    b_y_b = (1.0_num - a_y_b)/(sigma_y_b*dt)
+    b_z_b = (1.0_num - a_z_b)/(sigma_z_b*dt)
+    WHERE(sigma_x_e == 0.0_num) b_x_e = 1.0_num
+    WHERE(sigma_x_b == 0.0_num) b_x_b = 1.0_num
+    
+    WHERE(sigma_y_e == 0.0_num) b_y_e = 1.0_num
+    WHERE(sigma_y_b == 0.0_num) b_y_b = 1.0_num
+
+    WHERE(sigma_z_e == 0.0_num) b_z_e = 1.0_num
+    WHERE(sigma_z_b == 0.0_num) b_z_b = 1.0_num
   ENDIF
-  !sigma_z_e = 0
-  !sigma_x_e = 0
-  !sigma_y_e = 0
-  !sigma_z_b = 0
-  !sigma_y_b = 0
-  !sigma_x_b = 0
-  IF(l_spectral .EQV. .FALSE.) THEN
-    IF(.NOT. u_pml) THEN
-!      sigma_x_e = sigma_x_e**2
-!      sigma_y_e = sigma_y_e**2
-!      sigma_z_e = sigma_z_e**2
-    ENDIF
-  ENDIF
-!do ix=-nxguards,nx+nxguards-1
-!print*,log(sigma_x_e(ix)),log(sigma_x_b(ix)),ix
-!enddo
+   
+
+!sigma_x_e=0.0
+!sigma_y_e=0.0
+!sigma_z_e=0.0
+!sigma_x_b=0.0
+!sigma_y_b=0.0
+!sigma_z_b=0.0
+
 END SUBROUTINE init_pml_arrays
 
 ! ________________________________________________________________________________________
@@ -1114,12 +1148,14 @@ integer(idp) :: ix, iy, iz
 iy=0
 do ix = 0,nx-1
 do iz=0,nz-1
-ez(ix,iy,iz) = 1.e6*exp(-((ix-nx/2)/10.)**2)*exp(-((iz-nz/2)/10**7.)**2)
-dez(ix,iy,iz) =eps0*ex(ix,iy,iz)
-enddo
-enddo
+ey(ix,iy,iz) = 1.e6*exp(-((ix-nx/2)/10.)**2)*exp(-((iz-nz/2)/10.)**2)
 
-end subroutine  
+!dez(ix,iy,iz) =eps0*ex(ix,iy,iz)
+enddo
+enddo
+if(u_pml) dey=eps0*ey
+if(absorbing_bcs .AND. .NOT. u_pml) eyx=ey
+end subroutine  init_gaussian_pulse_2d
 
 
 subroutine  harris_pulse(t,thetaa,n)
@@ -1144,7 +1180,7 @@ endif
 arg=arg/mu0/dt/clight**2
 lambda = L/n/cos(thetaa)
 k=2*pi/lambda
-print*,"lamn",lambda/dx
+!print*,"lamn",lambda/dx
 freq = clight/lambda/cos(thetaa)
 kx = k*cos(thetaa)
 kz=k*sin(thetaa)
@@ -1155,35 +1191,89 @@ w_num = asin(sqrt(w_num))
 w_num = w_num *2._num/dt
 w_num  = w_num/cos(thetaa)
 do i = -nzguards,nz+nzguards
-jy(nx/2,0,i ) =sin(w_num*t +  k*dz *i*sin(thetaa)+k*dx*cos(thetaa))*arg
+jy(nz/2,0,i) =sin(w_num*t +  k*dz *i*sin(thetaa)+k*dx*cos(thetaa))*arg/mu0
 
 enddo
-CALL field_bc(jy, nxguards, nyguards, nzguards, nx, ny, nz)
 
-if(abs(max(it-10,1)*dt-t_harris) .LE. dt ) then
-ey(nx/2+1:nx+nxguards,:,:)=0.0_num
-bz(nx/2+1:nx+nxguards,:,:)=0.0_num
-bx(nx/2+1:nx+nxguards,:,:)=0.0_num
-if(l_spectral) THEN
-eyz(nx/2+1:nx+nxguards,:,:)=0.0_num
-eyx(nx/2+1:nx+nxguards,:,:)=0.0_num
-bzx(nx/2+1:nx+nxguards,:,:)=0.0_num
-bzy(nx/2+1:nx+nxguards,:,:)=0.0_num
-bxz(nx/2+1:nx+nxguards,:,:)=0.0_num
-bxy(nx/2+1:nx+nxguards,:,:)=0.0_num
-endif
-if(u_pml) then
-dey(nx/2+1:nx+nxguards,:,:)=0.0_num
-hz(nx/2+1:nx+nxguards,:,:)=0.0_num
-hx(nx/2+1:nx+nxguards,:,:)=0.0_num
-endif
-if(.NOT. u_pml) THEN
-eyx(nx/2+1:nx+nxguards,:,:)=0.0_num
-eyz(nx/2+1:nx+nxguards,:,:)=0.0_num
-byx(nx/2+1:nx+nxguards,:,:)=0.0_num
-byz(nx/2+1:nx+nxguards,:,:)=0.0_num
-endif
-endif
+!if(abs(max(it-10,1)*dt-t_harris) .LE. dt ) then
+!ey(:,:,nz/2+1:nz+nzguards)=0.0_num
+!bz(:,:,nz/2+1:nz+nzguards)=0.0_num
+!bx(:,:,nz/2+1:nz+nzguards)=0.0_num
+!if(l_spectral) THEN
+!eyz(:,:,nz/2+1:nz+nzguards)=0.0_num
+!eyx(:,:,nz/2+1:nz+nzguards)=0.0_num
+!bzx(:,:,nz/2+1:nz+nzguards)=0.0_num
+!bzy(:,:,nz/2+1:nz+nzguards)=0.0_num
+!bxz(:,:,nz/2+1:nz+nzguards)=0.0_num
+!bxy(:,:,nz/2+1:nz+nzguards)=0.0_num
+!endif
+!if(u_pml) then
+!dey(:,:,nz/2+1:nz+nzguards)=0.0_num
+!hz(:,:,nz/2+1:nz+nzguards)=0.0_num
+!hx(:,:,nz/2+1:nz+nzguards)=0.0_num
+!endif
+!if(.NOT. u_pml) THEN
+!eyx(:,:,nz/2+1:nz+nzguards)=0.0_num
+!eyz(:,:,nz/2+1:nz+nzguards)=0.0_num
+!byx(:,:,nz/2+1:nz+nzguards)=0.0_num
+!byz(:,:,nz/2+1:nz+nzguards)=0.0_num
+!endif
+!endif
+
+!CALL field_bc(byx, nxguards, nyguards, nzguards, nx, ny, nz)
+
+!if(abs(max(it-10,1)*dt-t_harris) .LE. dt ) then
+!by(nx/2+1:nx+nxguards,:,:)=0.0_num
+!ez(nx/2+1:nx+nxguards,:,:)=0.0_num
+!ex(nx/2+1:nx+nxguards,:,:)=0.0_num
+!if(l_spectral) THEN
+!byz(nx/2+1:nx+nxguards,:,:)=0.0_num
+!byx(nx/2+1:nx+nxguards,:,:)=0.0_num
+!ezx(nx/2+1:nx+nxguards,:,:)=0.0_num
+!ezy(nx/2+1:nx+nxguards,:,:)=0.0_num
+!exz(nx/2+1:nx+nxguards,:,:)=0.0_num
+!exy(nx/2+1:nx+nxguards,:,:)=0.0_num
+!endif
+!if(u_pml) then
+!hy(nx/2+1:nx+nxguards,:,:)=0.0_num
+!dez(nx/2+1:nx+nxguards,:,:)=0.0_num
+!dex(nx/2+1:nx+nxguards,:,:)=0.0_num
+!endif
+!if(.NOT. u_pml) THEN
+!byx(nx/2+1:nx+nxguards,:,:)=0.0_num
+!byz(nx/2+1:nx+nxguards,:,:)=0.0_num
+!eyx(nx/2+1:nx+nxguards,:,:)=0.0_num
+!eyz(nx/2+1:nx+nxguards,:,:)=0.0_num
+!endif
+!endif
+
+
+
+
+!if(abs(max(it-10,1)*dt-t_harris) .LE. dt ) then
+!ey(nx/2+1:nx+nxguards,:,:)=0.0_num
+!bz(nx/2+1:nx+nxguards,:,:)=0.0_num
+!bx(nx/2+1:nx+nxguards,:,:)=0.0_num
+!if(l_spectral) THEN
+!eyz(nx/2+1:nx+nxguards,:,:)=0.0_num
+!eyx(nx/2+1:nx+nxguards,:,:)=0.0_num
+!bzx(nx/2+1:nx+nxguards,:,:)=0.0_num
+!bzy(nx/2+1:nx+nxguards,:,:)=0.0_num
+!bxz(nx/2+1:nx+nxguards,:,:)=0.0_num
+!bxy(nx/2+1:nx+nxguards,:,:)=0.0_num
+!endif
+!if(u_pml) then
+!dey(nx/2+1:nx+nxguards,:,:)=0.0_num
+!hz(nx/2+1:nx+nxguards,:,:)=0.0_num
+!hx(nx/2+1:nx+nxguards,:,:)=0.0_num
+!endif
+!if(.NOT. u_pml) THEN
+!eyx(nx/2+1:nx+nxguards,:,:)=0.0_num
+!eyz(nx/2+1:nx+nxguards,:,:)=0.0_num
+!byx(nx/2+1:nx+nxguards,:,:)=0.0_num
+!byz(nx/2+1:nx+nxguards,:,:)=0.0_num
+!endif
+!endif
 
 end subroutine
 

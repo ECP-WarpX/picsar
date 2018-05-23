@@ -536,6 +536,16 @@ MODULE field_boundary
     nyy = local_ny
     nzz = local_nz
     IF(mpicom_curr == 1) THEN
+        CALL sendrecv_l2g_generalized(jx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        jx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(jy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        jy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(jz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        jz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(rho,nx,nxguards,ny,nyguards,nz,nzguards,         &
+        rho_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(rhoold,nx,nxguards,ny,nyguards,nz,nzguards,      &
+        rhoold_r,nxx,nyy,nzz)
       IF(.NOT. absorbing_bcs) THEN
 
         !> When using period bcs for fields, standard EM equations are solved
@@ -553,63 +563,67 @@ MODULE field_boundary
         by_r,nxx,nyy,nzz)
         CALL sendrecv_l2g_generalized(bz,nx,nxguards,ny,nyguards,nz,nzguards,          &
         bz_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized(jx,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        jx_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized(jy,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        jy_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized(jz,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        jz_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized(rho,nx,nxguards,ny,nyguards,nz,nzguards,         &
-        rho_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized(rhoold,nx,nxguards,ny,nyguards,nz,nzguards,      &
-        rhoold_r,nxx,nyy,nzz)
       ELSE IF (absorbing_bcs) THEN
 
         !> When using absorbing bcs for fields,splitted fields EM equations are
         !solved
         !> Splitted EM fields are exchanged between hybrid and local fields
-
-        CALL sendrecv_l2g_generalized(exy,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        exy_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized(eyx,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        eyx_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized(ezx,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        ezx_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized(bxy,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        bxy_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized(byx,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        byx_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized(bzx,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        bzx_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized(exz,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        exz_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized(eyz,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        eyz_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized(ezy,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        ezy_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized(bxz,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        bxz_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized(byz,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        byz_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized(bzy,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        bzy_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized(jx,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        jx_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized(jy,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        jy_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized(jz,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        jz_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized(rho,nx,nxguards,ny,nyguards,nz,nzguards,         &
-        rho_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized(rhoold,nx,nxguards,ny,nyguards,nz,nzguards,      &
-        rhoold_r,nxx,nyy,nzz)
+        IF(.NOT. u_pml) THEN
+          CALL sendrecv_l2g_generalized(exy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          exy_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized(eyx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          eyx_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized(ezx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          ezx_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized(bxy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          bxy_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized(byx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          byx_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized(bzx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          bzx_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized(exz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          exz_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized(eyz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          eyz_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized(ezy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          ezy_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized(bxz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          bxz_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized(byz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          byz_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized(bzy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          bzy_r,nxx,nyy,nzz)
+        ELSE IF(u_pml) THEN
+          CALL sendrecv_l2g_generalized(dex,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          dex_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized(dey,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          dey_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized(dez,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          dez_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized(hx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          hx_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized(hy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          hy_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized(hz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          hz_r,nxx,nyy,nzz)
+        ENDIF
       ENDIF
     ELSE 
+      CALL sendrecv_l2g_generalized_non_blocking(jx,nx,nxguards,ny,nyguards,nz,      &
+      nzguards,jx_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized_non_blocking(jy,nx,nxguards,ny,nyguards,nz,      &
+      nzguards,jy_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized_non_blocking(jz,nx,nxguards,ny,nyguards,nz,      &
+      nzguards,jz_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized_non_blocking(rho,nx,nxguards,ny,nyguards,nz,     &
+      nzguards,rho_r,nxx,nyy,nzz)
+      CALL sendrecv_l2g_generalized_non_blocking(rhoold,nx,nxguards,ny,nyguards,nz,  &
+      nzguards,rhoold_r,nxx,nyy,nzz)
+
       IF(.NOT. absorbing_bcs) THEN
 
         !> When using period bcs for fields, standard EM equations are solved
         !> Standard EM fields are exchanged between hybrid and local fields
-
         CALL sendrecv_l2g_generalized_non_blocking(ex,nx,nxguards,ny,nyguards,nz,      &
         nzguards,ex_r,nxx,nyy,nzz)
         CALL sendrecv_l2g_generalized_non_blocking(ey,nx,nxguards,ny,nyguards,nz,      &
@@ -622,55 +636,48 @@ MODULE field_boundary
         nzguards,by_r,nxx,nyy,nzz)
         CALL sendrecv_l2g_generalized_non_blocking(bz,nx,nxguards,ny,nyguards,nz,      &
         nzguards,bz_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized_non_blocking(jx,nx,nxguards,ny,nyguards,nz,      &
-        nzguards,jx_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized_non_blocking(jy,nx,nxguards,ny,nyguards,nz,      &
-        nzguards,jy_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized_non_blocking(jz,nx,nxguards,ny,nyguards,nz,      &
-        nzguards,jz_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized_non_blocking(rho,nx,nxguards,ny,nyguards,nz,     &
-        nzguards,rho_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized_non_blocking(rhoold,nx,nxguards,ny,nyguards,nz,  &
-        nzguards,rhoold_r,nxx,nyy,nzz)
       ELSE IF (absorbing_bcs) THEN
-
-        !> When using absorbing bcs for fields,splitted fields EM equations are solved
-        !> Splitted EM fields are exchanged between hybrid and local fields
-
-        CALL sendrecv_l2g_generalized_non_blocking(exy,nx,nxguards,ny,nyguards,nz,      &
-        nzguards,exy_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized_non_blocking(eyx,nx,nxguards,ny,nyguards,nz,      &
-        nzguards,eyx_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized_non_blocking(ezx,nx,nxguards,ny,nyguards,nz,      &
-        nzguards,ezx_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized_non_blocking(bxy,nx,nxguards,ny,nyguards,nz,      &
-        nzguards,bxy_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized_non_blocking(byx,nx,nxguards,ny,nyguards,nz,      &
-        nzguards,byx_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized_non_blocking(bzx,nx,nxguards,ny,nyguards,nz,      &
-        nzguards,bzx_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized_non_blocking(exz,nx,nxguards,ny,nyguards,nz,      &
-        nzguards,exz_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized_non_blocking(eyz,nx,nxguards,ny,nyguards,nz,      &
-        nzguards,eyz_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized_non_blocking(ezy,nx,nxguards,ny,nyguards,nz,      &
-        nzguards,ezy_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized_non_blocking(bxz,nx,nxguards,ny,nyguards,nz,      &
-        nzguards,bxz_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized_non_blocking(byz,nx,nxguards,ny,nyguards,nz,      &
-        nzguards,byz_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized_non_blocking(bzy,nx,nxguards,ny,nyguards,nz,      &
-        nzguards,bzy_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized_non_blocking(jx,nx,nxguards,ny,nyguards,nz,      &
-        nzguards,jx_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized_non_blocking(jy,nx,nxguards,ny,nyguards,nz,      &
-        nzguards,jy_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized_non_blocking(jz,nx,nxguards,ny,nyguards,nz,      &
-        nzguards,jz_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized_non_blocking(rho,nx,nxguards,ny,nyguards,nz,     &
-        nzguards,rho_r,nxx,nyy,nzz)
-        CALL sendrecv_l2g_generalized_non_blocking(rhoold,nx,nxguards,ny,nyguards,nz,  &
-        nzguards,rhoold_r,nxx,nyy,nzz)
+        IF(.NOT. u_pml) THEN
+          !> When using absorbing bcs for fields,splitted fields EM equations are solved
+          !> Splitted EM fields are exchanged between hybrid and local fields
+          CALL sendrecv_l2g_generalized_non_blocking(exy,nx,nxguards,ny,nyguards,nz,      &
+          nzguards,exy_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized_non_blocking(eyx,nx,nxguards,ny,nyguards,nz,      &
+          nzguards,eyx_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized_non_blocking(ezx,nx,nxguards,ny,nyguards,nz,      &
+          nzguards,ezx_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized_non_blocking(bxy,nx,nxguards,ny,nyguards,nz,      &
+          nzguards,bxy_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized_non_blocking(byx,nx,nxguards,ny,nyguards,nz,      &
+          nzguards,byx_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized_non_blocking(bzx,nx,nxguards,ny,nyguards,nz,      &
+          nzguards,bzx_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized_non_blocking(exz,nx,nxguards,ny,nyguards,nz,      &
+          nzguards,exz_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized_non_blocking(eyz,nx,nxguards,ny,nyguards,nz,      &
+          nzguards,eyz_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized_non_blocking(ezy,nx,nxguards,ny,nyguards,nz,      &
+          nzguards,ezy_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized_non_blocking(bxz,nx,nxguards,ny,nyguards,nz,      &
+          nzguards,bxz_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized_non_blocking(byz,nx,nxguards,ny,nyguards,nz,      &
+          nzguards,byz_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized_non_blocking(bzy,nx,nxguards,ny,nyguards,nz,      &
+          nzguards,bzy_r,nxx,nyy,nzz)
+        ELSE IF(u_pml) THEN 
+          CALL sendrecv_l2g_generalized_non_blocking(dex,nx,nxguards,ny,nyguards,nz,      &
+          nzguards,dex_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized_non_blocking(dey,nx,nxguards,ny,nyguards,nz,      &
+          nzguards,dey_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized_non_blocking(dez,nx,nxguards,ny,nyguards,nz,      &
+          nzguards,dez_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized_non_blocking(hx,nx,nxguards,ny,nyguards,nz,      &
+          nzguards,hx_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized_non_blocking(hy,nx,nxguards,ny,nyguards,nz,      &
+          nzguards,hy_r,nxx,nyy,nzz)
+          CALL sendrecv_l2g_generalized_non_blocking(hz,nx,nxguards,ny,nyguards,nz,      &
+          nzguards,hz_r,nxx,nyy,nzz)
+        ENDIF
       ENDIF
 
     ENDIF
@@ -859,31 +866,45 @@ MODULE field_boundary
         !> When using absorbing bcs for fields,splitted fields EM equations are
         !solved
         !> Splitted EM fields are exchanged between hybrid and local fields
-
-        CALL sendrecv_g2l_generalized(exy,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        exy_r,nxx,nyy,nzz)
-        CALL sendrecv_g2l_generalized(eyx,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        eyx_r,nxx,nyy,nzz)
-        CALL sendrecv_g2l_generalized(ezx,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        ezx_r,nxx,nyy,nzz)
-        CALL sendrecv_g2l_generalized(bxy,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        bxy_r,nxx,nyy,nzz)
-        CALL sendrecv_g2l_generalized(byx,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        byx_r,nxx,nyy,nzz)
-        CALL sendrecv_g2l_generalized(bzx,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        bzx_r,nxx,nyy,nzz) 
-        CALL sendrecv_g2l_generalized(exz,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        exz_r,nxx,nyy,nzz)
-        CALL sendrecv_g2l_generalized(eyz,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        eyz_r,nxx,nyy,nzz)
-        CALL sendrecv_g2l_generalized(ezy,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        ezy_r,nxx,nyy,nzz)
-        CALL sendrecv_g2l_generalized(bxz,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        bxz_r,nxx,nyy,nzz)
-        CALL sendrecv_g2l_generalized(byz,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        byz_r,nxx,nyy,nzz)
-        CALL sendrecv_g2l_generalized(bzy,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        bzy_r,nxx,nyy,nzz)
+        IF(.NOT. u_pml) THEN
+          CALL sendrecv_g2l_generalized(exy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          exy_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized(eyx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          eyx_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized(ezx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          ezx_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized(bxy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          bxy_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized(byx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          byx_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized(bzx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          bzx_r,nxx,nyy,nzz) 
+          CALL sendrecv_g2l_generalized(exz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          exz_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized(eyz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          eyz_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized(ezy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          ezy_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized(bxz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          bxz_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized(byz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          byz_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized(bzy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          bzy_r,nxx,nyy,nzz)
+        ELSE IF(u_pml) THEN
+          CALL sendrecv_g2l_generalized(dex,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          dex_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized(dey,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          dey_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized(dez,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          dez_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized(hx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          hx_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized(hy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          hy_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized(hz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          hz_r,nxx,nyy,nzz)
+        ENDIF
       ENDIF
     ELSE 
       IF (.NOT. absorbing_bcs) THEN
@@ -904,36 +925,52 @@ MODULE field_boundary
         CALL sendrecv_g2l_generalized_non_blocking(bz,nx,nxguards,ny,nyguards,         &
         nz,nzguards,bz_r,nxx,nyy,nzz)
       ELSE IF(absorbing_bcs) THEN
+        IF(.NOT. u_pml) THEN
+          !> When using absorbing bcs for fields,splitted fields EM equations are
+          !solved
+          !> Splitted EM fields are exchanged between hybrid and local fields
 
-        !> When using absorbing bcs for fields,splitted fields EM equations are
-        !solved
-        !> Splitted EM fields are exchanged between hybrid and local fields
+          CALL sendrecv_g2l_generalized_non_blocking(exy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          exy_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized_non_blocking(eyx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          eyx_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized_non_blocking(ezx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          ezx_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized_non_blocking(bxy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          bxy_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized_non_blocking(byx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          byx_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized_non_blocking(bzx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          bzx_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized_non_blocking(exz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          exz_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized_non_blocking(eyz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          eyz_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized_non_blocking(ezy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          ezy_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized_non_blocking(bxz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          bxz_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized_non_blocking(byz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          byz_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized_non_blocking(bzy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+          bzy_r,nxx,nyy,nzz)
+        ELSE IF(u_pml) THEN
+          CALL sendrecv_g2l_generalized_non_blocking(dex,nx,nxguards,ny,nyguards,         &
+          nz,nzguards,dex_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized_non_blocking(dey,nx,nxguards,ny,nyguards,         &
+          nz,nzguards,dey_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized_non_blocking(dez,nx,nxguards,ny,nyguards,         &
+          nz,nzguards,dez_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized_non_blocking(hx,nx,nxguards,ny,nyguards,         &
+          nz,nzguards,hx_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized_non_blocking(hy,nx,nxguards,ny,nyguards,         &
+          nz,nzguards,hy_r,nxx,nyy,nzz)
+          CALL sendrecv_g2l_generalized_non_blocking(hz,nx,nxguards,ny,nyguards,         &
+          nz,nzguards,hz_r,nxx,nyy,nzz)
+  
 
-        CALL sendrecv_g2l_generalized_non_blocking(exy,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        exy_r,nxx,nyy,nzz)
-        CALL sendrecv_g2l_generalized_non_blocking(eyx,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        eyx_r,nxx,nyy,nzz)
-        CALL sendrecv_g2l_generalized_non_blocking(ezx,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        ezx_r,nxx,nyy,nzz)
-        CALL sendrecv_g2l_generalized_non_blocking(bxy,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        bxy_r,nxx,nyy,nzz)
-        CALL sendrecv_g2l_generalized_non_blocking(byx,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        byx_r,nxx,nyy,nzz)
-        CALL sendrecv_g2l_generalized_non_blocking(bzx,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        bzx_r,nxx,nyy,nzz)
-        CALL sendrecv_g2l_generalized_non_blocking(exz,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        exz_r,nxx,nyy,nzz)
-        CALL sendrecv_g2l_generalized_non_blocking(eyz,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        eyz_r,nxx,nyy,nzz)
-        CALL sendrecv_g2l_generalized_non_blocking(ezy,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        ezy_r,nxx,nyy,nzz)
-        CALL sendrecv_g2l_generalized_non_blocking(bxz,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        bxz_r,nxx,nyy,nzz)
-        CALL sendrecv_g2l_generalized_non_blocking(byz,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        byz_r,nxx,nyy,nzz)
-        CALL sendrecv_g2l_generalized_non_blocking(bzy,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        bzy_r,nxx,nyy,nzz)
 
+        ENDIF
       ENDIF
     ENDIF
     IF (it.ge.timestat_itstart) THEN
@@ -1721,13 +1758,18 @@ MODULE field_boundary
     ELSE IF(absorbing_bcs) THEN
       IF(l_spectral) THEN
       !> When using absorbing bcs, exchange splitted EM fields
-
-        CALL field_bc(exy, nxguards, nyguards, nzguards, nx, ny, nz)
-        CALL field_bc(exz, nxguards, nyguards, nzguards, nx, ny, nz)
-        CALL field_bc(eyx, nxguards, nyguards, nzguards, nx, ny, nz)
-        CALL field_bc(eyz, nxguards, nyguards, nzguards, nx, ny, nz)
-        CALL field_bc(ezx, nxguards, nyguards, nzguards, nx, ny, nz)
-        CALL field_bc(ezy, nxguards, nyguards, nzguards, nx, ny, nz)
+        IF(.NOT. u_pml) THEN
+          CALL field_bc(exy, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(exz, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(eyx, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(eyz, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(ezx, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(ezy, nxguards, nyguards, nzguards, nx, ny, nz)
+        ELSE If(u_pml) THEN
+          CALL field_bc(dex, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(dey, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(dez, nxguards, nyguards, nzguards, nx, ny, nz)
+        ENDIF
       ELSE IF(c_dim  == 2) THEN
         IF(.NOT. u_pml) THEN
           CALL field_bc(ex, nxguards, nyguards, nzguards, nx, ny, nz)
@@ -1785,13 +1827,18 @@ MODULE field_boundary
     ELSE IF(absorbing_bcs) THEN
       IF(l_spectral) THEN
       !> When using absorbing bcs, exchange splitted EM fields
-
-        CALL field_bc(bxy, nxguards, nyguards, nzguards, nx, ny, nz)
-        CALL field_bc(bxz, nxguards, nyguards, nzguards, nx, ny, nz)
-        CALL field_bc(byx, nxguards, nyguards, nzguards, nx, ny, nz)
-        CALL field_bc(byz, nxguards, nyguards, nzguards, nx, ny, nz)
-        CALL field_bc(bzx, nxguards, nyguards, nzguards, nx, ny, nz)
-        CALL field_bc(bzy, nxguards, nyguards, nzguards, nx, ny, nz)
+        IF(.NOT. u_pml) THEN
+          CALL field_bc(bxy, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(bxz, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(byx, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(byz, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(bzx, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(bzy, nxguards, nyguards, nzguards, nx, ny, nz)
+        ELSE IF(u_pml) THEN
+          CALL field_bc(bx, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(by, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(bz, nxguards, nyguards, nzguards, nx, ny, nz)
+        ENDIF
       ELSE IF(c_dim == 2) THEN 
         If(.NOT. u_pml) THEN 
           CALL field_bc(bx, nxguards, nyguards, nzguards, nx, ny, nz)

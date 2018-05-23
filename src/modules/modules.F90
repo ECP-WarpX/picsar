@@ -70,15 +70,15 @@ MODULE constants
   !> The famous pi value
 #else
   !> Speed of light in vacuum
-  REAL(num), PARAMETER :: clight  = 2.99792458e8_num
+  REAL(num), PARAMETER :: clight  = 1._num!2.99792458e8_num
   !> Magnetic constant
-  REAL(num), PARAMETER :: mu0     = 1.2566370614359173e-06_num
+  REAL(num), PARAMETER :: mu0     = 1._num!1.2566370614359173e-06_num
   !> Vacuum permeability
-  REAL(num), PARAMETER :: eps0    = 8.854187817620389e-12_num
-  REAL(num), PARAMETER :: imu0    = 795774.715459_num
+  REAL(num), PARAMETER :: eps0    = 1._num!8.854187817620389e-12_num
+  REAL(num), PARAMETER :: imu0    = 1._num!795774.715459_num
 #endif
   !> The famous pi value
-  REAL(num), PARAMETER :: pi      = 3.14159265358979323_num
+  REAL(num), PARAMETER :: pi      = 1._num!3.14159265358979323_num
   !> Dimension of the cartesian topology
   INTEGER(isp), PARAMETER :: c_ndims = 3
   ! direction parameters
@@ -233,9 +233,16 @@ MODULE fields
         bxy,bxz,byx,byz,bzx,bzy
   ! U pml stuff
   REAL(num) , POINTER, DIMENSION(:,:,:) :: dex, dey,dez,hx,hy,hz
+  REAL(num) , POINTER, DIMENSION(:,:,:) :: dex_r, dey_r, dez_r, hx_r, hy_r, hz_r
+  REAL(num) , POINTER, DIMENSION(:,:,:) :: dexold, deyold, dezold, bxold, byold, bzold
+
+
   
   REAL(num) , POINTER, DIMENSION(:) :: sigma_x_e, sigma_y_e, sigma_z_e, &
         sigma_x_b, sigma_y_b, sigma_z_b
+  ! fields in case of u_pml 
+  REAL(num) , POINTER, DIMENSION(:) :: a_x_e, b_x_e, a_y_e, b_y_e, a_z_e, b_z_e, &
+  a_x_b, b_x_b, a_y_b, b_y_b, a_z_b, b_z_b
   !> MPI-domain electric field grid in x - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: exf
   !> MPI-domain electric field grid in y - Fourier space

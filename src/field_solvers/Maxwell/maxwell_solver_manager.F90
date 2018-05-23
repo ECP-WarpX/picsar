@@ -141,54 +141,83 @@ SUBROUTINE field_damping_bcs
   USE omp_lib
   USE time_stat
   USE params
+  USE constants
 
   IMPLICIT NONE
   INTEGER(idp)  :: ix,iy,iz
-  REAL(num)     :: tmptime
+  REAL(num)     :: tmptime, ieps0
+  INTEGER(idp) :: lbound_e(3), ubound_e(3)
+  
+  ieps0 = 1._num/eps0
+  IF(.NOT. u_pml) THEN 
+    lbound_e = LBOUND(exy)
+    ubound_e = UBOUND(exy) 
 
+  ELSE IF(u_pml) THEN
+    lbound_e = LBOUND(dex)
+    ubound_e = UBOUND(dex)
+  ENDIF   
+  ubound_e = ubound_e - 1_idp 
+  IF(c_dim == 2) THEN
+    ubound_e(2) = lbound_e(2)
+  ENDIF
   IF (it.ge.timestat_itstart) THEN
     tmptime = MPI_WTIME()
   ENDIF
-  IF(c_dim == 3) THEN 
+  IF(.NOT. u_pml) THEN
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-    DO ix = -nxguards,nx+nxguards-1
-      DO iy = -nyguards,ny+nyguards-1
-        DO iz = -nzguards,nz+nzguards-1
-          exy(ix,iy,iz) = sigma_y_e(iy) *exy(ix,iy,iz)
-          exz(ix,iy,iz) = sigma_z_e(iz) *exz(ix,iy,iz)
-          eyx(ix,iy,iz) = sigma_x_e(ix) *eyx(ix,iy,iz)
-          eyz(ix,iy,iz) = sigma_z_e(iz) *eyz(ix,iy,iz)
-          ezx(ix,iy,iz) = sigma_x_e(ix) *ezx(ix,iy,iz)
-          ezy(ix,iy,iz) = sigma_y_e(iy) *ezy(ix,iy,iz)
-          bxy(ix,iy,iz) = sigma_y_b(iy) *bxy(ix,iy,iz)
-          bxz(ix,iy,iz) = sigma_z_b(iz) *bxz(ix,iy,iz)
-          byx(ix,iy,iz) = sigma_x_b(ix) *byx(ix,iy,iz)
-          byz(ix,iy,iz) = sigma_z_b(iz) *byz(ix,iy,iz)
-          bzx(ix,iy,iz) = sigma_x_b(ix) *bzx(ix,iy,iz)
-          bzy(ix,iy,iz) = sigma_y_b(iy) *bzy(ix,iy,iz)
+    DO iz = lbound_e(3),ubound_e(3)
+      DO iy = lbound_e(2),ubound_e(2)
+        DO ix = lbound_e(1),ubound_e(1)
+          exy(ix,iy,iz) = a_y_e(iy) *exy(ix,iy,iz)
+          exz(ix,iy,iz) = a_z_e(iz) *exz(ix,iy,iz)
+          eyx(ix,iy,iz) = a_x_e(ix)*eyx(ix,iy,iz)
+          eyz(ix,iy,iz) = a_z_e(iz) *eyz(ix,iy,iz)
+          ezx(ix,iy,iz) = a_x_e(ix) *ezx(ix,iy,iz)
+          ezy(ix,iy,iz) = a_y_e(iy) *ezy(ix,iy,iz)
+          bxy(ix,iy,iz) = a_y_b(iy) *bxy(ix,iy,iz)
+          bxz(ix,iy,iz) = a_z_b(iz) *bxz(ix,iy,iz)
+          byx(ix,iy,iz) = a_x_b(ix) *byx(ix,iy,iz)
+          byz(ix,iy,iz) = a_z_b(iz) *byz(ix,iy,iz)
+          bzx(ix,iy,iz) = a_x_b(ix) *bzx(ix,iy,iz)
+          bzy(ix,iy,iz) = a_y_b(iy) *bzy(ix,iy,iz)
+
         ENDDO
       ENDDO
     ENDDO
     !$OMP END PARALLEL DO
-  ELSE IF(c_dim==2) THEN
-    iy=0_idp
-    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,  iz) COLLAPSE(2)
-    DO ix = -nxguards,nx+nxguards-1
-        DO iz = -nzguards,nz+nzguards-1
-          exz(ix,iy,iz) = sigma_z_e(iz) *exz(ix,iy,iz)
-          eyx(ix,iy,iz) = sigma_x_e(ix) *eyx(ix,iy,iz)
-          eyz(ix,iy,iz) = sigma_z_e(iz) *eyz(ix,iy,iz)
-          ezx(ix,iy,iz) = sigma_x_e(ix) *ezx(ix,iy,iz)
-          bxz(ix,iy,iz) = sigma_z_b(iz) *bxz(ix,iy,iz)
-          byx(ix,iy,iz) = sigma_x_b(ix) *byx(ix,iy,iz)
-          byz(ix,iy,iz) = sigma_z_b(iz) *byz(ix,iy,iz)
-          bzx(ix,iy,iz) = sigma_x_b(ix) *bzx(ix,iy,iz)
+  ELSE IF(u_pml) THEN
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+    DO iz = lbound_e(3),ubound_e(3)
+      DO iy = lbound_e(2),ubound_e(2)
+        DO ix = lbound_e(1),ubound_e(1)
+         ! - DAMP bx ,by ,bz, dex, dey, dez along y z x respectively
+
+          dex(ix,iy,iz) = a_y_e(iy) *dex(ix,iy,iz)
+          dey(ix,iy,iz) = a_z_e(iz) *dey(ix,iy,iz)
+          dez(ix,iy,iz) = a_x_e(ix) *dez(ix,iy,iz)
+          bx(ix,iy,iz) = a_y_b(iy) *bx(ix,iy,iz)
+          by(ix,iy,iz) = a_z_b(iz) *by(ix,iy,iz)
+          bz(ix,iy,iz) = a_x_b(ix) *bz(ix,iy,iz)
+          
+          ! Compute E
+          ex(ix,iy,iz) = a_z_e(iz)*ex(ix,iy,iz) + b_z_e(iz)/b_x_b(ix)*(dex(ix,iy,iz) - a_x_b(ix)*dexold(ix,iy,iz))*ieps0
+          ey(ix,iy,iz) = a_x_e(iz)*ey(ix,iy,iz) + b_x_e(iz)/b_y_b(iy)*(dey(ix,iy,iz) - a_y_b(iy)*deyold(ix,iy,iz))*ieps0
+          ez(ix,iy,iz) = a_y_e(iy)*ez(ix,iy,iz) + b_y_e(iy)/b_z_b(iz)*(dez(ix,iy,iz) - a_z_b(iz)*dezold(ix,iy,iz))*ieps0
+          ! Compute H
+          hx(ix,iy,iz) = a_z_b(iz)*hx(ix,iy,iz) + b_z_b(iz)/b_x_e(ix)*(bx(ix,iy,iz) - a_x_e(ix)*bxold(ix,iy,iz))*imu0
+          hy(ix,iy,iz) = a_x_b(iz)*hy(ix,iy,iz) + b_x_b(iz)/b_y_e(iy)*(by(ix,iy,iz) - a_y_e(iy)*byold(ix,iy,iz))*imu0
+          hz(ix,iy,iz) = a_y_b(iy)*hz(ix,iy,iz) + b_y_b(iy)/b_z_e(iz)*(bz(ix,iy,iz) - a_z_e(iz)*bzold(ix,iy,iz))*imu0
+
         ENDDO
       ENDDO
+    ENDDO
     !$OMP END PARALLEL DO
-  ENDIF
 
-   
+      
+
+  
+  ENDIF 
   IF (it.ge.timestat_itstart) THEN
     localtimes(26) = localtimes(26) + (MPI_WTIME() - tmptime)
   ENDIF
@@ -225,15 +254,15 @@ SUBROUTINE damp_e_field
   ENDIF
   IF(c_dim == 3) THEN 
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-    DO ix = -nxguards,nx+nxguards-1
+    DO iz = -nzguards,nz+nzguards-1
       DO iy = -nyguards,ny+nyguards-1
-        DO iz = -nzguards,nz+nzguards-1
-          exy(ix,iy,iz) = sigma_y_e(iy) *exy(ix,iy,iz)
-          exz(ix,iy,iz) = sigma_z_e(iz) *exz(ix,iy,iz)
-          eyx(ix,iy,iz) = sigma_x_e(ix) *eyx(ix,iy,iz)
-          eyz(ix,iy,iz) = sigma_z_e(iz) *eyz(ix,iy,iz)
-          ezx(ix,iy,iz) = sigma_x_e(ix) *ezx(ix,iy,iz)
-          ezy(ix,iy,iz) = sigma_y_e(iy) *ezy(ix,iy,iz)
+        DO ix = -nxguards,nx+nxguards-1
+          exy(ix,iy,iz) = EXP(-dt*sigma_y_e(iy)) *exy(ix,iy,iz)
+          exz(ix,iy,iz) = EXP(-dt*sigma_z_e(iz)) *exz(ix,iy,iz)
+          eyx(ix,iy,iz) = EXP(-dt*sigma_x_e(ix)) *eyx(ix,iy,iz)
+          eyz(ix,iy,iz) = EXP(-dt*sigma_z_e(iz)) *eyz(ix,iy,iz)
+          ezx(ix,iy,iz) = EXP(-dt*sigma_x_e(ix)) *ezx(ix,iy,iz)
+          ezy(ix,iy,iz) = EXP(-dt*sigma_y_e(iy)) *ezy(ix,iy,iz)
 
         ENDDO
       ENDDO
@@ -242,12 +271,12 @@ SUBROUTINE damp_e_field
   ELSE IF(c_dim==2) THEN
     iy=0_idp
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,  iz) COLLAPSE(2)
-    DO ix = -nxguards,nx+nxguards-1
-        DO iz = -nzguards,nz+nzguards-1
-          ex(ix,iy,iz) = sigma_z_e(iz) *ex(ix,iy,iz)
-          eyx(ix,iy,iz) = sigma_x_e(ix) *eyx(ix,iy,iz)
-          eyz(ix,iy,iz) = sigma_z_e(iz) *eyz(ix,iy,iz)
-          ez(ix,iy,iz) = sigma_x_e(ix) *ez(ix,iy,iz)
+    DO iz = -nzguards,nz+nzguards-1
+        DO ix = -nzguards,nx+nxguards-1
+          ex(ix,iy,iz)  = EXP(-dt*sigma_z_e(iz)) *ex(ix,iy,iz)
+          eyx(ix,iy,iz) = EXP(-dt*sigma_x_e(ix)) *eyx(ix,iy,iz)
+          eyz(ix,iy,iz) = EXP(-dt*sigma_z_e(iz)) *eyz(ix,iy,iz)
+          ez(ix,iy,iz)  = EXP(-dt*sigma_x_e(ix)) *ez(ix,iy,iz)
 
         ENDDO
       ENDDO
@@ -290,15 +319,15 @@ SUBROUTINE damp_b_field
   ENDIF
   IF(c_dim == 3) THEN 
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-    DO ix = -nxguards,nx-nxguards-1
+    DO iz = -nzguards,nz-nzguards-1
       DO iy = -nyguards,ny+nyguards-1
-        DO iz = -nzguards,nz+nzguards-1
-          bxy(ix,iy,iz) = sigma_y_b(iy) *bxy(ix,iy,iz)
-          bxz(ix,iy,iz) = sigma_z_b(iz) *bxz(ix,iy,iz)
-          byx(ix,iy,iz) = sigma_x_b(ix) *byx(ix,iy,iz)
-          byz(ix,iy,iz) = sigma_z_b(iz) *byz(ix,iy,iz)
-          bzx(ix,iy,iz) = sigma_x_b(ix) *bzx(ix,iy,iz)
-          bzy(ix,iy,iz) = sigma_y_b(iy) *bzy(ix,iy,iz)
+        DO ix = -nxguards,nx+nxguards-1
+          bxy(ix,iy,iz) = EXP(-dt*sigma_y_b(iy)) *bxy(ix,iy,iz)
+          bxz(ix,iy,iz) = EXP(-dt*sigma_z_b(iz)) *bxz(ix,iy,iz)
+          byx(ix,iy,iz) = EXP(-dt*sigma_x_b(ix)) *byx(ix,iy,iz)
+          byz(ix,iy,iz) = EXP(-dt*sigma_z_b(iz)) *byz(ix,iy,iz)
+          bzx(ix,iy,iz) = EXP(-dt*sigma_x_b(ix)) *bzx(ix,iy,iz)
+          bzy(ix,iy,iz) = EXP(-dt*sigma_y_b(iy)) *bzy(ix,iy,iz)
         ENDDO
       ENDDO
     ENDDO
@@ -306,12 +335,12 @@ SUBROUTINE damp_b_field
   ELSE IF(c_dim==2) THEN
     iy=0_idp
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,  iz) COLLAPSE(2)
-    DO ix = -nxguards,nx+nxguards-1
-        DO iz = -nzguards,nz+nzguards-1
-          bx(ix,iy,iz) = sigma_z_b(iz) *bx(ix,iy,iz)
-          byx(ix,iy,iz) = sigma_x_b(ix) *byx(ix,iy,iz)
-          byz(ix,iy,iz) = sigma_z_b(iz) *byz(ix,iy,iz)
-          bz(ix,iy,iz) = sigma_x_b(ix) *bz(ix,iy,iz)
+    DO iz = -nzguards,nz+nzguards-1
+        DO ix = -nxguards,nx+nxguards-1
+          bx(ix,iy,iz)  = EXP(-dt*sigma_z_b(iz)) *bx(ix,iy,iz)
+          byx(ix,iy,iz) = EXP(-dt*sigma_x_b(ix)) *byx(ix,iy,iz)
+          byz(ix,iy,iz) = EXP(-dt*sigma_z_b(iz)) *byz(ix,iy,iz)
+          bz(ix,iy,iz)  = EXP(-dt*sigma_x_b(ix)) *bz(ix,iy,iz)
         ENDDO
       ENDDO
     !$OMP END PARALLEL DO
@@ -443,9 +472,9 @@ SUBROUTINE merge_fields()
   lbound_f = LBOUND(ex)
 
   !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz,ixx ,iyy, izz) COLLAPSE(3)
-  DO ix = lbound_f(1),ubound_f(1)
+  DO iz = lbound_f(3),ubound_f(3)
     DO iy = lbound_f(2),ubound_f(2)
-      DO iz = lbound_f(3),ubound_f(3)
+      DO ix = lbound_f(1),ubound_f(1)
         ixx = ix - lbound_f(1) + lbound_s(1)
         iyy = iy - lbound_f(2) + lbound_s(2)
         izz = iz - lbound_f(3) + lbound_s(3)
@@ -656,7 +685,7 @@ SUBROUTINE push_psatd_ebfield()
   IMPLICIT NONE
 
   REAL(num) :: tmptime, tmptime_m
-
+integer :: i
 #if defined(DEBUG)
   WRITE(0, *) "push psatd ebfield 3d: start"
 #endif
@@ -674,13 +703,18 @@ SUBROUTINE push_psatd_ebfield()
       CALL get_Ffields_mpi! - global-hybrid FFT
     ENDIF
   ELSE
+
     CALL get_Ffields! - local FFT
   ENDIF
+
+
   IF(g_spectral) THEN
     IF (it.ge.timestat_itstart) THEN
       tmptime_m = MPI_WTIME()
     ENDIF
+
     CALL multiply_mat_vector(nmatrixes)
+
     IF (it.ge.timestat_itstart) THEN
       localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime_m)
     ENDIF
@@ -699,8 +733,12 @@ SUBROUTINE push_psatd_ebfield()
       CALL get_fields_mpi! global-hybrid IFFT
     ENDIF
   ELSE
+
+
     CALL get_fields! local IFFT
+
   ENDIF
+
 #endif
   IF (it.ge.timestat_itstart) THEN
     localtimes(24) = localtimes(24) + (MPI_WTIME() - tmptime)
