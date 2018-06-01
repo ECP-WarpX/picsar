@@ -84,6 +84,67 @@ SUBROUTINE push_laser_particles
 #endif
 END SUBROUTINE push_laser_particles
 
+
+
+SUBROUTINE laser_pusher_profile(amp_x,amp_y,amp_z,n)
+  USE particles
+  USE time_stat
+  USE tiling
+  USE params
+  USE constants
+  USE shared_data
+  
+  INTEGER(idp) , INTENT(IN) :: n
+  REAL(num)  , INTENT(IN),  DIMENSION(n) :: amp_x, amp_y, amp_z
+  INTEGER(idp) :: ispecies, ix, iy, iz, count, counter, i
+  TYPE(particle_species), POINTER :: curr
+  TYPE(particle_tile), POINTER    :: curr_tile
+  REAL(num)                       :: tdeb, tend, disp_max
+
+   
+#if defined(DEBUG)
+  WRITE(0, *) "push_laser_particles python: start"
+#endif
+  counter = 0_idp
+
+
+  DO iz=1, ntilez! LOOP ON TILES
+    DO iy=1, ntiley
+      DO ix=1, ntilex
+        DO ispecies=1, nspecies! LOOP ON SPECIES
+          curr=>species_parray(ispecies)
+          IF (.NOT. curr%is_antenna) CYCLE
+          curr_tile=>curr%array_of_tiles(ix, iy, iz)
+          count=curr_tile%np_tile(1)
+          IF (count .EQ. 0) CYCLE
+          DO i =  counter + 1, count + counter
+             ux = curr%charge*amp_x(i)
+             uy = curr%charge*amp_y(i)
+             uz = curr%charge*amp_z(i)
+ 
+             curr_tile%part_x(i)  = curr_tile%part_x(i) + dt*ux
+             curr_tile%part_y(i)  = curr_tile%part_y(i) + dt*uy
+             curr_tile%part_z(i)  = curr_tile%part_z(i) + dt*uz        
+
+             curr_tile%part_ux(i) = curr_tile%part_ux(i) + ux
+             curr_tile%part_uy(i) = curr_tile%part_uy(i) + uy
+             curr_tile%part_uz(i) = curr_tile%part_uz(i) + uz
+
+
+          ENDDO
+          counter = counter + count
+        END DO! END LOOP ON SPECIES
+      END DO
+    END DO
+  END DO! END LOOP ON TILES
+
+#if defined(DEBUG)
+  WRITE(0, *) "push_laser_particles python: end"
+#endif
+
+END SUBROUTINE laser_pusher_profile
+
+
 ! ________________________________________________________________________________________
 !> @brief
 !> Subroutine for pushing particles of type antenna

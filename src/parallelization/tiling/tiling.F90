@@ -1614,6 +1614,83 @@ MODULE tiling
     unity
 
   END SUBROUTINE estimate_tiles_memory_consumption
+   
+
+  SUBROUTINE init_laser_species_python(emax,spot,vector,polvector1,polvector2,charge, &
+    weight_laser, posx, posy, posz, np, js_laser)
+    USE antenna
+    USE constants
+
+
+    REAL(num) , INTENT(IN) :: emax, charge, weight_laser
+    REAL(num) , INTENT(IN) , DIMENSION(3) :: spot, vector, polvector1, polvector2
+    REAL(num), INTENT(IN) , DIMENSION(1:np) :: posx, posy, posz
+    INTEGER(idp) , INTENT(IN) :: np
+    TYPE(particle_species), POINTER :: curr
+    INTEGER(idp) :: i
+    REAL(num) ,  DIMENSION(npid) :: partpid
+    INTEGER(idp), DIMENSION(1), INTENT(INOUT) :: js_laser
+
+    IF (.NOT. l_species_allocated) THEN
+      nspecies=0
+      ALLOCATE(species_parray(1:nspecies_max))
+      l_species_allocated=.TRUE.
+    ENDIF
+    nspecies = nspecies+1
+    curr => species_parray(nspecies)
+    js_laser(1) = nspecies
+    ! minimal init for species attributes
+    curr%charge = charge
+    curr%mass = emass
+    curr%name='laser_antenna'
+    curr%nppcell = 1
+    curr%vdrift_x =0._num
+    curr%vdrift_y =0._num
+    curr%vdrift_z =0._num
+    curr%vth_x =0._num
+    curr%vth_y =0._num
+    curr%vth_z =0._num
+    curr%sorting_period = 0
+    curr%sorting_start = 0
+    curr%species_npart=0
+    curr%ldodepos = .TRUE.
+    ! --- Init default value for antenna params
+    curr%is_antenna=.TRUE.
+    curr%antenna_params%laser_z0 = 0._num
+    curr%antenna_params%polangle = 0._num
+    curr%antenna_params%vector_x = vector(1)
+    curr%antenna_params%vector_y = vector(2)
+    curr%antenna_params%vector_z = vector(3)
+    curr%antenna_params%spot_x = spot(1)
+    curr%antenna_params%spot_y = spot(2)
+    curr%antenna_params%spot_z = spot(3)
+    curr%antenna_params%pvec_x = polvector1(1)
+    curr%antenna_params%pvec_y = polvector1(2)
+    curr%antenna_params%pvec_z = polvector1(3)
+
+    DO i = 1, np
+      partpid(wpid) = weight_laser
+      ! -- X_a position of laser particle in antenna frame
+      !-- (projection on polvector1)
+      partpid(wpid+1_idp) = (posx(i)-spot(1))*polvector1(1) +        & 
+                            (posy(i)-spot(2))*polvector1(2) +        &
+                            (posz(i)-spot(3))*polvector1(3)
+      ! -- Y_a position of laser particle in antenna frame
+      !-- (projection on polvector2)
+      partpid(wpid+2_idp) = (posx(i)-spot(1))*polvector2(1) +        &
+                            (posy(i)-spot(2))*polvector2(2) +        &
+                            (posz(i)-spot(3))*polvector2(3)
+
+      ! -- Add particle to current laser species
+      IF(c_dim == 3) THEN
+        CALL add_particle_to_species(curr, posx(i), posy(i), posz(i), 0._num,      &
+        0._num, 0._num, 1._num, partpid)
+      ELSE IF(c_dim ==2) THEN
+        CALL add_particle_to_species_2d(curr,posx(i),posz(i),0._num,0._num,      &
+        0.0_num, 1.0_num, partpid)
+      ENDIF
+    ENDDO
+  END SUBROUTINE init_laser_species_python
 
   SUBROUTINE load_laser_species(curr)
     USE antenna
