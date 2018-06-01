@@ -626,7 +626,7 @@ MODULE particle_properties
   !> Particle initial distribution
   INTEGER(idp) :: pdistr
   !> Number of species
-  INTEGER(idp) :: nspecies
+  INTEGER(idp) :: nspecies = 0 
   !> total number of particles (all species, all subdomains -> useful for stat)
   INTEGER(idp) :: ntot
   !> Max number of particle species

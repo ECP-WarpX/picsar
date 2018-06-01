@@ -99,7 +99,7 @@ SUBROUTINE laser_pusher_profile(amp_x,amp_y,amp_z,n)
   INTEGER(idp) :: ispecies, ix, iy, iz, count, counter, i
   TYPE(particle_species), POINTER :: curr
   TYPE(particle_tile), POINTER    :: curr_tile
-  REAL(num)                       :: tdeb, tend, disp_max
+  REAL(num)                       :: tdeb, tend, disp_max, ux, uy, uz
 
    
 #if defined(DEBUG)

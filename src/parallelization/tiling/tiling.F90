@@ -135,8 +135,11 @@ MODULE tiling
     DO ispecies =1, nspecies
       curr_sp => species_array(ispecies)
       IF (.NOT. curr_sp%l_arrayoftiles_allocated) THEN
-        ALLOCATE(curr_sp%array_of_tiles(ntx, nty, ntz))
-        ALLOCATE(curr_sp%are_tiles_reallocated(ntx, nty, ntz))
+write(*,*),(allocated(curr_sp%array_of_tiles)),"chech if array of tiles is alloc",ispecies,curr_sp%name
+write(*,*),"size array of tiles",size(curr_sp%array_of_tiles),ntx,nty,ntz
+        ALLOCATE(species_array(ispecies)%array_of_tiles(ntx, nty, ntz)) 
+write(*,*),"check are tiles real",allocated(curr_sp%are_tiles_reallocated),curr_sp%name
+        ALLOCATE(species_array(ispecies)%are_tiles_reallocated(ntx, nty, ntz))
         curr_sp%are_tiles_reallocated= 0
         curr_sp%l_arrayoftiles_allocated = .TRUE.
       END IF
@@ -278,20 +281,23 @@ MODULE tiling
 
 
     ! Get first tiles dimensions (may be different from last tile)
+    write(*,*),"start add_particle_to_specie2d"
+    write(*,*),"check tile sizes",size(currsp%array_of_tiles)
     nx0_grid_tile = currsp%array_of_tiles(1, 1, 1)%nx_grid_tile
     nz0_grid_tile = currsp%array_of_tiles(1, 1, 1)%nz_grid_tile
-
+    write(*,*),"start add_particle_to_species_2d"
     ! Get particle index in array of tile
     ixtile = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx), idp)+1,       &
     ntilex)
     iztile = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz), idp)+1,       &
     ntilez)
-
+     write(*,*),"inside add_particle_to_species_2d","ixt",ixtile,"izt",iztile,size(partpid)
     ! Point to current tile arr_of_tiles(ixtile, iytile, iztile)
     !curr=>currsp%array_of_tiles(ixtile, iytile, iztile)
 
     CALL add_particle_at_tile_2d(currsp, ixtile, iztile, partx, partz, partux,        &
     partuy, partuz, gaminv, partpid)
+    write(*,*),"sucess add_particle_to_species_2d"
 
     ! Update total number of particle species
     currsp%species_npart=currsp%species_npart+1
@@ -1620,7 +1626,9 @@ MODULE tiling
     weight_laser, posx, posy, posz, np, js_laser)
     USE antenna
     USE constants
-
+    USE particle_properties
+    USE particles
+    USE shared_data
 
     REAL(num) , INTENT(IN) :: emax, charge, weight_laser
     REAL(num) , INTENT(IN) , DIMENSION(3) :: spot, vector, polvector1, polvector2
@@ -1636,6 +1644,9 @@ MODULE tiling
       ALLOCATE(species_parray(1:nspecies_max))
       l_species_allocated=.TRUE.
     ENDIF
+    write(*,*),"check atenna nb tiles",nspecies,allocated(curr%array_of_tiles)
+    write(*,*),"check atenna nb tiles",nspecies,allocated(curr%are_tiles_reallocated)
+
     nspecies = nspecies+1
     curr => species_parray(nspecies)
     js_laser(1) = nspecies
@@ -1668,10 +1679,16 @@ MODULE tiling
     curr%antenna_params%pvec_y = polvector1(2)
     curr%antenna_params%pvec_z = polvector1(3)
 
+    CALL set_tile_split_for_species(species_parray, nspecies, ntilex, ntiley, ntilez, &
+    nx_grid, ny_grid, nz_grid, x_min_local, y_min_local, z_min_local, x_max_local,    &
+    y_max_local, z_max_local)
+
     DO i = 1, np
       partpid(wpid) = weight_laser
       ! -- X_a position of laser particle in antenna frame
       !-- (projection on polvector1)
+      write(*,*),"start",i,posx(i),posy(i),posz(i),wpid
+
       partpid(wpid+1_idp) = (posx(i)-spot(1))*polvector1(1) +        & 
                             (posy(i)-spot(2))*polvector1(2) +        &
                             (posz(i)-spot(3))*polvector1(3)
@@ -1682,6 +1699,7 @@ MODULE tiling
                             (posz(i)-spot(3))*polvector2(3)
 
       ! -- Add particle to current laser species
+      write(*,*),"before add part",i,posx(i),posy(i),posz(i),wpid
       IF(c_dim == 3) THEN
         CALL add_particle_to_species(curr, posx(i), posy(i), posz(i), 0._num,      &
         0._num, 0._num, 1._num, partpid)
@@ -1690,6 +1708,7 @@ MODULE tiling
         0.0_num, 1.0_num, partpid)
       ENDIF
     ENDDO
+    write(*,*),"end init part pxr"
   END SUBROUTINE init_laser_species_python
 
   SUBROUTINE load_laser_species(curr)
