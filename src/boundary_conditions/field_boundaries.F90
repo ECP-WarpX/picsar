@@ -1769,6 +1769,11 @@ MODULE field_boundary
           CALL field_bc(dex, nxguards, nyguards, nzguards, nx, ny, nz)
           CALL field_bc(dey, nxguards, nyguards, nzguards, nx, ny, nz)
           CALL field_bc(dez, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(ex, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(ey, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(ez, nxguards, nyguards, nzguards, nx, ny, nz)
+
+
         ENDIF
       ELSE IF(c_dim  == 2) THEN
         IF(.NOT. u_pml) THEN
@@ -1838,6 +1843,10 @@ MODULE field_boundary
           CALL field_bc(bx, nxguards, nyguards, nzguards, nx, ny, nz)
           CALL field_bc(by, nxguards, nyguards, nzguards, nx, ny, nz)
           CALL field_bc(bz, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(hx, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(hy, nxguards, nyguards, nzguards, nx, ny, nz)
+          CALL field_bc(hz, nxguards, nyguards, nzguards, nx, ny, nz)
+
         ENDIF
       ELSE IF(c_dim == 2) THEN 
         If(.NOT. u_pml) THEN 

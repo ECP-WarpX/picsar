@@ -322,131 +322,131 @@ MODULE fourier_psaotd
          ENDIF
        ENDIF
      ELSE IF(u_pml) THEN
-     IF(absorbing_bcs_x) THEN
-       IF(x_min_boundary) THEN
-         DO ix = -nxguards,-1
-           dex_r(ix,:,:) = 0.0_num
-           dey_r(ix,:,:) = 0.0_num
-           dez_r(ix,:,:) = 0.0_num  
-           bx_r(ix,:,:) = 0.0_num
-           by_r(ix,:,:) = 0.0_num
-           bz_r(ix,:,:) = 0.0_num
-           ex_r(ix,:,:) = 0.0_num
-           ey_r(ix,:,:) = 0.0_num
-           ez_r(ix,:,:) = 0.0_num
-           hx_r(ix,:,:) = 0.0_num
-           hy_r(ix,:,:) = 0.0_num
-           hz_r(ix,:,:) = 0.0_num
-
-         ENDDO
-       ENDIF
-       IF(x_max_boundary) THEN
-         DO ix=nx,nx+nxguards-1 
-           dex_r(ix,:,:) = 0.0_num
-           dey_r(ix,:,:) = 0.0_num
-           dez_r(ix,:,:) = 0.0_num
-           bx_r(ix,:,:) = 0.0_num
-           by_r(ix-1,:,:) = 0.0_num
-           bz_r(ix-1,:,:) = 0.0_num
-           dex_r(ix,:,:) = 0.0_num
-           dey_r(ix,:,:) = 0.0_num
-           dez_r(ix,:,:) = 0.0_num
-           hx_r(ix,:,:) = 0.0_num
-           hy_r(ix-1,:,:) = 0.0_num
-           hz_r(ix-1,:,:) = 0.0_num
-
-         ENDDO
-         by_r(nx+nxguards-1,:,:) = 0.0_num
-         bz_r(nx+nxguards-1,:,:) = 0.0_num
-         hy_r(nx+nxguards-1,:,:) = 0.0_num
-         hz_r(nx+nxguards-1,:,:) = 0.0_num
-
-       ENDIF
-     ENDIF
-     IF(c_dim == 3) THEN 
-       IF(absorbing_bcs_y) THEN
-         IF(y_min_boundary) THEN
-           DO iy = -nyguards,-1
-             dex_r(:,iy,:) = 0.0_num
-             dey_r(:,iy,:) = 0.0_num
-             dez_r(:,iy,:) = 0.0_num
-             bx_r(:,iy,:) = 0.0_num
-             by_r(:,iy,:) = 0.0_num
-             bz_r(:,iy,:) = 0.0_num
-             ex_r(:,iy,:) = 0.0_num
-             ey_r(:,iy,:) = 0.0_num
-             ez_r(:,iy,:) = 0.0_num
-             hx_r(:,iy,:) = 0.0_num
-             hy_r(:,iy,:) = 0.0_num
-             hz_r(:,iy,:) = 0.0_num
+       IF(absorbing_bcs_x) THEN
+         IF(x_min_boundary) THEN
+           DO ix = -nxguards,-1
+             dex_r(ix,:,:) = 0.0_num
+             dey_r(ix,:,:) = 0.0_num
+             dez_r(ix,:,:) = 0.0_num  
+             bx_r(ix,:,:) = 0.0_num
+             by_r(ix,:,:) = 0.0_num
+             bz_r(ix,:,:) = 0.0_num
+             ex_r(ix,:,:) = 0.0_num
+             ey_r(ix,:,:) = 0.0_num
+             ez_r(ix,:,:) = 0.0_num
+             hx_r(ix,:,:) = 0.0_num
+             hy_r(ix,:,:) = 0.0_num
+             hz_r(ix,:,:) = 0.0_num
 
            ENDDO
          ENDIF
-         IF(y_max_boundary) THEN
-           DO iy=ny,ny+nyguards-1  
-              dex_r(:,iy,:) = 0.0_num
-              dey_r(:,iy,:) = 0.0_num
-              dez_r(:,iy,:) = 0.0_num
-              bx_r(:,iy-1,:) = 0.0_num
-              by_r(:,iy,:) = 0.0_num
-              bz_r(:,iy-1,:) = 0.0_num
-              ex_r(:,iy,:) = 0.0_num
-              ey_r(:,iy,:) = 0.0_num
-              ez_r(:,iy,:) = 0.0_num
-              hx_r(:,iy-1,:) = 0.0_num
-              hy_r(:,iy,:) = 0.0_num
-              hz_r(:,iy-1,:) = 0.0_num
+         IF(x_max_boundary) THEN
+           DO ix=nx,nx+nxguards-1 
+             dex_r(ix,:,:) = 0.0_num
+             dey_r(ix,:,:) = 0.0_num
+             dez_r(ix,:,:) = 0.0_num
+             bx_r(ix,:,:) = 0.0_num
+             by_r(ix-1,:,:) = 0.0_num
+             bz_r(ix-1,:,:) = 0.0_num
+             dex_r(ix,:,:) = 0.0_num
+             dey_r(ix,:,:) = 0.0_num
+             dez_r(ix,:,:) = 0.0_num
+             hx_r(ix,:,:) = 0.0_num
+             hy_r(ix-1,:,:) = 0.0_num
+             hz_r(ix-1,:,:) = 0.0_num
 
            ENDDO
-           bx_r(:,ny+nyguards-1,:) = 0.0_num
-           bz_r(:,ny+nyguards-1,:) = 0.0_num
-           hx_r(:,ny+nyguards-1,:) = 0.0_num
-           hz_r(:,ny+nyguards-1,:) = 0.0_num
+           by_r(nx+nxguards-1,:,:) = 0.0_num
+           bz_r(nx+nxguards-1,:,:) = 0.0_num
+           hy_r(nx+nxguards-1,:,:) = 0.0_num
+           hz_r(nx+nxguards-1,:,:) = 0.0_num
+
+         ENDIF
+       ENDIF
+       IF(c_dim == 3) THEN 
+         IF(absorbing_bcs_y) THEN
+           IF(y_min_boundary) THEN
+             DO iy = -nyguards,-1
+               dex_r(:,iy,:) = 0.0_num
+               dey_r(:,iy,:) = 0.0_num
+               dez_r(:,iy,:) = 0.0_num
+               bx_r(:,iy,:) = 0.0_num
+               by_r(:,iy,:) = 0.0_num
+               bz_r(:,iy,:) = 0.0_num
+               ex_r(:,iy,:) = 0.0_num
+               ey_r(:,iy,:) = 0.0_num
+               ez_r(:,iy,:) = 0.0_num
+               hx_r(:,iy,:) = 0.0_num
+               hy_r(:,iy,:) = 0.0_num
+               hz_r(:,iy,:) = 0.0_num
+
+             ENDDO
+           ENDIF
+           IF(y_max_boundary) THEN
+             DO iy=ny,ny+nyguards-1  
+                dex_r(:,iy,:) = 0.0_num
+                dey_r(:,iy,:) = 0.0_num
+                dez_r(:,iy,:) = 0.0_num
+                bx_r(:,iy-1,:) = 0.0_num
+                by_r(:,iy,:) = 0.0_num
+                bz_r(:,iy-1,:) = 0.0_num
+                ex_r(:,iy,:) = 0.0_num
+                ey_r(:,iy,:) = 0.0_num
+                ez_r(:,iy,:) = 0.0_num
+                hx_r(:,iy-1,:) = 0.0_num
+                hy_r(:,iy,:) = 0.0_num
+                hz_r(:,iy-1,:) = 0.0_num
+
+             ENDDO
+             bx_r(:,ny+nyguards-1,:) = 0.0_num
+             bz_r(:,ny+nyguards-1,:) = 0.0_num
+             hx_r(:,ny+nyguards-1,:) = 0.0_num
+             hz_r(:,ny+nyguards-1,:) = 0.0_num
+           ENDIF
+         ENDIF
+       ENDIF
+       IF(absorbing_bcs_z) THEN
+         IF(z_min_boundary) THEN
+           DO iz = -nzguards,-1
+             dex_r(:,:,iz) = 0.0_num
+             dey_r(:,:,iz) = 0.0_num
+             dez_r(:,:,iz) = 0.0_num
+             bx_r(:,:,iz) = 0.0_num
+             by_r(:,:,iz) = 0.0_num
+             bz_r(:,:,iz) = 0.0_num
+             ex_r(:,:,iz) = 0.0_num
+             ey_r(:,:,iz) = 0.0_num
+             ez_r(:,:,iz) = 0.0_num
+             hx_r(:,:,iz) = 0.0_num
+             hy_r(:,:,iz) = 0.0_num
+             hz_r(:,:,iz) = 0.0_num
+
+           ENDDO
+         ENDIF
+         IF(z_max_boundary) THEN
+           DO iz=nz ,nz+nzguards-1  
+             dex_r(:,:,iz) = 0.0_num
+             dey_r(:,:,iz) = 0.0_num
+             dez_r(:,:,iz) = 0.0_num
+             bx_r(:,:,iz-1) = 0.0_num
+             by_r(:,:,iz-1) = 0.0_num
+             bz_r(:,:,iz) = 0.0_num
+             ex_r(:,:,iz) = 0.0_num
+             ey_r(:,:,iz) = 0.0_num
+             ez_r(:,:,iz) = 0.0_num
+             hx_r(:,:,iz-1) = 0.0_num
+             hy_r(:,:,iz-1) = 0.0_num
+             hz_r(:,:,iz) = 0.0_num
+
+           ENDDO
+           bx_r(:,:,nz+nzguards-1) = 0.0_num
+           by_r(:,:,nz+nzguards-1) = 0.0_num
+           hx_r(:,:,nz+nzguards-1) = 0.0_num
+           hy_r(:,:,nz+nzguards-1) = 0.0_num
+
          ENDIF
        ENDIF
      ENDIF
-     IF(absorbing_bcs_z) THEN
-       IF(z_min_boundary) THEN
-         DO iz = -nzguards,-1
-           dex_r(:,:,iz) = 0.0_num
-           dey_r(:,:,iz) = 0.0_num
-           dez_r(:,:,iz) = 0.0_num
-           bx_r(:,:,iz) = 0.0_num
-           by_r(:,:,iz) = 0.0_num
-           bz_r(:,:,iz) = 0.0_num
-           ex_r(:,:,iz) = 0.0_num
-           ey_r(:,:,iz) = 0.0_num
-           ez_r(:,:,iz) = 0.0_num
-           hx_r(:,:,iz) = 0.0_num
-           hy_r(:,:,iz) = 0.0_num
-           hz_r(:,:,iz) = 0.0_num
-
-         ENDDO
-       ENDIF
-     IF(z_max_boundary) THEN
-       DO iz=nz ,nz+nzguards-1  
-         dex_r(:,:,iz) = 0.0_num
-         dey_r(:,:,iz) = 0.0_num
-         dez_r(:,:,iz) = 0.0_num
-         bx_r(:,:,iz-1) = 0.0_num
-         by_r(:,:,iz-1) = 0.0_num
-         bz_r(:,:,iz) = 0.0_num
-         ex_r(:,:,iz) = 0.0_num
-         ey_r(:,:,iz) = 0.0_num
-         ez_r(:,:,iz) = 0.0_num
-         hx_r(:,:,iz-1) = 0.0_num
-         hy_r(:,:,iz-1) = 0.0_num
-         hz_r(:,:,iz) = 0.0_num
-
-       ENDDO
-       bx_r(:,:,nz+nzguards-1) = 0.0_num
-       by_r(:,:,nz+nzguards-1) = 0.0_num
-       hx_r(:,:,nz+nzguards-1) = 0.0_num
-       hy_r(:,:,nz+nzguards-1) = 0.0_num
-
-       ENDIF
-     ENDIF
-   ENDIF
   END SUBROUTINE set_fields_null_guards_cells
  
   ! ______________________________________________________________________________________

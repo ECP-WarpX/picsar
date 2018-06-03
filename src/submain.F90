@@ -235,7 +235,7 @@ SUBROUTINE step(nst)
 
       !!! --- Boundary conditions for currents
       CALL current_bcs
-      CALL harris_pulse(dt*i,pi/4._num,10_idp)
+      !CALL harris_pulse(dt*i,0*pi/4._num,10_idp)
 #if defined(FFTW)
         IF (l_spectral) THEN
           CALL  copy_field(rhoold, nx+2*nxguards+1, ny+2*nyguards+1,      &
@@ -272,12 +272,10 @@ SUBROUTINE step(nst)
         ENDIF
       ELSE
 #endif
-
      CALL push_bfield_2d
      CALL bfield_bcs
      CALL push_efield_2d
      CALL efield_bcs()
-
 
   !     !IF (rank .EQ. 0) PRINT *, "#6"
   !     !!! --- Push B field half a time step
@@ -558,12 +556,23 @@ SUBROUTINE init_pml_arrays
     ALLOCATE(b_x_b(-nxguards:nx+nxguards-1))
     ALLOCATE(b_z_e(-nzguards:nz+nzguards-1))
     ALLOCATE(b_z_b(-nzguards:nz+nzguards-1))
+
+    ALLOCATE(c_x_e(-nxguards:nx+nxguards-1))
+    ALLOCATE(c_x_b(-nxguards:nx+nxguards-1))
+    ALLOCATE(c_z_e(-nzguards:nz+nzguards-1))
+    ALLOCATE(c_z_b(-nzguards:nz+nzguards-1))
+
     IF(c_dim == 3) THEN 
       ALLOCATE(b_y_e(-nzguards:ny+nyguards-1))
       ALLOCATE(b_y_b(-nzguards:ny+nyguards-1))
+      ALLOCATE(c_y_e(-nzguards:ny+nyguards-1))
+      ALLOCATE(c_y_b(-nzguards:ny+nyguards-1))
     ELSE 
       ALLOCATE(b_y_e(0:0))
       ALLOCATE(b_y_b(0:0))
+      ALLOCATE(c_y_e(0:0))
+      ALLOCATE(c_y_b(0:0))
+
     ENDIF
     b_x_e = (1.0_num - a_x_e)/(sigma_x_e*dt)
     b_y_e = (1.0_num - a_y_e)/(sigma_y_e*dt)
@@ -571,6 +580,14 @@ SUBROUTINE init_pml_arrays
     b_x_b = (1.0_num - a_x_b)/(sigma_x_b*dt)
     b_y_b = (1.0_num - a_y_b)/(sigma_y_b*dt)
     b_z_b = (1.0_num - a_z_b)/(sigma_z_b*dt)
+
+    c_x_e = (1.0_num - 1._num/a_x_e)/(-sigma_x_e*dt)
+    c_y_e = (1.0_num - 1._num/a_y_e)/(-sigma_y_e*dt)
+    c_z_e = (1.0_num - 1._num/a_z_e)/(-sigma_z_e*dt)
+    c_x_b = (1.0_num - 1._num/a_x_b)/(-sigma_x_b*dt)
+    c_y_b = (1.0_num - 1._num/a_y_b)/(-sigma_y_b*dt)
+    c_z_b = (1.0_num - 1._num/a_z_b)/(-sigma_z_b*dt)
+
     WHERE(sigma_x_e == 0.0_num) b_x_e = 1.0_num
     WHERE(sigma_x_b == 0.0_num) b_x_b = 1.0_num
     
@@ -579,6 +596,15 @@ SUBROUTINE init_pml_arrays
 
     WHERE(sigma_z_e == 0.0_num) b_z_e = 1.0_num
     WHERE(sigma_z_b == 0.0_num) b_z_b = 1.0_num
+
+    WHERE(sigma_x_e == 0.0_num) c_x_e = 1.0_num
+    WHERE(sigma_x_b == 0.0_num) c_x_b = 1.0_num
+
+    WHERE(sigma_y_e == 0.0_num) c_y_e = 1.0_num
+    WHERE(sigma_y_b == 0.0_num) c_y_b = 1.0_num
+
+    WHERE(sigma_z_e == 0.0_num) c_z_e = 1.0_num
+    WHERE(sigma_z_b == 0.0_num) c_z_b = 1.0_num
   ENDIF
    
 
@@ -651,14 +677,12 @@ SUBROUTINE initall
   IF (c_dim.eq.3) THEN
     IF (l_spectral) THEN
       dt=MIN(dx, dy, dz)/clight
-      dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
     ELSE
       dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
     ENDIF
   ELSE IF (c_dim.eq.2) THEN
     IF (l_spectral) THEN 
       dt=MIN(dx,dz)/clight
-      dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dz**2))
     ELSE
       dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dz**2))
     ENDIF

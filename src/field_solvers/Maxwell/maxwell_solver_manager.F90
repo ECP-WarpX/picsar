@@ -145,7 +145,7 @@ SUBROUTINE field_damping_bcs
 
   IMPLICIT NONE
   INTEGER(idp)  :: ix,iy,iz
-  REAL(num)     :: tmptime, ieps0
+  REAL(num)     :: tmptime, ieps0, extemp, eytemp, eztemp, hxtemp ,hytemp, hztemp
   INTEGER(idp) :: lbound_e(3), ubound_e(3)
   
   ieps0 = 1._num/eps0
@@ -173,7 +173,7 @@ SUBROUTINE field_damping_bcs
         DO ix = lbound_e(1),ubound_e(1)
           exy(ix,iy,iz) = a_y_e(iy) *exy(ix,iy,iz)
           exz(ix,iy,iz) = a_z_e(iz) *exz(ix,iy,iz)
-          eyx(ix,iy,iz) = a_x_e(ix)*eyx(ix,iy,iz)
+          eyx(ix,iy,iz) = a_x_e(ix) *eyx(ix,iy,iz)
           eyz(ix,iy,iz) = a_z_e(iz) *eyz(ix,iy,iz)
           ezx(ix,iy,iz) = a_x_e(ix) *ezx(ix,iy,iz)
           ezy(ix,iy,iz) = a_y_e(iy) *ezy(ix,iy,iz)
@@ -189,11 +189,19 @@ SUBROUTINE field_damping_bcs
     ENDDO
     !$OMP END PARALLEL DO
   ELSE IF(u_pml) THEN
-    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+!    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz ) COLLAPSE(3)
     DO iz = lbound_e(3),ubound_e(3)
       DO iy = lbound_e(2),ubound_e(2)
         DO ix = lbound_e(1),ubound_e(1)
          ! - DAMP bx ,by ,bz, dex, dey, dez along y z x respectively
+eytemp=ey(ix,iy,iz)
+eztemp=ez(ix,iy,iz)
+extemp=ex(ix,iy,iz)
+
+
+hxtemp=hx(ix,iy,iz)
+hytemp=hy(ix,iy,iz)
+hztemp=hz(ix,iy,iz)
 
           dex(ix,iy,iz) = a_y_e(iy) *dex(ix,iy,iz)
           dey(ix,iy,iz) = a_z_e(iz) *dey(ix,iy,iz)
@@ -202,19 +210,75 @@ SUBROUTINE field_damping_bcs
           by(ix,iy,iz) = a_z_b(iz) *by(ix,iy,iz)
           bz(ix,iy,iz) = a_x_b(ix) *bz(ix,iy,iz)
           
+
           ! Compute E
-          ex(ix,iy,iz) = a_z_e(iz)*ex(ix,iy,iz) + b_z_e(iz)/b_x_b(ix)*(dex(ix,iy,iz) - a_x_b(ix)*dexold(ix,iy,iz))*ieps0
-          ey(ix,iy,iz) = a_x_e(ix)*ey(ix,iy,iz) + b_x_e(ix)/b_y_b(iy)*(dey(ix,iy,iz) - a_y_b(iy)*deyold(ix,iy,iz))*ieps0
-          ez(ix,iy,iz) = a_y_e(iy)*ez(ix,iy,iz) + b_y_e(iy)/b_z_b(iz)*(dez(ix,iy,iz) - a_z_b(iz)*dezold(ix,iy,iz))*ieps0
+
+    !      ex(ix,iy,iz) = a_z_e(iz)*ex(ix,iy,iz) + b_z_e(iz)/b_x_b(ix)*(dex(ix,iy,iz) - a_x_b(ix)*dexold(ix,iy,iz))*ieps0
+
+!          ey(ix,iy,iz) = a_x_e(ix)*ey(ix,iy,iz) + b_x_e(ix)/b_y_b(iy)*(dey(ix,iy,iz) - a_y_b(iy)*deyold(ix,iy,iz))*ieps0
+          ex(ix,iy,iz) = a_z_e(iz)*(ex(ix,iy,iz) + 1._num/b_x_b(ix)*(dex(ix,iy,iz) - a_x_b(ix)*dexold(ix,iy,iz))*ieps0)
+
+          ey(ix,iy,iz) = a_x_e(ix)*(ey(ix,iy,iz) + 1._num/b_y_b(iy)*(dey(ix,iy,iz) - a_y_b(iy)*deyold(ix,iy,iz))*ieps0)
+          ez(ix,iy,iz) = a_y_e(iy)*(ez(ix,iy,iz) + 1._num/b_z_b(iz)*(dez(ix,iy,iz) - a_z_b(iz)*dezold(ix,iy,iz))*ieps0)
+
+!          dey(ix,iy,iz) = a_x_e(ix)*(dey(ix,iy,iz))! + 1._num/b_y_b(iy)*(ey(ix,iy,iz) - a_y_b(iy)*eytemp)*eps0)
+!          dex(ix,iy,iz) = a_z_e(iz)*(dex(ix,iy,iz))! + 1._num/b_x_b(ix)*(ex(ix,iy,iz) - a_x_b(ix)*extemp)*eps0)
+!          dez(ix,iy,iz) = a_y_e(iy)*(dez(ix,iy,iz))! + 1._num/b_z_b(iz)*(ez(ix,iy,iz) - a_z_b(iz)*eztemp)*eps0)
+!
+
+
+
+!
+
+
+!dey(ix,iy,iz) = ey(ix,iy,iz)*eps0
+  !        dey(ix,iy,iz) = a_y_b(iy)*deyold(ix,iy,iz) + b_y_b(iy)*(ey(ix,iy,iz) - a_x_e(ix)*eytemp)*eps0
+
+
+!          ez(ix,iy,iz) = a_y_e(iy)*ez(ix,iy,iz) + b_y_e(iy)/b_z_b(iz)*(dez(ix,iy,iz) - a_z_b(iz)*dezold(ix,iy,iz))*ieps0
           ! Compute H
-          hx(ix,iy,iz) = a_z_b(iz)*hx(ix,iy,iz) + b_z_b(iz)/b_x_e(ix)*(bx(ix,iy,iz) - a_x_e(ix)*bxold(ix,iy,iz))*imu0
-          hy(ix,iy,iz) = a_x_b(ix)*hy(ix,iy,iz) + b_x_b(ix)/b_y_e(iy)*(by(ix,iy,iz) - a_y_e(iy)*byold(ix,iy,iz))*imu0
-          hz(ix,iy,iz) = a_y_b(iy)*hz(ix,iy,iz) + b_y_b(iy)/b_z_e(iz)*(bz(ix,iy,iz) - a_z_e(iz)*bzold(ix,iy,iz))*imu0
+    !      hx(ix,iy,iz) = a_z_b(iz)*hx(ix,iy,iz) + b_z_b(iz)/b_x_e(ix)*(bx(ix,iy,iz) - a_x_e(ix)*bxold(ix,iy,iz))*imu0
+    !      hy(ix,iy,iz) = a_x_b(ix)*hy(ix,iy,iz) + b_x_b(ix)/b_y_e(iy)*(by(ix,iy,iz) - a_y_e(iy)*byold(ix,iy,iz))*imu0
+       !   hz(ix,iy,iz) = a_y_b(iy)*hz(ix,iy,iz) + b_y_b(iy)/b_z_e(iz)*(bz(ix,iy,iz) - a_z_e(iz)*bzold(ix,iy,iz))*imu0
+!hz(ix,iy,iz) = bz(ix,iy,iz)/mu0
+
+
+      !  ex(ix,iy,iz) = a_z_e(iz)*(ex(ix,iy,iz) + 1._num/b_x_b(ix)*(dex(ix,iy,iz) - a_x_b(ix)*dexold(ix,iy,iz))*ieps0)
+      !  ey(ix,iy,iz) = a_x_e(ix)*(ey(ix,iy,iz) + 1._num/b_y_b(iy)*(dey(ix,iy,iz) - a_y_b(iy)*deyold(ix,iy,iz))*ieps0)
+      !  ez(ix,iy,iz) = a_y_e(iy)*(ez(ix,iy,iz) + 1._num/b_z_b(iz)*(dez(ix,iy,iz) - a_z_b(iz)*dezold(ix,iy,iz))*ieps0)
+      !  ! Compute H
+        hx(ix,iy,iz) = a_z_b(iz)*(hx(ix,iy,iz) + 1._num/b_x_e(ix)*(bx(ix,iy,iz) - a_x_e(ix)*bxold(ix,iy,iz))*imu0)
+        hy(ix,iy,iz) = a_x_b(ix)*(hy(ix,iy,iz) + 1._num/b_y_e(iy)*(by(ix,iy,iz) - a_y_e(iy)*byold(ix,iy,iz))*imu0)
+        hz(ix,iy,iz) = a_y_b(iy)*(hz(ix,iy,iz) + 1._num/b_z_e(iz)*(bz(ix,iy,iz) - a_z_e(iz)*bzold(ix,iy,iz))*imu0)
+
+
+      !    bx(ix,iy,iz) = a_z_b(iz)*bxold(ix,iy,iz)! + b_x_e(ix)/b_z_b(iz)*(hx(ix,iy,iz) - a_z_b(iz)*hxtemp)*mu0
+      !    by(ix,iy,iz) = a_x_b(ix)*byold(ix,iy,iz)! + b_y_e(iy)/b_x_b(ix)*(hy(ix,iy,iz) - a_x_b(ix)*hytemp)*mu0
+      !    bz(ix,iy,iz) = a_y_b(iy)*bzold(ix,iy,iz)! + b_z_e(iz)/b_y_b(iy)*(hz(ix,iy,iz) - a_y_b(iy)*hztemp)*mu0
+
+!        hx(ix,iy,iz) = a_z_b(iz)*(bx(ix,iy,iz) + 1._num/b_x_e(ix)*(hx(ix,iy,iz) - a_x_e(ix)*hxtemp)*mu0)
+!        hy(ix,iy,iz) = a_x_b(ix)*(by(ix,iy,iz) + 1._num/b_y_e(iy)*(hy(ix,iy,iz) - a_y_e(iy)*hytemp)*mu0)
+!        hz(ix,iy,iz) = a_y_b(iy)*(bz(ix,iy,iz) + 1._num/b_z_e(iz)*(hz(ix,iy,iz) - a_z_e(iz)*hztemp)*mu0)
+
+
+      !    ! damp D 
+
+      !    dex(ix,iy,iz) = a_x_b(ix)*dexold(ix,iy,iz) + b_x_b(ix)/b_z_e(iz)*(ex(ix,iy,iz) - a_z_e(iz)*extemp)*eps0
+      !    dey(ix,iy,iz) = a_y_b(iy)*deyold(ix,iy,iz) + b_y_b(iy)/b_x_e(ix)*(ey(ix,iy,iz) - a_x_e(ix)*eytemp)*eps0
+      !    dez(ix,iy,iz) = a_z_b(iz)*dezold(ix,iy,iz) + b_z_b(iz)/b_y_e(iy)*(ez(ix,iy,iz) - a_y_e(iy)*eztemp)*eps0
+      ! !   ! Compute B
+
+      !    bx(ix,iy,iz) = a_x_e(ix)*bxold(ix,iy,iz) + b_x_e(ix)/b_z_b(iz)*(hx(ix,iy,iz) - a_z_b(iz)*hxtemp)*mu0
+      !    by(ix,iy,iz) = a_y_e(iy)*byold(ix,iy,iz) + b_y_e(iy)/b_x_b(ix)*(hy(ix,iy,iz) - a_x_b(ix)*hytemp)*mu0
+      !    bz(ix,iy,iz) = a_z_e(iz)*bzold(ix,iy,iz) + b_z_e(iz)/b_y_b(iy)*(hz(ix,iy,iz) - a_y_b(iy)*hztemp)*mu0
+
+    !   
+
 
         ENDDO
       ENDDO
     ENDDO
-    !$OMP END PARALLEL DO
+ !   !$OMP END PARALLEL DO
 
   
   ENDIF 

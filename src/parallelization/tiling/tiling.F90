@@ -1683,6 +1683,7 @@ MODULE tiling
     laser%q_0 = (0., 1.) * laser%laser_w0**2*pi/laser%lambda_laser
 
     ! --- Gaussian q parameter in antenna_plane
+    laser%focal_length = laser%focal_length*laser%inv_zr
     IF(laser%is_lens .EQV. .FALSE.) THEN
       laser%q_z = (laser%q_0+laser%laser_z0)
     ELSE

@@ -58,7 +58,7 @@ MODULE constants
   !> Proton mass
   REAL(num), PARAMETER :: pmass   = 1.6726231000000001e-27_num
   !> Electron charge
-  REAL(num), PARAMETER :: echarge = 1.6021764620000001e-19_num
+  REAL(num), PARAMETER :: echarge = 1.6021764620000001e-19_num 
 #if defined(LIBRARY)
   !> Speed of light in vacuum
   REAL(num), PARAMETER :: clight  = 1.0_num
@@ -70,12 +70,12 @@ MODULE constants
   !> The famous pi value
 #else
   !> Speed of light in vacuum
-  REAL(num), PARAMETER :: clight  = 1._num!2.99792458e8_num
+  REAL(num), PARAMETER :: clight  = 2.99792458e8_num
   !> Magnetic constant
-  REAL(num), PARAMETER :: mu0     = 1._num!1.2566370614359173e-06_num
+  REAL(num), PARAMETER :: mu0     = 1.2566370614359173e-06_num
   !> Vacuum permeability
-  REAL(num), PARAMETER :: eps0    = 1._num!8.854187817620389e-12_num
-  REAL(num), PARAMETER :: imu0    = 1._num!795774.715459_num
+  REAL(num), PARAMETER :: eps0    = 8.854187817620389e-12_num
+  REAL(num), PARAMETER :: imu0    = 795774.715459_num
 #endif
   !> The famous pi value
   REAL(num), PARAMETER :: pi      = 3.14159265358979323_num
@@ -242,7 +242,7 @@ MODULE fields
         sigma_x_b, sigma_y_b, sigma_z_b
   ! fields in case of u_pml 
   REAL(num) , POINTER, DIMENSION(:) :: a_x_e, b_x_e, a_y_e, b_y_e, a_z_e, b_z_e, &
-  a_x_b, b_x_b, a_y_b, b_y_b, a_z_b, b_z_b
+  a_x_b, b_x_b, a_y_b, b_y_b, a_z_b, b_z_b, c_x_b, c_y_b, c_z_b, c_x_e, c_y_e, c_z_e
   !> MPI-domain electric field grid in x - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: exf
   !> MPI-domain electric field grid in y - Fourier space
