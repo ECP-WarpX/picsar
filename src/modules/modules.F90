@@ -319,9 +319,9 @@ MODULE particle_tilemodule!#do not parse
     !> Flag: tile arrays are allocated
     LOGICAL(lp) :: l_arrays_allocated= .FALSE.
     !> Current number of particles in tile
-    INTEGER(idp), DIMENSION(1) :: np_tile
+    INTEGER(idp), DIMENSION(1) :: np_tile= (/0_idp/)
     !> Max number of particles per tile: size of the arrays
-    INTEGER(idp) :: npmax_tile
+    INTEGER(idp) :: npmax_tile = 0_idp
     !> Number of guard cells in x
     INTEGER(idp) :: nxg_tile
     !> Number of guard cells in y
