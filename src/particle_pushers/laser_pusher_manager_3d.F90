@@ -84,6 +84,18 @@ SUBROUTINE push_laser_particles
 #endif
 END SUBROUTINE push_laser_particles
 
+! ______________________________________________________________________________________
+!> @brief
+!> Push the antenna particles given the amplitude ampx, ampy, ampz given by python.
+!
+!> @author
+!> Haithem Kallala
+!> Guillaume Blaclard
+!
+!> @date
+!> Creation: 2018
+!
+! ______________________________________________________________________________________
 
 
 SUBROUTINE laser_pusher_profile(ispecies, amp_x,amp_y,amp_z,n)
@@ -100,7 +112,6 @@ SUBROUTINE laser_pusher_profile(ispecies, amp_x,amp_y,amp_z,n)
   TYPE(particle_species), POINTER :: curr
   TYPE(particle_tile), POINTER    :: curr_tile
   REAL(num)                       :: tdeb, tend, disp_max, ux, uy, uz
-
    
 #if defined(DEBUG)
   WRITE(0, *) "push_laser_particles python: start"
@@ -126,11 +137,8 @@ SUBROUTINE laser_pusher_profile(ispecies, amp_x,amp_y,amp_z,n)
              curr_tile%part_ux(i) =  ux
              curr_tile%part_uy(i) =  uy
              curr_tile%part_uz(i) =  uz
-
-
           ENDDO
           counter = counter + count
-
         END DO
       END DO
     END DO! END LOOP ON TILES
