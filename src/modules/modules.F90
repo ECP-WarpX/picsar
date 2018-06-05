@@ -642,6 +642,9 @@ MODULE particle_properties
   LOGICAL(lp) :: l_species_allocated=.FALSE.
   !> Flag for the allocation of the particle dump array
   LOGICAL(lp) :: l_pdumps_allocated=.FALSE.
+  !> Flag for the allocation of the grid tile arrays
+  LOGICAL(lp) :: l_aofgrid_tiles_allocated=.FALSE.
+  LOGICAL(lp) :: l_aofgrid_tiles_array_allocated=.FALSE.
   !> Flag for plasma init/push
   LOGICAL(lp) :: l_plasma = .TRUE.
 END MODULE particle_properties

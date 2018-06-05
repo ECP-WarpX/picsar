@@ -63,6 +63,7 @@ MODULE tiling
   !> Creation: 2015
   ! ______________________________________________________________________________________
   SUBROUTINE set_tile_split()
+    USE particle_properties
     IMPLICIT NONE
 
     ! Set tile split for species arrays
@@ -71,8 +72,10 @@ MODULE tiling
     y_max_local, z_max_local)
 
     ! ALLOCATE grid tile arrays
-    ALLOCATE(aofgrid_tiles(ntilex, ntiley, ntilez))
-
+    IF (.NOT. l_aofgrid_tiles_allocated) THEN
+      ALLOCATE(aofgrid_tiles(ntilex, ntiley, ntilez))
+      l_aofgrid_tiles_allocated = .TRUE.
+    ENDIF
   END SUBROUTINE set_tile_split
 
 
@@ -727,6 +730,7 @@ MODULE tiling
   ! ______________________________________________________________________________________
   SUBROUTINE init_tile_arrays_for_species(nspec2, species_array, aofgtiles, ntx2,     &
     nty2, ntz2)
+    USE particle_properties
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN)        :: nspec2, ntx2, nty2, ntz2
     TYPE(grid_tile), DIMENSION(ntx2, nty2, ntz2), INTENT(IN OUT)        :: aofgtiles
@@ -739,7 +743,8 @@ MODULE tiling
     TYPE(particle_species), POINTER :: curr
 
     IF (nspec2 .EQ. 0) RETURN
-
+    IF (l_aofgrid_tiles_array_allocated) RETURN
+    
     ! Allocate particle tile arrays
     DO ispecies=1, nspec2! LOOP ON SPECIES
       curr=>species_array(ispecies)
@@ -771,7 +776,9 @@ MODULE tiling
               curr_tile%nzg_tile=nzjguards
             END IF
             ! - Allocate arrays of current tile
-            CALL allocate_tile_arrays(curr_tile)
+            IF (.NOT. curr_tile%l_arrays_allocated) THEN
+              CALL allocate_tile_arrays(curr_tile)
+            ENDIF
           END DO
         END DO
       END DO
@@ -833,6 +840,8 @@ MODULE tiling
         END DO
       END DO
     END DO! END LOOP ON TILES
+    l_aofgrid_tiles_array_allocated = .TRUE.
+    
   END SUBROUTINE init_tile_arrays_for_species
 
   ! ______________________________________________________________________________________
@@ -1617,6 +1626,19 @@ MODULE tiling
 
   END SUBROUTINE estimate_tiles_memory_consumption
    
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Create an antenna species need for the coupling between picsar and warp through 
+  !> Python.
+  !
+  !> @author
+  !> Haithem Kallala
+  !> Guillaume Blaclard
+  !
+  !> @date
+  !> Creation: 2018
+  !
+  ! ______________________________________________________________________________________
 
   SUBROUTINE init_laser_species_python(emax,spot,vector,polvector1,polvector2,charge, &
     weight_laser, posx, posy, posz, np, js_laser)
@@ -1673,9 +1695,9 @@ MODULE tiling
     curr%antenna_params%pvec_x = polvector1(1)
     curr%antenna_params%pvec_y = polvector1(2)
     curr%antenna_params%pvec_z = polvector1(3)
-    CALL set_tile_split_for_species(species_parray, nspecies, ntilex, ntiley, ntilez, &
-    nx_grid, ny_grid, nz_grid, x_min_local, y_min_local, z_min_local, x_max_local,    &
-    y_max_local, z_max_local)
+    
+    CALL set_tile_split()
+    CALL init_tile_arrays()
 
     DO i = 1, np
       partpid(wpid) = weight_laser(i)
