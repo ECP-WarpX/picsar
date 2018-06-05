@@ -93,7 +93,6 @@ SUBROUTINE laser_pusher_profile(ispecies, amp_x,amp_y,amp_z,n)
   USE params
   USE constants
   USE shared_data
-  USE particle_boundary
   
   INTEGER(idp) , INTENT(IN) :: n, ispecies
   REAL(num)  , INTENT(IN),  DIMENSION(1:n) :: amp_x, amp_y, amp_z
@@ -120,9 +119,9 @@ SUBROUTINE laser_pusher_profile(ispecies, amp_x,amp_y,amp_z,n)
              uy = curr%charge*amp_y(i+counter)
              uz = curr%charge*amp_z(i+counter)
  
-             !curr_tile%part_x(i)  = curr_tile%part_x(i) + dt*ux
-             !curr_tile%part_y(i)  = curr_tile%part_y(i) + dt*uy
-             !curr_tile%part_z(i)  = curr_tile%part_z(i) + dt*uz        
+             curr_tile%part_x(i)  = curr_tile%part_x(i) + dt*ux
+             curr_tile%part_y(i)  = curr_tile%part_y(i) + dt*uy
+             curr_tile%part_z(i)  = curr_tile%part_z(i) + dt*uz        
              
              curr_tile%part_ux(i) =  ux
              curr_tile%part_uy(i) =  uy
@@ -135,13 +134,7 @@ SUBROUTINE laser_pusher_profile(ispecies, amp_x,amp_y,amp_z,n)
         END DO
       END DO
     END DO! END LOOP ON TILES
-  !IF(c_dim == 2) THEN
-  !  CALL particle_bcs_2d
-  !ELSE 
-  !  CALL particle_bcs
-  !ENDIF
 
-  
 #if defined(DEBUG)
   WRITE(0, *) "push_laser_particles python: end"
 #endif
