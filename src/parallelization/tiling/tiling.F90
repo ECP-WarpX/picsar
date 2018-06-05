@@ -1625,7 +1625,6 @@ MODULE tiling
     USE particle_properties
     USE particles
     USE shared_data
-    USE control_file
 
     REAL(num) , INTENT(IN) :: emax, charge
     REAL(num) , INTENT(IN) , DIMENSION(3) :: spot, vector, polvector1, polvector2
