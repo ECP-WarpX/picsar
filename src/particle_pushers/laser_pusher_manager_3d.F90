@@ -99,7 +99,7 @@ END SUBROUTINE push_laser_particles
 ! ______________________________________________________________________________________
 
 
-SUBROUTINE laser_pusher_profile(ispecies, amp_x,amp_y,amp_z,n)
+SUBROUTINE laser_pusher_profile(ispecies, amp_x,amp_y,amp_z,n,source_vx,source_vy,source_vz)
   USE particles
   USE time_stat
   USE tiling
@@ -113,6 +113,7 @@ SUBROUTINE laser_pusher_profile(ispecies, amp_x,amp_y,amp_z,n)
   TYPE(particle_species), POINTER :: curr
   TYPE(particle_tile), POINTER    :: curr_tile
   REAL(num)                       :: tdeb, tend, disp_max, ux, uy, uz
+  REAL(num) , INTENT(IN)          :: source_vx,source_vy,source_vz
    
 #if defined(DEBUG)
   WRITE(0, *) "push_laser_particles python: start"
@@ -131,9 +132,9 @@ SUBROUTINE laser_pusher_profile(ispecies, amp_x,amp_y,amp_z,n)
              uy = curr%charge*amp_y(i+counter)
              uz = curr%charge*amp_z(i+counter)
  
-             curr_tile%part_x(i)  = curr_tile%part_x(i) + dt*ux
-             curr_tile%part_y(i)  = curr_tile%part_y(i) + dt*uy
-             curr_tile%part_z(i)  = curr_tile%part_z(i) + dt*uz        
+             curr_tile%part_x(i)  = curr_tile%part_x(i) + dt*(ux + source_vx)
+             curr_tile%part_y(i)  = curr_tile%part_y(i) + dt*(uy + source_vy)
+             curr_tile%part_z(i)  = curr_tile%part_z(i) + dt*(uz + source_vz)     
              
              curr_tile%part_ux(i) =  ux
              curr_tile%part_uy(i) =  uy
