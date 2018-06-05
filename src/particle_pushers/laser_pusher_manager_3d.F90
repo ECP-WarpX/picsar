@@ -136,9 +136,9 @@ SUBROUTINE laser_pusher_profile(ispecies, amp_x,amp_y,amp_z,n,source_vx,source_v
              curr_tile%part_y(i)  = curr_tile%part_y(i) + dt*(uy + source_vy)
              curr_tile%part_z(i)  = curr_tile%part_z(i) + dt*(uz + source_vz)     
              
-             curr_tile%part_ux(i) =  ux
-             curr_tile%part_uy(i) =  uy
-             curr_tile%part_uz(i) =  uz
+             curr_tile%part_ux(i) =  ux + source_vx
+             curr_tile%part_uy(i) =  uy + source_vy
+             curr_tile%part_uz(i) =  uz + source_vz
           ENDDO
           counter = counter + count
         END DO
