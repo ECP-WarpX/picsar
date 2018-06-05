@@ -1842,9 +1842,9 @@ MODULE tiling
     pos = (/0._num, 0._num, 0._num/)
     spot=(/laser%spot_x, laser%spot_y, laser%spot_z/)
     IF(c_dim == 3) THEN
-      weight_laser=2.0_num*eps0*laser%Emax/(0.01_num)*dx*dy
+      weight_laser=eps0*laser%Emax/(0.01_num)*dx*dy
     ELSE IF(c_dim == 2) THEN 
-       weight_laser=2.0_num*eps0*laser%Emax/(0.01_num)*dx
+       weight_laser=eps0*laser%Emax/(0.01_num)*dx
     ENDIF  
     DO l=1, lmax
       pos(i2) = (mins(i2)+(l-1)*dst(i2))+(dst(i2))/2.0_num
@@ -1878,27 +1878,30 @@ MODULE tiling
           ENDIF
       ENDDO
     ENDDO
-    IF(RANK .EQ. 0) THEN
-      IF(c_dim == 3) THEN
-        WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dy**2+dz**2)
-      ELSE IF(c_dim == 2) THEN
-        WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dz**2)
-      ENDIF
-      WRITE(0,*) 'Laser Waist',laser%laser_w0,"m"
-      WRITE(0,*) 'Laser duration',laser%laser_tau,' (in s)'
-      WRITE(0,*) 'Laser duration',laser%laser_tau/dt,' (in dt)'
-      WRITE(0,*) 'Laser peak ',laser%t_peak/dt,"dt"
-      WRITE(0,*) 'Laser longitudinal length',laser%laser_ctau,'m'
-      WRITE(0,*) 'Laser temporal frequency w_laser',laser%k0_laser*clight,'s^-1'
-      WRITE(0,*) 'Laser temporal period',2.0_num*pi/(laser%k0_laser*clight),'s'
-      WRITE(0,*) 'Laser temporal period',2.0_num*pi/(laser%k0_laser*clight)/dt,'dt'
-      WRITE(0,*) 'Laser tau / laser period ',laser%laser_tau/(2.0_num*pi/(laser%k0_laser*clight))
-      IF(c_dim ==3) THEN
-        WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dy**2+dz**2)
-      ELSE IF(c_dim ==2) THEN
-        WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dz**2)
-      ENDIF
-      WRITE(0,*) 'LASER EMAX',laser%Emax, laser%Emax_laser_1,laser%Emax_laser_2
+    ! --- Verbosity only for species of charge = 1._num 
+    IF(curr%charge == 1._num) THEN
+      IF(RANK .EQ. 0) THEN
+        IF(c_dim == 3) THEN
+          WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dy**2+dz**2)
+        ELSE IF(c_dim == 2) THEN
+          WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dz**2)
+        ENDIF
+        WRITE(0,*) 'Laser Waist',laser%laser_w0,"m"
+        WRITE(0,*) 'Laser duration',laser%laser_tau,' (in s)'
+        WRITE(0,*) 'Laser duration',laser%laser_tau/dt,' (in dt)'
+        WRITE(0,*) 'Laser peak ',laser%t_peak/dt,"dt"
+        WRITE(0,*) 'Laser longitudinal length',laser%laser_ctau,'m'
+        WRITE(0,*) 'Laser temporal frequency w_laser',laser%k0_laser*clight,'s^-1'
+        WRITE(0,*) 'Laser temporal period',2.0_num*pi/(laser%k0_laser*clight),'s'
+        WRITE(0,*) 'Laser temporal period',2.0_num*pi/(laser%k0_laser*clight)/dt,'dt'
+        WRITE(0,*) 'Laser tau / laser period ',laser%laser_tau/(2.0_num*pi/(laser%k0_laser*clight))
+        IF(c_dim ==3) THEN
+          WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dy**2+dz**2)
+        ELSE IF(c_dim ==2) THEN
+          WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dz**2)
+        ENDIF
+        WRITE(0,*) 'LASER EMAX',laser%Emax, laser%Emax_laser_1,laser%Emax_laser_2
+     ENDIF
    ENDIF
   END SUBROUTINE load_laser_species
 
