@@ -1244,7 +1244,7 @@ MODULE control_file
   ! ______________________________________________________________________________________
   SUBROUTINE read_antenna_section
     INTEGER :: ix = 0
-    LOGICAL(lp)  :: end_section = .FALSE.
+    LOGICAL(lp)  :: end_section 
     TYPE(particle_species), POINTER :: curr, curr2
 
     IF (.NOT. l_species_allocated) THEN
@@ -1292,7 +1292,8 @@ MODULE control_file
     curr%antenna_params%vector = 0._num 
     curr%antenna_params%polvector1 = 0._num
     curr%antenna_params%polvector2 = 0._num
-
+     
+    end_section = .FALSE.
     DO WHILE((.NOT. end_section) .AND. (ios==0))
       READ(fh_input, '(A)', iostat=ios) buffer
       IF (INDEX(buffer, '#') .GT. 0) THEN
@@ -1400,9 +1401,6 @@ MODULE control_file
     curr2%antenna_params%vector = curr%antenna_params%vector
     curr2%antenna_params%polvector1 = curr%antenna_params%polvector1
     curr2%antenna_params%polvector2 =  curr%antenna_params%polvector2
-
-
-
     RETURN
   END SUBROUTINE read_antenna_section
   ! ______________________________________________________________________________________
