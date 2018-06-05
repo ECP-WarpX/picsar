@@ -899,12 +899,12 @@ MODULE tiling
                   phi=2*pi*rng(3)
 
                   partvx= curr%vdrift_x +                                             &
-                  curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
+                  curr%vth_x*SQRT(-2.*LOG(v))*COS(th)*COS(phi)
                   partvy= curr%vdrift_y +                                             &
-                  curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
-                  partvz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
+                  curr%vth_y*SQRT(-2.*LOG(v))*COS(th)*SIN(phi)
+                  partvz= curr%vdrift_z + curr%vth_z*SQRT(-2.*LOG(v))*SIN(th)
 
-                  gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 +                    &
+                  gaminv = SQRT(1.0_num - (partvx**2 + partvy**2 +                    &
                   partvz**2)*clightsq)
                   partux = partvx /gaminv
                   partuy = partvy /gaminv
@@ -937,11 +937,11 @@ MODULE tiling
                 th=2*pi*rng(2)
                 phi=2*pi*rng(3)
 
-                partvx= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
-                partvy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
-                partvz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
+                partvx= curr%vdrift_x + curr%vth_x*SQRT(-2.*LOG(v))*COS(th)*COS(phi)
+                partvy= curr%vdrift_y + curr%vth_y*SQRT(-2.*LOG(v))*COS(th)*SIN(phi)
+                partvz= curr%vdrift_z + curr%vth_z*SQRT(-2.*LOG(v))*SIN(th)
 
-                gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 + partvz**2)*clightsq)
+                gaminv = SQRT(1.0_num - (partvx**2 + partvy**2 + partvz**2)*clightsq)
                 partux = partvx /gaminv
                 partuy = partvy /gaminv
                 partuz = partvz /gaminv
@@ -982,11 +982,11 @@ MODULE tiling
                 th=2*pi*rng(5)
                 phi=2*pi*rng(6)
 
-                partvx= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
-                partvy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
-                partvz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
+                partvx= curr%vdrift_x + curr%vth_x*SQRT(-2.*LOG(v))*COS(th)*COS(phi)
+                partvy= curr%vdrift_y + curr%vth_y*SQRT(-2.*LOG(v))*COS(th)*SIN(phi)
+                partvz= curr%vdrift_z + curr%vth_z*SQRT(-2.*LOG(v))*SIN(th)
 
-                gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 + partvz**2)*clightsq)
+                gaminv = SQRT(1.0_num - (partvx**2 + partvy**2 + partvz**2)*clightsq)
                 partux = partvx /gaminv
                 partuy = partvy /gaminv
                 partuz = partvz /gaminv
@@ -1032,7 +1032,7 @@ MODULE tiling
                 partvy= curr%vdrift_y + curr%vth_x*COS(th)*SIN(phi)
                 partvz= curr%vdrift_z + curr%vth_x*SIN(th)
 
-                gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 + partvz**2)*clightsq)
+                gaminv = SQRT(1.0_num - (partvx**2 + partvy**2 + partvz**2)*clightsq)
                 partux = partvx /gaminv
                 partuy = partvy /gaminv
                 partuz = partvz /gaminv
@@ -1684,17 +1684,13 @@ MODULE tiling
     curr%ldodepos = .TRUE.
     ! --- Init default value for antenna params
     curr%is_antenna=.TRUE.
-    curr%antenna_params%laser_z0 = 0._num
     curr%antenna_params%polangle = 0._num
-    curr%antenna_params%vector_x = vector(1)
-    curr%antenna_params%vector_y = vector(2)
-    curr%antenna_params%vector_z = vector(3)
+    curr%antenna_params%vector = vector
     curr%antenna_params%spot_x = spot(1)
     curr%antenna_params%spot_y = spot(2)
     curr%antenna_params%spot_z = spot(3)
-    curr%antenna_params%pvec_x = polvector1(1)
-    curr%antenna_params%pvec_y = polvector1(2)
-    curr%antenna_params%pvec_z = polvector1(3)
+    curr%antenna_params%polvector1 = polvector1
+    curr%antenna_params%polvector2 = polvector2
     
     CALL set_tile_split()
     CALL init_tile_arrays()
@@ -1736,23 +1732,17 @@ MODULE tiling
     INTEGER(idp) :: i1, i2, inonz
     TYPE(particle_antenna), POINTER ::  laser
     REAL(num), DIMENSION(2, 2)      :: M1, M2, M3
-
+    REAL(num)  :: sx(3) , sy(3)
     laser=>curr%antenna_params
 
     IF(c_dim == 2) THEN
-      laser%vector_y = 0.0_num
+      laser%vector(2) = 0.0_num
       laser%spot_y = 0.0_num
     ENDIF
 
-    ! --- Initing laser wave vector (vector normal to laser injection plane)
-    laser%vector(1) = laser%vector_x
-    laser%vector(2) = laser%vector_y
-    laser%vector(3) = laser%vector_z
+    ! --- Normalize (vector normal to laser injection plane)
     laser%vector    = laser%vector/SQRT(SUM(laser%vector**2))! Norm - 1
-    ! --- Initing laser polarization vector
-    laser%polvector1(1) = laser%pvec_x
-    laser%polvector1(2) = laser%pvec_y
-    laser%polvector1(3) = laser%pvec_z
+    ! --- Normalize laser polarization vector
     laser%polvector1=laser%polvector1/SQRT(SUM(laser%polvector1**2))! Norm - 1
 
     IF(SUM(laser%polvector1*laser%vector) .NE. 0._num ) WRITE(0, *) 'ERROR : laser    &
@@ -1790,22 +1780,8 @@ MODULE tiling
     laser%inv_w02 = 1._num/laser%laser_w0**2
 
     ! --- Gaussian q parameter at focus
-    laser%q_0 = (0., 1.) * laser%laser_w0**2*pi/laser%lambda_laser
+    laser%q_z = (0._num, 1._num) * laser%laser_w0**2*pi/laser%lambda_laser
 
-    ! --- Gaussian q parameter in antenna_plane
-    IF(laser%is_lens .EQV. .FALSE.) THEN
-      laser%q_z = (laser%q_0+laser%laser_z0)
-    ELSE
-      M1(1, 1) = 1.0_num ; M1(1, 2) = laser%laser_z0-laser%laser_zf
-      M1(2, 1) = 0.0_num ; M1(2, 2) = 1.0_num
-      M2(1, 1) = 1.0_num ; M2(1, 2) = 0.0_num
-      M2(2, 1) = -1./laser%focal_length ; M2(2, 2) = 1.0_num
-      CALL product_matrix_2c2(M1, M2, M3)
-      M2(1, 1) = 1.0_num ; M2(1, 2) = laser%laser_zf
-      M2(2, 1) = 0.0_num ; M2(2, 2) = 1.0_num
-      CALL product_matrix_2c2(M3, M2, M1)
-      laser%q_z = (M1(1, 1)*laser%q_0  + M1(1, 2))/(M1(2, 1)*laser%q_0+M1(2, 2))
-    ENDIF
     ALLOCATE(partpid(npid))
 
     ! --- Sanity check on vector normal to antenna plane
@@ -1840,12 +1816,34 @@ MODULE tiling
     maxs = (/x_max_local, y_max_local, z_max_local/)
     dst  = (/dx, dy, dz/)
     pos = (/0._num, 0._num, 0._num/)
+
+    !-> Compute particle weight coeff depending on polarization direction
+    sx = 1._num 
+    sy = 1._num
+
+    IF(c_dim == 3) THEN
+      IF(laser%polvector1(1) .NE. 0._num) sx(1) = ABS(dx/laser%polvector1(1))
+      IF(laser%polvector1(2) .NE. 0._num) sx(2) = ABS(dy/laser%polvector1(2))
+      IF(laser%polvector1(3) .NE. 0._num) sx(3) = ABS(dz/laser%polvector1(3))
+      IF(laser%polvector2(1) .NE. 0._num) sy(1) = ABS(dx/laser%polvector2(1))
+      IF(laser%polvector2(2) .NE. 0._num) sy(2) = ABS(dy/laser%polvector2(2))
+      IF(laser%polvector2(3) .NE. 0._num) sy(3) = ABS(dz/laser%polvector2(3))
+    ELSE IF (c_dim == 2) THEN
+      IF(laser%polvector2(2) == 0.0_num) THEN 
+        IF(laser%polvector2(1) .NE. 0._num) sx(1) = ABS(dx/laser%polvector2(1))
+        IF(laser%polvector2(3) .NE. 0._num) sx(3) = ABS(dz/laser%polvector2(3))
+      ELSE IF(laser%polvector1(2) == 0.0_num) THEN
+        IF(laser%polvector1(1) .NE. 0._num) sx(1) = ABS(dx/laser%polvector1(1))
+        IF(laser%polvector1(3) .NE. 0._num) sx(3) = ABS(dz/laser%polvector1(3))
+      ENDIF
+    ENDIF
     spot=(/laser%spot_x, laser%spot_y, laser%spot_z/)
     IF(c_dim == 3) THEN
-      weight_laser=eps0*laser%Emax/(0.01_num)*dx*dy
-    ELSE IF(c_dim == 2) THEN 
-       weight_laser=eps0*laser%Emax/(0.01_num)*dx
-    ENDIF  
+      weight_laser = eps0*laser%Emax/(0.01_num)*MINVAL(sx)*MINVAL(sy)
+    ELSE IF(c_dim == 2) THEN
+       weight_laser = eps0*laser%Emax/(0.01_num)*MINVAL(sx)
+    ENDIF
+
     DO l=1, lmax
       pos(i2) = (mins(i2)+(l-1)*dst(i2))+(dst(i2))/2.0_num
       DO j=1, jmax
@@ -1882,9 +1880,9 @@ MODULE tiling
     IF(curr%charge == 1._num) THEN
       IF(RANK .EQ. 0) THEN
         IF(c_dim == 3) THEN
-          WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dy**2+dz**2)
+          WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/SQRT(dx**2+dy**2+dz**2)
         ELSE IF(c_dim == 2) THEN
-          WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dz**2)
+          WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/SQRT(dx**2+dz**2)
         ENDIF
         WRITE(0,*) 'Laser Waist',laser%laser_w0,"m"
         WRITE(0,*) 'Laser duration',laser%laser_tau,' (in s)'
@@ -1896,13 +1894,13 @@ MODULE tiling
         WRITE(0,*) 'Laser temporal period',2.0_num*pi/(laser%k0_laser*clight)/dt,'dt'
         WRITE(0,*) 'Laser tau / laser period ',laser%laser_tau/(2.0_num*pi/(laser%k0_laser*clight))
         IF(c_dim ==3) THEN
-          WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dy**2+dz**2)
+          WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/SQRT(dx**2+dy**2+dz**2)
         ELSE IF(c_dim ==2) THEN
-          WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dz**2)
+          WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/SQRT(dx**2+dz**2)
         ENDIF
         WRITE(0,*) 'LASER EMAX',laser%Emax, laser%Emax_laser_1,laser%Emax_laser_2
-     ENDIF
-   ENDIF
+      ENDIF
+    ENDIF
   END SUBROUTINE load_laser_species
 
   SUBROUTINE load_laser

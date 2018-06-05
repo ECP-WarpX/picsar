@@ -1277,28 +1277,22 @@ MODULE control_file
     curr%ldodepos = .TRUE.
     ! --- Init default value for antenna params
     curr%is_antenna=.TRUE.
-    curr%antenna_params%is_lens=.FALSE.
-    curr%antenna_params%laser_z0 = 0._num
     curr%antenna_params%polangle = 0._num
-    curr%antenna_params%vector_x = 0._num
-    curr%antenna_params%vector_y = 0._num
-    curr%antenna_params%vector_z = 0._num
     curr%antenna_params%spot_x = 0._num
     curr%antenna_params%spot_y = 0._num
     curr%antenna_params%spot_z = 0._num
     curr%antenna_params%lambda_laser = 0._num
-    curr%antenna_params%pvec_x = 0._num
-    curr%antenna_params%pvec_y = 0._num
-    curr%antenna_params%pvec_z = 0._num
     curr%antenna_params%laser_ctau = 0._num
     curr%antenna_params%laser_a_1 = 0._num
     curr%antenna_params%laser_a_2 = 0._num
     curr%antenna_params%laser_w0 = 0._num
     curr%antenna_params%temporal_order = 2
-    curr%antenna_params%laser_zf = 0._num
-    curr%antenna_params%focal_length = 0._num
     curr%antenna_params%t_peak = 0._num
     curr%antenna_params%time_window = 0_idp
+    curr%antenna_params%vector = 0._num 
+    curr%antenna_params%polvector1 = 0._num
+    curr%antenna_params%polvector2 = 0._num
+
     DO WHILE((.NOT. end_section) .AND. (ios==0))
       READ(fh_input, '(A)', iostat=ios) buffer
       IF (INDEX(buffer, '#') .GT. 0) THEN
@@ -1306,13 +1300,13 @@ MODULE control_file
       ENDIF
       IF (INDEX(buffer, 'vector_x') .GT. 0) THEN
         ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), *) curr%antenna_params%vector_x
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%vector(1)
       ELSE IF (INDEX(buffer, 'vector_y') .GT. 0) THEN
         ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), *) curr%antenna_params%vector_y
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%vector(2)
       ELSE IF (INDEX(buffer, 'vector_z') .GT. 0) THEN
         ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), *) curr%antenna_params%vector_z
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%vector(3)
       ELSE IF (INDEX(buffer, 'spot_x') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) curr%antenna_params%spot_x
@@ -1327,13 +1321,13 @@ MODULE control_file
         READ(buffer(ix+1:string_length), *) curr%antenna_params%lambda_laser
       ELSE IF (INDEX(buffer, 'pvec_x') .GT. 0) THEN
         ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), *) curr%antenna_params%pvec_x
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%polvector1(1)
       ELSE IF (INDEX(buffer, 'pvec_y') .GT. 0) THEN
         ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), *) curr%antenna_params%pvec_y
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%polvector1(2)
       ELSE IF (INDEX(buffer, 'pvec_z') .GT. 0) THEN
         ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), *) curr%antenna_params%pvec_z
+        READ(buffer(ix+1:string_length), *) curr%antenna_params%polvector1(3)
       ELSE IF (INDEX(buffer, 'laser_ctau') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) curr%antenna_params%laser_ctau
@@ -1358,18 +1352,6 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'window') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)')curr%antenna_params%time_window
-      ELSE IF (INDEX(buffer, 'is_lens') .GT. 0) THEN
-        ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), *) curr%antenna_params%is_lens
-      ELSE IF (INDEX(buffer, 'laser_zf') .GT. 0) THEN
-        ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), *) curr%antenna_params%laser_zf
-      ELSE IF (INDEX(buffer, 'focal_length') .GT. 0) THEN
-        ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), *) curr%antenna_params%focal_length
-      ELSE IF (INDEX(buffer, 'laser_z0') .GT. 0) THEN
-        ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), *) curr%antenna_params%laser_z0
       ELSE IF (INDEX(buffer, 'end::antenna') .GT. 0) THEN
         end_section =.TRUE.
       ENDIF
@@ -1403,28 +1385,22 @@ MODULE control_file
     curr2%ldodepos = .TRUE.
     ! --- Init default value for antenna params
     curr2%is_antenna=.TRUE.
-    curr2%antenna_params%is_lens=curr%antenna_params%is_lens
-    curr2%antenna_params%laser_z0 = curr%antenna_params%laser_z0
     curr2%antenna_params%polangle = curr%antenna_params%polangle
-    curr2%antenna_params%vector_x = curr%antenna_params%vector_x 
-    curr2%antenna_params%vector_y = curr%antenna_params%vector_y
-    curr2%antenna_params%vector_z = curr%antenna_params%vector_z
     curr2%antenna_params%spot_x = curr%antenna_params%spot_x
     curr2%antenna_params%spot_y = curr%antenna_params%spot_y
     curr2%antenna_params%spot_z = curr%antenna_params%spot_z
     curr2%antenna_params%lambda_laser = curr%antenna_params%lambda_laser
-    curr2%antenna_params%pvec_x = curr%antenna_params%pvec_x
-    curr2%antenna_params%pvec_y = curr%antenna_params%pvec_y
-    curr2%antenna_params%pvec_z = curr%antenna_params%pvec_z
     curr2%antenna_params%laser_ctau = curr%antenna_params%laser_ctau
     curr2%antenna_params%laser_a_1 = curr%antenna_params%laser_a_1
     curr2%antenna_params%laser_a_2 = curr%antenna_params%laser_a_2
     curr2%antenna_params%laser_w0 = curr%antenna_params%laser_w0
     curr2%antenna_params%temporal_order = curr%antenna_params%temporal_order
-    curr2%antenna_params%laser_zf = curr%antenna_params%laser_zf 
-    curr2%antenna_params%focal_length = curr%antenna_params%focal_length
     curr2%antenna_params%t_peak = curr%antenna_params%t_peak
     curr2%antenna_params%time_window =  curr%antenna_params%time_window 
+    curr2%antenna_params%vector = curr%antenna_params%vector
+    curr2%antenna_params%polvector1 = curr%antenna_params%polvector1
+    curr2%antenna_params%polvector2 =  curr%antenna_params%polvector2
+
 
 
     RETURN
