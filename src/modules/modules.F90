@@ -617,7 +617,7 @@ MODULE particle_properties
   !> total number of particles (all species, all subdomains -> useful for stat)
   INTEGER(idp) :: ntot
   !> Max number of particle species
-  INTEGER(idp) :: nspecies_max=6
+  INTEGER(idp) :: nspecies_max = 40_idp
   !> this parameter it not used
   REAL(num) :: fdxrand=0.0_num
   !> this parameter it not used
