@@ -174,7 +174,7 @@ subroutine warpx_pxr_push_em3d_bvec( &
      by, bylo, byhi, &
      bz, bzlo, bzhi, &
      dtsdx,dtsdy,dtsdz,&
-     norder) bind(c) !#do not parse
+     solver_type) bind(c) !#do not parse
 ! ______________________________________________________________________________
 
   USE constants
@@ -182,7 +182,7 @@ subroutine warpx_pxr_push_em3d_bvec( &
   integer :: xlo(3), xhi(3), ylo(3), yhi(3), zlo(3), zhi(3), &
        exlo(3),exhi(3),eylo(3),eyhi(3),ezlo(3),ezhi(3),&
        bxlo(3),bxhi(3),bylo(3),byhi(3),bzlo(3),bzhi(3),&
-       norder
+       solver_type
 
   real(num), intent(IN):: ex(exlo(1):exhi(1),exlo(2):exhi(2),exlo(3):exhi(3))
   real(num), intent(IN):: ey(eylo(1):eyhi(1),eylo(2):eyhi(2),eylo(3):eyhi(3))
@@ -196,35 +196,156 @@ subroutine warpx_pxr_push_em3d_bvec( &
 
   integer :: j,k,l
 
-  do l       = xlo(3), xhi(3)
-     do k    = xlo(2), xhi(2)
-        do j = xlo(1), xhi(1)
-           Bx(j,k,l) = Bx(j,k,l) - dtsdy * (Ez(j  ,k+1,l  ) - Ez(j,k,l)) &
-                                 + dtsdz * (Ey(j  ,k  ,l+1) - Ey(j,k,l))
-        end do
-     end do
-  end do
+  real(num) :: delta, rx, ry, rz, betaxz, betaxy, betayx, betayz, betazx, betazy 
+  real(num) :: beta, alphax, alphay, alphaz, gammax, gammay, gammaz
+  
+  ! solver_type: 0=Yee; 1=CKC
 
-  do l       = ylo(3), yhi(3)
-     do k    = ylo(2), yhi(2)
-        do j = ylo(1), yhi(1)
-           By(j,k,l) = By(j,k,l) + dtsdx * (Ez(j+1,k  ,l  ) - Ez(j,k,l)) &
-                                 - dtsdz * (Ex(j  ,k  ,l+1) - Ex(j,k,l))
-        end do
-     end do
-  end do
+  ! dtsdy should not be used.  It is set to nan by WarpX.
+  
+  if (solver_type==0) then
+  
+      ! Yee push
 
-  do l       = zlo(3), zhi(3)
-     do k    = zlo(2), zhi(2)
-        do j = zlo(1), zhi(1)
-           Bz(j,k,l) = Bz(j,k,l) - dtsdx * (Ey(j+1,k  ,l  ) - Ey(j,k,l)) &
-                                 + dtsdy * (Ex(j  ,k+1,l  ) - Ex(j,k,l))
-        end do
-     end do
-  end do
+      do l       = xlo(3), xhi(3)
+         do k    = xlo(2), xhi(2)
+            do j = xlo(1), xhi(1)
+               Bx(j,k,l) = Bx(j,k,l) - dtsdy * (Ez(j  ,k+1,l  ) - Ez(j,k,l)) &
+                                     + dtsdz * (Ey(j  ,k  ,l+1) - Ey(j,k,l))
+            end do
+         end do
+      end do
+
+      do l       = ylo(3), yhi(3)
+         do k    = ylo(2), yhi(2)
+            do j = ylo(1), yhi(1)
+               By(j,k,l) = By(j,k,l) + dtsdx * (Ez(j+1,k  ,l  ) - Ez(j,k,l)) &
+                                     - dtsdz * (Ex(j  ,k  ,l+1) - Ex(j,k,l))
+            end do
+         end do
+      end do
+
+      do l       = zlo(3), zhi(3)
+         do k    = zlo(2), zhi(2)
+            do j = zlo(1), zhi(1)
+               Bz(j,k,l) = Bz(j,k,l) - dtsdx * (Ey(j+1,k  ,l  ) - Ey(j,k,l)) &
+                                     + dtsdy * (Ex(j  ,k+1,l  ) - Ex(j,k,l))
+            end do
+         end do
+      end do
+  
+  else 
+
+      ! CKC push  
+
+      delta = max(dtsdx,dtsdy,dtsdz)
+      rx = (dtsdx/delta)**2
+      ry = (dtsdy/delta)**2
+      rz = (dtsdz/delta)**2
+      beta = 0.125*(1.-rx*ry*rz/(ry*rz+rz*rx+rx*ry))
+      betaxy = ry*beta
+      betaxz = rz*beta
+      betayx = rx*beta
+      betayz = rz*beta
+      betazx = rx*beta
+      betazy = ry*beta
+      gammax = ry*rz*(1./16.-0.125*ry*rz/(ry*rz+rz*rx+rx*ry))
+      gammay = rx*rz*(1./16.-0.125*rx*rz/(ry*rz+rz*rx+rx*ry))
+      gammaz = rx*ry*(1./16.-0.125*rx*ry/(ry*rz+rz*rx+rx*ry))
+      alphax = 1. - 2.*betaxy - 2.* betaxz - 4.*gammax
+      alphay = 1. - 2.*betayx - 2.* betayz - 4.*gammay
+      alphaz = 1. - 2.*betazx - 2.* betazy - 4.*gammaz
+
+      betaxy = dtsdx*betaxy
+      betaxz = dtsdx*betaxz
+      betayx = dtsdy*betayx
+      betayz = dtsdy*betayz
+      betazx = dtsdz*betazx
+      alphax = dtsdx*alphax
+      alphay = dtsdy*alphay
+      alphaz = dtsdz*alphaz
+      gammax = dtsdx*gammax
+      gammay = dtsdy*gammay
+      gammaz = dtsdz*gammaz
+
+      do l       = xlo(3), xhi(3)
+         do k    = xlo(2), xhi(2)
+            do j = xlo(1), xhi(1)
+               Bx(j,k,l) = Bx(j,k,l) - alphay * (Ez(j  ,k+1,l  ) - Ez(j,  k  ,l  )) &
+                                     - betayx * (Ez(j+1,k+1,l  ) - Ez(j+1,k  ,l  )  &
+                                              +  Ez(j-1,k+1,l  ) - Ez(j-1,k  ,l  )) &
+                                     - betayz * (Ez(j  ,k+1,l+1) - Ez(j  ,k  ,l+1)  &
+                                              +  Ez(j  ,k+1,l-1) - Ez(j  ,k  ,l-1)) &
+                                     - gammay * (Ez(j+1,k+1,l+1) - Ez(j+1,k  ,l+1)  &
+                                              +  Ez(j-1,k+1,l+1) - Ez(j-1,k  ,l+1)  &
+                                              +  Ez(j+1,k+1,l-1) - Ez(j+1,k  ,l-1)  &
+                                              +  Ez(j-1,k+1,l-1) - Ez(j-1,k  ,l-1)) &
+                                     + alphaz * (Ey(j  ,k  ,l+1) - Ey(j,  k,  l  )) &
+                                     + betazx * (Ey(j+1,k  ,l+1) - Ey(j+1,k  ,l  )  &
+                                              +  Ey(j-1,k  ,l+1) - Ey(j-1,k  ,l  )) &
+                                     + betazy * (Ey(j  ,k+1,l+1) - Ey(j  ,k+1,l  )  &
+                                              +  Ey(j  ,k-1,l+1) - Ey(j  ,k-1,l  )) &
+                                     + gammaz * (Ey(j+1,k+1,l+1) - Ey(j+1,k+1,l  )  &
+                                              +  Ey(j-1,k+1,l+1) - Ey(j-1,k+1,l  )  &
+                                              +  Ey(j+1,k-1,l+1) - Ey(j+1,k-1,l  )  &
+                                              +  Ey(j-1,k-1,l+1) - Ey(j-1,k-1,l  ))
+            end do
+         end do
+      end do
+
+      do l       = ylo(3), yhi(3)
+         do k    = ylo(2), yhi(2)
+            do j = ylo(1), yhi(1)
+               By(j,k,l) = By(j,k,l) + alphax * (Ez(j+1,k  ,l  ) - Ez(j,  k,  l  )) &
+                                     + betaxy * (Ez(j+1,k+1,l  ) - Ez(j  ,k+1,l  )  &
+                                              +  Ez(j+1,k-1,l  ) - Ez(j  ,k-1,l  )) &
+                                     + betaxz * (Ez(j+1,k  ,l+1) - Ez(j  ,k  ,l+1)  &
+                                              +  Ez(j+1,k  ,l-1) - Ez(j  ,k  ,l-1)) &
+                                     + gammax * (Ez(j+1,k+1,l+1) - Ez(j  ,k+1,l+1)  &
+                                              +  Ez(j+1,k-1,l+1) - Ez(j  ,k-1,l+1)  &
+                                              +  Ez(j+1,k+1,l-1) - Ez(j  ,k+1,l-1)  &
+                                              +  Ez(j+1,k-1,l-1) - Ez(j  ,k-1,l-1)) &
+                                     - alphaz * (Ex(j  ,k  ,l+1) - Ex(j  ,k  ,l  )) &
+                                     - betazx * (Ex(j+1,k  ,l+1) - Ex(j+1,k  ,l  )  &
+                                              +  Ex(j-1,k  ,l+1) - Ex(j-1,k  ,l  )) &
+                                     - betazy * (Ex(j  ,k+1,l+1) - Ex(j  ,k+1,l  )  &
+                                              +  Ex(j  ,k-1,l+1) - Ex(j  ,k-1,l  )) &
+                                     - gammaz * (Ex(j+1,k+1,l+1) - Ex(j+1,k+1,l  )  &
+                                              +  Ex(j-1,k+1,l+1) - Ex(j-1,k+1,l  )  &
+                                              +  Ex(j+1,k-1,l+1) - Ex(j+1,k-1,l  )  &
+                                              +  Ex(j-1,k-1,l+1) - Ex(j-1,k-1,l  ))
+            end do
+         end do
+      end do
+
+      do l       = zlo(3), zhi(3)
+         do k    = zlo(2), zhi(2)
+            do j = zlo(1), zhi(1)
+               Bz(j,k,l) = Bz(j,k,l) - alphax * (Ey(j+1,k  ,l  ) - Ey(j  ,k  ,l  )) &
+                                     - betaxy * (Ey(j+1,k+1,l  ) - Ey(j  ,k+1,l  )  &
+                                              +  Ey(j+1,k-1,l  ) - Ey(j  ,k-1,l  )) &
+                                     - betaxz * (Ey(j+1,k  ,l+1) - Ey(j  ,k  ,l+1)  &
+                                              +  Ey(j+1,k  ,l-1) - Ey(j  ,k  ,l-1)) &
+                                     - gammax * (Ey(j+1,k+1,l+1) - Ey(j  ,k+1,l+1)  &
+                                              +  Ey(j+1,k-1,l+1) - Ey(j  ,k-1,l+1)  &
+                                              +  Ey(j+1,k+1,l-1) - Ey(j  ,k+1,l-1)  &
+                                              +  Ey(j+1,k-1,l-1) - Ey(j  ,k-1,l-1)) &
+                                     + alphay * (Ex(j  ,k+1,l  ) - Ex(j  ,k  ,l  )) &
+                                     + betayx * (Ex(j+1,k+1,l  ) - Ex(j+1,k  ,l  )  &
+                                              +  Ex(j-1,k+1,l  ) - Ex(j-1,k  ,l  )) &
+                                     + betayz * (Ex(j  ,k+1,l+1) - Ex(j  ,k  ,l+1)  &
+                                              +  Ex(j  ,k+1,l-1) - Ex(j  ,k  ,l-1)) &
+                                     + gammay * (Ex(j+1,k+1,l+1) - Ex(j+1,k  ,l+1)  &
+                                              +  Ex(j-1,k+1,l+1) - Ex(j-1,k  ,l+1)  &
+                                              +  Ex(j+1,k+1,l-1) - Ex(j+1,k  ,l-1)  &
+                                              +  Ex(j-1,k+1,l-1) - Ex(j-1,k  ,l-1))
+            end do
+         end do
+      end do
+
+  end if
 
 end subroutine warpx_pxr_push_em3d_bvec
-
 
 ! ________________________________________________________________________________________
 !> @brief
@@ -391,10 +512,10 @@ subroutine warpx_pxr_push_em2d_bvec( &
       alphax = 1. - 2.*betaxz
       alphaz = 1. - 2.*betazx
 
-      betaxz = betaxz*dtsdx
-      betazx = betazx*dtsdz
-      alphax = alphax*dtsdx
-      alphaz = alphaz*dtsdz
+      betaxz = dtsdx*betaxz
+      betazx = dtsdz*betazx
+      alphax = dtsdx*alphax
+      alphaz = dtsdz*alphaz
 
       do k    = xlo(2), xhi(2)
          do j = xlo(1), xhi(1)
