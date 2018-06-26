@@ -315,6 +315,7 @@ end subroutine warpx_pxr_push_em2d_evec
 !> @author
 !> Weiqun Zhang
 !> Mathieu Lobet
+!> Jean-Luc Vay
 !
 !> @date
 !> Creation 2015
@@ -328,7 +329,7 @@ subroutine warpx_pxr_push_em2d_bvec( &
      by, bylo, byhi, &
      bz, bzlo, bzhi, &
      dtsdx,dtsdy,dtsdz,&
-     norder) bind(c) !#do not parse
+     solver_type) bind(c) !#do not parse
 ! ______________________________________________________________________________
 
   USE constants
@@ -336,7 +337,7 @@ subroutine warpx_pxr_push_em2d_bvec( &
   integer :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
        exlo(2),exhi(2),eylo(2),eyhi(2),ezlo(2),ezhi(2),&
        bxlo(2),bxhi(2),bylo(2),byhi(2),bzlo(2),bzhi(2),&
-       norder
+       solver_type
 
   real(num), intent(IN):: ex(exlo(1):exhi(1),exlo(2):exhi(2))
   real(num), intent(IN):: ey(eylo(1):eyhi(1),eylo(2):eyhi(2))
@@ -349,24 +350,76 @@ subroutine warpx_pxr_push_em2d_bvec( &
   real(num), intent(IN) :: dtsdx,dtsdy,dtsdz
 
   integer :: j,k
+  
+  real(num) :: delta, rx, rz, betaxz, betazx, alphax, alphaz
+  
+  ! solver_type: 0=Yee; 1=CKC
 
-  ! dtsdy should be be used.  It is set to nan by WarpX.
+  ! dtsdy should not be used.  It is set to nan by WarpX.
+  
+  if (solver_type==0) then
+  
+      ! Yee push
 
-  do k    = xlo(2), xhi(2)
-     do j = xlo(1), xhi(1)
-        Bx(j,k) = Bx(j,k) + dtsdz * (Ey(j  ,k+1) - Ey(j,k))
-    end do
- end do
- do k    = ylo(2), yhi(2)
-    do j = ylo(1), yhi(1)
-        By(j,k) = By(j,k) + dtsdx * (Ez(j+1,k  ) - Ez(j,k)) &
-                          - dtsdz * (Ex(j  ,k+1) - Ex(j,k))
+      do k    = xlo(2), xhi(2)
+         do j = xlo(1), xhi(1)
+            Bx(j,k) = Bx(j,k) + dtsdz * (Ey(j  ,k+1) - Ey(j,k))
+        end do
       end do
-   end do
-   do k    = zlo(2), zhi(2)
-      do j = zlo(1), zhi(1)
-        Bz(j,k) = Bz(j,k) - dtsdx * (Ey(j+1,k  ) - Ey(j,k))
-     end do
-  end do
+      do k    = ylo(2), yhi(2)
+        do j = ylo(1), yhi(1)
+            By(j,k) = By(j,k) + dtsdx * (Ez(j+1,k  ) - Ez(j,k)) &
+                              - dtsdz * (Ex(j  ,k+1) - Ex(j,k))
+          end do
+       end do
+       do k    = zlo(2), zhi(2)
+          do j = zlo(1), zhi(1)
+            Bz(j,k) = Bz(j,k) - dtsdx * (Ey(j+1,k  ) - Ey(j,k))
+         end do
+       end do
 
+  else
+
+      ! Cole-Karkkainen-Cowan push
+
+      ! computes coefficients according to Cowan - PRST-AB 16, 041303 (2013)
+      delta = max(dtsdx,dtsdz)
+      rx = (dtsdx/delta)**2
+      rz = (dtsdz/delta)**2
+      betaxz = 0.125*rz
+      betazx = 0.125*rx
+      alphax = 1. - 2.*betaxz
+      alphaz = 1. - 2.*betazx
+
+      betaxz = betaxz*dtsdx
+      betazx = betazx*dtsdz
+      alphax = alphax*dtsdx
+      alphaz = alphaz*dtsdz
+
+      do k    = xlo(2), xhi(2)
+         do j = xlo(1), xhi(1)
+            Bx(j,k) = Bx(j,k) + alphaz * (Ey(j  ,k+1) - Ey(j,  k)) &
+                              + betazx * (Ey(j+1,k+1) - Ey(j+1,k)  &
+                                       +  Ey(j-1,K+1) - Ey(j-1,k))
+        end do
+      end do
+      do k    = ylo(2), yhi(2)
+         do j = ylo(1), yhi(1)
+            By(j,k) = By(j,k) + alphax * (Ez(j+1,k  ) - Ez(j,k))   &
+                              + betaxz * (Ez(j+1,k+1) - Ez(j,k+1)  &
+                                       +  Ez(j+1,k-1) - Ez(j,k-1)) &
+                              - alphaz * (Ex(j  ,k+1) - Ex(j,k  )) &
+                              - betazx * (Ex(j+1,k+1) - Ex(j+1,k)  &
+                                       +  Ex(j-1,k+1) - Ex(j-1,k))
+          end do
+       end do
+       do k    = zlo(2), zhi(2)
+          do j = zlo(1), zhi(1)
+             Bz(j,k) = Bz(j,k) - alphax * (Ey(j+1,k  ) - Ey(j,k))  &
+                               - betaxz * (Ey(j+1,k+1) - Ey(j,k+1) &
+                                        +  Ey(j+1,k-1) - Ey(j,k-1))
+         end do
+       end do
+  
+  end if
 end subroutine warpx_pxr_push_em2d_bvec
