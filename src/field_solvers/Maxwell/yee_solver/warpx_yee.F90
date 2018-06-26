@@ -200,8 +200,6 @@ subroutine warpx_pxr_push_em3d_bvec( &
   real(num) :: beta, alphax, alphay, alphaz, gammax, gammay, gammaz
   
   ! solver_type: 0=Yee; 1=CKC
-
-  ! dtsdy should not be used.  It is set to nan by WarpX.
   
   if (solver_type==0) then
   
@@ -238,6 +236,7 @@ subroutine warpx_pxr_push_em3d_bvec( &
 
       ! CKC push  
 
+      ! computes coefficients according to Cowan - PRST-AB 16, 041303 (2013)
       delta = max(dtsdx,dtsdy,dtsdz)
       rx = (dtsdx/delta)**2
       ry = (dtsdy/delta)**2
