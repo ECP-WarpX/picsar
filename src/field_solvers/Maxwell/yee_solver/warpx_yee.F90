@@ -260,6 +260,7 @@ subroutine warpx_pxr_push_em3d_bvec( &
       betayx = dtsdy*betayx
       betayz = dtsdy*betayz
       betazx = dtsdz*betazx
+      betazy = dtsdz*betazy
       alphax = dtsdx*alphax
       alphay = dtsdy*alphay
       alphaz = dtsdz*alphaz
