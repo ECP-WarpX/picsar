@@ -229,6 +229,7 @@ SUBROUTINE push_efield_2d
   IMPLICIT NONE
 
   REAL(num) :: tmptime,mdt
+  INTEGER(idp) :: iy = 0
 
   IF (it.ge.timestat_itstart) THEN
     tmptime = MPI_WTIME()
@@ -236,79 +237,19 @@ SUBROUTINE push_efield_2d
   mdt = mu0*clight**2*dt
   ! Yee scheme at order 2
   IF ((norderx.eq.2).AND.(norderz.eq.2)) then
-  write(*,*) "-nxs, -nzs, nx+nxs, nz+nzs"
-  write(*,*) -nxs, -nzs, nx+nxs, nz+nzs
-  write(*,*) "(/-nxs, -nzs/), (/nx+nxs, nz+nzs/)"
-  write(*,*) (/-nxs, -nzs/), (/nx+nxs, nz+nzs/)
-  
-CALL pxrpush_em2d_evec( (/-nxs, -nzs/), (/nx+nxs, nz+nzs/), (/-nxs, -nzs/), &
-     (/nx+nxs, nz+nzs/), (/-nxs, -nzs/), (/nx+nxs, nz+nzs/), &
-     ex(:,0,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
-     ey(:,0,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
-     ez(:,0,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
-     bx(:,0,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
-     by(:,0,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
-     bz(:,0,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
-     jx(:,0,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
-     jy(:,0,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
-     jz(:,0,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
-     mdt, clight**2*dt/dx ,0., clight**2*dt/dz)
 
-    write(*,*) nxguards, nyguards, nzguards
-
-!     CALL pxrpush_em2d_evec(ex, ey, ez, bx, by, bz,jx,jy,jz,mdt, clight**2*dt/dx,clight**2*dt/dy, &
-!     clight**2*dt/dz, nx,ny,nz, nxguards, nyguards, nzguards,nxs,0_idp,nzs,&
-!     l_nodalgrid)
-
-!   INTEGER(idp) :: xlo(-nxs, -nzs)
-!   INTEGER(idp) :: xhi(nx+nxs, nz+nzs)
-!   INTEGER(idp) :: ylo(-nxs, -nzs)
-!   INTEGER(idp) :: yhi(nx+nxs, nz+nzs)
-!   INTEGER(idp) :: zlo(-nxs, -nzs)
-!   INTEGER(idp) :: zhi(nx+nxs, nz+nzs)
-!   INTEGER(idp) :: exlo(-nxguards, -nzguards)
-!   INTEGER(idp) :: exhi(nx+nxguards, nz+nzguards)
-!   INTEGER(idp) :: eylo(-nxguards, -nzguards)
-!   INTEGER(idp) :: eyhi(nx+nxguards, nz+nzguards)
-!   INTEGER(idp) :: ezlo(-nxguards, -nzguards)
-!   INTEGER(idp) :: ezhi(nx+nxguards, nz+nzguards)
-!   INTEGER(idp) :: bxlo(-nxguards, -nzguards)
-!   INTEGER(idp) :: bxhi(nx+nxguards, nz+nzguards)
-!   INTEGER(idp) :: bylo(-nxguards, -nzguards)
-!   INTEGER(idp) :: byhi(nx+nxguards, nz+nzguards)
-!   INTEGER(idp) :: bzlo(-nxguards, -nzguards)
-!   INTEGER(idp) :: bzhi(nx+nxguards, nz+nzguards)
-!   INTEGER(idp) :: jxlo(-nxguards, -nzguards)
-!   INTEGER(idp) :: jxhi(nx+nxguards, nz+nzguards)
-!   INTEGER(idp) :: jylo(-nxguards, -nzguards)
-!   INTEGER(idp) :: jyhi(nx+nxguards, nz+nzguards)
-!   INTEGER(idp) :: jzlo(-nxguards, -nzguards)
-!   INTEGER(idp) :: jzhi(nx+nxguards, nz+nzguards)
-
-! CALL pxrpush_em2d_evec( &
-!      (/-nxs, -nzs/), (/nx+nxs, nz+nzs/), (/-nxs, -nzs/), (/nx+nxs, nz+nzs/), (/-nxs, -nzs/), (/nx+nxs, nz+nzs/), &
-!      ex, (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
-!      ey, (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
-!      ez, (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
-!      bx, (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
-!      by, (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
-!      bz, (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
-!      jx, (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
-!      jy, (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
-!      jz, (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
-!      mdt, clight**2*dt/dx,0.,clight**2*dt/dz)
-
-! SUBROUTINE pxrpush_em2d_evec(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx, dtsdy,  &
-!   dtsdz, nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)
-
-
-
-
-
-
-
-
-
+    CALL pxrpush_em2d_evec( (/-nxs, -nzs/), (/nx+nxs, nz+nzs/), (/-nxs, -nzs/), &
+         (/nx+nxs, nz+nzs/), (/-nxs, -nzs/), (/nx+nxs, nz+nzs/), &
+         ex(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         ey(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         ez(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         bx(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         by(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         bz(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         jx(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         jy(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         jz(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         mdt, clight**2*dt/dx ,0., clight**2*dt/dz)
 
     ! Yee scheme arbitrary order
   ELSE

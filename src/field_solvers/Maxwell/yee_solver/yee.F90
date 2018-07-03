@@ -243,19 +243,6 @@ subroutine pxrpush_em2d_evec( xlo, xhi, ylo, yhi, zlo, zhi, &
 
   integer :: j,k
 
-  write(*,*) "IN pxrpush_em2d_evec"
-
-  write(*,*) "xlo"
-  write(*,*) xlo
-  write(*,*) "xhi"
-  write(*,*) xhi
-
-  write(*,*) "xlo, xhi, ylo, yhi, zlo, zhi"
-  write(*,*) xlo, xhi, ylo, yhi, zlo, zhi
-  write(*,*) "exlo, exhi"
-  write(*,*) exlo, exhi
-  write(*,*) "mudt, dtsdx, dtsdy, dtsdz"
-  write(*,*) mudt, dtsdx, dtsdy, dtsdz
   ! dtsdy should not be used.
 
   ! advance Ex
