@@ -208,7 +208,8 @@ END SUBROUTINE pxrpush_em2d_evec_norder
 ! !> @date
 ! !> Creation 2015
 ! ! ________________________________________________________________________________________
-subroutine pxrpush_em2d_evec( xlo, xhi, ylo, yhi, zlo, zhi, &
+subroutine pxrpush_em2d_evec( &
+     xlo, xhi, ylo, yhi, zlo, zhi, &
      ex, exlo, exhi, &
      ey, eylo, eyhi, &
      ez, ezlo, ezhi, &
@@ -540,6 +541,72 @@ SUBROUTINE pxrpush_em2d_bvec_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz,
 
 END SUBROUTINE pxrpush_em2d_bvec_norder
 
+
+
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine pushes the magnetic field with the 2D Yee FDTD
+!> scheme (order 2).
+!> This subroutine is adapted for Boxlib and do not contain $OMP parallel
+!> regions.
+!
+!> @author
+!> Weiqun Zhang
+!> Mathieu Lobet
+!
+!> @date
+!> Creation 2015
+! ________________________________________________________________________________________
+subroutine pxrpush_em2d_bvec( &
+     xlo, xhi, ylo, yhi, zlo, zhi, &
+     ex,exlo,exhi,&
+     ey,eylo, eyhi, &
+     ez,ezlo, ezhi, &
+     bx, bxlo, bxhi, &
+     by, bylo, byhi, &
+     bz, bzlo, bzhi, &
+     dtsdx,dtsdy,dtsdz) ! BIND(C, NAME='pxrpush_em2d_bvec_')
+! ______________________________________________________________________________
+
+  USE constants
+
+  integer(idp) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
+       exlo(2),exhi(2),eylo(2),eyhi(2),ezlo(2),ezhi(2),&
+       bxlo(2),bxhi(2),bylo(2),byhi(2),bzlo(2),bzhi(2)
+
+  real(num), intent(IN):: ex(exlo(1):exhi(1),exlo(2):exhi(2))
+  real(num), intent(IN):: ey(eylo(1):eyhi(1),eylo(2):eyhi(2))
+  real(num), intent(IN):: ez(ezlo(1):ezhi(1),ezlo(2):ezhi(2))
+
+  real(num), intent(INOUT):: bx(bxlo(1):bxhi(1),bxlo(2):bxhi(2))
+  real(num), intent(INOUT):: by(bylo(1):byhi(1),bylo(2):byhi(2))
+  real(num), intent(INOUT):: bz(bzlo(1):bzhi(1),bzlo(2):bzhi(2))
+
+  real(num), intent(IN) :: dtsdx,dtsdy,dtsdz
+
+  integer :: j,k
+
+  ! dtsdy should be be used.  It is set to nan by WarpX.
+
+  do k    = xlo(2), xhi(2)
+     do j = xlo(1), xhi(1)
+        Bx(j,k) = Bx(j,k) + dtsdz * (Ey(j  ,k+1) - Ey(j,k))
+    end do
+ end do
+ do k    = ylo(2), yhi(2)
+    do j = ylo(1), yhi(1)
+        By(j,k) = By(j,k) + dtsdx * (Ez(j+1,k  ) - Ez(j,k)) &
+                          - dtsdz * (Ex(j  ,k+1) - Ex(j,k))
+      end do
+   end do
+   do k    = zlo(2), zhi(2)
+      do j = zlo(1), zhi(1)
+        Bz(j,k) = Bz(j,k) - dtsdx * (Ey(j+1,k  ) - Ey(j,k))
+     end do
+  end do
+
+end subroutine pxrpush_em2d_bvec
+
 ! ________________________________________________________________________________________
 !> @brief
 !> Push magnetic field Yee 2D order 2
@@ -550,52 +617,52 @@ END SUBROUTINE pxrpush_em2d_bvec_norder
 !> @date
 !> Creation 2015
 ! ________________________________________________________________________________________
-SUBROUTINE pxrpush_em2d_bvec(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx, ny, nz, &
-  nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)
-  USE constants
-  INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
-  REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
-  -nzguard:nz+nzguard) :: ex, ey, ez, bx, by, bz
-  REAL(num), INTENT(IN) :: dtsdx, dtsdy, dtsdz
-  INTEGER(idp) :: j, k, l, ist
-  LOGICAL(lp)  :: l_nodalgrid
-
-  IF (l_nodalgrid) THEN
-    ist = 0
-  ELSE
-    ist = 1
-  END IF
-  k = 0_idp
-  ! advance Bx
-  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j)
-  !$OMP DO COLLAPSE(2)
-  DO l = -nzs, nz+nzs
-    DO j = -nxs, nx+nxs
-      Bx(j, 0, l) = Bx(j, 0, l) + dtsdz * (Ey(j, 0, l+1) - Ey(j, 0, l-1+ist))
-    END DO
-  END DO
-  !$OMP END DO
-  ! advance By
-  !$OMP DO COLLAPSE(2)
-  DO l = -nzs, nz+nzs
-    DO j = -nxs, nx+nxs
-      By(j, 0, l) = By(j, 0, l) + dtsdx * (Ez(j+1, 0, l  ) - Ez(j-1+ist, 0, l))
-      By(j, 0, l) = By(j, 0, l) - dtsdz * (Ex(j, 0, l+1) - Ex(j, 0, l-1+ist))
-    END DO
-  END DO
-  !$OMP END DO
-  ! advance Bz
-  !$OMP DO COLLAPSE(2)
-  DO l = -nzs, nz+nzs
-    DO j = -nxs, nx+nxs
-      Bz(j, 0, l) = Bz(j, 0, l) - dtsdx * (Ey(j+1, 0, l) - Ey(j-1+ist, 0, l))
-    END DO
-  END DO
-  !$OMP END DO
-  !$OMP END PARALLEL
-  RETURN
-
-END SUBROUTINE pxrpush_em2d_bvec
+! SUBROUTINE pxrpush_em2d_bvec(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx, ny, nz, &
+!   nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)
+!   USE constants
+!   INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
+!   REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
+!   -nzguard:nz+nzguard) :: ex, ey, ez, bx, by, bz
+!   REAL(num), INTENT(IN) :: dtsdx, dtsdy, dtsdz
+!   INTEGER(idp) :: j, k, l, ist
+!   LOGICAL(lp)  :: l_nodalgrid
+! 
+!   IF (l_nodalgrid) THEN
+!     ist = 0
+!   ELSE
+!     ist = 1
+!   END IF
+!   k = 0_idp
+!   ! advance Bx
+!   !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j)
+!   !$OMP DO COLLAPSE(2)
+!   DO l = -nzs, nz+nzs
+!     DO j = -nxs, nx+nxs
+!       Bx(j, 0, l) = Bx(j, 0, l) + dtsdz * (Ey(j, 0, l+1) - Ey(j, 0, l-1+ist))
+!     END DO
+!   END DO
+!   !$OMP END DO
+!   ! advance By
+!   !$OMP DO COLLAPSE(2)
+!   DO l = -nzs, nz+nzs
+!     DO j = -nxs, nx+nxs
+!       By(j, 0, l) = By(j, 0, l) + dtsdx * (Ez(j+1, 0, l  ) - Ez(j-1+ist, 0, l))
+!       By(j, 0, l) = By(j, 0, l) - dtsdz * (Ex(j, 0, l+1) - Ex(j, 0, l-1+ist))
+!     END DO
+!   END DO
+!   !$OMP END DO
+!   ! advance Bz
+!   !$OMP DO COLLAPSE(2)
+!   DO l = -nzs, nz+nzs
+!     DO j = -nxs, nx+nxs
+!       Bz(j, 0, l) = Bz(j, 0, l) - dtsdx * (Ey(j+1, 0, l) - Ey(j-1+ist, 0, l))
+!     END DO
+!   END DO
+!   !$OMP END DO
+!   !$OMP END PARALLEL
+!   RETURN
+! 
+! END SUBROUTINE pxrpush_em2d_bvec
 
 ! ________________________________________________________________________________________
 !> @brief
