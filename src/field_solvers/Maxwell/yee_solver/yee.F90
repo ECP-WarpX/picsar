@@ -197,70 +197,148 @@ SUBROUTINE pxrpush_em2d_evec_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dt
   RETURN
 END SUBROUTINE pxrpush_em2d_evec_norder
 
+! 
+! ! ________________________________________________________________________________________
+! !> @brief
+! !> Push electric field Yee 2D order 2
+! !
+! !> @author
+! !> Henri Vincenti
+! !
+! !> @date
+! !> Creation 2015
+! ! ________________________________________________________________________________________
+subroutine pxrpush_em2d_evec( xlo, xhi, ylo, yhi, zlo, zhi, &
+     ex, exlo, exhi, &
+     ey, eylo, eyhi, &
+     ez, ezlo, ezhi, &
+     bx, bxlo, bxhi, &
+     by, bylo, byhi, &
+     bz, bzlo, bzhi, &
+     jx, jxlo, jxhi, &
+     jy, jylo, jyhi, &
+     jz, jzlo, jzhi, &
+     mudt, dtsdx, dtsdy, dtsdz) ! BIND(C, NAME='pxrpush_em2d_evec_')
+     
+  use constants
 
-! ________________________________________________________________________________________
-!> @brief
-!> Push electric field Yee 2D order 2
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2015
-! ________________________________________________________________________________________
-SUBROUTINE pxrpush_em2d_evec(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx, dtsdy,  &
-  dtsdz, nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)
-  USE constants
-  INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
-  REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
-  -nzguard:nz+nzguard) :: ex, ey, ez, bx, by, bz
-  REAL(num), INTENT(IN), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,          &
-  -nzguard:nz+nzguard)    :: Jx, Jy, Jz
-  REAL(num) , INTENT(IN)  :: mudt, dtsdx, dtsdy, dtsdz
-  INTEGER(idp) :: j, k, l, ist
-  LOGICAL(lp) ,INTENT(IN) :: l_nodalgrid
-  IF (l_nodalgrid) THEN
-    ist = 0
-  ELSE
-    ist = 1
-  END IF
+  integer(idp), intent(in) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
+       exlo(2),exhi(2),eylo(2),eyhi(2),ezlo(2),ezhi(2),&
+       bxlo(2),bxhi(2),bylo(2),byhi(2),bzlo(2),bzhi(2),&
+       jxlo(2),jxhi(2),jylo(2),jyhi(2),jzlo(2),jzhi(2)
 
-  k = 0_idp
+  real(num), intent(IN OUT):: ex(exlo(1):exhi(1),exlo(2):exhi(2))
+  real(num), intent(IN OUT):: ey(eylo(1):eyhi(1),eylo(2):eyhi(2))
+  real(num), intent(IN OUT):: ez(ezlo(1):ezhi(1),ezlo(2):ezhi(2))
+
+  real(num), intent(IN):: bx(bxlo(1):bxhi(1),bxlo(2):bxhi(2))
+  real(num), intent(IN):: by(bylo(1):byhi(1),bylo(2):byhi(2))
+  real(num), intent(IN):: bz(bzlo(1):bzhi(1),bzlo(2):bzhi(2))
+
+  real(num), intent(IN):: jx(jxlo(1):jxhi(1),jxlo(2):jxhi(2))
+  real(num), intent(IN):: jy(jylo(1):jyhi(1),jylo(2):jyhi(2))
+  real(num), intent(IN):: jz(jzlo(1):jzhi(1),jzlo(2):jzhi(2))
+
+  real(num), intent(IN) :: mudt,dtsdx,dtsdy,dtsdz
+
+  integer :: j,k
+
+  write(*,*) "IN pxrpush_em2d_evec"
+
+  write(*,*) "xlo"
+  write(*,*) xlo
+  write(*,*) "xhi"
+  write(*,*) xhi
+
+  write(*,*) "xlo, xhi, ylo, yhi, zlo, zhi"
+  write(*,*) xlo, xhi, ylo, yhi, zlo, zhi
+  write(*,*) "exlo, exhi"
+  write(*,*) exlo, exhi
+  write(*,*) "mudt, dtsdx, dtsdy, dtsdz"
+  write(*,*) mudt, dtsdx, dtsdy, dtsdz
+  ! dtsdy should not be used.
+
   ! advance Ex
-  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j)
-  !$OMP DO COLLAPSE(2)
-  DO l = -nzs, nz+nzs
-    DO j = -nxs, nx+nxs
-      Ex(j, k, l) = Ex(j, k, l) - mudt  * Jx(j, k, l)
-      Ex(j, k, l) = Ex(j, k, l) - dtsdz * (By(j, k, l+1-ist)   - By(j, k, l-1))
-    END DO
-  END DO
-  !$OMP END DO
+  do k    = xlo(2), xhi(2)
+     do j = xlo(1), xhi(1)
+        ex(j,k) = ex(j,k) - dtsdz * (By(j,k) - By(j,k-1)) &
+                          - mudt  * jx(j,k)
+     end do
+  end do
 
   ! advance Ey
-  !$OMP DO COLLAPSE(2)
-  DO l = -nzs, nz+nzs
-    DO j = -nxs, nx+nxs
-      Ey(j, k, l) = Ey(j, k, l) - mudt  * Jy(j, k, l)
-      Ey(j, k, l) = Ey(j, k, l) - dtsdx * (Bz(j+1-ist, k, l)   - Bz(j-1, k, l))
-      Ey(j, k, l) = Ey(j, k, l) + dtsdz * (Bx(j, k, l+1-ist)   - Bx(j, k, l-1))
-    END DO
-  END DO
-  !$OMP END DO
+  do k    = ylo(2), yhi(2)
+     do j = ylo(1), yhi(1)
+        Ey(j,k) = Ey(j,k) - dtsdx * (Bz(j,k) - Bz(j-1,k)) &
+                          + dtsdz * (Bx(j,k) - Bx(j,k-1)) &
+                          - mudt  * jy(j,k)
+      end do
+   end do
 
   ! advance Ez
-  !$OMP DO COLLAPSE(2)
-  DO l = -nzs, nz+nzs
-    DO j = -nxs, nx+nxs
-      Ez(j, k, l) = Ez(j, k, l) - mudt  * Jz(j, k, l)
-      Ez(j, k, l) = Ez(j, k, l) + dtsdx * (By(j+1-ist, k, l) - By(j-1, k, l))
-    END DO
-  END DO
-  !$OMP END DO
-  !$OMP END PARALLEL
-  RETURN
-END SUBROUTINE pxrpush_em2d_evec
+   do k    = zlo(2), zhi(2)
+      do j = zlo(1), zhi(1)
+        Ez(j,k) = Ez(j,k) + dtsdx * (By(j,k) - By(j-1,k  )) &
+                          - mudt  * jz(j,k)
+     end do
+  end do
 
+end subroutine pxrpush_em2d_evec
+
+
+
+! SUBROUTINE pxrpush_em2d_evec(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx, dtsdy,  &
+!   dtsdz, nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)
+!   USE constants
+!   INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
+!   REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
+!   -nzguard:nz+nzguard) :: ex, ey, ez, bx, by, bz
+!   REAL(num), INTENT(IN), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,          &
+!   -nzguard:nz+nzguard)    :: Jx, Jy, Jz
+!   REAL(num) , INTENT(IN)  :: mudt, dtsdx, dtsdy, dtsdz
+!   INTEGER(idp) :: j, k, l, ist
+!   LOGICAL(lp) ,INTENT(IN) :: l_nodalgrid
+!   IF (l_nodalgrid) THEN
+!     ist = 0
+!   ELSE
+!     ist = 1
+!   END IF
+! 
+!   k = 0_idp
+!   ! advance Ex
+!   !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j)
+!   !$OMP DO COLLAPSE(2)
+!   DO l = -nzs, nz+nzs
+!     DO j = -nxs, nx+nxs
+!       Ex(j, k, l) = Ex(j, k, l) - mudt  * Jx(j, k, l)
+!       Ex(j, k, l) = Ex(j, k, l) - dtsdz * (By(j, k, l+1-ist)   - By(j, k, l-1))
+!     END DO
+!   END DO
+!   !$OMP END DO
+! 
+!   ! advance Ey
+!   !$OMP DO COLLAPSE(2)
+!   DO l = -nzs, nz+nzs
+!     DO j = -nxs, nx+nxs
+!       Ey(j, k, l) = Ey(j, k, l) - mudt  * Jy(j, k, l)
+!       Ey(j, k, l) = Ey(j, k, l) - dtsdx * (Bz(j+1-ist, k, l)   - Bz(j-1, k, l))
+!       Ey(j, k, l) = Ey(j, k, l) + dtsdz * (Bx(j, k, l+1-ist)   - Bx(j, k, l-1))
+!     END DO
+!   END DO
+!   !$OMP END DO
+! 
+!   ! advance Ez
+!   !$OMP DO COLLAPSE(2)
+!   DO l = -nzs, nz+nzs
+!     DO j = -nxs, nx+nxs
+!       Ez(j, k, l) = Ez(j, k, l) - mudt  * Jz(j, k, l)
+!       Ez(j, k, l) = Ez(j, k, l) + dtsdx * (By(j+1-ist, k, l) - By(j-1, k, l))
+!     END DO
+!   END DO
+!   !$OMP END DO
+!   !$OMP END PARALLEL
+!   RETURN
+! END SUBROUTINE pxrpush_em2d_evec
 
 ! ________________________________________________________________________________________
 !> @brief
