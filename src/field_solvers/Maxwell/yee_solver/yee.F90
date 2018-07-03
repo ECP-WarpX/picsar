@@ -218,7 +218,7 @@ subroutine pxrpush_em2d_evec( xlo, xhi, ylo, yhi, zlo, zhi, &
      jx, jxlo, jxhi, &
      jy, jylo, jyhi, &
      jz, jzlo, jzhi, &
-     mudt, dtsdx, dtsdy, dtsdz) ! BIND(C, NAME='pxrpush_em2d_evec_')
+     mudt, dtsdx, dtsdy, dtsdz) BIND(C, NAME='pxrpush_em2d_evec_')
      
   use constants
 
