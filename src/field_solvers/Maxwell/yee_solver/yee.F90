@@ -246,33 +246,38 @@ subroutine pxrpush_em2d_evec( &
 
   ! dtsdy should not be used.
 
+  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(k, j)
   ! advance Ex
-  do k    = xlo(2), xhi(2)
-     do j = xlo(1), xhi(1)
-        ex(j,k) = ex(j,k) - dtsdz * (By(j,k) - By(j,k-1)) &
-                          - mudt  * jx(j,k)
-     end do
+  !$OMP DO COLLAPSE(2)
+  do k   = xlo(2), xhi(2)
+    do j = xlo(1), xhi(1)
+      ex(j,k) = ex(j,k) - dtsdz * (By(j,k) - By(j,k-1)) &
+                        - mudt  * jx(j,k)
+    end do
   end do
-
+  !$OMP END DO
   ! advance Ey
-  do k    = ylo(2), yhi(2)
-     do j = ylo(1), yhi(1)
-        Ey(j,k) = Ey(j,k) - dtsdx * (Bz(j,k) - Bz(j-1,k)) &
-                          + dtsdz * (Bx(j,k) - Bx(j,k-1)) &
-                          - mudt  * jy(j,k)
-      end do
-   end do
-
-  ! advance Ez
-   do k    = zlo(2), zhi(2)
-      do j = zlo(1), zhi(1)
-        Ez(j,k) = Ez(j,k) + dtsdx * (By(j,k) - By(j-1,k  )) &
-                          - mudt  * jz(j,k)
-     end do
+  !$OMP DO COLLAPSE(2)
+  do k   = ylo(2), yhi(2)
+    do j = ylo(1), yhi(1)
+      Ey(j,k) = Ey(j,k) - dtsdx * (Bz(j,k) - Bz(j-1,k)) &
+                        + dtsdz * (Bx(j,k) - Bx(j,k-1)) &
+                        - mudt  * jy(j,k)
+    end do
   end do
+  !$OMP END DO
+  ! advance Ez
+  !$OMP DO COLLAPSE(2)
+  do k   = zlo(2), zhi(2)
+    do j = zlo(1), zhi(1)
+      Ez(j,k) = Ez(j,k) + dtsdx * (By(j,k) - By(j-1,k  )) &
+                        - mudt  * jz(j,k)
+    end do
+  end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 end subroutine pxrpush_em2d_evec
-
 
 
 ! SUBROUTINE pxrpush_em2d_evec(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx, dtsdy,  &
@@ -377,33 +382,44 @@ subroutine pxrpush_em3d_evec( &
 
   integer :: j,k,l
 
-  do l         = xlo(3), xhi(3)
-      do k     = xlo(2), xhi(2)
-          do j = xlo(1), xhi(1)
-            Ex(j,k,l) = Ex(j,k,l) + dtsdy * (Bz(j,k,l) - Bz(j,k-1,l  )) &
-                                 - dtsdz * (By(j,k,l) - By(j,k  ,l-1)) &
-                                 - mudt  * jx(j,k,l)
-          end do
+  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j)
+  ! advance Ex
+  !$OMP DO COLLAPSE(3)
+  do l     = xlo(3), xhi(3)
+    do k   = xlo(2), xhi(2)
+      do j = xlo(1), xhi(1)
+        Ex(j,k,l) = Ex(j,k,l) + dtsdy * (Bz(j,k,l) - Bz(j,k-1,l  )) &
+                              - dtsdz * (By(j,k,l) - By(j,k  ,l-1)) &
+                              - mudt  * jx(j,k,l)
       end do
+    end do
   end do
-  do l         = ylo(3), yhi(3)
-      do k     = ylo(2), yhi(2)
-          do j = ylo(1), yhi(1)
-            Ey(j,k,l) = Ey(j,k,l) - dtsdx * (Bz(j,k,l) - Bz(j-1,k,l)) &
-                                 + dtsdz * (Bx(j,k,l) - Bx(j,k,l-1)) &
-                                 - mudt  * jy(j,k,l)
-           end do
-       end do
-   end do
-   do l         = zlo(3), zhi(3)
-       do k     = zlo(2), zhi(2)
-           do j = zlo(1), zhi(1)
-           Ez(j,k,l) = Ez(j,k,l) + dtsdx * (By(j,k,l) - By(j-1,k  ,l)) &
-                                 - dtsdy * (Bx(j,k,l) - Bx(j  ,k-1,l)) &
-                                 - mudt  * jz(j,k,l)
-        end do
-     end do
+  !$OMP END DO
+  ! advance Ey
+  !$OMP DO COLLAPSE(3)
+  do l     = ylo(3), yhi(3)
+    do k   = ylo(2), yhi(2)
+      do j = ylo(1), yhi(1)
+        Ey(j,k,l) = Ey(j,k,l) - dtsdx * (Bz(j,k,l) - Bz(j-1,k,l)) &
+                              + dtsdz * (Bx(j,k,l) - Bx(j,k,l-1)) &
+                              - mudt  * jy(j,k,l)
+      end do
+    end do
   end do
+  !$OMP END DO
+  ! advance Ez
+  !$OMP DO COLLAPSE(3)
+  do l     = zlo(3), zhi(3)
+    do k   = zlo(2), zhi(2)
+      do j = zlo(1), zhi(1)
+        Ez(j,k,l) = Ez(j,k,l) + dtsdx * (By(j,k,l) - By(j-1,k  ,l)) &
+                              - dtsdy * (Bx(j,k,l) - Bx(j  ,k-1,l)) &
+                              - mudt  * jz(j,k,l)
+      end do
+    end do
+  end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 end subroutine pxrpush_em3d_evec
 ! SUBROUTINE pxrpush_em3d_evec(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx, dtsdy,  &
@@ -654,25 +670,35 @@ subroutine pxrpush_em2d_bvec( &
 
   integer :: j,k
 
-  ! dtsdy should be be used.  It is set to nan by WarpX.
+  ! dtsdy should not be used.  It is set to nan by WarpX.
 
-  do k    = xlo(2), xhi(2)
-     do j = xlo(1), xhi(1)
+  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(k, j)
+  ! advance Bx
+  !$OMP DO COLLAPSE(2)
+  do k   = xlo(2), xhi(2)
+    do j = xlo(1), xhi(1)
         Bx(j,k) = Bx(j,k) + dtsdz * (Ey(j  ,k+1) - Ey(j,k))
     end do
- end do
- do k    = ylo(2), yhi(2)
+  end do
+  !$OMP END DO
+  ! advance By
+  !$OMP DO COLLAPSE(2)
+  do k   = ylo(2), yhi(2)
     do j = ylo(1), yhi(1)
         By(j,k) = By(j,k) + dtsdx * (Ez(j+1,k  ) - Ez(j,k)) &
                           - dtsdz * (Ex(j  ,k+1) - Ex(j,k))
-      end do
-   end do
-   do k    = zlo(2), zhi(2)
-      do j = zlo(1), zhi(1)
-        Bz(j,k) = Bz(j,k) - dtsdx * (Ey(j+1,k  ) - Ey(j,k))
-     end do
+    end do
   end do
-
+  !$OMP END DO
+  ! advance Bz
+  !$OMP DO COLLAPSE(2)
+  do k   = zlo(2), zhi(2)
+    do j = zlo(1), zhi(1)
+      Bz(j,k) = Bz(j,k) - dtsdx * (Ey(j+1,k  ) - Ey(j,k))
+    end do
+  end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 end subroutine pxrpush_em2d_bvec
 
 ! ________________________________________________________________________________________
@@ -773,32 +799,41 @@ subroutine pxrpush_em3d_bvec( &
 
   integer :: j,k,l
 
-  do l       = xlo(3), xhi(3)
-     do k    = xlo(2), xhi(2)
-        do j = xlo(1), xhi(1)
+  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j)
+  ! advance Bx
+  !$OMP DO COLLAPSE(3)
+  do l     = xlo(3), xhi(3)
+    do k   = xlo(2), xhi(2)
+      do j = xlo(1), xhi(1)
            Bx(j,k,l) = Bx(j,k,l) - dtsdy * (Ez(j  ,k+1,l  ) - Ez(j,k,l)) &
                                  + dtsdz * (Ey(j  ,k  ,l+1) - Ey(j,k,l))
-        end do
-     end do
+       end do
+    end do
   end do
-
-  do l       = ylo(3), yhi(3)
-     do k    = ylo(2), yhi(2)
-        do j = ylo(1), yhi(1)
-           By(j,k,l) = By(j,k,l) + dtsdx * (Ez(j+1,k  ,l  ) - Ez(j,k,l)) &
-                                 - dtsdz * (Ex(j  ,k  ,l+1) - Ex(j,k,l))
-        end do
-     end do
+  !$OMP END DO
+  ! advance By
+  !$OMP DO COLLAPSE(3)
+  do l     = ylo(3), yhi(3)
+    do k   = ylo(2), yhi(2)
+      do j = ylo(1), yhi(1)
+        By(j,k,l) = By(j,k,l) + dtsdx * (Ez(j+1,k  ,l  ) - Ez(j,k,l)) &
+                              - dtsdz * (Ex(j  ,k  ,l+1) - Ex(j,k,l))
+      end do
+    end do
   end do
-
-  do l       = zlo(3), zhi(3)
-     do k    = zlo(2), zhi(2)
-        do j = zlo(1), zhi(1)
+  !$OMP END DO
+  ! advance Bz
+  !$OMP DO COLLAPSE(3)
+  do l     = zlo(3), zhi(3)
+    do k   = zlo(2), zhi(2)
+      do j = zlo(1), zhi(1)
            Bz(j,k,l) = Bz(j,k,l) - dtsdx * (Ey(j+1,k  ,l  ) - Ey(j,k,l)) &
                                  + dtsdy * (Ex(j  ,k+1,l  ) - Ex(j,k,l))
-        end do
-     end do
+      end do
+    end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 end subroutine pxrpush_em3d_bvec
 ! SUBROUTINE pxrpush_em3d_bvec(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx, ny, nz, &
