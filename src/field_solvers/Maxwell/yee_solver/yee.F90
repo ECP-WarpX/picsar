@@ -246,18 +246,20 @@ subroutine pxrpush_em2d_evec( &
 
   ! dtsdy should not be used.
 
+#ifndef WARPX
   !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(k, j)
-  ! advance Ex
   !$OMP DO COLLAPSE(2)
+#endif
   do k   = xlo(2), xhi(2)
     do j = xlo(1), xhi(1)
       ex(j,k) = ex(j,k) - dtsdz * (By(j,k) - By(j,k-1)) &
                         - mudt  * jx(j,k)
     end do
   end do
+#ifndef WARPX
   !$OMP END DO
-  ! advance Ey
   !$OMP DO COLLAPSE(2)
+#endif
   do k   = ylo(2), yhi(2)
     do j = ylo(1), yhi(1)
       Ey(j,k) = Ey(j,k) - dtsdx * (Bz(j,k) - Bz(j-1,k)) &
@@ -265,17 +267,20 @@ subroutine pxrpush_em2d_evec( &
                         - mudt  * jy(j,k)
     end do
   end do
+#ifndef WARPX
   !$OMP END DO
-  ! advance Ez
   !$OMP DO COLLAPSE(2)
+#endif
   do k   = zlo(2), zhi(2)
     do j = zlo(1), zhi(1)
       Ez(j,k) = Ez(j,k) + dtsdx * (By(j,k) - By(j-1,k  )) &
                         - mudt  * jz(j,k)
     end do
   end do
+#ifndef WARPX
   !$OMP END DO
   !$OMP END PARALLEL
+#endif
 
 end subroutine pxrpush_em2d_evec
 
@@ -382,9 +387,10 @@ subroutine pxrpush_em3d_evec( &
 
   integer :: j,k,l
 
+#ifndef WARPX
   !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j)
-  ! advance Ex
   !$OMP DO COLLAPSE(3)
+#endif
   do l     = xlo(3), xhi(3)
     do k   = xlo(2), xhi(2)
       do j = xlo(1), xhi(1)
@@ -394,9 +400,10 @@ subroutine pxrpush_em3d_evec( &
       end do
     end do
   end do
+#ifndef WARPX
   !$OMP END DO
-  ! advance Ey
   !$OMP DO COLLAPSE(3)
+#endif
   do l     = ylo(3), yhi(3)
     do k   = ylo(2), yhi(2)
       do j = ylo(1), yhi(1)
@@ -406,9 +413,10 @@ subroutine pxrpush_em3d_evec( &
       end do
     end do
   end do
+#ifndef WARPX
   !$OMP END DO
-  ! advance Ez
   !$OMP DO COLLAPSE(3)
+#endif
   do l     = zlo(3), zhi(3)
     do k   = zlo(2), zhi(2)
       do j = zlo(1), zhi(1)
@@ -418,8 +426,10 @@ subroutine pxrpush_em3d_evec( &
       end do
     end do
   end do
+#ifndef WARPX
   !$OMP END DO
   !$OMP END PARALLEL
+#endif
 
 end subroutine pxrpush_em3d_evec
 ! SUBROUTINE pxrpush_em3d_evec(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx, dtsdy,  &
@@ -672,33 +682,38 @@ subroutine pxrpush_em2d_bvec( &
 
   ! dtsdy should not be used.  It is set to nan by WarpX.
 
+#ifndef WARPX
   !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(k, j)
-  ! advance Bx
   !$OMP DO COLLAPSE(2)
+#endif
   do k   = xlo(2), xhi(2)
     do j = xlo(1), xhi(1)
         Bx(j,k) = Bx(j,k) + dtsdz * (Ey(j  ,k+1) - Ey(j,k))
     end do
   end do
+#ifndef WARPX
   !$OMP END DO
-  ! advance By
   !$OMP DO COLLAPSE(2)
+#endif
   do k   = ylo(2), yhi(2)
     do j = ylo(1), yhi(1)
         By(j,k) = By(j,k) + dtsdx * (Ez(j+1,k  ) - Ez(j,k)) &
                           - dtsdz * (Ex(j  ,k+1) - Ex(j,k))
     end do
   end do
+#ifndef WARPX
   !$OMP END DO
-  ! advance Bz
   !$OMP DO COLLAPSE(2)
+#endif
   do k   = zlo(2), zhi(2)
     do j = zlo(1), zhi(1)
       Bz(j,k) = Bz(j,k) - dtsdx * (Ey(j+1,k  ) - Ey(j,k))
     end do
   end do
+#ifndef WARPX
   !$OMP END DO
   !$OMP END PARALLEL
+#endif
 end subroutine pxrpush_em2d_bvec
 
 ! ________________________________________________________________________________________
@@ -799,9 +814,10 @@ subroutine pxrpush_em3d_bvec( &
 
   integer :: j,k,l
 
+#ifndef WARPX
   !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j)
-  ! advance Bx
   !$OMP DO COLLAPSE(3)
+#endif
   do l     = xlo(3), xhi(3)
     do k   = xlo(2), xhi(2)
       do j = xlo(1), xhi(1)
@@ -810,9 +826,10 @@ subroutine pxrpush_em3d_bvec( &
        end do
     end do
   end do
+#ifndef WARPX
   !$OMP END DO
-  ! advance By
   !$OMP DO COLLAPSE(3)
+#endif
   do l     = ylo(3), yhi(3)
     do k   = ylo(2), yhi(2)
       do j = ylo(1), yhi(1)
@@ -821,9 +838,10 @@ subroutine pxrpush_em3d_bvec( &
       end do
     end do
   end do
+#ifndef WARPX
   !$OMP END DO
-  ! advance Bz
   !$OMP DO COLLAPSE(3)
+#endif
   do l     = zlo(3), zhi(3)
     do k   = zlo(2), zhi(2)
       do j = zlo(1), zhi(1)
@@ -832,8 +850,10 @@ subroutine pxrpush_em3d_bvec( &
       end do
     end do
   end do
+#ifndef WARPX
   !$OMP END DO
   !$OMP END PARALLEL
+#endif
 
 end subroutine pxrpush_em3d_bvec
 ! SUBROUTINE pxrpush_em3d_bvec(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx, ny, nz, &
