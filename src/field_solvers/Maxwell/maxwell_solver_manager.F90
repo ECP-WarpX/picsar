@@ -192,17 +192,6 @@ SUBROUTINE push_bfield_2d
   ! Yee scheme at order 2
   IF ((norderx.eq.2).AND.(norderz.eq.2)) then
 
-!     CALL pxrpush_em2d_bvec(ex, ey, ez, bx, by, bz, 0.5_num*dt/dx, 0._num,             &
-!     0.5_num*dt/dz, nx, ny, nz, nxguards, 0_idp, nzguards, nxs, 0_idp, nzs,         &
-!     l_nodalgrid)
-
-    write(*,*) shape(ex)
-    write(*,*) shape(ey)
-    write(*,*) shape(ez)
-    write(*,*) shape(bx)
-    write(*,*) shape(by)
-    write(*,*) shape(bz)
-
     CALL pxrpush_em2d_bvec( (/-nxs, -nzs/), (/nx+nxs, nz+nzs/), (/-nxs, -nzs/), &
          (/nx+nxs, nz+nzs/), (/-nxs, -nzs/), (/nx+nxs, nz+nzs/), &
          ex(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
@@ -212,7 +201,6 @@ SUBROUTINE push_bfield_2d
          by(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
          bz(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
          0.5_num*dt/dx ,0._num, 0.5_num*dt/dx)
-!          clight**2._num*dt/dx ,0._num, clight**2._num*dt/dz)
 
     ! Yee scheme arbitrary order
   ELSE
