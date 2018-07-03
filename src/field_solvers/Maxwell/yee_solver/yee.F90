@@ -565,7 +565,7 @@ subroutine pxrpush_em2d_bvec( &
      bx, bxlo, bxhi, &
      by, bylo, byhi, &
      bz, bzlo, bzhi, &
-     dtsdx,dtsdy,dtsdz) ! BIND(C, NAME='pxrpush_em2d_bvec_')
+     dtsdx,dtsdy,dtsdz) BIND(C, NAME='pxrpush_em2d_bvec_')
 ! ______________________________________________________________________________
 
   USE constants
