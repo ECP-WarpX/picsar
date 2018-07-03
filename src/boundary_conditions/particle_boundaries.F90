@@ -1297,7 +1297,7 @@ DO ispecies=1, nspecies!
             ibuff=sendbuf(xbd, ybd, zbd)%ibuff
             IF (ibuff+nvar .GT. sendbuf(xbd, ybd, zbd)%nbuff) THEN
                 nold = sendbuf(xbd, ybd, zbd)%nbuff
-                nnew = 2_idp*nvar*(sendbuf(xbd, ybd, zbd)%nbuff+1_idp) ! ARRAY LIST TYPE
+                nnew = 2_idp*(sendbuf(xbd, ybd, zbd)%nbuff+nvar+1_idp) ! ARRAY LIST TYPE
 				CALL resize_1D_array_real(sendbuf(xbd, ybd, zbd)%buff_arr, nold, nnew)
 				sendbuf(xbd, ybd, zbd)%nbuff=nnew
             ENDIF 
@@ -1650,7 +1650,7 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
               ibuff=sendbuff(xbd, ybd, zbd)%ibuff
               IF (ibuff+nvar .GT. sendbuff(xbd, ybd, zbd)%nbuff) THEN
                 nold = sendbuff(xbd, ybd, zbd)%nbuff
-                nnew = 2_idp*nvar*(sendbuff(xbd, ybd, zbd)%nbuff+1_idp) ! ARRAY LIST TYPE
+                nnew = 2_idp*(sendbuff(xbd, ybd, zbd)%nbuff+nvar+1_idp) ! ARRAY LIST TYPE
 				CALL resize_1D_array_real(sendbuff(xbd, ybd, zbd)%buff_arr, nold, nnew)
 				sendbuff(xbd, ybd, zbd)%nbuff=nnew
               ENDIF 
@@ -1759,7 +1759,7 @@ DO iz = -1, 1
           recvbuff(ix, iy, iz)%buff_arr(ibuff),                 &
           recvbuff(ix, iy, iz)%buff_arr(ibuff+1),               & 
           recvbuff(ix, iy, iz)%buff_arr(ibuff+2),               &
-          recvbuff(ix, iy, iz)%buff_arr(ibuff+2),               & 
+          recvbuff(ix, iy, iz)%buff_arr(ibuff+3),               & 
           recvbuff(ix, iy, iz)%buff_arr(ibuff+4),               &
           recvbuff(ix, iy, iz)%buff_arr(ibuff+5),               & 
           recvbuff(ix, iy, iz)%buff_arr(ibuff+6),               &
