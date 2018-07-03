@@ -338,55 +338,123 @@ end subroutine pxrpush_em2d_evec
 !> @date
 !> Creation 2015
 ! ________________________________________________________________________________________
-SUBROUTINE pxrpush_em3d_evec(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx, dtsdy,  &
-  dtsdz, nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)
-  USE constants
-  INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
-  REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
-  -nzguard:nz+nzguard) :: ex, ey, ez, bx, by, bz
-  REAL(num), INTENT(IN), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,          &
-  -nzguard:nz+nzguard) :: jx, jy, jz
-  REAL(num), INTENT(IN) :: mudt, dtsdx, dtsdy, dtsdz
-  INTEGER(idp):: j, k, l
-  LOGICAL(lp)  :: l_nodalgrid
+subroutine pxrpush_em3d_evec( &
+     xlo, xhi, ylo, yhi, zlo, zhi, &
+     ex,exlo,exhi,&
+     ey,eylo, eyhi, &
+     ez,ezlo, ezhi, &
+     bx, bxlo, bxhi, &
+     by, bylo, byhi, &
+     bz, bzlo, bzhi, &
+     jx, jxlo, jxhi, &
+     jy, jylo, jyhi, &
+     jz, jzlo, jzhi, &
+     mudt,    &
+     dtsdx,dtsdy,dtsdz) BIND(C, NAME='pxrpush_em3d_evec_')
+! ______________________________________________________________________________
 
-  ! advance Ex
-  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j)
-  !$OMP DO COLLAPSE(3)
-  DO l = -nzs, nz+nzs
-    DO k = -nys, ny+nys
-      DO j = -nxs, nx+nxs
-        Ex(j, k, l) = Ex(j, k, l) + dtsdy * (Bz(j, k, l)   - Bz(j, k-1, l  )) - dtsdz &
-        * (By(j, k, l)   - By(j, k, l-1)) - mudt  * jx(j, k, l)
-      END DO
-    END DO
-  END DO
-  !$OMP END DO
-  ! advance Ey
-  !$OMP DO COLLAPSE(3)
-  DO l = -nzs, nz+nzs
-    DO k = -nys, ny+nys
-      DO j = -nxs, nx+nxs
-        Ey(j, k, l) = Ey(j, k, l) - dtsdx * (Bz(j, k, l)   - Bz(j-1, k, l)) + dtsdz * &
-        (Bx(j, k, l)   - Bx(j, k, l-1)) - mudt  * jy(j, k, l)
-      END DO
-    END DO
-  END DO
-  !$OMP END DO
-  ! advance Ez
-  !$OMP DO COLLAPSE(3)
-  DO l = -nzs, nz+nzs
-    DO k = -nys, ny+nys
-      DO j = -nxs, nx+nxs
-        Ez(j, k, l) = Ez(j, k, l) + dtsdx * (By(j, k, l) - By(j-1, k, l)) - dtsdy *   &
-        (Bx(j, k, l) - Bx(j, k-1, l)) - mudt  * jz(j, k, l)
-      END DO
-    END DO
-  END DO
-  !$OMP END DO
-  !$OMP END PARALLEL
-  RETURN
-END SUBROUTINE pxrpush_em3d_evec
+  use constants
+
+  integer(idp), intent(in) :: &
+       xlo(3), xhi(3), ylo(3), yhi(3), zlo(3), zhi(3), &
+       exlo(3),exhi(3),eylo(3),eyhi(3),ezlo(3),ezhi(3),&
+       bxlo(3),bxhi(3),bylo(3),byhi(3),bzlo(3),bzhi(3),&
+       jxlo(3),jxhi(3),jylo(3),jyhi(3),jzlo(3),jzhi(3)
+
+  real(num), intent(IN OUT):: ex(exlo(1):exhi(1),exlo(2):exhi(2),exlo(3):exhi(3))
+  real(num), intent(IN OUT):: ey(eylo(1):eyhi(1),eylo(2):eyhi(2),eylo(3):eyhi(3))
+  real(num), intent(IN OUT):: ez(ezlo(1):ezhi(1),ezlo(2):ezhi(2),ezlo(3):ezhi(3))
+
+  real(num), intent(IN):: bx(bxlo(1):bxhi(1),bxlo(2):bxhi(2),bxlo(3):bxhi(3))
+  real(num), intent(IN):: by(bylo(1):byhi(1),bylo(2):byhi(2),bylo(3):byhi(3))
+  real(num), intent(IN):: bz(bzlo(1):bzhi(1),bzlo(2):bzhi(2),bzlo(3):bzhi(3))
+
+  real(num), intent(IN):: jx(jxlo(1):jxhi(1),jxlo(2):jxhi(2),jxlo(3):jxhi(3))
+  real(num), intent(IN):: jy(jylo(1):jyhi(1),jylo(2):jyhi(2),jylo(3):jyhi(3))
+  real(num), intent(IN):: jz(jzlo(1):jzhi(1),jzlo(2):jzhi(2),jzlo(3):jzhi(3))
+
+  real(num), intent(IN) :: mudt,dtsdx,dtsdy,dtsdz
+
+  integer :: j,k,l
+
+  do l         = xlo(3), xhi(3)
+      do k     = xlo(2), xhi(2)
+          do j = xlo(1), xhi(1)
+            Ex(j,k,l) = Ex(j,k,l) + dtsdy * (Bz(j,k,l) - Bz(j,k-1,l  )) &
+                                 - dtsdz * (By(j,k,l) - By(j,k  ,l-1)) &
+                                 - mudt  * jx(j,k,l)
+          end do
+      end do
+  end do
+  do l         = ylo(3), yhi(3)
+      do k     = ylo(2), yhi(2)
+          do j = ylo(1), yhi(1)
+            Ey(j,k,l) = Ey(j,k,l) - dtsdx * (Bz(j,k,l) - Bz(j-1,k,l)) &
+                                 + dtsdz * (Bx(j,k,l) - Bx(j,k,l-1)) &
+                                 - mudt  * jy(j,k,l)
+           end do
+       end do
+   end do
+   do l         = zlo(3), zhi(3)
+       do k     = zlo(2), zhi(2)
+           do j = zlo(1), zhi(1)
+           Ez(j,k,l) = Ez(j,k,l) + dtsdx * (By(j,k,l) - By(j-1,k  ,l)) &
+                                 - dtsdy * (Bx(j,k,l) - Bx(j  ,k-1,l)) &
+                                 - mudt  * jz(j,k,l)
+        end do
+     end do
+  end do
+
+end subroutine pxrpush_em3d_evec
+! SUBROUTINE pxrpush_em3d_evec(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx, dtsdy,  &
+!   dtsdz, nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)
+!   USE constants
+!   INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
+!   REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
+!   -nzguard:nz+nzguard) :: ex, ey, ez, bx, by, bz
+!   REAL(num), INTENT(IN), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,          &
+!   -nzguard:nz+nzguard) :: jx, jy, jz
+!   REAL(num), INTENT(IN) :: mudt, dtsdx, dtsdy, dtsdz
+!   INTEGER(idp):: j, k, l
+!   LOGICAL(lp)  :: l_nodalgrid
+! 
+!   ! advance Ex
+!   !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j)
+!   !$OMP DO COLLAPSE(3)
+!   DO l = -nzs, nz+nzs
+!     DO k = -nys, ny+nys
+!       DO j = -nxs, nx+nxs
+!         Ex(j, k, l) = Ex(j, k, l) + dtsdy * (Bz(j, k, l)   - Bz(j, k-1, l  )) - dtsdz &
+!         * (By(j, k, l)   - By(j, k, l-1)) - mudt  * jx(j, k, l)
+!       END DO
+!     END DO
+!   END DO
+!   !$OMP END DO
+!   ! advance Ey
+!   !$OMP DO COLLAPSE(3)
+!   DO l = -nzs, nz+nzs
+!     DO k = -nys, ny+nys
+!       DO j = -nxs, nx+nxs
+!         Ey(j, k, l) = Ey(j, k, l) - dtsdx * (Bz(j, k, l)   - Bz(j-1, k, l)) + dtsdz * &
+!         (Bx(j, k, l)   - Bx(j, k, l-1)) - mudt  * jy(j, k, l)
+!       END DO
+!     END DO
+!   END DO
+!   !$OMP END DO
+!   ! advance Ez
+!   !$OMP DO COLLAPSE(3)
+!   DO l = -nzs, nz+nzs
+!     DO k = -nys, ny+nys
+!       DO j = -nxs, nx+nxs
+!         Ez(j, k, l) = Ez(j, k, l) + dtsdx * (By(j, k, l) - By(j-1, k, l)) - dtsdy *   &
+!         (Bx(j, k, l) - Bx(j, k-1, l)) - mudt  * jz(j, k, l)
+!       END DO
+!     END DO
+!   END DO
+!   !$OMP END DO
+!   !$OMP END PARALLEL
+!   RETURN
+! END SUBROUTINE pxrpush_em3d_evec
 
 
 ! ________________________________________________________________________________________
