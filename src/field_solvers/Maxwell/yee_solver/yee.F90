@@ -197,17 +197,20 @@ SUBROUTINE pxrpush_em2d_evec_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dt
   RETURN
 END SUBROUTINE pxrpush_em2d_evec_norder
 
-! 
-! ! ________________________________________________________________________________________
-! !> @brief
-! !> Push electric field Yee 2D order 2
-! !
-! !> @author
-! !> Henri Vincenti
-! !
-! !> @date
-! !> Creation 2015
-! ! ________________________________________________________________________________________
+! ________________________________________________________________________________________
+!> @brief
+!> Push electric field Yee 2D order 2
+!
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
+!> Weiqun Zhang
+!> Jean-Luc Vay
+!> Maxence Thevenet
+
+!> @date
+!> Creation 2015
+! ________________________________________________________________________________________
 subroutine pxrpush_em2d_evec( &
      xlo, xhi, ylo, yhi, zlo, zhi, &
      ex, exlo, exhi, &
@@ -284,66 +287,16 @@ subroutine pxrpush_em2d_evec( &
 
 end subroutine pxrpush_em2d_evec
 
-
-! SUBROUTINE pxrpush_em2d_evec(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx, dtsdy,  &
-!   dtsdz, nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)
-!   USE constants
-!   INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
-!   REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
-!   -nzguard:nz+nzguard) :: ex, ey, ez, bx, by, bz
-!   REAL(num), INTENT(IN), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,          &
-!   -nzguard:nz+nzguard)    :: Jx, Jy, Jz
-!   REAL(num) , INTENT(IN)  :: mudt, dtsdx, dtsdy, dtsdz
-!   INTEGER(idp) :: j, k, l, ist
-!   LOGICAL(lp) ,INTENT(IN) :: l_nodalgrid
-!   IF (l_nodalgrid) THEN
-!     ist = 0
-!   ELSE
-!     ist = 1
-!   END IF
-! 
-!   k = 0_idp
-!   ! advance Ex
-!   !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j)
-!   !$OMP DO COLLAPSE(2)
-!   DO l = -nzs, nz+nzs
-!     DO j = -nxs, nx+nxs
-!       Ex(j, k, l) = Ex(j, k, l) - mudt  * Jx(j, k, l)
-!       Ex(j, k, l) = Ex(j, k, l) - dtsdz * (By(j, k, l+1-ist)   - By(j, k, l-1))
-!     END DO
-!   END DO
-!   !$OMP END DO
-! 
-!   ! advance Ey
-!   !$OMP DO COLLAPSE(2)
-!   DO l = -nzs, nz+nzs
-!     DO j = -nxs, nx+nxs
-!       Ey(j, k, l) = Ey(j, k, l) - mudt  * Jy(j, k, l)
-!       Ey(j, k, l) = Ey(j, k, l) - dtsdx * (Bz(j+1-ist, k, l)   - Bz(j-1, k, l))
-!       Ey(j, k, l) = Ey(j, k, l) + dtsdz * (Bx(j, k, l+1-ist)   - Bx(j, k, l-1))
-!     END DO
-!   END DO
-!   !$OMP END DO
-! 
-!   ! advance Ez
-!   !$OMP DO COLLAPSE(2)
-!   DO l = -nzs, nz+nzs
-!     DO j = -nxs, nx+nxs
-!       Ez(j, k, l) = Ez(j, k, l) - mudt  * Jz(j, k, l)
-!       Ez(j, k, l) = Ez(j, k, l) + dtsdx * (By(j+1-ist, k, l) - By(j-1, k, l))
-!     END DO
-!   END DO
-!   !$OMP END DO
-!   !$OMP END PARALLEL
-!   RETURN
-! END SUBROUTINE pxrpush_em2d_evec
-
 ! ________________________________________________________________________________________
 !> @brief
 !> Push electric field Yee 3D order 2
 !
 !> @author
 !> Henri Vincenti
+!> Mathieu Lobet
+!> Weiqun Zhang
+!> Jean-Luc Vay
+!> Maxence Thevenet
 !
 !> @date
 !> Creation 2015
@@ -432,56 +385,6 @@ subroutine pxrpush_em3d_evec( &
 #endif
 
 end subroutine pxrpush_em3d_evec
-! SUBROUTINE pxrpush_em3d_evec(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx, dtsdy,  &
-!   dtsdz, nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)
-!   USE constants
-!   INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
-!   REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
-!   -nzguard:nz+nzguard) :: ex, ey, ez, bx, by, bz
-!   REAL(num), INTENT(IN), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,          &
-!   -nzguard:nz+nzguard) :: jx, jy, jz
-!   REAL(num), INTENT(IN) :: mudt, dtsdx, dtsdy, dtsdz
-!   INTEGER(idp):: j, k, l
-!   LOGICAL(lp)  :: l_nodalgrid
-! 
-!   ! advance Ex
-!   !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j)
-!   !$OMP DO COLLAPSE(3)
-!   DO l = -nzs, nz+nzs
-!     DO k = -nys, ny+nys
-!       DO j = -nxs, nx+nxs
-!         Ex(j, k, l) = Ex(j, k, l) + dtsdy * (Bz(j, k, l)   - Bz(j, k-1, l  )) - dtsdz &
-!         * (By(j, k, l)   - By(j, k, l-1)) - mudt  * jx(j, k, l)
-!       END DO
-!     END DO
-!   END DO
-!   !$OMP END DO
-!   ! advance Ey
-!   !$OMP DO COLLAPSE(3)
-!   DO l = -nzs, nz+nzs
-!     DO k = -nys, ny+nys
-!       DO j = -nxs, nx+nxs
-!         Ey(j, k, l) = Ey(j, k, l) - dtsdx * (Bz(j, k, l)   - Bz(j-1, k, l)) + dtsdz * &
-!         (Bx(j, k, l)   - Bx(j, k, l-1)) - mudt  * jy(j, k, l)
-!       END DO
-!     END DO
-!   END DO
-!   !$OMP END DO
-!   ! advance Ez
-!   !$OMP DO COLLAPSE(3)
-!   DO l = -nzs, nz+nzs
-!     DO k = -nys, ny+nys
-!       DO j = -nxs, nx+nxs
-!         Ez(j, k, l) = Ez(j, k, l) + dtsdx * (By(j, k, l) - By(j-1, k, l)) - dtsdy *   &
-!         (Bx(j, k, l) - Bx(j, k-1, l)) - mudt  * jz(j, k, l)
-!       END DO
-!     END DO
-!   END DO
-!   !$OMP END DO
-!   !$OMP END PARALLEL
-!   RETURN
-! END SUBROUTINE pxrpush_em3d_evec
-
 
 ! ________________________________________________________________________________________
 !> @brief
@@ -635,8 +538,6 @@ SUBROUTINE pxrpush_em2d_bvec_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz,
 
 END SUBROUTINE pxrpush_em2d_bvec_norder
 
-
-
 ! ________________________________________________________________________________________
 !> @brief
 !> This subroutine pushes the magnetic field with the 2D Yee FDTD
@@ -645,8 +546,11 @@ END SUBROUTINE pxrpush_em2d_bvec_norder
 !> regions.
 !
 !> @author
-!> Weiqun Zhang
+!> Henri Vincenti
 !> Mathieu Lobet
+!> Weiqun Zhang
+!> Jean-Luc Vay
+!> Maxence Thevenet
 !
 !> @date
 !> Creation 2015
@@ -718,67 +622,14 @@ end subroutine pxrpush_em2d_bvec
 
 ! ________________________________________________________________________________________
 !> @brief
-!> Push magnetic field Yee 2D order 2
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2015
-! ________________________________________________________________________________________
-! SUBROUTINE pxrpush_em2d_bvec(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx, ny, nz, &
-!   nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)
-!   USE constants
-!   INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
-!   REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
-!   -nzguard:nz+nzguard) :: ex, ey, ez, bx, by, bz
-!   REAL(num), INTENT(IN) :: dtsdx, dtsdy, dtsdz
-!   INTEGER(idp) :: j, k, l, ist
-!   LOGICAL(lp)  :: l_nodalgrid
-! 
-!   IF (l_nodalgrid) THEN
-!     ist = 0
-!   ELSE
-!     ist = 1
-!   END IF
-!   k = 0_idp
-!   ! advance Bx
-!   !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j)
-!   !$OMP DO COLLAPSE(2)
-!   DO l = -nzs, nz+nzs
-!     DO j = -nxs, nx+nxs
-!       Bx(j, 0, l) = Bx(j, 0, l) + dtsdz * (Ey(j, 0, l+1) - Ey(j, 0, l-1+ist))
-!     END DO
-!   END DO
-!   !$OMP END DO
-!   ! advance By
-!   !$OMP DO COLLAPSE(2)
-!   DO l = -nzs, nz+nzs
-!     DO j = -nxs, nx+nxs
-!       By(j, 0, l) = By(j, 0, l) + dtsdx * (Ez(j+1, 0, l  ) - Ez(j-1+ist, 0, l))
-!       By(j, 0, l) = By(j, 0, l) - dtsdz * (Ex(j, 0, l+1) - Ex(j, 0, l-1+ist))
-!     END DO
-!   END DO
-!   !$OMP END DO
-!   ! advance Bz
-!   !$OMP DO COLLAPSE(2)
-!   DO l = -nzs, nz+nzs
-!     DO j = -nxs, nx+nxs
-!       Bz(j, 0, l) = Bz(j, 0, l) - dtsdx * (Ey(j+1, 0, l) - Ey(j-1+ist, 0, l))
-!     END DO
-!   END DO
-!   !$OMP END DO
-!   !$OMP END PARALLEL
-!   RETURN
-! 
-! END SUBROUTINE pxrpush_em2d_bvec
-
-! ________________________________________________________________________________________
-!> @brief
 !> Push magnetic field Yee 3D order 2
 !
 !> @author
 !> Henri Vincenti
+!> Mathieu Lobet
+!> Weiqun Zhang
+!> Jean-Luc Vay
+!> Maxence Thevenet
 !
 !> @date
 !> Creation 2015
@@ -856,49 +707,3 @@ subroutine pxrpush_em3d_bvec( &
 #endif
 
 end subroutine pxrpush_em3d_bvec
-! SUBROUTINE pxrpush_em3d_bvec(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx, ny, nz, &
-!   nxguard, nyguard, nzguard, nxs, nys, nzs, l_nodalgrid)
-!   USE constants
-!   INTEGER(idp):: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
-!   REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
-!   -nzguard:nz+nzguard) :: ex, ey, ez, bx, by, bz
-!   REAL(num), INTENT(IN) :: dtsdx, dtsdy, dtsdz
-!   INTEGER(idp) :: j, k, l
-!   LOGICAL(lp)  :: l_nodalgrid
-! 
-!   ! advance Bx
-!   !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j)
-!   !$OMP DO COLLAPSE(3)
-!   DO l = -nzs, nz+nzs-1
-!     DO k = -nys, ny+nys-1
-!       DO j = -nxs, nx+nxs
-!         Bx(j, k, l) = Bx(j, k, l) - dtsdy * (Ez(j, k+1, l  ) - Ez(j, k, l)) + dtsdz * &
-!         (Ey(j, k, l+1) - Ey(j, k, l))
-!       END DO
-!     END DO
-!   END DO
-!   !$OMP END DO
-!   ! advance By
-!   !$OMP DO COLLAPSE(3)
-!   DO l = -nzs, nz+nzs-1
-!     DO k = -nys, ny+nys
-!       DO j = -nxs, nx+nxs-1
-!         By(j, k, l) = By(j, k, l) + dtsdx * (Ez(j+1, k, l  ) - Ez(j, k, l)) - dtsdz * &
-!         (Ex(j, k, l+1) - Ex(j, k, l))
-!       END DO
-!     END DO
-!   END DO
-!   !$OMP END DO
-!   ! advance Bz
-!   !$OMP DO COLLAPSE(3)
-!   DO l = -nzs, nz+nzs
-!     DO k = -nys, ny+nys-1
-!       DO j = -nxs, nx+nxs-1
-!         Bz(j, k, l) = Bz(j, k, l) - dtsdx * (Ey(j+1, k, l) - Ey(j, k, l)) + dtsdy *   &
-!         (Ex(j, k+1, l) - Ex(j, k, l))
-!       END DO
-!     END DO
-!   END DO
-!   !$OMP END DO
-!   !$OMP END PARALLEL
-! END SUBROUTINE pxrpush_em3d_bvec
