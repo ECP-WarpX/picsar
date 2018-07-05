@@ -222,10 +222,11 @@ subroutine pxrpush_em2d_evec( &
      jx, jxlo, jxhi, &
      jy, jylo, jyhi, &
      jz, jzlo, jzhi, &
-     mudt, dtsdx, dtsdy, dtsdz) BIND(C, NAME='pxrpush_em2d_evec_')
+     mudt, dtsdx, dtsdy, dtsdz)
      
   use constants
 
+  ! integer(idp),
   integer(idp), intent(in) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
        exlo(2),exhi(2),eylo(2),eyhi(2),ezlo(2),ezhi(2),&
        bxlo(2),bxhi(2),bylo(2),byhi(2),bzlo(2),bzhi(2),&
@@ -313,7 +314,7 @@ subroutine pxrpush_em3d_evec( &
      jy, jylo, jyhi, &
      jz, jzlo, jzhi, &
      mudt,    &
-     dtsdx,dtsdy,dtsdz) BIND(C, NAME='pxrpush_em3d_evec_')
+     dtsdx,dtsdy,dtsdz)
 ! ______________________________________________________________________________
 
   use constants
@@ -563,7 +564,7 @@ subroutine pxrpush_em2d_bvec( &
      bx, bxlo, bxhi, &
      by, bylo, byhi, &
      bz, bzlo, bzhi, &
-     dtsdx,dtsdy,dtsdz) BIND(C, NAME='pxrpush_em2d_bvec_')
+     dtsdx,dtsdy,dtsdz)
 ! ______________________________________________________________________________
 
   USE constants
@@ -643,7 +644,7 @@ subroutine pxrpush_em3d_bvec( &
      by, bylo, byhi, &
      bz, bzlo, bzhi, &
      dtsdx,dtsdy,dtsdz,&
-     norder)  BIND(C, NAME='pxrpush_em3d_bvec_')
+     norder)
 ! ______________________________________________________________________________
 
   USE constants
