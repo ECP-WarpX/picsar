@@ -333,12 +333,19 @@ subroutine pxrpush_em3d_evec( &
 
   use constants
 
+#ifdef WARPX
+  integer(isp), intent(in) :: &
+       xlo(3), xhi(3), ylo(3), yhi(3), zlo(3), zhi(3), &
+       exlo(3),exhi(3),eylo(3),eyhi(3),ezlo(3),ezhi(3),&
+       bxlo(3),bxhi(3),bylo(3),byhi(3),bzlo(3),bzhi(3),&
+       jxlo(3),jxhi(3),jylo(3),jyhi(3),jzlo(3),jzhi(3)
+#else
   integer(idp), intent(in) :: &
        xlo(3), xhi(3), ylo(3), yhi(3), zlo(3), zhi(3), &
        exlo(3),exhi(3),eylo(3),eyhi(3),ezlo(3),ezhi(3),&
        bxlo(3),bxhi(3),bylo(3),byhi(3),bzlo(3),bzhi(3),&
        jxlo(3),jxhi(3),jylo(3),jyhi(3),jzlo(3),jzhi(3)
-
+#endif
   real(num), intent(IN OUT):: ex(exlo(1):exhi(1),exlo(2):exhi(2),exlo(3):exhi(3))
   real(num), intent(IN OUT):: ey(eylo(1):eyhi(1),eylo(2):eyhi(2),eylo(3):eyhi(3))
   real(num), intent(IN OUT):: ez(ezlo(1):ezhi(1),ezlo(2):ezhi(2),ezlo(3):ezhi(3))
@@ -665,17 +672,20 @@ subroutine pxrpush_em3d_bvec( &
      bx, bxlo, bxhi, &
      by, bylo, byhi, &
      bz, bzlo, bzhi, &
-     dtsdx,dtsdy,dtsdz,&
-     norder)
+     dtsdx,dtsdy,dtsdz)
 ! ______________________________________________________________________________
 
   USE constants
 
+#ifdef WARPX
+  integer(isp) :: xlo(3), xhi(3), ylo(3), yhi(3), zlo(3), zhi(3), &
+       exlo(3),exhi(3),eylo(3),eyhi(3),ezlo(3),ezhi(3),&
+       bxlo(3),bxhi(3),bylo(3),byhi(3),bzlo(3),bzhi(3)
+#else
   integer(idp) :: xlo(3), xhi(3), ylo(3), yhi(3), zlo(3), zhi(3), &
        exlo(3),exhi(3),eylo(3),eyhi(3),ezlo(3),ezhi(3),&
-       bxlo(3),bxhi(3),bylo(3),byhi(3),bzlo(3),bzhi(3),&
-       norder
-
+       bxlo(3),bxhi(3),bylo(3),byhi(3),bzlo(3),bzhi(3)
+#endif
   real(num), intent(IN):: ex(exlo(1):exhi(1),exlo(2):exhi(2),exlo(3):exhi(3))
   real(num), intent(IN):: ey(eylo(1):eyhi(1),eylo(2):eyhi(2),eylo(3):eyhi(3))
   real(num), intent(IN):: ez(ezlo(1):ezhi(1),ezlo(2):ezhi(2),ezlo(3):ezhi(3))
