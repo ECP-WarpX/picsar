@@ -228,12 +228,17 @@ subroutine pxrpush_em2d_evec( &
      
   use constants
 
-  ! integer(idp),
+#ifdef WARPX
+  integer(isp), intent(in) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
+       exlo(2),exhi(2),eylo(2),eyhi(2),ezlo(2),ezhi(2),&
+       bxlo(2),bxhi(2),bylo(2),byhi(2),bzlo(2),bzhi(2),&
+       jxlo(2),jxhi(2),jylo(2),jyhi(2),jzlo(2),jzhi(2)
+#else
   integer(idp), intent(in) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
        exlo(2),exhi(2),eylo(2),eyhi(2),ezlo(2),ezhi(2),&
        bxlo(2),bxhi(2),bylo(2),byhi(2),bzlo(2),bzhi(2),&
        jxlo(2),jxhi(2),jylo(2),jyhi(2),jzlo(2),jzhi(2)
-
+#endif
   real(num), intent(IN OUT):: ex(exlo(1):exhi(1),exlo(2):exhi(2))
   real(num), intent(IN OUT):: ey(eylo(1):eyhi(1),eylo(2):eyhi(2))
   real(num), intent(IN OUT):: ez(ezlo(1):ezhi(1),ezlo(2):ezhi(2))
@@ -249,6 +254,12 @@ subroutine pxrpush_em2d_evec( &
   real(num), intent(IN) :: mudt,dtsdx,dtsdy,dtsdz
 
   integer :: j,k
+
+#ifdef WARPX
+    write(*,*) "compiled with -DWARPX"
+#else
+    write(*,*) "compiled without -DWARPX"
+#endif
 
   ! dtsdy should not be used.
 
@@ -317,8 +328,7 @@ subroutine pxrpush_em3d_evec( &
      jx, jxlo, jxhi, &
      jy, jylo, jyhi, &
      jz, jzlo, jzhi, &
-     mudt,    &
-     dtsdx,dtsdy,dtsdz)
+     mudt, dtsdx,dtsdy,dtsdz)
 ! ______________________________________________________________________________
 
   use constants
@@ -574,10 +584,15 @@ subroutine pxrpush_em2d_bvec( &
 
   USE constants
 
+#ifdef WARPX
+  integer(isp) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
+       exlo(2),exhi(2),eylo(2),eyhi(2),ezlo(2),ezhi(2),&
+       bxlo(2),bxhi(2),bylo(2),byhi(2),bzlo(2),bzhi(2)
+#else
   integer(idp) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
        exlo(2),exhi(2),eylo(2),eyhi(2),ezlo(2),ezhi(2),&
        bxlo(2),bxhi(2),bylo(2),byhi(2),bzlo(2),bzhi(2)
-
+#endif
   real(num), intent(IN):: ex(exlo(1):exhi(1),exlo(2):exhi(2))
   real(num), intent(IN):: ey(eylo(1):eyhi(1),eylo(2):eyhi(2))
   real(num), intent(IN):: ez(ezlo(1):ezhi(1),ezlo(2):ezhi(2))
