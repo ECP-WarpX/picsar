@@ -200,6 +200,8 @@ END SUBROUTINE pxrpush_em2d_evec_norder
 ! ________________________________________________________________________________________
 !> @brief
 !> Push electric field Yee 2D order 2
+!> This subroutine is general enough to be called by AMReX.
+!> OMP pragmas are ignored when compiled for WarpX.
 !
 !> @author
 !> Henri Vincenti
@@ -291,6 +293,8 @@ end subroutine pxrpush_em2d_evec
 ! ________________________________________________________________________________________
 !> @brief
 !> Push electric field Yee 3D order 2
+!> This subroutine is general enough to be called by AMReX.
+!> OMP pragmas are ignored when compiled for WarpX.
 !
 !> @author
 !> Henri Vincenti
@@ -543,7 +547,8 @@ END SUBROUTINE pxrpush_em2d_bvec_norder
 !> @brief
 !> This subroutine pushes the magnetic field with the 2D Yee FDTD
 !> scheme (order 2).
-!> This subroutine is adapted for Boxlib and do not contain $OMP parallel
+!> This subroutine is general enough to be called by AMReX.
+!> OMP pragmas are ignored when compiled for WarpX.
 !> regions.
 !
 !> @author
@@ -624,6 +629,8 @@ end subroutine pxrpush_em2d_bvec
 ! ________________________________________________________________________________________
 !> @brief
 !> Push magnetic field Yee 3D order 2
+!> This subroutine is general enough to be called by AMReX.
+!> OMP pragmas are ignored when compiled for WarpX.
 !
 !> @author
 !> Henri Vincenti
