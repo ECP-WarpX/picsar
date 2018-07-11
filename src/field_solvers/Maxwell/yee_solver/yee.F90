@@ -255,16 +255,12 @@ subroutine pxrpush_em2d_evec( &
 
   integer :: j,k
 
-#ifdef WARPX
-    write(*,*) "compiled with -DWARPX"
-#else
-    write(*,*) "compiled without -DWARPX"
-#endif
-
   ! dtsdy should not be used.
 
 #ifndef WARPX
-  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(k, j)
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j) , &
+  !$OMP& SHARED(xlo, xhi, ylo, yhi, zlo, zhi, mudt, dtsdx, dtsdz), &
+  !$OMP& SHARED(Ex, Ey, Ez, Bx, By, Bz, Jx, Jy, Jz)
   !$OMP DO COLLAPSE(2)
 #endif
   do k   = xlo(2), xhi(2)
@@ -363,7 +359,9 @@ subroutine pxrpush_em3d_evec( &
   integer :: j,k,l
 
 #ifndef WARPX
-  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j)
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(l, k, j) , &
+  !$OMP& SHARED(xlo, xhi, ylo, yhi, zlo, zhi, mudt, dtsdx, dtsdy, dtsdz), &
+  !$OMP& SHARED(Ex, Ey, Ez, Bx, By, Bz, Jx, Jy, Jz)
   !$OMP DO COLLAPSE(3)
 #endif
   do l     = xlo(3), xhi(3)
@@ -615,7 +613,9 @@ subroutine pxrpush_em2d_bvec( &
   ! dtsdy should not be used.  It is set to nan by WarpX.
 
 #ifndef WARPX
-  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(k, j)
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j) , &
+  !$OMP& SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdx, dtsdz), &
+  !$OMP& SHARED(Ex, Ey, Ez, Bx, By, Bz, Jx, Jy, Jz)
   !$OMP DO COLLAPSE(2)
 #endif
   do k   = xlo(2), xhi(2)
@@ -699,7 +699,9 @@ subroutine pxrpush_em3d_bvec( &
   integer :: j,k,l
 
 #ifndef WARPX
-  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(l, k, j)
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(l, k, j) , &
+  !$OMP& SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdx, dtsdy, dtsdz), &
+  !$OMP& SHARED(Ex, Ey, Ez, Bx, By, Bz, Jx, Jy, Jz)
   !$OMP DO COLLAPSE(3)
 #endif
   do l     = xlo(3), xhi(3)
