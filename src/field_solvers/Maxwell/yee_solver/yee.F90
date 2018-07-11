@@ -259,8 +259,8 @@ subroutine pxrpush_em2d_evec( &
 
 #ifndef WARPX
   !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j), &
-  !$OMP& SHARED(xlo, xhi, ylo, yhi, zlo, zhi, mudt, dtsdx, dtsdz), &
-  !$OMP& SHARED(Ex, Ey, Ez, Bx, By, Bz, Jx, Jy, Jz)
+  !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, mudt, dtsdx, dtsdz), &
+  !$OMP SHARED(Ex, Ey, Ez, Bx, By, Bz, Jx, Jy, Jz)
   !$OMP DO COLLAPSE(2)
 #endif
   do k   = xlo(2), xhi(2)
@@ -360,8 +360,8 @@ subroutine pxrpush_em3d_evec( &
 
 #ifndef WARPX
   !$OMP PARALLEL DEFAULT(NONE) PRIVATE(l, k, j), &
-  !$OMP& SHARED(xlo, xhi, ylo, yhi, zlo, zhi, mudt, dtsdx, dtsdy, dtsdz), &
-  !$OMP& SHARED(Ex, Ey, Ez, Bx, By, Bz, Jx, Jy, Jz)
+  !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, mudt, dtsdx, dtsdy, dtsdz), &
+  !$OMP SHARED(Ex, Ey, Ez, Bx, By, Bz, Jx, Jy, Jz)
   !$OMP DO COLLAPSE(3)
 #endif
   do l     = xlo(3), xhi(3)
@@ -614,8 +614,8 @@ subroutine pxrpush_em2d_bvec( &
 
 #ifndef WARPX
   !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j), &
-  !$OMP& SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdx, dtsdz), &
-  !$OMP& SHARED(Ex, Ey, Ez, Bx, By, Bz, Jx, Jy, Jz)
+  !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdx, dtsdz), &
+  !$OMP SHARED(Ex, Ey, Ez, Bx, By, Bz, Jx, Jy, Jz)
   !$OMP DO COLLAPSE(2)
 #endif
   do k   = xlo(2), xhi(2)
@@ -700,8 +700,8 @@ subroutine pxrpush_em3d_bvec( &
 
 #ifndef WARPX
   !$OMP PARALLEL DEFAULT(NONE) PRIVATE(l, k, j), &
-  !$OMP& SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdx, dtsdy, dtsdz), &
-  !$OMP& SHARED(Ex, Ey, Ez, Bx, By, Bz, Jx, Jy, Jz)
+  !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdx, dtsdy, dtsdz), &
+  !$OMP SHARED(Ex, Ey, Ez, Bx, By, Bz, Jx, Jy, Jz)
   !$OMP DO COLLAPSE(3)
 #endif
   do l     = xlo(3), xhi(3)
