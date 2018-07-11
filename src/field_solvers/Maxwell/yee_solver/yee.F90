@@ -615,7 +615,7 @@ subroutine pxrpush_em2d_bvec( &
 #ifndef WARPX
   !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j), &
   !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdx, dtsdz), &
-  !$OMP SHARED(ex, ey, ez, bx, by, bz, jx, jy, jz)
+  !$OMP SHARED(ex, ey, ez, bx, by, bz)
   !$OMP DO COLLAPSE(2)
 #endif
   do k   = xlo(2), xhi(2)
@@ -701,7 +701,7 @@ subroutine pxrpush_em3d_bvec( &
 #ifndef WARPX
   !$OMP PARALLEL DEFAULT(NONE) PRIVATE(l, k, j), &
   !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdx, dtsdy, dtsdz), &
-  !$OMP SHARED(ex, ey, ez, bx, by, bz, jx, jy, jz)
+  !$OMP SHARED(ex, ey, ez, bx, by, bz)
   !$OMP DO COLLAPSE(3)
 #endif
   do l     = xlo(3), xhi(3)
