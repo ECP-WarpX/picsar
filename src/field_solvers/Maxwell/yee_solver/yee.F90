@@ -258,7 +258,7 @@ subroutine pxrpush_em2d_evec( &
   ! dtsdy should not be used.
 
 #ifndef WARPX
-  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j) , &
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j), &
   !$OMP& SHARED(xlo, xhi, ylo, yhi, zlo, zhi, mudt, dtsdx, dtsdz), &
   !$OMP& SHARED(Ex, Ey, Ez, Bx, By, Bz, Jx, Jy, Jz)
   !$OMP DO COLLAPSE(2)
@@ -359,7 +359,7 @@ subroutine pxrpush_em3d_evec( &
   integer :: j,k,l
 
 #ifndef WARPX
-  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(l, k, j) , &
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(l, k, j), &
   !$OMP& SHARED(xlo, xhi, ylo, yhi, zlo, zhi, mudt, dtsdx, dtsdy, dtsdz), &
   !$OMP& SHARED(Ex, Ey, Ez, Bx, By, Bz, Jx, Jy, Jz)
   !$OMP DO COLLAPSE(3)
@@ -613,7 +613,7 @@ subroutine pxrpush_em2d_bvec( &
   ! dtsdy should not be used.  It is set to nan by WarpX.
 
 #ifndef WARPX
-  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j) , &
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j), &
   !$OMP& SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdx, dtsdz), &
   !$OMP& SHARED(Ex, Ey, Ez, Bx, By, Bz, Jx, Jy, Jz)
   !$OMP DO COLLAPSE(2)
@@ -699,7 +699,7 @@ subroutine pxrpush_em3d_bvec( &
   integer :: j,k,l
 
 #ifndef WARPX
-  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(l, k, j) , &
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(l, k, j), &
   !$OMP& SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdx, dtsdy, dtsdz), &
   !$OMP& SHARED(Ex, Ey, Ez, Bx, By, Bz, Jx, Jy, Jz)
   !$OMP DO COLLAPSE(3)
