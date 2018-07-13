@@ -610,7 +610,7 @@ subroutine pxrpush_em2d_bvec( &
 
   integer :: j,k
 
-  ! dtsdy should not be used.  It is set to nan by WarpX.
+  ! dtsdy should not be used.
 
 #ifndef WARPX
   !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j), &

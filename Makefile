@@ -356,7 +356,7 @@ lib: echo createdir build_lib
 build_lib:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/GPSTD.o \
 	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
-	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
+	$(SRCDIR)/field_solvers/Maxwell/karkkainen_solver/karkkainen.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fastfft.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/init_kspace_3D.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
@@ -378,7 +378,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/profiling/api_fortran_itt.o \
 	$(SRCDIR)/profiling/itt_fortran.o \
 	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
-	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
+	$(SRCDIR)/field_solvers/Maxwell/karkkainen_solver/karkkainen.o \
 	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/housekeeping/sorting.o \
@@ -423,7 +423,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/profiling/api_fortran_sde.o \
 	$(SRCDIR)/profiling/sde_fortran.o \
 	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
-	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
+	$(SRCDIR)/field_solvers/Maxwell/karkkainen_solver/karkkainen.o \
 	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/housekeeping/sorting.o \
@@ -468,7 +468,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fastfft.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/GPSTD.o \
 	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
-	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
+	$(SRCDIR)/field_solvers/Maxwell/karkkainen_solver/karkkainen.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/housekeeping/sorting.o \
 	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
@@ -515,7 +515,7 @@ build:$(SRCDIR)/modules/modules.o \
 else
 build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
-	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
+	$(SRCDIR)/field_solvers/Maxwell/karkkainen_solver/karkkainen.o \
 	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/housekeeping/sorting.o \
@@ -941,7 +941,7 @@ build_maxwell_2d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fastfft.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/GPSTD.o \
 	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
-	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
+	$(SRCDIR)/field_solvers/Maxwell/karkkainen_solver/karkkainen.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/housekeeping/sorting.o \
 	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
@@ -987,7 +987,7 @@ build_maxwell_2d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fastfft.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/GPSTD.o \
 	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
-	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
+	$(SRCDIR)/field_solvers/Maxwell/karkkainen_solver/karkkainen.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/housekeeping/sorting.o \
 	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
@@ -1033,7 +1033,7 @@ build_maxwell_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fastfft.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/GPSTD.o \
 	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
-	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
+	$(SRCDIR)/field_solvers/Maxwell/karkkainen_solver/karkkainen.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/housekeeping/sorting.o \
 	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
@@ -1079,7 +1079,7 @@ build_maxwell_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fastfft.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/GPSTD.o \
 	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
-	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
+	$(SRCDIR)/field_solvers/Maxwell/karkkainen_solver/karkkainen.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/housekeeping/sorting.o \
 	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
