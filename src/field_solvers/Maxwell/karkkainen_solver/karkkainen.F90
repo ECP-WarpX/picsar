@@ -145,12 +145,6 @@ subroutine pxrpush_em3d_bvec_ckc( &
   gammay = dtsdy*gammay
   gammaz = dtsdz*gammaz
 
-#ifdef WARPX
-    write(*,*) "compiled with flag WARPX"
-#else
-    write(*,*) "compiled without flag WARPX"
-#endif
-
 #ifndef WARPX
   !$OMP PARALLEL DEFAULT(NONE) PRIVATE(l, k, j), &
   !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdx), &
@@ -314,12 +308,6 @@ subroutine pxrpush_em2d_bvec_ckc( &
   betazx = dtsdz*betazx
   alphax = dtsdx*alphax
   alphaz = dtsdz*alphaz
-
-#ifdef WARPX
-    write(*,*) "compiled with flag WARPX"
-#else
-    write(*,*) "compiled without flag WARPX"
-#endif
 
 #ifndef WARPX
   !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j), &
