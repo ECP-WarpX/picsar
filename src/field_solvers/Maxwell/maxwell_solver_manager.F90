@@ -56,10 +56,19 @@ SUBROUTINE push_bfield
   ENDIF
 
   ! Yee scheme at order 2
-  IF ((norderx.eq.2).AND.(nordery.eq.2).AND.(norderz.eq.2)) then
-    CALL pxrpush_em3d_bvec(ex, ey, ez, bx, by, bz, 0.5_num*dt/dx, 0.5_num*dt/dy,      &
-    0.5_num*dt/dz, nx, ny, nz, nxguards, nyguards, nzguards, nxs, nys, nzs,           &
-    l_nodalgrid)
+  IF ((norderx.eq.2).AND.(nordery.eq.2).AND.(norderz.eq.2)) then    
+    CALL pxrpush_em3d_bvec( &
+         (/-nxs, -nys, -nzs/), (/nx+nxs, ny+nys, nz+nzs/), &
+         (/-nxs, -nys, -nzs/), (/nx+nxs, ny+nys, nz+nzs/), &
+         (/-nxs, -nys, -nzs/), (/nx+nxs, ny+nys, nz+nzs/), &
+         ex, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         ey, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         ez, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         bx, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         by, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         bz, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         0.5_num*dt/dx, 0.5_num*dt/dy, 0.5_num*dt/dz)
+
     ! Yee scheme arbitrary order
   ELSE
     CALL pxrpush_em3d_bvec_norder(ex, ey, ez, bx, by, bz, 0.5_num*dt/dx*xcoeffs,      &
@@ -146,9 +155,21 @@ SUBROUTINE push_efield
 
   ! Yee scheme at order 2
   IF ((norderx.eq.2).AND.(nordery.eq.2).AND.(norderz.eq.2)) then
-    CALL pxrpush_em3d_evec(ex, ey, ez, bx, by, bz, jx, jy, jz, clight**2*mu0*dt,      &
-    clight**2*dt/dx, clight**2*dt/dy, clight**2*dt/dz, nx, ny, nz, nxguards,          &
-    nyguards, nzguards, nxs, nys, nzs, l_nodalgrid)
+
+    CALL pxrpush_em3d_evec( &
+         (/-nxs, -nys, -nzs/), (/nx+nxs, ny+nys, nz+nzs/), &
+         (/-nxs, -nys, -nzs/), (/nx+nxs, ny+nys, nz+nzs/), &
+         (/-nxs, -nys, -nzs/), (/nx+nxs, ny+nys, nz+nzs/), &
+         ex, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         ey, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         ez, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         bx, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         by, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         bz, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         jx, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         jy, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         jz, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         clight**2*mu0*dt, clight**2*dt/dx , clight**2*dt/dy, clight**2*dt/dz)
 
   ELSE
     ! Yee scheme arbitrary order
@@ -183,6 +204,8 @@ SUBROUTINE push_bfield_2d
   IMPLICIT NONE
 
   REAL(num) :: tmptime
+  INTEGER(idp) :: iy = 0
+
   IF (it.ge.timestat_itstart) THEN
     tmptime = MPI_WTIME()
   ENDIF
@@ -190,9 +213,15 @@ SUBROUTINE push_bfield_2d
   ! Yee scheme at order 2
   IF ((norderx.eq.2).AND.(norderz.eq.2)) then
 
-    CALL pxrpush_em2d_bvec(ex, ey, ez, bx, by, bz, 0.5_num*dt/dx, 0._num,             &
-    0.5_num*dt/dz, nx, ny, nz, nxguards, 0_idp, nzguards, nxs, 0_idp, nzs,         &
-    l_nodalgrid)
+    CALL pxrpush_em2d_bvec( (/-nxs, -nzs/), (/nx+nxs, nz+nzs/), (/-nxs, -nzs/), &
+         (/nx+nxs, nz+nzs/), (/-nxs, -nzs/), (/nx+nxs, nz+nzs/), &
+         ex(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         ey(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         ez(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         bx(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         by(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         bz(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         0.5_num*dt/dx ,0._num, 0.5_num*dt/dz)
 
     ! Yee scheme arbitrary order
   ELSE
@@ -229,15 +258,27 @@ SUBROUTINE push_efield_2d
   IMPLICIT NONE
 
   REAL(num) :: tmptime,mdt
+  INTEGER(idp) :: iy = 0
+
   IF (it.ge.timestat_itstart) THEN
     tmptime = MPI_WTIME()
   ENDIF
   mdt = mu0*clight**2*dt
   ! Yee scheme at order 2
   IF ((norderx.eq.2).AND.(norderz.eq.2)) then
-    CALL pxrpush_em2d_evec(ex, ey, ez, bx, by, bz,jx,jy,jz,mdt, clight**2*dt/dx,clight**2*dt/dy, &
-    clight**2*dt/dz, nx,ny,nz, nxguards, nyguards, nzguards,nxs,0_idp,nzs,&
-    l_nodalgrid)
+
+    CALL pxrpush_em2d_evec( (/-nxs, -nzs/), (/nx+nxs, nz+nzs/), (/-nxs, -nzs/), &
+         (/nx+nxs, nz+nzs/), (/-nxs, -nzs/), (/nx+nxs, nz+nzs/), &
+         ex(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         ey(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         ez(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         bx(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         by(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         bz(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         jx(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         jy(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         jz(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         mdt, clight**2*dt/dx ,0., clight**2*dt/dz)
 
     ! Yee scheme arbitrary order
   ELSE
