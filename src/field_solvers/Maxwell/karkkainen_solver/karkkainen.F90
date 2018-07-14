@@ -36,7 +36,7 @@
 
 ! ________________________________________________________________________________________
 !> @brief
-!> This subroutine pushes the magnetic field with the 3D Yee FDTD
+!> This subroutine pushes the magnetic field with the 3D Karkkainen FDTD
 !> scheme (order 2).
 !> This subroutine is general enough to be called by AMReX.
 !> OMP pragmas are ignored when compiled for WarpX.
