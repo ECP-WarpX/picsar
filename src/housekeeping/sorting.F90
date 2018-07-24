@@ -66,6 +66,7 @@ MODULE sorting
   ! ______________________________________________________________________________________
   SUBROUTINE pxr_particle_sorting
     USE tiling
+    USE mpi
     USE shared_data
     USE PICSAR_precision
     USE constants
@@ -106,6 +107,7 @@ MODULE sorting
   ! ______________________________________________________________________________________
   SUBROUTINE particle_sorting_sub
     USE tiling
+    USE mpi
     USE shared_data
     USE PICSAR_precision
     USE constants
