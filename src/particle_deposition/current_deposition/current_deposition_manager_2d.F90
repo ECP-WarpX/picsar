@@ -154,6 +154,7 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
   USE fields
+  USE output_data
   USE shared_data
   USE params
   USE time_stat
