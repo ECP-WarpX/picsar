@@ -17,8 +17,7 @@ import glob
 import re, sys, os
 
 # Modules that are not defined within picsar
-known_external_modules = ['mpi', 'omp_lib', 'p3dfft', 'itt_sde_fortran']
-proc_modules = ['tiling']  # Modules that have the 'contains' statement
+known_external_modules = ['mpi', 'omp_lib', 'p3dfft', 'itt_sde_fortran', 'iso_c_binding']
 
 def reconstruct_lines(lines):
     """Reconstruction full lines from Fortran broken lines using &"""
@@ -36,55 +35,59 @@ def reconstruct_lines(lines):
     return new_lines
 
 
-def get_module_variables(listlines, dict_modules):
+def get_module_variables(listlines, dict_modules, dict_used_modules):
     """Modifies `dict_modules` by adding entries, with keys the module name
     and value a list of existing module variables"""
-    current_key = None
+    current_module = None
     inside_type = False
-    used_modules = {}
+    inside_subroutine = False
     for line in listlines:
         # Detect beginning of type
         m = re.match('\s*type (\w+)', line, re.IGNORECASE)
         if m:
-            dict_modules[current_key].append(m.group(1))
+            dict_modules[current_module].append(m.group(1).lower())
             if re.search('::', line): #Single-line type declaration
                 continue
             else:
                 inside_type = True
+        # Detect beginning of subroutine
+        m = re.match('\s*subroutine (\w+)', line, re.IGNORECASE)
+        if m and current_module is not None:
+            dict_modules[current_module].append(m.group(1).lower())
+            inside_subroutine = True
         # Detect module beginning
         m = re.match("^\s*module\s*(\w+)", line, flags=re.IGNORECASE)
         if m:
-            if current_key is not None:
+            if current_module is not None:
                 raise ValueError('Still parsing %s' %line )
-            current_key = m.group(1).lower()
-            dict_modules[current_key] = []
-            used_modules[current_key] = []
+            current_module = m.group(1).lower()
+            dict_modules[current_module] = []
+            dict_used_modules[current_module] = []
         # Detect module end
         m = re.match("^\s*end module", line, flags=re.IGNORECASE)
         if m:
-            current_key = None
+            current_module = None
         # Detect variable names and used modules
-        if (not inside_type) and (current_key is not None):
+        if (not inside_type) and (not inside_subroutine) and (current_module is not None):
             # Detect variable name
             m = re.match('.*::(.*)', line)
             if m:
                 for previous_char, variable in re.findall('(\W)(\w+)', m.group(1)):
-                    # Exclude default values for variables, such .TRUE.
-                    if previous_char not in ['=', '.']:
+                    # Exclude default values for variables, such .TRUE. and 'ex'
+                    if previous_char not in ['=', '.', "'"]:
                         # Exclude pure numbers
                         if not re.match('[\d]', variable):
-                            dict_modules[current_key].append( variable.lower() )
+                            dict_modules[current_module].append( variable.lower() )
             # Detect used module
             m = re.match('\s*use (\w+)', line, re.IGNORECASE)
             if m:
-                used_modules[current_key].append(m.group(1))
+                dict_used_modules[current_module].append(m.group(1).lower())
         # Detect end of type
         if re.match('\s*end type', line, re.IGNORECASE):
             inside_type = False
-        # Loop over modules and added variables from used modules
-        for module in dict_modules:
-            for sub_module in used_modules[module]:
-                dict_modules[module] += dict_modules[sub_module]
+        # Detect end of subroutine
+        if re.match('\s*end subroutine', line, re.IGNORECASE):
+            inside_subroutine = False
 
 def get_subroutines(listlines):
     """Return dictionary with text of the subroutines"""
@@ -105,76 +108,118 @@ def get_subroutines(listlines):
             current_key = None
     return( dict_subroutines )
 
-def get_sub_module( dict_subs, dict_modules ):
+def get_sub_module( dict_subs, dict_modules, dict_used_modules ):
     dict_subs_modules = {}
+    dict_ifdef_modules = {}
 
     # Loop over the subroutines
     for name, text in dict_subs.items():
-        module_list = re.findall( '\n\s*use (\w+)', text, re.IGNORECASE )
+        # Initialize dictionaries
+        dict_ifdef_modules[name] = {}
         dict_subs_modules[name] = {}
-        # Loop over the modules used in this subroutine
+        # Loop over lines and find all modules
+        lines = text.split('\n')
+        ifdef = None
+        module_list = []
+        for line in lines:
+            # Find beginning of ifdef
+            m = re.match( '\s*#if defined\((\w+)\)', line, re.IGNORECASE )
+            if m:
+                ifdef = m.group(1)
+            # Find modules
+            m = re.match( '\s*use (\w+)', line, re.IGNORECASE )
+            if m:
+                module = m.group(1).lower()
+                module_list.append( module )
+                if ifdef is not None:
+                    dict_ifdef_modules[name][module] = ifdef
+            # Find end of ifdef
+            if re.match('\s*#endif', line, re.IGNORECASE):
+                ifdef = None
+        # Also include all used modules
+        module_set = set()
         for module in module_list:
-            module = module.lower()
-            if module not in dict_modules.keys():
-                if module not in known_external_modules:
-                    print('WARNING: Module %s seems to be external.' %module)
+            module_set.add(module)
+            if module in known_external_modules:
                 continue
+            for used_module in dict_used_modules[module]:
+                module_set.add( used_module )
+        # Loop over the modules used in this subroutine
+        dict_subs_modules[name] = {}
+        for module in module_set:
             dict_subs_modules[name][module] = []
+            if module in known_external_modules:
+                continue
             # Loop over the variables defined by this module
             for variable in dict_modules[module]:
                 # Check whether this variable is being used
                 if re.search('[\W_]%s[\W\n]'%variable, text, re.IGNORECASE):
                     dict_subs_modules[name][module].append(variable)
 
-    return dict_subs_modules
+    return dict_subs_modules, dict_ifdef_modules
 
-def rewrite_subroutines( lines, dict_subs_modules ):
+def rewrite_subroutines( lines, dict_subs_modules, dict_ifdef_modules ):
     """Modifies the list lines in-place by replacing 'use *' with 'use * only'"""
     current_subroutine = None
     i = 0
     N_lines = len(lines)
+    replaced_modules = False
     while i < N_lines:
         line = lines[i]
         # Detect beginning of subroutine
         m = re.match('\s*subroutine (\w+)', line, re.IGNORECASE)
         if m:
             current_subroutine = m.group(1).lower()
+            replaced_modules = False  # Did not yet replace modules
         # Detect end of subroutine
         if re.match('\s*end subroutine', line, re.IGNORECASE):
             current_subroutine = None
         # Detect end of module
         if re.match('\s*end module', line, re.IGNORECASE):
             inside_module = False
-        # Replace use
         if current_subroutine is not None:
+            # Find first module
             m = re.match('(\s*)use (\w+)', line, re.IGNORECASE)
             if m:
-                # Find module name
-                module = m.group(2).lower()
-                # Collect complete the line, including line breaks
-                complete_line = line
-                while '&' in line:
-                    lines[i] = '' # Erase line in final text
+                # Remove all modules lines
+                while re.match('(\s*)use (\w+)', line, re.IGNORECASE):
+                    # Remove ifdef before and after
+                    if re.match('\s*#if defined', lines[i-1], re.IGNORECASE):
+                        lines[i-1] = ''
+                    if re.match('\s*#endif', lines[i+1], re.IGNORECASE):
+                        lines[i+1] = ''
+                    # Collect complete the line, including line breaks
+                    while '&' in line:
+                        lines[i] = '' # Erase line in final text
+                        i += 1
+                        line = lines[i]
+                    lines[i] = ''
                     i += 1
                     line = lines[i]
-                    complete_line = complete_line.rstrip('& \n') + ' ' + line.lstrip(' ')
-                # Skip some modules
-                if module in known_external_modules + proc_modules:
-                    pass
-                # Otherwise rewrite line
-                elif module in dict_subs_modules[ current_subroutine ]:
-                    variable_list = dict_subs_modules[ current_subroutine ][module]
-                    if variable_list == []:
-                        # No used variables: the module does not need to be used
-                        lines[i] = ''
-                    else:
-                        variables = ', '.join(variable_list)
-                        indent = m.group(1)
-                        new_line = 'USE %s, ONLY: %s\n' %(m.group(2), variables)
-                        final_line = format_less_than_75_characters( new_line, indent )
-                        lines[i] = final_line
-                else:
-                    raise RuntimeError('   Skipping %s in %s' %(module, current_subroutine))
+                i -= 1
+                # Add the used modules (if it was not yet done)
+                indent = m.group(1)
+                if not replaced_modules:
+                    for module in dict_subs_modules[current_subroutine].keys():
+                        # Add ifdef if needed
+                        if module in dict_ifdef_modules[current_subroutine]:
+                            lines[i] += '#if defined(%s)\n' %dict_ifdef_modules[current_subroutine][module]
+                        # Write external modules
+                        if module in known_external_modules:
+                            new_line = '%sUSE %s\n' %(indent, module)
+                            lines[i] += new_line
+                        # Otherwise add variables to the current line
+                        else:
+                            variable_list = dict_subs_modules[ current_subroutine ][module]
+                            if variable_list != []:
+                                variables = ', '.join(variable_list)
+                                new_line = 'USE %s, ONLY: %s\n' %(module, variables)
+                                final_line = format_less_than_75_characters( new_line, indent )
+                                lines[i] += final_line
+                        # Add ifdef if needed
+                        if module in dict_ifdef_modules[current_subroutine]:
+                            lines[i] += '#endif\n'
+                    replaced_modules = True
         # Go the next line
         i += 1
 
@@ -197,28 +242,27 @@ if __name__ == '__main__':
 
     # Go through all files and find modules and the variables defined
     dict_modules = {}
+    dict_used_modules = {}
     for filename in glob.iglob('../../src/**/*.F90', recursive=True):
         print(filename)
         with open(filename) as f:
             lines = f.readlines()
         lines = reconstruct_lines(lines)
-        get_module_variables(lines, dict_modules)
-    print('')
-    for key in dict_modules:
-        print(key)
+        get_module_variables(lines, dict_modules, dict_used_modules)
 
     # Go through all files and replace USE module syntax
     for filename in glob.iglob('../../src/**/*.F90', recursive=True):
-        print(filename)
+        print('Rewriting %s' %filename)
         with open(filename) as f:
             lines = f.readlines()
         # Extract the text of each subroutines
         dict_subs = get_subroutines(reconstruct_lines(lines))
         # Extract dictionaries with keys (subroutine, module) and
         # values list of variables used in the subroutine
-        dict_subs_modules = get_sub_module( dict_subs, dict_modules )
+        dict_subs_modules, dict_ifdef_modules = \
+            get_sub_module( dict_subs, dict_modules, dict_used_modules )
         # Rewrite routine by using the "only" syntax ; this is done by modifying the list `lines`
-        rewrite_subroutines( lines, dict_subs_modules )
+        rewrite_subroutines( lines, dict_subs_modules, dict_ifdef_modules )
         with open(filename, 'w') as f:
             f.write(''.join(lines) )
         print('')
