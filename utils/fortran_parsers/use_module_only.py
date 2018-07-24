@@ -33,7 +33,6 @@ def reconstruct_lines(lines):
             current_line += new_line
             new_lines.append(current_line)
             current_line = ''
-    print('%s %s' %(len(lines), len(new_lines)))
     return new_lines
 
 
@@ -116,7 +115,10 @@ def get_sub_module( dict_subs, dict_modules ):
 def rewrite_subroutines( lines, dict_subs_modules ):
     """Modifies the list lines in-place by replacing 'use *' with 'use * only'"""
     current_subroutine = None
-    for i, line in enumerate(lines):
+    i = 0
+    N_lines = len(lines)
+    while i < N_lines:
+        line = lines[i]
         # Detect beginning of subroutine
         m = re.match('\s*subroutine (\w+)', line, re.IGNORECASE)
         if m:
@@ -131,7 +133,15 @@ def rewrite_subroutines( lines, dict_subs_modules ):
         if current_subroutine is not None:
             m = re.match('(\s*)use (\w+)', line, re.IGNORECASE)
             if m:
+                # Find module name
                 module = m.group(2).lower()
+                # Collect complete the line, including line breaks
+                complete_line = line
+                while '&' in line:
+                    lines[i] = '' # Erase line in final text
+                    i += 1
+                    line = lines[i]
+                    complete_line = complete_line.rstrip('& \n') + ' ' + line.lstrip(' ')
                 # Rewrite line
                 if module in dict_subs_modules[ current_subroutine ]:
                     variable_list = dict_subs_modules[ current_subroutine ][module]
@@ -146,6 +156,8 @@ def rewrite_subroutines( lines, dict_subs_modules ):
                         lines[i] = final_line
                 elif module not in known_external_modules:
                     raise RuntimeError('   Skipping %s in %s' %(module, current_subroutine))
+        # Go the next line
+        i += 1
 
 
 def format_less_than_75_characters( line, indent ):
@@ -181,9 +193,8 @@ if __name__ == '__main__':
         print(filename)
         with open(filename) as f:
             lines = f.readlines()
-        lines = reconstruct_lines(lines)
         # Extract the text of each subroutines
-        dict_subs = get_subroutines(lines)
+        dict_subs = get_subroutines(reconstruct_lines(lines))
         # Extract dictionaries with keys (subroutine, module) and
         # values list of variables used in the subroutine
         dict_subs_modules = get_sub_module( dict_subs, dict_modules )
