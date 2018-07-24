@@ -18,7 +18,7 @@ import re, sys, os
 
 # Modules that are not defined within picsar
 known_external_modules = ['mpi', 'omp_lib', 'p3dfft', 'itt_sde_fortran']
-
+proc_modules = ['tiling']  # Modules that have the 'contains' statement
 
 def reconstruct_lines(lines):
     """Reconstruction full lines from Fortran broken lines using &"""
@@ -145,8 +145,11 @@ def rewrite_subroutines( lines, dict_subs_modules ):
                     i += 1
                     line = lines[i]
                     complete_line = complete_line.rstrip('& \n') + ' ' + line.lstrip(' ')
-                # Rewrite line
-                if module in dict_subs_modules[ current_subroutine ]:
+                # Skip some modules
+                if module in known_external_modules + proc_modules:
+                    pass
+                # Otherwise rewrite line
+                elif module in dict_subs_modules[ current_subroutine ]:
                     variable_list = dict_subs_modules[ current_subroutine ][module]
                     if variable_list == []:
                         # No used variables: the module does not need to be used
@@ -157,7 +160,7 @@ def rewrite_subroutines( lines, dict_subs_modules ):
                         new_line = 'USE %s, ONLY: %s\n' %(m.group(2), variables)
                         final_line = format_less_than_75_characters( new_line, indent )
                         lines[i] = final_line
-                elif module not in known_external_modules:
+                else:
                     raise RuntimeError('   Skipping %s in %s' %(module, current_subroutine))
         # Go the next line
         i += 1
