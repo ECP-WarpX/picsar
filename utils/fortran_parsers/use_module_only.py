@@ -41,6 +41,7 @@ def get_module_variables(listlines, dict_modules):
     and value a list of existing module variables"""
     current_key = None
     inside_type = False
+    used_modules = {}
     for line in listlines:
         # Detect beginning of type
         m = re.match('\s*type (\w+)', line, re.IGNORECASE)
@@ -57,12 +58,14 @@ def get_module_variables(listlines, dict_modules):
                 raise ValueError('Still parsing %s' %line )
             current_key = m.group(1).lower()
             dict_modules[current_key] = []
+            used_modules[current_key] = []
         # Detect module end
         m = re.match("^\s*end module", line, flags=re.IGNORECASE)
         if m:
             current_key = None
-        # Detect variable names
+        # Detect variable names and used modules
         if (not inside_type) and (current_key is not None):
+            # Detect variable name
             m = re.match('.*::(.*)', line)
             if m:
                 for previous_char, variable in re.findall('(\W)(\w+)', m.group(1)):
@@ -71,9 +74,17 @@ def get_module_variables(listlines, dict_modules):
                         # Exclude pure numbers
                         if not re.match('[\d]', variable):
                             dict_modules[current_key].append( variable.lower() )
+            # Detect used module
+            m = re.match('\s*use (\w+)', line, re.IGNORECASE)
+            if m:
+                used_modules[current_key].append(m.group(1))
         # Detect end of type
         if re.match('\s*end type', line, re.IGNORECASE):
             inside_type = False
+        # Loop over modules and added variables from used modules
+        for module in dict_modules:
+            for sub_module in used_modules[module]:
+                dict_modules[module] += dict_modules[sub_module]
 
 def get_subroutines(listlines):
     """Return dictionary with text of the subroutines"""
