@@ -20,11 +20,13 @@ import re, sys, os
 known_external_modules = ['mpi', 'omp_lib', 'p3dfft', 'itt_sde_fortran', 'iso_c_binding']
 
 def reconstruct_lines(lines):
-    """Reconstruction full lines from Fortran broken lines using &"""
+    """Reconstruction full lines from Fortran broken lines using &; and without comments"""
     new_lines = []
     current_line = ''
     for line in lines:
-        new_line = line.rstrip(' ')
+        # Remove comments
+        new_line = re.sub('!.*', '', line)
+        new_line = new_line.rstrip(' ')
         if new_line.endswith('&'):
             new_line = new_line.rstrip('& ')
             current_line += new_line
