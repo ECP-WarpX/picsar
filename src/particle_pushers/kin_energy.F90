@@ -31,6 +31,7 @@
 !> Creation 2017
 ! ________________________________________________________________________________________
 SUBROUTINE compute_kin_energy
+  USE PICSAR_precision
   USE fields
   USE shared_data
   USE params
@@ -139,14 +140,3 @@ SUBROUTINE compute_kin_energy_vector(np, gaminv, mass, kin_e, ppid)
 #endif
 
 END SUBROUTINE compute_kin_energy_vector
-
-
-
-
-
-
-
-
-
-
-
