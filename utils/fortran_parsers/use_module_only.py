@@ -217,7 +217,7 @@ def rewrite_subroutines( lines, dict_subs_modules, dict_ifdef_modules ):
                 # Add the used modules (if it was not yet done)
                 indent = m.group(1)
                 if not replaced_modules:
-                    for module in dict_subs_modules[current_subroutine].keys():
+                    for module in sorted(dict_subs_modules[current_subroutine].keys()):
                         # Add ifdef if needed
                         if dict_ifdef_modules[current_subroutine][module] is not None:
                             lines[i] += '#if defined(%s)\n' %dict_ifdef_modules[current_subroutine][module]
