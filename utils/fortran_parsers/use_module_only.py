@@ -137,6 +137,10 @@ def get_sub_module( dict_subs, dict_modules, dict_used_modules ):
             # Find end of ifdef
             if re.match('\s*#endif', line, re.IGNORECASE):
                 ifdef = None
+        # In addition, if there is a call to MPI_WTIME, explicitly import mpi
+        if re.search('MPI_WTIME', text, re.IGNORECASE):
+            module_list.append('mpi')
+            dict_ifdef_modules[name]['mpi'] = None
         # Also include all used modules
         module_set = set()
         for module in module_list:
