@@ -229,7 +229,7 @@ def rewrite_subroutines( lines, dict_subs_modules, dict_ifdef_modules ):
                                 lines[i] += final_line
                         # Add ifdef if needed
                         if dict_ifdef_modules[current_subroutine][module] is not None:
-                            lines[i] += '#endif !%s\n' %dict_ifdef_modules[current_subroutine][module]
+                            lines[i] += '#endif %s\n' %dict_ifdef_modules[current_subroutine][module]
                     replaced_modules = True
         # Go the next line
         i += 1
@@ -247,6 +247,33 @@ def format_less_than_75_characters( line, indent ):
     total_line += new_line
     return total_line.rstrip(' ')
 
+def remove_empty_endif( lines ):
+    N_lines = len(lines)
+    # Erase empty if / endif
+    for i in range(N_lines):
+        # Check the if defined
+        m = re.match('\s*#if defined\((\w+)\)', lines[i])
+        if m:
+            # Check if the next line is already the next endif
+            if re.match('\s*#endif %s' %m.group(1), lines[i+1]):
+                # In this case erase both
+                lines[i] = ''
+                lines[i+1] = ''
+    # Erase unneeded match endif/if
+    for i in range(N_lines):
+        # Check the if defined
+        m = re.match('\s*#if defined\((\w+)\)', lines[i])
+        if m:
+            # Check if the previous line is a corresponding endif
+            if re.match('\s*#endif %s' %m.group(1), lines[i-1]):
+                # In this case erase both
+                lines[i] = ''
+                lines[i-1] = ''
+    # Erase names after endif
+    for i in range(N_lines):
+        m = re.match('(\s*#endif)', lines[i])
+        if m:
+            lines[i] = m.group(1) + '\n'
 
 if __name__ == '__main__':
 
@@ -254,12 +281,13 @@ if __name__ == '__main__':
     # Go through all files and find modules and the variables defined
     dict_modules = {}
     dict_used_modules = {}
+    print('Scanning modules...')
     for filename in glob.iglob('../../src/**/*.F90', recursive=True):
-        print(filename)
         with open(filename) as f:
             lines = f.readlines()
         lines = reconstruct_lines(lines)
         get_module_variables(lines, dict_modules, dict_used_modules)
+    print('')
 
     # Go through all files and replace USE module syntax
     for filename in glob.iglob('../../src/**/*.F90', recursive=True):
@@ -277,3 +305,12 @@ if __name__ == '__main__':
         with open(filename, 'w') as f:
             f.write(''.join(lines) )
         print('')
+
+    # Clean empty endif
+    for filename in glob.iglob('../../src/**/*.F90', recursive=True):
+        print('Cleaning %s' %filename)
+        with open(filename) as f:
+            lines = f.readlines()
+        remove_empty_endif(lines)
+        with open(filename, 'w') as f:
+            f.write(''.join(lines) )
