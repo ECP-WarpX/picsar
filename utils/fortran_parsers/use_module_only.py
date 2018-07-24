@@ -53,9 +53,9 @@ def get_module_variables(listlines, dict_modules, dict_used_modules):
             else:
                 inside_type = True
         # Detect beginning of subroutine
-        m = re.match('\s*subroutine (\w+)', line, re.IGNORECASE)
+        m = re.match('\s*(subroutine|function) (\w+)', line, re.IGNORECASE)
         if m and current_module is not None:
-            dict_modules[current_module].append(m.group(1).lower())
+            dict_modules[current_module].append(m.group(2).lower())
             inside_subroutine = True
         # Detect module beginning
         m = re.match("^\s*module\s*(\w+)", line, flags=re.IGNORECASE)
@@ -88,7 +88,7 @@ def get_module_variables(listlines, dict_modules, dict_used_modules):
         if re.match('\s*end type', line, re.IGNORECASE):
             inside_type = False
         # Detect end of subroutine
-        if re.match('\s*end subroutine', line, re.IGNORECASE):
+        if re.match('\s*end (subroutine|function)', line, re.IGNORECASE):
             inside_subroutine = False
 
 def get_subroutines(listlines):
