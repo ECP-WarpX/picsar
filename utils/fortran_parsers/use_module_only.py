@@ -276,6 +276,10 @@ def remove_empty_endif( lines ):
         m = re.match('(\s*#endif)', lines[i])
         if m:
             lines[i] = m.group(1) + '\n'
+    # Also erase empty lines with only &
+    for i in range(N_lines):
+        if re.match('^\s*&\s*$', lines[i]):
+            lines[i] = ''
 
 if __name__ == '__main__':
 
