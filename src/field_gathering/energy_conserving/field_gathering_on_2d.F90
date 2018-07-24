@@ -67,7 +67,8 @@
 subroutine pxr_gete2dxz_n_energy_conserving( np, xp, yp, zp, ex, ey, ez, xmin, zmin,  &
   dx, dz, nox, noz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid, ezg,      &
   ezg_nguard, ezg_nvalid, l4symtry, l_2drz, l_lower_order_in_v)     !#do not wrap
-  use constants
+  USE PICSAR_precision
+  USE constants
   implicit none
 
   integer(idp)             :: np, nox, noz
@@ -354,7 +355,8 @@ end subroutine pxr_gete2dxz_n_energy_conserving
 subroutine pxr_getb2dxz_n_energy_conserving( np, xp, yp, zp, bx, by, bz, xmin, zmin,  &
   dx, dz, nox, noz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid, bzg,      &
   bzg_nguard, bzg_nvalid, l4symtry, l_2drz, l_lower_order_in_v)     !#do not wrap
-  use constants
+  USE PICSAR_precision
+  USE constants
   implicit none
   integer(idp) :: np, nox, noz
   integer(idp), intent(IN)                :: bxg_nguard(2), bxg_nvalid(2),            &

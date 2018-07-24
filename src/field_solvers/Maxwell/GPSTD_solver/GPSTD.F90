@@ -46,6 +46,7 @@
 MODULE matrix_data
   ! ________________________________________________________________________________________
 
+  USE PICSAR_precision
   USE constants
   ! Maximum number of instances (matrix_blocks and vector_blocks)
   INTEGER(idp), PARAMETER ::  ns_max=40
@@ -386,6 +387,7 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE multiply_unit_blocks(anew, block1, n1, n2, n3, coeff1, nc1, nc2, nc3,      &
   nthreads)
+  USE PICSAR_precision
   USE constants
 #ifdef _OPENMP
   USE omp_lib

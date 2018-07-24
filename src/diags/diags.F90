@@ -41,6 +41,7 @@
 !> Creation 2015
 ! ________________________________________________________________________________________
 MODULE diagnostics
+  USE PICSAR_precision
   USE constants
   USE mpi
   IMPLICIT NONE
@@ -1014,6 +1015,7 @@ MODULE diagnostics
   ! ______________________________________________________________________________________
   SUBROUTINE get_loc_field_energy_2d(field, nx2, nz2, dx2, dz2, nxguard, nzguard,     &
     field_energy)
+    USE PICSAR_precision
     USE constants
     IMPLICIT NONE
 
@@ -1057,6 +1059,7 @@ MODULE diagnostics
   ! ______________________________________________________________________________________
   SUBROUTINE get_loc_field_energy(field, nx2, ny2, nz2, dx2, dy2, dz2, nxguard,       &
     nyguard, nzguard, field_energy)
+    USE PICSAR_precision
     USE constants
     IMPLICIT NONE
     INTEGER(idp)     :: nx2, ny2, nz2
@@ -1101,6 +1104,7 @@ MODULE diagnostics
   ! ______________________________________________________________________________________
   SUBROUTINE get_field_energy_2d(field, nx2, nz2, dx2, dz2, nxguard, nzguard,         &
     field_energy)
+    USE PICSAR_precision
     USE constants
     USE mpi_derived_types
     USE mpi_type_constants
@@ -1155,6 +1159,7 @@ MODULE diagnostics
   ! ______________________________________________________________________________________
   SUBROUTINE get_field_energy(field, nx2, ny2, nz2, dx2, dy2, dz2, nxguard, nyguard,  &
     nzguard, field_energy)
+    USE PICSAR_precision
     USE constants
     USE mpi_derived_types
     USE mpi_type_constants
@@ -1208,6 +1213,7 @@ MODULE diagnostics
     USE mpi_derived_types
     USE mpi_type_constants
     USE shared_data
+    USE PICSAR_precision
     USE constants
     IMPLICIT NONE
 
@@ -1250,6 +1256,7 @@ MODULE diagnostics
     USE mpi_derived_types
     USE mpi_type_constants
     USE shared_data
+    USE PICSAR_precision
     USE constants
     IMPLICIT NONE
 
@@ -1292,6 +1299,7 @@ MODULE diagnostics
     USE mpi_derived_types
     USE mpi_type_constants
     USE shared_data
+    USE PICSAR_precision
     USE constants
     IMPLICIT NONE
 

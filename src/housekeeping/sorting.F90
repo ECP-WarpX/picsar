@@ -67,6 +67,7 @@ MODULE sorting
   SUBROUTINE pxr_particle_sorting
     USE tiling
     USE shared_data
+    USE PICSAR_precision
     USE constants
     USE particles
     USE time_stat
@@ -106,6 +107,7 @@ MODULE sorting
   SUBROUTINE particle_sorting_sub
     USE tiling
     USE shared_data
+    USE PICSAR_precision
     USE constants
     USE particles
     USE time_stat
@@ -239,6 +241,7 @@ END SUBROUTINE particle_sorting_sub
 ! ______________________________________________________________________________________
 SUBROUTINE pxr_particle_bin_sorting(np2, xp, yp, zp, ux, uy, uz, gam, pid, wpid,    &
   xmin2, ymin2, zmin2, xmax2, ymax2, zmax2, dxf, dyf, dzf)
+  USE PICSAR_precision
   USE constants
   implicit none
   integer(idp) :: ip, np2
@@ -356,6 +359,7 @@ END SUBROUTINE
 
 SUBROUTINE pxr_particle_bin_sorting_2d(np2, xp, zp, ux, uy, uz, gam, pid, wpid,    &
   xmin2,  zmin2, xmax2,  zmax2, dxf,  dzf)
+  USE PICSAR_precision
   USE constants
   implicit none
   integer(idp) :: ip, np2

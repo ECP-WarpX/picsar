@@ -105,6 +105,7 @@ SUBROUTINE compute_kin_energy
 END SUBROUTINE compute_kin_energy
 
 SUBROUTINE compute_kin_energy_vector(np, gaminv, mass, kin_e, ppid)
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN)   :: np

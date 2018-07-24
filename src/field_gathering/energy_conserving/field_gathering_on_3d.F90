@@ -56,6 +56,7 @@ SUBROUTINE pxrgete3d_n_energy_conserving(np, xp, yp, zp, ex, ey, ez, xmin, ymin,
   zmin, dx, dy, dz, nox, noy, noz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard,        &
   eyg_nvalid, ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
   USE omp_lib
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
   INTEGER(idp)             :: np
@@ -365,6 +366,7 @@ SUBROUTINE pxrgetb3d_n_energy_conserving(np, xp, yp, zp, bx, by, bz, xmin, ymin,
   zmin, dx, dy, dz, nox, noy, noz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard,        &
   byg_nvalid, bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
   USE omp_lib
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
   INTEGER(idp) :: np, nox, noy, noz
@@ -683,7 +685,8 @@ END SUBROUTINE pxrgetb3d_n_energy_conserving
 subroutine pxr_getb3d_n_energy_conserving(np, xp, yp, zp, bx, by, bz, xmin, ymin,     &
   zmin, dx, dy, dz, nox, noy, noz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard,        &
   byg_nvalid, bzg, bzg_nguard, bzg_nvalid, l4symtry, l_lower_order_in_v)     !#do not wrap
-  use constants
+  USE PICSAR_precision
+  USE constants
   implicit none
   integer(idp)                     :: np, nox, noy, noz
   INTEGER(idp), intent(in)             :: bxg_nguard(3), bxg_nvalid(3),               &
@@ -1021,7 +1024,8 @@ end subroutine pxr_getb3d_n_energy_conserving
 subroutine pxr_gete3d_n_energy_conserving(np, xp, yp, zp, ex, ey, ez, xmin, ymin,     &
   zmin, dx, dy, dz, nox, noy, noz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard,        &
   eyg_nvalid, ezg, ezg_nguard, ezg_nvalid, l4symtry, l_lower_order_in_v)     !#do not wrap
-  use constants
+  USE PICSAR_precision
+  USE constants
   USE params
   implicit none
   integer(idp) :: np, nox, noy, noz

@@ -82,6 +82,7 @@
 SUBROUTINE depose_jxjyjz_esirkepov_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,    &
   jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
   xmin, ymin, zmin, dt, dx, dy, dz)    !#do not wrap
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
 
@@ -267,6 +268,7 @@ END SUBROUTINE depose_jxjyjz_esirkepov_1_1_1
 SUBROUTINE depose_jxjyjz_esirkepov_vecHV_1_1_1(jx, jy, jz, np, xp, yp, zp, uxp, uyp,  &
   uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard,    &
   nzguard, l_particles_weight, l4symtry)
+  USE PICSAR_precision
   USE constants
   !USE precomputed
   IMPLICIT NONE
@@ -1056,6 +1058,7 @@ END SUBROUTINE
 SUBROUTINE depose_jxjyjz_esirkepov_vecHVv2_1_1_1(jx, jy, jz, np, xp, yp, zp, uxp,     &
   uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard,        &
   nyguard, nzguard, nox, noy, noz, l_particles_weight, l4symtry)
+  USE PICSAR_precision
   USE constants
   USE precomputed
   IMPLICIT NONE
@@ -1738,6 +1741,7 @@ END SUBROUTINE
 SUBROUTINE depose_jxjyjz_esirkepov_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard,    &
   jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
   xmin, ymin, zmin, dt, dx, dy, dz)    !#do not wrap
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
   INTEGER :: np
@@ -1924,6 +1928,7 @@ END SUBROUTINE depose_jxjyjz_esirkepov_2_2_2
 SUBROUTINE depose_jxjyjz_esirkepov_vecHV_2_2_2(jx, jy, jz, np, xp, yp, zp, uxp, uyp,  &
   uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard,    &
   nzguard, nox, noy, noz, l_particles_weight, l4symtry)
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
   INTEGER(idp)                             :: np, nx, ny, nz, nox, noy, noz, nxguard, &
@@ -3247,6 +3252,7 @@ END SUBROUTINE
 SUBROUTINE depose_jxjyjz_esirkepov_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard,    &
   jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
   xmin, ymin, zmin, dt, dx, dy, dz)    !#do not wrap
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
   INTEGER :: np
@@ -3446,6 +3452,7 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov_n( jx, jx_nguard, jx_nvalid, jy, jy_nguar
   xmin, ymin, zmin, dt, dx, dy, dz, nox, noy, noz, l_particles_weight,                  &
   l4symtry)!#do not wrap
 
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
 
@@ -3812,7 +3819,8 @@ END SUBROUTINE pxr_depose_jxjyjz_esirkepov_n
 subroutine warp_depose_jxjyjz_esirkepov_n(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp,  &
   w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, nox,   &
   noy, noz, l_particles_weight, l4symtry)
-  use constants
+  USE PICSAR_precision
+  USE constants
   implicit none
   integer(8) :: np, nx, ny, nz, nox, noy, noz, nxguard, nyguard, nzguard
   real(kind=8), dimension(-nxguard:nx+nxguard, -nyguard:ny+nyguard,                   &
@@ -4181,7 +4189,8 @@ end subroutine warp_depose_jxjyjz_esirkepov_n
 subroutine picsar_depose_jxjyjz_esirkepov_n(cj, np, xp, yp, zp, uxp, uyp, uzp,        &
   gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard,         &
   nzguard, nox, noy, noz, l_particles_weight, l4symtry)
-  use constants
+  USE PICSAR_precision
+  USE constants
   implicit none
   integer(8) :: np, nx, ny, nz, nox, noy, noz, nxguard, nyguard, nzguard
   real(kind=8), dimension(-nxguard:nx+nxguard, -nyguard:ny+nyguard,                   &

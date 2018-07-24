@@ -75,6 +75,7 @@ SUBROUTINE field_gathering_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
   nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, &
   l_lower_order_in_v_in)
   USE particles
+  USE PICSAR_precision
   USE constants
   USE tiling
   USE time_stat
@@ -291,6 +292,7 @@ END SUBROUTINE field_gathering_sub
 SUBROUTINE geteb3d_energy_conserving(np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin,    &
   ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, nox, noy, noz, exg,    &
   eyg, ezg, bxg, byg, bzg, ll4symtry, l_lower_order_in_v, lvect, field_gathe_algo)
+  USE PICSAR_precision
   USE constants
   USE particles
   USE params
@@ -352,6 +354,7 @@ SUBROUTINE geteb3d_energy_conserving_generic(np, xp, yp, zp, ex, ey, ez, bx, by,
   eyg_nguard, eyg_nvalid, ezg, ezg_nguard, ezg_nvalid, bxg, bxg_nguard, bxg_nvalid,     &
   byg, byg_nguard, byg_nvalid, bzg, bzg_nguard, bzg_nvalid, ll4symtry,                  &
   l_lower_order_in_v, lvect, field_gathe_algo)            !#do not wrap
+  USE PICSAR_precision
   USE constants
   USE particles
   USE params

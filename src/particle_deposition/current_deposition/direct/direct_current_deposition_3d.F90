@@ -99,6 +99,7 @@
 SUBROUTINE depose_jxjyjz_scalar_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
   jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
   xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
   INTEGER(idp)             :: np
@@ -273,6 +274,7 @@ END SUBROUTINE depose_jxjyjz_scalar_1_1_1
 SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,      &
   jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
   xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
   ! ___ Parameter declaration ______________________________________
@@ -637,6 +639,7 @@ END SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1
 SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells, jycells, jzcells, np, ncells, xp,   &
   yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz,    &
   nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN)                      :: np, nx, ny, nz, ncells
@@ -823,6 +826,7 @@ END SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1
 SUBROUTINE depose_jxjyjz_scalar_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
   jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
   xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
   INTEGER(idp) :: np
@@ -1063,6 +1067,7 @@ END SUBROUTINE depose_jxjyjz_scalar_2_2_2
 SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard,      &
   jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,  &
   xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
 
@@ -1518,6 +1523,7 @@ END SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2
 SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells, jycells, jzcells, np, ncells, xp,   &
   yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz,    &
   nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
   ! ____ Parameter initialization _____________________________________
@@ -1824,6 +1830,7 @@ END SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2
 SUBROUTINE depose_jxjyjz_scalar_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
   jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
   xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
   INTEGER(idp) :: np
@@ -2167,6 +2174,7 @@ END SUBROUTINE depose_jxjyjz_scalar_3_3_3
 SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp,     &
   gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard,         &
   nzguard)
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -2572,6 +2580,7 @@ END SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3
 SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard,      &
   jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
   xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
   ! ___ Parameter declaration _______________________________________
@@ -3057,6 +3066,7 @@ END SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3
 SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells, jycells, jzcells, np, ncells, xp,   &
   yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz,    &
   nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
 
@@ -3426,6 +3436,7 @@ END SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3
 ! ________________________________________________________________________________________
 SUBROUTINE current_reduction_1_1_1(jx, jy, jz, jxcells, jycells, jzcells, ncells, nx, &
   ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)
+  USE PICSAR_precision
   USE constants
   USE precomputed
   IMPLICIT NONE
@@ -3540,6 +3551,7 @@ END SUBROUTINE current_reduction_1_1_1
 ! ________________________________________________________________________________________
 SUBROUTINE current_reduction_2_2_2(jx, jy, jz, jxcells, jycells, jzcells, ncells, nx, &
   ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)
+  USE PICSAR_precision
   USE constants
   USE precomputed
   IMPLICIT NONE
@@ -3654,6 +3666,7 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE current_reduction_3_3_3(jx, jy, jz, jxcells, jycells, jzcells, ncells, nx, &
   ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)
+  USE PICSAR_precision
   USE constants
   USE precomputed
   IMPLICIT NONE

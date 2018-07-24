@@ -61,6 +61,7 @@
 !> last update 09/13/2016
 ! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_rho_on_grid
+  USE PICSAR_precision
   USE constants
   USE fields
   USE particles
@@ -76,6 +77,7 @@ SUBROUTINE pxrdepose_rho_on_grid
 
     SUBROUTINE depose_rho_scalar_1_1_1(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin,   &
       dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) !#do not parse
+      USE PICSAR_precision
       USE constants
       IMPLICIT NONE
       INTEGER(idp), INTENT (IN) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -89,6 +91,7 @@ SUBROUTINE pxrdepose_rho_on_grid
 
     SUBROUTINE depose_rho_scalar_2_2_2(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin,   &
       dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) !#do not parse
+      USE PICSAR_precision
       USE constants
       IMPLICIT NONE
       INTEGER(idp), INTENT (IN) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -102,6 +105,7 @@ SUBROUTINE pxrdepose_rho_on_grid
 
     SUBROUTINE depose_rho_scalar_3_3_3(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin,   &
       dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) !#do not parse
+      USE PICSAR_precision
       USE constants
       IMPLICIT NONE
       INTEGER(idp), INTENT (IN) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -115,6 +119,7 @@ SUBROUTINE pxrdepose_rho_on_grid
 
     SUBROUTINE depose_rho_vecHVv2_1_1_1(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin,  &
       dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) !#do not parse
+      USE PICSAR_precision
       USE constants
       IMPLICIT NONE
       INTEGER(idp), INTENT (IN) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -128,6 +133,7 @@ SUBROUTINE pxrdepose_rho_on_grid
 
     SUBROUTINE depose_rho_vecHVv2_2_2_2(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin,  &
       dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) !#do not parse
+      USE PICSAR_precision
       USE constants
       IMPLICIT NONE
       INTEGER(idp), INTENT (IN) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -140,6 +146,7 @@ SUBROUTINE pxrdepose_rho_on_grid
 
     SUBROUTINE depose_rho_vecHVv4_3_3_3(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin,  &
       dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect) !#do not parse
+      USE PICSAR_precision
       USE constants
       IMPLICIT NONE
       INTEGER(idp), INTENT (IN) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -271,6 +278,7 @@ END SUBROUTINE pxrdepose_rho_on_grid
 SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog, nxx, nyy, nzz, nxjguard,       &
   nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)
   USE particles
+  USE PICSAR_precision
   USE constants
   USE tiling
   IMPLICIT NONE
@@ -505,6 +513,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d(func_order, rhog, nxx, nyy, nzz, 
   nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvectt,           &
   c_rho_old)
   USE particles
+  USE PICSAR_precision
   USE constants
   USE tiling
   IMPLICIT NONE
@@ -514,6 +523,7 @@ SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d(func_order, rhog, nxx, nyy, nzz, 
     SUBROUTINE func_order(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx, dy, dz,    &
       nx, ny, nz, nxguard, nyguard, nzguard, lvect) !#do not parse
 
+      USE PICSAR_precision
       USE constants
       IMPLICIT NONE
 
@@ -751,6 +761,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d
 SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d(rhog, nxx, nyy, nzz, nxjguard,         &
   nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)
   USE particles
+  USE PICSAR_precision
   USE constants
   USE tiling
   IMPLICIT NONE
@@ -987,6 +998,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d
 SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog, nxx, nyy, nzz, nxjguard,  &
   nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)
   USE particles
+  USE PICSAR_precision
   USE constants
   USE tiling
   IMPLICIT NONE
@@ -1237,6 +1249,7 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar
 SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog, nxx, nyy, nzz, nxjguard,   &
   nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old, lvect)
   USE particles
+  USE PICSAR_precision
   USE constants
   USE tiling
   IMPLICIT NONE

@@ -14,6 +14,7 @@
 
 SUBROUTINE push_laser_particles
   USE particles
+  USE PICSAR_precision
   USE constants
   USE fields
   USE params
@@ -100,6 +101,7 @@ SUBROUTINE laserp_pusher_gaussian(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gam
   real_time, t_peak, temporal_order, polangle)
   USE shared_data
   USE omp_lib
+  USE PICSAR_precision
   USE constants
   USE params
   USE particles
@@ -189,6 +191,7 @@ SUBROUTINE laserp_pusher_hanning(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gami
   t_peak, temporal_order, polangle)
   USE shared_data
   USE omp_lib
+  USE PICSAR_precision
   USE constants
   USE params
   USE particles
@@ -288,6 +291,7 @@ SUBROUTINE gaussian_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvec
   !DIR$ k0_laser, q_z, laser_tau, real_time, t_peak, &
   !DIR$ temporal_order, polangle)  :: gaussian_profile
 #endif
+  USE PICSAR_precision
   USE constants
   USE params
   USE shared_data
@@ -348,6 +352,7 @@ SUBROUTINE hanning_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvect
 #endif
 
   USE shared_data
+  USE PICSAR_precision
   USE constants
   USE params
   USE omp_lib

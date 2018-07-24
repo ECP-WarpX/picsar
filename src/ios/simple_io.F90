@@ -228,6 +228,7 @@ SUBROUTINE output_temporal_diagnostics
   USE diagnostics
   USE output_data
   USE particle_properties
+  USE PICSAR_precision
   USE constants
   USE fields
   IMPLICIT NONE
@@ -582,6 +583,7 @@ END SUBROUTINE write_single_array_to_file
 ! ________________________________________________________________________________________
 SUBROUTINE write_particles_to_file
   USE particles
+  USE PICSAR_precision
   USE constants
   USE params
   USE time_stat
@@ -687,6 +689,7 @@ END SUBROUTINE write_particles_to_file
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE get_particles_to_dump(idump, mask, narr, ndump)
+  USE PICSAR_precision
   USE constants
   USE particles
   USE tiling
@@ -750,6 +753,7 @@ END SUBROUTINE get_particles_to_dump
 ! ________________________________________________________________________________________
 SUBROUTINE concatenate_particle_variable(idump, var, arr, narr, mask, nmask)
 USE particles
+USE PICSAR_precision
 USE constants
 USE tiling
 INTEGER(idp), INTENT(IN) :: idump, narr, var, nmask

@@ -54,6 +54,7 @@ MODULE particle_boundary
   USE particles
   USE tiling
   USE mpi_derived_types
+  USE PICSAR_precision
   USE constants
   USE time_stat
   USE params

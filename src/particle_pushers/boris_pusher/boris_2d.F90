@@ -40,6 +40,7 @@
 !> @param[in] dt time step
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_pushxz(np, xp, zp, uxp, uzp, gaminv, dt)
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
   INTEGER(idp)   :: np
@@ -73,6 +74,7 @@ END SUBROUTINE pxr_pushxz
 !> @param[in] dt time step
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_push2dxz(np, xp, zp, uxp, uyp, uzp, gaminv, dt)
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
   INTEGER(idp)   :: np

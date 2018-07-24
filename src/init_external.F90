@@ -24,6 +24,7 @@ MODULE link_external_tools
       BIND(C,name='init_params_picsar') 
     USE params
     USE shared_data
+    USE PICSAR_precision
     USE constants
     USE picsar_precision
     USE fields
@@ -129,6 +130,7 @@ MODULE link_external_tools
 
   SUBROUTINE evec3d_push_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, dt, dtsdx,  &
   dtsdy, dtsdz, nx, ny, nz, norderx, nordery, norderz, nxguard, nyguard,nzguard)
+  USE PICSAR_precision
   USE constants
   USE omp_lib
   INTEGER(idp), INTENT(IN) :: nx, ny, nz, nxguard, nyguard, nzguard
@@ -210,6 +212,7 @@ END SUBROUTINE evec3d_push_norder
 
 SUBROUTINE bvec3d_push_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx,  &
   ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard)
+  USE PICSAR_precision
   USE constants
   INTEGER(idp)          :: nx, ny, nz, nxguard, nyguard, nzguard,           &
   norderx, nordery, norderz
@@ -286,6 +289,7 @@ END SUBROUTINE bvec3d_push_norder
 SUBROUTINE solve_maxwell_fdtd_pxr() bind(C,name='solve_maxwell_fdtd_pxr')
   USE params
   USE shared_data
+  USE PICSAR_precision
   USE constants
   USE picsar_precision
   USE fields

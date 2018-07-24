@@ -42,6 +42,7 @@
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE push_bfield
+  USE PICSAR_precision
   USE constants
   USE params
   USE fields
@@ -93,6 +94,7 @@ END SUBROUTINE push_bfield
 ! ________________________________________________________________________________________
 SUBROUTINE compute_em_energy
   USE shared_data
+  USE PICSAR_precision
   USE constants
   USE fields
   USE params
@@ -141,6 +143,7 @@ END SUBROUTINE
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE push_efield
+  USE PICSAR_precision
   USE constants
   USE params
   USE fields
@@ -196,6 +199,7 @@ END SUBROUTINE push_efield
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE push_bfield_2d
+  USE PICSAR_precision
   USE constants
   USE params
   USE fields
@@ -250,6 +254,7 @@ END SUBROUTINE push_bfield_2d
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE push_efield_2d
+  USE PICSAR_precision
   USE constants
   USE params
   USE fields
@@ -312,6 +317,7 @@ END SUBROUTINE push_efield_2d
 !> Creation March 29 2017
 ! ________________________________________________________________________________________
 SUBROUTINE push_psatd_ebfield_3d() bind(C, name='push_psatd_ebfield_3d_')
+  USE PICSAR_precision
   USE constants
   USE time_stat
   USE params
@@ -391,6 +397,7 @@ END SUBROUTINE
 !> Creation March 29 2017
 ! ________________________________________________________________________________________
 SUBROUTINE push_psatd_ebfield_2d() bind(C, name='push_psatd_ebfield_2d_')
+  USE PICSAR_precision
   USE constants
   USE time_stat
   USE params

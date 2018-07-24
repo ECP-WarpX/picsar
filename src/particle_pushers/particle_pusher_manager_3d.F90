@@ -138,6 +138,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg
   nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, &
   nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in)
   USE particles
+  USE PICSAR_precision
   USE constants
   USE tiling
   USE time_stat
@@ -423,6 +424,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg, eyg, ezg, bx
   byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard,   &
   noxx, noyy, nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in)
   USE particles
+  USE PICSAR_precision
   USE constants
   USE tiling
   USE time_stat
@@ -659,6 +661,7 @@ SUBROUTINE particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
   nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, &
   l_lower_order_in_v_in)
   USE particles
+  USE PICSAR_precision
   USE constants
   USE tiling
   USE time_stat
@@ -923,6 +926,7 @@ SUBROUTINE pxrpush_particles_part1_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, n
   nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy,&
   dzz, dtt, l4symtry_in, l_lower_order_in_v_in, lvect, field_gathe_algo)
   USE particles
+  USE PICSAR_precision
   USE constants
   USE tiling
   IMPLICIT NONE
@@ -1129,6 +1133,7 @@ END SUBROUTINE pxrpush_particles_part1_sub
 ! ________________________________________________________________________________________
 SUBROUTINE pxrpush_particles_part2
   USE particles
+  USE PICSAR_precision
   USE constants
   USE fields
   USE params
@@ -1254,6 +1259,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np, xp, yp, zp, uxp, uyp, 
   nxguard, nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg, q, m, lvect,                 &
   l_lower_order_in_v)
   USE omp_lib
+  USE PICSAR_precision
   USE constants
   USE params
   USE particles
@@ -1488,6 +1494,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np, xp, yp, zp, uxp, uyp, 
   nxguard, nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg, q, m, lvect,                 &
   l_lower_order_in_v)
   USE omp_lib
+  USE PICSAR_precision
   USE constants
   USE params
   USE particles
@@ -1785,6 +1792,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np, xp, yp, zp, uxp, uyp, 
   nxguard, nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg, q, m, lvect,                 &
   l_lower_order_in_v)
   USE omp_lib
+  USE PICSAR_precision
   USE constants
   USE params
   USE particles

@@ -41,6 +41,7 @@
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_2d(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,  &
   xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, lvect)
+  USE PICSAR_precision
   USE constants
   implicit none
   integer(idp)                          :: np, nx, nz, nox, noz, nxguard, nzguard
@@ -73,6 +74,7 @@ END SUBROUTINE
 SUBROUTINE depose_jxjyjz_generic_2d( jx, jx_nguard, jx_nvalid, jy, jy_nguard,         &
   jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
   xmin, zmin, dt, dx, dz, nox, noz, lvect)     !#do not wrap
+  USE PICSAR_precision
   USE constants
   implicit none
   integer(idp)                          :: np, nox, noz
@@ -115,6 +117,7 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_esirkepov_2d(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp,      &
   gaminv, w, q, xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz)
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
   integer(idp)                          :: np, nx, nz, nox, noz, nxguard, nzguard
@@ -168,6 +171,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
 
     SUBROUTINE depose_jxjyjz_2d(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, &
       q, xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, lvect)!#do not parse
+      USE PICSAR_precision
       USE constants
       implicit none
       integer(idp)                          :: np, nx, nz, nox, noz, nxguard, nzguard
@@ -182,6 +186,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
     subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx, jy, jz, np, xp, zp, uxp,   &
       uyp, uzp, gaminv, w, q, xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox,    &
       noz, lvect, l_particles_weight, l4symtry, l_2drz, type_rz_depose)    !#do not parse
+      USE PICSAR_precision
       USE constants
       implicit none
       integer(idp)                          :: np, nx, nz, nox, noz, nxguard,         &
@@ -291,6 +296,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(curr_depo_su
   jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx,    &
   dyy, dzz, dtt, lvect)
   USE particles
+  USE PICSAR_precision
   USE constants
   USE tiling
   USE time_stat
@@ -320,6 +326,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(curr_depo_su
   INTERFACE
     SUBROUTINE curr_depo_sub(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, &
       xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, lvect)!#do not parse !#do not parse !#do not parse
+      USE PICSAR_precision
       USE constants
       implicit none
       integer(idp)                          :: np, nx, nz, nox, noz, nxguard, nzguard

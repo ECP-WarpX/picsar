@@ -70,6 +70,7 @@
 SUBROUTINE gete3d_energy_conserving_scalar_2_2_2(np, xp, yp, zp, ex, ey, ez, xmin,    &
   ymin, zmin, dx, dy, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid,     &
   ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
+  USE PICSAR_precision
   USE constants
   USE params
   IMPLICIT NONE
@@ -340,6 +341,7 @@ END SUBROUTINE
 SUBROUTINE getb3d_energy_conserving_scalar_2_2_2(np, xp, yp, zp, bx, by, bz, xmin,    &
   ymin, zmin, dx, dy, dz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid,     &
   bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
   INTEGER(idp)                         :: np
@@ -603,6 +605,7 @@ END SUBROUTINE
 SUBROUTINE gete3d_energy_conserving_vec_2_2_2(np, xp, yp, zp, ex, ey, ez, xmin, ymin, &
   zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg, ezg, lvect,        &
   l_lower_order_in_v)
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
   INTEGER(idp)                         :: np, nx, ny, nz
@@ -987,6 +990,7 @@ END SUBROUTINE
 SUBROUTINE getb3d_energy_conserving_vec_2_2_2(np, xp, yp, zp, bx, by, bz, xmin, ymin, &
   zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, bxg, byg, bzg, lvect,        &
   l_lower_order_in_v)
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
   INTEGER(idp)                         :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -1351,6 +1355,7 @@ END SUBROUTINE
 SUBROUTINE geteb3d_energy_conserving_vecV1_2_2_2(np, xp, yp, zp, ex, ey, ez, bx, by,  &
   bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg,    &
   ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)
+  USE PICSAR_precision
   USE constants
   USE params
 
@@ -1871,6 +1876,7 @@ END SUBROUTINE
 SUBROUTINE geteb3d_energy_conserving_vecV2_2_2_2(np, xp, yp, zp, ex, ey, ez, bx, by,  &
   bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg,    &
   ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
   ! ___ Parameter declaration _________________________________________________
@@ -2188,6 +2194,7 @@ END SUBROUTINE
 SUBROUTINE geteb3d_energy_conserving_vecV3_2_2_2(np, xp, yp, zp, ex, ey, ez, bx, by,  &
   bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg,    &
   ezg, bxg, byg, bzg, lvect, l_lower_order_in_v)
+  USE PICSAR_precision
   USE constants
   USE params
   ! ___ Parameter declaration _________________________________________________
@@ -2662,6 +2669,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV4_2_2_2(np, xp, yp, zp, ex, ey, ez, bx,
   eyg_nvalid, ezg, ezg_nguard, ezg_nvalid, bxg, bxg_nguard, bxg_nvalid, byg,            &
   byg_nguard, byg_nvalid, bzg, bzg_nguard, bzg_nvalid, lvect,                           &
   l_lower_order_in_v)        !#do not wrap
+  USE PICSAR_precision
   USE constants
   USE params
   ! ___ Parameter declaration _________________________________________________

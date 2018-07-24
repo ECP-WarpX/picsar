@@ -91,6 +91,7 @@ subroutine pxrpush_em3d_bvec_ckc( &
      dtsdx,dtsdy,dtsdz)
 ! ______________________________________________________________________________
 
+  USE PICSAR_precision
   USE constants
 
   integer :: xlo(3), xhi(3), ylo(3), yhi(3), zlo(3), zhi(3), &
@@ -268,6 +269,7 @@ subroutine pxrpush_em2d_bvec_ckc( &
      dtsdx,dtsdy,dtsdz)
 ! ______________________________________________________________________________
 
+  USE PICSAR_precision
   USE constants
 
 #ifdef WARPX

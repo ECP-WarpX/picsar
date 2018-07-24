@@ -47,7 +47,8 @@
 ! ________________________________________________________________________________________
 subroutine pxr_depose_rho_n_2dxz(rho, np, xp, yp, zp, w, q, xmin, zmin, dx, dz, nx,   &
   nz, nxguard, nzguard, nox, noz, l_particles_weight, l4symtry, l_2drz, type_rz_depose)
-  use constants
+  USE PICSAR_precision
+  USE constants
   implicit none
   integer(idp) :: np, nx, nz, nox, noz, nxguard, nzguard, type_rz_depose
   real(num), dimension(-nxguard:nx+nxguard, 0:0, -nzguard:nz+nzguard), intent(in out) &
@@ -190,7 +191,8 @@ end subroutine pxr_depose_rho_n_2dxz
 subroutine pxr_depose_rhoold_n_2dxz(rhoold, np, xp, zp, ux, uy, uz, gaminv, w, q,     &
   xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, l_particles_weight,       &
   l4symtry)
-  use constants
+  USE PICSAR_precision
+  USE constants
   implicit none
   integer(idp) :: np, nx, nz, nox, noz, nxguard, nzguard
   real(num), dimension(-nxguard:nx+nxguard, 0:0, -nzguard:nz+nzguard), intent(in out) &

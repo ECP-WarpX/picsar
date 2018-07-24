@@ -47,6 +47,7 @@
 SUBROUTINE depose_jxjyjz(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
   xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, nox, noy,    &
   noz, current_depo_algo)
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nox, noy, noz, nxguard, nyguard, nzguard,           &
@@ -74,6 +75,7 @@ END SUBROUTINE
 SUBROUTINE depose_jxjyjz_esirkepov(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, &
   w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, nox,   &
   noy, noz)
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nox, noy, noz, nxguard, nyguard, nzguard
@@ -105,6 +107,7 @@ END SUBROUTINE
 SUBROUTINE depose_jxjyjz_generic( jx, jx_nguard, jx_nvalid, jy, jy_nguard, jy_nvalid, &
   jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin,    &
   zmin, dt, dx, dy, dz, nox, noy, noz, current_depo_algo)     !#do not wrap
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
   INTEGER(idp) :: np, nox, noy, noz, current_depo_algo
@@ -242,6 +245,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
     SUBROUTINE depose_jxjyjz(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, &
       xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, nox,     &
       noy, noz, current_depo_algo)  !#do not parse
+      USE PICSAR_precision
       USE constants
       IMPLICIT NONE
       INTEGER(idp) :: np, nx, ny, nz, nox, noy, noz, nxguard, nyguard, nzguard,       &
@@ -256,6 +260,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
     SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells, jycells, jzcells, np, ncells,   &
       xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx,    &
       ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)  !#do not parse
+      USE PICSAR_precision
       USE constants
       IMPLICIT NONE
       INTEGER(idp), INTENT(IN)                      :: np, nx, ny, nz, ncells
@@ -271,6 +276,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
     SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells, jycells, jzcells, np, ncells,   &
       xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx,    &
       ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)  !#do not parse
+      USE PICSAR_precision
       USE constants
       IMPLICIT NONE
       INTEGER(idp), INTENT(IN)                      :: np, nx, ny, nz, ncells
@@ -286,6 +292,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
     SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells, jycells, jzcells, np, ncells,   &
       xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx,    &
       ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)  !#do not parse
+      USE PICSAR_precision
       USE constants
       IMPLICIT NONE
       INTEGER(idp), INTENT(IN)                      :: np, nx, ny, nz, ncells
@@ -299,6 +306,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 
     SUBROUTINE current_reduction_1_1_1(jx, jy, jz, jxcells, jycells, jzcells, ncells, &
       nx, ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz) !#do not parse
+      USE PICSAR_precision
       USE constants
       IMPLICIT NONE
       INTEGER(idp), INTENT(IN)                 :: nx, ny, nz, ncells
@@ -315,6 +323,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 
     SUBROUTINE current_reduction_2_2_2(jx, jy, jz, jxcells, jycells, jzcells, ncells, &
       nx, ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz) !#do not parse
+      USE PICSAR_precision
       USE constants
       IMPLICIT NONE
       INTEGER(idp), INTENT(IN)                 :: nx, ny, nz, ncells
@@ -331,6 +340,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 
     SUBROUTINE current_reduction_3_3_3(jx, jy, jz, jxcells, jycells, jzcells, ncells, &
       nx, ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz) !#do not parse
+      USE PICSAR_precision
       USE constants
       IMPLICIT NONE
       INTEGER(idp), INTENT(IN)                 :: nx, ny, nz, ncells
@@ -506,6 +516,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(func_order, jx
   jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy,    &
   dzz, dtt, current_depo_algo)
   USE particles
+  USE PICSAR_precision
   USE constants
   USE tiling
   USE time_stat
@@ -515,6 +526,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(func_order, jx
     SUBROUTINE func_order(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,    &
       xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, nox,     &
       noy, noz, current_depo_algo)  !#do not parse
+      USE PICSAR_precision
       USE constants
       IMPLICIT NONE
       INTEGER(idp) :: np, nx, ny, nz, nox, noy, noz, nxguard, nyguard, nzguard,       &
@@ -807,6 +819,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( curr_depo_
   curr_reduc_sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx,     &
   noyy, nozz, dxx, dyy, dzz, dtt, lvect)
   USE particles
+  USE PICSAR_precision
   USE constants
   USE tiling
   USE time_stat
@@ -817,6 +830,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( curr_depo_
     SUBROUTINE curr_depo_sub(jxcells, jycells, jzcells, np, ncells, xp, yp, zp, uxp,  &
       uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard,    &
       nyguard, nzguard, ncx, ncy, ncz, lvect)  !#do not parse
+      USE PICSAR_precision
       USE constants
       IMPLICIT NONE
       INTEGER(idp), INTENT(IN)                      :: np, nx, ny, nz, ncells
@@ -831,6 +845,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( curr_depo_
 
     SUBROUTINE curr_reduc_sub(jx, jy, jz, jxcells, jycells, jzcells, ncells, nx, ny,  &
       nz, nxguard, nyguard, nzguard, ncx, ncy, ncz) !#do not parse
+      USE PICSAR_precision
       USE constants
       IMPLICIT NONE
       INTEGER(idp), INTENT(IN)                 :: nx, ny, nz, ncells
@@ -1163,6 +1178,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3( curr_depo_
   noyy, nozz, dxx, dyy, dzz, dtt, lvect)
   ! ______________________________________________________________________________
   USE particles
+  USE PICSAR_precision
   USE constants
   USE tiling
   USE time_stat
@@ -1174,6 +1190,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3( curr_depo_
     SUBROUTINE curr_depo_sub(jxcells, jycells, jzcells, np, ncells, xp, yp, zp, uxp,  &
       uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard,    &
       nyguard, nzguard, ncx, ncy, ncz, lvect)  !#do not parse
+      USE PICSAR_precision
       USE constants
       IMPLICIT NONE
       INTEGER(idp), INTENT(IN)                      :: np, nx, ny, nz, ncells
@@ -1188,6 +1205,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3( curr_depo_
 
     SUBROUTINE curr_reduc_sub(jx, jy, jz, jxcells, jycells, jzcells, ncells, nx, ny,  &
       nz, nxguard, nyguard, nzguard, ncx, ncy, ncz) !#do not parse
+      USE PICSAR_precision
       USE constants
       IMPLICIT NONE
       INTEGER(idp), INTENT(IN)                 :: nx, ny, nz, ncells
@@ -1508,6 +1526,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order, jx
   jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy,    &
   dzz, dtt, current_depo_algo)
   USE particles
+  USE PICSAR_precision
   USE constants
   USE tiling
   USE time_stat
@@ -1535,6 +1554,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order, jx
     SUBROUTINE func_order(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,    &
       xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, nox,     &
       noy, noz, current_depo_algo)  !#do not parse
+      USE PICSAR_precision
       USE constants
       IMPLICIT NONE
       INTEGER(idp) :: np, nx, ny, nz, nox, noy, noz, nxguard, nyguard, nzguard,       &
@@ -1799,6 +1819,7 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg, jyg, jzg, nxx, nyy, nzz, &
   nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)
   USE particles
+  USE PICSAR_precision
   USE constants
   USE tiling
   USE time_stat
@@ -2081,6 +2102,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq(func_order, jxg, 
   jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz,    &
   dtt, currrent_depo_algo )
   USE particles
+  USE PICSAR_precision
   USE constants
   USE tiling
 
@@ -2108,6 +2130,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq(func_order, jxg, 
     SUBROUTINE func_order(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,    &
       xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, nox,     &
       noy, noz, current_depo_algo)  !#do not parse
+      USE PICSAR_precision
       USE constants
       IMPLICIT NONE
       INTEGER(idp) :: np, nx, ny, nz, nox, noy, noz, nxguard, nyguard, nzguard,       &
@@ -2192,6 +2215,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq(jxg, jyg, jzg, nx
   nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)
 
   USE particles
+  USE PICSAR_precision
   USE constants
   USE tiling
 

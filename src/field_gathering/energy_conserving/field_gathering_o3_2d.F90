@@ -60,7 +60,8 @@
 subroutine pxr_gete2dxz_energy_conserving_scalar_3_3( np, xp, zp, ex, ey, ez, xmin,   &
   zmin, dx, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid, ezg,          &
   ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
-  use constants
+  USE PICSAR_precision
+  USE constants
   implicit none
   integer(idp)             :: np
   integer(idp), intent(IN) :: exg_nguard(2), exg_nvalid(2), eyg_nguard(2),            &
@@ -283,7 +284,8 @@ subroutine pxr_gete2dxz_energy_conserving_vect_3_3( np, xp, zp, ex, ey, ez, xmin
   zmin, dx, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid, ezg,          &
   ezg_nguard, ezg_nvalid, lvect, l_lower_order_in_v)     !#do not wrap
   ! ______________________________________________________________________________
-  use constants
+  USE PICSAR_precision
+  USE constants
   implicit none
   integer(idp)                  :: np
   integer(idp), intent(IN)      :: exg_nguard(2), exg_nvalid(2), eyg_nguard(2),       &
@@ -600,7 +602,8 @@ end subroutine pxr_gete2dxz_energy_conserving_vect_3_3
 subroutine pxr_getb2dxz_energy_conserving_scalar_3_3( np, xp, zp, bx, by, bz, xmin,   &
   zmin, dx, dz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid, bzg,          &
   bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
-  use constants
+  USE PICSAR_precision
+  USE constants
   implicit none
   ! __ Parameter declaration ___________________________________________
   integer(idp), intent(in)                :: np
@@ -824,7 +827,8 @@ subroutine pxr_getb2dxz_energy_conserving_vect_3_3( np, xp, zp, bx, by, bz, xmin
   bzg_nguard, bzg_nvalid, lvect, l_lower_order_in_v)     !#do not wrap
   ! ______________________________________________________________________________
 
-  use constants
+  USE PICSAR_precision
+  USE constants
   implicit none
 
   ! __ Parameter declaration ___________________________________________
@@ -1161,7 +1165,8 @@ subroutine pxr_geteb2dxz_energy_conserving_vect_3_3( np, xp, zp, ex, ey, ez, bx,
   bz, xmin, zmin, dx, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid,     &
   ezg, ezg_nguard, ezg_nvalid, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard,            &
   byg_nvalid, bzg, bzg_nguard, bzg_nvalid, lvect, l_lower_order_in_v)        !#do not wrap
-  use constants
+  USE PICSAR_precision
+  USE constants
   implicit none
   ! __ Parameter declaration ___________________________________________
   integer(idp), intent(in)                :: np

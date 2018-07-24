@@ -50,6 +50,7 @@
 ! ________________________________________________________________________________________
 SUBROUTINE step(nst)
 
+  USE PICSAR_precision
   USE constants
   USE fields
   USE particles
@@ -320,6 +321,7 @@ END SUBROUTINE step
 !> Creation 2015
 SUBROUTINE initall
   ! ________________________________________________________________________________________
+  USE PICSAR_precision
   USE constants
   USE params
   USE fields
@@ -625,6 +627,7 @@ END SUBROUTINE estimate_total_memory_consumption
 ! ________________________________________________________________________________________
 SUBROUTINE init_stencil_coefficients()
 
+  USE PICSAR_precision
   USE constants
   USE params
   USE fields
@@ -666,6 +669,7 @@ END SUBROUTINE init_stencil_coefficients
 SUBROUTINE FD_weights(coeffs, norder, l_nodal)
   ! ________________________________________________________________________________________
 
+  USE PICSAR_precision
   USE constants
   IMPLICIT NONE
   INTEGER(idp) :: norder, n, m, mn, i, j, k

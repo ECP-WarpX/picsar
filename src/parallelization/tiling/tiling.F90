@@ -42,6 +42,7 @@
 !> Creation: 2015
 ! ________________________________________________________________________________________
 MODULE tiling
+  USE PICSAR_precision
   USE constants
   USE particles
   USE shared_data
@@ -1436,6 +1437,7 @@ MODULE tiling
   ! ______________________________________________________________________________________
   SUBROUTINE estimate_tiles_memory_consumption
     USE shared_data
+    USE PICSAR_precision
     USE constants
     USE particles
     USE time_stat
@@ -1830,7 +1832,8 @@ MODULE tiling
  !> Creation 2018
  ! _______________________________________________________________________________________
   SUBROUTINE get_local_tile_mem()
-    USE constants, ONLY: num
+    USE PICSAR_precision
+    USE constants
     USE grid_tilemodule, ONLY: aofgrid_tiles
     USE particles, ONLY: species_parray
     USE particle_properties, ONLY : nspecies
@@ -1904,7 +1907,8 @@ MODULE tiling
  !> Creation 2018
  ! _______________________________________________________________________________________
   SUBROUTINE get_global_tile_mem()
-    USE constants, ONLY: isp
+    USE PICSAR_precision
+    USE constants
     USE shared_data, ONLY: errcode, comm
     USE mpi_type_constants, ONLY: mpidbl
     USE mem_status, ONLY: local_grid_tiles_mem, local_part_tiles_mem,                  &

@@ -58,6 +58,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, 
   nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, &
   nozz, dxx, dyy, dzz, dtt)
   USE particles
+  USE PICSAR_precision
   USE constants
   USE tiling
   USE time_stat

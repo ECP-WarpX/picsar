@@ -46,6 +46,7 @@
 SUBROUTINE pxrpush_em3d_evec_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx,  &
   dtsdy, dtsdz, nx, ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard, nxs,  &
   nys, nzs, l_nodalgrid)
+  USE PICSAR_precision
   USE constants
 
   INTEGER(idp), INTENT(IN) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
@@ -135,6 +136,7 @@ END SUBROUTINE pxrpush_em3d_evec_norder
 SUBROUTINE pxrpush_em2d_evec_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx,  &
   dtsdy, dtsdz, nx, ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard, nxs,  &
   nys, nzs, l_nodalgrid)
+  USE PICSAR_precision
   USE constants
   INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, norderx,      &
   nordery, norderz
@@ -226,7 +228,8 @@ subroutine pxrpush_em2d_evec( &
      jz, jzlo, jzhi, &
      mudt, dtsdx, dtsdy, dtsdz)
      
-  use constants
+  USE PICSAR_precision
+  USE constants
 
 #ifdef WARPX
   integer(isp), intent(in) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
@@ -327,7 +330,8 @@ subroutine pxrpush_em3d_evec( &
      mudt, dtsdx,dtsdy,dtsdz)
 ! ______________________________________________________________________________
 
-  use constants
+  USE PICSAR_precision
+  USE constants
 
 #ifdef WARPX
   integer(isp), intent(in) :: &
@@ -419,6 +423,7 @@ end subroutine pxrpush_em3d_evec
 SUBROUTINE pxrpush_em3d_bvec_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx,  &
   ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard, nxs, nys, nzs,          &
   l_nodalgrid)
+  USE PICSAR_precision
   USE constants
   INTEGER(idp), INTENT(IN)    :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs,      &
   norderx, nordery, norderz
@@ -500,6 +505,7 @@ END SUBROUTINE pxrpush_em3d_bvec_norder
 SUBROUTINE pxrpush_em2d_bvec_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx,  &
   ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard, nxs, nys, nzs,          &
   l_nodalgrid)
+  USE PICSAR_precision
   USE constants
   INTEGER(idp) , INTENT(IN) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, norderx,      &
   nordery, norderz
@@ -587,6 +593,7 @@ subroutine pxrpush_em2d_bvec( &
      dtsdx,dtsdy,dtsdz)
 ! ______________________________________________________________________________
 
+  USE PICSAR_precision
   USE constants
 
 #ifdef WARPX
@@ -675,6 +682,7 @@ subroutine pxrpush_em3d_bvec( &
      dtsdx,dtsdy,dtsdz)
 ! ______________________________________________________________________________
 
+  USE PICSAR_precision
   USE constants
 
 #ifdef WARPX

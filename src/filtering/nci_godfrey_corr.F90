@@ -53,7 +53,8 @@
 
 MODULE godfrey_filter_coeffs
   use iso_c_binding
-  use constants
+  USE PICSAR_precision
+  USE constants
 IMPLICIT NONE
   REAL(num), DIMENSION(4,100), PARAMETER :: coeff_ex_galerkin = reshape([&
     -2.47536,2.04288,-0.598163,0.0314711, & 

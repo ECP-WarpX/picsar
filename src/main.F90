@@ -43,6 +43,7 @@
 
 
 PROGRAM main
+  USE PICSAR_precision
   USE constants
   USE fields
   USE particles

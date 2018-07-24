@@ -57,6 +57,7 @@ MODULE field_boundary
   USE particles
   USE tiling
   USE mpi_derived_types
+  USE PICSAR_precision
   USE constants
   USE time_stat
   USE params
@@ -105,6 +106,7 @@ MODULE field_boundary
   ! ______________________________________________________________________________________
   SUBROUTINE exchange_mpi_3d_grid_array_with_guards(field, nxg, nyg, nzg, nx_local,   &
     ny_local, nz_local)
+    USE PICSAR_precision
     USE constants
     USE mpi
     IMPLICIT NONE

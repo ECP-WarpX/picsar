@@ -190,7 +190,8 @@ MODULE gpstd_solver
   ! ______________________________________________________________________________________
   SUBROUTINE init_kspace
     USE matrix_coefficients
-    USE CONSTANTS
+    USE PICSAR_precision
+    USE constants
     USE mpi_fftw3
     USE omp_lib
     USE shared_data
@@ -422,6 +423,7 @@ MODULE gpstd_solver
   !> Creation 2017
   ! ______________________________________________________________________________________
   SUBROUTINE compute_k_vec(l_stg)
+    USE PICSAR_precision
     USE constants
     USE shared_data
     USE fields
@@ -592,6 +594,7 @@ MODULE gpstd_solver
   ! ______________________________________________________________________________________
   SUBROUTINE compute_k_1d(nfft,kvec,kvecf,kvecb,norder,d,l_stg)
      USE picsar_precision
+     USE PICSAR_precision
      USE constants
      REAL(num) , INTENT(IN)  :: d
      INTEGER(idp) , INTENT(IN) :: norder,nfft
@@ -664,6 +667,7 @@ MODULE gpstd_solver
   !> Creation 2017
   ! ______________________________________________________________________________________
   SUBROUTINE fftfreq(nxx, kxx, dxx)
+    USE PICSAR_precision
     USE constants
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN)                    :: nxx
@@ -771,7 +775,8 @@ MODULE gpstd_solver
   SUBROUTINE init_gpstd() bind(C, name='init_gpstd_pxr')
     USE matrix_coefficients
     USE PICSAR_PRECISION
-    USE CONSTANTS
+    USE PICSAR_precision
+    USE constants
     USE mpi_fftw3
     USE omp_lib
     USE shared_data!, ONLY : dx, dy, dz, nx, ny, nz
@@ -1118,6 +1123,7 @@ MODULE gpstd_solver
 
   ! - Computes factorial of n
   FUNCTION factorial(n)
+    USE PICSAR_precision
     USE constants
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: n

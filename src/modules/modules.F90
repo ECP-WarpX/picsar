@@ -102,6 +102,7 @@ END MODULE constants
 !> Module containing useful pre-computed parameters for some subroutines
 ! ________________________________________________________________________________________
 MODULE precomputed
+  USE PICSAR_precision
   USE constants
   !> Inverse of the space discretization:
   !> \f$ 1/dx \f$
@@ -124,6 +125,7 @@ END MODULE precomputed
 !> Module containing parameters and data structures for the fields
 ! ________________________________________________________________________________________
 MODULE fields
+  USE PICSAR_precision
   USE constants
   !> Flag: interpolation at a lower order for the field gathering
   LOGICAL(lp) :: l_lower_order_in_v
@@ -267,6 +269,7 @@ END MODULE fields
 !> Module containing the current/charge tile data structure.
 ! ________________________________________________________________________________________
 MODULE grid_tilemodule!#do not parse
+  USE PICSAR_precision
   USE constants
   !> This object contains 3D field grids for one tile 
   TYPE grid_tile
@@ -311,6 +314,7 @@ END MODULE grid_tilemodule
 !> Also see tiling.F90 for the definition of the tile properties.
 ! ________________________________________________________________________________________
 MODULE particle_tilemodule!#do not parse
+  USE PICSAR_precision
   USE constants
   !> Object that contains tile particle arrays and particle tile properties.
   TYPE particle_tile
@@ -433,7 +437,8 @@ END MODULE particle_tilemodule
 !> Module used for particle exchanges in MPI routines
 ! ________________________________________________________________________________________
 MODULE buff_exchange_part!#do not parse
-USE constants 
+USE PICSAR_precision
+USE constants
   TYPE buff_part
     INTEGER(idp) :: nbuff ! % curent size of buffer array
     INTEGER(idp) :: ibuff ! % curent position in buffer array
@@ -445,6 +450,7 @@ END MODULE buff_exchange_part
 !> Module defining particle_antenna type
 ! ________________________________________________________________________________________
 MODULE antenna!#do not parse
+  USE PICSAR_precision
   USE constants
   TYPE particle_antenna
     REAL(num)         ::  vector_x
@@ -493,6 +499,7 @@ END MODULE antenna
 ! ________________________________________________________________________________________
 MODULE particle_speciesmodule!#do not parse
   USE particle_tilemodule
+  USE PICSAR_precision
   USE constants
   USE antenna
   REAL(num)   :: kin_energy_mpi
@@ -569,6 +576,7 @@ END MODULE particle_speciesmodule
 ! ________________________________________________________________________________________
 MODULE tile_params
   ! # of particle tiles in each dimension
+  USE PICSAR_precision
   USE constants
   !> Number of tile in the x direction
   INTEGER(idp) :: ntilex
@@ -584,6 +592,7 @@ END MODULE tile_params
 !> Module containing useful properties for the particles
 ! ________________________________________________________________________________________
 MODULE particle_properties
+  USE PICSAR_precision
   USE constants
   !> Number of elements per particle in the pid particle array
   !> Default is 1 i.e only particle weights are recorded
@@ -650,6 +659,7 @@ END MODULE particle_properties
 !> Module containing the array of species
 ! ________________________________________________________________________________________
 MODULE particles!#do not parse
+  USE PICSAR_precision
   USE constants
   USE tile_params
   USE particle_tilemodule
@@ -666,6 +676,7 @@ END MODULE particles
 !> Module containing useful configuration and simulation parameters
 ! ________________________________________________________________________________________
 MODULE params
+  USE PICSAR_precision
   USE constants
   !> iteration number
   INTEGER(idp)         :: it
@@ -739,7 +750,8 @@ END MODULE params
 ! ________________________________________________________________________________________
 MODULE mpi_type_constants!#do not parse
   use mpi
-  use constants
+  USE PICSAR_precision
+  USE constants
   !> Variable with a short name that contains the double size
   !> parameter MPI_DOUBLE_PRECISION
   INTEGER(isp)  :: mpidbl = MPI_DOUBLE_PRECISION
@@ -761,7 +773,8 @@ END MODULE mpi_type_constants
 !> Module for the communications
 ! ________________________________________________________________________________________
 MODULE communications!#do not parse
-  use constants
+  USE PICSAR_precision
+  USE constants
   INTEGER(isp) :: reqperjxx(4)
   INTEGER(isp) :: reqperjxy(4)
   INTEGER(isp) :: reqperjxz(4)
@@ -891,7 +904,8 @@ END MODULE communications
 !> Module for the time statistics
 ! ________________________________________________________________________________________
 MODULE time_stat!#do not parse
-  use constants
+  USE PICSAR_precision
+  USE constants
   !> Activation of the outputs
   INTEGER(idp)                           :: timestat_activated
   !> Period for the outputs
@@ -918,7 +932,8 @@ END MODULE
 !> Module for the outputs
 ! ________________________________________________________________________________________
 MODULE output_data!#do not parse
-  use constants
+  USE PICSAR_precision
+  USE constants
 
   ! Simulation time statistics
   !> start time
@@ -1528,6 +1543,7 @@ END MODULE shared_data
 
 #if defined(FFTW)
 MODULE fourier!#do not parse
+  USE PICSAR_precision
   USE constants
   INTEGER(idp), DIMENSION(1) :: plan_r2c, plan_c2r
 END MODULE fourier
@@ -1537,6 +1553,7 @@ END MODULE fourier
 !> Module for the Maxwell Solver coefficients
 ! ________________________________________________________________________________________
 MODULE kyee_em3d
+  USE PICSAR_precision
   USE constants
   !> alphax Maxwell coefficient = 7./12.
   REAL(num) :: alphax = 0.58333333333333337_num
@@ -1570,6 +1587,7 @@ END MODULE kyee_em3d
 !> Module containing pointer to the python arrays (used in em3dsolverPXR.py)
 ! ________________________________________________________________________________________
 MODULE python_pointers
+  USE PICSAR_precision
   USE constants
   !> Equivalent of pg.nps, the number of particles for each species
   INTEGER(idp), POINTER :: partn(:)
@@ -1727,7 +1745,8 @@ END MODULE python_pointers
 !> Creation 2018
 ! ________________________________________________________________________________________
 MODULE mem_status
-  USE constants 
+  USE PICSAR_precision
+  USE constants
   ! Memory size (in Bytes) occupied by grid arrays on local rank 
   REAL(num) :: local_grid_mem = 0._num
   ! Memory size (in Bytes) occupied by tiles grid arrays on local rank 
