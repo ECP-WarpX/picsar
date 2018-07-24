@@ -131,8 +131,7 @@ def get_sub_module( dict_subs, dict_modules, dict_used_modules ):
             if m:
                 module = m.group(1).lower()
                 module_list.append( module )
-                if ifdef is not None:
-                    dict_ifdef_modules[name][module] = ifdef
+                dict_ifdef_modules[name][module] = ifdef
             # Find end of ifdef
             if re.match('\s*#endif', line, re.IGNORECASE):
                 ifdef = None
@@ -144,6 +143,18 @@ def get_sub_module( dict_subs, dict_modules, dict_used_modules ):
                 continue
             for used_module in dict_used_modules[module]:
                 module_set.add( used_module )
+                # Determine whether this used module should be imported outside of an ifdef
+                if (dict_ifdef_modules[name][module] is None) or \
+                    ((used_module in dict_ifdef_modules[name]) and (dict_ifdef_modules[name][used_module] is None)):
+                    dict_ifdef_modules[name][used_module] = None
+                else:
+                    # Otherwise, check that it is using the same ifdef
+                    if used_module in dict_ifdef_modules[name]:
+                        assert dict_ifdef_modules[name][used_module] == dict_ifdef_modules[name][module]
+                    else:
+                        # Not yet imported: import it within the same ifdef
+                        dict_ifdef_modules[name][used_module] = dict_ifdef_modules[name][module]
+
         # Loop over the modules used in this subroutine
         dict_subs_modules[name] = {}
         for module in module_set:
@@ -202,7 +213,7 @@ def rewrite_subroutines( lines, dict_subs_modules, dict_ifdef_modules ):
                 if not replaced_modules:
                     for module in dict_subs_modules[current_subroutine].keys():
                         # Add ifdef if needed
-                        if module in dict_ifdef_modules[current_subroutine]:
+                        if dict_ifdef_modules[current_subroutine][module] is not None:
                             lines[i] += '#if defined(%s)\n' %dict_ifdef_modules[current_subroutine][module]
                         # Write external modules
                         if module in known_external_modules:
@@ -217,8 +228,8 @@ def rewrite_subroutines( lines, dict_subs_modules, dict_ifdef_modules ):
                                 final_line = format_less_than_75_characters( new_line, indent )
                                 lines[i] += final_line
                         # Add ifdef if needed
-                        if module in dict_ifdef_modules[current_subroutine]:
-                            lines[i] += '#endif\n'
+                        if dict_ifdef_modules[current_subroutine][module] is not None:
+                            lines[i] += '#endif !%s\n' %dict_ifdef_modules[current_subroutine][module]
                     replaced_modules = True
         # Go the next line
         i += 1
