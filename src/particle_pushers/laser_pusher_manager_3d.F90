@@ -13,6 +13,7 @@
 ! ________________________________________________________________________________________
 
 SUBROUTINE push_laser_particles
+  USE mpi
   USE particles
   USE PICSAR_precision
   USE constants
@@ -307,7 +308,7 @@ SUBROUTINE gaussian_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvec
   COMPLEX(cpx)                               :: j, u1, u2
 
   j=(0.0_num, 1.0_num)
-  IF (temporal_order .EQ. 0_idp) THEN 
+  IF (temporal_order .EQ. 0_idp) THEN
     u1 = j*k0_laser*clight*(real_time-t_peak) - j*k0_laser*(xx**2+yy**2)/(2*q_z)
     u2 = j*k0_laser*clight*(real_time-t_peak) - j*k0_laser*(xx**2+yy**2)/(2*q_z)
   ELSE
@@ -315,7 +316,7 @@ SUBROUTINE gaussian_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvec
     ((real_time - t_peak )/laser_tau)**temporal_order
     u2 = j*k0_laser*clight*(real_time-t_peak) - j*k0_laser*(xx**2+yy**2)/(2*q_z) -      &
     ((real_time - t_peak )/laser_tau)**temporal_order+polangle*2.0_num*pi*j
-  ENDIF 
+  ENDIF
   u1 = EXP(u1)*emax1
   u2 = EXP(u2)*emax2
   arg(1) = (u1*polvector1(1) + u2*polvector2(1))
