@@ -46,6 +46,7 @@ SUBROUTINE push_bfield
   USE constants
   USE params
   USE fields
+  USE mpi, ONLY: MPI_WTIME
   USE shared_data
   USE time_stat
   IMPLICIT NONE
@@ -57,7 +58,7 @@ SUBROUTINE push_bfield
   ENDIF
 
   ! Yee scheme at order 2
-  IF ((norderx.eq.2).AND.(nordery.eq.2).AND.(norderz.eq.2)) then    
+  IF ((norderx.eq.2).AND.(nordery.eq.2).AND.(norderz.eq.2)) then
     CALL pxrpush_em3d_bvec( &
          (/-nxs, -nys, -nzs/), (/nx+nxs, ny+nys, nz+nzs/), &
          (/-nxs, -nys, -nzs/), (/nx+nxs, ny+nys, nz+nzs/), &
@@ -93,6 +94,7 @@ END SUBROUTINE push_bfield
 !> Creation 2017
 ! ________________________________________________________________________________________
 SUBROUTINE compute_em_energy
+  USE mpi, ONLY: MPI_WTIME
   USE shared_data
   USE PICSAR_precision
   USE constants
@@ -147,6 +149,7 @@ SUBROUTINE push_efield
   USE constants
   USE params
   USE fields
+  USE mpi, ONLY: MPI_WTIME
   USE shared_data
   USE time_stat
   IMPLICIT NONE
@@ -203,6 +206,7 @@ SUBROUTINE push_bfield_2d
   USE constants
   USE params
   USE fields
+  USE mpi, ONLY: MPI_WTIME
   USE shared_data
   USE time_stat
   IMPLICIT NONE
@@ -258,6 +262,7 @@ SUBROUTINE push_efield_2d
   USE constants
   USE params
   USE fields
+  USE mpi, ONLY: MPI_WTIME
   USE shared_data
   USE time_stat
   IMPLICIT NONE
@@ -321,6 +326,7 @@ SUBROUTINE push_psatd_ebfield_3d() bind(C, name='push_psatd_ebfield_3d_')
   USE constants
   USE time_stat
   USE params
+  USE mpi, ONLY: MPI_WTIME
   USE shared_data
   USE fields
 #if defined(FFTW)
@@ -358,7 +364,7 @@ SUBROUTINE push_psatd_ebfield_3d() bind(C, name='push_psatd_ebfield_3d_')
     IF (it.ge.timestat_itstart) THEN
       localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime_m)
     ENDIF
-  ELSE 
+  ELSE
     CALL push_psaotd_ebfielfs! - PUSH PSATD
   ENDIF
   ! - Inverse Fourier Transform C2R
@@ -401,6 +407,7 @@ SUBROUTINE push_psatd_ebfield_2d() bind(C, name='push_psatd_ebfield_2d_')
   USE constants
   USE time_stat
   USE params
+  USE mpi, ONLY: MPI_WTIME
   USE shared_data
   USE fields
 #if defined(FFTW)
@@ -465,5 +472,3 @@ SUBROUTINE push_psatd_ebfield_2d() bind(C, name='push_psatd_ebfield_2d_')
 #endif
 
 END SUBROUTINE
-
-
