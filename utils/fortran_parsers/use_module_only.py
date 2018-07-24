@@ -43,7 +43,9 @@ def get_module_variables(listlines, dict_modules):
     inside_type = False
     for line in listlines:
         # Detect beginning of type
-        if re.match('\s*type', line, re.IGNORECASE):
+        m = re.match('\s*type (\w+)', line, re.IGNORECASE)
+        if m:
+            dict_modules[current_key].append(m.group(1))
             if re.search('::', line): #Single-line type declaration
                 continue
             else:
