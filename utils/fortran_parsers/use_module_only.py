@@ -37,7 +37,7 @@ def reconstruct_lines(lines):
 
 
 def get_module_variables(listlines, dict_modules):
-    """Modifies `dict_modules` to with keys the module name
+    """Modifies `dict_modules` by adding entries, with keys the module name
     and value a list of existing module variables"""
     current_key = None
     inside_type = False
@@ -63,9 +63,12 @@ def get_module_variables(listlines, dict_modules):
         if (not inside_type) and (current_key is not None):
             m = re.match('.*::(.*)', line)
             if m:
-                for variable in re.findall('(\w+)', m.group(1)):
-                    if not re.match('[\d_]', variable): # Exclude pure numbers
-                        dict_modules[current_key].append( variable.lower() )
+                for previous_char, variable in re.findall('(\W)(\w+)', m.group(1)):
+                    # Exclude default values for variables, such .TRUE.
+                    if previous_char not in ['=', '.']:
+                        # Exclude pure numbers
+                        if not re.match('[\d]', variable):
+                            dict_modules[current_key].append( variable.lower() )
         # Detect end of type
         if re.match('\s*end type', line, re.IGNORECASE):
             inside_type = False
@@ -168,7 +171,7 @@ def format_less_than_75_characters( line, indent ):
         new_line += word + ' '
         if len(new_line) > 75:
             total_line += new_line + ' &\n'
-            new_line = indent
+            new_line = indent*2
     total_line += new_line
     return total_line.rstrip(' ')
 
