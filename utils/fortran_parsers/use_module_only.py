@@ -132,7 +132,7 @@ def get_sub_module( dict_subs, dict_modules, dict_used_modules ):
         module_list = []
         for line in lines:
             # Find beginning of ifdef
-            m = re.match( '\s*#if defined\((\w+)\)', line, re.IGNORECASE )
+            m = re.match( '\s*#if (.*)', line, re.IGNORECASE )
             if m:
                 ifdef = m.group(1)
             # Find modules
@@ -206,7 +206,7 @@ def rewrite_subroutines( lines, dict_subs_modules, dict_ifdef_modules ):
             for module in sorted(dict_subs_modules[current_subroutine].keys()):
                 # Add ifdef if needed
                 if dict_ifdef_modules[current_subroutine][module] is not None:
-                    lines[i] += '#if defined(%s)\n' %dict_ifdef_modules[current_subroutine][module]
+                    lines[i] += '#if %s\n' %dict_ifdef_modules[current_subroutine][module]
                 # Write external modules
                 if module in known_external_modules:
                     new_line = '%sUSE %s\n' %(indent, module)
@@ -260,7 +260,7 @@ def remove_empty_endif( lines ):
     # Erase empty if / endif
     for i in range(N_lines):
         # Check the if defined
-        if re.match('\s*#if defined\((\w+)\)', lines[i]):
+        if re.match('\s*#if ', lines[i]):
             # Check if the next line is already the next endif
             if re.match('\s*#endif', lines[i+1]):
                 # In this case erase both
@@ -269,10 +269,10 @@ def remove_empty_endif( lines ):
     # Erase unneeded match endif/if
     for i in range(N_lines):
         # Check the if defined
-        m = re.match('\s*#if defined\((\w+)\)', lines[i])
+        m = re.match('\s*#if (.*)', lines[i], re.IGNORECASE)
         if m:
             # Check if the previous line is a corresponding endif
-            if re.match('\s*#endif %s' %m.group(1), lines[i-1]):
+            if re.match('\s*#endif %s' %m.group(1), lines[i-1], re.IGNORECASE):
                 # In this case erase both
                 lines[i] = ''
                 lines[i-1] = ''
