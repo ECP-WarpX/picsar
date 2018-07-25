@@ -94,20 +94,27 @@ def get_module_variables(listlines, dict_modules, dict_used_modules):
 def get_subroutines(listlines):
     """Return dictionary with text of the subroutines"""
     dict_subroutines = {}
-    current_key = None
+    current_subroutine = None
+    inside_interface = False
     for line in listlines:
+        # Detect beginning of interface
+        if re.match('\s*interface', line, re.IGNORECASE):
+            inside_interface = True
         # Detect beginning of subroutine
         m = re.match('\s*subroutine (\w+)', line, re.IGNORECASE)
-        if m:
-            current_key = m.group(1).lower()
-            dict_subroutines[current_key] = ''  # Initialize empty string
+        if (not inside_interface) and m:
+            current_subroutine = m.group(1).lower()
+            dict_subroutines[current_subroutine] = ''  # Initialize empty string
         # Add line to text
-        if current_key is not None:
-            dict_subroutines[current_key] += line
+        if current_subroutine is not None:
+            dict_subroutines[current_subroutine] += line
         # Detect end of subroutine
         m = re.match('\s*end subroutine (\w+)', line, re.IGNORECASE)
-        if m:
-            current_key = None
+        if (not inside_interface) and m:
+            current_subroutine = None
+        # Detect end of interface
+        if re.match('\s*end interface', line, re.IGNORECASE):
+            inside_interface = False
     return( dict_subroutines )
 
 def get_sub_module( dict_subs, dict_modules, dict_used_modules ):
@@ -180,10 +187,15 @@ def rewrite_subroutines( lines, dict_subs_modules, dict_ifdef_modules ):
     current_subroutine = None
     i = 0
     N_lines = len(lines)
+    inside_interface = False
     while i < N_lines:
+        # Detect beginning of interface
+        if re.match('\s*interface', lines[i], re.IGNORECASE):
+            inside_interface = True
+
         # Detect beginning of subroutine
         m = re.match('(\s*)subroutine (\w+)', lines[i], re.IGNORECASE)
-        if m:
+        if (not inside_interface) and m:
             current_subroutine = m.group(2).lower()
             replaced_modules = False  # Did not yet replace modules
             # Go to the last line of the subroutine declaration, including line breaks
@@ -211,20 +223,21 @@ def rewrite_subroutines( lines, dict_subs_modules, dict_ifdef_modules ):
                 if dict_ifdef_modules[current_subroutine][module] is not None:
                     lines[i] += '#endif %s\n' %dict_ifdef_modules[current_subroutine][module]
 
-        # Detect end of subroutine
-        if re.match('\s*end subroutine', lines[i], re.IGNORECASE):
-            current_subroutine = None
-        # Detect end of module
-        if re.match('\s*end module', lines[i], re.IGNORECASE):
-            inside_module = False
-        if current_subroutine is not None:
-            # Remove all modules lines
+        # Remove all modules lines
+        if (not inside_interface) and (current_subroutine is not None):
             if re.match('\s*use ', lines[i], re.IGNORECASE):
                 # Collect complete line, including line breaks
                 while '&' in lines[i]:
                     lines[i] = '' # Erase intermediate lines
                     i += 1
                 lines[i] = '' # Erase final module line
+
+        # Detect end of interface
+        if re.match('\s*end interface', lines[i], re.IGNORECASE):
+            inside_interface = False
+        # Detect end of subroutine
+        if (not inside_interface) and re.match('\s*end subroutine', lines[i], re.IGNORECASE):
+            current_subroutine = None
 
         # Go the next line
         i += 1
