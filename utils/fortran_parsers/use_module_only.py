@@ -153,6 +153,10 @@ def get_sub_module( dict_subs, dict_modules, dict_used_modules ):
         if re.search('MPI_WTIME', text, re.IGNORECASE):
             module_list.append('mpi')
             dict_ifdef_modules[name]['mpi'] = None
+        # If there is a call to c_int, explicitly import iso_c_binding
+        if re.search('c_int', text, re.IGNORECASE):
+            module_list.append('iso_c_binding')
+            dict_ifdef_modules[name]['iso_c_binding'] = None        
         # Also include all used modules
         module_set = set()
         for module in module_list:
