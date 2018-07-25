@@ -200,12 +200,7 @@ def rewrite_subroutines( lines, dict_subs_modules, dict_ifdef_modules ):
             if m:
                 # Remove all modules lines
                 while re.match('(\s*)use (\w+)', line, re.IGNORECASE):
-                    # Remove ifdef before and after
-                    if re.match('\s*#if defined', lines[i-1], re.IGNORECASE):
-                        lines[i-1] = ''
-                    if re.match('\s*#endif', lines[i+1], re.IGNORECASE):
-                        lines[i+1] = ''
-                    # Collect complete the line, including line breaks
+                    # Collect complete line, including line breaks
                     while '&' in line:
                         lines[i] = '' # Erase line in final text
                         i += 1
@@ -258,10 +253,9 @@ def remove_empty_endif( lines ):
     # Erase empty if / endif
     for i in range(N_lines):
         # Check the if defined
-        m = re.match('\s*#if defined\((\w+)\)', lines[i])
-        if m:
+        if re.match('\s*#if defined\((\w+)\)', lines[i]):
             # Check if the next line is already the next endif
-            if re.match('\s*#endif %s' %m.group(1), lines[i+1]):
+            if re.match('\s*#endif', lines[i+1]):
                 # In this case erase both
                 lines[i] = ''
                 lines[i+1] = ''
