@@ -199,15 +199,21 @@ def rewrite_subroutines( lines, dict_subs_modules, dict_ifdef_modules ):
             inside_interface = True
 
         # Detect beginning of subroutine
-        m = re.match('(\s*)subroutine (\w+)', lines[i], re.IGNORECASE)
+        m = re.match('\s*subroutine (\w+)', lines[i], re.IGNORECASE)
         if (not inside_interface) and m:
-            current_subroutine = m.group(2).lower()
+            current_subroutine = m.group(1).lower()
             replaced_modules = False  # Did not yet replace modules
             # Go to the last line of the subroutine declaration, including line breaks
             while '&' in lines[i]:
                 i += 1
+            # Detect indentation of the first non-empty line after the subroutine declaration
+            j = i+1
+            m = re.match('(\s*)[^#]', lines[j])
+            while m is None:
+                j+=1
+                m = re.match('(\s*)[^#]', lines[j])
+            indent = m.group(1)
             # Add the modules at the end of the subroutine declaration
-            indent = m.group(1) + '  '
             for module in sorted(dict_subs_modules[current_subroutine].keys()):
                 # Add ifdef if needed
                 if dict_ifdef_modules[current_subroutine][module] is not None:
