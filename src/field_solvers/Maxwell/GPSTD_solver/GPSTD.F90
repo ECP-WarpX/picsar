@@ -69,6 +69,7 @@ END MODULE matrix_data
 !> Creation 2016
 ! ________________________________________________________________________________________
 MODULE matrix_coefficients!#do not parse
+  USE PICSAR_precision
   USE matrix_data
   IMPLICIT NONE
   TYPE block3d
@@ -108,6 +109,7 @@ END MODULE matrix_coefficients
 !> Creation 2016
 ! ________________________________________________________________________________________
 SUBROUTINE point_to_matrix_block_p2f(ain, n1, n2, n3, bid1, bid2, mat_index)
+  USE PICSAR_precision
   USE matrix_coefficients
   IMPLICIT NONE
   INTEGER(8), INTENT(IN) :: n1, n2, n3, mat_index, bid1, bid2
@@ -134,6 +136,7 @@ END SUBROUTINE point_to_matrix_block_p2f
 !> Creation 2016
 ! ________________________________________________________________________________________
 SUBROUTINE point_to_matrix_block(ain, n1, n2, n3, mat_index, bid1, bid2)
+  USE PICSAR_precision
   USE matrix_coefficients
   IMPLICIT NONE
   INTEGER(8), INTENT(IN) :: n1, n2, n3, mat_index, bid1, bid2
@@ -157,6 +160,7 @@ END SUBROUTINE point_to_matrix_block
 !
 ! ________________________________________________________________________________________
 SUBROUTINE point_to_vec_block(ain, n1, n2, n3, mat_index, bid1, old)
+  USE PICSAR_precision
   USE matrix_coefficients
   IMPLICIT NONE
   INTEGER(8), INTENT(IN) :: n1, n2, n3, mat_index, bid1
@@ -184,6 +188,7 @@ END SUBROUTINE point_to_vec_block
 !
 ! ________________________________________________________________________________________
 SUBROUTINE modify_vec_block(value, mat_index, bid1, old)
+  USE PICSAR_precision
   USE matrix_coefficients
   IMPLICIT NONE
   INTEGER(8), INTENT(IN)   :: mat_index, bid1
@@ -212,6 +217,7 @@ END SUBROUTINE modify_vec_block
 !
 ! ________________________________________________________________________________________
 SUBROUTINE point_to_vector_block_p2f(ain, n1, n2, n3, iv, mat_index, old, is_source)
+  USE PICSAR_precision
   USE matrix_coefficients
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN) :: n1, n2, n3, mat_index, iv
@@ -271,6 +277,7 @@ END SUBROUTINE nullify_vector_block
 !
 ! ________________________________________________________________________________________
 SUBROUTINE allocate_new_matrix_vector(nvar)
+  USE PICSAR_precision
   USE matrix_coefficients
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN) :: nvar
@@ -311,6 +318,7 @@ END SUBROUTINE allocate_new_matrix_vector
 !
 ! ________________________________________________________________________________________
 SUBROUTINE multiply_mat_vector(matrix_index)
+  USE PICSAR_precision
   USE matrix_coefficients
 #ifdef _OPENMP
   USE omp_lib
