@@ -180,58 +180,52 @@ def rewrite_subroutines( lines, dict_subs_modules, dict_ifdef_modules ):
     current_subroutine = None
     i = 0
     N_lines = len(lines)
-    replaced_modules = False
     while i < N_lines:
-        line = lines[i]
         # Detect beginning of subroutine
-        m = re.match('\s*subroutine (\w+)', line, re.IGNORECASE)
+        m = re.match('(\s*)subroutine (\w+)', lines[i], re.IGNORECASE)
         if m:
-            current_subroutine = m.group(1).lower()
+            current_subroutine = m.group(2).lower()
             replaced_modules = False  # Did not yet replace modules
+            # Go to the last line of the subroutine declaration, including line breaks
+            while '&' in lines[i]:
+                i += 1
+            # Add the modules at the end of the subroutine declaration
+            indent = m.group(1) + '  '
+            for module in sorted(dict_subs_modules[current_subroutine].keys()):
+                # Add ifdef if needed
+                if dict_ifdef_modules[current_subroutine][module] is not None:
+                    lines[i] += '#if defined(%s)\n' %dict_ifdef_modules[current_subroutine][module]
+                # Write external modules
+                if module in known_external_modules:
+                    new_line = '%sUSE %s\n' %(indent, module)
+                    lines[i] += new_line
+                # Otherwise add variables to the current line
+                else:
+                    variable_list = dict_subs_modules[ current_subroutine ][module]
+                    if variable_list != []:
+                        variables = ', '.join(variable_list)
+                        new_line = 'USE %s, ONLY: %s\n' %(module, variables)
+                        final_line = format_less_than_75_characters( new_line, indent )
+                        lines[i] += final_line
+                # Add ifdef if needed
+                if dict_ifdef_modules[current_subroutine][module] is not None:
+                    lines[i] += '#endif %s\n' %dict_ifdef_modules[current_subroutine][module]
+
         # Detect end of subroutine
-        if re.match('\s*end subroutine', line, re.IGNORECASE):
+        if re.match('\s*end subroutine', lines[i], re.IGNORECASE):
             current_subroutine = None
         # Detect end of module
-        if re.match('\s*end module', line, re.IGNORECASE):
+        if re.match('\s*end module', lines[i], re.IGNORECASE):
             inside_module = False
         if current_subroutine is not None:
-            # Find first module
-            m = re.match('(\s*)use (\w+)', line, re.IGNORECASE)
-            if m:
-                # Remove all modules lines
-                while re.match('(\s*)use (\w+)', line, re.IGNORECASE):
-                    # Collect complete line, including line breaks
-                    while '&' in line:
-                        lines[i] = '' # Erase line in final text
-                        i += 1
-                        line = lines[i]
-                    lines[i] = ''
+            # Remove all modules lines
+            if re.match('\s*use ', lines[i], re.IGNORECASE):
+                # Collect complete line, including line breaks
+                while '&' in lines[i]:
+                    lines[i] = '' # Erase intermediate lines
                     i += 1
-                    line = lines[i]
-                i -= 1
-                # Add the used modules (if it was not yet done)
-                indent = m.group(1)
-                if not replaced_modules:
-                    for module in sorted(dict_subs_modules[current_subroutine].keys()):
-                        # Add ifdef if needed
-                        if dict_ifdef_modules[current_subroutine][module] is not None:
-                            lines[i] += '#if defined(%s)\n' %dict_ifdef_modules[current_subroutine][module]
-                        # Write external modules
-                        if module in known_external_modules:
-                            new_line = '%sUSE %s\n' %(indent, module)
-                            lines[i] += new_line
-                        # Otherwise add variables to the current line
-                        else:
-                            variable_list = dict_subs_modules[ current_subroutine ][module]
-                            if variable_list != []:
-                                variables = ', '.join(variable_list)
-                                new_line = 'USE %s, ONLY: %s\n' %(module, variables)
-                                final_line = format_less_than_75_characters( new_line, indent )
-                                lines[i] += final_line
-                        # Add ifdef if needed
-                        if dict_ifdef_modules[current_subroutine][module] is not None:
-                            lines[i] += '#endif %s\n' %dict_ifdef_modules[current_subroutine][module]
-                    replaced_modules = True
+                lines[i] = '' # Erase final module line
+
         # Go the next line
         i += 1
 
