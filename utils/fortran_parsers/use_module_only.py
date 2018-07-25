@@ -269,13 +269,12 @@ def remove_empty_endif( lines ):
     # Erase unneeded match endif/if
     for i in range(N_lines):
         # Check the if defined
-        m = re.match('\s*#if (.*)', lines[i], re.IGNORECASE)
+        m = re.match('\s*#endif (.*)', lines[i], re.IGNORECASE)
         if m:
-            # Check if the previous line is a corresponding endif
-            if re.match('\s*#endif %s' %m.group(1), lines[i-1], re.IGNORECASE):
+            if re.match('\s*#if %s' %m.group(1), lines[i+1], re.IGNORECASE):
                 # In this case erase both
                 lines[i] = ''
-                lines[i-1] = ''
+                lines[i+1] = ''
     # Erase names after endif
     for i in range(N_lines):
         m = re.match('(\s*#endif)', lines[i])
