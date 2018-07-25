@@ -13,6 +13,11 @@ Usage
 -----
 python use_module_only.py
 """
+# First of all: check that this python 3 is being used
+import sys
+if sys.version_info.major < 3:
+    raise RuntimeError('This script only works with Python 3.')
+
 import glob
 import re, sys, os
 
@@ -271,7 +276,8 @@ def remove_empty_endif( lines ):
         # Check the if defined
         m = re.match('\s*#endif (.*)', lines[i], re.IGNORECASE)
         if m:
-            if re.match('\s*#if %s' %m.group(1), lines[i+1], re.IGNORECASE):
+            pattern = '\s*#if %s' %re.escape(m.group(1))
+            if re.match(pattern, lines[i+1], re.IGNORECASE):
                 # In this case erase both
                 lines[i] = ''
                 lines[i+1] = ''
