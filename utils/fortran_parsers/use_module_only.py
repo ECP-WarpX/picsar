@@ -226,7 +226,7 @@ def rewrite_subroutines( lines, dict_subs_modules, dict_ifdef_modules ):
                         lines[i] += final_line
                 # Add ifdef if needed
                 if dict_ifdef_modules[current_subroutine][module] is not None:
-                    lines[i] += '#endif %s\n' %dict_ifdef_modules[current_subroutine][module]
+                    lines[i] += '#endif%s\n' %dict_ifdef_modules[current_subroutine][module]
 
         # Remove all modules lines
         if (not inside_interface) and (current_subroutine is not None):
@@ -273,8 +273,7 @@ def remove_empty_endif( lines ):
                 lines[i+1] = ''
     # Erase unneeded match endif/if
     for i in range(N_lines):
-        # Check the if defined
-        m = re.match('\s*#endif(.*)', lines[i], re.IGNORECASE)
+        m = re.match('\s*#endif(.+)', lines[i], re.IGNORECASE)
         if m and (i+1<N_lines):
             pattern = '\s*#if%s' %re.escape(m.group(1))
             if re.match(pattern, lines[i+1], re.IGNORECASE):
