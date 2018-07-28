@@ -76,19 +76,21 @@ def get_module_variables(listlines, dict_modules, dict_used_modules):
             current_module = None
         # Detect variable names and used modules
         if (not inside_type) and (not inside_subroutine) and (current_module is not None):
-            # Detect variable name
-            m = re.match('.*::(.*)', line)
-            if m:
-                for previous_char, variable in re.findall('(\W)(\w+)', m.group(1)):
-                    # Exclude default values for variables, such .TRUE. and 'ex'
-                    if previous_char not in ['=', '.', "'"]:
-                        # Exclude pure numbers
-                        if not re.match('[\d]', variable):
-                            dict_modules[current_module].append( variable.lower() )
             # Detect used module
             m = re.match('\s*use (\w+)', line, re.IGNORECASE)
             if m:
                 dict_used_modules[current_module].append(m.group(1).lower())
+
+            else:
+                # Detect variable name
+                m = re.match('.*::(.*)', line)
+                if m:
+                    for previous_char, variable in re.findall('(\W)(\w+)', m.group(1)):
+                        # Exclude default values for variables, such .TRUE. and 'ex'
+                        if previous_char not in ['=', '.', "'"]:
+                            # Exclude pure numbers
+                            if not re.match('[\d]', variable):
+                                dict_modules[current_module].append( variable.lower() )
         # Detect end of type
         if re.match('\s*end type', line, re.IGNORECASE):
             inside_type = False
@@ -312,6 +314,13 @@ if __name__ == '__main__':
             lines = f.readlines()
         lines = reconstruct_lines(lines)
         get_module_variables(lines, dict_modules, dict_used_modules)
+    # Add the FFTW functions by hand: cannot be seen due to `include` statement
+    dict_modules['fftw3_fortran'] += ['fftw_alloc_complex', 'fftw_measure', 'fftw_estimate',
+                                      'fftw_forward', 'fftw_backward']
+    dict_modules['mpi_fftw3'] += ['fftw_alloc_complex', 'fftw_mpi_plan_dft_c2r_2d', 'fftw_mpi_plan_dft_c2r_3d',
+                                  'fftw_mpi_plan_dft_r2c_2d', 'fftw_mpi_plan_dft_r2c_3d', 'fftw_mpi_transposed_out',
+                                  'fftw_mpi_transposed_in', 'fftw_measure', 'fftw_estimate',
+                                  'fftw_forward', 'fftw_backward']
     print('')
 
     # Go through all files and replace USE module syntax
