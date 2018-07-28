@@ -32,8 +32,8 @@ def reconstruct_lines(lines):
         # Remove comments (without removing pragmas, such as !$OMP)
         new_line = re.sub('![^$].*', '', line)
         new_line = new_line.rstrip(' ')
-        if new_line.endswith('&'):
-            new_line = new_line.rstrip('& ')
+        if '&' in new_line:
+            new_line = new_line.rstrip('& \n')
             current_line += new_line
         else:
             current_line += new_line
