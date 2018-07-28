@@ -61,6 +61,7 @@ MODULE fourier_psaotd
     USE shared_data
     USE fields
     USE mpi_fftw3
+    USE mpi
     USE group_parameters
     USE matrix_coefficients
     IMPLICIT NONE
