@@ -77,10 +77,9 @@ def get_module_variables(listlines, dict_modules, dict_used_modules):
         # Detect variable names and used modules
         if (not inside_type) and (not inside_subroutine) and (current_module is not None):
             # Detect used module
-            m = re.match('\s*use (\w+)', line, re.IGNORECASE)
+            m = re.match('\s*use(, intrinsic ::)* (\w+)', line, re.IGNORECASE)
             if m:
-                dict_used_modules[current_module].append(m.group(1).lower())
-
+                dict_used_modules[current_module].append(m.group(2).lower())
             else:
                 # Detect variable name
                 m = re.match('.*::(.*)', line)
