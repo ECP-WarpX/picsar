@@ -314,12 +314,17 @@ if __name__ == '__main__':
         lines = reconstruct_lines(lines)
         get_module_variables(lines, dict_modules, dict_used_modules)
     # Add the FFTW functions by hand: cannot be seen due to `include` statement
-    dict_modules['fftw3_fortran'] += ['fftw_alloc_complex', 'fftw_measure', 'fftw_estimate',
-                                      'fftw_forward', 'fftw_backward']
-    dict_modules['mpi_fftw3'] += ['fftw_alloc_complex', 'fftw_mpi_plan_dft_c2r_2d', 'fftw_mpi_plan_dft_c2r_3d',
-                                  'fftw_mpi_plan_dft_r2c_2d', 'fftw_mpi_plan_dft_r2c_3d', 'fftw_mpi_transposed_out',
-                                  'fftw_mpi_transposed_in', 'fftw_measure', 'fftw_estimate',
+    dict_modules['fftw3_fortran'] += ['fftw_alloc_complex', 'fftw_alloc_real',
+                                  'fftw_measure', 'fftw_estimate',
                                   'fftw_forward', 'fftw_backward']
+    dict_modules['mpi_fftw3'] += ['fftw_alloc_complex', 'fftw_alloc_real',
+                                  'fftw_measure', 'fftw_estimate',
+                                  'fftw_forward', 'fftw_backward', 
+                                  'fftw_mpi_plan_dft_c2r_2d', 'fftw_mpi_plan_dft_c2r_3d',
+                                  'fftw_mpi_plan_dft_r2c_2d', 'fftw_mpi_plan_dft_r2c_3d',
+                                  'fftw_mpi_transposed_out', 'fftw_mpi_transposed_in',
+                                  'fftw_mpi_local_size_2d', 'fftw_mpi_local_size_3d',
+                                  'fftw_mpi_local_size_3d_transposed']
     print('')
 
     # Go through all files and replace USE module syntax
