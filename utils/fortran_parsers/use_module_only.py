@@ -267,7 +267,7 @@ def format_less_than_75_characters( line, indent ):
         new_line += word + ' '
         if len(new_line) > 75:
             total_line += new_line + ' &\n'
-            new_line = indent*2
+            new_line = indent + '  '
     total_line += new_line
     return total_line.rstrip(' ')
 
