@@ -552,7 +552,7 @@ END SUBROUTINE setup_communicator
 ! ______________________________________________________________________________________
 SUBROUTINE setup_groups
 #if defined(FFTW)
-USE  group_parameters
+USE group_parameters
 USE mpi_fftw3
 #endif
 USE picsar_precision
