@@ -97,7 +97,12 @@ def get_module_variables(listlines, dict_modules, dict_used_modules):
         # Detect end of subroutine
         if re.match('\s*end (subroutine|function)', line, re.IGNORECASE):
             inside_subroutine = False
-
+        # Detect module that have the `contains` statement:
+        # For these modules, the "only" syntax is not used, do to some incompatibilities with Forthon
+        if current_module is not None:
+            if re.match('^\s*contains\s*$', line, re.IGNORECASE):
+                known_external_modules.append(current_module)
+            
 def get_subroutines(listlines):
     """Return dictionary with text of the subroutines"""
     dict_subroutines = {}
