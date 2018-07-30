@@ -22,7 +22,8 @@ import glob
 import re, sys, os
 
 # Modules that are not defined within picsar
-known_external_modules = ['mpi', 'omp_lib', 'p3dfft', 'itt_sde_fortran', 'iso_c_binding']
+known_external_modules = ['mpi', 'omp_lib', 'p3dfft', 'itt_sde_fortran', 'iso_c_binding',
+                          'itt_fortran', 'sde_fortran']
 
 def reconstruct_lines(lines):
     """Reconstruction full lines from Fortran broken lines using &; and without comments"""
