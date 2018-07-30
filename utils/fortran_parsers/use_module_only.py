@@ -186,7 +186,7 @@ def get_sub_module( dict_subs, dict_modules, dict_used_modules ):
             if module in known_external_modules:
                 continue
             # Loop over the variables defined by this module
-            for variable in dict_modules[module]:
+            for variable in set(dict_modules[module]):
                 # Check whether this variable is being used
                 if re.search('[\W_]%s[\W\n]'%variable, text, re.IGNORECASE):
                     dict_subs_modules[name][module].append(variable)
