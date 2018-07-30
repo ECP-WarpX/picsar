@@ -324,7 +324,8 @@ if __name__ == '__main__':
                                   'fftw_mpi_plan_dft_r2c_2d', 'fftw_mpi_plan_dft_r2c_3d',
                                   'fftw_mpi_transposed_out', 'fftw_mpi_transposed_in',
                                   'fftw_mpi_local_size_2d', 'fftw_mpi_local_size_3d',
-                                  'fftw_mpi_local_size_3d_transposed']
+                                  'fftw_mpi_local_size_3d_transposed', 'fftw_mpi_init',
+                                  'fftw_mpi_execute_dft_c2r', 'fftw_mpi_execute_dft_r2c']
     print('')
 
     # Go through all files and replace USE module syntax
