@@ -1346,8 +1346,12 @@ MODULE diagnostics
     REAL(num) , INTENT(IN) :: gam,cbeta,beta_c
     REAL(num)   :: temp
     INTEGER(idp) :: i 
+
     ! Check that n1 is equal 10 
-    IF(n1 .NE. 10_idp) STOP
+    IF(n1 .NE. 10_idp) THEN
+       WRITE(0,*) 'ERROR: Number of fields quantities should be equal to 10'
+       STOP
+    ENDIF
    
     ! Nomenclature :
     ! 'Ex':0, 'Ey':1, 'Ez':2, 'Bx':3,'By':4, 'Bz':5, 'Jx':6, 'Jy':7, 'Jz':8, 'rho':9
@@ -1363,8 +1367,8 @@ MODULE diagnostics
       fields(3,i) = gam*(fields(3,i) - cbeta*temp)    ! bx
   
       temp = fields(9,i)
-      fields(9,i) =  gam*( fields(9,i) + beta_c * fields(8,i) )
-      fields(8,i) = gam*(fields(8,i) + cbeta *temp)
+      fields(9,i) =  gam*( fields(9,i) + beta_c * fields(8,i) ) ! rho
+      fields(8,i) = gam*(fields(8,i) + cbeta *temp) ! jz
 
     ENDDO
     !$OMP END PARALLEL DO
@@ -1389,7 +1393,11 @@ MODULE diagnostics
     REAL(num)   :: temp
     INTEGER(idp) :: i,j   
     ! Check that n1 is equal 10 
-    IF(n1 .NE. 10_idp) STOP
+
+    IF(n1 .NE. 10_idp) THEN
+       WRITE(0,*) 'ERROR: Number of fields quantities should be equal to 10'
+       STOP
+    ENDIF
 
     ! Nomenclature :
     ! 'Ex':0, 'Ey':1, 'Ez':2, 'Bx':3,'By':4, 'Bz':5, 'Jx':6, 'Jy':7, 'Jz':8, 'rho':9
@@ -1406,8 +1414,8 @@ MODULE diagnostics
         fields(3,i,j) = gam*(fields(3,i,j) - cbeta*temp)    ! bx
 
         temp = fields(9,i,j)
-        fields(9,i,j) =  gam*( fields(9,i,j) + beta_c * fields(8,i,j) )
-        fields(8,i,j) = gam*(fields(8,i,j) + cbeta *temp)
+        fields(9,i,j) =  gam*( fields(9,i,j) + beta_c * fields(8,i,j) ) ! rho
+        fields(8,i,j) = gam*(fields(8,i,j) + cbeta *temp) ! jz
       ENDDO
     ENDDO
     !$OMP END PARALLEL DO
