@@ -65,12 +65,12 @@ MODULE sorting
   !> 2016
   ! ______________________________________________________________________________________
   SUBROUTINE pxr_particle_sorting
+    USE mpi
+    USE params, ONLY: it
+    USE picsar_precision, ONLY: num
+    USE shared_data, ONLY: sorting_activated
     USE tiling
-    USE shared_data
-    USE constants
-    USE particles
-    USE time_stat
-    USE params
+    USE time_stat, ONLY: timestat_itstart, localtimes
     IMPLICIT NONE
 
     !LOGICAL(lp)  :: verbose=.TRUE.
@@ -104,12 +104,18 @@ MODULE sorting
   !> @date 2016
   ! ______________________________________________________________________________________
   SUBROUTINE particle_sorting_sub
+    USE grid_tilemodule, ONLY: grid_tile, aofgrid_tiles
+    USE mpi
+    USE params, ONLY: it
+    USE particle_properties, ONLY: nspecies, wpid
+    USE particle_speciesmodule, ONLY: particle_species
+    USE particle_tilemodule, ONLY: particle_tile
+    USE particles, ONLY: species_parray
+    USE picsar_precision, ONLY: idp, num, lp
+    USE shared_data, ONLY: sorting_dx, sorting_shiftx, sorting_dy, y, z, dx, c_dim,  &
+      sorting_verbose, sorting_shiftz, x, dy, rank, sorting_shifty, sorting_dz, dz
+    USE tile_params, ONLY: ntilez, ntilex, ntiley
     USE tiling
-    USE shared_data
-    USE constants
-    USE particles
-    USE time_stat
-    USE params
     IMPLICIT NONE
 
     INTEGER(idp)                    :: ispecies, ix, iy, iz, count
@@ -239,7 +245,7 @@ END SUBROUTINE particle_sorting_sub
 ! ______________________________________________________________________________________
 SUBROUTINE pxr_particle_bin_sorting(np2, xp, yp, zp, ux, uy, uz, gam, pid, wpid,    &
   xmin2, ymin2, zmin2, xmax2, ymax2, zmax2, dxf, dyf, dzf)
-  USE constants
+  USE picsar_precision, ONLY: idp, num
   implicit none
   integer(idp) :: ip, np2
   integer(idp) :: k, ic, nbhc
@@ -356,7 +362,7 @@ END SUBROUTINE
 
 SUBROUTINE pxr_particle_bin_sorting_2d(np2, xp, zp, ux, uy, uz, gam, pid, wpid,    &
   xmin2,  zmin2, xmax2,  zmax2, dxf,  dzf)
-  USE constants
+  USE picsar_precision, ONLY: idp, num
   implicit none
   integer(idp) :: ip, np2
   integer(idp) :: k, ic, nbhc

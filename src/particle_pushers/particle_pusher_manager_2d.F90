@@ -57,14 +57,19 @@
 SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, bzg,  &
   nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, &
   nozz, dxx, dyy, dzz, dtt)
-  USE particles
-  USE constants
+  USE grid_tilemodule, ONLY: aofgrid_tiles
+  USE mpi
+  USE output_data, ONLY: pushtime
+  USE particle_properties, ONLY: ezoldpid, nspecies, bzoldpid, bxoldpid,             &
+    particle_pusher, byoldpid, eyoldpid, exoldpid
+  USE particle_speciesmodule, ONLY: particle_species
+  USE particle_tilemodule, ONLY: particle_tile
+  USE particles, ONLY: species_parray
+  USE picsar_precision, ONLY: idp, num, lp
+  USE tile_params, ONLY: ntilez, ntilex, ntiley
   USE tiling
-  USE time_stat
+  USE time_stat, ONLY: localtimes
   ! Vtune/SDE profiling
-#if defined(PROFILING) && PROFILING==3
-  USE ITT_SDE_FORTRAN
-#endif
 
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard,     &
@@ -108,11 +113,11 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, 
   !$OMP iy, iz, ispecies, curr, curr_tile, count, jmin, jmax, kmin, kmax,             &
   !$OMP lmin, lmax, nxc, nyc, nzc, ipmin, ipmax, ip, nxjg, nzjg, isgathered,          &
   !$OMP extile, eytile, eztile, bxtile, bytile, bztile, nxt, nyt, nzt, nxt_o, nyt_o,  &
-  !$OMP nzt_o)      
+  !$OMP nzt_o)
   nxt_o=0_idp
   nyt_o=0_idp
-  nzt_o=0_idp    
-  !$OMP DO COLLAPSE(2) SCHEDULE(runtime)                           
+  nzt_o=0_idp
+  !$OMP DO COLLAPSE(2) SCHEDULE(runtime)
   DO iz=1, ntilez! LOOP ON TILES
     DO ix=1, ntilex
       curr=>species_parray(1)
@@ -163,7 +168,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, 
         nxt_o=nxt
         nyt_o=nyt
         nzt_o=nzt
-        ! - Copy values of field arrays in temporary grid tile arrays 
+        ! - Copy values of field arrays in temporary grid tile arrays
         extile=exg(jmin:jmax, kmin:kmax, lmin:lmax)
         eytile=eyg(jmin:jmax, kmin:kmax, lmin:lmax)
         eztile=ezg(jmin:jmax, kmin:kmax, lmin:lmax)
@@ -198,7 +203,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, 
             bytile, bztile , .FALSE., .TRUE., LVEC_fieldgathe,                        &
             fieldgathe)
           END IF
-          
+
 	  SELECT CASE (particle_pusher)
 	  !! Vay pusher -- Full push
 	  CASE (1_idp)
@@ -221,7 +226,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, 
 	    curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt)
 	  !! Boris pusher with RR (B08 model, according to VRANIC2016, https://doi.org/10.1016/j.cpc.2016.04.002) -- Full push
 	  CASE (4_idp)
-	    	    
+
 	    CALL pxr_boris_push_rr_LL_u_3d(count, curr_tile%part_ux, 		    &
 	    curr_tile%part_uy, curr_tile%part_uz, curr_tile%part_gaminv, 	    &
 	    curr_tile%pid(1:count,exoldpid), curr_tile%pid(1:count,eyoldpid),	    &
@@ -229,16 +234,16 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, 
 	    curr_tile%pid(1:count,byoldpid), curr_tile%pid(1:count,bzoldpid), 	    &
 	    curr_tile%part_ex, curr_tile%part_ey, curr_tile%part_ez, 		    &
 	    curr_tile%part_bx, curr_tile%part_by, curr_tile%part_bz, 		    &
-	    curr%charge, curr%mass, dtt)	
+	    curr%charge, curr%mass, dtt)
 
 	    curr_tile%pid(1:count,exoldpid) = curr_tile%part_ex
 	    curr_tile%pid(1:count,eyoldpid) = curr_tile%part_ey
 	    curr_tile%pid(1:count,ezoldpid) = curr_tile%part_ez
 	    curr_tile%pid(1:count,bxoldpid) = curr_tile%part_bx
 	    curr_tile%pid(1:count,byoldpid) = curr_tile%part_by
-	    curr_tile%pid(1:count,bzoldpid) = curr_tile%part_bz	  				
+	    curr_tile%pid(1:count,bzoldpid) = curr_tile%part_bz
 	  !! Boris pusher -- Full push
-	  
+
 	  CASE DEFAULT
 	    !! Push momentum using the Boris method in a single subroutine
 	    CALL pxr_boris_push_u_3d(count, curr_tile%part_ux, curr_tile%part_uy,   &
@@ -255,11 +260,11 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, 
     END DO
   END DO! END LOOP ON TILES
   !$OMP END DO
-  IF (ALLOCATED(extile)) THEN ! Deallocation of tile arrays 
+  IF (ALLOCATED(extile)) THEN ! Deallocation of tile arrays
     DEALLOCATE(extile,eytile,eztile,bxtile,bytile,bztile)
   ENDIF
-  !$OMP END PARALLEL 
-  
+  !$OMP END PARALLEL
+
 #if PROFILING==3
   CALL stop_collection()
 #endif

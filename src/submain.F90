@@ -49,29 +49,26 @@
 !
 ! ________________________________________________________________________________________
 SUBROUTINE step(nst)
-
-  USE constants
-  USE fields
-  USE particles
-  USE params
-  USE shared_data
-  USE field_boundary
-  USE particle_boundary
-  USE diagnostics
-  USE simple_io
-  USE sorting
-  USE mpi_routines
+USE diagnostics
+USE field_boundary
+USE fields, ONLY: l_spectral, nzguards, nxguards, nyguards
 #if defined(FFTW)
-  USE gpstd_solver
-  USE mpi_fftw3
-  USE group_parameters
+USE gpstd_solver
 #endif
-#if (defined(VTUNE) && VTUNE>0)
-  USE ITT_FORTRAN
+#if defined(FFTW)
+USE iso_c_binding
 #endif
-#if (defined(SDE) && SDE>0)||(defined(DFP))
-  USE SDE_FORTRAN
-#endif
+USE mpi
+USE mpi_routines
+USE output_data, ONLY: dive_computed, timeit, pushtime, startit
+USE params, ONLY: dt, nsteps, it
+USE particle_boundary
+USE particle_properties, ONLY: ntot, particle_pusher, l_plasma
+USE picsar_precision, ONLY: idp, num
+USE shared_data, ONLY: rho, nz, ny, rhoold, nx, c_dim, rank
+USE simple_io
+USE sorting
+
 
   IMPLICIT NONE
   INTEGER(idp) :: nst, i
@@ -319,20 +316,35 @@ END SUBROUTINE step
 !> @date
 !> Creation 2015
 SUBROUTINE initall
-  ! ________________________________________________________________________________________
-  USE constants
-  USE params
-  USE fields
-  USE particles
-  USE shared_data
-  USE tiling
-  USE time_stat
+  USE constants, ONLY: eps0, emass, pi, echarge, clight
+  USE fields, ONLY: ez, nox, noy, noz, jz, l_spectral, xcoeffs, bz, nzguards,        &
+    nxguards, nyguards, jy, jx, ex, bx, by, ey
 #if defined(FFTW)
-  USE group_parameters
   USE fourier_psaotd
   USE gpstd_solver
+  USE group_parameters, ONLY: nb_group_x, nb_group_y, nb_group_z
 #endif
-  USE precomputed
+  USE mpi
+  USE output_data, ONLY: particle_dump, npdumps, particle_dumps
+  USE params, ONLY: g0, w0_l, currdepo, lvec_charge_depo, w0_t, mpicom_curr, dtcoef, &
+    tmax, rhodepo, fieldgathe, fg_p_pp_separated, partcom, lvec_curr_depo, dt, nc,   &
+    mpi_buf_size, wlab, w0, topology, nsteps, lambdalab, lvec_fieldgathe, it, nlab
+  USE particle_properties, ONLY: nspecies, particle_pusher, pdistr
+  USE particle_speciesmodule, ONLY: particle_species
+  USE particles, ONLY: species_parray
+  USE picsar_precision, ONLY: idp, num
+  USE precomputed, ONLY: dts2dz, dys2, dts2dx, dzs2, dts2dy, dzi, invvol, dyi,       &
+    dtsdy0, dtsdz0, dxi, clightsq, dtsdx0, dxs2
+  USE shared_data, ONLY: nz, ny, fftw_with_mpi, y_min_local, nx_grid, sorting_dx,    &
+    nx, nz_grid, p3dfft_stride, y_max_local, p3dfft_flag, sorting_shiftx, ymin,      &
+    fftw_threads_ok, sorting_dy, y, ymax, z, dx, c_dim, sorting_activated, ny_grid,  &
+    sorting_shiftz, x, fftw_mpi_transpose, dy, rank, sorting_shifty, fftw_hybrid,    &
+    sorting_dz, dz
+  USE tile_params, ONLY: ntilez, ntilex, ntiley
+  USE tiling
+  USE time_stat, ONLY: timestat_itstart, timestat_activated, nbuffertimestat,        &
+    init_localtimes, localtimes
+  ! ________________________________________________________________________________________
 
   !use IFPORT ! uncomment if using the intel compiler (for rand)
   IMPLICIT NONE
@@ -586,9 +598,11 @@ END SUBROUTINE initall
 !> Creation 2018
 ! ________________________________________________________________________________________
 SUBROUTINE estimate_total_memory_consumption
-  USE tiling
+  USE mem_status, ONLY: local_grid_mem, global_part_tiles_mem,                       &
+    global_grid_tiles_mem, global_grid_mem
   USE mpi_routines
-  USE mem_status
+  USE picsar_precision, ONLY: num
+  USE tiling
   IMPLICIT NONE 
   REAL(num) :: total_memory=0._num, avg_per_mpi=0._num
   ! - Get local/global memory occupied by tile arrays (grid and particles)
@@ -624,13 +638,10 @@ END SUBROUTINE estimate_total_memory_consumption
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE init_stencil_coefficients()
+USE fields, ONLY: nordery, zcoeffs, l_nodalgrid, xcoeffs, norderz, ycoeffs, norderx
+USE params, ONLY: l_coeffs_allocated
+USE tiling
 
-  USE constants
-  USE params
-  USE fields
-  USE particles
-  USE shared_data
-  USE tiling
   IMPLICIT NONE
 
   !!! --- Allocate coefficient arrays for Maxwell solver
@@ -664,9 +675,9 @@ END SUBROUTINE init_stencil_coefficients
 !> @date
 !> Creation 2015
 SUBROUTINE FD_weights(coeffs, norder, l_nodal)
+  USE picsar_precision, ONLY: idp, num, lp
   ! ________________________________________________________________________________________
 
-  USE constants
   IMPLICIT NONE
   INTEGER(idp) :: norder, n, m, mn, i, j, k
   LOGICAL(lp)  :: l_nodal
@@ -736,9 +747,9 @@ END SUBROUTINE FD_weights
 !> @date
 !> Creation 2016
 SUBROUTINE current_debug
+  USE fields, ONLY: jy
+  USE shared_data, ONLY: nz, ny, nx
   ! ________________________________________________________________________________________
-  USE fields
-  USE shared_data
   IMPLICIT NONE
 
   INTEGER :: i

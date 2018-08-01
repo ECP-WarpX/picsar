@@ -57,12 +57,18 @@ MODULE fourier_psaotd
   !> @params[in] nopenmp - INTEGER(idp) - number of OpenMP threads/MPI processes  
   ! ______________________________________________________________________________________
   SUBROUTINE init_plans_fourier_mpi(nopenmp)
-    USE PICSAR_precision
-    USE shared_data
-    USE fields
-    USE mpi_fftw3
-    USE group_parameters
-    USE matrix_coefficients
+    USE fields, ONLY: ex_r, exf
+    USE group_parameters, ONLY: nx_group, ny_group, mpi_comm_group_id, nb_group,     &
+      nz_group
+    USE iso_c_binding
+    USE mpi
+    USE mpi_fftw3, ONLY: plan_r2c_mpi, fftw_mpi_transposed_out, fftw_estimate,       &
+      fftw_mpi_plan_dft_c2r_3d, fftw_mpi_plan_dft_c2r_2d, plan_c2r_mpi,              &
+      fftw_mpi_plan_dft_r2c_3d, fftw_mpi_transposed_in, fftw_measure,                &
+      fftw_mpi_plan_dft_r2c_2d
+    USE picsar_precision, ONLY: idp, isp
+    USE shared_data, ONLY: fftw_plan_measure, nx_global, ny_global, fftw_threads_ok, &
+      comm, c_dim, nz_global, fftw_mpi_transpose, fftw_hybrid
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: nopenmp
     INTEGER(C_INT) :: nopenmp_cint, iret
@@ -153,12 +159,13 @@ MODULE fourier_psaotd
   !> Creation 2017
   ! ______________________________________________________________________________________
   SUBROUTINE get_Ffields()
-    USE shared_data
-    USE fields
-    USE fourier
     USE fastfft
-    USE time_stat
-    USE params
+    USE fields, ONLY: nzguards, nxguards, nyguards
+    USE mpi
+    USE params, ONLY: it
+    USE picsar_precision, ONLY: idp, num
+    USE shared_data, ONLY: nz, ny, nx
+    USE time_stat, ONLY: timestat_itstart, localtimes
 
     IMPLICIT NONE
     INTEGER(idp) :: nfftx, nffty, nfftz, nxx, nyy, nzz
@@ -201,13 +208,18 @@ MODULE fourier_psaotd
   !> Creation 2017
   ! ______________________________________________________________________________________
   SUBROUTINE get_Ffields_mpi_lb()
-    USE shared_data
-    USE fields
-    USE mpi_fftw3
-    USE time_stat
-    USE params
-    USE group_parameters
     USE field_boundary
+    USE fields, ONLY: ez_r, ez, jx_r, ey_r, ex_r, bx_r, jz, by_r, rho_r, bz,         &
+      nxguards, bz_r, jy, jx, ex, bx, jz_r, jy_r, by, rhoold_r, ey
+    USE group_parameters, ONLY: l_first_cell_to_send_y, l_first_cell_to_send_z,      &
+      g_first_cell_to_recv_y, size_exchanges_l2g_recv_z, size_exchanges_l2g_recv_y,  &
+      g_first_cell_to_recv_z
+    USE iso_c_binding
+    USE mpi
+    USE params, ONLY: it
+    USE picsar_precision, ONLY: idp, num
+    USE shared_data, ONLY: rho, rhoold, ix_min_r, ix_max_r, y, z
+    USE time_stat, ONLY: timestat_itstart, localtimes
 
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz
@@ -297,13 +309,16 @@ MODULE fourier_psaotd
  !> Creation 2017
  ! _______________________________________________________________________________________
   SUBROUTINE get_Ffields_mpi
-    USE shared_data
-    USE fields
-    USE mpi_fftw3
-    USE time_stat
-    USE params
-    USE group_parameters
     USE field_boundary
+    USE fields, ONLY: ez_r, ez, jx_r, ey_r, ex_r, bx_r, jz, by_r, rho_r, bz, bz_r,   &
+      jy, jx, ex, bx, jz_r, jy_r, by, rhoold_r, ey
+    USE iso_c_binding
+    USE mpi
+    USE params, ONLY: it
+    USE picsar_precision, ONLY: idp, num
+    USE shared_data, ONLY: rho, rhoold, iy_max_r, iz_max_r, iz_min_r, ix_min_r,      &
+      ix_max_r, iy_min_r
+    USE time_stat, ONLY: timestat_itstart, localtimes
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz
     REAL(num)    :: tmptime
@@ -352,12 +367,13 @@ MODULE fourier_psaotd
   !> Creation 2017
   ! ______________________________________________________________________________________
   SUBROUTINE get_fields()
-    USE params
-    USE shared_data
-    USE fields
-    USE fourier
     USE fastfft
-    USE time_stat
+    USE fields, ONLY: nzguards, nxguards, nyguards
+    USE mpi
+    USE params, ONLY: it
+    USE picsar_precision, ONLY: idp, num
+    USE shared_data, ONLY: nz, ny, nx
+    USE time_stat, ONLY: timestat_itstart, localtimes
     IMPLICIT NONE
     REAL(num) :: tmptime
     INTEGER(idp) :: ix, iy, iz, nxx, nyy, nzz, nfftx, nffty, nfftz
@@ -400,12 +416,14 @@ MODULE fourier_psaotd
  !> Creation 2017
  ! _______________________________________________________________________________________
   SUBROUTINE get_fields_mpi
-    USE shared_data
-    USE fields
-    USE mpi_fftw3
-    USE time_stat
-    USE params
-    USE group_parameters
+    USE fields, ONLY: ez_r, ez, ey_r, ex_r, bx_r, by_r, bz, bz_r, ex, bx, by, ey
+    USE iso_c_binding
+    USE mpi
+    USE params, ONLY: it
+    USE picsar_precision, ONLY: idp, num
+    USE shared_data, ONLY: iy_max_r, iz_max_r, iz_min_r, ix_min_r, ix_max_r,         &
+      iy_min_r
+    USE time_stat, ONLY: timestat_itstart, localtimes
     IMPLICIT NONE
     REAL(num) :: tmptime
     INTEGER(idp) :: ix, iy, iz
@@ -449,13 +467,18 @@ MODULE fourier_psaotd
   !> Creation 2017
   ! ______________________________________________________________________________________
   SUBROUTINE get_fields_mpi_lb
-    USE shared_data
-    USE fields
-    USE mpi_fftw3
-    USE time_stat
-    USE params
-    USE group_parameters
     USE field_boundary
+    USE fields, ONLY: ez_r, ez, ey_r, ex_r, bx_r, by_r, bz, nxguards, bz_r, ex, bx,  &
+      by, ey
+    USE group_parameters, ONLY: g_first_cell_to_send_y, size_exchanges_g2l_recv_z,   &
+      l_first_cell_to_recv_z, g_first_cell_to_send_z, l_first_cell_to_recv_y,        &
+      size_exchanges_g2l_recv_y
+    USE iso_c_binding
+    USE mpi
+    USE params, ONLY: it
+    USE picsar_precision, ONLY: idp, num
+    USE shared_data, ONLY: ix_min_r, ix_max_r, y, z
+    USE time_stat, ONLY: timestat_itstart, localtimes
     IMPLICIT NONE
     REAL(num) ::  tmptime
     INTEGER(idp) :: ix, iy, iz
@@ -514,12 +537,15 @@ MODULE fourier_psaotd
   END SUBROUTINE get_fields_mpi_lb
   
   SUBROUTINE fft_forward_r2c_local(nfftx,nffty,nfftz) 
-    USE fields
     USE fastfft
-    USE fourier
-    USE time_stat
-    USE shared_data
-    USE params
+    USE fields, ONLY: ezf, ez_r, jx_r, jxf, ey_r, rhooldf, ex_r, rhof, bx_r, by_r,   &
+      bxf, rho_r, bz_r, g_spectral, jzf, jz_r, jy_r, eyf, rhoold_r, jyf, byf, bzf,   &
+      exf
+    USE fourier, ONLY: plan_r2c
+    USE mpi
+    USE params, ONLY: it
+    USE picsar_precision, ONLY: idp, num
+    USE time_stat, ONLY: timestat_itstart, localtimes
     REAL(num)   :: tmptime
     INTEGER(idp), INTENT(IN)    ::   nfftx,nffty,nfftz
     
@@ -569,16 +595,20 @@ MODULE fourier_psaotd
   END SUBROUTINE fft_forward_r2c_local
 
   SUBROUTINE fft_forward_r2c_hybrid()
-    USE fields
     USE fastfft
-    USE mpi_fftw3
-    USE time_stat
-    USE shared_data
-    USE params
-    USE group_parameters
+    USE fields, ONLY: ezf, ez_r, jx_r, jxf, ey_r, rhooldf, ex_r, rhof, bx_r, by_r,   &
+      bxf, rho_r, bz_r, g_spectral, jzf, jz_r, jy_r, eyf, rhoold_r, jyf, byf, bzf,   &
+      exf
+    USE iso_c_binding
+    USE mpi
+    USE mpi_fftw3, ONLY: plan_r2c_mpi, fftw_mpi_execute_dft_r2c
 #if defined(P3DFFT) 
     USE p3dfft
 #endif
+    USE params, ONLY: it
+    USE picsar_precision, ONLY: num
+    USE shared_data, ONLY: p3dfft_flag
+    USE time_stat, ONLY: timestat_itstart, localtimes
     REAL(num)   :: tmptime
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
@@ -662,12 +692,14 @@ MODULE fourier_psaotd
   END SUBROUTINE fft_forward_r2c_hybrid
 
   SUBROUTINE fft_backward_c2r_local(nfftx,nffty,nfftz)
-    USE fields
-    USE fourier
     USE fastfft
-    USE time_stat
-    USE shared_data
-    USE params
+    USE fields, ONLY: ezf, ez_r, ey_r, ex_r, bx_r, by_r, bxf, bz_r, g_spectral, eyf, &
+      byf, bzf, exf
+    USE fourier, ONLY: plan_c2r
+    USE mpi
+    USE params, ONLY: it
+    USE picsar_precision, ONLY: idp, num
+    USE time_stat, ONLY: timestat_itstart, localtimes
     REAL(num)   :: tmptime
     INTEGER(idp), INTENT(IN)     :: nfftx,nffty,nfftz
 
@@ -703,15 +735,19 @@ MODULE fourier_psaotd
   END SUBROUTINE fft_backward_c2r_local
 
   SUBROUTINE fft_backward_c2r_hybrid()
-    USE fields
     USE fastfft
-    USE mpi_fftw3
-    USE time_stat
-    USE shared_data
-    USE params
+    USE fields, ONLY: ezf, ez_r, ey_r, ex_r, bx_r, by_r, bxf, bz_r, g_spectral, eyf, &
+      byf, bzf, exf
+    USE iso_c_binding
+    USE mpi
+    USE mpi_fftw3, ONLY: plan_c2r_mpi, fftw_mpi_execute_dft_c2r
 #if defined(P3DFFT)
     USE p3dfft
 #endif
+    USE params, ONLY: it
+    USE picsar_precision, ONLY: num
+    USE shared_data, ONLY: p3dfft_flag
+    USE time_stat, ONLY: timestat_itstart, localtimes
     REAL(num)   :: tmptime
 
     IF (it.ge.timestat_itstart) THEN
@@ -772,12 +808,13 @@ MODULE fourier_psaotd
   END SUBROUTINE fft_backward_c2r_hybrid
 
   SUBROUTINE push_psaotd_ebfielfs_2d() bind(C, name='push_psaotd_ebfields_2d')
-    USE shared_data
-    USE fields
-    USE fourier
-    USE time_stat
-    USE params
-    USE mpi_fftw3
+    USE fields, ONLY: ezf, jxf, rhooldf, rhof, bxf, jzf, eyf, jyf, byf, bzf, exf
+    USE iso_c_binding
+    USE mpi
+    USE params, ONLY: it
+    USE picsar_precision, ONLY: idp, num, cpx
+    USE shared_data, ONLY: nkx, nkz
+    USE time_stat, ONLY: timestat_itstart, localtimes
     IMPLICIT NONE
     INTEGER(idp) ::  ix, iy, iz, nxx, nzz
     REAL(num) :: tmptime
@@ -859,13 +896,13 @@ MODULE fourier_psaotd
 
 
   SUBROUTINE push_psaotd_ebfielfs() bind(C, name='push_psaotd_ebfields')
-    USE shared_data
-    USE fields
-    USE fourier
-    USE time_stat
-    USE params
-    USE mpi_fftw3
-    USE group_parameters
+    USE fields, ONLY: ezf, jxf, rhooldf, rhof, bxf, jzf, eyf, jyf, byf, bzf, exf
+    USE iso_c_binding
+    USE mpi
+    USE params, ONLY: it
+    USE picsar_precision, ONLY: idp, num, cpx
+    USE shared_data, ONLY: nkx, nky, nkz
+    USE time_stat, ONLY: timestat_itstart, localtimes
     IMPLICIT NONE
     INTEGER(idp) ::  ix, iy, iz, nxx, nyy, nzz
     REAL(num) :: tmptime
@@ -965,13 +1002,15 @@ MODULE fourier_psaotd
   END SUBROUTINE push_psaotd_ebfielfs
 
   SUBROUTINE init_plans_blocks() bind(C, name='init_plans_blocks_pxr')
-    USE shared_data
     USE fastfft
-    Use fourier
-    USE fftw3_fortran
-    USE fields
+    USE fftw3_fortran, ONLY: fftw_measure, fftw_backward, fftw_forward
+    USE fields, ONLY: ex_r, nzguards, nxguards, g_spectral, nyguards, exf
+    USE fourier, ONLY: plan_c2r, plan_r2c
+    USE iso_c_binding
     USE omp_lib
-    USE params
+    USE picsar_precision, ONLY: idp
+    USE shared_data, ONLY: nz, ny, fftw_with_mpi, nx, nx_global, p3dfft_flag,        &
+      ny_global, c_dim, nz_global, rank
 
     INTEGER(idp) :: nfftx, nffty, nfftz, nopenmp
 #ifdef _OPENMP

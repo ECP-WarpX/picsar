@@ -41,6 +41,7 @@
 !> Creation 2015
 ! ________________________________________________________________________________________
 MODULE diagnostics
+  USE PICSAR_precision
   USE constants
   USE mpi
   IMPLICIT NONE
@@ -60,14 +61,17 @@ MODULE diagnostics
   !
   ! ______________________________________________________________________________________
   SUBROUTINE calc_diags
-    USE fields
     USE field_boundary
+    USE fields, ONLY: ez, nzguards, nxguards, nyguards, ex, ey
+    USE mpi
+    USE output_data, ONLY: dive_computed
+    USE params, ONLY: it
     USE particle_boundary
-    USE particles
-    USE params
-    USE shared_data
+    USE particle_properties, ONLY: l_plasma
+    USE picsar_precision, ONLY: num
+    USE shared_data, ONLY: nz, ny, nx, dx, dy, dive, dz
     USE tiling
-    USE time_stat
+    USE time_stat, ONLY: timestat_itstart, localtimes
     IMPLICIT NONE
 
     REAL(num) :: tmptime
@@ -207,7 +211,7 @@ MODULE diagnostics
   !
   ! ______________________________________________________________________________________
   SUBROUTINE init_diags
-    USE shared_data
+    USE shared_data, ONLY: rank
     IMPLICIT NONE
 
     IF (rank.eq.0) THEN
@@ -244,10 +248,13 @@ MODULE diagnostics
   !
   ! ______________________________________________________________________________________
   SUBROUTINE init_temp_diags
-    USE output_data
-    USE particle_properties
-    USE shared_data
-    USE params
+    USE mpi_type_constants, ONLY: status
+    USE output_data, ONLY: temdiag_nb_values, temdiag_nb_part, temdiag_act_list,     &
+      temdiag_format, temdiag_i_list, temdiag_nb, temdiag_name_list,                 &
+      temdiag_nb_field, temdiag_totvalues, temdiag_frequency
+    USE params, ONLY: dt
+    USE particle_properties, ONLY: nspecies
+    USE shared_data, ONLY: rho, errcode, nproc, comm, rank, dive
 
     IMPLICIT NONE
 
@@ -422,9 +429,10 @@ MODULE diagnostics
   !
   ! ______________________________________________________________________________________
   SUBROUTINE init_time_stat_output
-    USE time_stat
-    USE shared_data
-    USE params
+    USE params, ONLY: dt
+    USE shared_data, ONLY: rank
+    USE time_stat, ONLY: timestat_activated, buffer_timestat, itimestat,             &
+      timestat_period, nbuffertimestat
     IMPLICIT NONE
 
     INTEGER :: nb_timestat
@@ -462,12 +470,12 @@ MODULE diagnostics
   !> June 2017
   ! ______________________________________________________________________________________
   SUBROUTINE get_local_number_of_particles_from_species(is, nptot_loc)
-    USE particle_tilemodule
-    USE particle_speciesmodule
-    USE tile_params
-    USE particles
     USE mpi_derived_types
-    USE shared_data
+    USE particle_speciesmodule, ONLY: particle_species
+    USE particle_tilemodule, ONLY: particle_tile
+    USE particles, ONLY: species_parray
+    USE picsar_precision, ONLY: idp
+    USE tile_params, ONLY: ntilez, ntilex, ntiley
     USE tiling
     IMPLICIT NONE
 
@@ -513,12 +521,9 @@ MODULE diagnostics
   !> Creation: May 2016
   ! ______________________________________________________________________________________
   SUBROUTINE get_tot_number_of_particles_from_species(is, nptot)
-    USE particle_tilemodule
-    USE particle_speciesmodule
-    USE tile_params
-    USE particles
     USE mpi_derived_types
-    USE shared_data
+    USE picsar_precision, ONLY: idp, isp
+    USE shared_data, ONLY: errcode, comm
     USE tiling
     IMPLICIT NONE
 
@@ -551,10 +556,11 @@ MODULE diagnostics
   !> June 2017
   ! ______________________________________________________________________________________
   SUBROUTINE getquantity(ispecies, quantity, nptot, quantityarray)
-      USE particle_tilemodule
-      USE particle_speciesmodule
-      USE tile_params
-      USE particles
+      USE particle_speciesmodule, ONLY: particle_species
+      USE particle_tilemodule, ONLY: particle_tile
+      USE particles, ONLY: species_parray
+      USE picsar_precision, ONLY: idp, num
+      USE tile_params, ONLY: ntilez, ntilex, ntiley
       USE tiling
       IMPLICIT NONE
 
@@ -624,10 +630,11 @@ MODULE diagnostics
   !> June 2017
   ! ______________________________________________________________________________________
   SUBROUTINE getquantity_pid(ispecies, quantitypid, nptot, quantityarray)
-      USE particle_tilemodule
-      USE particle_speciesmodule
-      USE tile_params
-      USE particles
+      USE particle_speciesmodule, ONLY: particle_species
+      USE particle_tilemodule, ONLY: particle_tile
+      USE particles, ONLY: species_parray
+      USE picsar_precision, ONLY: idp, num
+      USE tile_params, ONLY: ntilez, ntilex, ntiley
       USE tiling
       IMPLICIT NONE
 
@@ -836,12 +843,13 @@ MODULE diagnostics
   !
   ! ______________________________________________________________________________________
   SUBROUTINE get_loc_kinetic_energy(ispecies, kinetic_energy_loc)
-    USE particle_tilemodule
-    USE particle_speciesmodule
-    USE tile_params
-    USE particles
     USE mpi_derived_types
-    USE shared_data
+    USE particle_properties, ONLY: wpid
+    USE particle_speciesmodule, ONLY: particle_species
+    USE particle_tilemodule, ONLY: particle_tile
+    USE particles, ONLY: species_parray
+    USE picsar_precision, ONLY: idp, num
+    USE tile_params, ONLY: ntilez, ntilex, ntiley
     USE tiling
     IMPLICIT NONE
     INTEGER(idp) :: ispecies
@@ -928,12 +936,15 @@ MODULE diagnostics
   !
   ! ______________________________________________________________________________________
   SUBROUTINE get_kinetic_energy(ispecies, total_kinetic_energy)
-    USE particle_tilemodule
-    USE particle_speciesmodule
-    USE tile_params
-    USE particles
     USE mpi_derived_types
-    USE shared_data
+    USE mpi_type_constants, ONLY: mpidbl
+    USE particle_properties, ONLY: wpid
+    USE particle_speciesmodule, ONLY: particle_species
+    USE particle_tilemodule, ONLY: particle_tile
+    USE particles, ONLY: species_parray
+    USE picsar_precision, ONLY: idp, num, isp
+    USE shared_data, ONLY: errcode, comm
+    USE tile_params, ONLY: ntilez, ntilex, ntiley
     USE tiling
     IMPLICIT NONE
     INTEGER(idp) :: ispecies
@@ -1014,7 +1025,7 @@ MODULE diagnostics
   ! ______________________________________________________________________________________
   SUBROUTINE get_loc_field_energy_2d(field, nx2, nz2, dx2, dz2, nxguard, nzguard,     &
     field_energy)
-    USE constants
+    USE picsar_precision, ONLY: idp, num
     IMPLICIT NONE
 
     ! __ Parameters ________________________________
@@ -1057,7 +1068,7 @@ MODULE diagnostics
   ! ______________________________________________________________________________________
   SUBROUTINE get_loc_field_energy(field, nx2, ny2, nz2, dx2, dy2, dz2, nxguard,       &
     nyguard, nzguard, field_energy)
-    USE constants
+    USE picsar_precision, ONLY: idp, num
     IMPLICIT NONE
     INTEGER(idp)     :: nx2, ny2, nz2
     INTEGER(idp)     :: nxguard, nyguard, nzguard
@@ -1101,10 +1112,11 @@ MODULE diagnostics
   ! ______________________________________________________________________________________
   SUBROUTINE get_field_energy_2d(field, nx2, nz2, dx2, dz2, nxguard, nzguard,         &
     field_energy)
-    USE constants
+    USE mpi
     USE mpi_derived_types
-    USE mpi_type_constants
-    USE shared_data
+    USE mpi_type_constants, ONLY: mpidbl
+    USE picsar_precision, ONLY: idp, num, isp
+    USE shared_data, ONLY: errcode, comm
 
     ! __ Parameters _____________________________________
     IMPLICIT NONE
@@ -1155,10 +1167,11 @@ MODULE diagnostics
   ! ______________________________________________________________________________________
   SUBROUTINE get_field_energy(field, nx2, ny2, nz2, dx2, dy2, dz2, nxguard, nyguard,  &
     nzguard, field_energy)
-    USE constants
+    USE mpi
     USE mpi_derived_types
-    USE mpi_type_constants
-    USE shared_data
+    USE mpi_type_constants, ONLY: mpidbl
+    USE picsar_precision, ONLY: idp, num, isp
+    USE shared_data, ONLY: errcode, comm
     IMPLICIT NONE
     INTEGER(idp)                :: nx2, ny2, nz2
     INTEGER(idp)                :: nxguard, nyguard, nzguard
@@ -1205,10 +1218,10 @@ MODULE diagnostics
   ! ______________________________________________________________________________________
   SUBROUTINE get_loc_norm_divErho(divee2, rho2, nx2, ny2, nz2, nxguard, nyguard,      &
     nzguard, norm)
+    USE constants, ONLY: eps0
+    USE mpi
     USE mpi_derived_types
-    USE mpi_type_constants
-    USE shared_data
-    USE constants
+    USE picsar_precision, ONLY: idp, num
     IMPLICIT NONE
 
     INTEGER(idp)                :: j, k, l
@@ -1247,10 +1260,9 @@ MODULE diagnostics
   !> Creation 2016
   ! ______________________________________________________________________________________
   SUBROUTINE get_loc_norm_2(array, nx2, ny2, nz2, nxguard, nyguard, nzguard, norm)
+    USE mpi
     USE mpi_derived_types
-    USE mpi_type_constants
-    USE shared_data
-    USE constants
+    USE picsar_precision, ONLY: idp, num
     IMPLICIT NONE
 
     INTEGER(idp)                :: j, k, l
@@ -1289,10 +1301,12 @@ MODULE diagnostics
   ! ______________________________________________________________________________________
   SUBROUTINE get_norm_divErho(divee2, rho2, nx2, ny2, nz2, nxguard, nyguard, nzguard, &
     norm)
+    USE constants, ONLY: eps0
+    USE mpi
     USE mpi_derived_types
-    USE mpi_type_constants
-    USE shared_data
-    USE constants
+    USE mpi_type_constants, ONLY: mpidbl
+    USE picsar_precision, ONLY: idp, num, isp
+    USE shared_data, ONLY: errcode, comm
     IMPLICIT NONE
 
     INTEGER(idp)                :: j, k, l

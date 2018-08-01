@@ -42,11 +42,13 @@
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE push_bfield
-  USE constants
-  USE params
-  USE fields
-  USE shared_data
-  USE time_stat
+  USE fields, ONLY: ez, nordery, nys, zcoeffs, l_nodalgrid, xcoeffs, nxs, bz,        &
+    nzguards, nxguards, norderz, nyguards, ex, bx, by, ycoeffs, nzs, norderx, ey
+  USE mpi
+  USE params, ONLY: dt, it
+  USE picsar_precision, ONLY: num
+  USE shared_data, ONLY: nz, ny, nx, dx, dy, dz
+  USE time_stat, ONLY: timestat_itstart, localtimes
   IMPLICIT NONE
 
   REAL(num) :: tmptime
@@ -56,7 +58,7 @@ SUBROUTINE push_bfield
   ENDIF
 
   ! Yee scheme at order 2
-  IF ((norderx.eq.2).AND.(nordery.eq.2).AND.(norderz.eq.2)) then    
+  IF ((norderx.eq.2).AND.(nordery.eq.2).AND.(norderz.eq.2)) then
     CALL pxrpush_em3d_bvec( &
          (/-nxs, -nys, -nzs/), (/nx+nxs, ny+nys, nz+nzs/), &
          (/-nxs, -nys, -nzs/), (/nx+nxs, ny+nys, nz+nzs/), &
@@ -92,11 +94,13 @@ END SUBROUTINE push_bfield
 !> Creation 2017
 ! ________________________________________________________________________________________
 SUBROUTINE compute_em_energy
-  USE shared_data
-  USE constants
-  USE fields
-  USE params
+  USE constants, ONLY: mu0, eps0
+  USE fields, ONLY: ez, magneto_energy_total, electromagn_energy_mpi,                &
+    magnetic_energy_mpi, electro_energy_mpi, bz, ex, bx, by,                         &
+    electromagn_energy_total, electro_energy_total, ey
   USE mpi
+  USE picsar_precision, ONLY: num, isp
+  USE shared_data, ONLY: nz, ny, errcode, nx, dx, comm, dy, dz
   IMPLICIT NONE
 
   electro_energy_mpi = 0.0_num
@@ -141,11 +145,15 @@ END SUBROUTINE
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE push_efield
-  USE constants
-  USE params
-  USE fields
-  USE shared_data
-  USE time_stat
+  USE constants, ONLY: mu0, clight
+  USE fields, ONLY: ez, nordery, jz, nys, zcoeffs, l_nodalgrid, xcoeffs, nxs, bz,    &
+    nzguards, nxguards, norderz, nyguards, jy, jx, ex, bx, by, ycoeffs, nzs,         &
+    norderx, ey
+  USE mpi
+  USE params, ONLY: dt, it
+  USE picsar_precision, ONLY: num
+  USE shared_data, ONLY: nz, ny, nx, dx, dy, dz
+  USE time_stat, ONLY: timestat_itstart, localtimes
   IMPLICIT NONE
 
   REAL(num) :: tmptime
@@ -196,11 +204,13 @@ END SUBROUTINE push_efield
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE push_bfield_2d
-  USE constants
-  USE params
-  USE fields
-  USE shared_data
-  USE time_stat
+  USE fields, ONLY: ez, nordery, nys, zcoeffs, l_nodalgrid, xcoeffs, nxs, bz,        &
+    nzguards, nxguards, norderz, nyguards, ex, bx, by, ycoeffs, nzs, norderx, ey
+  USE mpi
+  USE params, ONLY: dt, it
+  USE picsar_precision, ONLY: idp, num
+  USE shared_data, ONLY: nz, ny, nx, dx, dy, dz
+  USE time_stat, ONLY: timestat_itstart, localtimes
   IMPLICIT NONE
 
   REAL(num) :: tmptime
@@ -250,11 +260,15 @@ END SUBROUTINE push_bfield_2d
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE push_efield_2d
-  USE constants
-  USE params
-  USE fields
-  USE shared_data
-  USE time_stat
+  USE constants, ONLY: mu0, clight
+  USE fields, ONLY: ez, nordery, jz, zcoeffs, l_nodalgrid, xcoeffs, nxs, bz,         &
+    nzguards, nxguards, norderz, nyguards, jy, jx, ex, bx, by, ycoeffs, nzs,         &
+    norderx, ey
+  USE mpi
+  USE params, ONLY: dt, it
+  USE picsar_precision, ONLY: idp, num
+  USE shared_data, ONLY: nz, ny, nx, dx, dy, dz
+  USE time_stat, ONLY: timestat_itstart, localtimes
   IMPLICIT NONE
 
   REAL(num) :: tmptime,mdt
@@ -312,15 +326,18 @@ END SUBROUTINE push_efield_2d
 !> Creation March 29 2017
 ! ________________________________________________________________________________________
 SUBROUTINE push_psatd_ebfield_3d() bind(C, name='push_psatd_ebfield_3d_')
-  USE constants
-  USE time_stat
-  USE params
-  USE shared_data
-  USE fields
+  USE fields, ONLY: g_spectral
 #if defined(FFTW)
   USE fourier_psaotd
-  USE matrix_coefficients
 #endif
+#if defined(FFTW)
+  USE matrix_data, ONLY: nmatrixes
+#endif
+  USE mpi
+  USE params, ONLY: it
+  USE picsar_precision, ONLY: num
+  USE shared_data, ONLY: fftw_with_mpi, fftw_hybrid
+  USE time_stat, ONLY: timestat_itstart, localtimes
   IMPLICIT NONE
 
   REAL(num) :: tmptime, tmptime_m
@@ -352,7 +369,7 @@ SUBROUTINE push_psatd_ebfield_3d() bind(C, name='push_psatd_ebfield_3d_')
     IF (it.ge.timestat_itstart) THEN
       localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime_m)
     ENDIF
-  ELSE 
+  ELSE
     CALL push_psaotd_ebfielfs! - PUSH PSATD
   ENDIF
   ! - Inverse Fourier Transform C2R
@@ -391,15 +408,18 @@ END SUBROUTINE
 !> Creation March 29 2017
 ! ________________________________________________________________________________________
 SUBROUTINE push_psatd_ebfield_2d() bind(C, name='push_psatd_ebfield_2d_')
-  USE constants
-  USE time_stat
-  USE params
-  USE shared_data
-  USE fields
+  USE fields, ONLY: g_spectral
 #if defined(FFTW)
   USE fourier_psaotd
-  USE matrix_coefficients
 #endif
+#if defined(FFTW)
+  USE matrix_data, ONLY: nmatrixes
+#endif
+  USE mpi
+  USE params, ONLY: it
+  USE picsar_precision, ONLY: num
+  USE shared_data, ONLY: fftw_with_mpi, fftw_hybrid
+  USE time_stat, ONLY: timestat_itstart, localtimes
   IMPLICIT NONE
 
   REAL(num) :: tmptime, tmptime_m
@@ -458,5 +478,3 @@ SUBROUTINE push_psatd_ebfield_2d() bind(C, name='push_psatd_ebfield_2d_')
 #endif
 
 END SUBROUTINE
-
-

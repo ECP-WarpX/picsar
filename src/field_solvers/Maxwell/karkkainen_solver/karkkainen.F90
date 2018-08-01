@@ -89,9 +89,9 @@ subroutine pxrpush_em3d_bvec_ckc( &
      by, bylo, byhi, &
      bz, bzlo, bzhi, &
      dtsdx,dtsdy,dtsdz)
+USE picsar_precision, ONLY: num
 ! ______________________________________________________________________________
 
-  USE constants
 
   integer :: xlo(3), xhi(3), ylo(3), yhi(3), zlo(3), zhi(3), &
        exlo(3),exhi(3),eylo(3),eyhi(3),ezlo(3),ezhi(3), &
@@ -266,9 +266,9 @@ subroutine pxrpush_em2d_bvec_ckc( &
      by, bylo, byhi, &
      bz, bzlo, bzhi, &
      dtsdx,dtsdy,dtsdz)
+USE picsar_precision, ONLY: idp, num, isp
 ! ______________________________________________________________________________
 
-  USE constants
 
 #ifdef WARPX
   integer(isp) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &

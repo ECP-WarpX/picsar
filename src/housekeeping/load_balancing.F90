@@ -691,15 +691,27 @@ END SUBROUTINE get_2Dintersection
   ! ______________________________________________________________________________________
 
   SUBROUTINE get2D_intersection_group_mpi
+    USE fields, ONLY: nzguards, nxguards, nyguards
 #if defined(FFTW)
-    USE group_parameters
-    USE mpi_fftw3
+    USE group_parameters, ONLY: size_exchanges_l2g_send_z, g_first_cell_to_send_y,   &
+      group_z_max_boundary, l_first_cell_to_send_y, l_first_cell_to_send_z,          &
+      g_first_cell_to_recv_y, cell_y_min_g, ny_group, nb_group_y,                    &
+      size_exchanges_g2l_recv_z, l_first_cell_to_recv_z, g_first_cell_to_send_z,     &
+      group_y_max_boundary, cell_z_min_g, nyg_group, size_exchanges_l2g_recv_z,      &
+      size_exchanges_l2g_recv_y, group_y_min_boundary, g_first_cell_to_recv_z,       &
+      l_first_cell_to_recv_y, nb_group_z, nzg_group, cell_y_max_g,                   &
+      size_exchanges_g2l_send_z, size_exchanges_g2l_recv_y,                          &
+      size_exchanges_g2l_send_y, group_z_min_boundary, size_exchanges_l2g_send_y,    &
+      cell_z_max_g
+    USE iso_c_binding
 #endif
-    USE shared_data
     USE mpi
     USE mpi_derived_types
-    USE fields , ONLY : nxguards, nyguards, nzguards
-    USE params , ONLY : mpicom_curr
+    USE params, ONLY: mpicom_curr
+    USE picsar_precision, ONLY: idp, isp, lp
+    USE shared_data, ONLY: nz, ny, cell_y_min, cell_z_max, y_min_boundary, z_coords, &
+      z_min_boundary, p3dfft_flag, ny_global, nprocz, cell_z_min, y, z_max_boundary, &
+      y_coords, z, nprocy, nz_global, cell_y_max, y_max_boundary
     IMPLICIT NONE
     INTEGER(idp)                   :: i,j
     INTEGER(idp)                   :: iz1min,iz1max,iz2min,iz2max, iy1min,              &
@@ -894,8 +906,23 @@ END SUBROUTINE get_2Dintersection
   ! ______________________________________________________________________________________
   SUBROUTINE compute_effective_communication_setup() 
 #if defined(FFTW) 
-   USE group_parameters
-   USE params, ONLY : mpicom_curr
+   USE group_parameters, ONLY: size_exchanges_l2g_send_z, g_first_cell_to_send_y,    &
+     l_first_cell_to_send_y, l_first_cell_to_send_z, g_first_cell_to_recv_y,         &
+     requests_l2g, size_exchanges_g2l_send, array_of_ranks_to_recv_from,             &
+     requests_g2l, recv_type_g, recv_type_l, size_exchanges_g2l_recv_z,              &
+     mpi_ordered_comm_world, l_first_cell_to_recv_z, work_array_g2l, work_array_l2g, &
+     send_type_l, array_of_ranks_to_recv_from_g2l, g_first_cell_to_send_z,           &
+     nb_comms_g2l, array_of_ranks_to_send_to_l2g, nb_comms_l2g,                      &
+     size_exchanges_l2g_recv_z, array_of_ranks_to_recv_from_l2g,                     &
+     array_of_ranks_to_send_to, size_exchanges_l2g_recv_y, g_first_cell_to_recv_z,   &
+     l_first_cell_to_recv_y, size_exchanges_l2g_recv, send_type_g,                   &
+     size_exchanges_g2l_recv, size_exchanges_g2l_send_z, size_exchanges_l2g_send,    &
+     size_exchanges_g2l_recv_y, size_exchanges_g2l_send_y,                           &
+     size_exchanges_l2g_send_y, array_of_ranks_to_send_to_g2l
+#endif
+#if defined(FFTW) 
+   USE params, ONLY: mpicom_curr
+   USE picsar_precision, ONLY: idp, isp
    INTEGER(idp)     :: ll,ii,i,j,k,n,jj,jjj,kk,kkk,shift_y,shift_z
    INTEGER(idp)  , ALLOCATABLE, DIMENSION(:) :: temp1,temp2,temp3,temp4,&
         temp5,temp6,temp7,temp8
@@ -1305,14 +1332,23 @@ END SUBROUTINE get_2Dintersection
   ! ______________________________________________________________________________________
 
   SUBROUTINE create_derived_types_groups
+  USE constants, ONLY: c_ndims
+  USE fields, ONLY: nzguards, nxguards, nyguards
 #if defined(FFTW)
-  USE mpi_fftw3
-  USE group_parameters
+  USE group_parameters, ONLY: size_exchanges_l2g_send_z, nx_group, recv_type_g,      &
+    recv_type_l, size_exchanges_g2l_recv_z, send_type_l, size_exchanges_l2g_recv_z,  &
+    size_exchanges_l2g_recv_y, send_type_g, size_exchanges_g2l_send_z,               &
+    size_exchanges_g2l_recv_y, size_exchanges_g2l_send_y, size_exchanges_l2g_send_y
+  USE iso_c_binding
 #endif
-  USE shared_data
   USE mpi
   USE mpi_derived_types
-  USE fields , ONLY : nxguards, nyguards, nzguards
+#if defined(FFTW)
+  USE mpi_fftw3, ONLY: local_ny, local_nx, local_nz
+#endif
+  USE mpi_type_constants, ONLY: mpidbl
+  USE picsar_precision, ONLY: idp, isp
+  USE shared_data, ONLY: nz, ny, nx, nprocz, y, z, nprocy
   INTEGER(idp)         ::  i,j
   INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
   INTEGER(isp)                     :: basetype
@@ -1419,7 +1455,7 @@ END SUBROUTINE get_2Dintersection
         size_to_exchange_recv, first_cell_recv,                               &
         size_to_exchange_send,first_cell_send,is_grp_min,is_grp_max,n_global, &
         n_guards)
-    USE picsar_precision
+    USE picsar_precision, ONLY: idp, lp
     INTEGER(idp) , INTENT(IN)  :: iz1min, iz1max, iz2min, iz2max
     INTEGER(idp) , INTENT(INOUT)  ::   size_to_exchange_recv, first_cell_recv
     INTEGER(idp) , INTENT(INOUT)  ::   size_to_exchange_send, first_cell_send
@@ -1582,7 +1618,7 @@ SUBROUTINE compute_send_recv_sizes_and_index_g2l_copies                         
         size_to_exchange_recv,first_cell_recv,                                    &
         size_to_exchange_send,first_cell_send,is_group_min,is_group_max,n_global, &
         n_guards)
-    USE picsar_precision
+    USE picsar_precision, ONLY: idp, lp
     INTEGER(idp) , INTENT(IN)  :: iz1min, iz1max, iz2min, iz2max
     INTEGER(idp)               :: iz1min_temp
     INTEGER(idp) , INTENT(INOUT)  ::   size_to_exchange_recv,first_cell_recv,     &
@@ -2346,6 +2382,7 @@ END SUBROUTINE create_new_tile_split
 SUBROUTINE remap_particles(ix1old, ix2old, iy1old, iy2old, iz1old, iz2old, ix1new,    &
 ix2new, iy1new, iy2new, iz1new, iz2new, ncxmin, ncxmax, ncymin, ncymax, nczmin,       &
 nczmax, iproc, ncpus, npx, npy, npz, l_cart_comm)
+USE iso_c_binding
 
 IMPLICIT NONE
 INTEGER(idp), INTENT(IN) :: iproc, ncpus, npx, npy, npz
@@ -2587,6 +2624,7 @@ END SUBROUTINE remap_particles
 ! ________________________________________________________________________________________
 SUBROUTINE remap_particles_2D(ix1old, ix2old, iz1old, iz2old, ix1new, ix2new, iz1new, &
 iz2new, ncxmin, ncxmax, nczmin, nczmax, iproc, ncpus, npx, npz, l_cart_comm)
+USE iso_c_binding
 
 
 IMPLICIT NONE
@@ -2814,6 +2852,7 @@ END SUBROUTINE remap_particles_2D
 !> Creation 2016
 ! ________________________________________________________________________________________
 SUBROUTINE get_proc_interval(iproc, ic, ncmin, ncmax, ncpus)
+USE iso_c_binding
 
 IMPLICIT NONE
 INTEGER(idp), INTENT(IN OUT) :: iproc
