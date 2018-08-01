@@ -55,8 +55,8 @@
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_ebcancelpush3d(np, uxp, uyp, uzp, gi, ex, ey, ez, bx, by, bz, q, &
   m, dt, which)
-  USE PICSAR_precision
-  USE constants
+  USE constants, ONLY: clight
+  USE picsar_precision, ONLY: idp, num
   ! Input/Ooutput parameters
   INTEGER(idp), INTENT(IN) :: np, which
   REAL(num), INTENT(INOUT) :: uxp(np), uyp(np), uzp(np), gi(np)

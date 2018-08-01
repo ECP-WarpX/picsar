@@ -47,8 +47,7 @@
 SUBROUTINE depose_jxjyjz(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
   xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, nox, noy,    &
   noz, current_depo_algo)
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nox, noy, noz, nxguard, nyguard, nzguard,           &
   current_depo_algo
@@ -75,8 +74,7 @@ END SUBROUTINE
 SUBROUTINE depose_jxjyjz_esirkepov(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, &
   w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, nox,   &
   noy, noz)
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nox, noy, noz, nxguard, nyguard, nzguard
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,                      &
@@ -107,8 +105,7 @@ END SUBROUTINE
 SUBROUTINE depose_jxjyjz_generic( jx, jx_nguard, jx_nvalid, jy, jy_nguard, jy_nvalid, &
   jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin,    &
   zmin, dt, dx, dy, dz, nox, noy, noz, current_depo_algo)     !#do not wrap
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   INTEGER(idp) :: np, nox, noy, noz, current_depo_algo
   INTEGER(idp), intent(in)                :: jx_nguard(3), jx_nvalid(3),              &
@@ -223,17 +220,13 @@ END SUBROUTINE
 !> 2015-2016
 ! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
-  USE fields
-  USE particles
-  USE shared_data
-  USE params
-  USE time_stat
-#if defined(VTUNE) && VTUNE==2
-  USE ITT_FORTRAN
-#endif
-#if defined(SDE) && SDE==2
-  USE SDE_FORTRAN
-#endif
+  USE fields, ONLY: nyjguards, nox, noy, noz, jz, nxjguards, nzjguards, jy, jx
+  USE mpi
+  USE params, ONLY: currdepo, lvec_curr_depo, dt, it
+  USE particle_properties, ONLY: nspecies
+  USE picsar_precision, ONLY: idp, num
+  USE shared_data, ONLY: nz, ny, nx, xmin, zmin, ymin, dx, dy, dz
+  USE time_stat, ONLY: timestat_itstart, localtimes
   IMPLICIT NONE
   REAL(num) :: tdeb, tend
 
@@ -515,11 +508,14 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(func_order, jxg,    &
   jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy,    &
   dzz, dtt, current_depo_algo)
-  USE particles
-  USE PICSAR_precision
-  USE constants
+  USE grid_tilemodule, ONLY: grid_tile, aofgrid_tiles
+  USE particle_properties, ONLY: nspecies, wpid
+  USE particle_speciesmodule, ONLY: particle_species
+  USE particle_tilemodule, ONLY: particle_tile
+  USE particles, ONLY: species_parray
+  USE picsar_precision, ONLY: idp, num, lp
+  USE tile_params, ONLY: ntilez, ntilex, ntiley
   USE tiling
-  USE time_stat
   IMPLICIT NONE
   ! Interfaces for func_order
   INTERFACE
@@ -818,11 +814,14 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( curr_depo_sub,  &
   curr_reduc_sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx,     &
   noyy, nozz, dxx, dyy, dzz, dtt, lvect)
-  USE particles
-  USE PICSAR_precision
-  USE constants
+  USE grid_tilemodule, ONLY: grid_tile, aofgrid_tiles
+  USE particle_properties, ONLY: nspecies, wpid
+  USE particle_speciesmodule, ONLY: particle_species
+  USE particle_tilemodule, ONLY: particle_tile
+  USE particles, ONLY: species_parray
+  USE picsar_precision, ONLY: idp, num, lp
+  USE tile_params, ONLY: ntilez, ntilex, ntiley
   USE tiling
-  USE time_stat
   IMPLICIT NONE
   ! _______________________________________________________________________
   ! Interfaces for curr_depo_sub and curr_reduc_sub
@@ -1176,12 +1175,15 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3( curr_depo_sub,  &
   curr_reduc_sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx,     &
   noyy, nozz, dxx, dyy, dzz, dtt, lvect)
-  ! ______________________________________________________________________________
-  USE particles
-  USE PICSAR_precision
-  USE constants
+  USE grid_tilemodule, ONLY: grid_tile, aofgrid_tiles
+  USE particle_properties, ONLY: nspecies, wpid
+  USE particle_speciesmodule, ONLY: particle_species
+  USE particle_tilemodule, ONLY: particle_tile
+  USE particles, ONLY: species_parray
+  USE picsar_precision, ONLY: idp, num, lp
+  USE tile_params, ONLY: ntilez, ntilex, ntiley
   USE tiling
-  USE time_stat
+  ! ______________________________________________________________________________
   IMPLICIT NONE
 
   ! _______________________________________________________________________
@@ -1525,11 +1527,14 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order, jxg,    &
   jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy,    &
   dzz, dtt, current_depo_algo)
-  USE particles
-  USE PICSAR_precision
-  USE constants
+  USE grid_tilemodule, ONLY: grid_tile, aofgrid_tiles
+  USE particle_properties, ONLY: nspecies, wpid
+  USE particle_speciesmodule, ONLY: particle_species
+  USE particle_tilemodule, ONLY: particle_tile
+  USE particles, ONLY: species_parray
+  USE picsar_precision, ONLY: idp, num, lp
+  USE tile_params, ONLY: ntilez, ntilex, ntiley
   USE tiling
-  USE time_stat
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz, nxjguard, nyjguard, nzjguard
   INTEGER(idp), INTENT(IN) :: noxx, noyy, nozz
@@ -1818,11 +1823,14 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp
 ! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg, jyg, jzg, nxx, nyy, nzz, &
   nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)
-  USE particles
-  USE PICSAR_precision
-  USE constants
+  USE grid_tilemodule, ONLY: grid_tile, aofgrid_tiles
+  USE particle_properties, ONLY: nspecies, wpid
+  USE particle_speciesmodule, ONLY: particle_species
+  USE particle_tilemodule, ONLY: particle_tile
+  USE particles, ONLY: species_parray
+  USE picsar_precision, ONLY: idp, num, lp
+  USE tile_params, ONLY: ntilez, ntilex, ntiley
   USE tiling
-  USE time_stat
   IMPLICIT NONE
 
   INTEGER(idp), INTENT(IN)        :: nxx, nyy, nzz, nxjguard, nyjguard, nzjguard
@@ -2101,9 +2109,13 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq(func_order, jxg, jyg,  &
   jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz,    &
   dtt, currrent_depo_algo )
-  USE particles
-  USE PICSAR_precision
-  USE constants
+  USE grid_tilemodule, ONLY: grid_tile, aofgrid_tiles
+  USE particle_properties, ONLY: nspecies, wpid
+  USE particle_speciesmodule, ONLY: particle_species
+  USE particle_tilemodule, ONLY: particle_tile
+  USE particles, ONLY: species_parray
+  USE picsar_precision, ONLY: idp, num, lp
+  USE tile_params, ONLY: ntilez, ntilex, ntiley
   USE tiling
 
   IMPLICIT NONE
@@ -2213,11 +2225,15 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq
 ! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq(jxg, jyg, jzg, nxx,    &
   nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)
+USE grid_tilemodule, ONLY: grid_tile, aofgrid_tiles
+USE particle_properties, ONLY: nspecies, wpid
+USE particle_speciesmodule, ONLY: particle_species
+USE particle_tilemodule, ONLY: particle_tile
+USE particles, ONLY: species_parray
+USE picsar_precision, ONLY: idp, num, lp
+USE tile_params, ONLY: ntilez, ntilex, ntiley
+USE tiling
 
-  USE particles
-  USE PICSAR_precision
-  USE constants
-  USE tiling
 
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz, nxjguard, nyjguard, nzjguard

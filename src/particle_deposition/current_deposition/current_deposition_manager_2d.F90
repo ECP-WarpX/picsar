@@ -41,8 +41,7 @@
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_2d(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,  &
   xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, lvect)
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num
   implicit none
   integer(idp)                          :: np, nx, nz, nox, noz, nxguard, nzguard
   integer(idp)                          :: lvect
@@ -74,8 +73,7 @@ END SUBROUTINE
 SUBROUTINE depose_jxjyjz_generic_2d( jx, jx_nguard, jx_nvalid, jy, jy_nguard,         &
   jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
   xmin, zmin, dt, dx, dz, nox, noz, lvect)     !#do not wrap
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num, lp
   implicit none
   integer(idp)                          :: np, nox, noz
   INTEGER(idp), intent(in)              :: jx_nguard(2), jx_nvalid(2), jy_nguard(2),  &
@@ -117,8 +115,7 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_esirkepov_2d(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp,      &
   gaminv, w, q, xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz)
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num, lp
   IMPLICIT NONE
   integer(idp)                          :: np, nx, nz, nox, noz, nxguard, nzguard
   real(num), dimension(-nxguard:nx+nxguard, -nzguard:nz+nzguard), intent(inout) ::    &
@@ -153,14 +150,13 @@ END SUBROUTINE
 !> Creation 2016
 ! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
-  USE fields
-  USE output_data
-  USE shared_data
-  USE params
-  USE time_stat
-#if defined(PROFILING) && PROFILING==2
-  USE ITT_SDE_FORTRAN
-#endif
+  USE fields, ONLY: nyjguards, nox, noy, noz, jz, nxjguards, nzjguards, jy, jx,      &
+    l4symtry
+  USE mpi
+  USE params, ONLY: currdepo, lvec_curr_depo, dt
+  USE picsar_precision, ONLY: idp, num, lp
+  USE shared_data, ONLY: nz, ny, nx, xmin, zmin, dx, dy, dz
+  USE time_stat, ONLY: localtimes
   IMPLICIT NONE
 
   ! __ Parameter declaration __________________________________________________
@@ -296,11 +292,14 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_2d
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp(curr_depo_sub,    &
   jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx,    &
   dyy, dzz, dtt, lvect)
-  USE particles
-  USE PICSAR_precision
-  USE constants
+  USE grid_tilemodule, ONLY: grid_tile, aofgrid_tiles
+  USE particle_properties, ONLY: nspecies, wpid
+  USE particle_speciesmodule, ONLY: particle_species
+  USE particle_tilemodule, ONLY: particle_tile
+  USE particles, ONLY: species_parray
+  USE picsar_precision, ONLY: idp, num, lp
+  USE tile_params, ONLY: ntilez, ntilex, ntiley
   USE tiling
-  USE time_stat
   IMPLICIT NONE
   ! __ Parameter declaration _____________________________________________________________
   INTEGER(idp), INTENT(IN)  :: nxx, nyy, nzz, nxjguard, nyjguard, nzjguard

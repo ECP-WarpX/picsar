@@ -61,9 +61,7 @@
 SUBROUTINE geteb2dxz_energy_conserving(np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin,  &
   ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, nox, noy, noz, exg,    &
   eyg, ezg, bxg, byg, bzg, l4symtry, l_lower_order_in_v, lvect, field_gathe_algo)
-  USE PICSAR_precision
-  USE constants
-  USE params
+  USE picsar_precision, ONLY: idp, num
   implicit none
 
   integer(idp)                  :: np, nx, ny, nz, nox, noy, noz, nxguard, nyguard,   &
@@ -121,10 +119,8 @@ SUBROUTINE geteb2dxz_energy_conserving_generic(np, xp, yp, zp, ex, ey, ez, bx, b
   eyg_nguard, eyg_nvalid, ezg, ezg_nguard, ezg_nvalid, bxg, bxg_nguard, bxg_nvalid,     &
   byg, byg_nguard, byg_nvalid, bzg, bzg_nguard, bzg_nvalid, l4symtry,                   &
   l_lower_order_in_v, lvect, field_gathe_algo)            !#do not wrap
-  USE PICSAR_precision
-  USE constants
-  USE particles
-  USE params
+  USE params, ONLY: fieldgathe, lvec_fieldgathe
+  USE picsar_precision, ONLY: idp, num, lp
   implicit none
 
   integer(idp)                  :: field_gathe_algo

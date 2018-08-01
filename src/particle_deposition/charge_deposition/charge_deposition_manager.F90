@@ -61,13 +61,13 @@
 !> last update 09/13/2016
 ! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_rho_on_grid
-  USE PICSAR_precision
-  USE constants
-  USE fields
-  USE particles
-  USE shared_data
-  USE params
-  USE time_stat
+  USE fields, ONLY: nyjguards, nox, noy, noz, nxjguards, nzjguards
+  USE mpi
+  USE params, ONLY: lvec_charge_depo, rhodepo, dt, it
+  USE particle_properties, ONLY: nspecies
+  USE picsar_precision, ONLY: idp, num
+  USE shared_data, ONLY: rho, nz, ny, nx, xmin, zmin, ymin, dx, c_dim, dy, dz
+  USE time_stat, ONLY: timestat_itstart, localtimes
   IMPLICIT NONE
 
   INTEGER(idp) :: c_rho_old
@@ -277,9 +277,13 @@ END SUBROUTINE pxrdepose_rho_on_grid
 ! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n(rhog, nxx, nyy, nzz, nxjguard,       &
   nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)
-  USE particles
-  USE PICSAR_precision
-  USE constants
+  USE grid_tilemodule, ONLY: grid_tile, aofgrid_tiles
+  USE particle_properties, ONLY: nspecies, wpid
+  USE particle_speciesmodule, ONLY: particle_species
+  USE particle_tilemodule, ONLY: particle_tile
+  USE particles, ONLY: species_parray
+  USE picsar_precision, ONLY: idp, num, lp
+  USE tile_params, ONLY: ntilez, ntilex, ntiley
   USE tiling
   IMPLICIT NONE
   ! _______________________________________________________________________
@@ -512,9 +516,13 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n
 SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d(func_order, rhog, nxx, nyy, nzz,       &
   nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, lvectt,           &
   c_rho_old)
-  USE particles
-  USE PICSAR_precision
-  USE constants
+  USE grid_tilemodule, ONLY: grid_tile, aofgrid_tiles
+  USE particle_properties, ONLY: nspecies, wpid
+  USE particle_speciesmodule, ONLY: particle_species
+  USE particle_tilemodule, ONLY: particle_tile
+  USE particles, ONLY: species_parray
+  USE picsar_precision, ONLY: idp, num, lp
+  USE tile_params, ONLY: ntilez, ntilex, ntiley
   USE tiling
   IMPLICIT NONE
   ! _______________________________________________________________________
@@ -760,9 +768,13 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d
 ! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d(rhog, nxx, nyy, nzz, nxjguard,         &
   nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)
-  USE particles
-  USE PICSAR_precision
-  USE constants
+  USE grid_tilemodule, ONLY: grid_tile, aofgrid_tiles
+  USE particle_properties, ONLY: nspecies, wpid
+  USE particle_speciesmodule, ONLY: particle_species
+  USE particle_tilemodule, ONLY: particle_tile
+  USE particles, ONLY: species_parray
+  USE picsar_precision, ONLY: idp, num, lp
+  USE tile_params, ONLY: ntilez, ntilex, ntiley
   USE tiling
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz, nxjguard, nyjguard, nzjguard
@@ -997,9 +1009,13 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d
 ! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar(rhog, nxx, nyy, nzz, nxjguard,  &
   nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old)
-  USE particles
-  USE PICSAR_precision
-  USE constants
+  USE grid_tilemodule, ONLY: grid_tile, aofgrid_tiles
+  USE particle_properties, ONLY: nspecies, wpid
+  USE particle_speciesmodule, ONLY: particle_species
+  USE particle_tilemodule, ONLY: particle_tile
+  USE particles, ONLY: species_parray
+  USE picsar_precision, ONLY: idp, num, lp
+  USE tile_params, ONLY: ntilez, ntilex, ntiley
   USE tiling
   IMPLICIT NONE
   ! _______________________________________________________________________
@@ -1248,9 +1264,13 @@ END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar
 ! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto(rhog, nxx, nyy, nzz, nxjguard,   &
   nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, c_rho_old, lvect)
-  USE particles
-  USE PICSAR_precision
-  USE constants
+  USE grid_tilemodule, ONLY: grid_tile, aofgrid_tiles
+  USE particle_properties, ONLY: nspecies, wpid
+  USE particle_speciesmodule, ONLY: particle_species
+  USE particle_tilemodule, ONLY: particle_tile
+  USE particles, ONLY: species_parray
+  USE picsar_precision, ONLY: idp, num, lp
+  USE tile_params, ONLY: ntilez, ntilex, ntiley
   USE tiling
   IMPLICIT NONE
   ! _______________________________________________________________________

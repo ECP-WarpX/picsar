@@ -76,8 +76,7 @@
 ! ________________________________________________________________________________________
 SUBROUTINE depose_rho_scalar_1_1_1(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,   &
   dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,                      &
@@ -162,8 +161,7 @@ END SUBROUTINE depose_rho_scalar_1_1_1
 ! ________________________________________________________________________________________
 SUBROUTINE depose_rho_scalar_2_2_2(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,   &
   dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,                      &
@@ -282,8 +280,7 @@ END SUBROUTINE depose_rho_scalar_2_2_2
 ! ________________________________________________________________________________________
 SUBROUTINE depose_rho_scalar_3_3_3(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,   &
   dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,                      &
@@ -429,8 +426,7 @@ END SUBROUTINE depose_rho_scalar_3_3_3
 ! ________________________________________________________________________________________
 SUBROUTINE depose_rho_vecSH_1_1_1(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,    &
   dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), INTENT(IN OUT) ::                                                        &
@@ -588,8 +584,7 @@ END SUBROUTINE depose_rho_vecSH_1_1_1
 ! ________________________________________________________________________________________
 SUBROUTINE depose_rho_vecNOY_1_1_1(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,   &
   dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,                      &
@@ -679,8 +674,7 @@ END SUBROUTINE depose_rho_vecNOY_1_1_1
 ! ________________________________________________________________________________________
 SUBROUTINE depose_rho_vecHV_1_1_1(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,    &
   dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), INTENT(IN OUT) ::                                                        &
@@ -822,9 +816,8 @@ END SUBROUTINE depose_rho_vecHV_1_1_1
 ! ________________________________________________________________________________________
 SUBROUTINE depose_rho_vecHVv2_1_1_1(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,  &
   dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
+  USE picsar_precision, ONLY: idp, num
   !bind(C, name="depose_rho_vecHVv2_1_1_1")
-  USE PICSAR_precision
-  USE constants
   IMPLICIT NONE
 
   INTEGER(idp), INTENT (IN) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -1023,8 +1016,7 @@ END SUBROUTINE depose_rho_vecHVv2_1_1_1
 ! ________________________________________________________________________________________
 SUBROUTINE depose_rho_vecHVv2_2_2_2(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,  &
   dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
 
   INTEGER(idp), INTENT (IN)    :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -1259,8 +1251,7 @@ END SUBROUTINE depose_rho_vecHVv2_2_2_2
 ! ________________________________________________________________________________________
 SUBROUTINE depose_rho_vecHVv2_3_3_3(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,  &
   dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), INTENT(IN OUT) ::                                                        &
@@ -1486,8 +1477,7 @@ END SUBROUTINE depose_rho_vecHVv2_3_3_3
 ! ________________________________________________________________________________________
 SUBROUTINE depose_rho_vecHVv3_3_3_3(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,  &
   dy, dz, nx, ny, nz, nxguard, nyguard, nzguard)
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
 
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -1736,8 +1726,7 @@ END SUBROUTINE depose_rho_vecHVv3_3_3_3
 ! ________________________________________________________________________________________
 SUBROUTINE depose_rho_vecHVv4_3_3_3(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx,  &
   dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, lvect)
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   INTEGER(idp), INTENT (IN)    :: np, nx, ny, nz, nxguard, nyguard, nzguard
   INTEGER(idp), INTENT (IN)    :: lvect
@@ -1980,8 +1969,7 @@ END SUBROUTINE depose_rho_vecHVv4_3_3_3
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_depose_rho_n(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx, dy, dz,  &
   nx, ny, nz, nxguard, nyguard, nzguard, nox, noy, noz, l_particles_weight, l4symtry)
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num, lp
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nox, noy, noz, nxguard, nyguard, nzguard
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,                      &

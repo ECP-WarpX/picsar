@@ -57,17 +57,19 @@
 SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, bzg,  &
   nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, &
   nozz, dxx, dyy, dzz, dtt)
+  USE grid_tilemodule, ONLY: aofgrid_tiles
   USE mpi
-  USE output_data
-  USE particles
-  USE PICSAR_precision
-  USE constants
+  USE output_data, ONLY: pushtime
+  USE particle_properties, ONLY: ezoldpid, nspecies, bzoldpid, bxoldpid,             &
+    particle_pusher, byoldpid, eyoldpid, exoldpid
+  USE particle_speciesmodule, ONLY: particle_species
+  USE particle_tilemodule, ONLY: particle_tile
+  USE particles, ONLY: species_parray
+  USE picsar_precision, ONLY: idp, num, lp
+  USE tile_params, ONLY: ntilez, ntilex, ntiley
   USE tiling
-  USE time_stat
+  USE time_stat, ONLY: localtimes
   ! Vtune/SDE profiling
-#if defined(PROFILING) && PROFILING==3
-  USE ITT_SDE_FORTRAN
-#endif
 
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard,     &

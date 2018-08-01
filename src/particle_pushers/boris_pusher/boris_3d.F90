@@ -50,8 +50,8 @@
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_boris_push_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by, bz, q,  &
   m, dt)
-  USE PICSAR_precision
-  USE constants
+  USE constants, ONLY: clight
+  USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   ! Input/Output parameters
   INTEGER(idp), INTENT(IN) :: np
@@ -158,8 +158,8 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_boris_push_rr_S09_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by, bz, q,  &
   m, dt)
-  USE PICSAR_precision
-  USE constants
+  USE constants, ONLY: mu0, pi, clight
+  USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   ! Input/Output parameters
   INTEGER(idp), INTENT(IN) :: np
@@ -331,8 +331,8 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_boris_push_rr_B08_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by, bz, q,  &
   m, dt)
-  USE PICSAR_precision
-  USE constants
+  USE constants, ONLY: eps0, pi, clight
+  USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   ! Input/Output parameters
   INTEGER(idp), INTENT(IN) :: np
@@ -515,8 +515,8 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_boris_push_rr_LL_u_3d(np, uxp, uyp, uzp, gaminv, exold, eyold, ezold, & 
            bxold, byold, bzold, ex, ey, ez, bx, by, bz, q, m, dt)
-  USE PICSAR_precision
-  USE constants
+  USE constants, ONLY: eps0, pi, clight
+  USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   ! Input/Output parameters
   INTEGER(idp), INTENT(IN) :: np
@@ -727,8 +727,8 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_boris_push_u_3d_block(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by,   &
   bz, q, m, dt, lvect)
-  USE PICSAR_precision
-  USE constants
+  USE constants, ONLY: clight
+  USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   ! Input/Output parameters
   INTEGER(idp), INTENT(IN) :: np
@@ -846,8 +846,7 @@ END SUBROUTINE
 !> @param[in] dt time step
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_pushxyz(np, xp, yp, zp, uxp, uyp, uzp, gaminv, dt)
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN)   :: np
   REAL(num), INTENT(INOUT)   :: xp(np), yp(np), zp(np)
@@ -911,8 +910,7 @@ END SUBROUTINE pxr_pushxyz
 !> @param[in] dt time step
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_epush_v(np, uxp, uyp, uzp, ex, ey, ez, q, m, dt)
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   ! Input/Output parameters
   INTEGER(idp), INTENT(IN) :: np
@@ -977,8 +975,7 @@ END SUBROUTINE pxr_epush_v
 !> @param[in] dt time step
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_bpush_v(np, uxp, uyp, uzp, gaminv, bx, by, bz, q, m, dt)
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   ! Input/Output parameters
   INTEGER(idp), INTENT(IN)   :: np
@@ -1055,8 +1052,8 @@ END SUBROUTINE pxr_bpush_v
 !
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_set_gamma(np, uxp, uyp, uzp, gaminv)
-  USE PICSAR_precision
-  USE constants
+  USE constants, ONLY: clight
+  USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
 
   ! Input/output parameters

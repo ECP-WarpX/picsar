@@ -60,10 +60,20 @@ MODULE simple_io
   !> Creation 2015
   ! ______________________________________________________________________________________
   SUBROUTINE output_routines()
-    USE shared_data
-    USE params
-    USE time_stat
+    USE constants, ONLY: string_length
     USE diagnostics
+    USE mpi
+    USE output_data, ONLY: filejy, filebz, output_step_min, c_output_divb,           &
+      c_output_ex, c_output_dive, dive_computed, filedivj, filerho, c_output_jy,     &
+      c_output_rho, filejx, c_output_divj, filedive, fileby, output_step_max,        &
+      c_output_jx, c_output_bx, fileey, output_frequency, c_output_jz, c_output_bz,  &
+      c_output_by, filebx, c_output_ez, fileex, c_output_ey, filejz, fileez,         &
+      filedivb
+    USE params, ONLY: it
+    USE picsar_precision, ONLY: num
+    USE shared_data, ONLY: rho, nz, ny, divj, nx, xmin, zmin, nx_global, ny_global,  &
+      ymin, divb, ymax, dx, nz_global, zmax, dy, rank, xmax, dive, dz
+    USE time_stat, ONLY: timestat_itstart, localtimes
     IMPLICIT NONE
 
     CHARACTER(LEN=string_length) :: strtemp
@@ -222,15 +232,19 @@ END SUBROUTINE output_routines
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE output_temporal_diagnostics
-  USE shared_data
-  USE params
-  USE time_stat
+  USE constants, ONLY: eps0, imu0, emass, clight
   USE diagnostics
-  USE output_data
-  USE particle_properties
-  USE PICSAR_precision
-  USE constants
-  USE fields
+  USE fields, ONLY: ez, bz, nzguards, nxguards, nyguards, ex, bx, by, ey
+  USE mpi
+  USE mpi_type_constants, ONLY: mpidbl
+  USE output_data, ONLY: temdiag_nb_values, temdiag_act_list, temdiag_format,        &
+    dive_computed, temdiag_i_list, temdiag_nb, temdiag_totvalues, temdiag_frequency
+  USE params, ONLY: it
+  USE particle_properties, ONLY: nspecies
+  USE picsar_precision, ONLY: idp, num, isp
+  USE shared_data, ONLY: rho, nz, ny, errcode, nx, nproc, dx, comm, c_dim, dy, rank, &
+    dive, dz
+  USE time_stat, ONLY: localtimes
   IMPLICIT NONE
 
   REAL(num), dimension(:), allocatable :: local_values, global_values
@@ -582,11 +596,12 @@ END SUBROUTINE write_single_array_to_file
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE write_particles_to_file
-  USE particles
-  USE PICSAR_precision
-  USE constants
-  USE params
-  USE time_stat
+  USE mpi
+  USE params, ONLY: it
+  USE particle_speciesmodule, ONLY: particle_species
+  USE particles, ONLY: species_parray
+  USE picsar_precision, ONLY: idp, num, isp, lp
+  USE time_stat, ONLY: timestat_itstart, localtimes
 
   REAL(num), ALLOCATABLE, DIMENSION(:)    :: arr
   LOGICAL(lp), ALLOCATABLE, DIMENSION(:) :: mask
@@ -689,11 +704,13 @@ END SUBROUTINE write_particles_to_file
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE get_particles_to_dump(idump, mask, narr, ndump)
-  USE PICSAR_precision
-  USE constants
-  USE particles
+  USE output_data, ONLY: particle_dump, particle_dumps
+  USE particle_speciesmodule, ONLY: particle_species
+  USE particle_tilemodule, ONLY: particle_tile
+  USE particles, ONLY: species_parray
+  USE picsar_precision, ONLY: idp, num, lp
+  USE tile_params, ONLY: ntilez, ntilex, ntiley
   USE tiling
-  USE output_data
 
   INTEGER(idp), INTENT(IN) :: idump, narr
   INTEGER(idp), INTENT(IN OUT) :: ndump
@@ -752,9 +769,12 @@ END SUBROUTINE get_particles_to_dump
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE concatenate_particle_variable(idump, var, arr, narr, mask, nmask)
-USE particles
-USE PICSAR_precision
-USE constants
+USE particle_properties, ONLY: wpid
+USE particle_speciesmodule, ONLY: particle_species
+USE particle_tilemodule, ONLY: particle_tile
+USE particles, ONLY: species_parray
+USE picsar_precision, ONLY: idp, num, lp
+USE tile_params, ONLY: ntilez, ntilex, ntiley
 USE tiling
 INTEGER(idp), INTENT(IN) :: idump, narr, var, nmask
 LOGICAL(lp), DIMENSION(nmask), INTENT(IN) :: mask
@@ -877,9 +897,12 @@ END SUBROUTINE write_particle_variable
 !> Creation 2016
 ! ________________________________________________________________________________________
 SUBROUTINE output_time_statistics
-USE time_stat
-USE params
-USE shared_data
+USE mpi_type_constants, ONLY: mpidbl
+USE params, ONLY: it
+USE picsar_precision, ONLY: isp
+USE shared_data, ONLY: errcode, nproc, comm, rank
+USE time_stat, ONLY: buffer_timestat, itimestat, timestat_period, nbuffertimestat,   &
+  avetimes, localtimes
 IMPLICIT NONE
 
 #if defined(DEBUG)
@@ -933,9 +956,7 @@ END SUBROUTINE
 !> Creation 2016
 ! ________________________________________________________________________________________
 SUBROUTINE final_output_time_statistics
-USE time_stat
-USE params
-USE shared_data
+USE time_stat, ONLY: timestat_activated, buffer_timestat, itimestat
 IMPLICIT NONE
 
 IF (timestat_activated.gt.0) THEN

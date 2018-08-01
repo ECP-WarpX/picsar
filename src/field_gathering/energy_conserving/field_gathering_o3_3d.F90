@@ -83,9 +83,7 @@
 SUBROUTINE gete3d_energy_conserving_scalar_3_3_3(np, xp, yp, zp, ex, ey, ez, xmin,    &
   ymin, zmin, dx, dy, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid,     &
   ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
-  USE PICSAR_precision
-  USE constants
-  USE params
+  USE picsar_precision, ONLY: idp, num, isp
   IMPLICIT NONE
   INTEGER(idp)                         :: np
   INTEGER(idp), intent(in)             :: exg_nguard(3), exg_nvalid(3),               &
@@ -381,8 +379,7 @@ END SUBROUTINE
 SUBROUTINE getb3d_energy_conserving_scalar_3_3_3(np, xp, yp, zp, bx, by, bz, xmin,    &
   ymin, zmin, dx, dy, dz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid,     &
   bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   INTEGER(idp)                         :: np
   INTEGER(idp), intent(in)             :: bxg_nguard(3), bxg_nvalid(3),               &
@@ -663,9 +660,7 @@ END SUBROUTINE
 SUBROUTINE gete3d_energy_conserving_linear_3_3_3(np, xp, yp, zp, ex, ey, ez, xmin,    &
   ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg, ezg,         &
   l_lower_order_in_v)
-  USE PICSAR_precision
-  USE constants
-  USE params
+  USE picsar_precision, ONLY: idp, num, isp
   IMPLICIT NONE
   INTEGER(idp)                         :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), DIMENSION(np)             :: xp, yp, zp, ex, ey, ez
@@ -1224,8 +1219,7 @@ END SUBROUTINE
 SUBROUTINE getb3d_energy_conserving_linear_3_3_3(np, xp, yp, zp, bx, by, bz, xmin,    &
   ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, bxg, byg, bzg,         &
   l_lower_order_in_v)
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   INTEGER(idp)                         :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), DIMENSION(np)             :: xp, yp, zp, bx, by, bz
@@ -1725,8 +1719,7 @@ END SUBROUTINE
 SUBROUTINE gete3d_energy_conserving_vec_3_3_3(np, xp, yp, zp, ex, ey, ez, xmin, ymin, &
   zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg, ezg, lvect,        &
   l_lower_order_in_v)
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num, isp
   IMPLICIT NONE
 
   INTEGER(idp)                           :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -2341,8 +2334,7 @@ END SUBROUTINE
 SUBROUTINE getb3d_energy_conserving_vec_3_3_3(np, xp, yp, zp, bx, by, bz, xmin, ymin, &
   zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, bxg, byg, bzg, lvect,        &
   l_lower_order_in_v)
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num, isp
   IMPLICIT NONE
   INTEGER(idp)                         :: np, nx, ny, nz, nxguard, nyguard, nzguard
   INTEGER(idp)                         :: lvect
@@ -2920,8 +2912,7 @@ END SUBROUTINE
 SUBROUTINE gete3d_energy_conserving_vec2_3_3_3(np, xp, yp, zp, ex, ey, ez, xmin,      &
   ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg, ezg, lvect,  &
   l_lower_order_in_v)
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num, isp
   IMPLICIT NONE
   INTEGER(idp)                           :: np, nx, ny, nz, nxguard, nyguard, nzguard
   INTEGER(idp)                           :: lvect
@@ -3410,8 +3401,7 @@ END SUBROUTINE
 SUBROUTINE getb3d_energy_conserving_vec2_3_3_3(np, xp, yp, zp, bx, by, bz, xmin,      &
   ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, bxg, byg, bzg, lvect,  &
   l_lower_order_in_v)
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num, isp
   IMPLICIT NONE
   INTEGER(idp)                         :: np, nx, ny, nz, nxguard, nyguard, nzguard
   INTEGER(idp)                         :: lvect
@@ -3876,8 +3866,7 @@ END SUBROUTINE
 SUBROUTINE geteb3d_energy_conserving_vec_3_3_3(np, xp, yp, zp, ex, ey, ez, bx, by,    &
   bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg,    &
   ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num, isp
   IMPLICIT NONE
   ! ___ Parameter declaration _________________________________________________
   INTEGER(idp)                           :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -4813,8 +4802,7 @@ END SUBROUTINE
 SUBROUTINE geteb3d_energy_conserving_vecV2_3_3_3(np, xp, yp, zp, ex, ey, ez, bx, by,  &
   bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg,    &
   ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num, isp
   IMPLICIT NONE
   ! ___ Parameter declaration _________________________________________________
   INTEGER(idp)                           :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -5515,8 +5503,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV3_3_3_3(np, xp, yp, zp, ex, ey, ez, bx,
   eyg_nvalid, ezg, ezg_nguard, ezg_nvalid, bxg, bxg_nguard, bxg_nvalid, byg,            &
   byg_nguard, byg_nvalid, bzg, bzg_nguard, bzg_nvalid, lvect,                           &
   l_lower_order_in_v)        !#do not wrap
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num, isp
   IMPLICIT NONE
   ! ___ Parameter declaration _________________________________________________
   INTEGER(idp), intent(in)                :: np
@@ -6217,8 +6204,7 @@ END SUBROUTINE
 SUBROUTINE geteb3d_energy_conserving_blockvec_3_3_3(np, xp, yp, zp, ex, ey, ez, bx,   &
   by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg,     &
   eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num, isp
   IMPLICIT NONE
   ! ___ Parameter declaration _________________________________________________
   INTEGER(idp)                           :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -6855,8 +6841,7 @@ END SUBROUTINE
 SUBROUTINE geteb3d_energy_conserving_blockvec2_3_3_3(np, xp, yp, zp, ex, ey, ez, bx,  &
   by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg,     &
   eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
-  USE PICSAR_precision
-  USE constants
+  USE picsar_precision, ONLY: idp, num, isp
   IMPLICIT NONE
   ! ___ Parameter declaration _________________________________________________
   INTEGER(idp)                           :: np, nx, ny, nz, nxguard, nyguard, nzguard

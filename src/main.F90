@@ -98,11 +98,11 @@ PROGRAM main
   IF (fftw_with_mpi) THEN 
     CALL mpi_minimal_init_fftw
   ELSE
-#endif 
+#endif
     CALL mpi_minimal_init
 #if defined(FFTW)
   ENDIF 
-#endif 
+#endif
   IF (rank .EQ. 0) THEN
     write(0,*) "_________________________________________________________________"
     write(0,*) ""

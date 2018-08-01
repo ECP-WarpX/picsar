@@ -109,8 +109,8 @@ END MODULE matrix_coefficients
 !> Creation 2016
 ! ________________________________________________________________________________________
 SUBROUTINE point_to_matrix_block_p2f(ain, n1, n2, n3, bid1, bid2, mat_index)
-  USE PICSAR_precision
-  USE matrix_coefficients
+  USE matrix_coefficients, ONLY: cc_mat
+  USE picsar_precision, ONLY: cpx
   IMPLICIT NONE
   INTEGER(8), INTENT(IN) :: n1, n2, n3, mat_index, bid1, bid2
   COMPLEX(cpx), INTENT(IN), TARGET, DIMENSION(n1, n2, n3) :: ain
@@ -136,8 +136,8 @@ END SUBROUTINE point_to_matrix_block_p2f
 !> Creation 2016
 ! ________________________________________________________________________________________
 SUBROUTINE point_to_matrix_block(ain, n1, n2, n3, mat_index, bid1, bid2)
-  USE PICSAR_precision
-  USE matrix_coefficients
+  USE matrix_coefficients, ONLY: cc_mat
+  USE picsar_precision, ONLY: cpx
   IMPLICIT NONE
   INTEGER(8), INTENT(IN) :: n1, n2, n3, mat_index, bid1, bid2
   COMPLEX(cpx), INTENT(IN OUT), DIMENSION(n1, n2, n3) :: ain
@@ -160,8 +160,8 @@ END SUBROUTINE point_to_matrix_block
 !
 ! ________________________________________________________________________________________
 SUBROUTINE point_to_vec_block(ain, n1, n2, n3, mat_index, bid1, old)
-  USE PICSAR_precision
-  USE matrix_coefficients
+  USE matrix_coefficients, ONLY: vnew, vold
+  USE picsar_precision, ONLY: cpx
   IMPLICIT NONE
   INTEGER(8), INTENT(IN) :: n1, n2, n3, mat_index, bid1
   LOGICAL(8), INTENT(IN) :: old
@@ -188,8 +188,8 @@ END SUBROUTINE point_to_vec_block
 !
 ! ________________________________________________________________________________________
 SUBROUTINE modify_vec_block(value, mat_index, bid1, old)
-  USE PICSAR_precision
-  USE matrix_coefficients
+  USE matrix_coefficients, ONLY: vnew, vold
+  USE picsar_precision, ONLY: cpx
   IMPLICIT NONE
   INTEGER(8), INTENT(IN)   :: mat_index, bid1
   LOGICAL(8), INTENT(IN)   :: old
@@ -217,8 +217,8 @@ END SUBROUTINE modify_vec_block
 !
 ! ________________________________________________________________________________________
 SUBROUTINE point_to_vector_block_p2f(ain, n1, n2, n3, iv, mat_index, old, is_source)
-  USE PICSAR_precision
-  USE matrix_coefficients
+  USE matrix_coefficients, ONLY: vnew, vold
+  USE picsar_precision, ONLY: idp, lp, cpx
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN) :: n1, n2, n3, mat_index, iv
   LOGICAL(lp), INTENT(IN) :: old, is_source
@@ -254,7 +254,7 @@ END SUBROUTINE point_to_vector_block_p2f
 !
 ! ________________________________________________________________________________________
 SUBROUTINE nullify_vector_block(bid, mat_index)
-  USE matrix_coefficients
+  USE matrix_coefficients, ONLY: vnew, vold
   IMPLICIT NONE
   INTEGER(8), INTENT(IN) :: mat_index, bid
 
@@ -277,8 +277,9 @@ END SUBROUTINE nullify_vector_block
 !
 ! ________________________________________________________________________________________
 SUBROUTINE allocate_new_matrix_vector(nvar)
-  USE PICSAR_precision
-  USE matrix_coefficients
+  USE matrix_coefficients, ONLY: vnew, cc_mat, vold
+  USE matrix_data, ONLY: ns_max, nmatrixes
+  USE picsar_precision, ONLY: idp
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN) :: nvar
 
@@ -318,11 +319,11 @@ END SUBROUTINE allocate_new_matrix_vector
 !
 ! ________________________________________________________________________________________
 SUBROUTINE multiply_mat_vector(matrix_index)
-  USE PICSAR_precision
-  USE matrix_coefficients
+  USE matrix_coefficients, ONLY: vnew, cc_mat, block3d, vold
 #ifdef _OPENMP
   USE omp_lib
 #endif
+  USE picsar_precision, ONLY: idp
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN) :: matrix_index
   INTEGER(idp) :: irow, icol, nrow, ncol, nthreads_tot, nthreads_loop1,               &
@@ -395,11 +396,10 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE multiply_unit_blocks(anew, block1, n1, n2, n3, coeff1, nc1, nc2, nc3,      &
   nthreads)
-  USE PICSAR_precision
-  USE constants
 #ifdef _OPENMP
   USE omp_lib
 #endif
+  USE picsar_precision, ONLY: idp, cpx
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN) :: n1, n2, n3, nc1, nc2, nc3, nthreads
   COMPLEX(cpx), INTENT(IN OUT), DIMENSION(n1, n2, n3) :: anew, block1
