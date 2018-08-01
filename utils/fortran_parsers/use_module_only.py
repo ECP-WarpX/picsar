@@ -102,7 +102,7 @@ def get_module_variables(listlines, dict_modules, dict_used_modules):
         if current_module is not None:
             if re.match('^\s*contains\s*$', line, re.IGNORECASE):
                 known_external_modules.append(current_module)
-            
+
 def get_subroutines(listlines):
     """Return dictionary with text of the subroutines"""
     dict_subroutines = {}
@@ -163,7 +163,7 @@ def get_sub_module( dict_subs, dict_modules, dict_used_modules ):
         # If there is a call to c_int, explicitly import iso_c_binding
         if re.search('c_(int|ptr)', text, re.IGNORECASE):
             module_list.append('iso_c_binding')
-            dict_ifdef_modules[name]['iso_c_binding'] = None        
+            dict_ifdef_modules[name]['iso_c_binding'] = None
         # Also include all used modules
         module_set = set()
         for module in module_list:
@@ -239,7 +239,7 @@ def rewrite_subroutines( lines, dict_subs_modules, dict_ifdef_modules ):
                     if variable_list != []:
                         variables = ', '.join(variable_list)
                         new_line = 'USE %s, ONLY: %s\n' %(module, variables)
-                        final_line = format_less_than_75_characters( new_line, indent )
+                        final_line = format_less_than_85_characters( new_line, indent )
                         lines[i] += final_line
                 # Add ifdef if needed
                 if dict_ifdef_modules[current_subroutine][module] is not None:
@@ -265,15 +265,16 @@ def rewrite_subroutines( lines, dict_subs_modules, dict_ifdef_modules ):
         i += 1
 
 
-def format_less_than_75_characters( line, indent ):
+def format_less_than_85_characters( line, indent ):
     words = line.split(' ')
     total_line = ''
     new_line = indent
     for word in words:
-        new_line += word + ' '
-        if len(new_line) > 75:
-            total_line += new_line + ' &\n'
+        if len(new_line) + len(word) > 84:
+            n_spaces = 85 - len(new_line)
+            total_line += new_line + n_spaces*' ' + '&\n'
             new_line = indent + '  '
+        new_line += word + ' '
     total_line += new_line
     return total_line.rstrip(' ')
 
@@ -325,7 +326,7 @@ if __name__ == '__main__':
                                   'fftw_forward', 'fftw_backward']
     dict_modules['mpi_fftw3'] += ['fftw_alloc_complex', 'fftw_alloc_real',
                                   'fftw_measure', 'fftw_estimate',
-                                  'fftw_forward', 'fftw_backward', 
+                                  'fftw_forward', 'fftw_backward',
                                   'fftw_mpi_plan_dft_c2r_2d', 'fftw_mpi_plan_dft_c2r_3d',
                                   'fftw_mpi_plan_dft_r2c_2d', 'fftw_mpi_plan_dft_r2c_3d',
                                   'fftw_mpi_transposed_out', 'fftw_mpi_transposed_in',
