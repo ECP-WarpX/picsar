@@ -54,6 +54,7 @@ MODULE particle_boundary
   USE particles
   USE tiling
   USE mpi_derived_types
+  USE PICSAR_precision
   USE constants
   USE time_stat
   USE params
@@ -80,10 +81,12 @@ MODULE particle_boundary
   !> last modified: 09/12/2016
   ! ______________________________________________________________________________________
   SUBROUTINE particle_bcs
+    USE mpi
 #ifdef _OPENMP
     USE omp_lib
 #endif
-    USE time_stat
+    USE picsar_precision, ONLY: num
+    USE time_stat, ONLY: timestat_itstart, localtimes
     IMPLICIT NONE
 
     REAL(num) :: tdeb, tend
@@ -254,11 +257,13 @@ MODULE particle_boundary
   !> Creation 2015
   ! ______________________________________________________________________________________
   SUBROUTINE particle_bcs_2d
+    USE mpi
 #ifdef _OPENMP
     USE omp_lib
 #endif
-    USE time_stat
+    USE picsar_precision, ONLY: num
     USE tiling
+    USE time_stat, ONLY: localtimes
 
     IMPLICIT NONE
     REAL(num) :: tdeb, tend
@@ -723,11 +728,12 @@ MODULE particle_boundary
   ! Mathieu Lobet, 2016
   ! ______________________________________________________________________________________
   SUBROUTINE particle_bsc_openmp_reordering
-
+USE communications, ONLY: part_com_buffer
 #ifdef _OPENMP
-    USE omp_lib
+USE omp_lib
 #endif
-    USE communications
+USE picsar_precision, ONLY: idp, num
+
     IMPLICIT NONE
 
     INTEGER(idp) :: i, is, ix, iy, iz, indx, indy, indz, ipx, ipy, ipz
@@ -1032,8 +1038,9 @@ END SUBROUTINE particle_bsc_openmp_reordering
 !
 ! ________________________________________________________________________________________
 SUBROUTINE particle_bcs_mpi_blocking
+USE buff_exchange_part, ONLY: buff_part
 USE mpi
-USE buff_exchange_part
+USE picsar_precision, ONLY: idp, num, isp, lp
 INTEGER(isp) :: nvar! Simple implementation
 INTEGER(idp) :: nold, nnew
 INTEGER(isp), DIMENSION(-1:1, -1:1, -1:1) :: nptoexch
@@ -1297,7 +1304,7 @@ DO ispecies=1, nspecies!
             ibuff=sendbuf(xbd, ybd, zbd)%ibuff
             IF (ibuff+nvar .GT. sendbuf(xbd, ybd, zbd)%nbuff) THEN
                 nold = sendbuf(xbd, ybd, zbd)%nbuff
-                nnew = 2_idp*nvar*(sendbuf(xbd, ybd, zbd)%nbuff+1_idp) ! ARRAY LIST TYPE
+                nnew = 2_idp*(sendbuf(xbd, ybd, zbd)%nbuff+nvar+1_idp) ! ARRAY LIST TYPE
 				CALL resize_1D_array_real(sendbuf(xbd, ybd, zbd)%buff_arr, nold, nnew)
 				sendbuf(xbd, ybd, zbd)%nbuff=nnew
             ENDIF 
@@ -1379,8 +1386,9 @@ END SUBROUTINE particle_bcs_mpi_blocking
 !> Mathieu - 11/09/2016 - add use mpi for compatibility with my version of mpi
 ! ________________________________________________________________________________________
 SUBROUTINE particle_bcs_mpi_non_blocking
+USE buff_exchange_part, ONLY: buff_part
 USE mpi
-USE buff_exchange_part
+USE picsar_precision, ONLY: idp, num, isp, lp
 IMPLICIT NONE
 INTEGER(isp) :: nvar! Simple implementation
 INTEGER(isp), DIMENSION(-1:1, -1:1, -1:1) :: nptoexch
@@ -1650,7 +1658,7 @@ DO ispecies=1, nspecies!LOOP ON SPECIES
               ibuff=sendbuff(xbd, ybd, zbd)%ibuff
               IF (ibuff+nvar .GT. sendbuff(xbd, ybd, zbd)%nbuff) THEN
                 nold = sendbuff(xbd, ybd, zbd)%nbuff
-                nnew = 2_idp*nvar*(sendbuff(xbd, ybd, zbd)%nbuff+1_idp) ! ARRAY LIST TYPE
+                nnew = 2_idp*(sendbuff(xbd, ybd, zbd)%nbuff+nvar+1_idp) ! ARRAY LIST TYPE
 				CALL resize_1D_array_real(sendbuff(xbd, ybd, zbd)%buff_arr, nold, nnew)
 				sendbuff(xbd, ybd, zbd)%nbuff=nnew
               ENDIF 
@@ -1759,7 +1767,7 @@ DO iz = -1, 1
           recvbuff(ix, iy, iz)%buff_arr(ibuff),                 &
           recvbuff(ix, iy, iz)%buff_arr(ibuff+1),               & 
           recvbuff(ix, iy, iz)%buff_arr(ibuff+2),               &
-          recvbuff(ix, iy, iz)%buff_arr(ibuff+2),               & 
+          recvbuff(ix, iy, iz)%buff_arr(ibuff+3),               & 
           recvbuff(ix, iy, iz)%buff_arr(ibuff+4),               &
           recvbuff(ix, iy, iz)%buff_arr(ibuff+5),               & 
           recvbuff(ix, iy, iz)%buff_arr(ibuff+6),               &
@@ -2097,12 +2105,13 @@ END SUBROUTINE particle_bcs_mpi_non_blocking_2d
 !
 ! ________________________________________________________________________________________
 SUBROUTINE particle_bcs_tiles_and_mpi_3d
+USE communications, ONLY: mpi_tile_buffer
+USE mpi
 #ifdef _OPENMP
 USE omp_lib
 #endif
-USE communications
-USE params
-USE mpi
+USE params, ONLY: resize_factor, mpi_buf_size
+USE picsar_precision, ONLY: idp, num, isp
 IMPLICIT NONE
 INTEGER(idp)                    :: is, ix, iy, iz
 INTEGER(idp)                    :: i, i2, i3

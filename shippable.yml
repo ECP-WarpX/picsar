@@ -59,3 +59,5 @@ build:
     - cp -p ../../../examples/example_scripts_python/test_Langmuir_wave_3d.py .
     - export OMP_NUM_THREADS=2
     - python test_Langmuir_wave_3d.py
+    - cd ../test_radiation_reaction
+    - py.test 

@@ -31,15 +31,17 @@
 !> Creation 2017
 ! ________________________________________________________________________________________
 SUBROUTINE compute_kin_energy
-  USE fields
-  USE shared_data
-  USE params
-  USE particles
-  USE time_stat
+  USE grid_tilemodule, ONLY: grid_tile, aofgrid_tiles
   USE mpi
-#if defined(PROFILING) && PROFILING==3
-  USE ITT_SDE_FORTRAN
-#endif
+  USE params, ONLY: fieldgathe, nc, lvec_fieldgathe
+  USE particle_properties, ONLY: nspecies
+  USE particle_speciesmodule, ONLY: particle_species, kin_energy_total,              &
+    kin_energy_mpi
+  USE particle_tilemodule, ONLY: particle_tile
+  USE particles, ONLY: species_parray
+  USE picsar_precision, ONLY: idp, num, isp
+  USE shared_data, ONLY: errcode, dx, comm, dy, dz
+  USE tile_params, ONLY: ntilez, ntilex, ntiley
   IMPLICIT NONE
   INTEGER(idp)             :: ispecies, ix, iy, iz, count
   INTEGER(idp)             :: jmin, jmax, kmin, kmax, lmin, lmax
@@ -105,7 +107,8 @@ SUBROUTINE compute_kin_energy
 END SUBROUTINE compute_kin_energy
 
 SUBROUTINE compute_kin_energy_vector(np, gaminv, mass, kin_e, ppid)
-  USE constants
+  USE constants, ONLY: clight
+  USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN)   :: np
   REAL(num), INTENT(IN)   :: gaminv(np), mass, ppid
@@ -138,14 +141,3 @@ SUBROUTINE compute_kin_energy_vector(np, gaminv, mass, kin_e, ppid)
 #endif
 
 END SUBROUTINE compute_kin_energy_vector
-
-
-
-
-
-
-
-
-
-
-

@@ -32,9 +32,17 @@ parser.add_argument( '--full_pxr', choices=['True', 'False'], default='False',
 args = parser.parse_args()
    
 
+full_pxr_add = ''
+parser_file = 'forthon_parser.py'
 if(args.full_pxr=='True'):
-    fftw_lib = '/usr/lib/x86_64-linux-gnu'
-    p3dfft_lib = ''   #does not work for now
+    fftw_lib = ' /home/kallala/develop/install_fftw/lib '
+    p3dfft_lib = ' /home/kallala/develop/install_p3dfft/lib   '
+    fftw_link = ' -I /home/kallala/develop/install_fftw/include '
+    p3dfft_link = '-I /home/kallala/develop/install_p3dfft/include  '
+    full_pxr_add = ' -D FFTW=1 -D P3DFFT=1'
+    full_pxr_add += fftw_link
+    full_pxr_add += ' ' + p3dfft_link
+    parser_file = 'forthon_parser_full_pxr.py'
     
 # Check if we are on Edison or Cori, at NERSC
 if host.startswith('edison') or host.startswith('cori'):
@@ -45,25 +53,23 @@ if host.startswith('edison') or host.startswith('cori'):
         fcomp = 'gfortran'
         libs = '-lgomp'
         if args.architecture == 'knl':
-            fargs = '"-O3 -fopenmp -march=knl -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0"'
+            fargs = '-O3 -fopenmp -march=knl -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0'
         else:
-            fargs = '"-O3 -fopenmp -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0"'
+            fargs = '-O3 -fopenmp -D FFTW=1 -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0'
     elif args.compiler == 'intel':
         fcomp = 'intel'
         libs = ''
         if args.architecture == 'knl':
-            fargs = '"-O3 -qopenmp  -xMIC-AVX512"'
+             fargs = '-O3 -qopenmp  -xMIC-AVX512'
         else:
-            fargs = '"-O3 -qopenmp -xCORE-AVX2 -align array64byte"'
+             fargs = '-O3 -qopenmp -xCORE-AVX2 -align array64byte'
+
     parsed_mpi = True
 
 else:
     comp = 'mpif90'
     fcomp = 'gfortran'
-    if(args.full_pxr=='False'):
-        fargs = '"-O3 -fopenmp -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0"'
-    else:
-        fargs = '"-O3 -fopenmp -D FFTW=1 -I /usr/include -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0  "'
+    fargs = '-O3 -fopenmp  -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0  '
     # Parse the result of mpif90 -show
     parsed_mpi = True   # By default ; errors modify this flag
     try:
@@ -93,10 +99,13 @@ else:
             libs += ' -lgomp '
             print('MPI flags: %s' %libs)
 
+fargs = fargs + full_pxr_add
+fargs = ' " '+fargs+' " '
 
 if(args.full_pxr=='True'):
     libdir_list.append(fftw_lib)
-    libs += ' -lfftw3  -lfftw3_mpi '
+    libdir_list.append(p3dfft_lib)
+    libs += ' -lfftw3  -lfftw3_mpi -lfftw3_omp -lp3dfft '
 
 # Read the file Makefile_Forthon.in
 with open('Makefile_Forthon.in') as f:
@@ -111,6 +120,8 @@ makefile_text = re.sub('\nLIBS=.*', '\nLIBS=%s' %libs, makefile_text)
 makefile_text = re.sub('\nFCOMPEXEC=.*', '\nFCOMPEXEC=%s' %comp, makefile_text)
 makefile_text = re.sub('\nFCOMP=.*', '\nFCOMP=%s' %fcomp, makefile_text)
 makefile_text = re.sub('\nFARGS=.*', '\nFARGS=%s' %fargs, makefile_text)
+makefile_text = re.sub('\nPARSERFILE=.*', '\nPARSERFILE=%s' %parser_file, makefile_text)
+
 
 # Write the new file Makefile_Forthon
 with open('Makefile_Forthon', 'w') as f:

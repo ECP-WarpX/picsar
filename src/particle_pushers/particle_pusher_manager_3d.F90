@@ -48,11 +48,13 @@
 !> Revision 10.06.2015
 ! ________________________________________________________________________________________
 SUBROUTINE field_gathering_plus_particle_pusher
-  USE fields
-  USE shared_data
-  USE params
-  USE particles
-  USE time_stat
+  USE fields, ONLY: bx_p, nyjguards, l_lower_order_in_v, ez_p, nox, by_p, noy, noz,  &
+    bz_p, nxjguards, nzjguards, nzguards, nxguards, nyguards, ey_p, ex_p
+  USE mpi
+  USE params, ONLY: fg_p_pp_separated, dt
+  USE particle_properties, ONLY: nspecies, particle_pusher
+  USE picsar_precision, ONLY: idp
+  USE shared_data, ONLY: nz, ny, nx, dx, c_dim, dy, dz
   IMPLICIT NONE
 
 #if defined(DEBUG)
@@ -137,14 +139,19 @@ END SUBROUTINE field_gathering_plus_particle_pusher
 SUBROUTINE field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg,     &
   nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, &
   nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in)
-  USE particles
-  USE constants
+  USE grid_tilemodule, ONLY: aofgrid_tiles
+  USE mpi
+  USE output_data, ONLY: pushtime
+  USE particle_properties, ONLY: ezoldpid, nspecies, bzoldpid, bxoldpid,             &
+    particle_pusher, byoldpid, eyoldpid, exoldpid
+  USE particle_speciesmodule, ONLY: particle_species
+  USE particle_tilemodule, ONLY: particle_tile
+  USE particles, ONLY: species_parray
+  USE picsar_precision, ONLY: idp, num, lp
+  USE tile_params, ONLY: ntilez, ntilex, ntiley
   USE tiling
-  USE time_stat
+  USE time_stat, ONLY: timestat_itstart, localtimes
   ! Vtune/SDE profiling
-#if defined(PROFILING) && PROFILING==3
-  USE ITT_SDE_FORTRAN
-#endif
   IMPLICIT NONE
 
   ! ___ Parameter declaration __________________________________________
@@ -193,7 +200,8 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg
   !$OMP ntiley, ntilez, nspecies, species_parray, aofgrid_tiles, nxjguard, nyjguard,  &
   !$OMP nzjguard, nxguard, nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg, dxx, dyy,  &
   !$OMP dzz, dtt, noxx, noyy, nozz, c_dim, l_lower_order_in_v_in, particle_pusher,    &
-  !$OMP fieldgathe, LVEC_fieldgathe) PRIVATE(ix, iy, iz, ispecies, curr, curr_tile,   &
+  !$OMP fieldgathe, LVEC_fieldgathe, exoldpid, eyoldpid, ezoldpid, bxoldpid, 	      &
+  !$OMP byoldpid, bzoldpid) PRIVATE(ix, iy, iz, ispecies, curr, curr_tile,   	      &
   !$OMP count, jmin, jmax, kmin, kmax, lmin, lmax, nxc, nyc, nzc, ipmin,              &
   !$OMP extile, eytile, eztile, bxtile, bytile, bztile,                               &
   !$OMP nxt, nyt, nzt, ipmax, ip, nxjg, nyjg, nzjg, isgathered, nxt_o, nyt_o, nzt_o)
@@ -255,7 +263,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg
           nxt_o=nxt
           nyt_o=nyt
           nzt_o=nzt
-          ! - Copy values of field arrays in temporary grid tile arrays 
+          ! - Copy values of field arrays in temporary grid tile arrays
           extile=exg(jmin:jmax, kmin:kmax, lmin:lmax)
           eytile=eyg(jmin:jmax, kmin:kmax, lmin:lmax)
           eztile=ezg(jmin:jmax, kmin:kmax, lmin:lmax)
@@ -310,7 +318,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg
             END SELECT
 
             SELECT CASE (particle_pusher)
-              !! Vay pusher -- Full push
+            !! Vay pusher -- Full push
             CASE (1_idp)
               CALL pxr_ebcancelpush3d(count, curr_tile%part_ux, curr_tile%part_uy,    &
               curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
@@ -318,11 +326,48 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg
               curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt,      &
               0_idp)
 
-              !! Boris pusher -- Full push
+            !! Boris pusher with RR (S09 model, according to VRANIC2016,
+            !! https://doi.org/10.1016/j.cpc.2016.04.002)-- Full push
+	        CASE (2_idp)
+              CALL pxr_boris_push_rr_S09_u_3d(count, curr_tile%part_ux,               &
+              curr_tile%part_uy,                                                      &
+              curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
+              curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
+              curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt)
+
+	        !! Boris pusher with RR (B08 model, according to VRANIC2016,
+	        !! https://doi.org/10.1016/j.cpc.2016.04.002)-- Full push
+	        CASE (3_idp)
+              CALL pxr_boris_push_rr_B08_u_3d(count, curr_tile%part_ux,               &
+              curr_tile%part_uy,                                                      &
+              curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
+              curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
+              curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt)
+
+            !! Boris pusher with RR (LL model, according to VRANIC2016,
+            !! https://doi.org/10.1016/j.cpc.2016.04.002)-- Full push
+	        CASE (4_idp)
+              CALL pxr_boris_push_rr_LL_u_3d(count, curr_tile%part_ux, 		      &
+              curr_tile%part_uy, curr_tile%part_uz, curr_tile%part_gaminv, 	      &
+              curr_tile%pid(1:count,exoldpid), curr_tile%pid(1:count,eyoldpid),   &
+  	          curr_tile%pid(1:count,ezoldpid), curr_tile%pid(1:count,bxoldpid),	  &
+	          curr_tile%pid(1:count,byoldpid), curr_tile%pid(1:count,bzoldpid),   &
+              curr_tile%part_ex, curr_tile%part_ey, curr_tile%part_ez, 		      &
+              curr_tile%part_bx, curr_tile%part_by, curr_tile%part_bz, 		      &
+              curr%charge, curr%mass, dtt)
+
+			  ! Store fields on particle position for next step
+			  ! to compute dE/dt and dB/dt terms in LL RR force
+  	          curr_tile%pid(1:count,exoldpid) = curr_tile%part_ex
+	          curr_tile%pid(1:count,eyoldpid) = curr_tile%part_ey
+	          curr_tile%pid(1:count,ezoldpid) = curr_tile%part_ez
+	          curr_tile%pid(1:count,bxoldpid) = curr_tile%part_bx
+	          curr_tile%pid(1:count,byoldpid) = curr_tile%part_by
+	          curr_tile%pid(1:count,bzoldpid) = curr_tile%part_bz
+
+            !! Boris pusher -- Full push
             CASE DEFAULT
-
               !! Push momentum using the Boris method in a single subroutine
-
               CALL pxr_boris_push_u_3d(count, curr_tile%part_ux, curr_tile%part_uy,   &
               curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
               curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
@@ -337,11 +382,11 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg
       END DO
     END DO
   END DO! END LOOP ON TILES
-  !$OMP END DO 
-  IF (ALLOCATED(extile)) THEN ! Deallocation of tile arrays 
+  !$OMP END DO
+  IF (ALLOCATED(extile)) THEN ! Deallocation of tile arrays
     DEALLOCATE(extile,eytile,eztile,bxtile,bytile,bztile)
   ENDIF
-  !$OMP END PARALLEL 
+  !$OMP END PARALLEL
 
 #if PROFILING==3
   CALL stop_collection()
@@ -384,15 +429,19 @@ END SUBROUTINE field_gathering_plus_particle_pusher_sub
 SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg, eyg, ezg, bxg,    &
   byg, bzg, nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard,   &
   noxx, noyy, nozz, dxx, dyy, dzz, dtt, l_lower_order_in_v_in)
-  USE particles
-  USE constants
+  USE grid_tilemodule, ONLY: aofgrid_tiles
+  USE mpi
+  USE output_data, ONLY: pushtime
+  USE params, ONLY: fieldgathe, lvec_fieldgathe, it
+  USE particle_properties, ONLY: nspecies
+  USE particle_speciesmodule, ONLY: particle_species
+  USE particle_tilemodule, ONLY: particle_tile
+  USE particles, ONLY: species_parray
+  USE picsar_precision, ONLY: idp, num, lp
+  USE tile_params, ONLY: ntilez, ntilex, ntiley
   USE tiling
-  USE time_stat
-  USE params
+  USE time_stat, ONLY: timestat_itstart, localtimes
   ! Vtune/SDE profiling
-#if defined(PROFILING) && PROFILING==3
-  USE ITT_SDE_FORTRAN
-#endif
   IMPLICIT NONE
 
   ! ___ Parameter declaration __________________________________________
@@ -503,7 +552,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg, eyg, ezg, bx
           nxt_o=nxt
           nyt_o=nyt
           nzt_o=nzt
-          ! - Copy values of field arrays in temporary grid tile arrays 
+          ! - Copy values of field arrays in temporary grid tile arrays
           extile=exg(jmin:jmax, kmin:kmax, lmin:lmax)
           eytile=eyg(jmin:jmax, kmin:kmax, lmin:lmax)
           eztile=ezg(jmin:jmax, kmin:kmax, lmin:lmax)
@@ -577,8 +626,8 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg, eyg, ezg, bx
       END DO
     END DO
   END DO! END LOOP ON TILES
-  !$OMP END DO 
-  IF (ALLOCATED(extile)) THEN ! Deallocation of tile arrays 
+  !$OMP END DO
+  IF (ALLOCATED(extile)) THEN ! Deallocation of tile arrays
     DEALLOCATE(extile,eytile,eztile,bxtile,bytile,bztile)
   ENDIF
   !$OMP END PARALLEL
@@ -620,14 +669,18 @@ END SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub
 SUBROUTINE particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxguard,  &
   nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt, &
   l_lower_order_in_v_in)
-  USE particles
-  USE constants
+  USE grid_tilemodule, ONLY: aofgrid_tiles
+  USE mpi
+  USE output_data, ONLY: pushtime
+  USE particle_properties, ONLY: nspecies, particle_pusher
+  USE particle_speciesmodule, ONLY: particle_species
+  USE particle_tilemodule, ONLY: particle_tile
+  USE particles, ONLY: species_parray
+  USE picsar_precision, ONLY: idp, num, lp
+  USE tile_params, ONLY: ntilez, ntilex, ntiley
   USE tiling
-  USE time_stat
+  USE time_stat, ONLY: timestat_itstart, localtimes
   ! Vtune/SDE profiling
-#if defined(PROFILING) && PROFILING==3
-  USE ITT_SDE_FORTRAN
-#endif
   IMPLICIT NONE
   ! ___ Parameter declaration __________________________________________
   INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz, nxguard, nyguard, nzguard, nxjguard,     &
@@ -668,8 +721,6 @@ SUBROUTINE particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
   CALL start_vtune_collection()
 #endif
 
-#if defined(DEBUG)
-#endif
 
   !$OMP PARALLEL DEFAULT(NONE) SHARED(ntilex,                                         &
   !$OMP ntiley, ntilez, nspecies, species_parray, aofgrid_tiles, nxjguard, nyjguard,  &
@@ -737,7 +788,7 @@ SUBROUTINE particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
           nxt_o=nxt
           nyt_o=nyt
           nzt_o=nzt
-          ! - Copy values of field arrays in temporary grid tile arrays 
+          ! - Copy values of field arrays in temporary grid tile arrays
           extile=exg(jmin:jmax, kmin:kmax, lmin:lmax)
           eytile=eyg(jmin:jmax, kmin:kmax, lmin:lmax)
           eztile=ezg(jmin:jmax, kmin:kmax, lmin:lmax)
@@ -760,11 +811,35 @@ SUBROUTINE particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
               curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
               curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt,      &
               0_idp)
+
+              !! Boris pusher with RR (S09 model, according to VRANIC2016, https://doi.org/10.1016/j.cpc.2016.04.002)-- Full push
+	    CASE (2_idp)
+              CALL pxr_boris_push_rr_S09_u_3d(count, curr_tile%part_ux, curr_tile%part_uy,&
+              curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
+              curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
+              curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt)
+
+              !! Boris pusher with RR (B08 model, according to VRANIC2016, https://doi.org/10.1016/j.cpc.2016.04.002)model-- Full push
+	    CASE (3_idp)
+              CALL pxr_boris_push_rr_B08_u_3d(count, curr_tile%part_ux, curr_tile%part_uy,&
+              curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
+              curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
+              curr_tile%part_by, curr_tile%part_bz, curr%charge, curr%mass, dtt)
+	      !! Boris pusher with RR (LL model, according to VRANIC2016, https://doi.org/10.1016/j.cpc.2016.04.002)-- Full push
+	    CASE (4_idp)
+              CALL pxr_boris_push_rr_LL_u_3d(count, curr_tile%part_ux, 		      &
+              curr_tile%part_uy, curr_tile%part_uz, curr_tile%part_gaminv, 	      &
+              curr_tile%pid(1:count,4), curr_tile%pid(1:count,5),		      &
+  	      curr_tile%pid(1:count,6), curr_tile%pid(1:count,7),		      &
+	      curr_tile%pid(1:count,8), curr_tile%pid(1:count,9),                     &
+              curr_tile%part_ex, curr_tile%part_ey, curr_tile%part_ez, 		      &
+              curr_tile%part_bx, curr_tile%part_by, curr_tile%part_bz, 		      &
+              curr%charge, curr%mass, dtt)
+
               !! Boris pusher -- Full push
             CASE DEFAULT
 
               !! Push momentum using the Boris method in a single subroutine
-
               CALL pxr_boris_push_u_3d(count, curr_tile%part_ux, curr_tile%part_uy,   &
               curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%part_ex,            &
               curr_tile%part_ey, curr_tile%part_ez, curr_tile%part_bx,                &
@@ -779,8 +854,8 @@ SUBROUTINE particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
       END DO
     END DO
   END DO! END LOOP ON TILES
-  !$OMP END DO 
-  IF (ALLOCATED(extile)) THEN ! Deallocation of tile arrays 
+  !$OMP END DO
+  IF (ALLOCATED(extile)) THEN ! Deallocation of tile arrays
     DEALLOCATE(extile,eytile,eztile,bxtile,bytile,bztile)
   ENDIF
   !$OMP END PARALLEL
@@ -815,9 +890,10 @@ END SUBROUTINE particle_pusher_sub
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE pxrpush_particles_part1
-  USE fields
-  USE shared_data
-  USE params
+  USE fields, ONLY: bx_p, nyjguards, l_lower_order_in_v, ez_p, nox, by_p, noy, noz,  &
+    bz_p, nxjguards, nzjguards, nzguards, nxguards, nyguards, ey_p, ex_p, l4symtry
+  USE params, ONLY: fieldgathe, dt, lvec_fieldgathe
+  USE shared_data, ONLY: nz, ny, nx, dx, dy, dz
   IMPLICIT NONE
 
 #if defined(DEBUG)
@@ -860,8 +936,13 @@ END SUBROUTINE pxrpush_particles_part1
 SUBROUTINE pxrpush_particles_part1_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz,   &
   nxguard, nyguard, nzguard, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy,&
   dzz, dtt, l4symtry_in, l_lower_order_in_v_in, lvect, field_gathe_algo)
-  USE particles
-  USE constants
+  USE grid_tilemodule, ONLY: aofgrid_tiles
+  USE particle_properties, ONLY: nspecies, particle_pusher
+  USE particle_speciesmodule, ONLY: particle_species
+  USE particle_tilemodule, ONLY: particle_tile
+  USE particles, ONLY: species_parray
+  USE picsar_precision, ONLY: idp, num, lp
+  USE tile_params, ONLY: ntilez, ntilex, ntiley
   USE tiling
   IMPLICIT NONE
 
@@ -907,7 +988,7 @@ SUBROUTINE pxrpush_particles_part1_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, n
   nxt_o=0_idp
   nyt_o=0_idp
   nzt_o=0_idp
-  !$OMP DO COLLAPSE(3) SCHEDULE(runtime) 
+  !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
   DO iz=1, ntilez! LOOP ON TILES
     DO iy=1, ntiley
       DO ix=1, ntilex
@@ -962,7 +1043,7 @@ SUBROUTINE pxrpush_particles_part1_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, n
           nxt_o=nxt
           nyt_o=nyt
           nzt_o=nzt
-          ! - Copy values of field arrays in temporary grid tile arrays 
+          ! - Copy values of field arrays in temporary grid tile arrays
           extile=exg(jmin:jmax, kmin:kmax, lmin:lmax)
           eytile=eyg(jmin:jmax, kmin:kmax, lmin:lmax)
           eztile=ezg(jmin:jmax, kmin:kmax, lmin:lmax)
@@ -1046,11 +1127,11 @@ SUBROUTINE pxrpush_particles_part1_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, n
       END DO
     END DO
   END DO! END LOOP ON TILES
-  !$OMP END DO 
-  IF (ALLOCATED(extile)) THEN ! Deallocation of tile arrays 
+  !$OMP END DO
+  IF (ALLOCATED(extile)) THEN ! Deallocation of tile arrays
     DEALLOCATE(extile,eytile,eztile,bxtile,bytile,bztile)
   ENDIF
-  !$OMP END PARALLEL 
+  !$OMP END PARALLEL
 
 END SUBROUTINE pxrpush_particles_part1_sub
 
@@ -1066,11 +1147,17 @@ END SUBROUTINE pxrpush_particles_part1_sub
 !> Revision 06.10.2016
 ! ________________________________________________________________________________________
 SUBROUTINE pxrpush_particles_part2
-  USE particles
-  USE constants
-  USE fields
-  USE params
-  USE shared_data
+  USE fields, ONLY: nyjguards, ez, nxjguards, nzjguards, bz, ex, bx, by, ey
+  USE mpi
+  USE output_data, ONLY: pushtime
+  USE params, ONLY: dt
+  USE particle_properties, ONLY: nspecies, particle_pusher
+  USE particle_speciesmodule, ONLY: particle_species
+  USE particle_tilemodule, ONLY: particle_tile
+  USE particles, ONLY: species_parray
+  USE picsar_precision, ONLY: idp, num
+  USE shared_data, ONLY: y, z, dx, c_dim, x, dy, dz
+  USE tile_params, ONLY: ntilez, ntilex, ntiley
   USE tiling
   IMPLICIT NONE
   INTEGER(idp) :: ispecies, ix, iy, iz, count
@@ -1191,10 +1278,11 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np, xp, yp, zp, uxp, uyp, 
   gaminv, ex, ey, ez, bx, by, bz, xmin, ymin, zmin, dx, dy, dz, dtt, nx, ny, nz,        &
   nxguard, nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg, q, m, lvect,                 &
   l_lower_order_in_v)
+  USE constants, ONLY: clight
   USE omp_lib
-  USE constants
-  USE params
-  USE particles
+  USE params, ONLY: dt
+  USE particle_properties, ONLY: particle_pusher
+  USE picsar_precision, ONLY: idp, num, isp, lp
 
   IMPLICIT NONE
 
@@ -1425,10 +1513,11 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np, xp, yp, zp, uxp, uyp, 
   gaminv, ex, ey, ez, bx, by, bz, xmin, ymin, zmin, dx, dy, dz, dtt, nx, ny, nz,        &
   nxguard, nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg, q, m, lvect,                 &
   l_lower_order_in_v)
+  USE constants, ONLY: clight
   USE omp_lib
-  USE constants
-  USE params
-  USE particles
+  USE params, ONLY: dt
+  USE particle_properties, ONLY: particle_pusher
+  USE picsar_precision, ONLY: idp, num, isp, lp
   IMPLICIT NONE
   ! Input/Output parameters
   INTEGER(idp), INTENT(IN)                :: np, nx, ny, nz, nxguard, nyguard,        &
@@ -1722,10 +1811,11 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np, xp, yp, zp, uxp, uyp, 
   gaminv, ex, ey, ez, bx, by, bz, xmin, ymin, zmin, dx, dy, dz, dtt, nx, ny, nz,        &
   nxguard, nyguard, nzguard, exg, eyg, ezg, bxg, byg, bzg, q, m, lvect,                 &
   l_lower_order_in_v)
+  USE constants, ONLY: clight
   USE omp_lib
-  USE constants
-  USE params
-  USE particles
+  USE params, ONLY: dt
+  USE particle_properties, ONLY: particle_pusher
+  USE picsar_precision, ONLY: idp, num, isp, lp
   IMPLICIT NONE
   ! Input/Output parameters
   INTEGER(idp), INTENT(IN)                :: np, nx, ny, nz, nxguard, nyguard,        &
@@ -2091,4 +2181,3 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np, xp, yp, zp, uxp, uyp, 
 
   RETURN
 END SUBROUTINE field_gathering_plus_particle_pusher_3_3_3
-

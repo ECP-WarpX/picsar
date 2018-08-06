@@ -22,16 +22,20 @@ MODULE link_external_tools
   SUBROUTINE init_params_external(n1,n2,n3,d1,d2,d3,dtt,ng1,ng2,ng3,nor1,nor2,nor3,is_spec,&
       field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11, cdim) &
       BIND(C,name='init_params_picsar') 
-    USE params
-    USE shared_data
-    USE constants
-    USE picsar_precision
-    USE fields
     USE fastfft
+    USE fields, ONLY: ezf, ez_r, ez, jx_r, jxf, nordery, ey_r, rhooldf, l_staggered, &
+      ex_r, rhof, bx_r, jz, by_r, bxf, l_spectral, zcoeffs, rho_r, xcoeffs, bz,      &
+      nzguards, nxguards, norderz, bz_r, nyguards, jzf, jy, jx, ex, bx, jz_r, jy_r,  &
+      by, ycoeffs, eyf, rhoold_r, jyf, norderx, byf, bzf, exf, ey
 #if defined(FFTW)
     USE fourier_psaotd
-    USE fourier
-#endif 
+#endif
+    USE iso_c_binding
+    USE params, ONLY: dt
+    USE picsar_precision, ONLY: idp, isp, lp
+    USE shared_data, ONLY: nz, ny, fftw_with_mpi, nx, nkx, p3dfft_stride, nky,       &
+      p3dfft_flag, fftw_threads_ok, dx, c_dim, nkz, fftw_mpi_transpose, dy, rank,    &
+      fftw_hybrid, dz
     IMPLICIT NONE 
     INTEGER(C_INT) , INTENT(IN) :: n1,n2,n3,ng1,ng2,ng3,nor1,nor2,nor3,cdim
     REAL(C_DOUBLE) , INTENT(INOUT), TARGET , DIMENSION(-ng3:n3+ng3,-ng2:n2+ng2,-ng1:n1+ng1) :: &
@@ -129,8 +133,8 @@ MODULE link_external_tools
 
   SUBROUTINE evec3d_push_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, dt, dtsdx,  &
   dtsdy, dtsdz, nx, ny, nz, norderx, nordery, norderz, nxguard, nyguard,nzguard)
-  USE constants
   USE omp_lib
+  USE picsar_precision, ONLY: idp, num
   INTEGER(idp), INTENT(IN) :: nx, ny, nz, nxguard, nyguard, nzguard
   INTEGER(idp), INTENT(IN) :: norderx, nordery, norderz
   REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
@@ -210,7 +214,7 @@ END SUBROUTINE evec3d_push_norder
 
 SUBROUTINE bvec3d_push_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx,  &
   ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard)
-  USE constants
+  USE picsar_precision, ONLY: idp, num
   INTEGER(idp)          :: nx, ny, nz, nxguard, nyguard, nzguard,           &
   norderx, nordery, norderz
   REAL(num), INTENT(IN OUT), dimension(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
@@ -284,11 +288,10 @@ SUBROUTINE bvec3d_push_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx,  
 END SUBROUTINE bvec3d_push_norder
 
 SUBROUTINE solve_maxwell_fdtd_pxr() bind(C,name='solve_maxwell_fdtd_pxr')
-  USE params
-  USE shared_data
-  USE constants
-  USE picsar_precision
-  USE fields
+  USE fields, ONLY: ez, nordery, jz, zcoeffs, xcoeffs, bz, nzguards, nxguards,       &
+    norderz, nyguards, jy, jx, ex, bx, by, ycoeffs, norderx, ey
+  USE params, ONLY: dt
+  USE shared_data, ONLY: nz, ny, nx
 
   CALL evec3d_push_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,dt,xcoeffs,ycoeffs,zcoeffs,&
         nx, ny, nz, norderx, nordery, norderz, nxguards,nyguards,nzguards)

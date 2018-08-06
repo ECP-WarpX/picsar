@@ -42,11 +42,13 @@
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE push_bfield
-  USE constants
-  USE params
-  USE fields
-  USE shared_data
-  USE time_stat
+  USE fields, ONLY: ez, nordery, nys, zcoeffs, l_nodalgrid, xcoeffs, nxs, bz,        &
+    nzguards, nxguards, norderz, nyguards, ex, bx, by, ycoeffs, nzs, norderx, ey
+  USE mpi
+  USE params, ONLY: dt, it
+  USE picsar_precision, ONLY: num
+  USE shared_data, ONLY: nz, ny, nx, dx, dy, dz
+  USE time_stat, ONLY: timestat_itstart, localtimes
   IMPLICIT NONE
 
   REAL(num) :: tmptime
@@ -57,9 +59,18 @@ SUBROUTINE push_bfield
 
   ! Yee scheme at order 2
   IF ((norderx.eq.2).AND.(nordery.eq.2).AND.(norderz.eq.2)) then
-    CALL pxrpush_em3d_bvec(ex, ey, ez, bx, by, bz, 0.5_num*dt/dx, 0.5_num*dt/dy,      &
-    0.5_num*dt/dz, nx, ny, nz, nxguards, nyguards, nzguards, nxs, nys, nzs,           &
-    l_nodalgrid)
+    CALL pxrpush_em3d_bvec( &
+         (/-nxs, -nys, -nzs/), (/nx+nxs, ny+nys, nz+nzs/), &
+         (/-nxs, -nys, -nzs/), (/nx+nxs, ny+nys, nz+nzs/), &
+         (/-nxs, -nys, -nzs/), (/nx+nxs, ny+nys, nz+nzs/), &
+         ex, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         ey, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         ez, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         bx, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         by, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         bz, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         0.5_num*dt/dx, 0.5_num*dt/dy, 0.5_num*dt/dz)
+
     ! Yee scheme arbitrary order
   ELSE
     CALL pxrpush_em3d_bvec_norder(ex, ey, ez, bx, by, bz, 0.5_num*dt/dx*xcoeffs,      &
@@ -83,11 +94,13 @@ END SUBROUTINE push_bfield
 !> Creation 2017
 ! ________________________________________________________________________________________
 SUBROUTINE compute_em_energy
-  USE shared_data
-  USE constants
-  USE fields
-  USE params
+  USE constants, ONLY: mu0, eps0
+  USE fields, ONLY: ez, magneto_energy_total, electromagn_energy_mpi,                &
+    magnetic_energy_mpi, electro_energy_mpi, bz, ex, bx, by,                         &
+    electromagn_energy_total, electro_energy_total, ey
   USE mpi
+  USE picsar_precision, ONLY: num, isp
+  USE shared_data, ONLY: nz, ny, errcode, nx, dx, comm, dy, dz
   IMPLICIT NONE
 
   electro_energy_mpi = 0.0_num
@@ -263,11 +276,15 @@ END subroutine merge_fields
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE push_efield
-  USE constants
-  USE params
-  USE fields
-  USE shared_data
-  USE time_stat
+  USE constants, ONLY: mu0, clight
+  USE fields, ONLY: ez, nordery, jz, nys, zcoeffs, l_nodalgrid, xcoeffs, nxs, bz,    &
+    nzguards, nxguards, norderz, nyguards, jy, jx, ex, bx, by, ycoeffs, nzs,         &
+    norderx, ey
+  USE mpi
+  USE params, ONLY: dt, it
+  USE picsar_precision, ONLY: num
+  USE shared_data, ONLY: nz, ny, nx, dx, dy, dz
+  USE time_stat, ONLY: timestat_itstart, localtimes
   IMPLICIT NONE
 
   REAL(num) :: tmptime
@@ -277,9 +294,21 @@ SUBROUTINE push_efield
 
   ! Yee scheme at order 2
   IF ((norderx.eq.2).AND.(nordery.eq.2).AND.(norderz.eq.2)) then
-    CALL pxrpush_em3d_evec(ex, ey, ez, bx, by, bz, jx, jy, jz, clight**2*mu0*dt,      &
-    clight**2*dt/dx, clight**2*dt/dy, clight**2*dt/dz, nx, ny, nz, nxguards,          &
-    nyguards, nzguards, nxs, nys, nzs, l_nodalgrid)
+
+    CALL pxrpush_em3d_evec( &
+         (/-nxs, -nys, -nzs/), (/nx+nxs, ny+nys, nz+nzs/), &
+         (/-nxs, -nys, -nzs/), (/nx+nxs, ny+nys, nz+nzs/), &
+         (/-nxs, -nys, -nzs/), (/nx+nxs, ny+nys, nz+nzs/), &
+         ex, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         ey, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         ez, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         bx, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         by, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         bz, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         jx, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         jy, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         jz, (/-nxguards, -nyguards, -nzguards/), (/nx+nxguards, ny+nyguards, nz+nzguards/), &
+         clight**2*mu0*dt, clight**2*dt/dx , clight**2*dt/dy, clight**2*dt/dz)
 
   ELSE
     ! Yee scheme arbitrary order
@@ -306,14 +335,18 @@ END SUBROUTINE push_efield
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE push_bfield_2d
-  USE constants
-  USE params
-  USE fields
-  USE shared_data
-  USE time_stat
+  USE fields, ONLY: ez, nordery, nys, zcoeffs, l_nodalgrid, xcoeffs, nxs, bz,        &
+    nzguards, nxguards, norderz, nyguards, ex, bx, by, ycoeffs, nzs, norderx, ey
+  USE mpi
+  USE params, ONLY: dt, it
+  USE picsar_precision, ONLY: idp, num
+  USE shared_data, ONLY: nz, ny, nx, dx, dy, dz
+  USE time_stat, ONLY: timestat_itstart, localtimes
   IMPLICIT NONE
 
   REAL(num) :: tmptime
+  INTEGER(idp) :: iy = 0
+
   IF (it.ge.timestat_itstart) THEN
     tmptime = MPI_WTIME()
   ENDIF
@@ -321,9 +354,15 @@ SUBROUTINE push_bfield_2d
   ! Yee scheme at order 2
   IF ((norderx.eq.2).AND.(norderz.eq.2)) then
 
-    CALL pxrpush_em2d_bvec(ex, ey, ez, bx, by, bz, 0.5_num*dt/dx, 0._num,             &
-    0.5_num*dt/dz, nx, ny, nz, nxguards, 0_idp, nzguards, nxs, 0_idp, nzs,         &
-    l_nodalgrid)
+    CALL pxrpush_em2d_bvec( (/-nxs, -nzs/), (/nx+nxs, nz+nzs/), (/-nxs, -nzs/), &
+         (/nx+nxs, nz+nzs/), (/-nxs, -nzs/), (/nx+nxs, nz+nzs/), &
+         ex(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         ey(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         ez(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         bx(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         by(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         bz(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         0.5_num*dt/dx ,0._num, 0.5_num*dt/dz)
 
     ! Yee scheme arbitrary order
   ELSE
@@ -352,23 +391,39 @@ END SUBROUTINE push_bfield_2d
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE push_efield_2d
-  USE constants
-  USE params
-  USE fields
-  USE shared_data
-  USE time_stat
+  USE constants, ONLY: mu0, clight
+  USE fields, ONLY: ez, nordery, jz, zcoeffs, l_nodalgrid, xcoeffs, nxs, bz,         &
+    nzguards, nxguards, norderz, nyguards, jy, jx, ex, bx, by, ycoeffs, nzs,         &
+    norderx, ey
+  USE mpi
+  USE params, ONLY: dt, it
+  USE picsar_precision, ONLY: idp, num
+  USE shared_data, ONLY: nz, ny, nx, dx, dy, dz
+  USE time_stat, ONLY: timestat_itstart, localtimes
   IMPLICIT NONE
 
   REAL(num) :: tmptime,mdt
+  INTEGER(idp) :: iy = 0
+
   IF (it.ge.timestat_itstart) THEN
     tmptime = MPI_WTIME()
   ENDIF
   mdt = mu0*clight**2*dt
   ! Yee scheme at order 2
   IF ((norderx.eq.2).AND.(norderz.eq.2)) then
-    CALL pxrpush_em2d_evec(ex, ey, ez, bx, by, bz,jx,jy,jz,mdt, clight**2*dt/dx,clight**2*dt/dy, &
-    clight**2*dt/dz, nx,ny,nz, nxguards, nyguards, nzguards,nxs,0_idp,nzs,&
-    l_nodalgrid)
+
+    CALL pxrpush_em2d_evec( (/-nxs, -nzs/), (/nx+nxs, nz+nzs/), (/-nxs, -nzs/), &
+         (/nx+nxs, nz+nzs/), (/-nxs, -nzs/), (/nx+nxs, nz+nzs/), &
+         ex(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         ey(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         ez(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         bx(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         by(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         bz(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         jx(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         jy(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         jz(:,iy,:), (/-nxguards, -nzguards/), (/nx+nxguards, nz+nzguards/), &
+         mdt, clight**2*dt/dx ,0., clight**2*dt/dz)
 
     ! Yee scheme arbitrary order
   ELSE
@@ -400,23 +455,26 @@ END SUBROUTINE push_efield_2d
 !
 !> @date
 !> Creation March 29 2017
-! ________________________________________________________________________________________
-SUBROUTINE push_psatd_ebfield() 
-  USE constants
-  USE time_stat
-  USE params
-  USE shared_data
-  USE fields
+
+  SUBROUTINE push_psatd_ebfield
+  USE fields, ONLY: g_spectral
 #if defined(FFTW)
   USE fourier_psaotd
-  USE matrix_coefficients
 #endif
+#if defined(FFTW)
+  USE matrix_data, ONLY: nmatrixes
+#endif
+  USE mpi
+  USE params, ONLY: it
+  USE picsar_precision, ONLY: num
+  USE shared_data, ONLY: fftw_with_mpi, fftw_hybrid, c_dim
+  USE time_stat, ONLY: timestat_itstart, localtimes
   IMPLICIT NONE
 
   REAL(num) :: tmptime, tmptime_m
 
 #if defined(DEBUG)
-  WRITE(0, *) "push psatd ebfield 3d: start"
+  WRITE(0, *) "push psatd ebfield : start"
 #endif
 
   IF (it.ge.timestat_itstart) THEN
@@ -465,9 +523,7 @@ SUBROUTINE push_psatd_ebfield()
   ENDIF
 
 #if defined(DEBUG)
-  WRITE(0, *) "push psatd ebfield: end"
+  WRITE(0, *) "push psatd ebfield : end"
 #endif
 
-END SUBROUTINE push_psatd_ebfield
-
-
+  END SUBROUTINE push_psatd_ebfield

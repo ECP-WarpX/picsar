@@ -56,7 +56,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/profiling/api_fortran_sde.o \
 	$(SRCDIR)/profiling/sde_fortran.o \
 	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
-	$(SRCDIR)/field_solvers/Maxwell/karkainnen_solver/karkainnen.o \
+	$(SRCDIR)/field_solvers/Maxwell/karkkainen_solver/karkkainen.o \
 	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/housekeeping/sorting.o \

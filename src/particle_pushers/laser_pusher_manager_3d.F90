@@ -13,13 +13,18 @@
 ! ________________________________________________________________________________________
 
 SUBROUTINE push_laser_particles
-  USE particles
-  USE constants
-  USE fields
-  USE params
-  USE shared_data
+  USE mpi
+  USE output_data, ONLY: pushtime
+  USE params, ONLY: dt, it
+  USE particle_properties, ONLY: nspecies, npid
+  USE particle_speciesmodule, ONLY: particle_species
+  USE particle_tilemodule, ONLY: particle_tile
+  USE particles, ONLY: species_parray
+  USE picsar_precision, ONLY: idp, num
+  USE shared_data, ONLY: y, z, x
+  USE tile_params, ONLY: ntilez, ntilex, ntiley
   USE tiling
-  USE time_stat
+  USE time_stat, ONLY: timestat_itstart, localtimes
   IMPLICIT NONE
   INTEGER(idp) :: ispecies, ix, iy, iz, count
   TYPE(particle_species), POINTER :: curr
@@ -56,7 +61,7 @@ SUBROUTINE push_laser_particles
             curr%antenna_params%polvector2, curr%antenna_params%k0_laser,             &
             curr%antenna_params%q_z, curr%antenna_params%laser_tau, real_time,        &
             curr%antenna_params%t_peak, curr%antenna_params%temporal_order,           &
-            curr%antenna_params%polangle,curr%charge)
+            curr%antenna_params%polangle)
           ELSE
             CALL laserp_pusher_hanning(count, npid, curr_tile%pid(1:count, 1:npid),   &
             curr_tile%part_x, curr_tile%part_y, curr_tile%part_z, curr_tile%part_ux,  &
@@ -65,8 +70,7 @@ SUBROUTINE push_laser_particles
             curr%antenna_params%Emax_laser_2, curr%antenna_params%polvector1,         &
             curr%antenna_params%polvector2, curr%antenna_params%k0_laser,             &
             curr%antenna_params%q_z, real_time, curr%antenna_params%t_peak,           &
-            curr%antenna_params%temporal_order,curr%antenna_params%polangle,          &
-            curr%charge)
+            curr%antenna_params%temporal_order, curr%antenna_params%polangle)
           ENDIF
         END DO! END LOOP ON SPECIES
       END DO
@@ -98,24 +102,19 @@ END SUBROUTINE push_laser_particles
 
 SUBROUTINE laserp_pusher_gaussian(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gaminv,  &
   dtt, lvect, emax, emax1, emax2, polvector1, polvector2, k0_laser, q_z, laser_tau,     &
-  real_time, t_peak, temporal_order, polangle,charge)
-  USE shared_data
+  real_time, t_peak, temporal_order, polangle)
+  USE constants, ONLY: clight
   USE omp_lib
-  USE constants
-  USE params
-  USE particles
-  USE particle_speciesmodule
-  USE particle_properties
-  USE antenna
-  USE particle_tilemodule
-  use fields
+  USE params, ONLY: dt
+  USE picsar_precision, ONLY: idp, num, cpx
+  USE shared_data, ONLY: z, c_dim
   INTEGER(idp), INTENT(IN)                :: np
   INTEGER(idp), INTENT(IN)                :: npidd
   INTEGER(idp), INTENT(IN)                :: lvect
   REAL(num), DIMENSION(1:np, 1:npidd), INTENT(IN)  :: pid
   REAL(num), DIMENSION(np), INTENT(INOUT) :: xp, yp, zp
   REAL(num), DIMENSION(np), INTENT(INOUT) :: uxp, uyp, uzp, gaminv
-  REAL(num), INTENT(IN)                   :: dtt,charge
+  REAL(num), INTENT(IN)                   :: dtt
   REAL(num), DIMENSION(3), INTENT(IN)     :: polvector1, polvector2
   REAL(num), INTENT(IN)                   :: emax, emax1, emax2, k0_laser, laser_tau,  &
   real_time, t_peak, polangle
@@ -155,7 +154,7 @@ SUBROUTINE laserp_pusher_gaussian(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gam
       yy = pid(nn, 3)
       CALL gaussian_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvector1, &
       polvector2, k0_laser, q_z, laser_tau, real_time, t_peak, temporal_order,        &
-      polangle,charge)
+      polangle)
       ! --- Update particle momenta based on laser electric field
       uxp(nn) = amp1*coeff_ampli
       uyp(nn) = amp2*coeff_ampli
@@ -187,24 +186,19 @@ END SUBROUTINE laserp_pusher_gaussian
 ! ________________________________________________________________________________________
 SUBROUTINE laserp_pusher_hanning(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gaminv,   &
   dtt, lvect, emax, emax1, emax2, polvector1, polvector2, k0_laser, q_z, real_time,     &
-  t_peak, temporal_order, polangle,charge)
-  USE shared_data
+  t_peak, temporal_order, polangle)
+  USE constants, ONLY: clight
   USE omp_lib
-  USE constants
-  USE params
-  USE particles
-  USE particle_speciesmodule
-  USE particle_properties
-  USE antenna
-  USE particle_tilemodule
-  use fields
+  USE params, ONLY: dt
+  USE picsar_precision, ONLY: idp, num, cpx
+  USE shared_data, ONLY: z, c_dim
   INTEGER(idp), INTENT(IN)                :: np
   INTEGER(idp), INTENT(IN)                :: npidd
   INTEGER(idp), INTENT(IN)                :: lvect
   REAL(num), DIMENSION(1:np, 1:npidd), INTENT(IN)  :: pid
   REAL(num), DIMENSION(np), INTENT(INOUT) :: xp, yp, zp
   REAL(num), DIMENSION(np), INTENT(INOUT) :: uxp, uyp, uzp, gaminv
-  REAL(num), INTENT(IN)                   :: dtt,charge
+  REAL(num), INTENT(IN)                   :: dtt
   REAL(num), DIMENSION(3), INTENT(IN)    :: polvector1, polvector2
   REAL(num), INTENT(IN)                  :: emax, emax1, emax2, k0_laser, real_time,  &
   t_peak, polangle
@@ -243,7 +237,7 @@ SUBROUTINE laserp_pusher_hanning(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gami
       xx = pid(nn, 2)
       yy = pid(nn, 3)
       CALL hanning_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvector1,  &
-      polvector2, k0_laser, q_z, real_time, t_peak, temporal_order, polangle,charge)
+      polvector2, k0_laser, q_z, real_time, t_peak, temporal_order, polangle)
       ! --- Update particle momenta based on laser electric field
       uxp(nn) = amp1*coeff_ampli
       uyp(nn) = amp2*coeff_ampli
@@ -276,36 +270,35 @@ END SUBROUTINE laserp_pusher_hanning
 ! ________________________________________________________________________________________
 
 SUBROUTINE gaussian_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvector1, &
-  polvector2, k0_laser, q_z, laser_tau, real_time, t_peak, temporal_order, polangle,  &
-  charge)
+  polvector2, k0_laser, q_z, laser_tau, real_time, t_peak, temporal_order, polangle)
+  USE constants, ONLY: pi, clight
+  USE omp_lib
+  USE picsar_precision, ONLY: idp, num, cpx
+  USE shared_data, ONLY: z
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !!$OMP DECLARE SIMD(gaussian_profile) UNIFORM(emax, emax1, emax2, polvector1,        &
   !!$OMP polvector2, k0_laser, q_z, laser_tau, real_time, t_peak, temporal_order,      &
-  !!$OMP polangle,charge)
+  !!$OMP polangle)
 #endif
 #elif defined __INTEL_COMPILER
   !DIR$ ATTRIBUTES VECTOR :                                  &
   !DIR$ UNIFORM(emax, emax1, emax2, emax, polvector1, polvector2, &
   !DIR$ k0_laser, q_z, laser_tau, real_time, t_peak, &
-  !DIR$ temporal_order, polangle,charge)  :: gaussian_profile
+  !DIR$ temporal_order, polangle)  :: gaussian_profile
 #endif
-  USE constants
-  USE params
-  USE shared_data
-  USE omp_lib
   REAL(num), INTENT(INOUT)   :: amp1, amp2, amp3
   REAL(num), DIMENSION(3), INTENT(IN)       :: polvector1, polvector2
   REAL(num), INTENT(IN)                      :: emax, emax1, emax2, k0_laser,         &
   laser_tau, real_time, t_peak, polangle
   COMPLEX(cpx), INTENT(IN)                  :: q_z
-  REAL(num), INTENT(IN)                     :: xx, yy,charge
+  REAL(num), INTENT(IN)                     :: xx, yy
   INTEGER(idp), INTENT(IN)                  :: temporal_order
   COMPLEX(cpx), DIMENSION(3)                :: arg
   COMPLEX(cpx)                               :: j, u1, u2
 
   j=(0.0_num, 1.0_num)
-  IF (temporal_order .EQ. 0_idp) THEN 
+  IF (temporal_order .EQ. 0_idp) THEN
     u1 = j*k0_laser*clight*(real_time-t_peak) - j*k0_laser*(xx**2+yy**2)/(2*q_z)
     u2 = j*k0_laser*clight*(real_time-t_peak) - j*k0_laser*(xx**2+yy**2)/(2*q_z)
   ELSE
@@ -313,15 +306,15 @@ SUBROUTINE gaussian_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvec
     ((real_time - t_peak )/laser_tau)**temporal_order
     u2 = j*k0_laser*clight*(real_time-t_peak) - j*k0_laser*(xx**2+yy**2)/(2*q_z) -      &
     ((real_time - t_peak )/laser_tau)**temporal_order+polangle*2.0_num*pi*j
-  ENDIF 
+  ENDIF
   u1 = EXP(u1)*emax1
   u2 = EXP(u2)*emax2
   arg(1) = (u1*polvector1(1) + u2*polvector2(1))
-  amp1 = charge*AIMAG(arg(1))
+  amp1 = AIMAG(arg(1))
   arg(2) = (u1*polvector1(2) + u2*polvector2(2))
-  amp2 = charge*AIMAG(arg(2))
+  amp2 = AIMAG(arg(2))
   arg(3) = (u1*polvector1(3) + u2*polvector2(3))
-  amp3 = charge*AIMAG(arg(3))
+  amp3 = AIMAG(arg(3))
 
 END SUBROUTINE gaussian_profile
 ! ________________________________________________________________________________________
@@ -335,30 +328,30 @@ END SUBROUTINE gaussian_profile
 ! ________________________________________________________________________________________
 
 SUBROUTINE hanning_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvector1,  &
-  polvector2, k0_laser, q_z, real_time, t_peak, temporal_order, polangle,charge)
+  polvector2, k0_laser, q_z, real_time, t_peak, temporal_order, polangle)
+  USE constants, ONLY: pi, clight
+  USE omp_lib
+  USE picsar_precision, ONLY: idp, num, cpx
+  USE shared_data, ONLY: z
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !!$OMP DECLARE SIMD(hanning_profile) UNIFORM(emax, emax1, emax2, polvector1,         &
-  !!$OMP polvector2, k0_laser, q_z, real_time, t_peak, temporal_order, polangle,charge)
+  !!$OMP polvector2, k0_laser, q_z, real_time, t_peak, temporal_order, polangle)
 #endif
 #elif defined __INTEL_COMPILER
   !DIR$ ATTRIBUTES VECTOR :                       &
   !DIR$ UNIFORM(emax, emax1, emax2, emax, &
   !DIR$ polvector1, polvector2, k0_laser, q_z, &
-  !DIR$ real_time, t_peak, temporal_order, polangle,charge) &
+  !DIR$ real_time, t_peak, temporal_order, polangle) &
   !DIR$ :: hanning_profile
 #endif
 
-  USE shared_data
-  USE constants
-  USE params
-  USE omp_lib
   REAL(num), INTENT(INOUT) :: amp1, amp2, amp3
   REAL(num), DIMENSION(3), INTENT(IN)    :: polvector1, polvector2
   REAL(num), INTENT(IN)                  :: emax, emax1, emax2, k0_laser, real_time,  &
   t_peak, polangle
   COMPLEX(cpx), INTENT(IN)                :: q_z
-  REAL(num), INTENT(IN)                   :: xx, yy,charge
+  REAL(num), INTENT(IN)                   :: xx, yy
   INTEGER(idp), INTENT(IN)                 :: temporal_order
   COMPLEX(cpx), DIMENSION(3)              :: arg
   COMPLEX(cpx)                            :: j, u1, u2
@@ -380,10 +373,10 @@ SUBROUTINE hanning_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvect
   u1=Idd*EXP(u1)*emax1*(0.5_num -0.5_num*COS(real_time*2.0_num*pi/(2.0_num*t_peak)))
   u2=Idd*EXP(u2)*emax2*(0.5_num -0.5_num*COS(real_time*2.0_num*pi/(2.0_num*t_peak)))
   arg(1) = (u1*polvector1(1) + u2*polvector2(1))
-  amp1 = charge*REAL(arg(1), num)
+  amp1 = REAL(arg(1), num)
   arg(2) = (u1*polvector1(2) + u2*polvector2(2))
-  amp2 = charge*REAL(arg(2), num)
+  amp2 = REAL(arg(2), num)
   arg(3) = (u1*polvector1(3) + u2*polvector2(3))
-  amp3 = charge*REAL(arg(3), num)
+  amp3 = REAL(arg(3), num)
 
 END SUBROUTINE hanning_profile

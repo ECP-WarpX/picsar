@@ -73,7 +73,9 @@ MODULE mpi_routines
 
   SUBROUTINE mpi_minimal_init_fftw()
 #if defined(FFTW)
-    USE mpi_fftw3
+    USE iso_c_binding
+    USE mpi_fftw3, ONLY: fftw_mpi_init
+    USE picsar_precision, ONLY: idp, isp
 #endif
     LOGICAL(isp) :: isinitialized
     INTEGER(isp) :: nproc_comm, rank_in_comm
@@ -620,15 +622,41 @@ END SUBROUTINE get_non_periodic_mpi_bcs
 ! ______________________________________________________________________________________
 SUBROUTINE setup_groups
 #if defined(FFTW)
-USE  group_parameters
-USE mpi_fftw3
+USE group_parameters, ONLY: group_z_max_boundary, is_on_boundary_group_z,            &
+  ny_group_global_grid, mpi_group_id, p3d_fsize, cell_y_min_g, nx_group, &
+  ny_group_grid, p3d_iend, ny_group, nz_group_global_array, nz_group_global_grid,    &
+  y_max_group, which_group, p3d_istart, p3d_fstart,                                  &
+  is_on_boundary_group_y, x_min_group, x_max_group, mpi_ordered_comm_world,          &
+  y_min_group, z_max_group, mpi_comm_group_id, x_group_coords, group_y_max_boundary, &
+  p3d_fend, local_size, cell_z_min_g,           root_size,            p3d_isize,     &
+  nx_group_global_array, group_y_min_boundary, nx_group_global_grid, mpi_root_comm,  &
+  group_sizes, root_rank, mpi_root_group,             ny_group_global,               &
+  cell_y_max_g, mpi_world_group, nz_group, ny_group_global_array, z_min_group,       &
+  y_group_coords, nx_group_global,            local_rank, nz_group_grid,             &
+  group_z_min_boundary, z_group_coords, nz_group_global, nx_group_grid,              &
+  cell_z_max_g, is_group_x_boundary_max, is_group_x_boundary_min,                    &
+  is_group_y_boundary_max, is_group_y_boundary_min, is_group_z_boundary_max,         &
+  is_group_z_boundary_min, cell_x_min_g, cell_x_max_g
+USE iso_c_binding
 #endif
-USE picsar_precision
-USE shared_data
 USE mpi
-#if defined(P3DFFT)
-  USE p3dfft
+#if defined(FFTW)
+USE mpi_fftw3, ONLY: local_y0_tr, local_z0_tr, fftw_mpi_local_size_3d, local_x0,     &
+  local_ny_tr, fftw_mpi_local_size_2d, local_ny, local_nx_tr,                        &
+  fftw_mpi_local_size_3d_transposed, alloc_local, local_z0, local_nx, local_x0_tr,   &
+  local_nz, local_y0, local_nz_tr
 #endif
+USE mpi_type_constants, ONLY: mpidbl
+#if defined(P3DFFT)
+USE p3dfft
+#endif
+USE picsar_precision, ONLY: idp, isp
+USE shared_data, ONLY: nz, ny, errcode, nprocx, iy_max_r, nx, y_min_boundary,        &
+  z_coords, z_min_boundary, xmin, nproc, zmin, iz_max_r, p3dfft_flag, ny_global,     &
+  ymin, nprocz, iz_min_r, ix_min_r, ix_max_r, y, z_max_boundary, ymax, y_coords, z,  &
+  dx, comm, c_dim, nprocy, nz_global, x, x_coords, iy_min_r, zmax, y_max_boundary,   &
+  fftw_mpi_transpose, dy, rank, xmax, dz, nb_group, nb_group_x, nb_group_y,          &
+  nb_group_z, nxg_group, nyg_group, nzg_group
 INTEGER(isp) :: ierr
 INTEGER(idp) :: group_size
 INTEGER(isp), ALLOCATABLE, DIMENSION(:)    ::  grp_comm
@@ -1204,12 +1232,21 @@ END SUBROUTINE setup_groups
 !> 2018
 ! ______________________________________________________________________________________
 SUBROUTINE adjust_grid_mpi_global
+#if defined(FFTW)
+USE iso_c_binding
+USE mpi
+USE mpi_fftw3, ONLY: local_y0_tr, local_z0_tr, local_x0, local_ny_tr, local_ny,      &
+  local_nx_tr, local_nx, local_x0_tr, local_nz, local_y0, local_nz_tr
+#endif
+#if defined(FFTW)
+USE picsar_precision, ONLY: idp, isp
+USE shared_data, ONLY: nz_global_grid_min, nz, ny, fftw_with_mpi, errcode,           &
+  cell_z_max, nz_global_grid_max, iy_max_r, nx, z_coords, nz_grid, iz_max_r,         &
+  nx_global, ny_global, nprocz, iz_min_r, cell_z_min, ix_min_r, ix_max_r, comm,      &
+  nz_global, iy_min_r, fftw_mpi_transpose, fftw_hybrid
+#endif
 
 #if defined(FFTW)
-  USE mpi_fftw3
-  USE shared_data
-  USE mpi
-  USE picsar_precision
   INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: all_nz
   INTEGER(idp)  :: idim
   nz = local_nz
@@ -1287,9 +1324,19 @@ END SUBROUTINE adjust_grid_mpi_global
 ! ______________________________________________________________________________________
 SUBROUTINE mpi_initialise
 #if defined(FFTW)
-USE mpi_fftw3
-USE group_parameters
+USE shared_data, ONLY: nyg_group, nzg_group, nxg_group
+#endif
+USE iso_c_binding
+#if defined(FFTW)
 USE load_balance
+#endif
+USE mpi
+#if defined(FFTW)
+USE mpi_fftw3, ONLY: local_z0_tr, fftw_mpi_local_size_3d,                            &
+  fftw_mpi_local_size_3d_transposed, alloc_local, local_z0, local_nz, local_nz_tr
+#endif
+#if defined(FFTW)
+USE picsar_precision, ONLY: idp, num, isp
 #endif
 INTEGER(isp) :: idim
 INTEGER(isp) :: nx0, nxp
@@ -1702,11 +1749,16 @@ END SUBROUTINE compute_simulation_axis
 !> Creation 2015
 ! ______________________________________________________________________________________
 SUBROUTINE allocate_grid_quantities()
+USE iso_c_binding
+#if defined(FFTW)
+USE mpi_fftw3, ONLY: fftw_alloc_complex, local_ny_tr, fftw_alloc_real, local_ny,     &
+  local_nx_tr, alloc_local, local_nx, local_nz, local_nz_tr
+#endif
 #if defined(FFTW)
 USE fourier
 USE mpi_fftw3
 USE group_parameters
-
+USE picsar_precision, ONLY: idp
 #endif
 IMPLICIT NONE
 #if defined(FFTW)
@@ -2013,6 +2065,7 @@ END SUBROUTINE allocate_grid_quantities
 !> Creation 2015
 ! ______________________________________________________________________________________
 SUBROUTINE mpi_close
+USE mpi
 INTEGER :: seconds, minutes, hours, total
 
 IF (rank .EQ. 0) THEN
@@ -2040,11 +2093,13 @@ END SUBROUTINE mpi_close
 !> Creation 2016
 ! ______________________________________________________________________________________
 SUBROUTINE time_statistics
-USE time_stat
-USE params
 #ifdef _OPENMP
 USE omp_lib
 #endif
+USE params, ONLY: currdepo, rhodepo, fieldgathe, fg_p_pp_separated, nsteps, it
+USE picsar_precision, ONLY: idp, num, isp
+USE time_stat, ONLY: maxtimes, init_avetimes, mintimes, init_localtimes, avetimes,   &
+  init_maxtimes, localtimes, init_mintimes
 IMPLICIT NONE
 REAL(num), DIMENSION(26) :: percenttimes
 INTEGER(idp)             :: nthreads_tot
@@ -2201,11 +2256,13 @@ END SUBROUTINE time_statistics
 !> 2016
 ! ______________________________________________________________________________________
 SUBROUTINE time_statistics_per_iteration
-USE time_stat
-USE params
 #ifdef _OPENMP
 USE omp_lib
 #endif
+USE params, ONLY: fg_p_pp_separated, nsteps, it
+USE picsar_precision, ONLY: num, isp
+USE time_stat, ONLY: maxtimes, init_avetimes, mintimes, timestat_perit,              &
+  init_localtimes, avetimes, init_maxtimes, localtimes, init_mintimes
 IMPLICIT NONE
 
 REAL(num), DIMENSION(26) :: percenttimes
@@ -2322,6 +2379,7 @@ END SUBROUTINE time_statistics_per_iteration
 SUBROUTINE get_local_grid_mem()
   USE mem_status, ONLY: local_grid_mem
   USE shared_data, ONLY: absorbing_bcs
+  USE picsar_precision, ONLY: num
   IMPLICIT NONE 
   INTEGER(idp) :: field_size_f, field_size_r, cc_mat_size
   local_grid_mem = 0._num
@@ -2385,7 +2443,8 @@ END SUBROUTINE get_local_grid_mem
 !> Creation 2018
 ! ________________________________________________________________________________________
 SUBROUTINE get_global_grid_mem()
-  USE mem_status, ONLY: local_grid_mem, global_grid_mem 
+  USE mem_status, ONLY: local_grid_mem, global_grid_mem
+  USE picsar_precision, ONLY: isp
   IMPLICIT NONE 
 
   ! - Estimate total grid arrays memory (reduce on proc 0)

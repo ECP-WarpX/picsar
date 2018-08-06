@@ -1110,7 +1110,7 @@ listfiles=["modules/modules.F90", \
            "housekeeping/sorting.F90", \
            "field_solvers/Maxwell/maxwell_solver_manager.F90", \
            "field_solvers/Maxwell/yee_solver/yee.F90", \
-           "field_solvers/Maxwell/karkainnen_solver/karkainnen.F90", \
+           "field_solvers/Maxwell/karkkainen_solver/karkkainen.F90", \
            "field_solvers/Maxwell/GPSTD_solver/GPSTD.F90", \
            "parallelization/tiling/tiling.F90", \
            "particle_pushers/boris_pusher/boris_2d.F90", \
