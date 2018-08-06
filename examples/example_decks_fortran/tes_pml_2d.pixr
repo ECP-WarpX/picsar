@@ -58,7 +58,8 @@ section::solver
 # fftw_with_mpi = .TRUE.
 # fftw_hybrid = .TRUE.
 # nb_group_z = 1
- absorbing_bcs =.TRUE.
+ absorbing_bcs_x =.TRUE.
+ absorbing_bcs_z = .TRUE.
  nx_pml=  4
  nz_pml=  4
  #fftw_with_mpi = .TRUE.
