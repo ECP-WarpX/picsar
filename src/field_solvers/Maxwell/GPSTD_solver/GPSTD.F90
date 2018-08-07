@@ -306,52 +306,6 @@ END SUBROUTINE allocate_new_matrix_vector
 
 ! ________________________________________________________________________________________
 !> @brief
-!> This subroutine deletes unused allocated blocks
-!
-!> @warning
-!> Need for more information about input/output arguments
-!
-!> @author
-!> Haithem Kallala
-!
-!> @date
-!> Creation 2018
-!
-! ________________________________________________________________________________________
-
-SUBROUTINE deallocate_mat_block()
-  USE matrix_coefficients
-  IMPLICIT NONE
-  INTEGER(idp) :: i,j,nm
-  DO nm=1,nmatrixes-1
-    DO i = 1, cc_mat(nm)%nblocks
-      DO j= 1, cc_mat(nm)%nblocks
-        IF(SIZE(cc_mat(nm)%block_matrix2d(i,j)%block3dc).GT. 1) THEN
-          DEALLOCATE(cc_mat(nm)%block_matrix2d(i,j)%block3dc)
-        ENDIF
-      ENDDO
-    ENDDO
-    DEALLOCATE(cc_mat(nm)%block_matrix2d)
-    DO i = 1, vold(nm)%nblocks
-      IF(SIZE(vold(nm)%block_vector(i)%block3dc) .GT. 1 ) THEN
-        DEALLOCATE(vold(nm)%block_vector(i)%block3dc)
-      ENDIF
-    ENDDO
-    DO i = 1, vnew(nm)%nblocks
-      IF(SIZE(vnew(nm)%block_vector(i)%block3dc) .GT. 1 ) THEN
-        DEALLOCATE(vnew(nm)%block_vector(i)%block3dc)
-      ENDIF
-    ENDDO
-    DEALLOCATE(vnew(nm)%block_vector)
-    DEALLOCATE(vold(nm)%block_vector)
-  ENDDO
-END SUBROUTINE deallocate_mat_block  
-
-
-    
-
-! ________________________________________________________________________________________
-!> @brief
 !> This subroutine multiplies matrix and vector by blocks
 !
 !> @warning
@@ -364,6 +318,7 @@ END SUBROUTINE deallocate_mat_block
 !> Creation 2016
 !
 ! ________________________________________________________________________________________
+
 SUBROUTINE multiply_mat_vector(matrix_index)
   USE matrix_coefficients, ONLY: vnew, cc_mat, block3d, vold
 #ifdef _OPENMP

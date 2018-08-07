@@ -124,10 +124,10 @@ PROGRAM main
    CALL DFP_INIT_STOP
 #endif
 
+
   !----------------------------------------------
   ! THIS IS THE PIC ALGORITHM TIME LOOP
   !----------------------------------------------
-
   IF (rank .EQ. 0) startsim=MPI_WTIME()
   CALL step(nsteps)
 
