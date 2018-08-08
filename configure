@@ -27,22 +27,22 @@ parser.add_argument( '--compiler', choices=['gnu', 'intel'], default='gnu',
     help='which compiler to use (only used when compiling on Edison/Cori)')
 parser.add_argument( '--architecture', choices=['cpu', 'knl'], default='cpu',
     help='which architecture to cross-compile for (only used when compiling on Cori)')
-parser.add_argument( '--full_pxr', choices=['True', 'False'], default='False',
+parser.add_argument( '--pxr_spectral_hybrid', choices=['True', 'False'], default='False',
     help='which picsar mode to use)') 
 args = parser.parse_args()
    
 
-full_pxr_add = ''
+pxr_spectral_hybrid_add = ''
 parser_file = 'forthon_parser.py'
-if(args.full_pxr=='True'):
+if(args.pxr_spectral_hybrid=='True'):
     fftw_lib = ' /home/kallala/develop/install_fftw/lib '
     p3dfft_lib = ' /home/kallala/develop/install_p3dfft/lib   '
     fftw_link = ' -I /home/kallala/develop/install_fftw/include '
     p3dfft_link = '-I /home/kallala/develop/install_p3dfft/include  '
-    full_pxr_add = ' -D FFTW=1 -D P3DFFT=1'
-    full_pxr_add += fftw_link
-    full_pxr_add += ' ' + p3dfft_link
-    parser_file = 'forthon_parser_full_pxr.py'
+    pxr_spectral_hybrid_add = ' -D FFTW=1 -D P3DFFT=1'
+    pxr_spectral_hybrid_add += fftw_link
+    pxr_spectral_hybrid_add += ' ' + p3dfft_link
+    parser_file = 'forthon_parser_pxr_spectral_hybrid.py'
     
 # Check if we are on Edison or Cori, at NERSC
 if host.startswith('edison') or host.startswith('cori'):
@@ -99,10 +99,10 @@ else:
             libs += ' -lgomp '
             print('MPI flags: %s' %libs)
 
-fargs = fargs + full_pxr_add
+fargs = fargs + pxr_spectral_hybrid_add
 fargs = ' " '+fargs+' " '
 
-if(args.full_pxr=='True'):
+if(args.pxr_spectral_hybrid=='True'):
     libdir_list.append(fftw_lib)
     libdir_list.append(p3dfft_lib)
     libs += ' -lfftw3  -lfftw3_mpi -lfftw3_omp -lp3dfft '

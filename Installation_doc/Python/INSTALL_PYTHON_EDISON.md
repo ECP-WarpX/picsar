@@ -48,7 +48,7 @@ Clone `picsar` where you want to install it.
 If you have already installed Warp,
 we recommend to put it in the same installation directory: `$SCRATCH/warp_install`.
 
-After `cd` in the `picsar` directory, use the command `./configure` or 'python configure --full_pxr True'  to prepare
+After `cd` in the `picsar` directory, use the command `./configure` or 'python configure --pxr_spectral_hybrid True'  to prepare
 the `Makefile`.  After this step, a file `Makefile_Forthon` must have been generated
 and must look like:
 

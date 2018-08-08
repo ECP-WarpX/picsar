@@ -76,6 +76,6 @@ Set
 -p3dfft_link = "-I path_to_p3dfft_directory/include" 
 Finally type:
 
-python configure --full_pxr True --other_flags(compiler - architecture) ...
+python configure --pxr_spectral_hybrid True --other_flags(compiler - architecture) ...
 
 
