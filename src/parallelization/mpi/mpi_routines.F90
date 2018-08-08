@@ -1756,7 +1756,6 @@ USE mpi_fftw3, ONLY: fftw_alloc_complex, local_ny_tr, fftw_alloc_real, local_ny,
 #endif
 #if defined(FFTW)
 USE fourier
-USE mpi_fftw3
 USE group_parameters
 USE picsar_precision, ONLY: idp
 #endif
