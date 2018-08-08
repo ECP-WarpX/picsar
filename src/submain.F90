@@ -144,9 +144,6 @@ USE sorting
       IF (l_spectral) THEN
 
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
-        IF (absorbing_bcs) THEN
-          CALL field_damping_bcs()
-        ENDIF
         CALL push_psatd_ebfield
         !IF (rank .EQ. 0) PRINT *, "#0"
         !!! --- Boundary conditions for E AND B
@@ -237,9 +234,6 @@ USE sorting
 #if defined(FFTW)
       IF (l_spectral) THEN
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
-        IF (absorbing_bcs) THEN
-          CALL field_damping_bcs()
-        ENDIF
         CALL push_psatd_ebfield
         !IF (rank .EQ. 0) PRINT *, "#0"
         !!! --- Boundary conditions for E AND B
@@ -342,10 +336,11 @@ SUBROUTINE init_pml_arrays
   REAL(num)    :: coeff,b_offset, e_offset
   INTEGER(idp) :: type_id  
   REAL(num)    , ALLOCATABLE, DIMENSION(:) :: temp
-  coeff = .10_num
+
+  coeff = 4._num/25._num
   b_offset = .50_num
   e_offset = 0._num
-  pow = 3_idp
+  pow = 2._idp
 
   !> Inits pml arrays of the same size as ex fields in the daming direction!
   !> sigmas are 1d arrray to economize memory
@@ -462,22 +457,22 @@ SUBROUTINE init_pml_arrays
   !> dE/dt = -sigma * E => E(n)=exp(-sigma*dt)*E(n-1)
   !> Note that fdtd pml solving requires field time centering
   IF(absorbing_bcs_x) THEN 
-    sigma_x_e = EXP(-sigma_x_e*dt/2.0_num)
-    sigma_x_b = EXP(-sigma_x_b*dt/2.0_num)
+    sigma_x_e = EXP(-sigma_x_e*dt)
+    sigma_x_b = EXP(-sigma_x_b*dt)
   ELSE 
     sigma_x_e = 1.0_num
     sigma_x_b = 1.0_num
   ENDIF
   IF(absorbing_bcs_y) THEN
-    sigma_y_e = EXP(-sigma_y_e*dt/2.0_num)
-    sigma_y_b = EXP(-sigma_y_b*dt/2.0_num)
+    sigma_y_e = EXP(-sigma_y_e*dt)
+    sigma_y_b = EXP(-sigma_y_b*dt)
   ELSE
     sigma_y_e = 1.0_num
     sigma_y_b = 1.0_num
   ENDIF  
   IF(absorbing_bcs_z) THEN
-    sigma_z_e = EXP(-sigma_z_e*dt/2.0_num)
-    sigma_z_b = EXP(-sigma_z_b*dt/2.0_num)
+    sigma_z_e = EXP(-sigma_z_e*dt)
+    sigma_z_b = EXP(-sigma_z_b*dt)
   ELSE 
     sigma_z_e = 1.0_num
     sigma_z_b = 1.0_num
