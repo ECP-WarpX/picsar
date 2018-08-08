@@ -697,11 +697,11 @@ END SUBROUTINE get_2Dintersection
       group_z_max_boundary, l_first_cell_to_send_y, l_first_cell_to_send_z,          &
       g_first_cell_to_recv_y, cell_y_min_g, ny_group,                                &
       size_exchanges_g2l_recv_z, l_first_cell_to_recv_z, g_first_cell_to_send_z,     &
-      group_y_max_boundary, cell_z_min_g,            size_exchanges_l2g_recv_z,      &
+      group_y_max_boundary, cell_z_min_g, size_exchanges_l2g_recv_z,                 &
       size_exchanges_l2g_recv_y, group_y_min_boundary, g_first_cell_to_recv_z,       &
-      l_first_cell_to_recv_y,   cell_y_max_g,                                        &
-      size_exchanges_g2l_send_z, size_exchanges_g2l_recv_y,                          &
-      size_exchanges_g2l_send_y, group_z_min_boundary, size_exchanges_l2g_send_y,    &
+      l_first_cell_to_recv_y, cell_y_max_g, size_exchanges_g2l_send_z,               &
+      size_exchanges_g2l_recv_y,  size_exchanges_g2l_send_y,                         &
+      group_z_min_boundary, size_exchanges_l2g_send_y,                               &
       cell_z_max_g, z_group_coords, y_group_coords, nz_group_global_array,           &
       ny_group_global_array
     USE iso_c_binding
