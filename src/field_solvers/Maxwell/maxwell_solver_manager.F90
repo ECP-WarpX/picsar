@@ -164,9 +164,9 @@ SUBROUTINE field_damping_bcs
   ENDIF
   IF(c_dim == 3) THEN 
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-    DO ix = -nxguards,nx+nxguards-1
+    DO iz = -nzguards,nz+nzguards-1
       DO iy = -nyguards,ny+nyguards-1
-        DO iz = -nzguards,nz+nzguards-1
+        DO ix = -nxguards,nx+nxguards-1
           exy(ix,iy,iz) = sigma_y_e(iy) *exy(ix,iy,iz)
           exz(ix,iy,iz) = sigma_z_e(iz) *exz(ix,iy,iz)
           eyx(ix,iy,iz) = sigma_x_e(ix) *eyx(ix,iy,iz)
@@ -186,8 +186,8 @@ SUBROUTINE field_damping_bcs
   ELSE IF(c_dim==2) THEN
     iy=0_idp
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,  iz) COLLAPSE(2)
-    DO ix = -nxguards,nx+nxguards-1
-        DO iz = -nzguards,nz+nzguards-1
+    DO iz = -nzguards,nz+nzguards-1
+        DO ix = -nxguards,nx+nxguards-1
           exz(ix,iy,iz) = sigma_z_e(iz) *exz(ix,iy,iz)
           eyx(ix,iy,iz) = sigma_x_e(ix) *eyx(ix,iy,iz)
           eyz(ix,iy,iz) = sigma_z_e(iz) *eyz(ix,iy,iz)
@@ -241,9 +241,9 @@ SUBROUTINE merge_fields()
   lbound_f = LBOUND(ex)
 
   !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz,ixx ,iyy, izz) COLLAPSE(3)
-  DO ix = lbound_f(1),ubound_f(1)
+  DO iz = lbound_f(3),ubound_f(3)
     DO iy = lbound_f(2),ubound_f(2)
-      DO iz = lbound_f(3),ubound_f(3)
+      DO ix = lbound_f(1),ubound_f(1)
         ixx = ix - lbound_f(1) + lbound_s(1)
         iyy = iy - lbound_f(2) + lbound_s(2)
         izz = iz - lbound_f(3) + lbound_s(3)
