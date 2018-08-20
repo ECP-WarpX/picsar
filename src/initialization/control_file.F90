@@ -397,13 +397,13 @@ MODULE control_file
         READ(buffer, *) nzguards
         nzjguards=nzguards
 #if defined(FFTW)
-      ELSE IF (INDEX(buffer, 'nggroup_x') .GT. 0) THEN
+      ELSE IF (INDEX(buffer, 'ngguards_x') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) nxg_group
-      ELSE IF (INDEX(buffer, 'nggroup_y') .GT. 0) THEN
+      ELSE IF (INDEX(buffer, 'ngguards_y') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) nyg_group
-      ELSE IF (INDEX(buffer, 'nggroup_z') .GT. 0) THEN
+      ELSE IF (INDEX(buffer, 'ngguards_z') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) nzg_group
 #endif
