@@ -118,19 +118,19 @@ USE picsar_precision, ONLY: num
   rx = (dtsdx/delta)**2
   ry = (dtsdy/delta)**2
   rz = (dtsdz/delta)**2
-  beta = 0.125*(1.-rx*ry*rz/(ry*rz+rz*rx+rx*ry))
+  beta = 1.0_num/8.0_num*(1.-rx*ry*rz/(ry*rz+rz*rx+rx*ry))
   betaxy = ry*beta
   betaxz = rz*beta
   betayx = rx*beta
   betayz = rz*beta
   betazx = rx*beta
   betazy = ry*beta
-  gammax = ry*rz*(1./16.-0.125*ry*rz/(ry*rz+rz*rx+rx*ry))
-  gammay = rx*rz*(1./16.-0.125*rx*rz/(ry*rz+rz*rx+rx*ry))
-  gammaz = rx*ry*(1./16.-0.125*rx*ry/(ry*rz+rz*rx+rx*ry))
-  alphax = 1. - 2.*betaxy - 2.* betaxz - 4.*gammax
-  alphay = 1. - 2.*betayx - 2.* betayz - 4.*gammay
-  alphaz = 1. - 2.*betazx - 2.* betazy - 4.*gammaz
+  gammax = ry*rz*(1.0_num/16.0_num-1.0_num/8.0_num*ry*rz/(ry*rz+rz*rx+rx*ry))
+  gammay = rx*rz*(1.0_num/16.0_num-1.0_num/8.0_num*rx*rz/(ry*rz+rz*rx+rx*ry))
+  gammaz = rx*ry*(1.0_num/16.0_num-1.0_num/8.0_num*rx*ry/(ry*rz+rz*rx+rx*ry))
+  alphax = 1.0_num - 2.0_num*betaxy - 2.0_num* betaxz - 4.0_num*gammax
+  alphay = 1.0_num - 2.0_num*betayx - 2.0_num* betayz - 4.0_num*gammay
+  alphaz = 1.0_num - 2.0_num*betazx - 2.0_num* betazy - 4.0_num*gammaz
 
   betaxy = dtsdx*betaxy
   betaxz = dtsdx*betaxz
@@ -299,10 +299,10 @@ USE picsar_precision, ONLY: idp, num, isp
   delta = max(dtsdx,dtsdz)
   rx = (dtsdx/delta)**2
   rz = (dtsdz/delta)**2
-  betaxz = 0.125*rz
-  betazx = 0.125*rx
-  alphax = 1. - 2.*betaxz
-  alphaz = 1. - 2.*betazx
+  betaxz = 1.0_num/8.0_num*rz
+  betazx = 1.0_num/8.0_num*rx
+  alphax = 1.0_num - 2.0_num*betaxz
+  alphaz = 1.0_num - 2.0_num*betazx
 
   betaxz = dtsdx*betaxz
   betazx = dtsdz*betazx
