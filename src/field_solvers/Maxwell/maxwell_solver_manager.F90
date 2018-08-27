@@ -134,6 +134,137 @@ SUBROUTINE compute_em_energy
   electromagn_energy_total= electro_energy_total+magneto_energy_total
 END SUBROUTINE
 
+
+! ________________________________________________________________________________________
+!> @brief
+!> Field damping in pml region
+!> Damps fields in pml region
+!> if vaccum then does nothing
+!> @author
+!> Haithem Kallala
+!
+!> @date
+!> Creation 2018
+! ________________________________________________________________________________________
+
+SUBROUTINE field_damping_bcs
+  USE fields
+  USE shared_data
+  USE constants
+  USE omp_lib
+  USE time_stat
+  USE params
+
+  IMPLICIT NONE
+  INTEGER(idp)  :: ix,iy,iz
+  REAL(num)     :: tmptime
+
+  IF (it.ge.timestat_itstart) THEN
+    tmptime = MPI_WTIME()
+  ENDIF
+  IF(c_dim == 3) THEN 
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+    DO iz = -nzguards,nz+nzguards-1
+      DO iy = -nyguards,ny+nyguards-1
+        DO ix = -nxguards,nx+nxguards-1
+          exy(ix,iy,iz) = sigma_y_e(iy) *exy(ix,iy,iz)
+          exz(ix,iy,iz) = sigma_z_e(iz) *exz(ix,iy,iz)
+          eyx(ix,iy,iz) = sigma_x_e(ix) *eyx(ix,iy,iz)
+          eyz(ix,iy,iz) = sigma_z_e(iz) *eyz(ix,iy,iz)
+          ezx(ix,iy,iz) = sigma_x_e(ix) *ezx(ix,iy,iz)
+          ezy(ix,iy,iz) = sigma_y_e(iy) *ezy(ix,iy,iz)
+          bxy(ix,iy,iz) = sigma_y_b(iy) *bxy(ix,iy,iz)
+          bxz(ix,iy,iz) = sigma_z_b(iz) *bxz(ix,iy,iz)
+          byx(ix,iy,iz) = sigma_x_b(ix) *byx(ix,iy,iz)
+          byz(ix,iy,iz) = sigma_z_b(iz) *byz(ix,iy,iz)
+          bzx(ix,iy,iz) = sigma_x_b(ix) *bzx(ix,iy,iz)
+          bzy(ix,iy,iz) = sigma_y_b(iy) *bzy(ix,iy,iz)
+        ENDDO
+      ENDDO
+    ENDDO
+    !$OMP END PARALLEL DO
+  ELSE IF(c_dim==2) THEN
+    iy=0_idp
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,  iz) COLLAPSE(2)
+    DO iz = -nzguards,nz+nzguards-1
+        DO ix = -nxguards,nx+nxguards-1
+          exz(ix,iy,iz) = sigma_z_e(iz) *exz(ix,iy,iz)
+          eyx(ix,iy,iz) = sigma_x_e(ix) *eyx(ix,iy,iz)
+          eyz(ix,iy,iz) = sigma_z_e(iz) *eyz(ix,iy,iz)
+          ezx(ix,iy,iz) = sigma_x_e(ix) *ezx(ix,iy,iz)
+          bxz(ix,iy,iz) = sigma_z_b(iz) *bxz(ix,iy,iz)
+          byx(ix,iy,iz) = sigma_x_b(ix) *byx(ix,iy,iz)
+          byz(ix,iy,iz) = sigma_z_b(iz) *byz(ix,iy,iz)
+          bzx(ix,iy,iz) = sigma_x_b(ix) *bzx(ix,iy,iz)
+        ENDDO
+      ENDDO
+    !$OMP END PARALLEL DO
+  ENDIF
+
+   
+  IF (it.ge.timestat_itstart) THEN
+    localtimes(26) = localtimes(26) + (MPI_WTIME() - tmptime)
+  ENDIF
+
+END subroutine field_damping_bcs
+
+
+! ________________________________________________________________________________________
+!> @brief
+!> Mege splitted fields of when using absorbing_bcs to compute real EM field
+!> @author
+!> Haithem Kallala
+!
+!> @date
+!> Creation 2018
+! ________________________________________________________________________________________
+
+SUBROUTINE merge_fields()
+  USE fields
+  USE shared_data
+  USE omp_lib
+  USE time_stat
+  USE params
+
+  IMPLICIT NONE 
+  INTEGER(idp)  :: ix,iy,iz,ixx,iyy,izz,&
+  ubound_s(3), ubound_f(3), lbound_s(3), lbound_f(3)
+  REAL(num)     :: tmptime
+
+  IF (it.ge.timestat_itstart) THEN
+    tmptime = MPI_WTIME()
+  ENDIF
+
+  ubound_s = UBOUND(exy)
+  lbound_s = LBOUND(exy)
+  ubound_f = UBOUND(ex)
+  lbound_f = LBOUND(ex)
+
+  !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz,ixx ,iyy, izz) COLLAPSE(3)
+  DO iz = lbound_f(3),ubound_f(3)
+    DO iy = lbound_f(2),ubound_f(2)
+      DO ix = lbound_f(1),ubound_f(1)
+        ixx = ix - lbound_f(1) + lbound_s(1)
+        iyy = iy - lbound_f(2) + lbound_s(2)
+        izz = iz - lbound_f(3) + lbound_s(3)
+
+        ex(ix,iy,iz) = exy(ixx,iyy,izz) + exz(ixx,iyy,izz)
+        ey(ix,iy,iz) = eyx(ixx,iyy,izz) + eyz(ixx,iyy,izz)
+        ez(ix,iy,iz) = ezx(ixx,iyy,izz) + ezy(ixx,iyy,izz)
+        bx(ix,iy,iz) = bxy(ixx,iyy,izz) + bxz(ixx,iyy,izz)
+        by(ix,iy,iz) = byx(ixx,iyy,izz) + byz(ixx,iyy,izz)
+        bz(ix,iy,iz) = bzx(ixx,iyy,izz) + bzy(ixx,iyy,izz)
+      ENDDO
+    ENDDO
+  ENDDO
+  !$OMP END PARALLEL DO
+
+  IF (it.ge.timestat_itstart) THEN
+    localtimes(26) = localtimes(26) + (MPI_WTIME() - tmptime)
+  ENDIF
+
+END subroutine merge_fields
+   
 ! ________________________________________________________________________________________
 !> @brief
 !> PUSH E field a full  time step
@@ -324,8 +455,8 @@ END SUBROUTINE push_efield_2d
 !
 !> @date
 !> Creation March 29 2017
-! ________________________________________________________________________________________
-SUBROUTINE push_psatd_ebfield_3d() bind(C, name='push_psatd_ebfield_3d_')
+
+  SUBROUTINE push_psatd_ebfield
   USE fields, ONLY: g_spectral
 #if defined(FFTW)
   USE fourier_psaotd
@@ -336,14 +467,14 @@ SUBROUTINE push_psatd_ebfield_3d() bind(C, name='push_psatd_ebfield_3d_')
   USE mpi
   USE params, ONLY: it
   USE picsar_precision, ONLY: num
-  USE shared_data, ONLY: fftw_with_mpi, fftw_hybrid
+  USE shared_data, ONLY: fftw_with_mpi, fftw_hybrid, c_dim
   USE time_stat, ONLY: timestat_itstart, localtimes
   IMPLICIT NONE
 
   REAL(num) :: tmptime, tmptime_m
 
 #if defined(DEBUG)
-  WRITE(0, *) "push psatd ebfield 3d: start"
+  WRITE(0, *) "push psatd ebfield : start"
 #endif
 
   IF (it.ge.timestat_itstart) THEN
@@ -369,8 +500,12 @@ SUBROUTINE push_psatd_ebfield_3d() bind(C, name='push_psatd_ebfield_3d_')
     IF (it.ge.timestat_itstart) THEN
       localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime_m)
     ENDIF
-  ELSE
-    CALL push_psaotd_ebfielfs! - PUSH PSATD
+  ELSE 
+    IF(c_dim == 3) THEN
+      CALL push_psaotd_ebfielfs_3d! - PUSH PSATD
+    ELSE IF(c_dim == 2) THEN
+      CALL push_psaotd_ebfielfs_2d
+    ENDIF
   ENDIF
   ! - Inverse Fourier Transform C2R
   IF (fftw_with_mpi) THEN
@@ -388,93 +523,7 @@ SUBROUTINE push_psatd_ebfield_3d() bind(C, name='push_psatd_ebfield_3d_')
   ENDIF
 
 #if defined(DEBUG)
-  WRITE(0, *) "push psatd ebfield 3d: end"
+  WRITE(0, *) "push psatd ebfield : end"
 #endif
 
-END SUBROUTINE
-
-!> @brief
-!> PUSH E, B PSAOTD a full time step
-!> This subroutine pushes the electric and the magnetic fields using
-!> the PSATD solver.
-!
-!> @details
-!
-!> @author
-!> Henri Vincenti
-!> Mathieu Lobet
-!
-!> @date
-!> Creation March 29 2017
-! ________________________________________________________________________________________
-SUBROUTINE push_psatd_ebfield_2d() bind(C, name='push_psatd_ebfield_2d_')
-  USE fields, ONLY: g_spectral
-#if defined(FFTW)
-  USE fourier_psaotd
-#endif
-#if defined(FFTW)
-  USE matrix_data, ONLY: nmatrixes
-#endif
-  USE mpi
-  USE params, ONLY: it
-  USE picsar_precision, ONLY: num
-  USE shared_data, ONLY: fftw_with_mpi, fftw_hybrid
-  USE time_stat, ONLY: timestat_itstart, localtimes
-  IMPLICIT NONE
-
-  REAL(num) :: tmptime, tmptime_m
-
-#if defined(DEBUG)
-  WRITE(0, *) "push psatd ebfield 2d: start"
-#endif
-
-  IF (it.ge.timestat_itstart) THEN
-    tmptime = MPI_WTIME()
-  ENDIF
-#if defined(FFTW)
-  ! - Fourier Transform R2C
-  IF (fftw_with_mpi) THEN
-    IF(fftw_hybrid) THEN
-      CALL get_Ffields_mpi_lb ! -global-hybrid balanced FFT
-    ELSE
-      CALL get_Ffields_mpi! - global-hybrid FFT
-    ENDIF
-
-  ELSE
-    CALL get_Ffields! - local FFT
-  ENDIF
-
-  IF(g_spectral) THEN
-    IF (it.ge.timestat_itstart) THEN
-      tmptime_m = MPI_WTIME()
-    ENDIF
-
-    CALL multiply_mat_vector(nmatrixes)
-
-    IF (it.ge.timestat_itstart) THEN
-      localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime_m)
-    ENDIF
-
-  ELSE
-    CALL push_psaotd_ebfielfs_2d! - PUSH PSATD
-  ENDIF
-  ! - Inverse Fourier Transform C2R
-  IF (fftw_with_mpi) THEN
-    IF(fftw_hybrid) THEN
-      CALL get_fields_mpi_lb! global-hybrid balanced IFFT
-    ELSE
-      CALL get_fields_mpi! global-hybrid IFFT
-    ENDIF
-  ELSE
-    CALL get_fields! local IFFT
-  ENDIF
-#endif
-  IF (it.ge.timestat_itstart) THEN
-    localtimes(24) = localtimes(24) + (MPI_WTIME() - tmptime)
-  ENDIF
-
-#if defined(DEBUG)
-  WRITE(0, *) "push psatd ebfield 2d: end"
-#endif
-
-END SUBROUTINE
+  END SUBROUTINE push_psatd_ebfield

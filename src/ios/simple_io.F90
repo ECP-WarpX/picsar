@@ -449,7 +449,7 @@ SUBROUTINE output_temporal_diagnostics
   WRITE(0, *) "output_temporal_diagnostics: stop"
 #endif
 
-END SUBROUTINE
+END SUBROUTINE output_temporal_diagnostics
 
 
 ! ________________________________________________________________________________________

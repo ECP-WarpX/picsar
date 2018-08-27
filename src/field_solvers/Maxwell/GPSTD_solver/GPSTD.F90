@@ -283,15 +283,15 @@ SUBROUTINE allocate_new_matrix_vector(nvar)
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN) :: nvar
 
-  IF (.NOT. associated(cc_mat)) THEN
+  IF (.NOT. ASSOCIATED(cc_mat)) THEN
     ALLOCATE(cc_mat(ns_max))
   ENDIF
 
-  IF (.NOT. associated(vold)) THEN
+  IF (.NOT. ASSOCIATED(vold)) THEN
     ALLOCATE(vold(ns_max))
   ENDIF
 
-  IF (.NOT. associated(vnew)) THEN
+  IF (.NOT. ASSOCIATED(vnew)) THEN
     ALLOCATE(vnew(ns_max))
   ENDIF
 
@@ -318,6 +318,7 @@ END SUBROUTINE allocate_new_matrix_vector
 !> Creation 2016
 !
 ! ________________________________________________________________________________________
+
 SUBROUTINE multiply_mat_vector(matrix_index)
   USE matrix_coefficients, ONLY: vnew, cc_mat, block3d, vold
 #ifdef _OPENMP
@@ -377,7 +378,7 @@ SUBROUTINE multiply_mat_vector(matrix_index)
   END DO
   !$OMP END PARALLEL DO
 
-END SUBROUTINE
+END SUBROUTINE multiply_mat_vector
 
 ! ________________________________________________________________________________________
 !> @brief

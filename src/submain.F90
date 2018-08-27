@@ -109,7 +109,6 @@ USE sorting
       !!! --- Init iteration variables
       pushtime=0._num
       divE_computed = .False.
-
       IF (l_plasma) THEN
         !!! --- Field gather & particle push
         !IF (rank .EQ. 0) PRINT *, "#1"
@@ -130,30 +129,35 @@ USE sorting
         ENDIF
 #endif
         !!! --- Particle Sorting
-        !write(0, *), 'Sorting'
+        !WRITE(0, *), 'Sorting'
         CALL pxr_particle_sorting
         !IF (rank .EQ. 0) PRINT *, "#4"
         !!! --- Deposit current of particle species on the grid
-        !write(0, *), 'Depose currents'
+        !WRITE(0, *), 'Depose currents'
         CALL pxrdepose_currents_on_grid_jxjyjz
         !IF (rank .EQ. 0) PRINT *, "#5"
         !!! --- Boundary conditions for currents
-        !write(0, *), 'Current_bcs'
+        !WRITE(0, *), 'Current_bcs'
         CALL current_bcs
       ENDIF
 #if defined(FFTW)
       IF (l_spectral) THEN
+
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
-        CALL push_psatd_ebfield_3d
+        CALL push_psatd_ebfield
         !IF (rank .EQ. 0) PRINT *, "#0"
         !!! --- Boundary conditions for E AND B
         CALL efield_bcs
         CALL bfield_bcs
+        IF(absorbing_bcs) THEN
+          CALL field_damping_bcs()
+          CALL merge_fields()
+        ENDIF
       ELSE
 #endif
         !IF (rank .EQ. 0) PRINT *, "#6"
         !!! --- Push B field half a time step
-        !write(0, *), 'push_bfield'
+        !WRITE(0, *), 'push_bfield'
         CALL push_bfield
         !IF (rank .EQ. 0) PRINT *, "#7"
         !!! --- Boundary conditions for B
@@ -230,16 +234,20 @@ USE sorting
 #if defined(FFTW)
       IF (l_spectral) THEN
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
-        CALL push_psatd_ebfield_2d
+        CALL push_psatd_ebfield
         !IF (rank .EQ. 0) PRINT *, "#0"
         !!! --- Boundary conditions for E AND B
         CALL efield_bcs
         CALL bfield_bcs
+        IF (absorbing_bcs) THEN
+          CALL field_damping_bcs()
+          CALL merge_fields()
+        ENDIF
       ELSE
 #endif
         !IF (rank .EQ. 0) PRINT *, "#6"
         !!! --- Push B field half a time step
-        !write(0, *), 'push_bfield'
+        !WRITE(0, *), 'push_bfield'
         CALL push_bfield_2d
         !IF (rank .EQ. 0) PRINT *, "#7"
         !!! --- Boundary conditions for B
@@ -304,6 +312,172 @@ USE sorting
   CALL final_output_time_statistics
 
 END SUBROUTINE step
+! ________________________________________________________________________________________
+!> @brief
+!> init pml arrays 
+!
+!> @author
+!> Haithem Kallala
+!
+!> @date
+!> Creation 2018
+
+SUBROUTINE init_pml_arrays
+  USE field_boundary
+  USE fields
+  USE shared_data
+  USE constants  
+  USE params, ONLY : dt 
+  USE mpi
+  USE mpi_derived_types
+
+  LOGICAL(lp)  :: is_intersection_x, is_intersection_y, is_intersection_z
+  INTEGER(idp) :: ix,iy,iz,pow
+  REAL(num)    :: coeff,b_offset, e_offset
+  INTEGER(idp) :: type_id  
+  REAL(num)    , ALLOCATABLE, DIMENSION(:) :: temp
+
+  coeff = 4._num/25._num
+  b_offset = .50_num
+  e_offset = 0._num
+  pow = 2._idp
+
+  !> Inits pml arrays of the same size as ex fields in the daming direction!
+  !> sigmas are 1d arrray to economize memory
+  
+  !> Pml arrays are initializd to 0.0_num because exp(0.0_num) = 1.0!
+  !> So in case of no pml region inside the mpi domain, pml acts as vaccum
+
+  !> first each proc allocates sigma as a 1d array of size n_global + 2*ng 
+  !> then each proc will compute sigma in the whole domain and will then extract
+  !> the relevent part for its subdomain
+  !> Note that a pml region can overlap many procs even with local psatd !
+  !> In this case (when pml overlaps many procs) field guardcells can act as a
+  !> pml region too (imagine nx_pml = 15 and  nx_local = 10, then 5 cells of
+  !> proc number 2 will be pml regions. Say that we have 3 nxguards, then the 3
+  !> guardcells and 2 physical cells are pmls
+
+  ALLOCATE(sigma_x_e(-nxguards:nx_global+nxguards-1));
+  sigma_x_e = 0.0_num
+  ALLOCATE(sigma_x_b(-nxguards:nx_global+nxguards-1));
+  sigma_x_b = 0.0_num
+  ALLOCATE(sigma_y_e(-nyguards:ny_global+nyguards-1));
+  sigma_y_e = 0.0_num
+  ALLOCATE(sigma_y_b(-nyguards:ny_global+nyguards-1));
+  sigma_y_b = 0.0_num
+  ALLOCATE(sigma_z_e(-nzguards:nz_global+nzguards-1));
+  sigma_z_e = 0.0_num
+  ALLOCATE(sigma_z_b(-nzguards:nz_global+nzguards-1));
+  sigma_z_b = 0.0_num
+
+  !> Inits sigma_x_e and sigma_x_b in the lower bound of the domain along x
+  !> axis
+  !> first, each proc will compute sigma in the whole domain
+  DO ix = 0,nx_pml-1
+    sigma_x_e(ix) = coeff*clight/dx*(nx_pml-ix-e_offset)**pow
+    sigma_x_b(ix) = coeff*clight/dx*(nx_pml-ix-b_offset)**pow
+  ENDDO
+
+  ! > Inits sigma_x_e and sigma_x_b in the upper bound of the domain along x
+  !> axis
+  !> first, each proc will compute sigma in the whole domain
+  DO ix = nx_global-nx_pml, nx_global-1
+    sigma_x_e(ix) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+e_offset)**pow
+    sigma_x_b(ix-1) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+b_offset-1)**pow
+  ENDDO
+
+  !> Each proc extracts the relevent part of sigma 
+  ALLOCATE(temp(-nxguards:nx_global+nxguards)) 
+  temp = sigma_x_e
+  DEALLOCATE(sigma_x_e); ALLOCATE(sigma_x_e(-nxguards:nx+nxguards-1))
+  sigma_x_e = temp(cell_x_min(x_coords+1)-nxguards:cell_x_max(x_coords+1)+nxguards)
+ 
+  temp = sigma_x_b
+  DEALLOCATE(sigma_x_b); ALLOCATE(sigma_x_b(-nxguards:nx+nxguards-1))
+  sigma_x_b = temp(cell_x_min(x_coords+1)-nxguards:cell_x_max(x_coords+1)+nxguards)
+  DEALLOCATE(temp)
+  IF(c_dim == 3) THEN 
+    ! > Inits sigma_y_e and sigma_y_b in the lower bound of the domain along y
+    !> axis
+    !> first, each proc will compute sigma in the whole domain
+    DO iy = 0 , ny_pml-1
+      sigma_y_e(iy) =  coeff*clight/dy*(ny_pml-iy-e_offset)**pow
+      sigma_y_b(iy) =  coeff*clight/dy*(ny_pml-iy-b_offset)**pow
+    ENDDO
+  
+    ! > Inits sigma_y_e and sigma_y_b in the upper bound of the domain along y
+    !> axis
+    !> first, each proc will compute sigma in the whole domain
+    DO iy = ny_global-ny_pml,ny_global-1
+      sigma_y_e(iy) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+e_offset)**pow
+      sigma_y_b(iy-1) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+b_offset-1)**pow
+    ENDDO
+    
+    !> Each proc extracts the relevent part of sigma 
+    ALLOCATE(temp(-nyguards:ny_global+nyguards)) 
+    temp = sigma_y_e
+    DEALLOCATE(sigma_y_e); ALLOCATE(sigma_y_e(-nyguards:ny+nyguards-1))
+    sigma_y_e = temp(cell_y_min(y_coords+1)-nyguards:cell_y_max(y_coords+1)+nyguards)
+    temp = sigma_y_b
+    DEALLOCATE(sigma_y_b); ALLOCATE(sigma_y_b(-nyguards:ny+nyguards-1))
+    sigma_y_b = temp(cell_y_min(y_coords+1)-nyguards:cell_y_max(y_coords+1)+nyguards)
+    DEALLOCATE(temp)
+  ENDIF
+  ! > Inits sigma_z_e and sigma_z_b in the lower bound of the domain along z
+  !> axis
+  !> first, each proc will compute sigma in the whole domain
+  !> Need more straightforward way to do this
+  DO iz =0 , nz_pml-1
+    sigma_z_e(iz) =  coeff*clight/dz*(nz_pml-iz-e_offset)**pow
+    sigma_z_b(iz) =  coeff*clight/dz*(nz_pml-iz-b_offset)**pow
+  ENDDO
+
+  ! > Inits sigma_z_e and sigma_z_b in the upper bound of the domain along z
+  !> axis
+  !> first, each proc will compute sigma in the whole domain
+  !> Need more straightforward way to do this
+  DO iz =  nz_global-nz_pml,nz_global-1 
+     sigma_z_e(iz) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+e_offset)**pow
+     sigma_z_b(iz-1) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+b_offset-1)**pow
+  ENDDO
+
+  !> Each proc extracts the relevent part of sigma 
+  ALLOCATE(temp(-nzguards:nz_global+nzguards))
+  temp = sigma_z_e
+  DEALLOCATE(sigma_z_e); ALLOCATE(sigma_z_e(-nzguards:nz+nzguards-1))
+  sigma_z_e = temp(cell_z_min(z_coords+1)-nzguards:cell_z_max(z_coords+1)+nzguards)
+
+  temp = sigma_z_b 
+  DEALLOCATE(sigma_z_b); ALLOCATE(sigma_z_b(-nzguards:nz+nzguards-1))
+  sigma_z_b = temp(cell_z_min(z_coords+1)-nzguards:cell_z_max(z_coords+1)+nzguards)
+  DEALLOCATE(temp)
+ 
+  !> sigma=exp(-sigma*dt) 
+  !> Uses an exact formulation to damp fields :
+  !> dE/dt = -sigma * E => E(n)=exp(-sigma*dt)*E(n-1)
+  !> Note that fdtd pml solving requires field time centering
+  IF(absorbing_bcs_x) THEN 
+    sigma_x_e = EXP(-sigma_x_e*dt)
+    sigma_x_b = EXP(-sigma_x_b*dt)
+  ELSE 
+    sigma_x_e = 1.0_num
+    sigma_x_b = 1.0_num
+  ENDIF
+  IF(absorbing_bcs_y) THEN
+    sigma_y_e = EXP(-sigma_y_e*dt)
+    sigma_y_b = EXP(-sigma_y_b*dt)
+  ELSE
+    sigma_y_e = 1.0_num
+    sigma_y_b = 1.0_num
+  ENDIF  
+  IF(absorbing_bcs_z) THEN
+    sigma_z_e = EXP(-sigma_z_e*dt)
+    sigma_z_b = EXP(-sigma_z_b*dt)
+  ELSE 
+    sigma_z_e = 1.0_num
+    sigma_z_b = 1.0_num
+  ENDIF
+END SUBROUTINE init_pml_arrays
 
 ! ________________________________________________________________________________________
 !> @brief
@@ -322,7 +496,7 @@ SUBROUTINE initall
 #if defined(FFTW)
   USE fourier_psaotd
   USE gpstd_solver
-  USE group_parameters, ONLY: nb_group_x, nb_group_y, nb_group_z
+  USE shared_data, ONLY: nb_group_x, nb_group_y, nb_group_z
 #endif
   USE mpi
   USE output_data, ONLY: particle_dump, npdumps, particle_dumps
@@ -369,7 +543,11 @@ SUBROUTINE initall
     ymax = HUGE(1.0_num) 
     y_min_local = -HUGE(1.0_num)
     y_max_local = HUGE(1.0_num)
+    cell_y_min = 0_idp
+    cell_y_max = 0_idp
   ENDIF
+
+  IF(absorbing_bcs_x .OR. absorbing_bcs_y .OR. absorbing_bcs_z) absorbing_bcs = .TRUE.
 
   ! Few calculations and updates
   nc    = nlab*g0! density (in the simulation frame)
@@ -428,107 +606,133 @@ SUBROUTINE initall
   dys2 = dy*0.5_num
   dzs2 = dz*0.5_num
 
-  ! - Init stencil coefficients
-  CALL init_stencil_coefficients()
+  ! - Init stencil coefficients for FDTD
 
+  IF(.NOT. l_spectral) THEN
+    CALL init_stencil_coefficients()
+  ENDIF
   ! Summary
   IF (rank .EQ. 0) THEN
-    write(0, *) ''
-    write(0, *) 'SIMULATION PARAMETERS:'
-    write(0, *) 'Dimension:', c_dim
-    write(0, *) 'dx, dy, dz:', dx, dy, dz
-    write(0, *) 'dt:', dt, 's', dt*1e15, 'fs'
-    write(0, '(" Coefficient on dt determined via the CFL (dtcoef): ", F12.5)')       &
+    WRITE(0, *) ''
+    WRITE(0, *) 'SIMULATION PARAMETERS:'
+    WRITE(0, *) 'Dimension:', c_dim
+    WRITE(0, *) 'dx, dy, dz:', dx, dy, dz
+    WRITE(0, *) 'dt:', dt, 's', dt*1e15, 'fs'
+    WRITE(0, '(" Coefficient on dt determined via the CFL (dtcoef): ", F12.5)')       &
     dtcoef
-    write(0, *) 'Total time:', tmax, 'plasma periods:', tmax/w0_l, 's'
-    write(0, *) 'Number of steps:', nsteps
-    write(0, *) 'Tiles:', ntilex, ntiley, ntilez
-    write(0, *) 'MPI com current:', mpicom_curr
-    write(0, *) 'Current deposition method:', currdepo
-    write(0, *) 'Charge deposition algo:', rhodepo
-    write(0, *) 'Field gathering method:', fieldgathe
-    write(0, *) 'Field gathering plus particle pusher seperated:', fg_p_pp_separated
-    write(0, *) 'Current/field gathering order:', nox, noy, noz
-    write(0, '(" Particle communication: (partcom=", I1, ")")') partcom
+    WRITE(0, *) 'Total time:', tmax, 'plasma periods:', tmax/w0_l, 's'
+    WRITE(0, *) 'Number of steps:', nsteps
+    WRITE(0, *) 'Tiles:', ntilex, ntiley, ntilez
+    WRITE(0, *) 'MPI com current:', mpicom_curr
+    WRITE(0, *) 'Current deposition method:', currdepo
+    WRITE(0, *) 'Charge deposition algo:', rhodepo
+    WRITE(0, *) 'Field gathering method:', fieldgathe
+    WRITE(0, *) 'Field gathering plus particle pusher seperated:', fg_p_pp_separated
+    WRITE(0, *) 'Current/field gathering order:', nox, noy, noz
+    WRITE(0, '(" Particle communication: (partcom=", I1, ")")') partcom
     IF (particle_pusher.eq.1) THEN
-      write(0, '(" Pusher: Jean-Luc Vay algorithm, particle_pusher=", I1)')           &
+      WRITE(0, '(" Pusher: Jean-Luc Vay algorithm, particle_pusher=", I1)')           &
       particle_pusher
     ELSE
-      write(0, '(" Pusher: Boris algorithm (particle_pusher=", I1, ")")')             &
+      WRITE(0, '(" Pusher: Boris algorithm (particle_pusher=", I1, ")")')             &
       particle_pusher
     ENDIF
-    write(0, *) 'Maxwell derivative coeff:', xcoeffs
-    write(0, *) 'MPI buffer size:', mpi_buf_size
+    IF(.NOT. l_spectral) THEN
+      WRITE(0, *) 'Maxwell derivative coeff:', xcoeffs
+    ENDIF
+    WRITE(0, *) 'MPI buffer size:', mpi_buf_size
     WRITE(0, *) ''
     WRITE(0, *) 'Vector length current deposition', lvec_curr_depo
     WRITE(0, *) 'Vector length charge deposition', lvec_charge_depo
     WRITE(0, *) 'Vector length field gathering', lvec_fieldgathe
-    write(0, *) ''
-    write(0, *) 'PLASMA PROPERTIES:'
-    write(0, *) 'Distribution:', pdistr
-    write(0, *) 'Density in the lab frame:', nlab, 'm^-3'
-    write(0, *) 'Density in the simulation frame:', nc, 'm^-3'
-    write(0, *) 'Cold plasma frequency in the lab frame:', wlab, 's^-1'
-    write(0, *) 'cold plasma wavelength:', lambdalab, 'm', lambdalab*1e6, 'um'
-    write(0, *) ''
+    WRITE(0, *) ''
+    WRITE(0, *) 'PLASMA PROPERTIES:'
+    WRITE(0, *) 'Distribution:', pdistr
+    WRITE(0, *) 'Density in the lab frame:', nlab, 'm^-3'
+    WRITE(0, *) 'Density in the simulation frame:', nc, 'm^-3'
+    WRITE(0, *) 'Cold plasma frequency in the lab frame:', wlab, 's^-1'
+    WRITE(0, *) 'cold plasma wavelength:', lambdalab, 'm', lambdalab*1e6, 'um'
+    WRITE(0, *) ''
 
-    write(0, '(" MPI domain decomposition")')
-    write(0, *) 'Topology:', topology
-    write(0, '(" Local number of cells:", I5, X, I5, X, I5)') nx, ny, nz
-    write(0, '(" Local number of grid point:", I5, X, I5, X, I5)') nx_grid, ny_grid,  &
+    WRITE(0, '(" MPI domain decomposition")')
+    WRITE(0, *) 'Topology:', topology
+    WRITE(0, '(" Local number of cells:", I5, X, I5, X, I5)') nx, ny, nz
+    WRITE(0, '(" Local number of grid point:", I5, X, I5, X, I5)') nx_grid, ny_grid,  &
     nz_grid
-    write(0, '(" Guard cells:", I5, X, I5, X, I5)') nxguards, nyguards, nzguards
-    write(0, *) ''
-    write(0, '(" FFTW - parameters ")')
+    WRITE(0, '(" Guard cells:", I5, X, I5, X, I5)') nxguards, nyguards, nzguards
+    WRITE(0, *) ''
+    IF(absorbing_bcs_x) THEN
+       WRITE(0, '(" Absorbing field bcs X axis, nx_pml =:", I5)')  nx_pml
+    ELSE 
+       WRITE(0, '(" Periodic field bcs X axis")')
+    ENDIF
+    IF(absorbing_bcs_y) THEN
+       WRITE(0, '(" Absorbing field bcs Y axis, ny_pml =:", I5 )')  ny_pml
+    ELSE
+       WRITE(0, '(" Periodic field bcs Y axis")')
+    ENDIF
+    IF(absorbing_bcs_z) THEN
+       WRITE(0, '(" Absorbing field bcs Z axis, nz_pml =:", I5 )')  nz_pml
+    ELSE
+       WRITE(0, '(" Periodic field bcs Z axis")')
+    ENDIF
+
+    IF(l_spectral) THEN
+
 #if defined(FFTW)
-    IF (l_spectral)    write(0, '(" PSATD Maxwell Solver")')
-    IF (fftw_with_mpi) write(0, '(" FFTW distributed version - MPI ")')
-    IF (fftw_hybrid)   write(0, '(" FFTW distributed version")')
-    IF (p3dfft_flag)   write(0, '(" USING PDFFT")')
-    IF(p3dfft_stride .AND. p3dfft_flag) write(0, '(" USING STRIDED  PDFFT")')
-    IF(p3dfft_stride .EQV. .FALSE. .AND. p3dfft_flag) write(0, '(" USING UNSTRIDED PDFFT")')
-    IF(fftw_hybrid) write(0, '(" nb_groups :", I5, X, I5, X, I5)') nb_group_x,nb_group_y,nb_group_z
-    IF (fftw_threads_ok) write(0, '(" FFTW MPI - Threaded support enabled ")')
-    IF (fftw_mpi_transpose) write(0, '(" FFTW MPI Transpose plans enabled ")')
+      WRITE(0, '(" FFTW - parameters ")')
+      IF (g_spectral)    WRITE(0, '(" G_spectral = TRUE")')
+      IF (fftw_with_mpi) WRITE(0, '(" FFTW distributed version - MPI ")')
+      IF (fftw_hybrid)   WRITE(0, '(" FFTW distributed version")')
+      IF (p3dfft_flag)   WRITE(0, '(" USING PDFFT")')
+      IF(p3dfft_stride .AND. p3dfft_flag) WRITE(0, '(" USING STRIDED  PDFFT")')
+      IF(p3dfft_stride .EQV. .FALSE. .AND. p3dfft_flag) WRITE(0, '(" USING UNSTRIDED PDFFT")')
+      IF(fftw_hybrid) WRITE(0, '(" nb_groups :", I5, X, I5, X, I5)') nb_group_x,nb_group_y,nb_group_z
+      IF(fftw_hybrid) WRITE(0, '(" nb guards groups :", I5, X, I5, X, I5)') nxg_group,nyg_group,nzg_group
+      IF (fftw_threads_ok) WRITE(0, '(" FFTW MPI - Threaded support enabled ")')
+      IF (fftw_mpi_transpose) WRITE(0, '(" FFTW MPI Transpose plans enabled ")')
 #endif
+    ELSE
+      WRITE(0,'(" FDTD_SOLVER ")')
+    ENDIF
     ! Sorting
     IF (sorting_activated.gt.0) THEN
-      write(0, *) 'Particle sorting activated'
-      write(0, *) 'dx:', sorting_dx
-      write(0, *) 'dy:', sorting_dy
-      write(0, *) 'dz:', sorting_dz
-      write(0, *) 'shiftx:', sorting_shiftx
-      write(0, *) 'shifty:', sorting_shifty
-      write(0, *) 'shiftz:', sorting_shiftz
-      write(0, *) ''
+      WRITE(0, *) 'Particle sorting activated'
+      WRITE(0, *) 'dx:', sorting_dx
+      WRITE(0, *) 'dy:', sorting_dy
+      WRITE(0, *) 'dz:', sorting_dz
+      WRITE(0, *) 'shiftx:', sorting_shiftx
+      WRITE(0, *) 'shifty:', sorting_shifty
+      WRITE(0, *) 'shiftz:', sorting_shiftz
+      WRITE(0, *) ''
     ELSE
-      write(0, *) 'Particle sorting non-activated'
-      write(0, *) ''
+      WRITE(0, *) 'Particle sorting non-activated'
+      WRITE(0, *) ''
     ENDIF
 
     ! Species properties
-    write(0, *)  'Number of species:', nspecies
+    WRITE(0, *)  'Number of species:', nspecies
     DO ispecies=1, nspecies
       curr => species_parray(ispecies)
-      write(0, *) trim(adjustl(curr%name))
-      write(0, *) 'Charge:', curr%charge
-      write(0, *) 'Drift velocity:', curr%vdrift_x, curr%vdrift_y, curr%vdrift_z
-      write(0, *) 'Sorting period:', curr%sorting_period
-      write(0, *) 'Sorting start:', curr%sorting_start
-      write(0, *) ''
+      WRITE(0, *) trim(adjustl(curr%name))
+      WRITE(0, *) 'Charge:', curr%charge
+      WRITE(0, *) 'Drift velocity:', curr%vdrift_x, curr%vdrift_y, curr%vdrift_z
+      WRITE(0, *) 'Sorting period:', curr%sorting_period
+      WRITE(0, *) 'Sorting start:', curr%sorting_start
+      WRITE(0, *) ''
     end do
 
     ! Diags
     IF (timestat_activated.gt.0) THEN
-      write(0, *) 'Output of time statistics activated'
-      write(0, *) 'Computation of the time statistics starts at', timestat_itstart
-      write(0, *) 'Buffer size:', nbuffertimestat
+      WRITE(0, *) 'Output of time statistics activated'
+      WRITE(0, *) 'Computation of the time statistics starts at', timestat_itstart
+      WRITE(0, *) 'Buffer size:', nbuffertimestat
     ELSE
-      write(0, *) 'Output of time statistics non-activated'
-      write(0, '(X, "Computation of the time statistics starts at iteration:", I5)')  &
+      WRITE(0, *) 'Output of time statistics non-activated'
+      WRITE(0, '(X, "Computation of the time statistics starts at iteration:", I5)')  &
       timestat_itstart
     ENDIF
-    write(0, *)
+    WRITE(0, *)
 
     ! Particle Dump
     IF (npdumps.gt.0) THEN
@@ -552,12 +756,12 @@ SUBROUTINE initall
   !!! --- Set tile split for particles
   CALL set_tile_split
 
-  IF (rank .EQ. 0) write(0, *) "Set tile split: done"
+  IF (rank .EQ. 0) WRITE(0, *) "Set tile split: done"
 
   ! - Allocate particle arrays for each tile of each species
   CALL init_tile_arrays
 
-  IF (rank .EQ. 0) write(0, *) "Initialization of the tile arrays: done"
+  IF (rank .EQ. 0) WRITE(0, *) "Initialization of the tile arrays: done"
 
   ! - Load particle distribution on each tile
   CALL load_particles
@@ -565,9 +769,14 @@ SUBROUTINE initall
   ! - Load laser antenna particles
   CALL load_laser
 
-  IF (rank .EQ. 0) write(0, *) "Creation of the particles: done"
+  IF (rank .EQ. 0) WRITE(0, *) "Creation of the particles: done"
 
   init_localtimes(1) = MPI_WTIME() - tdeb
+
+  ! - If absorbing bcs then init pml arrays
+  IF(absorbing_bcs) THEN
+    CALL init_pml_arrays
+  ENDIF
 
 #if defined(FFTW)
   ! -Init Fourier
@@ -584,7 +793,28 @@ SUBROUTINE initall
   ex=0.0_num;ey=0.0_num;ez=0.0_num
   bx=0.0_num;by=0.0_num;bz=0.0_num
   jx=0.0_num;jy=0.0_num;jz=0.0_num
+  IF(absorbing_bcs) THEN
+    CALL init_splitted_fields_random()
+  ENDIF
 END SUBROUTINE initall
+
+
+SUBROUTINE init_splitted_fields_random()
+  USE fields
+  exy = 0.5_num * ex
+  exz = 0.5_num * ex
+  eyx = 0.5_num * ey
+  eyz = 0.5_num * ey
+  ezx = 0.5_num * ez
+  ezy = 0.5_num * ez
+  bxy = 0.5_num * bx
+  bxz = 0.5_num * bx
+  byx = 0.5_num * by
+  byz = 0.5_num * by
+  bzx = 0.5_num * bz
+  bzy = 0.5_num * bz
+
+END SUBROUTINE init_splitted_fields_random
 
 ! ________________________________________________________________________________________
 !> @brief
