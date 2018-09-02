@@ -55,7 +55,7 @@ if host.startswith('edison') or host.startswith('cori'):
         if args.architecture == 'knl':
             fargs = '-O3 -fopenmp -march=knl -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0'
         else:
-            fargs = '-O3 -fopenmp -D FFTW=1 -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0'
+            fargs = '-O3 -fopenmp  -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0'
     elif args.compiler == 'intel':
         fcomp = 'intel'
         libs = ''
