@@ -296,8 +296,6 @@ SUBROUTINE initall
     write(0, *) 'Number of steps:', nsteps
     write(0, *) 'Tiles:', ntilex, ntiley, ntilez
     write(0, *) 'MPI com current:', mpicom_curr
-    write(0, *) 'Current deposition method:', currdepo
-    write(0, *) 'Charge deposition algo:', rhodepo
     write(0, *) 'Field gathering method:', fieldgathe
     write(0, *) 'Field gathering plus particle pusher seperated:', fg_p_pp_separated
     write(0, *) 'Current/field gathering order:', nox, noy, noz

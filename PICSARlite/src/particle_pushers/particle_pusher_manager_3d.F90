@@ -207,7 +207,6 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg
         isgathered=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr=>species_parray(ispecies)
-          IF (curr%is_antenna) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isgathered=.TRUE.
@@ -252,7 +251,6 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg
             ! - Get current tile properties
             ! - Init current tile variables
             curr=>species_parray(ispecies)
-            IF (curr%is_antenna) CYCLE
             curr_tile=>curr%array_of_tiles(ix, iy, iz)
             count=curr_tile%np_tile(1)
 
@@ -426,7 +424,6 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg, eyg, ezg, bx
 
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr=>species_parray(ispecies)
-          IF (curr%is_antenna) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isgathered=.TRUE.
@@ -472,7 +469,6 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg, eyg, ezg, bx
             ! - Get current tile properties
             ! - Init current tile variables
             curr=>species_parray(ispecies)
-            IF (curr%is_antenna) CYCLE
             curr_tile=>curr%array_of_tiles(ix, iy, iz)
             count=curr_tile%np_tile(1)
             IF (count .EQ. 0) CYCLE
@@ -627,7 +623,6 @@ SUBROUTINE particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
         isgathered=.FALSE.
         DO ispecies=1, nspecies! LOOP ON SPECIES
           curr=>species_parray(ispecies)
-          IF (curr%is_antenna) CYCLE
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .GT. 0) isgathered=.TRUE.
@@ -672,7 +667,6 @@ SUBROUTINE particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
             ! - Get current tile properties
             ! - Init current tile variables
             curr=>species_parray(ispecies)
-            IF (curr%is_antenna) CYCLE
             curr_tile=>curr%array_of_tiles(ix, iy, iz)
             count=curr_tile%np_tile(1)
             IF (count .EQ. 0) CYCLE

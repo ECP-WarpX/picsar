@@ -199,20 +199,15 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
   ! Current deposition branches
   ! _______________________________________________________
   ! Classical current deposition, non-optimized/no tiling
-  IF (currdepo.EQ.5) THEN
-    IF ((nox.eq.noy).AND.(noy.eq.noz)) THEN
+  IF ((nox.eq.noy).AND.(noy.eq.noz).AND.(nox>0.and.nox<4)) THEN
       CALL pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq(depose_jxjyjz, jx, jy, &
       jz, nx, ny, nz, nxjguards, nyjguards, nzjguards, nox, noy, noz, dx, dy, dz, dt)
-    ELSE
+  ELSE
        PRINT *, 'CALL pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp'
        STOP
-    ENDIF
+  ENDIF
     ! _______________________________________________________
     ! Classical current deposition, non-optimized/tiling
-  ELSE
-     PRINT *, 'pxrdepose_currents_on_grid_jxjyjz: currdepo should be 5'
-     STOP
-  ENDIF
 
   !!! --- Stop Vtune analysis
 #if VTUNE==2

@@ -442,59 +442,12 @@ USE constants
 END MODULE buff_exchange_part
 
 ! ________________________________________________________________________________________
-!> Module defining particle_antenna type
-! ________________________________________________________________________________________
-MODULE antenna!#do not parse
-  USE constants
-  TYPE particle_antenna
-    REAL(num)         ::  vector_x
-    REAL(num)         ::  vector_y
-    REAL(num)         ::  vector_z
-    REAL(num)         ::  spot_x
-    REAL(num)         ::  spot_y
-    REAL(num)         ::  spot_z
-    REAL(num)         ::  pvec_x
-    REAL(num)         ::  pvec_y
-    REAL(num)         ::  pvec_z
-    REAL(num), DIMENSION(3) ::  polvector1, polvector2, vector!source_v
-    REAL(num)         :: laser_a_1!laser particle max_v_1 at focus (in clight unit)
-    REAL(num)         :: laser_a_2!laser particle max_v_2 at focus (in clight unit)
-    REAL(num)         :: Emax_laser_1
-    REAL(num)         :: Emax_laser_2
-    REAL(num)         :: Emax
-    REAL(num)         :: laser_w0!laser waist at focus
-    REAL(num)         :: inv_w02! 1./w0**2
-    COMPLEX(cpx)      :: q_z! complex curv on the plan
-    COMPLEX(cpx)      :: q_0! complex_curv at focus
-    REAL(num)         :: laser_ctau! length of the pulse --->
-    ! ---> (length from the peak to 1/e*pick= c*time_duration_of_the_pulse)
-    REAL(num)         :: laser_tau! time duration of the pulse
-    REAL(num)         :: t_peak
-    REAL(num)         :: laser_z0! initial position with respect to (spot, vector)
-    LOGICAL(lp)       :: is_lens! if .TRUE. the is a this lens beteen plan and source
-    REAL(num)         :: laser_zf! distance between lens and plan
-    REAL(num)         :: laser_z! distance between focus and lens
-    REAL(num)         :: focal_length! focal length of the lens
-    REAL(num)         :: zr! rayleigh length of the laser
-    REAL(num)         :: inv_zr!1/zr
-    REAL(num)         :: polangle! phase shift between laser along povector2 -->
-    ! --> and polvector1
-    REAL(num)         :: lambda_laser
-    REAL(num)         :: k0_laser
-    COMPLEX(cpx)      :: diffract_factor
-    INTEGER(idp)      :: temporal_order
-    INTEGER(idp)      :: time_window! 0 for Gaussian 1 Hanning Window
-  END TYPE particle_antenna
-END MODULE antenna
-
-! ________________________________________________________________________________________
 !> @brief
 !> Module containing the Fortran object descriptor representing a particle species
 ! ________________________________________________________________________________________
 MODULE particle_speciesmodule!#do not parse
   USE particle_tilemodule
   USE constants
-  USE antenna
   REAL(num)   :: kin_energy_mpi
   REAL(num)   :: kin_energy_total
 
@@ -503,11 +456,6 @@ MODULE particle_speciesmodule!#do not parse
     ! Species kinetic energy
     REAL(num)   :: kin_energy_sp
     ! Attributes of particle species object
-    !> Particle antenna flag (.FALSE. by default)
-    LOGICAL(lp) :: is_antenna = .FALSE.
-    !> Antenna params (init if is_antenna true)
-    TYPE(particle_antenna) :: antenna_params
-    !> Particle species name
     CHARACTER(LEN=string_length) :: name
     !> Particle species charge
     REAL(num) :: charge
@@ -713,20 +661,12 @@ MODULE params
   INTEGER(idp) :: mpicom_curr
   !> Seed for random drawings
   INTEGER(isp) :: seed
-  !> Current deposition method
-  INTEGER(idp) :: currdepo = 0
-  !> Charge deposition method
-  INTEGER(idp) :: rhodepo = 0
   !> Field gathering method
   INTEGER(idp) :: fieldgathe = 0
   !> Type of comm routine to use for particles
   INTEGER(idp) :: partcom = 0
   !> Field gathering + part. pusher seperated flag
   INTEGER(idp) :: fg_p_pp_separated = 0
-  !> Vector size for the current deposition
-  INTEGER(idp) :: lvec_curr_depo = 16
-  !> Vector size for the charge deposition
-  INTEGER(idp) :: lvec_charge_depo = 16
   !> Vector size for the field gathering
   INTEGER(idp) :: lvec_fieldgathe = 16
   !> MPI buffer size
@@ -1418,189 +1358,6 @@ MODULE shared_data
   INTEGER(idp) :: npart_local
   INTEGER(idp) :: npart_global
 END MODULE shared_data
-
-! ________________________________________________________________________________________
-!> Module for the Maxwell Solver coefficients
-! ________________________________________________________________________________________
-MODULE kyee_em3d
-  USE constants
-  !> alphax Maxwell coefficient = 7./12.
-  REAL(num) :: alphax = 0.58333333333333337_num
-  !> alphax Maxwell coefficient = 1./12.
-  REAL(num) :: betaxy = 0.083333333333333329_num
-  !> alphax Maxwell coefficient = 1./12.
-  REAL(num) :: betaxz = 0.083333333333333329_num
-  !> gammax Maxwell coefficient = 1./48.
-  REAL(num) :: gammax = 0.020833333333333332_num
-  !> alphay Maxwell coefficient = 7./12.
-  REAL(num) :: alphay = 0.58333333333333337_num
-  !> betayx Maxwell coefficient = 1./12.
-  REAL(num) :: betayx = 0.083333333333333329_num
-  !> betayz Maxwell coefficient = 1./12.
-  REAL(num) :: betayz = 0.083333333333333329_num
-  !> gammay Maxwell coefficient = 1./48.
-  REAL(num) :: gammay = 0.020833333333333332_num
-  !> alphaz Maxwell coefficient = 7./12.
-  REAL(num) :: alphaz = 0.58333333333333337_num
-  !> betazx Maxwell coefficient = 1./12.
-  REAL(num) :: betazx = 0.083333333333333329_num
-  !> betazy Maxwell coefficient = 1./12.
-  REAL(num) :: betazy = 0.083333333333333329_num
-  !> gammaz Maxwell coefficient = 1./48.
-  REAL(num) :: gammaz = 0.020833333333333332_num
-  !> Coefficient for the lehe solver
-  REAL(num) :: deltaz = 0.000000000000000000_num
-END MODULE kyee_em3d
-
-! ________________________________________________________________________________________
-!> Module containing pointer to the python arrays (used in em3dsolverPXR.py)
-! ________________________________________________________________________________________
-MODULE python_pointers
-  USE constants
-  !> Equivalent of pg.nps, the number of particles for each species
-  INTEGER(idp), POINTER :: partn(:)
-  !> Maximal number of particles, equivalent of pg.npmax in em3dsolverPXR
-  INTEGER(idp) :: partnmax
-  !> Number of guard cells in x, equivalent of particle_tile%nxg_tile
-  INTEGER(idp) :: nxtg
-  !> Number of guard cells in y, equivalent of particle_tile%nyg_tile
-  INTEGER(idp) :: nytg
-  !> Number of guard cells in z, equivalent of particle_tile%nzg_tile
-  INTEGER(idp) :: nztg
-  !> Number of nodes in x, equivalent of particle_tile%nx_grid_tile
-  INTEGER(idp) :: nxgt
-  !> Number of nodes in y, equivalent of particle_tile%ny_grid_tile
-  INTEGER(idp) :: nygt
-  !> Number of nodes in z, equivalent of particle_tile%nz_grid_tile
-  INTEGER(idp) :: nzgt
-  !> Number of cells in x, equivalent of particle_tile%nx_cells_tile
-  INTEGER(idp) :: nxct
-  !> Number of cells in y, equivalent of particle_tile%ny_cells_tile
-  INTEGER(idp) :: nyct
-  !> Number of cells in z, equivalent of particle_tile%nz_cells_tile
-  INTEGER(idp) :: nzct
-  !> Minimal cell index in x, equivalent of particle_tile%nx_tile_min
-  INTEGER(idp) :: nxmin
-  !> Maximal cell index in x, equivalent of particle_tile%nx_tile_max
-  INTEGER(idp) :: nxmax
-  !> Minimal cell index in y, equivalent of particle_tile%ny_tile_min
-  INTEGER(idp) :: nymin
-  !> Maximal cell index in y, equivalent of particle_tile%ny_tile_max
-  INTEGER(idp) :: nymax
-  !> Minimal cell index in z, equivalent of particle_tile%nz_tile_min
-  INTEGER(idp) :: nzmin
-  !> Maximal cell index in z, equivalent of particle_tile%nz_tile_max
-  INTEGER(idp) :: nzmax
-  ! Tile position
-  !> Minimal tile limit in x: equivalent of particle_tile%x_tile_min
-  REAL(num) :: xtmin
-  !> Minimal tile limit in y: equivalent of particle_tile%y_tile_min
-  REAL(num) :: ytmin
-  !> Minimal tile limit in z: equivalent of particle_tile%z_tile_min
-  REAL(num) :: ztmin
-  !> Maximal tile limit in x: equivalent of particle_tile%x_tile_max
-  REAL(num) :: xtmax
-  !> Maximal tile limit in y: equivalent of particle_tile%y_tile_max
-  REAL(num) :: ytmax
-  !> Maximal tile limit in z: equivalent of particle_tile%z_tile_max
-  REAL(num) :: ztmax
-  !> Minimal grid tile boundary in x
-  REAL(num) :: xgtmin
-  !> Minimal grid tile boundary in y
-  REAL(num) :: ygtmin
-  !> Minimal grid tile boundary in z
-  REAL(num) :: zgtmin
-  !> Maximal grid tile boundary in x
-  REAL(num) :: xgtmax
-  !> Maximal grid tile boundary in y
-  REAL(num) :: ygtmax
-  !> Maximal grid tile boundary in z
-  REAL(num) :: zgtmax
-  !> array for particle x position
-  REAL(num), DIMENSION(:), POINTER :: partx
-#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-  !dir$ attributes align:64 :: partx
-#endif
-  !DIR ATTRIBUTES FASTMEM  :: partx
-  !> array for particle y position
-  REAL(num), DIMENSION(:), POINTER :: party
-#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-  !dir$ attributes align:64 :: party
-#endif
-  !DIR ATTRIBUTES FASTMEM  :: party
-  !> array for particle z position
-  REAL(num), DIMENSION(:), POINTER :: partz
-#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-  !dir$ attributes align:64 :: partz
-#endif
-  !DIR ATTRIBUTES FASTMEM  :: partz
-  !> array for particle x momentum
-  REAL(num), DIMENSION(:), POINTER :: partux
-#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-  !dir$ attributes align:64 :: partux
-#endif
-  !DIR ATTRIBUTES FASTMEM  :: partux
-  !> array for particle y momentum
-  REAL(num), DIMENSION(:), POINTER :: partuy
-#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-  !dir$ attributes align:64 :: partuy
-#endif
-  !DIR ATTRIBUTES FASTMEM  :: partuy
-  !> array for particle z momentum
-  REAL(num), DIMENSION(:), POINTER :: partuz
-#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-  !dir$ attributes align:64 :: partuz
-#endif
-  !DIR ATTRIBUTES FASTMEM  :: partuz
-  !> array for the inverse of the particle gamma factor
-  REAL(num), DIMENSION(:), POINTER :: partgaminv
-#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-  !dir$ attributes align:64 :: partgaminv
-#endif
-  !DIR ATTRIBUTES FASTMEM  :: partgaminv
-  !> Array for particle weights and ids
-  REAL(num), DIMENSION(:, :), POINTER :: pid
-#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-  !dir$ attributes align:64 :: pid
-#endif
-  !DIR ATTRIBUTES FASTMEM  :: pid
-  !> Particle Ex electric field
-  REAL(num), DIMENSION(:), POINTER :: partex
-#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-  !dir$ attributes align:64 :: partex
-#endif
-  !DIR ATTRIBUTES FASTMEM  :: partex
-  !> Particle Ey electric field
-  REAL(num), DIMENSION(:), POINTER :: partey
-#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-  !dir$ attributes align:64 :: partey
-#endif
-  !DIR ATTRIBUTES FASTMEM  :: partey
-  !> Particle Ez electric field
-  REAL(num), DIMENSION(:), POINTER :: partez
-#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-  !dir$ attributes align:64 :: partez
-#endif
-  !DIR ATTRIBUTES FASTMEM  :: partez
-  !> Particle Bx magnetic field
-  REAL(num), DIMENSION(:), POINTER :: partbx
-#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-  !dir$ attributes align:64 :: partbx
-#endif
-  !DIR ATTRIBUTES FASTMEM  :: partbx
-  !> Particle By magnetic field
-  REAL(num), DIMENSION(:), POINTER :: partby
-#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-  !dir$ attributes align:64 :: partby
-#endif
-  !DIR ATTRIBUTES FASTMEM  :: partby
-  !> Particle Bz magnetic field
-  REAL(num), DIMENSION(:), POINTER :: partbz
-#if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER
-  !dir$ attributes align:64 :: partbz
-#endif
-  !DIR ATTRIBUTES FASTMEM  :: partbz
-END MODULE python_pointers
 
 ! ________________________________________________________________________________________
 !> @brief

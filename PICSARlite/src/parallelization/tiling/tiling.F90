@@ -701,7 +701,6 @@ MODULE tiling
     IF (pdistr .EQ. 1) THEN
       DO ispecies=1, nspecies
         curr=>species_parray(ispecies)
-        IF (curr%is_antenna) CYCLE
         IF (c_dim.eq.3) THEN
           jmin = NINT(MAX(curr%x_min-x_min_local, 0.0_num)/dx)
           jmax = NINT(MIN(curr%x_max-x_min_local, x_max_local-x_min_local)/dx)
@@ -752,7 +751,6 @@ MODULE tiling
     ELSE IF (pdistr .EQ. 2) THEN
       DO ispecies=1, nspecies
         curr=>species_parray(ispecies)
-        IF (curr%is_antenna) CYCLE
         jmin = NINT(MAX(curr%x_min-x_min_local, 0.0_num)/dx)
         jmax = NINT(MIN(curr%x_max-x_min_local, x_max_local-x_min_local)/dx)
         kmin = NINT(MAX(curr%y_min-y_min_local, 0.0_num)/dy)
@@ -796,7 +794,6 @@ MODULE tiling
       !!! --- Sets-up particle space distribution (random space with a given velocity)
     ELSE IF (pdistr .EQ. 3) THEN
       DO ispecies=1, nspecies
-        IF (curr%is_antenna) CYCLE
         curr=>species_parray(ispecies)
         jmin = NINT(MAX(curr%x_min-x_min_local, 0.0_num)/dx)
         jmax = NINT(MIN(curr%x_max-x_min_local, x_max_local-x_min_local)/dx)
@@ -844,7 +841,6 @@ MODULE tiling
     ntot=0
     DO ispecies=1, nspecies
       curr=>species_parray(ispecies)
-      IF (curr%is_antenna) CYCLE
       CALL MPI_ALLREDUCE(curr%species_npart, npart, 1_isp, MPI_INTEGER8, MPI_SUM,     &
       comm, err)
       ntot=ntot+npart
