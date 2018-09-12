@@ -264,6 +264,114 @@ SUBROUTINE merge_fields()
   ENDIF
 
 END subroutine merge_fields
+
+! ________________________________________________________________________________________
+!> @brief
+!> Mege Electric splitted fields of when using absorbing_bcs to compute real EM field
+!> @author
+!> Haithem Kallala
+!
+!> @date
+!> Creation 2018
+! ________________________________________________________________________________________
+
+SUBROUTINE merge_e_fields()
+  USE fields
+  USE shared_data
+  USE omp_lib
+  USE time_stat
+  USE params
+
+  IMPLICIT NONE
+  INTEGER(idp)  :: ix,iy,iz,ixx,iyy,izz,&
+  ubound_s(3), ubound_f(3), lbound_s(3), lbound_f(3)
+  REAL(num)     :: tmptime
+
+  IF (it.ge.timestat_itstart) THEN
+    tmptime = MPI_WTIME()
+  ENDIF
+
+  ubound_s = UBOUND(exy)
+  lbound_s = LBOUND(exy)
+  ubound_f = UBOUND(ex)
+  lbound_f = LBOUND(ex)
+
+  !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz,ixx ,iyy, izz) COLLAPSE(3)
+  DO iz = lbound_f(3),ubound_f(3)
+    DO iy = lbound_f(2),ubound_f(2)
+      DO ix = lbound_f(1),ubound_f(1)
+        ixx = ix - lbound_f(1) + lbound_s(1)
+        iyy = iy - lbound_f(2) + lbound_s(2)
+        izz = iz - lbound_f(3) + lbound_s(3)
+
+        ex(ix,iy,iz) = exy(ixx,iyy,izz) + exz(ixx,iyy,izz)
+        ey(ix,iy,iz) = eyx(ixx,iyy,izz) + eyz(ixx,iyy,izz)
+        ez(ix,iy,iz) = ezx(ixx,iyy,izz) + ezy(ixx,iyy,izz)
+      ENDDO
+    ENDDO
+  ENDDO
+  !$OMP END PARALLEL DO
+
+  IF (it.ge.timestat_itstart) THEN
+    localtimes(26) = localtimes(26) + (MPI_WTIME() - tmptime)
+  ENDIF
+
+END subroutine merge_e_fields
+
+! ________________________________________________________________________________________
+!> @brief
+!> Mege Electric splitted fields of when using absorbing_bcs to compute real EM field
+!> @author
+!> Haithem Kallala
+!
+!> @date
+!> Creation 2018
+! ________________________________________________________________________________________
+
+SUBROUTINE merge_b_fields()
+  USE fields
+  USE shared_data
+  USE omp_lib
+  USE time_stat
+  USE params
+
+  IMPLICIT NONE
+  INTEGER(idp)  :: ix,iy,iz,ixx,iyy,izz,&
+  ubound_s(3), ubound_f(3), lbound_s(3), lbound_f(3)
+  REAL(num)     :: tmptime
+
+  IF (it.ge.timestat_itstart) THEN
+    tmptime = MPI_WTIME()
+  ENDIF
+
+  ubound_s = UBOUND(bxy)
+  lbound_s = LBOUND(bxy)
+  ubound_f = UBOUND(bx)
+  lbound_f = LBOUND(bx)
+
+  !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz,ixx ,iyy, izz) COLLAPSE(3)
+  DO iz = lbound_f(3),ubound_f(3)
+    DO iy = lbound_f(2),ubound_f(2)
+      DO ix = lbound_f(1),ubound_f(1)
+        ixx = ix - lbound_f(1) + lbound_s(1)
+        iyy = iy - lbound_f(2) + lbound_s(2)
+        izz = iz - lbound_f(3) + lbound_s(3)
+
+        bx(ix,iy,iz) = bxy(ixx,iyy,izz) + bxz(ixx,iyy,izz)
+        by(ix,iy,iz) = byx(ixx,iyy,izz) + byz(ixx,iyy,izz)
+        bz(ix,iy,iz) = bzx(ixx,iyy,izz) + bzy(ixx,iyy,izz)
+      ENDDO
+    ENDDO
+  ENDDO
+  !$OMP END PARALLEL DO
+
+  IF (it.ge.timestat_itstart) THEN
+    localtimes(26) = localtimes(26) + (MPI_WTIME() - tmptime)
+  ENDIF
+
+END subroutine merge_b_fields
+
+
    
 ! ________________________________________________________________________________________
 !> @brief

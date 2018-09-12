@@ -336,6 +336,7 @@ SUBROUTINE init_pml_arrays
   REAL(num)    :: coeff,b_offset, e_offset
   INTEGER(idp) :: type_id  
   REAL(num)    , ALLOCATABLE, DIMENSION(:) :: temp
+  INTEGER(idp) :: cx, cy, cz 
 
   coeff = 4._num/25._num
   b_offset = .50_num
@@ -369,21 +370,30 @@ SUBROUTINE init_pml_arrays
   sigma_z_e = 0.0_num
   ALLOCATE(sigma_z_b(-nzguards:nz_global+nzguards-1));
   sigma_z_b = 0.0_num
-
+  
   !> Inits sigma_x_e and sigma_x_b in the lower bound of the domain along x
   !> axis
   !> first, each proc will compute sigma in the whole domain
+    
+  cx = nxguards - shift_x_pml
+  cy = nyguards - shift_y_pml
+  cz = nzguards - shift_z_pml
+  IF(fftw_hybrid) THEN
+    cx = 0_idp
+    cy = 0_idp
+    cz = 0_idp
+  ENDIF
   DO ix = 0,nx_pml-1
-    sigma_x_e(ix) = coeff*clight/dx*(nx_pml-ix-e_offset)**pow
-    sigma_x_b(ix) = coeff*clight/dx*(nx_pml-ix-b_offset)**pow
+    sigma_x_e(ix-cx) = coeff*clight/dx*(nx_pml-ix-e_offset)**pow
+    sigma_x_b(ix-cx) = coeff*clight/dx*(nx_pml-ix-b_offset)**pow
   ENDDO
 
   ! > Inits sigma_x_e and sigma_x_b in the upper bound of the domain along x
   !> axis
   !> first, each proc will compute sigma in the whole domain
   DO ix = nx_global-nx_pml, nx_global-1
-    sigma_x_e(ix) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+e_offset)**pow
-    sigma_x_b(ix-1) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+b_offset-1)**pow
+    sigma_x_e(ix+cx) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+e_offset)**pow
+    sigma_x_b(ix-1+cx) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+b_offset-1)**pow
   ENDDO
 
   !> Each proc extracts the relevent part of sigma 
@@ -401,16 +411,16 @@ SUBROUTINE init_pml_arrays
     !> axis
     !> first, each proc will compute sigma in the whole domain
     DO iy = 0 , ny_pml-1
-      sigma_y_e(iy) =  coeff*clight/dy*(ny_pml-iy-e_offset)**pow
-      sigma_y_b(iy) =  coeff*clight/dy*(ny_pml-iy-b_offset)**pow
+      sigma_y_e(iy-cy) =  coeff*clight/dy*(ny_pml-iy-e_offset)**pow
+      sigma_y_b(iy-cy) =  coeff*clight/dy*(ny_pml-iy-b_offset)**pow
     ENDDO
   
     ! > Inits sigma_y_e and sigma_y_b in the upper bound of the domain along y
     !> axis
     !> first, each proc will compute sigma in the whole domain
     DO iy = ny_global-ny_pml,ny_global-1
-      sigma_y_e(iy) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+e_offset)**pow
-      sigma_y_b(iy-1) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+b_offset-1)**pow
+      sigma_y_e(iy+cy) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+e_offset)**pow
+      sigma_y_b(iy-1+cy) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+b_offset-1)**pow
     ENDDO
     
     !> Each proc extracts the relevent part of sigma 
@@ -428,8 +438,8 @@ SUBROUTINE init_pml_arrays
   !> first, each proc will compute sigma in the whole domain
   !> Need more straightforward way to do this
   DO iz =0 , nz_pml-1
-    sigma_z_e(iz) =  coeff*clight/dz*(nz_pml-iz-e_offset)**pow
-    sigma_z_b(iz) =  coeff*clight/dz*(nz_pml-iz-b_offset)**pow
+    sigma_z_e(iz-cz) =  coeff*clight/dz*(nz_pml-iz-e_offset)**pow
+    sigma_z_b(iz-cz) =  coeff*clight/dz*(nz_pml-iz-b_offset)**pow
   ENDDO
 
   ! > Inits sigma_z_e and sigma_z_b in the upper bound of the domain along z
@@ -437,8 +447,8 @@ SUBROUTINE init_pml_arrays
   !> first, each proc will compute sigma in the whole domain
   !> Need more straightforward way to do this
   DO iz =  nz_global-nz_pml,nz_global-1 
-     sigma_z_e(iz) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+e_offset)**pow
-     sigma_z_b(iz-1) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+b_offset-1)**pow
+     sigma_z_e(iz+cz) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+e_offset)**pow
+     sigma_z_b(iz-1+cz) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+b_offset-1)**pow
   ENDDO
 
   !> Each proc extracts the relevent part of sigma 

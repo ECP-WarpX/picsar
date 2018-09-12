@@ -1774,13 +1774,14 @@ USE picsar_precision, ONLY: idp, num, isp
     ELSE IF(absorbing_bcs) THEN
 
       !> When using absorbing bcs, exchange splitted EM fields
-
       CALL field_bc(exy, nxguards, nyguards, nzguards, nx, ny, nz)
       CALL field_bc(exz, nxguards, nyguards, nzguards, nx, ny, nz)
       CALL field_bc(eyx, nxguards, nyguards, nzguards, nx, ny, nz)
       CALL field_bc(eyz, nxguards, nyguards, nzguards, nx, ny, nz)
       CALL field_bc(ezx, nxguards, nyguards, nzguards, nx, ny, nz)
       CALL field_bc(ezy, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL merge_e_fields()
+
     ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(8) = localtimes(8) + (MPI_WTIME() - tmptime)
@@ -1829,6 +1830,7 @@ USE mpi
       CALL field_bc(byz, nxguards, nyguards, nzguards, nx, ny, nz)
       CALL field_bc(bzx, nxguards, nyguards, nzguards, nx, ny, nz)
       CALL field_bc(bzy, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL merge_b_fields()
     ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(6) = localtimes(6) + (MPI_WTIME() - tmptime)
