@@ -51,6 +51,7 @@ PROGRAM main
   USE mpi_routines
   USE control_file
   USE time_stat
+  USE simple_io
 !  USE diagnostics
   USE mem_status, ONLY : global_grid_mem, global_grid_tiles_mem, global_part_tiles_mem
 
@@ -102,7 +103,7 @@ PROGRAM main
   CALL initall
 
 ! --- Diagnostics
-!  CALL init_diags
+  CALL init_diags
   
 ! Intel Design Forward project
 #if defined(DFP)

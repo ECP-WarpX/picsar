@@ -374,6 +374,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
+	$(SRCDIR)/ios/simple_io.o \
 	$(SRCDIR)/submain.o \
 	$(SRCDIR)/initialization/control_file.o \
 	$(SRCDIR)/main.o
@@ -398,6 +399,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
+	$(SRCDIR)/ios/simple_io.o \
 	$(SRCDIR)/submain.o \
 	$(SRCDIR)/initialization/control_file.o \
 	$(SRCDIR)/main.o
@@ -420,6 +422,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
 	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
+	$(SRCDIR)/ios/simple_io.o \
 	$(SRCDIR)/submain.o \
 	$(SRCDIR)/initialization/control_file.o \
 	$(SRCDIR)/main.o
@@ -442,6 +445,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
+	$(SRCDIR)/ios/simple_io.o \
 	$(SRCDIR)/submain.o \
 	$(SRCDIR)/initialization/control_file.o \
 	$(SRCDIR)/main.o

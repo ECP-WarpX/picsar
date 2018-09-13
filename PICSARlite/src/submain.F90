@@ -58,7 +58,7 @@ SUBROUTINE step(nst)
   USE field_boundary
   USE particle_boundary
 !  USE diagnostics
-!  USE simple_io
+  USE simple_io
   USE sorting
   USE mpi_routines
 #if (defined(VTUNE) && VTUNE>0)
@@ -151,7 +151,7 @@ SUBROUTINE step(nst)
 !      CALL calc_diags
       !IF (rank .EQ. 0) PRINT *, "#13"
       !!! --- Output simulation results
-!      CALL output_routines
+      CALL output_routines
       !IF (rank .EQ. 0) PRINT *, "#14"
 
       it = it+1
@@ -280,9 +280,6 @@ SUBROUTINE initall
   dys2 = dy*0.5_num
   dzs2 = dz*0.5_num
 
-  ! - Init stencil coefficients
-  CALL init_stencil_coefficients()
-
   ! Summary
   IF (rank .EQ. 0) THEN
     write(0, *) ''
@@ -307,7 +304,6 @@ SUBROUTINE initall
       write(0, '(" Pusher: Boris algorithm (particle_pusher=", I1, ")")')             &
       particle_pusher
     ENDIF
-    write(0, *) 'Maxwell derivative coeff:', xcoeffs
     write(0, *) 'MPI buffer size:', mpi_buf_size
     WRITE(0, *) ''
     write(0, *) 'PLASMA PROPERTIES:'
@@ -449,113 +445,3 @@ SUBROUTINE estimate_total_memory_consumption
   ENDIF 
 END SUBROUTINE estimate_total_memory_consumption
 
-
-
-! ________________________________________________________________________________________
-!> @brief
-!> Initialize stencil coefficients.
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2015
-! ________________________________________________________________________________________
-SUBROUTINE init_stencil_coefficients()
-
-  USE constants
-  USE params
-  USE fields
-  USE particles
-  USE shared_data
-  USE tiling
-  IMPLICIT NONE
-
-  !!! --- Allocate coefficient arrays for Maxwell solver
-  IF (.NOT. l_coeffs_allocated) THEN
-    ALLOCATE(xcoeffs(norderx/2), ycoeffs(nordery/2), zcoeffs(norderz/2))
-    l_coeffs_allocated=.TRUE.
-  END IF
-
-  !!! --- Initialize stencil coefficients array for Maxwell field solver
-  CALL FD_weights(xcoeffs, norderx, l_nodalgrid)
-  CALL FD_weights(ycoeffs, nordery, l_nodalgrid)
-  CALL FD_weights(zcoeffs, norderz, l_nodalgrid)
-
-END SUBROUTINE init_stencil_coefficients
-
-
-! ________________________________________________________________________________________
-!> @brief
-!> Compute stencil coefficients for Maxwell field solver
-!
-!> Adapted from Matlab code from Fornberg (1998)
-!> Calculates FD weights. The parameters are:
-!> @param[in] z location where approximations are to be accurate.
-!> n   number of grid points, !> m   highest derivative that we want to find weights for
-!> c   array size m+1, length(x) containing (as output) in
-!> successive rows the weights for derivatives 0, 1, ..., m.
-!
-!> @author
-!> Henri Vincenti
-!
-!> @date
-!> Creation 2015
-SUBROUTINE FD_weights(coeffs, norder, l_nodal)
-  ! ________________________________________________________________________________________
-
-  USE constants
-  IMPLICIT NONE
-  INTEGER(idp) :: norder, n, m, mn, i, j, k
-  LOGICAL(lp)  :: l_nodal
-  REAL(num)    :: z, fact, c1, c2, c3, c4, c5
-  REAL(num), INTENT(IN OUT), DIMENSION(norder/2) :: coeffs
-  REAL(num), ALLOCATABLE, DIMENSION(:)           :: x
-  REAL(num), ALLOCATABLE, DIMENSION(:, :)         :: c
-
-  IF (l_nodal) THEN
-    z=0.0_num
-    fact=1.0_num
-  ELSE
-    z=0.5_num
-    fact=0.5_num
-  END IF
-  m=1
-  n=norder+1
-
-  ALLOCATE(x(0:n-1))
-  ALLOCATE(c(0:m, 0:n-1))
-
-  DO i=0, n-1
-    x(i)=(i-n/2+1)*1.0_num
-  END DO
-
-  c=0.0_num; c1=1.0_num; c4=x(0)-z; c(0, 0)=1.0_num
-  DO i=1, n-1
-    mn=min(i+1, m+1)
-    c2=1.0_num
-    c5=c4
-    c4=x(i)-z
-    DO j=0, i-1
-      c3=x(i)-x(j)
-      c2=c2*c3
-      IF (j .EQ. (i-1)) THEN
-        DO k=1, mn-1
-          c(k, i)=c1*(k*c(k-1, i-1)-c5*c(k, i-1))/c2
-        END DO
-        c(0, i)=-c1*c5*c(0, i-1)/c2
-        DO k=1, mn-1
-          c(k, j)=(c4*c(k, j)-k*c(k-1, j))/c3
-        END DO
-        c(0, j)=c4*c(0, j)/c3
-      END IF
-
-    END DO
-    c1=c2
-  END DO
-
-  DO i=1, norder/2
-    coeffs(i)=c(m, norder/2+i-1)
-  END DO
-  RETURN
-END SUBROUTINE FD_weights
