@@ -62,7 +62,7 @@ IS_P3DFFT = false
 # Source directory
 SRCDIR=src
 # Binary directory
-BINDIR=fortran_bin
+BINDIR=bin
 # Lib directory
 LIBDIR=lib
 # Application name
