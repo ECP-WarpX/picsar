@@ -25,7 +25,7 @@ COMP=gnu
 # - sde: sde profiling
 # - map: Allinea Map profiling
 # - library: create static and dynamic library
-MODE=prod
+MODE=prod_spectral
 
 # System (SYS)
 # - cori2
@@ -981,7 +981,6 @@ build_maxwell_2d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/housekeeping/load_balancing.o \
-	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/init_kspace_3D.o \
