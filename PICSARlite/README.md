@@ -60,7 +60,7 @@ These sections contain keywords and associated values to be specified.
 
 If the code was compiled with OpenMP, you can set "x" OpenMP threads per MPI task by defining `export OMP_NUM_THREADS=x` before starting the simulation (default varies with the OS). OpenMP scheduling for balancing loads between tiles can be adjusted at runtime by setting the environment variable `OMP_SCHEDULE` to either `static`, `guided` or `dynamic`. To ensure that threads have enough memory space on the stack, set `OMP_STACKSIZE` to high enough value. In practice, `export OMP_STACKSIZE=32M` should be sufficient for most of test cases.   
 
-## **5. Outputs**
+## **4. Outputs**
 
 
 #### A.  Field diagnostics
