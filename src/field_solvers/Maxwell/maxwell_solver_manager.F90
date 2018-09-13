@@ -267,7 +267,7 @@ END subroutine merge_fields
 
 ! ________________________________________________________________________________________
 !> @brief
-!> Mege Electric splitted fields of when using absorbing_bcs to compute real EM field
+!> Mege Electric splitted fields when using absorbing_bcs to compute real electric field
 !> @author
 !> Haithem Kallala
 !
@@ -320,7 +320,7 @@ END subroutine merge_e_fields
 
 ! ________________________________________________________________________________________
 !> @brief
-!> Mege Electric splitted fields of when using absorbing_bcs to compute real EM field
+!> Mege Electric splitted fields when using absorbing_bcs to compute real magnetic field
 !> @author
 !> Haithem Kallala
 !
