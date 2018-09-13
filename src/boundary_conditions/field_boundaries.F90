@@ -1780,6 +1780,8 @@ USE picsar_precision, ONLY: idp, num, isp
       CALL field_bc(eyz, nxguards, nyguards, nzguards, nx, ny, nz)
       CALL field_bc(ezx, nxguards, nyguards, nzguards, nx, ny, nz)
       CALL field_bc(ezy, nxguards, nyguards, nzguards, nx, ny, nz)
+      !> When using absorbing bcs, the electric field is merged here
+      !> This is done here in order not to call merge_fields from warp 
       CALL merge_e_fields()
 
     ENDIF
@@ -1830,6 +1832,10 @@ USE mpi
       CALL field_bc(byz, nxguards, nyguards, nzguards, nx, ny, nz)
       CALL field_bc(bzx, nxguards, nyguards, nzguards, nx, ny, nz)
       CALL field_bc(bzy, nxguards, nyguards, nzguards, nx, ny, nz)
+
+      !> When using absorbing bcs, the magnetic field is merged here
+      !> This is done here in order not to call merge_fields from warp 
+
       CALL merge_b_fields()
     ENDIF
     IF (it.ge.timestat_itstart) THEN
