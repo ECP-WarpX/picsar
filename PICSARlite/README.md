@@ -12,7 +12,7 @@ The Particle-In-Cell Scalable Application Resource lite (PICSARlite) is a proxy 
 * The field gathering routine is 'energy conserving' (i.e. gathers the field components directly from the staggered 'Yee' mesh).
 * The current deposition and field gathering routines include high-order particle shape factors (up to 3rd order).
 
-#### B.  Here are some high performance features of the PICSAR code :
+#### B.  Here are some high performance features of the PICSARlite code :
 
 * Particle tiling to help increase memory locality.
 * OpenMP parallelization for intranode parallelism.
@@ -69,22 +69,5 @@ For the moment, the code outputs binary matrix files with extensions ".pxr" that
 (Note: In order for these scripts to work, you need to add the folder `postproc`
 to your `$PYTHONPATH`.)
 
-In the Fortran version, the output frequency is controlled by setting the flag `output_frequency` in the output section of the `input_file.pixr`. Use `output_frequency=-1` to disable outputs. The code places output files in a `RESULTS` directory where the code is ran. This directory has to be created before running the code in your submission script.
+The output frequency is controlled by setting the flag `output_frequency` in the output section of the `input_file.pixr`. Use `output_frequency=-1` to disable outputs. The code places output files in a `RESULTS` directory where the code is ran. This directory has to be created before running the code in your submission script.
 
-#### B.  Temporal diagnostics
-
-Temporal diagnosctics enable to outpout the time evolution of several physical quantities such as the species kinetic energies, the field energies and the L2 norm of divergence of the field minus the charge. Temporal diagnostics can be configurated using the section `temporal`. Output format can be controled using the keyword `format`.
-Temporal output files can be binary files (`format=1`) or ascii files (`format=1`).
-The output frequency can be controled via the keyword `frequency`.
-The different diagnostics can be activated with their flags:
-
-* `kinE=1` for the kinetic energies
-* `exE=1`, `eyE=1`, `ezE=1`: electric field energies
-* `bxE=1`, `byE=1`, `bzE=1`: magnetic field energies
-* `divE-rho=1`: the L2 norm of divergence of the field minus the charge
-
-#### C.  Time statistics
-
-Time statistics refer to the computation of the simulation times spend in each significant part of the code. A final time survey is automatically provided at the end of a simulation with the stand-alone code.
-The time statisctics function enables to outpout in files the time spend in the main subroutines for each iteration.
-It corresponds to the section named `timestat`.
