@@ -52,6 +52,7 @@ section::solver
  nordery = 2
  norderz = 2
  
+ # Current deposition order (1, 2 or 3). Should all have same value.
  nox = 1
  noy = 1
  noz = 1
