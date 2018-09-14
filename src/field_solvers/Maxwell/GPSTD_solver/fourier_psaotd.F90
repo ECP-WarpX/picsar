@@ -169,7 +169,8 @@ MODULE fourier_psaotd
   ! ______________________________________________________________________________________
   SUBROUTINE get_Ffields()
     USE fastfft
-    USE fields, ONLY: nzguards, nxguards, nyguards
+    USE fields, ONLY: nzguards, nxguards, nyguards, shift_x_pml, shift_y_pml,         &
+                        shift_z_pml
     USE fields, ONLY: exy_r, exz_r, eyx_r, eyz_r, ezx_r, ezy_r
     USE fields, ONLY: bxy_r, bxz_r, byx_r, byz_r, bzx_r, bzy_r
     USE mpi
@@ -181,6 +182,7 @@ MODULE fourier_psaotd
     USE shared_data, ONLY : x_min_boundary, y_min_boundary, z_min_boundary
 
     USE time_stat, ONLY: timestat_itstart, localtimes
+     
 
     IMPLICIT NONE
     INTEGER(idp) :: nfftx, nffty, nfftz, nxx, nyy, nzz
@@ -206,7 +208,7 @@ MODULE fourier_psaotd
    ! reflective bcs after pml
     IF(absorbing_bcs_x) THEN
       IF(x_min_boundary) THEN
-        DO ix = -nxguards,-1
+        DO ix = -nxguards,-nxguards+shift_x_pml-1
           exy_r(ix,:,:) = 0.0_num
           exz_r(ix,:,:) = 0.0_num
           eyx_r(ix,:,:) = 0.0_num
@@ -222,7 +224,7 @@ MODULE fourier_psaotd
         ENDDO
       ENDIF
       IF(x_max_boundary) THEN
-        DO ix=nx,nx+nxguards-1 
+        DO ix=nx+nxguards-shift_x_pml,nx+nxguards-1 
           exy_r(ix,:,:) = 0.0_num
           exz_r(ix,:,:) = 0.0_num
           eyx_r(ix,:,:) = 0.0_num
@@ -245,7 +247,7 @@ MODULE fourier_psaotd
     IF(c_dim == 3) THEN 
       IF(absorbing_bcs_y) THEN
         IF(y_min_boundary) THEN
-          DO iy = -nyguards,-1
+          DO iy = -nyguards,-nyguards+shift_y_pml-1
             exy_r(:,iy,:) = 0.0_num
             exz_r(:,iy,:) = 0.0_num
             eyx_r(:,iy,:) = 0.0_num
@@ -261,7 +263,7 @@ MODULE fourier_psaotd
           ENDDO
         ENDIF
         IF(y_max_boundary) THEN
-          DO iy=ny,ny+nyguards-1  
+          DO iy=ny+nyguards-shift_y_pml,ny+nyguards-1  
             exy_r(:,iy,:) = 0.0_num
             exz_r(:,iy,:) = 0.0_num
             eyx_r(:,iy,:) = 0.0_num
@@ -284,7 +286,7 @@ MODULE fourier_psaotd
     ENDIF
     IF(absorbing_bcs_z) THEN
       IF(z_min_boundary) THEN
-        DO iz = -nzguards,-1
+        DO iz = -nzguards,-nzguards+shift_z_pml-1
           exy_r(:,:,iz) = 0.0_num
           exz_r(:,:,iz) = 0.0_num
           eyx_r(:,:,iz) = 0.0_num
@@ -300,7 +302,7 @@ MODULE fourier_psaotd
         ENDDO
       ENDIF
       IF(z_max_boundary) THEN
-        DO iz=nz ,nz+nzguards-1  
+        DO iz=nz + nzguards-shift_z_pml,nz+nzguards-1  
           exy_r(:,:,iz) = 0.0_num
           exz_r(:,:,iz) = 0.0_num
           eyx_r(:,:,iz) = 0.0_num

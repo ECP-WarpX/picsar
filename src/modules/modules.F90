@@ -152,6 +152,11 @@ MODULE fields
   INTEGER(idp):: ny_pml
   !> n_pml in z direction 
   INTEGER(idp):: nz_pml
+  !> shift_pml :: number of guardcells forced to 0 when using PMLS.
+  !> Available option only for local solver.
+  !> When using hybrid solver all guardcells are forced to 0 because the  guardcells 
+  !> of the local fields (ex, ey ....) are not filled from the FFT-grid fields (ex_r,ey_r ...)
+  INTEGER(idp) :: shift_x_pml ,shift_y_pml, shift_z_pml
   !> Number of guard cells in x
   INTEGER(idp):: nxguards
   !> Number of guard cells in y

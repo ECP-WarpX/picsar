@@ -358,14 +358,14 @@ build_lib:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
 	$(SRCDIR)/field_solvers/Maxwell/karkkainen_solver/karkkainen.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fastfft.o \
-	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/init_kspace_3D.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/housekeeping/load_balancing.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/init_kspace_3D.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fourier_psaotd.o \
-	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
+	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/init_external.o 
 	ar rcs libpxr.a $(SRCDIR)/*.o $(SRCDIR)/*/*.o  $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o
 	$(FC) $(FARGS) -shared -o libpxr.so $(SRCDIR)/*.o  $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o  $(SRCDIR)/*/*/*/*.o
@@ -804,6 +804,8 @@ build_tile_mpi_part_com_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
@@ -811,6 +813,8 @@ build_tile_mpi_part_com_test: $(SRCDIR)/modules/modules.o \
 	Acceptance_testing/Gcov_tests/tile_mpi_part_com_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_mpi_part_com_test \
 	$(SRCDIR)/modules/modules.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
@@ -836,6 +840,7 @@ build_tile_mpi_part_com_test: $(SRCDIR)/modules/modules.o \
 
 build_rho_deposition_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
@@ -850,6 +855,8 @@ build_rho_deposition_3d_test: $(SRCDIR)/modules/modules.o \
 
 build_tile_rho_depo_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
@@ -863,6 +870,8 @@ build_tile_rho_depo_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
@@ -880,6 +889,8 @@ build_tile_curr_depo_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
@@ -894,6 +905,8 @@ build_tile_curr_depo_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
@@ -1014,11 +1027,11 @@ build_maxwell_2d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/housekeeping/load_balancing.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/init_kspace_3D.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fourier_psaotd.o \
-	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
@@ -1106,11 +1119,11 @@ build_maxwell_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/housekeeping/load_balancing.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/init_kspace_3D.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fourier_psaotd.o \
-	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
