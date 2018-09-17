@@ -41,6 +41,7 @@
 !> Creation 2015
 ! ________________________________________________________________________________________
 MODULE diagnostics
+  USE PICSAR_precision
   USE constants
   USE mpi
   IMPLICIT NONE
@@ -60,14 +61,17 @@ MODULE diagnostics
   !
   ! ______________________________________________________________________________________
   SUBROUTINE calc_diags
-    USE fields
     USE field_boundary
+    USE fields, ONLY: ez, nzguards, nxguards, nyguards, ex, ey
+    USE mpi
+    USE output_data, ONLY: dive_computed
+    USE params, ONLY: it
     USE particle_boundary
-    USE particles
-    USE params
-    USE shared_data
+    USE particle_properties, ONLY: l_plasma
+    USE picsar_precision, ONLY: num
+    USE shared_data, ONLY: nz, ny, nx, dx, dy, dive, dz
     USE tiling
-    USE time_stat
+    USE time_stat, ONLY: timestat_itstart, localtimes
     IMPLICIT NONE
 
     REAL(num) :: tmptime
@@ -207,7 +211,7 @@ MODULE diagnostics
   !
   ! ______________________________________________________________________________________
   SUBROUTINE init_diags
-    USE shared_data
+    USE shared_data, ONLY: rank
     IMPLICIT NONE
 
     IF (rank.eq.0) THEN
@@ -244,10 +248,13 @@ MODULE diagnostics
   !
   ! ______________________________________________________________________________________
   SUBROUTINE init_temp_diags
-    USE output_data
-    USE particle_properties
-    USE shared_data
-    USE params
+    USE mpi_type_constants, ONLY: status
+    USE output_data, ONLY: temdiag_nb_values, temdiag_nb_part, temdiag_act_list,     &
+      temdiag_format, temdiag_i_list, temdiag_nb, temdiag_name_list,                 &
+      temdiag_nb_field, temdiag_totvalues, temdiag_frequency
+    USE params, ONLY: dt
+    USE particle_properties, ONLY: nspecies
+    USE shared_data, ONLY: rho, errcode, nproc, comm, rank, dive
 
     IMPLICIT NONE
 
@@ -422,9 +429,10 @@ MODULE diagnostics
   !
   ! ______________________________________________________________________________________
   SUBROUTINE init_time_stat_output
-    USE time_stat
-    USE shared_data
-    USE params
+    USE params, ONLY: dt
+    USE shared_data, ONLY: rank
+    USE time_stat, ONLY: timestat_activated, buffer_timestat, itimestat,             &
+      timestat_period, nbuffertimestat
     IMPLICIT NONE
 
     INTEGER :: nb_timestat
@@ -462,12 +470,12 @@ MODULE diagnostics
   !> June 2017
   ! ______________________________________________________________________________________
   SUBROUTINE get_local_number_of_particles_from_species(is, nptot_loc)
-    USE particle_tilemodule
-    USE particle_speciesmodule
-    USE tile_params
-    USE particles
     USE mpi_derived_types
-    USE shared_data
+    USE particle_speciesmodule, ONLY: particle_species
+    USE particle_tilemodule, ONLY: particle_tile
+    USE particles, ONLY: species_parray
+    USE picsar_precision, ONLY: idp
+    USE tile_params, ONLY: ntilez, ntilex, ntiley
     USE tiling
     IMPLICIT NONE
 
@@ -513,12 +521,9 @@ MODULE diagnostics
   !> Creation: May 2016
   ! ______________________________________________________________________________________
   SUBROUTINE get_tot_number_of_particles_from_species(is, nptot)
-    USE particle_tilemodule
-    USE particle_speciesmodule
-    USE tile_params
-    USE particles
     USE mpi_derived_types
-    USE shared_data
+    USE picsar_precision, ONLY: idp, isp
+    USE shared_data, ONLY: errcode, comm
     USE tiling
     IMPLICIT NONE
 
@@ -551,10 +556,11 @@ MODULE diagnostics
   !> June 2017
   ! ______________________________________________________________________________________
   SUBROUTINE getquantity(ispecies, quantity, nptot, quantityarray)
-      USE particle_tilemodule
-      USE particle_speciesmodule
-      USE tile_params
-      USE particles
+      USE particle_speciesmodule, ONLY: particle_species
+      USE particle_tilemodule, ONLY: particle_tile
+      USE particles, ONLY: species_parray
+      USE picsar_precision, ONLY: idp, num
+      USE tile_params, ONLY: ntilez, ntilex, ntiley
       USE tiling
       IMPLICIT NONE
 
@@ -624,10 +630,11 @@ MODULE diagnostics
   !> June 2017
   ! ______________________________________________________________________________________
   SUBROUTINE getquantity_pid(ispecies, quantitypid, nptot, quantityarray)
-      USE particle_tilemodule
-      USE particle_speciesmodule
-      USE tile_params
-      USE particles
+      USE particle_speciesmodule, ONLY: particle_species
+      USE particle_tilemodule, ONLY: particle_tile
+      USE particles, ONLY: species_parray
+      USE picsar_precision, ONLY: idp, num
+      USE tile_params, ONLY: ntilez, ntilex, ntiley
       USE tiling
       IMPLICIT NONE
 
@@ -837,12 +844,13 @@ MODULE diagnostics
   !
   ! ______________________________________________________________________________________
   SUBROUTINE get_loc_kinetic_energy(ispecies, kinetic_energy_loc)
-    USE particle_tilemodule
-    USE particle_speciesmodule
-    USE tile_params
-    USE particles
     USE mpi_derived_types
-    USE shared_data
+    USE particle_properties, ONLY: wpid
+    USE particle_speciesmodule, ONLY: particle_species
+    USE particle_tilemodule, ONLY: particle_tile
+    USE particles, ONLY: species_parray
+    USE picsar_precision, ONLY: idp, num
+    USE tile_params, ONLY: ntilez, ntilex, ntiley
     USE tiling
     IMPLICIT NONE
     INTEGER(idp) :: ispecies
@@ -929,12 +937,15 @@ MODULE diagnostics
   !
   ! ______________________________________________________________________________________
   SUBROUTINE get_kinetic_energy(ispecies, total_kinetic_energy)
-    USE particle_tilemodule
-    USE particle_speciesmodule
-    USE tile_params
-    USE particles
     USE mpi_derived_types
-    USE shared_data
+    USE mpi_type_constants, ONLY: mpidbl
+    USE particle_properties, ONLY: wpid
+    USE particle_speciesmodule, ONLY: particle_species
+    USE particle_tilemodule, ONLY: particle_tile
+    USE particles, ONLY: species_parray
+    USE picsar_precision, ONLY: idp, num, isp
+    USE shared_data, ONLY: errcode, comm
+    USE tile_params, ONLY: ntilez, ntilex, ntiley
     USE tiling
     IMPLICIT NONE
     INTEGER(idp) :: ispecies
@@ -1015,7 +1026,7 @@ MODULE diagnostics
   ! ______________________________________________________________________________________
   SUBROUTINE get_loc_field_energy_2d(field, nx2, nz2, dx2, dz2, nxguard, nzguard,     &
     field_energy)
-    USE constants
+    USE picsar_precision, ONLY: idp, num
     IMPLICIT NONE
 
     ! __ Parameters ________________________________
@@ -1058,7 +1069,7 @@ MODULE diagnostics
   ! ______________________________________________________________________________________
   SUBROUTINE get_loc_field_energy(field, nx2, ny2, nz2, dx2, dy2, dz2, nxguard,       &
     nyguard, nzguard, field_energy)
-    USE constants
+    USE picsar_precision, ONLY: idp, num
     IMPLICIT NONE
     INTEGER(idp)     :: nx2, ny2, nz2
     INTEGER(idp)     :: nxguard, nyguard, nzguard
@@ -1102,10 +1113,11 @@ MODULE diagnostics
   ! ______________________________________________________________________________________
   SUBROUTINE get_field_energy_2d(field, nx2, nz2, dx2, dz2, nxguard, nzguard,         &
     field_energy)
-    USE constants
+    USE mpi
     USE mpi_derived_types
-    USE mpi_type_constants
-    USE shared_data
+    USE mpi_type_constants, ONLY: mpidbl
+    USE picsar_precision, ONLY: idp, num, isp
+    USE shared_data, ONLY: errcode, comm
 
     ! __ Parameters _____________________________________
     IMPLICIT NONE
@@ -1156,10 +1168,11 @@ MODULE diagnostics
   ! ______________________________________________________________________________________
   SUBROUTINE get_field_energy(field, nx2, ny2, nz2, dx2, dy2, dz2, nxguard, nyguard,  &
     nzguard, field_energy)
-    USE constants
+    USE mpi
     USE mpi_derived_types
-    USE mpi_type_constants
-    USE shared_data
+    USE mpi_type_constants, ONLY: mpidbl
+    USE picsar_precision, ONLY: idp, num, isp
+    USE shared_data, ONLY: errcode, comm
     IMPLICIT NONE
     INTEGER(idp)                :: nx2, ny2, nz2
     INTEGER(idp)                :: nxguard, nyguard, nzguard
@@ -1206,10 +1219,10 @@ MODULE diagnostics
   ! ______________________________________________________________________________________
   SUBROUTINE get_loc_norm_divErho(divee2, rho2, nx2, ny2, nz2, nxguard, nyguard,      &
     nzguard, norm)
+    USE constants, ONLY: eps0
+    USE mpi
     USE mpi_derived_types
-    USE mpi_type_constants
-    USE shared_data
-    USE constants
+    USE picsar_precision, ONLY: idp, num
     IMPLICIT NONE
 
     INTEGER(idp)                :: j, k, l
@@ -1248,10 +1261,9 @@ MODULE diagnostics
   !> Creation 2016
   ! ______________________________________________________________________________________
   SUBROUTINE get_loc_norm_2(array, nx2, ny2, nz2, nxguard, nyguard, nzguard, norm)
+    USE mpi
     USE mpi_derived_types
-    USE mpi_type_constants
-    USE shared_data
-    USE constants
+    USE picsar_precision, ONLY: idp, num
     IMPLICIT NONE
 
     INTEGER(idp)                :: j, k, l
@@ -1290,10 +1302,12 @@ MODULE diagnostics
   ! ______________________________________________________________________________________
   SUBROUTINE get_norm_divErho(divee2, rho2, nx2, ny2, nz2, nxguard, nyguard, nzguard, &
     norm)
+    USE constants, ONLY: eps0
+    USE mpi
     USE mpi_derived_types
-    USE mpi_type_constants
-    USE shared_data
-    USE constants
+    USE mpi_type_constants, ONLY: mpidbl
+    USE picsar_precision, ONLY: idp, num, isp
+    USE shared_data, ONLY: errcode, comm
     IMPLICIT NONE
 
     INTEGER(idp)                :: j, k, l
@@ -1326,5 +1340,262 @@ MODULE diagnostics
     norm = sqrt(norm)
 
   END SUBROUTINE
+
+
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Performs Lorentz transform over gird quantities (2D)
+  !
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2018
+  ! ______________________________________________________________________________________
+
+
+  SUBROUTINE  transform_lorentz2d(n1,n2,fields, gam,cbeta,beta_c)
+    USE omp_lib
+    INTEGER(idp) , INTENT(IN) :: n1, n2
+    REAL(num) , DIMENSION(0:n1-1,n2), INTENT(INOUT) :: fields
+    REAL(num) , INTENT(IN) :: gam,cbeta,beta_c
+    REAL(num)   :: temp
+    INTEGER(idp) :: i 
+
+    ! Check that n1 is equal 10 
+    IF(n1 .NE. 10_idp) THEN
+       WRITE(0,*) 'ERROR: Number of fields quantities should be equal to 10'
+       STOP
+    ENDIF
+   
+    ! Nomenclature :
+    ! 'Ex':0, 'Ey':1, 'Ez':2, 'Bx':3,'By':4, 'Bz':5, 'Jx':6, 'Jy':7, 'Jz':8, 'rho':9
+ 
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i,temp) COLLAPSE(1)
+    DO i =1,n2
+      temp = fields(0,i)
+      fields(0,i) = gam*(fields(0,i) + cbeta*fields(4,i)) ! ex
+      fields(4,i) = gam*(fields(4,i) + beta_c*temp)  ! by
+
+      temp = fields(1,i)
+      fields(1,i) = gam*(fields(1,i) - cbeta*fields(3,i)) ! ey
+      fields(3,i) = gam*(fields(3,i) - cbeta*temp)    ! bx
+  
+      temp = fields(9,i)
+      fields(9,i) =  gam*( fields(9,i) + beta_c * fields(8,i) ) ! rho
+      fields(8,i) = gam*(fields(8,i) + cbeta *temp) ! jz
+
+    ENDDO
+    !$OMP END PARALLEL DO
+  END SUBROUTINE transform_lorentz2d
+
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Performs Lorentz transform over gird quantities (3D)
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2018
+  ! ______________________________________________________________________________________
+
+
+  SUBROUTINE  transform_lorentz3d(n1,n2,n3,fields, gam,cbeta,beta_c)
+    USE omp_lib
+    INTEGER(idp) , INTENT(IN) :: n1, n2, n3
+    REAL(num) , DIMENSION(0:n1-1,n2,n3), INTENT(INOUT) :: fields
+    REAL(num) , INTENT(IN) :: gam,cbeta,beta_c
+    REAL(num)   :: temp
+    INTEGER(idp) :: i,j   
+    ! Check that n1 is equal 10 
+
+    IF(n1 .NE. 10_idp) THEN
+       WRITE(0,*) 'ERROR: Number of fields quantities should be equal to 10'
+       STOP
+    ENDIF
+
+    ! Nomenclature :
+    ! 'Ex':0, 'Ey':1, 'Ez':2, 'Bx':3,'By':4, 'Bz':5, 'Jx':6, 'Jy':7, 'Jz':8, 'rho':9
+
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i,j,temp) COLLAPSE(2)
+    DO j =1,n3
+      DO i =1,n2
+        temp = fields(0,i,j)
+        fields(0,i,j) = gam*(fields(0,i,j) + cbeta*fields(4,i,j)) ! ex
+        fields(4,i,j) = gam*(fields(4,i,j) + beta_c*temp)  ! by
+
+        temp = fields(1,i,j)
+        fields(1,i,j) = gam*(fields(1,i,j) - cbeta*fields(3,i,j)) ! ey
+        fields(3,i,j) = gam*(fields(3,i,j) - cbeta*temp)    ! bx
+
+        temp = fields(9,i,j)
+        fields(9,i,j) =  gam*( fields(9,i,j) + beta_c * fields(8,i,j) ) ! rho
+        fields(8,i,j) = gam*(fields(8,i,j) + cbeta *temp) ! jz
+      ENDDO
+    ENDDO
+    !$OMP END PARALLEL DO
+  END SUBROUTINE transform_lorentz3d
+
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Performs Lorentz transform over particles quantities (with fields quantities)
+  !> on two different time steps then interpolates the  data on the snapshot time
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2018
+  ! ______________________________________________________________________________________
+
+
+  
+  SUBROUTINE lorentz_transform_parts_with_fields(np, gamma_boost, beta_boost, time, dt,t_output,  &
+                                     xc, xcp, yc, ycp, zc, zcp, uxc, uxcp, uyc, uycp, &
+                                     uzc, uzcp, gc, gcp, exc, excp, eyc, eycp, ezc,   &
+                                     ezcp, bxc, bxcp, byc, bycp, bzc, bzcp )
+     USE constants , ONLY : clight
+     USE omp_lib
+ 
+     REAL(num) , INTENT(IN) :: gamma_boost,beta_boost,time,dt,t_output
+     INTEGER(idp) , INTENT(IN) :: np
+     REAL(num) , INTENT(INOUT), DIMENSION(np) :: xc, yc, zc, xcp, ycp, zcp, uxc, uyc, &
+                                                 uzc, uxcp, uycp, uzcp, gc, gcp
+     REAL(num) , INTENT(INOUT), DIMENSION(np) :: exc, excp, eyc, eycp, ezc, &
+                                                           ezcp, bxc, bxcp, byc, bycp,&
+                                                           bzc, bzcp
+     INTEGER(idp) :: i
+     REAL(num) ::  uzfrm, iclight, iclight2, cbeta, beta_ov_c, temp, t_prev, t,  &
+                   weight_next, weight_prev,yrmp
+
+  
+
+
+     ! Compute some constants
+     uzfrm = -beta_boost*gamma_boost*clight
+     iclight2 = 1._num/clight**2
+     iclight = 1._num/clight
+     cbeta = beta_boost*clight
+     beta_ov_c = beta_boost*iclight
+
+     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i,t,t_prev,weight_prev,weight_next, temp) COLLAPSE(1)
+     DO  i =1,np
+       ! Compute times
+       t = gamma_boost*time - uzfrm*zc(i)*iclight2
+       t_prev = gamma_boost*(time - dt)   - uzfrm*zcp(i)*iclight2
+
+       ! Compute modified data by lorentz transform
+       zc(i) = gamma_boost*(zc(i) + beta_boost*clight*time)
+       zcp(i) = gamma_boost*(zcp(i) + beta_boost*clight*(time-dt))
+       
+       temp = eyc(i) 
+       eyc(i) = gamma_boost*(eyc(i) - cbeta*bxc(i)) 
+       bxc(i) = gamma_boost*(bxc(i) - beta_ov_c*temp) 
+       temp = eycp(i)
+       eycp(i) = gamma_boost*(eycp(i) - cbeta*bxcp(i))                         
+       bxcp(i) = gamma_boost*(bxcp(i) - beta_ov_c*temp)
+
+       temp = exc(i)
+       exc(i) = gamma_boost*(exc(i) + cbeta*byc(i))                         
+       byc(i) = gamma_boost*(byc(i) + beta_ov_c*temp)
+       temp = excp(i)
+       excp(i) = gamma_boost*(excp(i) + cbeta*bycp(i))
+       bycp(i) = gamma_boost*(bycp(i) + beta_ov_c*temp)
+       uzc(i) = gamma_boost*uzc(i)- gc(i)*uzfrm
+       uzcp(i) = gamma_boost*uzcp(i)   - gcp(i)*uzfrm
+
+       ! Compute interpolation weights
+       weight_prev = (t - t_output)/(t - t_prev)
+       weight_next = (t_output - t_prev)/(t - t_prev)
+
+       ! Interpolate all weights
+       xc(i)  = xcp(i) * weight_prev  + xc(i) * weight_next
+       yc(i)  = ycp(i) * weight_prev  + yc(i) * weight_next
+       zc(i)  = zcp(i) * weight_prev  + zc(i) * weight_next
+       uxc(i) = uxcp(i) * weight_prev + uxc(i) * weight_next
+       uyc(i) = uycp(i) * weight_prev + uyc(i) * weight_next
+       uzc(i) = uzcp(i) * weight_prev + uzc(i) * weight_next
+       gc(i)  = gcp(i) * weight_prev  + gc(i) * weight_next
+       exc(i)  = excp(i) * weight_prev  + exc(i) * weight_next
+       eyc(i)  = eycp(i) * weight_prev  + eyc(i) * weight_next
+       ezc(i)  = ezcp(i) * weight_prev  + ezc(i) * weight_next
+       bxc(i)  = bxcp(i) * weight_prev  + bxc(i) * weight_next
+       byc(i)  = bycp(i) * weight_prev  + byc(i) * weight_next
+       bzc(i)  = bzcp(i) * weight_prev  + bzc(i) * weight_next
+
+     ENDDO
+     !$OMP END PARALLEL DO
+
+       
+  END SUBROUTINE lorentz_transform_parts_with_fields
+
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Performs Lorentz transform over particles quantities (without fields quantities)
+  !> on two different time steps then interpolates the  data on the snapshot time
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2018
+  ! ______________________________________________________________________________________
+
+
+
+  SUBROUTINE lorentz_transform_parts_without_fields(np, gamma_boost, beta_boost, time, dt,t_output,  &
+                                     xc, xcp, yc, ycp, zc, zcp, uxc, uxcp, uyc, uycp, &
+                                     uzc, uzcp, gc, gcp)
+     USE constants , ONLY : clight
+     USE omp_lib
+ 
+     REAL(num) , INTENT(IN) :: gamma_boost,beta_boost,time,dt,t_output
+     INTEGER(idp) , INTENT(IN) :: np
+     REAL(num) , INTENT(INOUT), DIMENSION(np) :: xc, yc, zc, xcp, ycp, zcp, uxc, uyc, &
+                                                 uzc, uxcp, uycp, uzcp, gc, gcp
+
+     INTEGER(idp) :: i
+     REAL(num) ::  uzfrm, iclight, iclight2, cbeta, beta_ov_c, temp, t_prev, t,  &
+                   weight_next, weight_prev,yrmp
+
+
+  
+
+
+     ! Compute some constants
+     uzfrm = -beta_boost*gamma_boost*clight
+     iclight2 = 1._num/clight**2
+     iclight = 1._num/clight
+     cbeta = beta_boost*clight
+     beta_ov_c = beta_boost*iclight
+
+     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i,t,t_prev,weight_prev,weight_next) COLLAPSE(1)
+     DO  i =1,np
+       ! Compute times
+       t = gamma_boost*time - uzfrm*zc(i)*iclight2
+       t_prev = gamma_boost*(time - dt)   - uzfrm*zcp(i)*iclight2
+
+       ! Compute modified data by lorentz transform
+       zc(i) = gamma_boost*(zc(i) + beta_boost*clight*time)
+       zcp(i) = gamma_boost*(zcp(i) + beta_boost*clight*(time-dt))
+       uzc(i) = gamma_boost*uzc(i)- gc(i)*uzfrm
+       uzcp(i) = gamma_boost*uzcp(i)   - gcp(i)*uzfrm
+
+       ! Compute interpolation weights
+       weight_prev = (t - t_output)/(t - t_prev)
+       weight_next = (t_output - t_prev)/(t - t_prev)
+
+       ! Interpolate all weights
+       xc(i)  = xcp(i) * weight_prev  + xc(i) * weight_next
+       yc(i)  = ycp(i) * weight_prev  + yc(i) * weight_next
+       zc(i)  = zcp(i) * weight_prev  + zc(i) * weight_next
+       uxc(i) = uxcp(i) * weight_prev + uxc(i) * weight_next
+       uyc(i) = uycp(i) * weight_prev + uyc(i) * weight_next
+       uzc(i) = uzcp(i) * weight_prev + uzc(i) * weight_next
+       gc(i)  = gcp(i) * weight_prev  + gc(i) * weight_next
+     ENDDO
+     !$OMP END PARALLEL DO
+
+       
+  END SUBROUTINE lorentz_transform_parts_without_fields
+
 
 END MODULE diagnostics

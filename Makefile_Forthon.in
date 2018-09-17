@@ -30,7 +30,7 @@ LIBDIR=
 LIBS=
 # Location of the test scripts
 TESTDIR=examples/example_scripts_python
-
+PARSERFILE=
 
 all: clean parse build
 test: test1 test2
@@ -43,7 +43,7 @@ build: $(SRCDIR)/$(APPNAME).F90 $(SRCDIR)/$(APPNAME).v
 	cp $(SRCDIR)/build/*/*/$(PYTHON_NAME).so $(BINDIR)
 
 parse:
-	python $(UTIL)/forthon_parser.py
+	python $(UTIL)/$(PARSERFILE)
 
 clean:
 	rm -rf $(SRCDIR)/build

@@ -57,6 +57,7 @@ MODULE field_boundary
   USE particles
   USE tiling
   USE mpi_derived_types
+  USE PICSAR_precision
   USE constants
   USE time_stat
   USE params
@@ -105,8 +106,9 @@ MODULE field_boundary
   ! ______________________________________________________________________________________
   SUBROUTINE exchange_mpi_3d_grid_array_with_guards(field, nxg, nyg, nzg, nx_local,   &
     ny_local, nz_local)
-    USE constants
+    USE constants, ONLY: c_ndims
     USE mpi
+    USE picsar_precision, ONLY: idp, num, isp
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
@@ -325,41 +327,42 @@ MODULE field_boundary
     ! NEED TO WAIT BEFORE EXCHANGING ALONG Y (DIAGONAL TERMS)
     CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
 
-    ! MOVE EDGES ALONG Y
-    subsizes(1) = sizes(1)
-    subsizes(2) = nyg+1
-    subsizes(3) = sizes(3)
-
-    IF (is_dtype_init(5)) THEN
-      mpi_dtypes(5) = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
-      is_dtype_init(5) = .FALSE.
-    ENDIF
-
-    ! --- +Y
-    CALL MPI_ISEND(field(-nxg, 0, -nzg), 1_isp, mpi_dtypes(5), INT(proc_y_min, isp),  &
-    tag, comm, requests(1), errcode)
-    CALL MPI_IRECV(field(-nxg, ny_local, -nzg), 1_isp, mpi_dtypes(5), INT(proc_y_max, &
-    isp), tag, comm, requests(2), errcode)
-
-    ! --- Need to wait here to avoid modifying buffer at field(nx_local) and field(0)
-    CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
-
-    ! --- -Y
-    CALL MPI_ISEND(field(-nxg, ny_local-nyg, -nzg), 1_isp, mpi_dtypes(5),             &
-    INT(proc_y_max, isp), tag, comm, requests(1), errcode)
-    CALL MPI_IRECV(field(-nxg, -nyg, -nzg), 1_isp, mpi_dtypes(5), INT(proc_y_min,     &
-    isp), tag, comm, requests(2), errcode)
-
-    ! NEED TO WAIT BEFORE EXCHANGING ALONG Z (DIAGONAL TERMS)
-    CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
-
+    IF(c_dim == 3) THEN
+      ! MOVE EDGES ALONG Y
+      subsizes(1) = sizes(1)
+      subsizes(2) = nyg+1
+      subsizes(3) = sizes(3)
+  
+      IF (is_dtype_init(5)) THEN
+        mpi_dtypes(5) = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
+        is_dtype_init(5) = .FALSE.
+      ENDIF
+  
+      ! --- +Y
+      CALL MPI_ISEND(field(-nxg, 0, -nzg), 1_isp, mpi_dtypes(5), INT(proc_y_min, isp),  &
+      tag, comm, requests(1), errcode)
+      CALL MPI_IRECV(field(-nxg, ny_local, -nzg), 1_isp, mpi_dtypes(5), INT(proc_y_max, &
+      isp), tag, comm, requests(2), errcode)
+  
+      ! --- Need to wait here to avoid modifying buffer at field(nx_local) and field(0)
+      CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
+  
+      ! --- -Y
+      CALL MPI_ISEND(field(-nxg, ny_local-nyg, -nzg), 1_isp, mpi_dtypes(5),             &
+      INT(proc_y_max, isp), tag, comm, requests(1), errcode)
+      CALL MPI_IRECV(field(-nxg, -nyg, -nzg), 1_isp, mpi_dtypes(5), INT(proc_y_min,     &
+      isp), tag, comm, requests(2), errcode)
+  
+      ! NEED TO WAIT BEFORE EXCHANGING ALONG Z (DIAGONAL TERMS)
+      CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
+    ENDIF  
     ! MOVE EDGES ALONG Z
     subsizes(1) = sizes(1)
     subsizes(2) = sizes(2)
     subsizes(3) = nzg+1
-
+  
     sz = subsizes(1) * subsizes(2) * subsizes(3)
-
+  
     IF (is_dtype_init(6)) THEN
       mpi_dtypes(6) = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
       is_dtype_init(6) = .FALSE.
@@ -438,35 +441,35 @@ MODULE field_boundary
     array(nn-nxg:nn, :, :) = array(nn-nxg:nn, :, :) + temp
 
     DEALLOCATE(temp)
+    IF(c_dim == 3) THEN
+      !! -- Summation along Y- direction
+      subsizes(1) = sizes(1)
+      subsizes(2) = nyg+1
+      subsizes(3) = sizes(3)
+      nn =  ny_local
 
-    !! -- Summation along Y- direction
-    subsizes(1) = sizes(1)
-    subsizes(2) = nyg+1
-    subsizes(3) = sizes(3)
-    nn =  ny_local
+      IF (is_dtype_init(8)) THEN
+        mpi_dtypes(8) = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
+        is_dtype_init(8) = .FALSE.
+      ENDIF
 
-    IF (is_dtype_init(8)) THEN
-      mpi_dtypes(8) = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
-      is_dtype_init(8) = .FALSE.
+      sz = subsizes(1) * subsizes(2) * subsizes(3)
+      ALLOCATE(temp(subsizes(1), subsizes(2), subsizes(3)))
+
+      temp = 0.0_num
+      CALL MPI_SENDRECV(array(-nxg, nn, -nzg), 1_isp, mpi_dtypes(8), INT(neighbour(0,   &
+      1, 0), isp), tag, temp, sz, mpidbl, INT(neighbour(0, -1, 0), isp), tag, comm,     &
+      status, errcode)
+      array(:, 0:nyg, :) = array(:, 0:nyg, :) + temp
+
+      temp = 0.0_num
+      CALL MPI_SENDRECV(array(-nxg, -nyg, -nzg), 1_isp, mpi_dtypes(8), INT(neighbour(0, &
+      -1, 0), isp), tag, temp, sz, mpidbl, INT(neighbour(0, 1, 0), isp), tag, comm,     &
+      status, errcode)
+      array(:, nn-nyg:nn, :) = array(:, nn-nyg:nn, :) + temp
+    
+      DEALLOCATE(temp)
     ENDIF
-
-    sz = subsizes(1) * subsizes(2) * subsizes(3)
-    ALLOCATE(temp(subsizes(1), subsizes(2), subsizes(3)))
-
-    temp = 0.0_num
-    CALL MPI_SENDRECV(array(-nxg, nn, -nzg), 1_isp, mpi_dtypes(8), INT(neighbour(0,   &
-    1, 0), isp), tag, temp, sz, mpidbl, INT(neighbour(0, -1, 0), isp), tag, comm,     &
-    status, errcode)
-    array(:, 0:nyg, :) = array(:, 0:nyg, :) + temp
-
-    temp = 0.0_num
-    CALL MPI_SENDRECV(array(-nxg, -nyg, -nzg), 1_isp, mpi_dtypes(8), INT(neighbour(0, &
-    -1, 0), isp), tag, temp, sz, mpidbl, INT(neighbour(0, 1, 0), isp), tag, comm,     &
-    status, errcode)
-    array(:, nn-nyg:nn, :) = array(:, nn-nyg:nn, :) + temp
-
-    DEALLOCATE(temp)
-
     !! -- Summation along Z- direction
     subsizes(1) = sizes(1)
     subsizes(2) = sizes(2)
@@ -515,14 +518,20 @@ MODULE field_boundary
   !> of computations in the field gathering and Maxwell solvers stages of the PIC cycle. 
   ! ______________________________________________________________________________________
   SUBROUTINE generalized_comms_group_l2g()
+    USE fields, ONLY: ez_r, ez, jx_r, ey_r, ex_r, bx_r, jz, by_r, rho_r, bz,         &
+      nzguards, nxguards, bz_r, nyguards, jy, jx, ex, bx, jz_r, jy_r, by, rhoold_r,  &
+      ey
 #if defined(FFTW) 
-    USE group_parameters
-    USE mpi_fftw3
+    USE iso_c_binding
     USE load_balance
 #endif
-    USE time_stat
-    USE shared_data
-    USE fields
+    USE mpi
+#if defined(FFTW) 
+    USE mpi_fftw3, ONLY: local_ny, local_nx, local_nz
+#endif
+    USE picsar_precision, ONLY: idp, num
+    USE shared_data, ONLY: rho, nz, ny, rhoold, nx
+    USE time_stat, ONLY: timestat_itstart, localtimes
 #if defined(FFTW)
     INTEGER(idp)  :: nxx, nyy, nzz
     REAL(num)                                   :: tmptime
@@ -535,51 +544,143 @@ MODULE field_boundary
     nyy = local_ny
     nzz = local_nz
     IF(mpicom_curr == 1) THEN
-      CALL sendrecv_l2g_generalized(ex,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      ex_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized(ey,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      ey_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized(ez,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      ez_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized(bx,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      bx_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized(by,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      by_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized(bz,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      bz_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized(jx,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      jx_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized(jy,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      jy_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized(jz,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      jz_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized(rho,nx,nxguards,ny,nyguards,nz,nzguards,           &
-      rho_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized(rhoold,nx,nxguards,ny,nyguards,nz,nzguards,        &
-      rhoold_r,nxx,nyy,nzz)
+      IF(.NOT. absorbing_bcs) THEN
+
+        !> When using period bcs for fields, standard EM equations are solved
+        !> Standard EM fields are exchanged between hybrid and local fields
+
+        CALL sendrecv_l2g_generalized(ex,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        ex_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(ey,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        ey_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(ez,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        ez_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(bx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(by,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        by_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(bz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(jx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        jx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(jy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        jy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(jz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        jz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(rho,nx,nxguards,ny,nyguards,nz,nzguards,         &
+        rho_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(rhoold,nx,nxguards,ny,nyguards,nz,nzguards,      &
+        rhoold_r,nxx,nyy,nzz)
+      ELSE IF (absorbing_bcs) THEN
+
+        !> When using absorbing bcs for fields,splitted fields EM equations are
+        !solved
+        !> Splitted EM fields are exchanged between hybrid and local fields
+
+        CALL sendrecv_l2g_generalized(exy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        exy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(eyx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        eyx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(ezx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        ezx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(bxy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bxy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(byx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        byx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(bzx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bzx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(exz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        exz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(eyz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        eyz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(ezy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        ezy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(bxz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bxz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(byz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        byz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(bzy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bzy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(jx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        jx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(jy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        jy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(jz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        jz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(rho,nx,nxguards,ny,nyguards,nz,nzguards,         &
+        rho_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized(rhoold,nx,nxguards,ny,nyguards,nz,nzguards,      &
+        rhoold_r,nxx,nyy,nzz)
+      ENDIF
     ELSE 
-      CALL sendrecv_l2g_generalized_non_blocking(ex,nx,nxguards,ny,nyguards,nz,        &
-      nzguards,ex_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized_non_blocking(ey,nx,nxguards,ny,nyguards,nz,        &
-      nzguards,ey_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized_non_blocking(ez,nx,nxguards,ny,nyguards,nz,        &
-      nzguards,ez_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized_non_blocking(bx,nx,nxguards,ny,nyguards,nz,        &
-      nzguards,bx_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized_non_blocking(by,nx,nxguards,ny,nyguards,nz,        &
-      nzguards,by_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized_non_blocking(bz,nx,nxguards,ny,nyguards,nz,        &
-      nzguards,bz_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized_non_blocking(jx,nx,nxguards,ny,nyguards,nz,        &
-      nzguards,jx_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized_non_blocking(jy,nx,nxguards,ny,nyguards,nz,        &
-      nzguards,jy_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized_non_blocking(jz,nx,nxguards,ny,nyguards,nz,        &
-      nzguards,jz_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized_non_blocking(rho,nx,nxguards,ny,nyguards,nz,       &
-      nzguards,rho_r,nxx,nyy,nzz)
-      CALL sendrecv_l2g_generalized_non_blocking(rhoold,nx,nxguards,ny,nyguards,nz,    &
-      nzguards,rhoold_r,nxx,nyy,nzz)
+      IF(.NOT. absorbing_bcs) THEN
+
+        !> When using period bcs for fields, standard EM equations are solved
+        !> Standard EM fields are exchanged between hybrid and local fields
+
+        CALL sendrecv_l2g_generalized_non_blocking(ex,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,ex_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(ey,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,ey_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(ez,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,ez_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(bx,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,bx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(by,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,by_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(bz,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,bz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(jx,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,jx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(jy,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,jy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(jz,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,jz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(rho,nx,nxguards,ny,nyguards,nz,     &
+        nzguards,rho_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(rhoold,nx,nxguards,ny,nyguards,nz,  &
+        nzguards,rhoold_r,nxx,nyy,nzz)
+      ELSE IF (absorbing_bcs) THEN
+
+        !> When using absorbing bcs for fields,splitted fields EM equations are solved
+        !> Splitted EM fields are exchanged between hybrid and local fields
+
+        CALL sendrecv_l2g_generalized_non_blocking(exy,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,exy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(eyx,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,eyx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(ezx,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,ezx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(bxy,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,bxy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(byx,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,byx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(bzx,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,bzx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(exz,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,exz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(eyz,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,eyz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(ezy,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,ezy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(bxz,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,bxz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(byz,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,byz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(bzy,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,bzy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(jx,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,jx_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(jy,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,jy_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(jz,nx,nxguards,ny,nyguards,nz,      &
+        nzguards,jz_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(rho,nx,nxguards,ny,nyguards,nz,     &
+        nzguards,rho_r,nxx,nyy,nzz)
+        CALL sendrecv_l2g_generalized_non_blocking(rhoold,nx,nxguards,ny,nyguards,nz,  &
+        nzguards,rhoold_r,nxx,nyy,nzz)
+      ENDIF
+
     ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
@@ -609,10 +710,18 @@ MODULE field_boundary
   ! ______________________________________________________________________________________
   SUBROUTINE sendrecv_l2g_generalized(field_l,nx1,nxg,ny1,nyg,nz1,nzg,field_g,nxx,nyy,nzz)
 #if defined(FFTW)
+    USE group_parameters, ONLY: size_exchanges_l2g_send_z, l_first_cell_to_send_y,   &
+      l_first_cell_to_send_z, g_first_cell_to_recv_y, recv_type_g, send_type_l,      &
+      array_of_ranks_to_send_to_l2g, nb_comms_l2g, size_exchanges_l2g_recv_z,        &
+      array_of_ranks_to_recv_from_l2g, size_exchanges_l2g_recv_y,                    &
+      g_first_cell_to_recv_z, size_exchanges_l2g_send_y
     USE load_balance
-    USE group_parameters
 #endif
-    USE mpi 
+    USE mpi
+#if defined(FFTW)
+    USE mpi_type_constants, ONLY: status
+    USE picsar_precision, ONLY: idp, num, isp
+#endif
     INTEGER(idp), INTENT(IN)                    ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
     REAL(num)    ,INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)   & 
     :: field_l
@@ -665,12 +774,19 @@ MODULE field_boundary
   ! ______________________________________________________________________________________
   SUBROUTINE sendrecv_l2g_generalized_non_blocking(field_l,nx1,nxg,ny1,nyg,nz1,nzg,    &
   field_g,nxx,nyy,nzz)
-
 #if defined(FFTW)
-    USE load_balance
-    USE group_parameters
+USE group_parameters, ONLY: size_exchanges_l2g_send_z, l_first_cell_to_send_y,       &
+  l_first_cell_to_send_z, g_first_cell_to_recv_y, requests_l2g, recv_type_g,         &
+  send_type_l, array_of_ranks_to_send_to_l2g, nb_comms_l2g,                          &
+  size_exchanges_l2g_recv_z, array_of_ranks_to_recv_from_l2g,                        &
+  size_exchanges_l2g_recv_y, g_first_cell_to_recv_z, size_exchanges_l2g_send_y
+USE load_balance
 #endif
-    USE mpi
+USE mpi
+#if defined(FFTW)
+USE picsar_precision, ONLY: idp, num, isp
+#endif
+
     INTEGER(idp), INTENT(IN)                    ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
     REAL(num)    ,INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)   &
     :: field_l
@@ -725,14 +841,19 @@ MODULE field_boundary
   !> of computations in the field gathering and Maxwell solvers stages of the PIC cycle. 
   ! ______________________________________________________________________________________
   SUBROUTINE generalized_comms_group_g2l()
+    USE fields, ONLY: ez_r, ez, ey_r, ex_r, bx_r, by_r, bz, nzguards, nxguards,      &
+      bz_r, nyguards, ex, bx, by, ey
 #if defined(FFTW) 
-    USE group_parameters
-    USE mpi_fftw3
+    USE iso_c_binding
     USE load_balance
 #endif
-    USE time_stat
-    USE shared_data
-    USE fields
+    USE mpi
+#if defined(FFTW) 
+    USE mpi_fftw3, ONLY: local_ny, local_nx, local_nz
+#endif
+    USE picsar_precision, ONLY: idp, num
+    USE shared_data, ONLY: nz, ny, nx
+    USE time_stat, ONLY: timestat_itstart, localtimes
     INTEGER(idp)  :: nxx, nyy, nzz
     REAL(num)     :: tmptime
 #if defined(FFTW)
@@ -744,32 +865,104 @@ MODULE field_boundary
     nyy = local_ny
     nzz = local_nz
     IF(mpicom_curr ==1) THEN
-      CALL sendrecv_g2l_generalized(ex,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      ex_r,nxx,nyy,nzz)
-      CALL sendrecv_g2l_generalized(ey,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      ey_r,nxx,nyy,nzz)
-      CALL sendrecv_g2l_generalized(ez,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      ez_r,nxx,nyy,nzz)
-      CALL sendrecv_g2l_generalized(bx,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      bx_r,nxx,nyy,nzz)
-      CALL sendrecv_g2l_generalized(by,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      by_r,nxx,nyy,nzz)
-      CALL sendrecv_g2l_generalized(bz,nx,nxguards,ny,nyguards,nz,nzguards,            &
-      bz_r,nxx,nyy,nzz)
+      IF(.NOT. absorbing_bcs) THEN
 
+        !> When using period bcs for fields, standard EM equations are solved
+        !> Standard EM fields are exchanged between hybrid and local fields
+
+        CALL sendrecv_g2l_generalized(ex,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        ex_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(ey,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        ey_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(ez,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        ez_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(bx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bx_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(by,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        by_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(bz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bz_r,nxx,nyy,nzz)
+      ELSE IF(absorbing_bcs) THEN
+
+        !> When using absorbing bcs for fields,splitted fields EM equations are
+        !solved
+        !> Splitted EM fields are exchanged between hybrid and local fields
+
+        CALL sendrecv_g2l_generalized(exy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        exy_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(eyx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        eyx_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(ezx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        ezx_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(bxy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bxy_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(byx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        byx_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(bzx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bzx_r,nxx,nyy,nzz) 
+        CALL sendrecv_g2l_generalized(exz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        exz_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(eyz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        eyz_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(ezy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        ezy_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(bxz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bxz_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(byz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        byz_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized(bzy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bzy_r,nxx,nyy,nzz)
+      ENDIF
     ELSE 
-      CALL sendrecv_g2l_generalized_non_blocking(ex,nx,nxguards,ny,nyguards,           &
-      nz,nzguards,ex_r,nxx,nyy,nzz)
-      CALL sendrecv_g2l_generalized_non_blocking(ey,nx,nxguards,ny,nyguards,           &
-      nz,nzguards,ey_r,nxx,nyy,nzz)
-      CALL sendrecv_g2l_generalized_non_blocking(ez,nx,nxguards,ny,nyguards,           &
-      nz,nzguards,ez_r,nxx,nyy,nzz)
-      CALL sendrecv_g2l_generalized_non_blocking(bx,nx,nxguards,ny,nyguards,           &
-      nz,nzguards,bx_r,nxx,nyy,nzz)
-      CALL sendrecv_g2l_generalized_non_blocking(by,nx,nxguards,ny,nyguards,           &
-      nz,nzguards,by_r,nxx,nyy,nzz)
-      CALL sendrecv_g2l_generalized_non_blocking(bz,nx,nxguards,ny,nyguards,           &
-      nz,nzguards,bz_r,nxx,nyy,nzz)
+      IF (.NOT. absorbing_bcs) THEN
+
+        !> When using period bcs for fields, standard EM equations are solved
+        !> Standard EM fields are exchanged between hybrid and local fields
+
+        CALL sendrecv_g2l_generalized_non_blocking(ex,nx,nxguards,ny,nyguards,         &
+        nz,nzguards,ex_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(ey,nx,nxguards,ny,nyguards,         &
+        nz,nzguards,ey_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(ez,nx,nxguards,ny,nyguards,         &
+        nz,nzguards,ez_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(bx,nx,nxguards,ny,nyguards,         &
+        nz,nzguards,bx_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(by,nx,nxguards,ny,nyguards,         &
+        nz,nzguards,by_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(bz,nx,nxguards,ny,nyguards,         &
+        nz,nzguards,bz_r,nxx,nyy,nzz)
+      ELSE IF(absorbing_bcs) THEN
+
+        !> When using absorbing bcs for fields,splitted fields EM equations are
+        !solved
+        !> Splitted EM fields are exchanged between hybrid and local fields
+
+        CALL sendrecv_g2l_generalized_non_blocking(exy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        exy_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(eyx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        eyx_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(ezx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        ezx_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(bxy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bxy_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(byx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        byx_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(bzx,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bzx_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(exz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        exz_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(eyz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        eyz_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(ezy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        ezy_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(bxz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bxz_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(byz,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        byz_r,nxx,nyy,nzz)
+        CALL sendrecv_g2l_generalized_non_blocking(bzy,nx,nxguards,ny,nyguards,nz,nzguards,          &
+        bzy_r,nxx,nyy,nzz)
+
+      ENDIF
     ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(25) = localtimes(25) + (MPI_WTIME() - tmptime)
@@ -800,12 +993,20 @@ MODULE field_boundary
   ! ______________________________________________________________________________________
   SUBROUTINE sendrecv_g2l_generalized_non_blocking(field_l,nx1,nxg,ny1,nyg,nz1,nzg,    &
   field_g,nxx,nyy,nzz)
-
 #if defined(FFTW)
-    USE load_balance
-    USE group_parameters
+USE group_parameters, ONLY: g_first_cell_to_send_y, requests_g2l, recv_type_l,       &
+  size_exchanges_g2l_recv_z, l_first_cell_to_recv_z,                                 &
+  array_of_ranks_to_recv_from_g2l, g_first_cell_to_send_z, nb_comms_g2l,             &
+  l_first_cell_to_recv_y, send_type_g, size_exchanges_g2l_send_z,                    &
+  size_exchanges_g2l_recv_y, size_exchanges_g2l_send_y,                              &
+  array_of_ranks_to_send_to_g2l
+USE load_balance
 #endif
-    USE mpi
+USE mpi
+#if defined(FFTW)
+USE picsar_precision, ONLY: idp, num, isp
+#endif
+
     INTEGER(idp), INTENT(IN)                      ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
     REAL(num)   , INTENT(INOUT)  ,                                                     &
     DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field_l
@@ -869,10 +1070,19 @@ MODULE field_boundary
   ! ______________________________________________________________________________________
   SUBROUTINE sendrecv_g2l_generalized(field_l,nx1,nxg,ny1,nyg,nz1,nzg,field_g,nxx,nyy,nzz)
 #if defined(FFTW)
+    USE group_parameters, ONLY: g_first_cell_to_send_y, recv_type_l,                 &
+      size_exchanges_g2l_recv_z, l_first_cell_to_recv_z,                             &
+      array_of_ranks_to_recv_from_g2l, g_first_cell_to_send_z, nb_comms_g2l,         &
+      l_first_cell_to_recv_y, send_type_g, size_exchanges_g2l_send_z,                &
+      size_exchanges_g2l_recv_y, size_exchanges_g2l_send_y,                          &
+      array_of_ranks_to_send_to_g2l
     USE load_balance
-    USE group_parameters
 #endif
     USE mpi
+#if defined(FFTW)
+    USE mpi_type_constants, ONLY: status
+    USE picsar_precision, ONLY: idp, num, isp
+#endif
     INTEGER(idp), INTENT(IN)                      :: nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
     REAL(num), INTENT(INOUT),                                                          &
     DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)  :: field_l
@@ -965,39 +1175,39 @@ MODULE field_boundary
     array(nn-nxg:nn, :, :) = array(nn-nxg:nn, :, :) + temp2
 
     DEALLOCATE(temp1, temp2)
-
-    !! -- Summation along Y- direction
-    subsizes(1) = sizes(1)
-    subsizes(2) = nyg+1
-    subsizes(3) = sizes(3)
-    nn = ny_local
-
-    IF (is_dtype_init(11)) THEN
-      mpi_dtypes(11) = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
-      is_dtype_init(11) = .FALSE.
+    IF(c_dim == 3) THEN
+      !! -- Summation along Y- direction
+      subsizes(1) = sizes(1)
+      subsizes(2) = nyg+1
+      subsizes(3) = sizes(3)
+      nn = ny_local
+  
+      IF (is_dtype_init(11)) THEN
+        mpi_dtypes(11) = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
+        is_dtype_init(11) = .FALSE.
+      ENDIF
+  
+      sz = subsizes(1) * subsizes(2) * subsizes(3)
+      ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)), temp2(subsizes(1),         &
+      subsizes(2), subsizes(3)))
+  
+      temp1  = 0.0_num
+      temp2 = 0.0_num
+      CALL MPI_ISEND(array(-nxg, nn, -nzg), 1_isp, mpi_dtypes(11), INT(proc_y_max,      &
+      isp), tag, comm, requests(1), errcode)
+      CALL MPI_IRECV(temp1, sz, mpidbl, INT(proc_y_min, isp), tag, comm, requests(2),   &
+      errcode)
+      CALL MPI_ISEND(array(-nxg, -nyg, -nzg), 1_isp, mpi_dtypes(11), INT(proc_y_min,    &
+      isp), tag, comm, requests(3), errcode)
+      CALL MPI_IRECV(temp2, sz, mpidbl, INT(proc_y_max, isp), tag, comm, requests(4),   &
+      errcode)
+      CALL MPI_WAITALL(4_isp, requests, MPI_STATUSES_IGNORE, errcode)
+  
+      array(:, 0:nyg, :) = array(:, 0:nyg, :) + temp1
+      array(:, nn-nyg:nn, :) = array(:, nn-nyg:nn, :) + temp2
+  
+      DEALLOCATE(temp1, temp2)
     ENDIF
-
-    sz = subsizes(1) * subsizes(2) * subsizes(3)
-    ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)), temp2(subsizes(1),         &
-    subsizes(2), subsizes(3)))
-
-    temp1  = 0.0_num
-    temp2 = 0.0_num
-    CALL MPI_ISEND(array(-nxg, nn, -nzg), 1_isp, mpi_dtypes(11), INT(proc_y_max,      &
-    isp), tag, comm, requests(1), errcode)
-    CALL MPI_IRECV(temp1, sz, mpidbl, INT(proc_y_min, isp), tag, comm, requests(2),   &
-    errcode)
-    CALL MPI_ISEND(array(-nxg, -nyg, -nzg), 1_isp, mpi_dtypes(11), INT(proc_y_min,    &
-    isp), tag, comm, requests(3), errcode)
-    CALL MPI_IRECV(temp2, sz, mpidbl, INT(proc_y_max, isp), tag, comm, requests(4),   &
-    errcode)
-    CALL MPI_WAITALL(4_isp, requests, MPI_STATUSES_IGNORE, errcode)
-
-    array(:, 0:nyg, :) = array(:, 0:nyg, :) + temp1
-    array(:, nn-nyg:nn, :) = array(:, nn-nyg:nn, :) + temp2
-
-    DEALLOCATE(temp1, temp2)
-
     !! -- Summation along Z- direction
     subsizes(1) = sizes(1)
     subsizes(2) = sizes(2)
@@ -1047,8 +1257,10 @@ MODULE field_boundary
   ! ______________________________________________________________________________________
   SUBROUTINE summation_bcs_persistent_jx(array, nxg, nyg, nzg, nx_local, ny_local,    &
     nz_local)
-    USE communications
+    USE communications, ONLY: reqperjxz, reqperjxx, reqperjxy
+    USE constants, ONLY: c_ndims
     USE mpi
+    USE picsar_precision, ONLY: idp, num, isp
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
     REAL(num), DIMENSION(-nxg:nx_local+nxg, -nyg:ny_local+nyg, -nzg:nz_local+nzg),    &
@@ -1214,8 +1426,10 @@ MODULE field_boundary
   ! ______________________________________________________________________________________
   SUBROUTINE summation_bcs_persistent_jy(array, nxg, nyg, nzg, nx_local, ny_local,    &
     nz_local)
-    USE communications
+    USE communications, ONLY: reqperjyz, reqperjyx, reqperjyy
+    USE constants, ONLY: c_ndims
     USE mpi
+    USE picsar_precision, ONLY: idp, num, isp
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
     REAL(num), DIMENSION(-nxg:nx_local+nxg, -nyg:ny_local+nyg, -nzg:nz_local+nzg),    &
@@ -1377,8 +1591,10 @@ MODULE field_boundary
   ! ______________________________________________________________________________________
   SUBROUTINE summation_bcs_persistent_jz(array, nxg, nyg, nzg, nx_local, ny_local,    &
     nz_local)
-    USE communications
+    USE communications, ONLY: reqperjzy, reqperjzz, reqperjzx
+    USE constants, ONLY: c_ndims
     USE mpi
+    USE picsar_precision, ONLY: idp, num, isp
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
     REAL(num), DIMENSION(-nxg:nx_local+nxg, -nyg:ny_local+nyg, -nzg:nz_local+nzg),    &
@@ -1538,6 +1754,7 @@ MODULE field_boundary
   !
   ! ______________________________________________________________________________________
   SUBROUTINE efield_bcs
+    USE mpi
     REAL(num) :: tmptime
 #if defined(DEBUG)
     WRITE(0, *) "efield_bcs: start"
@@ -1547,9 +1764,27 @@ MODULE field_boundary
       tmptime = MPI_WTIME()
     ENDIF
     ! Electric field MPI exchange between subdomains
-    CALL field_bc(ex, nxguards, nyguards, nzguards, nx, ny, nz)
-    CALL field_bc(ey, nxguards, nyguards, nzguards, nx, ny, nz)
-    CALL field_bc(ez, nxguards, nyguards, nzguards, nx, ny, nz)
+    IF(.NOT. absorbing_bcs) THEN
+    
+      !> When using periodic bcs, exchange standard EM fields
+
+      CALL field_bc(ex, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(ey, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(ez, nxguards, nyguards, nzguards, nx, ny, nz)
+    ELSE IF(absorbing_bcs) THEN
+
+      !> When using absorbing bcs, exchange splitted EM fields
+      CALL field_bc(exy, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(exz, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(eyx, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(eyz, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(ezx, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(ezy, nxguards, nyguards, nzguards, nx, ny, nz)
+      !> When using absorbing bcs, the electric field is merged here
+      !> This is done here in order not to call merge_fields from warp 
+      CALL merge_e_fields()
+
+    ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(8) = localtimes(8) + (MPI_WTIME() - tmptime)
     ENDIF
@@ -1570,6 +1805,7 @@ MODULE field_boundary
   !
   ! ______________________________________________________________________________________
   SUBROUTINE bfield_bcs
+USE mpi
 
     REAL(num) :: tmptime
 #if defined(DEBUG)
@@ -1579,9 +1815,29 @@ MODULE field_boundary
       tmptime = MPI_WTIME()
     ENDIF
     ! Magnetic field MPI exchange between subdomains
-    CALL field_bc(bx, nxguards, nyguards, nzguards, nx, ny, nz)
-    CALL field_bc(by, nxguards, nyguards, nzguards, nx, ny, nz)
-    CALL field_bc(bz, nxguards, nyguards, nzguards, nx, ny, nz)
+    IF(.NOT. absorbing_bcs) THEN 
+
+      !> When using periodic bcs, exchange standard EM fields
+
+      CALL field_bc(bx, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(by, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(bz, nxguards, nyguards, nzguards, nx, ny, nz)
+    ELSE IF(absorbing_bcs) THEN
+
+      !> When using absorbing bcs, exchange splitted EM fields
+
+      CALL field_bc(bxy, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(bxz, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(byx, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(byz, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(bzx, nxguards, nyguards, nzguards, nx, ny, nz)
+      CALL field_bc(bzy, nxguards, nyguards, nzguards, nx, ny, nz)
+
+      !> When using absorbing bcs, the magnetic field is merged here
+      !> This is done here in order not to call merge_fields from warp 
+
+      CALL merge_b_fields()
+    ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(6) = localtimes(6) + (MPI_WTIME() - tmptime)
     ENDIF
@@ -1602,6 +1858,7 @@ MODULE field_boundary
   !
   ! ______________________________________________________________________________________
   SUBROUTINE current_bcs
+    USE mpi
     REAL(num) :: tmptime
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
@@ -1650,7 +1907,9 @@ MODULE field_boundary
   !
   ! ______________________________________________________________________________________
   SUBROUTINE charge_bcs
-    USE time_stat
+    USE mpi
+    USE picsar_precision, ONLY: num
+    USE time_stat, ONLY: timestat_itstart, localtimes
 
     REAL(num) :: tmptime
     IF (it.ge.timestat_itstart) THEN

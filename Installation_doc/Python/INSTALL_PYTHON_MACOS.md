@@ -42,6 +42,9 @@ In order to automatically configure the installation, type
 ```
 ./configure
 ```
+In order to use highly scalable hybrid PSATD with warp you need to configure python with --pxr_spectral_hybrid flag
+python configure --pxr_spectral_hybrid True
+
 
 Then type
 ```

@@ -13,10 +13,15 @@ F90EXE_sources += tiling.F90
 VPATH_LOCATIONS   += $(PICSAR_HOME)/src/parallelization/tiling/
 INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/parallelization/tiling/
 
-F90EXE_sources += warpx_yee.F90
+F90EXE_sources += yee.F90
 
 VPATH_LOCATIONS   += $(PICSAR_HOME)/src/field_solvers/Maxwell/yee_solver
 INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/field_solvers/Maxwell/yee_solver
+
+F90EXE_sources += karkkainen.F90
+
+VPATH_LOCATIONS   += $(PICSAR_HOME)/src/field_solvers/Maxwell/karkkainen_solver
+INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/field_solvers/Maxwell/karkkainen_solver
 
 F90EXE_sources += charge_deposition_3d.F90
 F90EXE_sources += charge_deposition_2d.F90

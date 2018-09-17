@@ -73,7 +73,9 @@ MODULE mpi_routines
 
   SUBROUTINE mpi_minimal_init_fftw()
 #if defined(FFTW)
-    USE mpi_fftw3
+    USE iso_c_binding
+    USE mpi_fftw3, ONLY: fftw_mpi_init
+    USE picsar_precision, ONLY: idp, isp
 #endif
     LOGICAL(isp) :: isinitialized
     INTEGER(isp) :: nproc_comm, rank_in_comm
@@ -109,13 +111,19 @@ MODULE mpi_routines
   !> Creation 2015
   ! ______________________________________________________________________________________
   SUBROUTINE mpi_minimal_init_python(comm_in)
+#if defined(FFTW)
+    USE mpi_fftw3
+#endif
     LOGICAL(isp) :: isinitialized
     INTEGER(isp) :: nproc_comm, rank_in_comm
     INTEGER(idp), OPTIONAL, INTENT(IN) :: comm_in
+    INTEGER(isp) :: iret
 
     CALL MPI_INITIALIZED(isinitialized, errcode)
-    IF (.NOT. isinitialized) CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE, provided,        &
-    errcode)
+    IF (.NOT. isinitialized) THEN
+      CALL MPI_INIT_THREAD(MPI_THREAD_SINGLE, provided,  errcode)
+    ENDIF
+
     IF (present(comm_in) .AND. comm_in .GE. 0) THEN
       CALL MPI_COMM_DUP(INT(comm_in, isp), comm, errcode)
     ELSE
@@ -126,8 +134,41 @@ MODULE mpi_routines
 
     CALL MPI_COMM_RANK(comm, rank_in_comm, errcode)
     rank=INT(rank_in_comm, idp)
+#if defined(FFTW)
+    IF (.NOT. p3dfft_flag) THEN
+      CALL DFFTW_INIT_THREADS(iret)
+      IF( fftw_with_mpi) THEN
+        CALL FFTW_MPI_INIT()
+      ENDIF
+    ENDIF
+#endif
+
 
   END SUBROUTINE mpi_minimal_init_python
+
+
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Get mpi topology when using warpp.
+  !
+  !> @author
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2018
+  ! ______________________________________________________________________________________
+  SUBROUTINE get_neighbours_python
+
+
+  
+    proc_x_min = MODULO(x_coords-1,nprocx) + y_coords*nprocx +z_coords*nprocx*nprocy
+    proc_x_max = MODULO(x_coords+1,nprocx) + y_coords*nprocx +z_coords*nprocx*nprocy
+    proc_y_min = x_coords + MODULO(y_coords-1,nprocy)*nprocx +z_coords*nprocx*nprocy
+    proc_y_max = x_coords + MODULO(y_coords+1,nprocy)*nprocx +z_coords*nprocx*nprocy
+    proc_z_min = x_coords + y_coords*nprocx +MODULO(z_coords-1,nprocz)*nprocx*nprocy
+    proc_z_max = x_coords + y_coords*nprocx +MODULO(z_coords+1,nprocz)*nprocx*nprocy
+
+  END SUBROUTINE get_neighbours_python
 
   ! ______________________________________________________________________________________
   !> @brief
@@ -539,7 +580,36 @@ ELSE
   ENDDO
 
 ENDIF
+
+IF(absorbing_bcs) THEN
+  CALL get_non_periodic_mpi_bcs()
+ENDIF
+
 END SUBROUTINE setup_communicator
+
+! ______________________________________________________________________________________
+!> @brief
+!> This routine subroutine sets proc_x/y/z_min/max to  MPI_PROC_NULL for mpi at the edge 
+!> of the domain when using absorbing_bcs
+!> @ author
+!> H. Kallala
+!> H. Vincenti
+!> 2018
+! ______________________________________________________________________________________
+SUBROUTINE get_non_periodic_mpi_bcs()
+  IF(absorbing_bcs_x) THEN
+    IF(x_min_boundary) proc_x_min = MPI_PROC_NULL
+    IF(x_max_boundary) proc_x_max = MPI_PROC_NULL
+  ENDIF
+  IF(absorbing_bcs_y) THEN
+    IF(y_min_boundary) proc_y_min = MPI_PROC_NULL
+    IF(y_max_boundary) proc_y_max = MPI_PROC_NULL
+  ENDIF
+  IF(absorbing_bcs_z) THEN
+    IF(z_min_boundary) proc_z_min = MPI_PROC_NULL
+    IF(z_max_boundary) proc_z_max = MPI_PROC_NULL
+  ENDIF
+END SUBROUTINE get_non_periodic_mpi_bcs
 
 ! ______________________________________________________________________________________
 !> @brief
@@ -552,15 +622,41 @@ END SUBROUTINE setup_communicator
 ! ______________________________________________________________________________________
 SUBROUTINE setup_groups
 #if defined(FFTW)
-USE  group_parameters
-USE mpi_fftw3
+USE group_parameters, ONLY: group_z_max_boundary, is_on_boundary_group_z,            &
+  ny_group_global_grid, mpi_group_id, p3d_fsize, cell_y_min_g, nx_group, &
+  ny_group_grid, p3d_iend, ny_group, nz_group_global_array, nz_group_global_grid,    &
+  y_max_group, which_group, p3d_istart, p3d_fstart,                                  &
+  is_on_boundary_group_y, x_min_group, x_max_group, mpi_ordered_comm_world,          &
+  y_min_group, z_max_group, mpi_comm_group_id, x_group_coords, group_y_max_boundary, &
+  p3d_fend, local_size, cell_z_min_g,           root_size,            p3d_isize,     &
+  nx_group_global_array, group_y_min_boundary, nx_group_global_grid, mpi_root_comm,  &
+  group_sizes, root_rank, mpi_root_group,             ny_group_global,               &
+  cell_y_max_g, mpi_world_group, nz_group, ny_group_global_array, z_min_group,       &
+  y_group_coords, nx_group_global,            local_rank, nz_group_grid,             &
+  group_z_min_boundary, z_group_coords, nz_group_global, nx_group_grid,              &
+  cell_z_max_g, is_group_x_boundary_max, is_group_x_boundary_min,                    &
+  is_group_y_boundary_max, is_group_y_boundary_min, is_group_z_boundary_max,         &
+  is_group_z_boundary_min, cell_x_min_g, cell_x_max_g
+USE iso_c_binding
 #endif
-USE picsar_precision
-USE shared_data
 USE mpi
-#if defined(P3DFFT)
-  USE p3dfft
+#if defined(FFTW)
+USE mpi_fftw3, ONLY: local_y0_tr, local_z0_tr, fftw_mpi_local_size_3d, local_x0,     &
+  local_ny_tr, fftw_mpi_local_size_2d, local_ny, local_nx_tr,                        &
+  fftw_mpi_local_size_3d_transposed, alloc_local, local_z0, local_nx, local_x0_tr,   &
+  local_nz, local_y0, local_nz_tr
 #endif
+USE mpi_type_constants, ONLY: mpidbl
+#if defined(P3DFFT)
+USE p3dfft
+#endif
+USE picsar_precision, ONLY: idp, isp
+USE shared_data, ONLY: nz, ny, errcode, nprocx, iy_max_r, nx, y_min_boundary,        &
+  z_coords, z_min_boundary, xmin, nproc, zmin, iz_max_r, p3dfft_flag, ny_global,     &
+  ymin, nprocz, iz_min_r, ix_min_r, ix_max_r, y, z_max_boundary, ymax, y_coords, z,  &
+  dx, comm, c_dim, nprocy, nz_global, x, x_coords, iy_min_r, zmax, y_max_boundary,   &
+  fftw_mpi_transpose, dy, rank, xmax, dz, nb_group, nb_group_x, nb_group_y,          &
+  nb_group_z, nxg_group, nyg_group, nzg_group
 INTEGER(isp) :: ierr
 INTEGER(idp) :: group_size
 INTEGER(isp), ALLOCATABLE, DIMENSION(:)    ::  grp_comm
@@ -575,11 +671,18 @@ INTEGER(isp)                            :: pdims(2)
 INTEGER(idp) , ALLOCATABLE, DIMENSION(:)  :: all_iy_min_global,all_iy_max_global
 INTEGER(isp) :: color
 INTEGER(isp)                              :: key, key_roots,color_roots
+LOGICAL(isp)                               :: is_in_place
 
 #if defined(FFTW)
 #if defined(DEBUG)
   WRITE(0, *) "setup_groups : start"
 #endif
+
+  IF(c_dim == 2) THEN
+    ny_global = 1_idp
+    nyguards = 0_idp
+    nyjguards = 0_idp
+  ENDIF
 
   ! - Create the base group upon which all other groups are defined
   CALL MPI_COMM_GROUP(comm, mpi_world_group, errcode)
@@ -706,6 +809,7 @@ INTEGER(isp)                              :: key, key_roots,color_roots
   ! -- Duplicate old communicators to the variables mpi_comm_group_id,
   ! -- mpi_group_id
   DO i = 1, nb_group
+
     IF (grp_comm(i) .NE. MPI_COMM_NULL) THEN
       CALL MPI_COMM_DUP(grp_comm(i),mpi_comm_group_id(i),errcode)
       ! -- Create a MPI group associated to the local MPI communicator
@@ -895,7 +999,7 @@ INTEGER(isp)                              :: key, key_roots,color_roots
             local_y0_tr=0
             local_ny_tr=nz_group
           ! Fourier arrays have same dimensions than real arrays
-          ELSE 
+          ELSE  
             alloc_local = FFTW_MPI_LOCAL_SIZE_3D(nz_group, ny_group, nx_group/2+1,      &
             mpi_comm_group_id(i), local_nz, local_z0)
             IF(local_nz .EQ. 0_idp ) THEN
@@ -921,6 +1025,7 @@ INTEGER(isp)                              :: key, key_roots,color_roots
           ! - Init FFT
           alloc_local = FFTW_MPI_LOCAL_SIZE_2D(nz_group, nx_group/2+1,                  &
           MPI_COMM_GROUP_ID(i), local_nz, local_z0)
+
           ! - Sanity check: if local_nz<nprocz in group, this can lead to
           ! - local_nz=0 --> Abort
           IF(local_nz .EQ. 0_idp ) THEN
@@ -948,9 +1053,10 @@ INTEGER(isp)                              :: key, key_roots,color_roots
        pdims(1) = INT(nprocy/nb_group_y,isp)
        pdims(2) = INT(nprocz/nb_group_z,isp)
        ! Set up P3DFFT plans and decomp
+       is_in_place = .TRUE.
        CALL p3dfft_setup(pdims,INT(nx_group,isp),INT(ny_group,isp),INT(nz_group,isp),&
           mpi_comm_group_id(i),INT(nx_group,isp),INT(ny_group,isp),INT(nz_group,isp),&
-          .FALSE.)
+          is_in_place)
        ! - Get local dimensions/starting indices of FFT arrays in real space
        CALL p3dfft_get_dims(p3d_istart,p3d_iend,p3d_isize,1_isp)
        ! - Get local dimensions/starting indices of FFT arrays in Fourier space
@@ -1059,12 +1165,18 @@ INTEGER(isp)                              :: key, key_roots,color_roots
   INT(1,isp), MPI_INTEGER8, mpi_ordered_comm_world, errcode)
 
   ! -- Store min and max indices along y in 1D arrays
+  IF (c_dim==3) THEN
   DO i=1, nprocy
     cell_y_min_g(i) = all_iy_min_global(x_coords+(i-1)*nprocx+ & 
     z_coords*nprocx*nprocy+1_idp)
     cell_y_max_g(i) = all_iy_max_global(x_coords+(i-1)*nprocx+ &
     z_coords*nprocx*nprocy+1_idp)
   ENDDO
+  ELSE
+    cell_y_min_g(1)=0
+    cell_y_max_g(1)=0 
+  ENDIF
+  
   DEALLOCATE(all_iy_max_global,all_iy_min_global)
   
   ! -- upper/lower x-boundaries of group 
@@ -1074,6 +1186,33 @@ INTEGER(isp)                              :: key, key_roots,color_roots
 
   ! -- Deallocate used arrays
   DEALLOCATE(grp_comm )
+  !> Checks  if current group on domain boundary or not
+  is_group_x_boundary_min = .FALSE.
+  is_group_x_boundary_max = .FALSE.
+  is_group_y_boundary_min = .FALSE.
+  is_group_y_boundary_max = .FALSE.
+  is_group_z_boundary_min = .FALSE.
+  is_group_z_boundary_max = .FALSE.
+
+  IF(x_group_coords==0_idp) is_group_x_boundary_min = .TRUE.
+  IF(x_group_coords==nb_group_x-1_idp)  is_group_x_boundary_max = .TRUE.
+  IF(y_group_coords==0_idp) is_group_y_boundary_min = .TRUE.
+  IF(y_group_coords==nb_group_y-1_idp)  is_group_y_boundary_max = .TRUE.
+  IF(z_group_coords==0_idp) is_group_z_boundary_min = .TRUE.
+  IF(z_group_coords==nb_group_z-1_idp)  is_group_z_boundary_max = .TRUE.
+
+  !> If current group is on one boundary and sorbing_bcs .TRUE. then current
+  !> group contains a pml region
+  IF(absorbing_bcs) THEN
+    IF(is_group_x_boundary_min .OR. is_group_x_boundary_max .OR. &
+       is_group_y_boundary_min .OR. is_group_y_boundary_max .OR. &
+       is_group_z_boundary_min .OR. is_group_z_boundary_max) THEN
+     ENDIF
+  ENDIF
+  ALLOCATE(cell_x_min_g(nprocx),cell_x_max_g(nprocx))
+  cell_x_min_g = cell_x_min - nxguards
+  cell_x_max_g = cell_x_max + nxguards
+     
 
 #if defined(DEBUG)
   WRITE(0, *) "setup_groups : end"
@@ -1093,12 +1232,21 @@ END SUBROUTINE setup_groups
 !> 2018
 ! ______________________________________________________________________________________
 SUBROUTINE adjust_grid_mpi_global
+#if defined(FFTW)
+USE iso_c_binding
+USE mpi
+USE mpi_fftw3, ONLY: local_y0_tr, local_z0_tr, local_x0, local_ny_tr, local_ny,      &
+  local_nx_tr, local_nx, local_x0_tr, local_nz, local_y0, local_nz_tr
+#endif
+#if defined(FFTW)
+USE picsar_precision, ONLY: idp, isp
+USE shared_data, ONLY: nz_global_grid_min, nz, ny, fftw_with_mpi, errcode,           &
+  cell_z_max, nz_global_grid_max, iy_max_r, nx, z_coords, nz_grid, iz_max_r,         &
+  nx_global, ny_global, nprocz, iz_min_r, cell_z_min, ix_min_r, ix_max_r, comm,      &
+  nz_global, iy_min_r, fftw_mpi_transpose, fftw_hybrid
+#endif
 
 #if defined(FFTW)
-  USE mpi_fftw3
-  USE shared_data
-  USE mpi
-  USE picsar_precision
   INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: all_nz
   INTEGER(idp)  :: idim
   nz = local_nz
@@ -1176,9 +1324,19 @@ END SUBROUTINE adjust_grid_mpi_global
 ! ______________________________________________________________________________________
 SUBROUTINE mpi_initialise
 #if defined(FFTW)
-USE mpi_fftw3
-USE group_parameters
+USE shared_data, ONLY: nyg_group, nzg_group, nxg_group
+#endif
+USE iso_c_binding
+#if defined(FFTW)
 USE load_balance
+#endif
+USE mpi
+#if defined(FFTW)
+USE mpi_fftw3, ONLY: local_z0_tr, fftw_mpi_local_size_3d,                            &
+  fftw_mpi_local_size_3d_transposed, alloc_local, local_z0, local_nz, local_nz_tr
+#endif
+#if defined(FFTW)
+USE picsar_precision, ONLY: idp, num, isp
 #endif
 INTEGER(isp) :: idim
 INTEGER(isp) :: nx0, nxp
@@ -1199,8 +1357,10 @@ IF (l_smooth_compensate) THEN
   nzguards = nzguards + 1
 END IF
 
-CALL setup_communicator
+! Init boundary conditions
+IF(absorbing_bcs_x .OR. absorbing_bcs_y .OR. absorbing_bcs_z) absorbing_bcs = .TRUE.
 
+CALL setup_communicator
 ALLOCATE(x_grid_mins(1:nprocx), x_grid_maxs(1:nprocx))
 ALLOCATE(y_grid_mins(1:nprocy), y_grid_maxs(1:nprocy))
 ALLOCATE(z_grid_mins(1:nprocz), z_grid_maxs(1:nprocz))
@@ -1368,7 +1528,7 @@ IF(fftw_with_mpi) THEN
     !!! --- it is computed differently by distributed FFT libraries)
     CALL adjust_grid_mpi_global
     IF(nz .NE. cell_z_max(z_coords+1) - cell_z_min(z_coords+1)+1) THEN
-      WRITE(*, *), 'ERROR IN AJUSTING THE GRID 1'
+      WRITE(0, *) 'ERROR IN AJUSTING THE GRID 1'
       STOP
     ENDIF
   ENDIF
@@ -1382,6 +1542,14 @@ IF(fftw_hybrid) THEN
     ! fftw_local_size_3d
 ENDIF
 #endif
+IF(absorbing_bcs .AND. l_spectral) THEN
+  g_spectral = .TRUE. ! absorbing_bcs push only available with mult_mat_vec
+                        ! routine
+ENDIF
+IF(absorbing_bcs .AND. .NOT. l_spectral) THEN
+ IF(rank==0)  WRITE(0, *)'ERROR , pmls are not available yet with FDTD'
+ STOP
+ENDIF
 
 !!! --- Set up global grid limits
 
@@ -1551,10 +1719,15 @@ DO iproc = 1, nprocx
   x_grid_mins(iproc) = x_global(cell_x_min(iproc))
   x_grid_maxs(iproc) = x_global(cell_x_max(iproc)+1)
 ENDDO
-DO iproc = 1, nprocy
-  y_grid_mins(iproc) = y_global(cell_y_min(iproc))
-  y_grid_maxs(iproc) = y_global(cell_y_max(iproc)+1)
-ENDDO
+IF(c_dim == 3) THEN
+  DO iproc = 1, nprocy
+    y_grid_mins(iproc) = y_global(cell_y_min(iproc))
+    y_grid_maxs(iproc) = y_global(cell_y_max(iproc)+1)
+  ENDDO
+ELSE
+ y_grid_mins(1) = 0
+ y_grid_maxs(1) = 0
+ENDIF 
 DO iproc = 1, nprocz
   z_grid_mins(iproc) = z_global(cell_z_min(iproc))
   z_grid_maxs(iproc) = z_global(cell_z_max(iproc)+1)
@@ -1576,10 +1749,15 @@ END SUBROUTINE compute_simulation_axis
 !> Creation 2015
 ! ______________________________________________________________________________________
 SUBROUTINE allocate_grid_quantities()
+USE iso_c_binding
+#if defined(FFTW)
+USE mpi_fftw3, ONLY: fftw_alloc_complex, local_ny_tr, fftw_alloc_real, local_ny,     &
+  local_nx_tr, alloc_local, local_nx, local_nz, local_nz_tr
+#endif
 #if defined(FFTW)
 USE fourier
-USE mpi_fftw3
 USE group_parameters
+USE picsar_precision, ONLY: idp
 #endif
 IMPLICIT NONE
 #if defined(FFTW)
@@ -1594,6 +1772,21 @@ ALLOCATE(ez(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards)
 ALLOCATE(bx(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 ALLOCATE(by(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 ALLOCATE(bz(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+! > When using absorbing_bcs , allocate splitted fields 
+IF(absorbing_bcs) THEN
+  ALLOCATE(exy(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
+  ALLOCATE(exz(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
+  ALLOCATE(eyx(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
+  ALLOCATE(eyz(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
+  ALLOCATE(ezx(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
+  ALLOCATE(ezy(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
+  ALLOCATE(bxy(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
+  ALLOCATE(bxz(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
+  ALLOCATE(byx(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
+  ALLOCATE(byz(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
+  ALLOCATE(bzx(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
+  ALLOCATE(bzy(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
+ENDIF
 ALLOCATE(jx(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
 -nzjguards:nz+nzjguards))
 ALLOCATE(jy(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
@@ -1608,7 +1801,6 @@ ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards,                     
 -nzguards:nz+nzguards))
 ALLOCATE(divj(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 ALLOCATE(divb(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-
 ! --- Initialize auxiliary field arrays for gather to particles
 ex_p => ex
 ey_p => ey
@@ -1617,15 +1809,20 @@ bx_p => bx
 by_p => by
 bz_p => bz
 
+
 #if defined(FFTW)
 ! ---  Allocate grid quantities in Fourier space
 IF (l_spectral) THEN
+
   ! - Case when fftw_with_mpi is .TRUE. (distributed FFT)
   IF (fftw_with_mpi) THEN
     ! - FFT arrays dimensions in Fourier space along X,Y,Z
     nkx=local_nx_tr
     nky=local_ny_tr
     nkz=local_nz_tr
+    IF(c_dim == 2) THEN
+      nky = 1_idp
+    ENDIF
     ! - Allocate complex FFT arrays
     ! - Case when p3dfft_flag is .TRUE. (p3dfft is used for distributed FFT)
     IF(p3dfft_flag) THEN
@@ -1673,50 +1870,122 @@ IF (l_spectral) THEN
     nxx = local_nx
     nyy = local_ny
     nzz = local_nz
+    IF(c_dim == 2) THEN
+      nyy = 1_idp
+    ENDIF
     ! - Case when p3dfft_flag is .TRUE. (p3dfft is used for distributed FFT)
     IF(.NOT. p3dfft_flag) THEN
-      cin = fftw_alloc_real(2 * alloc_local);
-      CALL c_f_pointer(cin, ex_r, [nxx, nyy, nzz])
-      cin = fftw_alloc_real(2 * alloc_local);
-      CALL c_f_pointer(cin, ey_r, [nxx, nyy, nzz])
-      cin = fftw_alloc_real(2 * alloc_local);
-      CALL c_f_pointer(cin, ez_r, [nxx, nyy, nzz])
-      cin = fftw_alloc_real(2 * alloc_local);
-      CALL c_f_pointer(cin, bx_r, [nxx, nyy, nzz])
-      cin = fftw_alloc_real(2 * alloc_local);
-      CALL c_f_pointer(cin, by_r, [nxx, nyy, nzz])
-      cin = fftw_alloc_real(2 * alloc_local);
-      CALL c_f_pointer(cin, bz_r, [nxx, nyy, nzz])
-      cin = fftw_alloc_real(2 * alloc_local);
-      CALL c_f_pointer(cin, jx_r, [nxx, nyy, nzz])
-      cin = fftw_alloc_real(2 * alloc_local);
-      CALL c_f_pointer(cin, jy_r, [nxx, nyy, nzz])
-      cin = fftw_alloc_real(2 * alloc_local);
-      CALL c_f_pointer(cin, jz_r, [nxx, nyy, nzz])
-      cin = fftw_alloc_real(2 * alloc_local);
-      CALL c_f_pointer(cin, rho_r, [nxx, nyy, nzz])
-      cin = fftw_alloc_real(2 * alloc_local);
-      CALL c_f_pointer(cin, rhoold_r, [nxx, nyy, nzz])
-      cin = fftw_alloc_real(2 * alloc_local);
+    ! - When using absorbing_bcs, merged fields are not allocated in fourier space
+    ! - neither ex_r,ey_r ... components
+    ! - In this case only splitted fields are allocated  
+    ! - The merge is done using local fields (ex = exy+exz )
+     IF(.NOT. absorbing_bcs) THEN
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, ex_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, ey_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, ez_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, bx_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, by_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, bz_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, jx_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, jy_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, jz_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, rho_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, rhoold_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+     ELSE IF(absorbing_bcs) THEN
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, exy_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, exz_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, eyx_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, eyz_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, ezx_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, ezy_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, bxy_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, bxz_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, byx_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, byz_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, bzx_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, bzy_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, jx_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, jy_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, jz_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, rho_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+       CALL c_f_pointer(cin, rhoold_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+      ENDIF
     ! - Case when FFTW is used for the distributed FFT
     ELSE IF(p3dfft_flag) THEN
-      ALLOCATE(ex_r(nxx,nyy,nzz))
-      ALLOCATE(ey_r(nxx,nyy,nzz))
-      ALLOCATE(ez_r(nxx,nyy,nzz))
-      ALLOCATE(bx_r(nxx,nyy,nzz))
-      ALLOCATE(by_r(nxx,nyy,nzz))
-      ALLOCATE(bz_r(nxx,nyy,nzz))
-      ALLOCATE(jx_r(nxx,nyy,nzz))
-      ALLOCATE(jy_r(nxx,nyy,nzz))
-      ALLOCATE(jz_r(nxx,nyy,nzz))
-      ALLOCATE(rho_r(nxx,nyy,nzz))
-      ALLOCATE(rhoold_r(nxx,nyy,nzz))
+    ! - When using absorbing_bcs, merged fields are not allocated in fourier space
+    ! - neither ex_r,ey_r ... components
+    ! - In this case only splitted fields are allocated  
+    ! - The merge is done using local fields (ex = exy+exz )
+      IF(.NOT. absorbing_bcs) THEN
+        ALLOCATE(ex_r(nxx,nyy,nzz))
+        ALLOCATE(ey_r(nxx,nyy,nzz))
+        ALLOCATE(ez_r(nxx,nyy,nzz))
+        ALLOCATE(bx_r(nxx,nyy,nzz))
+        ALLOCATE(by_r(nxx,nyy,nzz))
+        ALLOCATE(bz_r(nxx,nyy,nzz))
+        ALLOCATE(jx_r(nxx,nyy,nzz))
+        ALLOCATE(jy_r(nxx,nyy,nzz))
+        ALLOCATE(jz_r(nxx,nyy,nzz))
+        ALLOCATE(rho_r(nxx,nyy,nzz))
+        ALLOCATE(rhoold_r(nxx,nyy,nzz))
+      ELSE IF(absorbing_bcs) THEN
+        ALLOCATE(exy_r(nxx,nyy,nzz))
+        ALLOCATE(exz_r(nxx,nyy,nzz))
+        ALLOCATE(eyx_r(nxx,nyy,nzz))
+        ALLOCATE(eyz_r(nxx,nyy,nzz))
+        ALLOCATE(ezx_r(nxx,nyy,nzz))
+        ALLOCATE(ezy_r(nxx,nyy,nzz))
+        ALLOCATE(bxy_r(nxx,nyy,nzz))
+        ALLOCATE(bxz_r(nxx,nyy,nzz))
+        ALLOCATE(byx_r(nxx,nyy,nzz))
+        ALLOCATE(byz_r(nxx,nyy,nzz))
+        ALLOCATE(bzx_r(nxx,nyy,nzz))
+        ALLOCATE(bzy_r(nxx,nyy,nzz))
+        ALLOCATE(jx_r(nxx,nyy,nzz))
+        ALLOCATE(jy_r(nxx,nyy,nzz))
+        ALLOCATE(jz_r(nxx,nyy,nzz))
+        ALLOCATE(rho_r(nxx,nyy,nzz))
+        ALLOCATE(rhoold_r(nxx,nyy,nzz))
+      ENDIF
     ENDIF      
   ! Case of local FFTs (purely local pseudo-spectral solver)
   ELSE IF(.NOT. fftw_with_mpi) THEN
     nkx=(2*nxguards+nx)/2+1! Real To Complex Transform
     nky=(2*nyguards+ny)
     nkz=(2*nzguards+nz)
+    IF(c_dim == 2) THEN
+      nky =1_idp
+    ENDIF
     IF(.NOT. g_spectral) THEN
     ! - Allocate complex FFT arrays
       ALLOCATE(exf(nkx, nky, nkz))
@@ -1735,17 +2004,45 @@ IF (l_spectral) THEN
     imn=-nxguards; imx=nx+nxguards-1
     jmn=-nyguards;jmx=ny+nyguards-1
     kmn=-nzguards;kmx=nz+nzguards-1
-    ALLOCATE(ex_r(imn:imx, jmn:jmx, kmn:kmx))
-    ALLOCATE(ey_r(imn:imx, jmn:jmx, kmn:kmx))
-    ALLOCATE(ez_r(imn:imx, jmn:jmx, kmn:kmx))
-    ALLOCATE(bx_r(imn:imx, jmn:jmx, kmn:kmx))
-    ALLOCATE(by_r(imn:imx, jmn:jmx, kmn:kmx))
-    ALLOCATE(bz_r(imn:imx, jmn:jmx, kmn:kmx))
-    ALLOCATE(jx_r(imn:imx, jmn:jmx, kmn:kmx))
-    ALLOCATE(jy_r(imn:imx, jmn:jmx, kmn:kmx))
-    ALLOCATE(jz_r(imn:imx, jmn:jmx, kmn:kmx))
-    ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
-    ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
+    IF(c_dim == 2) THEN
+      jmn = 0
+      jmx = 0
+    ENDIF
+    IF (.NOT. absorbing_bcs) THEN
+    ! - When using absorbing_bcs, merged fields are not allocated in fourier space
+    ! - neither ex_r,ey_r ... components
+    ! - In this case only splitted fields are allocated  
+    ! - The merge is done using local fields (ex = exy+exz )
+      ALLOCATE(ex_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(ey_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(ez_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(bx_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(by_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(bz_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(jx_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(jy_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(jz_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
+    ELSE IF(absorbing_bcs) THEN
+      ALLOCATE(exy_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(exz_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(eyx_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(eyz_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(ezx_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(ezy_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(bxy_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(bxz_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(byx_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(byz_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(bzx_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(bzy_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(jx_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(jy_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(jz_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
+      ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
+    ENDIF
   ENDIF
 ENDIF
 #endif
@@ -1767,6 +2064,7 @@ END SUBROUTINE allocate_grid_quantities
 !> Creation 2015
 ! ______________________________________________________________________________________
 SUBROUTINE mpi_close
+USE mpi
 INTEGER :: seconds, minutes, hours, total
 
 IF (rank .EQ. 0) THEN
@@ -1794,19 +2092,22 @@ END SUBROUTINE mpi_close
 !> Creation 2016
 ! ______________________________________________________________________________________
 SUBROUTINE time_statistics
-USE time_stat
-USE params
 #ifdef _OPENMP
 USE omp_lib
 #endif
+USE params, ONLY: currdepo, rhodepo, fieldgathe, fg_p_pp_separated, nsteps, it
+USE picsar_precision, ONLY: idp, num, isp
+USE time_stat, ONLY: maxtimes, init_avetimes, mintimes, init_localtimes, avetimes,   &
+  init_maxtimes, localtimes, init_mintimes
 IMPLICIT NONE
-REAL(num), DIMENSION(25) :: percenttimes
+REAL(num), DIMENSION(26) :: percenttimes
 INTEGER(idp)             :: nthreads_tot
 
 ! Total times
 localtimes(20) = sum(localtimes(1:14)) + localtimes(24)
 localtimes(19) = localtimes(2) + localtimes(4) + localtimes(6) + localtimes(8) +      &
 localtimes(11) + localtimes(13)
+localtimes(24)  = localtimes(24)  + localtimes(26) 
 localtimes(18) = localtimes(5) + localtimes(6) + localtimes(7) + localtimes(8) +      &
 localtimes(24)
 
@@ -1814,15 +2115,15 @@ init_localtimes(5) = sum(init_localtimes(1:4))
 
 ! Reductions
 ! Maximun times
-CALL MPI_REDUCE(localtimes, maxtimes, 25_isp, mpidbl, MPI_MAX, 0_isp, comm, errcode)
+CALL MPI_REDUCE(localtimes, maxtimes, 26_isp, mpidbl, MPI_MAX, 0_isp, comm, errcode)
 CALL MPI_REDUCE(init_localtimes, init_maxtimes, 5_isp, mpidbl, MPI_MAX, 0_isp, comm,  &
 errcode)
 ! Minimum times
-CALL MPI_REDUCE(localtimes, mintimes, 25_isp, mpidbl, MPI_MIN, 0_isp, comm, errcode)
+CALL MPI_REDUCE(localtimes, mintimes, 26_isp, mpidbl, MPI_MIN, 0_isp, comm, errcode)
 CALL MPI_REDUCE(init_localtimes, init_mintimes, 5_isp, mpidbl, MPI_MIN, 0_isp, comm,  &
 errcode)
 ! Average
-CALL MPI_REDUCE(localtimes, avetimes, 25_isp, mpidbl, MPI_SUM, 0_isp, comm, errcode)
+CALL MPI_REDUCE(localtimes, avetimes, 26_isp, mpidbl, MPI_SUM, 0_isp, comm, errcode)
 CALL MPI_REDUCE(init_localtimes, init_avetimes, 5_isp, mpidbl, MPI_SUM, 0_isp, comm,  &
 errcode)
 avetimes = avetimes / nproc
@@ -1880,6 +2181,9 @@ IF (rank .EQ. 0) THEN
   maxtimes(22), percenttimes(22), avetimes(22)/nsteps*1e3
   WRITE(0, '(X, A25, 5(X, F8.2))') "Multiply f_fields:", mintimes(23), avetimes(23),  &
   maxtimes(23), percenttimes(23), avetimes(23)/nsteps*1e3
+  WRITE(0, '(X, A25, 5(X, F8.2))') "Absorbing_bcs:", mintimes(26),avetimes(26),  &
+  maxtimes(26), percenttimes(23), avetimes(26)/nsteps*1e3
+
   WRITE(0, '(X, A25, 5(X, F8.2))') "Total solve max psatd:", mintimes(24),            &
   avetimes(24), maxtimes(24), percenttimes(24), avetimes(24)/nsteps*1e3
   WRITE(0, '(X, A25, 5(X, F8.2))') "Group mpi comm:", mintimes(25), avetimes(25),     &
@@ -1951,14 +2255,16 @@ END SUBROUTINE time_statistics
 !> 2016
 ! ______________________________________________________________________________________
 SUBROUTINE time_statistics_per_iteration
-USE time_stat
-USE params
 #ifdef _OPENMP
 USE omp_lib
 #endif
+USE params, ONLY: fg_p_pp_separated, nsteps, it
+USE picsar_precision, ONLY: num, isp
+USE time_stat, ONLY: maxtimes, init_avetimes, mintimes, timestat_perit,              &
+  init_localtimes, avetimes, init_maxtimes, localtimes, init_mintimes
 IMPLICIT NONE
 
-REAL(num), DIMENSION(25) :: percenttimes
+REAL(num), DIMENSION(26) :: percenttimes
 
 ! Time stats per iteration activated
 IF (timestat_perit.gt.0) THEN
@@ -1967,6 +2273,7 @@ IF (timestat_perit.gt.0) THEN
   localtimes(20) = sum(localtimes(1:14)) + localtimes(24)
   localtimes(19) = localtimes(2) + localtimes(4) + localtimes(6) + localtimes(8) +    &
   localtimes(11) + localtimes(13)
+  localtimes(24) = localtimes(24) + localtimes(26) 
   localtimes(18) = localtimes(5) + localtimes(6) + localtimes(7) + localtimes(8) +    &
   localtimes(24)
 
@@ -1974,17 +2281,17 @@ IF (timestat_perit.gt.0) THEN
 
   ! Reductions
   ! Maximun times
-  CALL MPI_REDUCE(localtimes, maxtimes, 25_isp, mpidbl, MPI_MAX, 0_isp, comm,         &
+  CALL MPI_REDUCE(localtimes, maxtimes, 26_isp, mpidbl, MPI_MAX, 0_isp, comm,         &
   errcode)
   CALL MPI_REDUCE(init_localtimes, init_maxtimes, 5_isp, mpidbl, MPI_MAX, 0_isp,      &
   comm, errcode)
   ! Minimum times
-  CALL MPI_REDUCE(localtimes, mintimes, 25_isp, mpidbl, MPI_MIN, 0_isp, comm,         &
+  CALL MPI_REDUCE(localtimes, mintimes, 26_isp, mpidbl, MPI_MIN, 0_isp, comm,         &
   errcode)
   CALL MPI_REDUCE(init_localtimes, init_mintimes, 5_isp, mpidbl, MPI_MAX, 0_isp,      &
   comm, errcode)
   ! Average
-  CALL MPI_REDUCE(localtimes, avetimes, 25_isp, mpidbl, MPI_SUM, 0_isp, comm,         &
+  CALL MPI_REDUCE(localtimes, avetimes, 26_isp, mpidbl, MPI_SUM, 0_isp, comm,         &
   errcode)
   CALL MPI_REDUCE(init_localtimes, init_avetimes, 5_isp, mpidbl, MPI_MAX, 0_isp,      &
   comm, errcode)
@@ -2029,6 +2336,8 @@ IF (timestat_perit.gt.0) THEN
     maxtimes(22), percenttimes(22), avetimes(22)/nsteps*1e3
     WRITE(0, '(X, A25, 5(X, F8.2))') "Multiply f_fields:", mintimes(23),              &
     avetimes(23), maxtimes(23), percenttimes(23), avetimes(23)/nsteps*1e3
+    WRITE(0, '(X, A25, 5(X, F8.2))') "Absorbing_bcs:", mintimes(26),&
+    avetimes(26), maxtimes(26), percenttimes(26), avetimes(26)/nsteps*1e3
     WRITE(0, '(X, A25, 5(X, F8.2))') "Total solve max psatd:", mintimes(24),          &
     avetimes(24), maxtimes(24), percenttimes(24), avetimes(24)/nsteps*1e3
     WRITE(0, '(X, A25, 5(X, F8.2))') "Group mpi comm:", mintimes(25), avetimes(25),   &
@@ -2068,9 +2377,12 @@ END SUBROUTINE time_statistics_per_iteration
 ! ________________________________________________________________________________________
 SUBROUTINE get_local_grid_mem()
   USE mem_status, ONLY: local_grid_mem
+  USE shared_data, ONLY: absorbing_bcs
+  USE picsar_precision, ONLY: num
   IMPLICIT NONE 
+  INTEGER(idp) :: field_size_f, field_size_r, cc_mat_size
   local_grid_mem = 0._num
-
+  
   ! -- Update of memory size occupied by real-space arrays 
   local_grid_mem = local_grid_mem + SIZEOF(ex)
   local_grid_mem = local_grid_mem + SIZEOF(ey)
@@ -2086,31 +2398,34 @@ SUBROUTINE get_local_grid_mem()
   local_grid_mem = local_grid_mem + SIZEOF(dive)
   local_grid_mem = local_grid_mem + SIZEOF(divj)
   local_grid_mem = local_grid_mem + SIZEOF(divb)
+  IF(absorbing_bcs) THEN
+    local_grid_mem = local_grid_mem + SIZEOF(sigma_x_e)*6.0_num
+    local_grid_mem = local_grid_mem + SIZEOF(exy) * 12.0_num
+  ENDIF
 
 #if defined(FFTW)
   ! -- Update of memory size occupied by Fourier arrays 
-  local_grid_mem = local_grid_mem + SIZEOF(exf)
-  local_grid_mem = local_grid_mem + SIZEOF(eyf)
-  local_grid_mem = local_grid_mem + SIZEOF(ezf)
-  local_grid_mem = local_grid_mem + SIZEOF(bxf)
-  local_grid_mem = local_grid_mem + SIZEOF(byf)
-  local_grid_mem = local_grid_mem + SIZEOF(bzf)
-  local_grid_mem = local_grid_mem + SIZEOF(jxf)
-  local_grid_mem = local_grid_mem + SIZEOF(jyf)
-  local_grid_mem = local_grid_mem + SIZEOF(jzf)
-  local_grid_mem = local_grid_mem + SIZEOF(rhof)
-  local_grid_mem = local_grid_mem + SIZEOF(rhooldf)
-  local_grid_mem = local_grid_mem + SIZEOF(ex_r)
-  local_grid_mem = local_grid_mem + SIZEOF(ey_r)
-  local_grid_mem = local_grid_mem + SIZEOF(ez_r)
-  local_grid_mem = local_grid_mem + SIZEOF(bx_r)
-  local_grid_mem = local_grid_mem + SIZEOF(by_r)
-  local_grid_mem = local_grid_mem + SIZEOF(bz_r)
-  local_grid_mem = local_grid_mem + SIZEOF(jx_r)
-  local_grid_mem = local_grid_mem + SIZEOF(jy_r)
-  local_grid_mem = local_grid_mem + SIZEOF(jz_r)
-  local_grid_mem = local_grid_mem + SIZEOF(rho_r)
-  local_grid_mem = local_grid_mem + SIZEOF(rhoold_r)
+  IF(g_spectral) THEN
+    IF(absorbing_bcs) THEN
+      field_size_f = SIZEOF(exf)*(17.0_num+12.0_num) 
+    ELSE 
+      field_size_f = SIZEOF(exf)*(11.0_num+6.0_num)
+    ENDIF
+  ELSE 
+    field_size_f = SIZEOF(exf)*11.0_num
+  ENDIF
+  local_grid_mem = local_grid_mem + field_size_f
+  IF(absorbing_bcs) THEN
+    field_size_r = SIZEOF(ex_r)*17.0_num  
+    ! -- Memory occupied by blocs
+    cc_mat_size = SIZEOF(exf)*(34.0_num) 
+  ELSE 
+    field_size_r = SIZEOF(ex_r)*11.0_num 
+    ! -- Memory occupued by blocs
+    cc_mat_size = SIZEOF(exf)*(33.0_num)
+  ENDIF
+  local_grid_mem =  local_grid_mem + field_size_r + cc_mat_size
+  
 #endif
 END SUBROUTINE get_local_grid_mem 
 
@@ -2127,7 +2442,8 @@ END SUBROUTINE get_local_grid_mem
 !> Creation 2018
 ! ________________________________________________________________________________________
 SUBROUTINE get_global_grid_mem()
-  USE mem_status, ONLY: local_grid_mem, global_grid_mem 
+  USE mem_status, ONLY: local_grid_mem, global_grid_mem
+  USE picsar_precision, ONLY: isp
   IMPLICIT NONE 
 
   ! - Estimate total grid arrays memory (reduce on proc 0)

@@ -1,0 +1,168 @@
+######################### INPUT FILE FOR THE CODE PICSAR
+section::cpusplit
+ nprocx =2
+ nprocy =1  
+ nprocz =2
+ c_dim =2
+ topology = 0
+ 
+ # MPI com type
+ mpicom_curr =0
+ 
+ # LVEC size for the current deposition
+ lvec_curr_depo = 8
+ 
+ # LVEC size for the charge deposition
+ lvec_charge_depo = 64
+
+ # LVEC size for the charge deposition
+ lvec_fieldgathe = 256
+ 
+ # buffer size for MPI exchanges
+ mpi_buf_size = 2000
+ 
+end::cpusplit
+
+section::main
+ # Number of grid points in x,y,z
+ nx = 200
+ ny=1
+ nz = 200
+
+ # Origin of simulation axes
+ xmin =-0.25e-5
+ zmin =-0.25e-5
+ xmax = 0.25e-5
+ zmax = 0.25e-5
+ # Simulation duration (in 1/w0)
+ #t_max = 7
+ nsteps=401
+ 
+ ntilex = 1
+ ntiley=1
+ ntilez = 1 
+ 
+ # Guard cells
+ nguardsx =  8 
+ nguardsz =  8
+ njguardsx = 8 
+ njguardsz = 8
+ 
+end::main
+
+
+section::solver
+ 
+ # Maxwell solver order
+ l_spectral = .TRUE.
+# fftw_with_mpi = .TRUE.
+# fftw_hybrid = .TRUE.
+# nb_group_z = 1
+ absorbing_bcs_x =.TRUE.
+ absorbing_bcs_z = .TRUE.
+ nx_pml=  4
+ nz_pml=  4
+ #fftw_with_mpi = .TRUE.
+ #fftw_hybrid = .TRUE.
+ #nb_group=1
+ norderx =16 
+ norderz =16 
+ # Shape factor order
+ nox = 2
+ noy = 2
+ noz = 2
+
+ # Current deposition method
+ currdepo = 0
+ 
+ # Field gathering method
+ fieldgathe = 0
+ 
+ # Type of particle communication
+ partcom = 1
+
+ # Charge deposition method
+ rhodepo = 0
+
+ # Particle pusher and field gathering seperated
+ fg_p_pp_separated = 0
+
+ # Particle pusher algorithm
+ particle_pusher = 0
+
+end::solver
+
+section::plasma
+
+ nlab=1.1e25
+ gamma0=1
+ 
+ # Initialization type
+ pdistr=1
+ 
+end::plasma
+
+section::sorting
+ activation = 1
+ dx=0.5
+ dy=0.5
+ dz=0.5
+ shiftx=-0.5
+ shifty=-0.5
+ shiftz=-0.5
+end::sorting 
+
+section::output
+ output_frequency = 10
+ output_step_min  = 0
+ output_step_max  = 10000
+ ex = 1
+ ey = 1 
+ ez = 1 
+ bx = 1 
+ by = 1 
+ bz = 1 
+end::output
+
+section::timestat
+  activation=0
+  period=1
+  buffer=10
+end::timestat
+
+section::antenna
+  vector_x = 1.0
+  vector_y = 0.0
+  vector_z = 0.0
+  spot_x = 0e-5
+  spot_y = 0e-5
+  spot_z = 0e-5
+  lambda_laser = 0.5e-6
+  pvec_x = 0.0
+  pvec_y = 1.0
+  pvec_z = 0.0
+  polangle = 0
+  laser_ctau =0.5e-6
+  t_peak=2e-15
+  laser_a_1=1.
+  laser_a_2=0.
+  laser_w0 =0.10e-5
+  focal_length = 0.
+  temporal_order =4
+  window = 0
+end::antenna
+
+
+
+section::temporal
+  frequency=1
+  format=1
+  kinE=1
+  exE=1
+  eyE=1
+  ezE=1
+  bxE=1
+  byE=1
+  bzE=1
+end::temporal
+
