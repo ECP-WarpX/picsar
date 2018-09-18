@@ -284,8 +284,13 @@ class MiniAppParser( object ):
         #LIST ALL .F90 or .F files in current directory
         self.listfiles = self.create_listfiles()
 
+        # Reconstruct PICSARlite
         for file in self.listfiles:
             self.write_available_routines(file)
+
+        # Remove unavailable routines
+        for file in self.listfiles:
+            self.comment_unavailable_routine(file)
 
     def clean_folder(self):
 
@@ -376,10 +381,10 @@ class MiniAppParser( object ):
 
         file = routine.file
 
-        if not os.path.exists('PICSARlite/src/%s'%file):
+        if not os.path.exists('./PICSARlite/src/%s'%file):
 
             divided_path = file.split('/')
-            path_folder = 'PICSARlite/src/'
+            path_folder = './PICSARlite/src/'
 
             for folder in divided_path[:-1]:
                 path_folder += '%s/'%folder
@@ -407,7 +412,7 @@ class MiniAppParser( object ):
             # Remove the list of routines
             text_header = text_header.split('! List of subroutines:')[0]
 
-            fnew = open('PICSARlite/src/%s'%file, 'w')
+            fnew = open('./PICSARlite/src/%s'%file, 'w')
             fnew.writelines(split_str)
             fnew.writelines(text_header)
             fnew.writelines(split_str+'\n\n')
@@ -427,18 +432,98 @@ class MiniAppParser( object ):
     def end_module( self, routine, module ):
         file = routine.file
 
-        f = open('PICSARlite/src/%s'%file, 'aw')
+        f = open('./PICSARlite/src/%s'%file, 'aw')
         f.writelines('END MODULE %s'%module +'\n')
         f.close()
+
+    def comment_unavailable_routine(self, file):
+        """
+            When all the files are written, check inside the files if some
+            unavailable routines are unused but called. It may introduce
+            a crash at compilation time.
+
+            To avoid it, this function comments these routines and inserts
+            stops.
+        """
+
+        # Find the unwanted call
+        f = open('./PICSARlite/src/%s'%file,"r")
+        listlines=f.readlines()
+        Nlines = len(listlines)
+        istart = [-1]
+        iend   = [-1]
+        list_routine_name = []
+
+        for i in range(0, Nlines):
+            curr_line=listlines[i].lower()
+            curr_word_list=curr_line.split(" ")
+            # We find a CALL
+            if (("call" in curr_word_list) & (curr_line.find("!")==-1 )):
+                # Get the name of the following routine
+                indexcall = curr_word_list.index("call")
+                routine_name = curr_word_list[indexcall+1].split('(')[0]
+
+                # If the routine is in the list, everything fine, if not the
+                # line and the block should be commented.
+                if not routine_name in self.list_available_routines:
+                    list_routine_name.append(routine_name)
+                    istart.append(i)
+                    curr_line_old = curr_line
+                    while True:
+                        if (i>=Nlines):
+                            sys.exit("ERROR: missing end call block")
+                        if not "&" in curr_line_old:
+                            break
+                        else:
+                            curr_line_old = curr_line
+                            i += 1
+                            curr_line=listlines[i].lower()
+                    iend.append(i)
+
+        # Comment and stop the code
+        fnew = open('./PICSARlite/src/%s'%file,"w")
+        listlines_new = []
+        compt = 0
+        for i in range(0, Nlines):
+            # If no more wrong subroutines, finsh the file
+            if (compt == len(iend)-1) :
+                listlines_new.append(listlines[i])
+
+            elif i > iend[compt]:
+                # It is regular lines
+                if i != istart[compt+1]:
+                    listlines_new.append(listlines[i])
+
+                # It is a call block
+                else:
+                    # Comment the lines
+                    for iblock in range(iend[compt+1]-istart[compt+1]):
+                        listlines_new.append('!'+listlines[i+iblock])
+
+                    # Print error message
+                    error_message = "WRITE(0,*) 'ERROR: The subroutine "  \
+                           + "%s cannot be used in this configuration.'"%( \
+                           list_routine_name[compt])
+                    listlines_new.append("\n" + error_message + "\n")
+                    listlines_new.append("STOP \n \n")
+                    if compt == len(iend)-2:
+                        compt = 0
+                    else:
+                        compt += 1
+
+        fnew.writelines(listlines_new)
+        fnew.close()
+
+
 
 ###############################################################################
 # Main
 
 arglist=sys.argv
 #try:
-type_parser = str(arglist[1])
-type_pusher = str(arglist[2])
-type_depos  = str(arglist[3])
+type_parser = "all" #str(arglist[1])
+type_pusher = "all" #str(arglist[2])
+type_depos  = "all" #str(arglist[3])
 miniapp = MiniAppParser(type_parser, type_pusher, type_depos)
 
 # except(IndexError):
