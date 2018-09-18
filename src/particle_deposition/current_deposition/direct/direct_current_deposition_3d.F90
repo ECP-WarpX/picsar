@@ -2156,7 +2156,7 @@ SUBROUTINE depose_jxjyjz_scalar_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
 END SUBROUTINE depose_jxjyjz_scalar_3_3_3
 
 #if defined (DEV)
-!  _______________________________________________________________________________________
+! _______________________________________________________________________________________
 !> @brief
 !> Order 3 3D vector current deposition routine (rho*v)
 !
