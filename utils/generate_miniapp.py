@@ -37,8 +37,7 @@ class Subroutines( object ):
             # This is a subroutine block
             if ((curr_line.find("subroutine")>=0) \
                 & (curr_line.find("!")==-1)    \
-                & (curr_line.find("end subroutine")==-1) \
-                & (curr_line.find("#do not parse")==-1) ):
+                & (curr_line.find("end subroutine")==-1)):
                 ip=curr_line.find("(")
 
                 # Do not compt the subroutines which are in interface
@@ -141,10 +140,6 @@ class Modules( object ):
                         break
                     if ((curr_line.find("contains")>=0)):
                         proc_mod=True
-                        if (subname.find("#do not parse")==-1):
-                            break
-                        else:
-                            pass
 
                 iend.append(i)
                 names.append(subname.strip())
@@ -184,10 +179,8 @@ class Modules( object ):
         #icomm_intel=line.find("!DIR$")
         icomm_intel=-1
         icomm_ibm=line.find("!ibm*")
-        iparseinstr=line.find("!#do not parse")
         iwrapinstr=line.find("!#do not wrap")
         if ((icomm >=0) & \
-            (iparseinstr==-1) & \
             (iwrapinstr==-1) & \
             (icomm_defined==-1) & \
             (icomm_omp==-1) & \
@@ -285,6 +278,9 @@ class MiniAppParser( object ):
             print('#########################################################' \
                               '#########')
 
+        self.list_available_routines = None
+        self.list_available_modules = None
+
         #LIST ALL .F90 or .F files in current directory
         self.listfiles = self.create_listfiles()
 
@@ -321,27 +317,10 @@ class MiniAppParser( object ):
         for imodule in range(len(nb_modules)):
             nb_modules[imodule] = nb_modules[imodule][:-1]
 
-        # Just indenpendant modules or subroutines
-        if len(nb_modules) == 0:
-            # Loop on the available modules
-            for iname in range(len(m.names)):
-                if self.list_available_modules is None:
-                    self.copy_files_from_picsar(m, iname)
-
-                elif m.names[iname] in self.list_available_modules:
-                    self.copy_files_from_picsar(m, iname)
-
-            for iname in range(len(r.names)):
-                if self.list_available_routines is None:
-                    self.copy_files_from_picsar(r, iname)
-
-                elif r.names[iname] in self.list_available_routines:
-                    self.copy_files_from_picsar(r, iname)
-
-        # Loop on each module occurence, for each print the modules then
-        # subroutines inside and finish by "end module"
-        else:
-            for module in nb_modules:
+        for module in m.names:
+            # Loop on each module occurence, for each print the modules then
+            # subroutines inside and finish by "end module"
+            if module in nb_modules:
                 if (self.list_available_modules is None):
                     iname = m.names.index(module)
                     self.copy_files_from_picsar(m, iname)
@@ -373,6 +352,24 @@ class MiniAppParser( object ):
 
                     # End the module
                     self.end_module(r, module)
+            else:
+                    iname = m.names.index(module)
+                    self.copy_files_from_picsar(m, iname)
+
+                    if self.list_available_modules is None:
+                        self.copy_files_from_picsar(m, iname)
+
+                    elif m.names[iname] in self.list_available_modules:
+                        self.copy_files_from_picsar(m, iname)
+
+        # Add the subroutines out of modules
+        for iname in range(len(r.names)):
+            if r.proceduremod[iname] == '':
+                if self.list_available_routines is None:
+                    self.copy_files_from_picsar(r, iname)
+
+                elif r.names[iname] in self.list_available_routines:
+                    self.copy_files_from_picsar(r, iname)
 
     def copy_files_from_picsar( self, routine, index ):
         # routine is an instance of the class Routines or Modules
@@ -438,19 +435,19 @@ class MiniAppParser( object ):
 # Main
 
 arglist=sys.argv
-try:
-    type_parser = str(arglist[1])
-    type_pusher = str(arglist[2])
-    type_depos  = str(arglist[3])
-    miniapp = MiniAppParser(type_parser, type_pusher, type_depos)
+#try:
+type_parser = str(arglist[1])
+type_pusher = str(arglist[2])
+type_depos  = str(arglist[3])
+miniapp = MiniAppParser(type_parser, type_pusher, type_depos)
 
-except(IndexError):
-    print('##################################################################')
-    print('Some arguments are needed there.')
-    print('The list of available solvers is:')
-    print('- all: every routines and modules from picsar')
-    print('- fdtd: every routines and modules related to the Finate Domain')
-    print('        Time Domain Maxwell solver in 3D.')
-    print('- spectral: every routines and modules related to the Pseudo-')
-    print('        Spectral Analytical Time Domain Maxwell solver in 3D.')
-    print('##################################################################')
+# except(IndexError):
+#     print('##################################################################')
+#     print('Some arguments are needed there.')
+#     print('The list of available solvers is:')
+#     print('- all: every routines and modules from picsar')
+#     print('- fdtd: every routines and modules related to the Finate Domain')
+#     print('        Time Domain Maxwell solver in 3D.')
+#     print('- spectral: every routines and modules related to the Pseudo-')
+#     print('        Spectral Analytical Time Domain Maxwell solver in 3D.')
+#     print('##################################################################')
