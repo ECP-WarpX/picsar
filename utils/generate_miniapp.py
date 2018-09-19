@@ -293,6 +293,9 @@ class MiniAppParser( object ):
         for file in self.availablelistfiles:
             self.comment_unavailable_routine(file)
 
+        # Copy some extra needed folders
+        self.copy_utils_example()
+
     def clean_folder(self):
 
         # Delete all files
@@ -544,6 +547,10 @@ class MiniAppParser( object ):
 
         fnew.writelines(listlines_new)
         fnew.close()
+
+    def copy_utils_example(self):
+        os.system('cp -r ./utils ./PICSARlite/utils')
+        os.system('cp -r ./examples ./PICSARlite/examples')
 
 ###############################################################################
 # Main
