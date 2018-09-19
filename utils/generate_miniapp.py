@@ -282,14 +282,15 @@ class MiniAppParser( object ):
         self.list_available_modules = None
 
         #LIST ALL .F90 or .F files in current directory
-        self.listfiles = self.create_listfiles()
+        self.listfiles = self.create_listfiles('./src')
 
         # Reconstruct PICSARlite
         for file in self.listfiles:
             self.write_available_routines(file)
 
         # Remove unavailable routines
-        for file in self.listfiles:
+        self.availablelistfiles = self.create_listfiles('./PICSARlite/src')
+        for file in self.availablelistfiles:
             self.comment_unavailable_routine(file)
 
     def clean_folder(self):
@@ -298,12 +299,12 @@ class MiniAppParser( object ):
         if os.path.exists('./PICSARlite'):
             shutil.rmtree('./PICSARlite')
 
-    def create_listfiles(self):
+    def create_listfiles(self, folder):
         listfiles = []
-        for root, subFolder, files in os.walk('./src'):
+        for root, subFolder, files in os.walk(folder):
             for file in files:
-                if len(root) > 5:
-                     listfiles.append('%s/%s'%(root[6:], file))
+                if len(root) > len(folder):
+                     listfiles.append('%s/%s'%(root[len(folder)+1:], file))
         return listfiles
 
     def write_available_routines(self, file):
@@ -446,6 +447,24 @@ class MiniAppParser( object ):
             stops.
         """
 
+
+        def formatting_line(nb_blanks, str, add_ampersand=True):
+            "Add the & symbol at the 87th place."
+            L = len(str)+nb_blanks
+            space = ' '
+            strnew = ''
+            # Add nb_blanks at the beginning
+            for n in range(nb_blanks):
+                strnew += space
+
+            strnew += str
+
+            for n in range(86-L):
+                strnew += space
+            if add_ampersand:
+                strnew += '&'
+            return strnew
+
         # Find the unwanted call
         f = open('./PICSARlite/src/%s'%file,"r")
         listlines=f.readlines()
@@ -453,6 +472,7 @@ class MiniAppParser( object ):
         istart = [-1]
         iend   = [-1]
         list_routine_name = []
+        nb_blanks = []
 
         for i in range(0, Nlines):
             curr_line=listlines[i].lower()
@@ -469,6 +489,10 @@ class MiniAppParser( object ):
                     list_routine_name.append(routine_name)
                     istart.append(i)
                     curr_line_old = curr_line
+
+                    # Store the number of blanks before the call
+                    nb_blanks.append(indexcall)
+
                     while True:
                         if (i>=Nlines):
                             sys.exit("ERROR: missing end call block")
@@ -489,7 +513,7 @@ class MiniAppParser( object ):
             if (compt == len(iend)-1) :
                 listlines_new.append(listlines[i])
 
-            elif i > iend[compt]:
+            elif i >= iend[compt]:
                 # It is regular lines
                 if i != istart[compt+1]:
                     listlines_new.append(listlines[i])
@@ -498,14 +522,21 @@ class MiniAppParser( object ):
                 else:
                     # Comment the lines
                     for iblock in range(iend[compt+1]-istart[compt+1]):
-                        listlines_new.append('!'+listlines[i+iblock])
+                        listlines_new.append('!'+listlines[i+iblock][1:])
 
                     # Print error message
-                    error_message = "WRITE(0,*) 'ERROR: The subroutine "  \
-                           + "%s cannot be used in this configuration.'"%( \
-                           list_routine_name[compt])
+                    error_message = \
+                formatting_line( nb_blanks[compt], \
+                                       "WRITE(0,*) 'ERROR:',") + '\n' \
+              + formatting_line( nb_blanks[compt]+11, \
+                    "'The subroutine %s', "%(list_routine_name[compt])) + '\n'\
+              + formatting_line( nb_blanks[compt]+11, \
+                                "'cannot be used in this configuration.'",  \
+                                add_ampersand=False)
+
                     listlines_new.append("\n" + error_message + "\n")
-                    listlines_new.append("STOP \n \n")
+                    listlines_new.append(formatting_line( nb_blanks[compt], \
+                                        "STOP", add_ampersand=False)+ "\n \n")
                     if compt == len(iend)-2:
                         compt = 0
                     else:
@@ -513,8 +544,6 @@ class MiniAppParser( object ):
 
         fnew.writelines(listlines_new)
         fnew.close()
-
-
 
 ###############################################################################
 # Main
