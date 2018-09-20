@@ -1,5 +1,6 @@
 import os, sys
 import shutil
+from datetime import datetime
 
 # The two following classes are inspired by the parser in
 # picsar/utils/forthon_parser.
@@ -196,6 +197,9 @@ class MiniAppParser( object ):
     def __init__( self, type_solver, type_pusher, type_depos ):
 
         self.clean_folder()
+        self.type_solver = type_solver
+        self.type_pusher = type_pusher
+        self.type_depos  = type_depos
 
         # Create the folder for the mini app
         os.makedirs('./PICSARlite')
@@ -611,6 +615,7 @@ class MiniAppParser( object ):
 
         # Copy some extra needed folders
         self.copy_utils_example()
+        self.generate_main()
 
     def clean_folder(self):
 
@@ -804,7 +809,8 @@ class MiniAppParser( object ):
 
                 # If the routine is in the list, everything fine, if not the
                 # line and the block should be commented.
-                if not routine_name in self.list_available_routines:
+                #if not routine_name in self.list_available_routines:
+                if 1:
                     list_routine_name.append(routine_name)
                     istart.append(i)
                     curr_line_old = curr_line
@@ -846,7 +852,7 @@ class MiniAppParser( object ):
                     # Print error message
                     error_message = \
                 formatting_line( nb_blanks[compt], \
-                                       "WRITE(0,*) 'ERROR:',") + '\n' \
+                                       "WRITE(0,*) 'ABORT.',") + '\n' \
               + formatting_line( nb_blanks[compt]+11, \
                     "'The subroutine %s', "%(list_routine_name[compt])) + '\n'\
               + formatting_line( nb_blanks[compt]+11, \
@@ -867,6 +873,209 @@ class MiniAppParser( object ):
     def copy_utils_example(self):
         os.system('cp -r ./utils ./PICSARlite/utils')
         os.system('cp -r ./examples ./PICSARlite/examples')
+
+
+    def generate_main( self ):
+        file = 'main.F90'
+        fnew = open('./PICSARlite/src/%s'%file,"w")
+        listlines = []
+
+        # Get the current date
+        now = datetime.now()
+
+        # Print the header
+        header = '! ________________________________________________________' \
+           + '________________________________ \n! \n'                        \
+           + '! *** Copyright Notice *** \n! \n'                              \
+           + '! "Particle In Cell Scalable Application Resource (PICSAR) v2",'\
+           + ' Copyright (c) 2016, \n! The Regents of the University of '     \
+           + 'California, through Lawrence Berkeley National \n! Laboratory ' \
+           + '(subject to receipt of any required approvals from the U.S. '   \
+           + 'Dept. of Energy). \n! All rights reserved. \n! \n'              \
+           + '! If you have questions about your rights to use or distribute '\
+           + "this software, \n! please contact Berkeley Lab's Innovation & " \
+           + 'Partnerships Office at  IPO@lbl.gov. \n! \n! NOTICE. \n! '      \
+           + 'This Software was developed under funding from the U.S.'        \
+           + ' Department of Energy \n! and the U.S. Government consequently' \
+           + 'retains certain rights. As such, the U.S. \n! Government has '  \
+           + 'been granted for itself and others acting on its behalf a '     \
+           + 'paid-up, \n! nonexclusive, irrevocable, worldwide license in '  \
+           + 'the Software to reproduce, distribute \n! copies to the '       \
+           + 'public, prepare derivative works, and perform publicly and '    \
+           + 'display \n! publicly, and to permit other to do so. \n! \n'     \
+           + '! PICSAR MINIAPP \n! \n'                                        \
+           + '! Creation date: %s/%s/%s \n! \n'%(now.day, now.month, now.year)\
+           + '! DEVELOPERS: \n! - Henri Vincenti \n! - Mathieu Lobet \n! - '  \
+           + 'Remi Lehe \n! - Jean-Luc Vay \n! - Guillaume Blaclard \n! - '   \
+           + 'Haithem Kallala \n! \n'                                         \
+           + '! INCLUDES \n! - Maxwell solver: %s \n'%(self.type_solver)      \
+           + '! - Particle pusher: %s \n'%(self.type_pusher)                  \
+           + '! - Particle deposition: %s \n'%(self.type_depos)  + '! \n'     \
+           + '! ____________________________________________________________' \
+           + '____________________________ \n\n\n'
+        listlines.append(header)
+
+
+        # Print the main file
+        listlines.append('PROGRAM main\n')
+        listmodulesmain = ["PICSAR_precision", "constants", "fields",         \
+                        "particles", "params", "shared_data", "mpi_routines", \
+                        "control_file", "time_stat", "diagnostics"]
+
+        for module in listmodulesmain:
+            #if module in self.list_available_modules:
+            if 1:
+                listlines.append('  USE %s \n'%module)
+
+        #if "mem_status" in self.list_available_modules:
+        if 1:
+            listlines.append('  USE mem_status, ONLY : global_grid_mem, '     \
+                            +'global_grid_tiles_mem, global_part_tiles_mem\n\n')
+
+        if (self.type_solver == 'all') | (self.type_solver == 'spectral'):
+            listlines.append('#if defined(FFTW)\n  USE mpi_fftw3 \n  '       \
+             +'USE fourier \n  USE fastfft \n  USE fftw3_fortran \n'        \
+             +'#endif\n\n')
+
+        listlines.append('  IMPLICIT NONE\n')
+        listlines.append('  LOGICAL :: exist\n')
+        listlines.append('  CHARACTER(len=250) :: str1, str2, str3\n')
+        listlines.append('  CHARACTER(len=250) :: str4, str5, str7\n')
+        listlines.append('  CHARACTER(len=500) :: str6\n\n')
+        listlines.append('! --- default init\n')
+        listlines.append('  CALL default_init\n\n')
+        listlines.append('! --- reads input_file\n')
+        listlines.append('  CALL read_input_file\n\n')
+        listlines.append('! --- reads from command line\n')
+        listlines.append('  CALL read_from_cl\n\n')
+        listlines.append('! --- mpi init communicator\n')
+
+        if (self.type_solver == 'all') | (self.type_solver == 'spectral'):
+            listlines.append('#if defined(FFTW)\n')
+            listlines.append('  IF (fftw_with_mpi) THEN \n')
+            listlines.append('    CALL mpi_minimal_init_fftw\n')
+            listlines.append('  ELSE\n')
+            listlines.append('#endif\n')
+            listlines.append('    CALL mpi_minimal_init\n')
+            listlines.append('#if defined(FFTW)\n')
+            listlines.append('  ENDIF \n')
+            listlines.append('#endif\n\n')
+        else:
+            listlines.append('  CALL mpi_minimal_init\n\n')
+
+        listlines.append('  IF (rank .EQ. 0) THEN\n')
+        listlines.append('    write(0,*) "___________________________________'\
+                       + '______________________________"\n')
+        listlines.append('    write(0,*) ""\n')
+        listlines.append('    write(0,*) " PICSAR"\n')
+        listlines.append('    write(0,*) "___________________________________'\
+                       + '______________________________"\n')
+        listlines.append('  ENDIF\n\n')
+
+        listlines.append('! --- Check domain decomposition / Create Cartesian'\
+                       + ' communicator / Allocate grid arrays\n')
+        listlines.append('  CALL mpi_initialise\n\n')
+        listlines.append('! --- allocates and inits particle distributions ' \
+                       + '(on each subdomain)\n')
+        listlines.append('  CALL initall\n\n')
+        listlines.append('! --- Diagnostics\n')
+        listlines.append('  CALL init_diags\n\n')
+
+        listlines.append('  !----------------------------------------------\n')
+        listlines.append('  ! THIS IS THE PIC ALGORITHM TIME LOOP\n')
+        listlines.append('  !----------------------------------------------\n')
+        listlines.append('  IF (rank .EQ. 0) startsim=MPI_WTIME()\n')
+        listlines.append('  CALL step(nsteps)\n\n')
+
+        listlines.append('  IF (rank .EQ. 0) endsim=MPI_WTIME()\n')
+        listlines.append('  IF (rank .EQ. 0) WRITE(0,*)  "Total runtime on ",'\
+                       + 'nproc," CPUS =",                   &\n')
+        listlines.append('  endsim-startsim,"CPU AVERG TIME PER IT", '\
+                       + '(endsim-startsim)/nsteps\n\n')
+
+        listlines.append('  ! Time statistics for the different processes of '\
+                       + 'the PIC step\n')
+        listlines.append('  CALL time_statistics\n\n')
+
+        listlines.append('  IF (rank .EQ. 0) THEN \n')
+        listlines.append('	  INQUIRE(file="output_statistics.out", '\
+                       + 'exist=exist)\n')
+        listlines.append('  	IF (exist) THEN \n')
+        listlines.append('  		OPEN (unit=12,file="output_statistics'\
+                       + '.out", &\n')
+        listlines.append('  		action="write",position="append", status='\
+                       + '"old")\n')
+        listlines.append('  	ELSE\n')
+        listlines.append('  		OPEN (unit=12,file="output_statistics.out"'\
+                       + ',  &\n')
+        listlines.append('  		  action="write",status="new")\n')
+        listlines.append('  	ENDIF \n')
+        listlines.append('  	WRITE(str1,*) nx_global; WRITE(str2,*) '\
+                       + 'ny_global\n')
+        listlines.append('  	WRITE(str3,*) nz_global; WRITE(str4,*) nproc\n')
+        listlines.append('  	! total simulation time\n')
+        listlines.append('  	WRITE(str5,*) endsim-startsim\n')
+        listlines.append('  	! Average time spent in different steps of '\
+                       + 'the PIC loop\n')
+        listlines.append("  	WRITE(str6,'(22(E12.5))') avetimes(1),"\
+                       + 'avetimes(14),avetimes(2),avetimes(11),      &\n')
+        listlines.append('  								avetimes(3),'\
+                       + 'avetimes(4),avetimes(5),                  &\n')
+        listlines.append('  								avetimes(6),'\
+                       + 'avetimes(7),avetimes(21),                 &\n')
+        listlines.append('  								avetimes(22),'\
+                       + 'avetimes(23),avetimes(24), avetimes(25), &\n')
+        listlines.append('  								avetimes(8),'\
+                       + 'avetimes(10),                             &\n')
+        listlines.append('  								avetimes(12),'\
+                       + ' avetimes(13), avetimes(9),              &\n')
+        listlines.append('  								avetimes(18), '\
+                       + 'avetimes(19), avetimes(20)\n\n')
+
+        listlines.append('  	! Total memory used in the case (in GB)\n')
+        listlines.append("  	WRITE(str7,'(4(E12.5))') global_grid_mem/1e9,"\
+                       + ' global_grid_tiles_mem/1e9,          &\n')
+        listlines.append('  	global_part_tiles_mem/1e9\n\n')
+
+        listlines.append('  	! All time are put in the file on a single'\
+                       + ' line\n')
+        listlines.append("  	WRITE(12, '(512A)')"+'  trim(adjustl(str1))//"'\
+                       + ' "//trim(adjustl(str2))//" "//         &\n')
+        listlines.append('  				  trim(adjustl(str3))//" '\
+                       + '"//trim(adjustl(str4))//" "//                &\n')
+        listlines.append(' 		    	      trim(adjustl(str5))//" '\
+                       + '"//trim(adjustl(str6))//                 &\n')
+        listlines.append('  				  " "//trim(adjustl(str7))\n')
+        listlines.append('  	CLOSE(12)\n')
+        listlines.append('  ENDIF \n\n')
+
+        if (self.type_solver == 'all') | (self.type_solver == 'spectral'):
+            listlines.append('#if defined(FFTW)\n')
+            listlines.append('  IF(l_spectral) THEN\n')
+            listlines.append('    IF(fftw_with_mpi) THEN\n')
+            listlines.append('      CALL DFFTW_DESTROY_PLAN(plan_r2c_mpi)\n')
+            listlines.append('      CALL DFFTW_DESTROY_PLAN(plan_c2r_mpi)\n')
+            listlines.append('    ELSE\n')
+            listlines.append('      CALL fast_fftw_destroy_plan_dft,'\
+                           + '(plan_r2c)\n')
+            listlines.append('      CALL fast_fftw_destroy_plan_dft,'\
+                           + '(plan_c2r)\n')
+            listlines.append('    ENDIF\n')
+            listlines.append('  ENDIF\n')
+            listlines.append('#endif\n')
+            listlines.append('  CALL mpi_close\n\n')
+            listlines.append('! Intel Design Forward project\n')
+            listlines.append('#if defined(DFP)\n')
+            listlines.append('   CALL DFP_FINAL_STOP\n')
+            listlines.append('#endif\n\n')
+            listlines.append('END PROGRAM main\n')
+
+        else:
+            listlines.append('END PROGRAM main\n')
+
+        fnew.writelines(listlines)
+        fnew.close()
+
 
 ###############################################################################
 # Main
