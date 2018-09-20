@@ -248,219 +248,191 @@ class MiniAppParser( object ):
 			   "time_statistics_per_iteration",\
 			   "get_local_grid_mem ",\
 			   "get_global_grid_mem",\
-  			   "set_tile_split"
-  			   "set_tile_split_for_species"
-  			   "add_particle_to_species_2d"
-  			   "add_particle_to_species"
-  			   "add_particle_at_tile_2d"
-  			   "add_particle_at_tile"
-  			   "add_group_of_particles_at_tile"
-  			   "rm_particles_from_species_with_mask"
-  			   "rm_particles_from_species_2d"
-  			   "rm_particles_from_species"
-  			   "rm_particle_at_tile_2d"
-  			   "rm_particle_at_tile"
-  			   "allocate_tile_arrays"
-  			   "init_tile_arrays"
-  			   "init_tile_arrays_for_species"
-  			   "load_particles"
-  			   "resize_particle_arrays"
-  			   "resize_1D_array_real"
-  			   "resize_2D_array_real"
-  			   "resize_3D_array_real"
-  			   "get_local_number_of_part"
-  			   "point_to_tile"
-  			   "set_particle_species_properties"
-  			   "get_are_tiles_reallocated"
-  			   "set_are_tiles_reallocated"
-  			   "estimate_tiles_memory_consumption"
-  			   "load_laser_species"
-  			   "load_laser"
-  			   "product_matrix_2c2"
-  			   "get_local_tile_mem"
-  			   "get_global_tile_mem"
-			   "default_init"
-			   "read_from_cl"
-			   "read_input_file"
-			   "read_cpusplit_section"
-			   "read_plasma_section"
-			   "read_solver_section"
-			   "read_sorting_section"
-			   "read_timestat_section"
-			   "read_main_section"
-			   "read_species_section"
-			   "read_particle_dumps_section"
-			   "read_output_section"
-			   "read_temporal_output_section"
-			   "read_antenna_section"
-			   "init_species_section"
-			   "initall"
-
-
-
-
-]
-
-
-
-
+  			   "set_tile_split",\
+  			   "set_tile_split_for_species",\
+  			   "add_particle_to_species_2d",\
+  			   "add_particle_to_species",\
+  			   "add_particle_at_tile_2d",\
+  			   "add_particle_at_tile",\
+  			   "add_group_of_particles_at_tile",\
+  			   "rm_particles_from_species_with_mask",\
+  			   "rm_particles_from_species_2d",\
+  			   "rm_particles_from_species",\
+  			   "rm_particle_at_tile_2d",\
+  			   "rm_particle_at_tile",\
+  			   "allocate_tile_arrays",\
+  			   "init_tile_arrays",\
+  			   "init_tile_arrays_for_species",\
+  			   "load_particles",\
+  			   "resize_particle_arrays",\
+  			   "resize_1D_array_real",\
+  			   "resize_2D_array_real",\
+  			   "resize_3D_array_real",\
+  			   "get_local_number_of_part",\
+  			   "point_to_tile",\
+  			   "set_particle_species_properties",\
+  			   "get_are_tiles_reallocated",\
+  			   "set_are_tiles_reallocated",\
+  			   "estimate_tiles_memory_consumption",\
+  			   "load_laser_species",\
+  			   "load_laser",\
+  			   "product_matrix_2c2",\
+  			   "get_local_tile_mem",\
+  			   "get_global_tile_mem",\
+			   "default_init",\
+			   "read_from_cl",\
+			   "read_input_file",\
+			   "read_cpusplit_section",\
+			   "read_plasma_section",\
+			   "read_solver_section",\
+			   "read_sorting_section",\
+			   "read_timestat_section",\
+			   "read_main_section",\
+			   "read_species_section",\
+			   "read_particle_dumps_section",\
+			   "read_output_section",\
+			   "read_temporal_output_section",\
+			   "read_antenna_section",\
+			   "init_species_section",\
+			   "initall"]
 
         generic_modules_solver = ["fields","field_boundary"]
+
         generic_routines_solver = [
-  "field_bc"
-  "exchange_mpi_3d_grid_array_with_guards"
-  "exchange_mpi_3d_grid_array_with_guards_nonblocking"
-  "summation_bcs"
-  "summation_bcs_nonblocking"
-  "summation_bcs_persistent_jx"
-  "summation_bcs_persistent_jy"
-  "summation_bcs_persistent_jz"
-  "efield_bcs"
-  "bfield_bcs"
-  "current_bcs"
-  "charge_bcs"
-]
-        generic_routines_pusher = [
-  END SUBROUTINE particle_bcs
-  END SUBROUTINE particle_bcs_2d
-  END SUBROUTINE particle_bcs_tiles
-  END SUBROUTINE particle_bcs_tiles_openmp
-  END SUBROUTINE particle_bcs_tiles_2d
-  END SUBROUTINE particle_bcs_tiles_2d_openmp
-END SUBROUTINE particle_bsc_openmp_reordering
-END SUBROUTINE particle_bcs_mpi_blocking
-END SUBROUTINE particle_bcs_mpi_non_blocking
-END SUBROUTINE particle_bcs_mpi_non_blocking_2d
-END SUBROUTINE particle_bcs_tiles_and_mpi_3d
-
-laser_pusher_manager_3d.F90:END SUBROUTINE push_laser_particles
-laser_pusher_manager_3d.F90:END SUBROUTINE laserp_pusher_gaussian
-laser_pusher_manager_3d.F90:END SUBROUTINE laserp_pusher_hanning
-laser_pusher_manager_3d.F90:END SUBROUTINE gaussian_profile
-laser_pusher_manager_3d.F90:END SUBROUTINE hanning_profile
-particle_pusher_manager_2d.F90:END SUBROUTINE field_gathering_plus_particle_pusher_sub_2d
-particle_pusher_manager_3d.F90:END SUBROUTINE field_gathering_plus_particle_pusher
-particle_pusher_manager_3d.F90:END SUBROUTINE field_gathering_plus_particle_pusher_sub
-particle_pusher_manager_3d.F90:END SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub
-particle_pusher_manager_3d.F90:END SUBROUTINE particle_pusher_sub
-particle_pusher_manager_3d.F90:END SUBROUTINE pxrpush_particles_part1
-particle_pusher_manager_3d.F90:END SUBROUTINE pxrpush_particles_part1_sub
-particle_pusher_manager_3d.F90:END SUBROUTINE pxrpush_particles_part2
-particle_pusher_manager_3d.F90:END SUBROUTINE field_gathering_plus_particle_pusher_1_1_1
-particle_pusher_manager_3d.F90:END SUBROUTINE field_gathering_plus_particle_pusher_2_2_2
-particle_pusher_manager_3d.F90:END SUBROUTINE field_gathering_plus_particle_pusher_3_3_3
-pxr_pushxyz
-pxr_push2dxz
-pxr_pushxz
-
-
-
-]
-
-
-
+				   "field_bc",\
+ 				   "exchange_mpi_3d_grid_array_with_guards",\
+ 				   "exchange_mpi_3d_grid_array_with_guards_nonblocking",\
+ 				   "summation_bcs",\
+ 				   "summation_bcs_nonblocking",\
+ 				   "summation_bcs_persistent_jx",\
+ 				   "summation_bcs_persistent_jy",\
+ 				   "summation_bcs_persistent_jz",\
+ 				   "efield_bcs",\
+ 				   "bfield_bcs",\
+ 				   "current_bcs",\
+ 				   "charge_bcs"]
         generic_modules_pusher = [
-			 "grid_tilemodule",\
-			 "buff_exchange_part",\
-			 "antenna",\
-			 "particle_speciesmodule",\
-			 "particle_properties",\
-			 "particles",\
-			 "buff_exchange_part",\
-			 "sorting",\
-			 "particle_boundary" ]
+                         "grid_tilemodule",\
+                         "buff_exchange_part",\
+                         "antenna",\
+                         "particle_speciesmodule",\
+                         "particle_properties",\
+                         "particles",\
+                         "buff_exchange_part",\
+                         "sorting",\
+                         "particle_boundary" ]
 
-routines_boris = [
-boris_2d.F90:END SUBROUTINE pxr_pushxz
-boris_2d.F90:END SUBROUTINE pxr_push2dxz
-boris_3d.F90:END SUBROUTINE pxr_boris_push_u_3d
-boris_3d.F90:END SUBROUTINE pxr_boris_push_rr_S09_u_3d
-boris_3d.F90:END SUBROUTINE pxr_boris_push_rr_B08_u_3d
-boris_3d.F90:END SUBROUTINE pxr_boris_push_rr_LL_u_3d
-boris_3d.F90:END SUBROUTINE pxr_boris_push_u_3d_block
-boris_3d.F90:END SUBROUTINE pxr_pushxyz
-boris_3d.F90:END SUBROUTINE pxr_epush_v
-boris_3d.F90:END SUBROUTINE pxr_bpush_v
-boris_3d.F90:END SUBROUTINE pxr_set_gamma
-]
+        generic_routines_pusher = [
+				   "particle_bcs",\
+				   "particle_bcs_2d",\
+				   "particle_bcs_tiles",\
+				   "particle_bcs_tiles_openmp",\
+				   "particle_bcs_tiles_2d",\
+				   "particle_bcs_tiles_2d_openmp",\
+				   "particle_bsc_openmp_reordering",\
+				   "particle_bcs_mpi_blocking",\
+				   "particle_bcs_mpi_non_blocking",\
+				   "particle_bcs_mpi_non_blocking_2d",\
+				   "particle_bcs_tiles_and_mpi_3d",\
+				   "SUBROUTINE push_laser_particles",\
+				   "SUBROUTINE laserp_pusher_gaussian",\
+				   "SUBROUTINE laserp_pusher_hanning",\
+				   "SUBROUTINE gaussian_profile",\
+				   "SUBROUTINE hanning_profile",\
+				   "field_gathering_plus_particle_pusher_sub_2d",\
+				   "field_gathering_plus_particle_pusher",\
+				   "field_gathering_plus_particle_pusher_sub",\
+				   "field_gathering_plus_particle_pusher_cacheblock_sub",\
+				   "particle_pusher_sub",\
+				   "pxrpush_particles_part1",\
+				   "pxrpush_particles_part1_sub",\
+				   "pxrpush_particles_part2",\
+				   "field_gathering_plus_particle_pusher_1_1_1",\
+				   "field_gathering_plus_particle_pusher_2_2_2",\
+				   "field_gathering_plus_particle_pusher_3_3_3",\
+				   "pxr_pushxyz",\
+				   "pxr_push2dxz",\
+				   "pxr_pushxz"]
 
 
-routines_vay = [
-pxr_ebcancelpush3d
+	boris_modules = []
+	boris_routines = [
+			  "pxr_pushxz",\
+			  "pxr_push2dxz",\
+			  "pxr_boris_push_u_3d",\
+			  "pxr_boris_push_rr_S09_u_3d",\
+			  "pxr_boris_push_rr_B08_u_3d",\
+			  "pxr_boris_push_rr_LL_u_3d",\
+			  "pxr_boris_push_u_3d_block",\
+			  "pxr_pushxyz",\
+			  "pxr_epush_v",\
+			  "pxr_bpush_v",\
+			  "pxr_set_gamma"]
 
- ]
+	vay_pusher_modules = []
+
+	vay_pusher_routines= ["pxr_ebcancelpush3d" ]
+
         generic_modules_depos = [
 			"grid_tilemodule",\
 			"tile_params",\
 			"tiling",\
 			"particle_tilemodule"]
         generic_routines_depos = [
-END SUBROUTINE depose_rho_scalar_1_1_1
-END SUBROUTINE depose_rho_scalar_2_2_2
-END SUBROUTINE depose_rho_scalar_3_3_3
-END SUBROUTINE depose_rho_vecSH_1_1_1
-END SUBROUTINE depose_rho_vecNOY_1_1_1
-END SUBROUTINE depose_rho_vecHV_1_1_1
-END SUBROUTINE depose_rho_vecHVv2_1_1_1
-END SUBROUTINE depose_rho_vecHVv2_2_2_2
-END SUBROUTINE depose_rho_vecHVv2_3_3_3
-END SUBROUTINE depose_rho_vecHVv3_3_3_3
-END SUBROUTINE depose_rho_vecHVv4_3_3_3
-END SUBROUTINE pxr_depose_rho_n
-END SUBROUTINE pxr_depose_rho_n_2dxz
-END SUBROUTINE pxr_depose_rhoold_n_2dxz
-END SUBROUTINE pxrdepose_rho_on_grid
-END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_n
-END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d
-END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_2d
-END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_scalar
-END SUBROUTINE pxrdepose_rho_on_grid_sub_openmp_3d_vecto
-depose_jxjyjz
- depose_jxjyjz_generic 
-pxrdepose_currents_on_grid_jxjyjz
+			"depose_rho_scalar_1_1_1",\
+			"depose_rho_scalar_2_2_2",\
+			"depose_rho_scalar_3_3_3",\
+			"depose_rho_vecSH_1_1_1",\
+			"depose_rho_vecNOY_1_1_1",\
+			"depose_rho_vecHV_1_1_1",\
+			"depose_rho_vecHVv2_1_1_1",\
+			"depose_rho_vecHVv2_2_2_2",\
+			"depose_rho_vecHVv2_3_3_3",\
+			"depose_rho_vecHVv3_3_3_3",\
+			"depose_rho_vecHVv4_3_3_3",\
+			"pxr_depose_rho_n",\
+			"pxr_depose_rho_n_2dxz",\
+			"pxr_depose_rhoold_n_2dxz",\
+			"pxrdepose_rho_on_grid",\
+			"pxrdepose_rho_on_grid_sub_openmp_3d_n",\
+			"pxrdepose_rho_on_grid_sub_openmp_3d",\
+			"pxrdepose_rho_on_grid_sub_openmp_2d",\
+			"pxrdepose_rho_on_grid_sub_openmp_3d_scalar",\
+			"pxrdepose_rho_on_grid_sub_openmp_3d_vecto",\
+			"depose_jxjyjz",\
+			"depose_jxjyjz_generic",\
+			"pxrdepose_currents_on_grid_jxjyjz"]
 
+	esirkepov_modules = []
 
+	esirkepov_routines = ["pxrdepose_currents_on_grid_jxjyjz_sub_openmp",\
+			"pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp",\
+			"depose_jxjyjz_esirkepov",\
+			"depose_jxjyjz_esirkepov_1_1_1",\
+			"depose_jxjyjz_esirkepov_2_2_2",\
+			"depose_jxjyjz_esirkepov_3_3_3",\
+			"pxr_depose_jxjyjz_esirkepov_n",\
+			"pxr_depose_jxjyjz_esirkepov2d_n",\
+			"pxr_depose_jxjyjz_esirkepov2d_1_1",\
+			"pxr_depose_jxjyjz_esirkepov2d_2_2",\
+			"pxr_depose_jxjyjz_esirkepov2d_3_3" ]
 
+	direct_modules = []
 
+	direct_routines = ["depose_jxjyjz_scalar_1_1_1",\
+			"depose_jxjyjz_vecHVv2_1_1_1",\
+			"depose_jxjyjz_vecHV_vnr_1_1_1",\
+			"depose_jxjyjz_scalar_2_2_2",\
+			"depose_jxjyjz_vecHVv2_2_2_2",\
+			"depose_jxjyjz_vecHV_vnr_2_2_2",\
+			"depose_jxjyjz_scalar_3_3_3",\
+			"depose_jxjyjz_vecHVv3_3_3_3",\
+			"depose_jxjyjz_vecHV_vnr_3_3_3",\
+			"current_reduction_1_1_1",\
+			"current_reduction_2_2_2",\
+			"current_reduction_3_3_3"]
 
-				]
-
-
-esirkeov_routines= [
- pxrdepose_currents_on_grid_jxjyjz_sub_openmp
- pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp 
-depose_jxjyjz_esirkepov
- depose_jxjyjz_esirkepov_1_1_1
- depose_jxjyjz_esirkepov_2_2_2
- depose_jxjyjz_esirkepov_3_3_3
- pxr_depose_jxjyjz_esirkepov_n
-
-END SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_n
-END SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1
-END SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_2_2
-END SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_3_3
-
-
-
-]
-
-
-direct_routines =[
-END SUBROUTINE depose_jxjyjz_scalar_1_1_1
-END SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1
-END SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1
-END SUBROUTINE depose_jxjyjz_scalar_2_2_2
-END SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2
-END SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2
-END SUBROUTINE depose_jxjyjz_scalar_3_3_3
-END SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3
-END SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3
-END SUBROUTINE current_reduction_1_1_1
-END SUBROUTINE current_reduction_2_2_2
-END SUBROUTINE current_reduction_3_3_3
-]
-
-	modules_spectral = [
+	spectral_modules= [
 			"math_tools",\
 			"gpstd_solver",\
 			"fourier_psaotd",\
@@ -472,95 +444,91 @@ END SUBROUTINE current_reduction_3_3_3
 			"fourier",\
 			"group_parameters",\
 			"load_balance"]
-	routine_spectral  = [
-    mpi_routines.F90:END SUBROUTINE get_non_periodic_mpi_bcs
-    mpi_routines.F90:END SUBROUTINE setup_groups
-      mpi_routines.F90:END SUBROUTINE adjust_grid_mpi_global
-    mpi_routines.F90:  END SUBROUTINE mpi_minimal_init_fftw
-          END SUBROUTINE generalized_comms_group_l2g
-          END SUBROUTINE  sendrecv_l2g_generalized
-          END SUBROUTINE  sendrecv_l2g_generalized_non_blocking
-          END SUBROUTINE generalized_comms_group_g2l
-          END SUBROUTINE  sendrecv_g2l_generalized_non_blocking
-          END SUBROUTINE  sendrecv_g2l_generalized
 
-	END SUBROUTINE field_damping_bcs
-	END SUBROUTINE merge_fields
-	END SUBROUTINE merge_e_fields
-	END SUBROUTINE merge_b_fields
-  END SUBROUTINE push_psatd_ebfield
-	init_pml_arrays
-  END SUBROUTINE select_case_dims_local
-  END SUBROUTINE select_case_dims_global
-  END SUBROUTINE init_kspace
-  END SUBROUTINE delete_k_space
-  END SUBROUTINE compute_k_vec
-  END SUBROUTINE compute_k_1d
-  END SUBROUTINE fftfreq
-  END SUBROUTINE init_gpstd
-  END SUBROUTINE compute_cc_mat_splitted_fields
-  END SUBROUTINE compute_cc_mat_merged_fields
-  END SUBROUTINE FD_weights_hvincenti
-  END SUBROUTINE copy_field
-  END SUBROUTINE copy_field_forward
-  END SUBROUTINE copy_field_backward
-  END SUBROUTINE init_plans_fourier_mpi
-  END SUBROUTINE get_Ffields
-  END SUBROUTINE get_Ffields_mpi_lb 
-  END SUBROUTINE get_Ffields_mpi
-  END SUBROUTINE get_fields
-  END SUBROUTINE get_fields_mpi
-  END SUBROUTINE get_fields_mpi_lb
-  END SUBROUTINE fft_forward_r2c_local
-  END SUBROUTINE fft_forward_r2c_hybrid
-  END SUBROUTINE fft_backward_c2r_local
-  END SUBROUTINE fft_backward_c2r_hybrid
-  END SUBROUTINE push_psaotd_ebfielfs_2d
-  END SUBROUTINE push_psaotd_ebfielfs_3d
-  END SUBROUTINE init_plans_blocks
+	spectral_routines  = [
+			"get_non_periodic_mpi_bcs",
+			"setup_groups",
+			"adjust_grid_mpi_global",
+			"mpi_minimal_init_fftw",
+			"generalized_comms_group_l2g",
+			"sendrecv_l2g_generalized",
+			"sendrecv_l2g_generalized_non_blocking",
+			"generalized_comms_group_g2l",
+			"sendrecv_g2l_generalized_non_blocking",
+			"sendrecv_g2l_generalized",
+			"field_damping_bcs",
+			"merge_fields",
+			"merge_e_fields",
+			"merge_b_fields",
+			"push_psatd_ebfield",
+			"init_pml_arrays",
+			"select_case_dims_local",
+			"select_case_dims_global",
+			"init_kspace",
+			"delete_k_space",
+			"compute_k_vec",
+			"compute_k_1d",
+			"fftfreq",
+			"init_gpstd",
+			"compute_cc_mat_splitted_fields",
+			"compute_cc_mat_merged_fields",
+			"FD_weights_hvincenti",
+			"copy_field",
+			"copy_field_forward",
+			"copy_field_backward",
+			"init_plans_fourier_mpi",
+			"get_Ffields",
+			"get_Ffields_mpi_lb",
+			"get_Ffields_mpi",
+			"get_fields",
+			"get_fields_mpi",
+			"get_fields_mpi_lb",
+			"fft_forward_r2c_local",
+			"fft_forward_r2c_hybrid",
+			"fft_backward_c2r_local",
+			"fft_backward_c2r_hybrid",
+			"push_psaotd_ebfielfs_2d",
+			"push_psaotd_ebfielfs_3d",
+			"init_plans_blocks",
+			"fast_fftw_create_plan_r2c_3d_dft",
+			"fast_fftw_create_plan_c2r_3d_dft",
+			"fast_fftw_create_plan_r2c_2d_dft",
+			"fast_fftw_create_plan_c2r_2d_dft",
+			"fast_fftw3d_c2r_with_plan",
+			"fast_fftw3d_r2c_with_plan",
+			"allocate_new_matrix_vector",
+			"multiply_mat_vector",
+			"multiply_unit_blocks"]
+	fdtd_modules = []
 
-fast_fftw_create_plan_r2c_3d_dft
- fast_fftw_create_plan_c2r_3d_dft
- fast_fftw_create_plan_r2c_2d_dft
- fast_fftw_create_plan_c2r_2d_dft
- fast_fftw3d_c2r_with_plan
- fast_fftw3d_r2c_with_plan
-allocate_new_matrix_vector
-multiply_mat_vector
-multiply_unit_blocks
+	fdtd_routines = [
+		        "push_bfield",
+		        "push_efield",
+		        "init_stencil_coefficients",
+		        "push_bfield_2d",
+		        "push_efield_2d",
+		        "pxrpush_em3d_evec_norder",
+		        "pxrpush_em2d_evec_norder",
+		        "pxrpush_em2d_evec",
+		        "pxrpush_em3d_evec",
+		        "pxrpush_em3d_bvec_norder",
+		        "pxrpush_em2d_bvec_norder",
+		        "pxrpush_em2d_bvec",
+		        "pxrpush_em3d_bvec"]
 
-
-
-
-]
-	fdtd_routines= [
-END SUBROUTINE push_bfield
-        END SUBROUTINE push_efield
-END SUBROUTINE push_bfield_2d
-END SUBROUTINE push_efield_2d
-END SUBROUTINE pxrpush_em3d_evec_norder
-END SUBROUTINE pxrpush_em2d_evec_norder
-END SUBROUTINE pxrpush_em2d_evec
-END SUBROUTINE pxrpush_em3d_evec
-END SUBROUTINE pxrpush_em3d_bvec_norder
-END SUBROUTINE pxrpush_em2d_bvec_norder
-END SUBROUTINE pxrpush_em2d_bvec
-END SUBROUTINE pxrpush_em3d_bvec
-
-
-]
-
+	self.list_available_modules = generic_modules + generic_modules_solver + generic_modules_pusher + generic_modules_depos 
+	self.list_available_routines =  generic_routines + generic_routines_solver + generic_routines_pusher + generic_routines_depos
         if type_solver == 'all':
-            self.list_available_modules = []
-            self.list_available_routines = []
+            self.list_available_modules+= spectral_modules + fdtd_modules
+            self.list_available_routines += spectral_routines + fdtd_routines
 
         elif type_solver == 'fdtd':
-            self.list_available_modules = []
-            self.list_available_routines = []
+            self.list_available_modules+= fdtd_modules
+            self.list_available_routines+= fdtd_routines
 
         elif type_solver == 'spectral':
-            self.list_available_modules = []
-            self.list_available_routines = []
+            self.list_available_modules += spectral_modules
+            self.list_available_routines += spectral_routines 
 
         else:
             print('#########################################################' \
@@ -580,16 +548,16 @@ END SUBROUTINE pxrpush_em3d_bvec
 
         # Pusher
         if type_pusher == 'all':
-            self.list_available_modules.append([])
-            self.list_available_routines.append([])
+            self.list_available_modules +=  vay_pusher_modules + boris_modules
+            self.list_available_routines +=  vay_pusher_routines + boris_routines
 
         elif type_pusher == 'boris':
-            self.list_available_modules.append([])
-            self.list_available_routines.append([])
+            self.list_available_modules += boris_modules
+            self.list_available_routines += boris_routines
 
         elif type_pusher == 'vay':
-            self.list_available_modules.append([])
-            self.list_available_routines.append([])
+            self.list_available_modules += vay_pusher_modules
+            self.list_available_routines +=vay_pusher_routines
 
         else:
             print('#########################################################' \
@@ -604,16 +572,16 @@ END SUBROUTINE pxrpush_em3d_bvec
 
         # Deposition
         if type_depos == 'all':
-            self.list_available_modules.append([])
-            self.list_available_routines.append([])
+            self.list_available_modules += direct_modules + esirkepov_modules
+            self.list_available_routines += direct_routines + esirkepov_routines
 
         elif type_depos == 'direct':
-            self.list_available_modules.append([])
-            self.list_available_routines.append([])
+            self.list_available_modules += direct_modules
+            self.list_available_routines += direct_routines
 
         elif type_depos == 'esirkepov':
-            self.list_available_modules.append([])
-            self.list_available_routines.append([])
+            self.list_available_modules += esirkepov_modules
+            self.list_available_routines +=esirkepov_routines
 
         else:
             print('#########################################################' \
