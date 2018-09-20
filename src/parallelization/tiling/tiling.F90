@@ -1827,7 +1827,7 @@ MODULE tiling
         ENDDO
       ENDDO
     ENDDO
-  END SUBROUTINE
+  END SUBROUTINE product_matrix_2c2
 
  ! _______________________________________________________________________________________
  !> @brief

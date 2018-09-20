@@ -200,7 +200,7 @@ END SUBROUTINE pxrpush_em2d_evec_norder
 ! ________________________________________________________________________________________
 !> @brief
 !> Push electric field Yee 2D order 2
-!> This subroutine is general enough to be called by AMReX.
+!> This SUBROUTINE is general enough to be called by AMReX.
 !> OMP pragmas are ignored when compiled for WarpX.
 !
 !> @author
@@ -213,7 +213,7 @@ END SUBROUTINE pxrpush_em2d_evec_norder
 !> @date
 !> Creation 2015
 ! ________________________________________________________________________________________
-subroutine pxrpush_em2d_evec( &
+SUBROUTINE pxrpush_em2d_evec( &
      xlo, xhi, ylo, yhi, zlo, zhi, &
      ex, exlo, exhi, &
      ey, eylo, eyhi, &
@@ -295,12 +295,12 @@ subroutine pxrpush_em2d_evec( &
   !$OMP END PARALLEL
 #endif
 
-end subroutine pxrpush_em2d_evec
+END SUBROUTINE pxrpush_em2d_evec
 
 ! ________________________________________________________________________________________
 !> @brief
 !> Push electric field Yee 3D order 2
-!> This subroutine is general enough to be called by AMReX.
+!> This SUBROUTINE is general enough to be called by AMReX.
 !> OMP pragmas are ignored when compiled for WarpX.
 !
 !> @author
@@ -313,7 +313,7 @@ end subroutine pxrpush_em2d_evec
 !> @date
 !> Creation 2015
 ! ________________________________________________________________________________________
-subroutine pxrpush_em3d_evec( &
+SUBROUTINE pxrpush_em3d_evec( &
      xlo, xhi, ylo, yhi, zlo, zhi, &
      ex,exlo,exhi,&
      ey,eylo, eyhi, &
@@ -404,7 +404,7 @@ USE picsar_precision, ONLY: idp, num, isp
   !$OMP END PARALLEL
 #endif
 
-end subroutine pxrpush_em3d_evec
+END SUBROUTINE pxrpush_em3d_evec
 
 ! ________________________________________________________________________________________
 !> @brief
@@ -560,9 +560,9 @@ END SUBROUTINE pxrpush_em2d_bvec_norder
 
 ! ________________________________________________________________________________________
 !> @brief
-!> This subroutine pushes the magnetic field with the 2D Yee FDTD
+!> This SUBROUTINE pushes the magnetic field with the 2D Yee FDTD
 !> scheme (order 2).
-!> This subroutine is general enough to be called by AMReX.
+!> This SUBROUTINE is general enough to be called by AMReX.
 !> OMP pragmas are ignored when compiled for WarpX.
 !> regions.
 !
@@ -576,7 +576,7 @@ END SUBROUTINE pxrpush_em2d_bvec_norder
 !> @date
 !> Creation 2015
 ! ________________________________________________________________________________________
-subroutine pxrpush_em2d_bvec( &
+SUBROUTINE pxrpush_em2d_bvec( &
      xlo, xhi, ylo, yhi, zlo, zhi, &
      ex,exlo,exhi,&
      ey,eylo, eyhi, &
@@ -646,12 +646,12 @@ USE picsar_precision, ONLY: idp, num, isp
   !$OMP END DO
   !$OMP END PARALLEL
 #endif
-end subroutine pxrpush_em2d_bvec
+END SUBROUTINE pxrpush_em2d_bvec
 
 ! ________________________________________________________________________________________
 !> @brief
 !> Push magnetic field Yee 3D order 2
-!> This subroutine is general enough to be called by AMReX.
+!> This SUBROUTINE is general enough to be called by AMReX.
 !> OMP pragmas are ignored when compiled for WarpX.
 !
 !> @author
@@ -664,7 +664,7 @@ end subroutine pxrpush_em2d_bvec
 !> @date
 !> Creation 2015
 ! ________________________________________________________________________________________
-subroutine pxrpush_em3d_bvec( &
+SUBROUTINE pxrpush_em3d_bvec( &
      xlo, xhi, ylo, yhi, zlo, zhi, &
      ex,exlo,exhi,&
      ey,eylo, eyhi, &
@@ -741,4 +741,4 @@ USE picsar_precision, ONLY: idp, num, isp
   !$OMP END PARALLEL
 #endif
 
-end subroutine pxrpush_em3d_bvec
+END SUBROUTINE pxrpush_em3d_bvec

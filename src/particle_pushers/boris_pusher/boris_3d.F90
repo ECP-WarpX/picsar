@@ -133,7 +133,7 @@ SUBROUTINE pxr_boris_push_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by, bz
 #endif
 #endif
 
-END SUBROUTINE
+END SUBROUTINE pxr_boris_push_u_3d
 
 
 ! ________________________________________________________________________________________
@@ -306,7 +306,7 @@ SUBROUTINE pxr_boris_push_rr_S09_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx,
 #endif
 #endif
 
-END SUBROUTINE
+END SUBROUTINE pxr_boris_push_rr_S09_u_3d
 
 
 ! ________________________________________________________________________________________
@@ -487,7 +487,7 @@ SUBROUTINE pxr_boris_push_rr_B08_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx,
 #endif
 #endif
 
-END SUBROUTINE
+END SUBROUTINE pxr_boris_push_rr_B08_u_3d
 
 
 ! ________________________________________________________________________________________
@@ -700,7 +700,7 @@ SUBROUTINE pxr_boris_push_rr_LL_u_3d(np, uxp, uyp, uzp, gaminv, exold, eyold, ez
 #endif
 #endif
 
-END SUBROUTINE
+END SUBROUTINE pxr_boris_push_rr_LL_u_3d
 
 
 
@@ -822,12 +822,8 @@ SUBROUTINE pxr_boris_push_u_3d_block(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, 
 #endif
 #endif
   ENDDO
-END SUBROUTINE
+END SUBROUTINE pxr_boris_push_u_3d_block
 
-SUBROUTINE pxr_boris_push_u_3d_block_rr
-
-
-END SUBROUTINE 
 ! ________________________________________________________________________________________
 !> @brief
 !> Advance particle positions

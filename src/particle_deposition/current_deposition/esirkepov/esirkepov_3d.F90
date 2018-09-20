@@ -1033,7 +1033,7 @@ SUBROUTINE depose_jxjyjz_esirkepov_vecHV_1_1_1(jx, jy, jz, np, xp, yp, zp, uxp, 
   DEALLOCATE(jxcells, jycells, jzcells)
   RETURN
 
-END SUBROUTINE
+END SUBROUTINE depose_jxjyjz_esirkepov_vecHV_1_1_1
 #endif
 
 
@@ -1693,7 +1693,7 @@ SUBROUTINE depose_jxjyjz_esirkepov_vecHVv2_1_1_1(jx, jy, jz, np, xp, yp, zp, uxp
   END DO
 
   RETURN
-END SUBROUTINE
+END SUBROUTINE depose_jxjyjz_esirkepov_vecHVv2_1_1_1
 #endif
 
 ! ________________________________________________________________________________________
@@ -3204,7 +3204,7 @@ SUBROUTINE depose_jxjyjz_esirkepov_vecHV_2_2_2(jx, jy, jz, np, xp, yp, zp, uxp, 
   DEALLOCATE(jxcells, jycells, jzcells)
   RETURN
 
-END SUBROUTINE
+END SUBROUTINE depose_jxjyjz_esirkepov_vecHV_2_2_2
 #endif
 
 ! ________________________________________________________________________________________
@@ -4172,7 +4172,7 @@ subroutine warp_depose_jxjyjz_esirkepov_n(jx, jy, jz, np, xp, yp, zp, uxp, uyp, 
   deallocate(sdx, sdy, sdz, sx, sx0, dsx, sy, sy0, dsy, sz, sz0, dsz)
 
   return
-end subroutine warp_depose_jxjyjz_esirkepov_n
+END SUBROUTINE warp_depose_jxjyjz_esirkepov_n
 #endif
 
 #if defined (DEV)
@@ -4537,5 +4537,5 @@ subroutine picsar_depose_jxjyjz_esirkepov_n(cj, np, xp, yp, zp, uxp, uyp, uzp,  
   deallocate(sdx, sdy, sdz, sx, sx0, dsx, sy, sy0, dsy, sz, sz0, dsz)
 
   return
-end subroutine picsar_depose_jxjyjz_esirkepov_n
+END SUBROUTINE picsar_depose_jxjyjz_esirkepov_n
 #endif

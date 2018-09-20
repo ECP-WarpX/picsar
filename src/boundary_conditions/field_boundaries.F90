@@ -1411,7 +1411,7 @@ USE picsar_precision, ONLY: idp, num, isp
     DEALLOCATE(temp1, temp2)
 
     CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
-  END SUBROUTINE
+  END SUBROUTINE summation_bcs_persistent_jx
 
   ! ______________________________________________________________________________________
   !> @brief
@@ -1576,7 +1576,7 @@ USE picsar_precision, ONLY: idp, num, isp
     DEALLOCATE(temp1, temp2)
 
     CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
-  END SUBROUTINE
+  END SUBROUTINE summation_bcs_persistent_jy
 
   ! ______________________________________________________________________________________
   !> @brief
@@ -1740,7 +1740,7 @@ USE picsar_precision, ONLY: idp, num, isp
     DEALLOCATE(temp1, temp2)
 
     CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
-  END SUBROUTINE
+  END SUBROUTINE summation_bcs_persistent_jz
 
   ! ______________________________________________________________________________________
   !> @brief

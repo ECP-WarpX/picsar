@@ -3636,7 +3636,7 @@ SUBROUTINE current_reduction_2_2_2(jx, jy, jz, jxcells, jycells, jzcells, ncells
   END DO
 
   RETURN
-END SUBROUTINE
+END SUBROUTINE current_reduction_2_2_2
 
 ! ________________________________________________________________________________________
 !> @brief
