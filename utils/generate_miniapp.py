@@ -202,6 +202,133 @@ class MiniAppParser( object ):
 
         # To be completed
         # Solver
+	generic_modules = [
+                           "diagnostics",\
+                           "control_file",\
+                           "simple_io",\
+                           "PICSAR_precision",\
+                           "constants",\
+                           "precomputed",\
+                           "params",\
+                           "mpi_type_constants",\
+                           "communications",\
+                           "time_stat",\
+                           "output_data",\
+                           "shared_data",\
+                           "mem_status",\
+                           "mpi_derived_types",\
+                           "mpi_routines" ]
+        generic_routines = [
+		           "calc_diags",\
+		           "calc_field_div",\
+		           "calc_field_divB",\
+		           "init_diags",\
+		           "init_temp_diags",\
+		           "init_time_stat_output",\
+		           "get_loc_kinetic_energy",\
+		           "get_kinetic_energy",\
+		           "get_loc_field_energy_2d",\
+		           "get_loc_field_energy",\
+		           "get_field_energy_2d",\
+		           "get_field_energy",\
+		           "get_field_energy",\
+		           "get_loc_norm_2",\
+		           "get_norm_divErho",\
+			   "output_routines",\
+			   "output_temporal_diagnostics",\
+			   "write_3d_field_array_to_file",\
+			   "write_single_array_to_file",\
+			   "mpi_minimal_init",\
+			   "setup_communicator",\
+			   "mpi_initialise",\
+			   "compute_simulation_axis",\
+			   "allocate_grid_quantities",\
+			   "mpi_close",\
+			   "time_statistics",\
+			   "time_statistics_per_iteration",\
+			   "get_local_grid_mem ",\
+			   "get_global_grid_mem",\
+  			   "set_tile_split"
+  			   "set_tile_split_for_species"
+  			   "add_particle_to_species_2d"
+  			   "add_particle_to_species"
+  			   "add_particle_at_tile_2d"
+  			   "add_particle_at_tile"
+  			   "add_group_of_particles_at_tile"
+  			   "rm_particles_from_species_with_mask"
+  			   "rm_particles_from_species_2d"
+  			   "rm_particles_from_species"
+  			   "rm_particle_at_tile_2d"
+  			   "rm_particle_at_tile"
+  			   "allocate_tile_arrays"
+  			   "init_tile_arrays"
+  			   "init_tile_arrays_for_species"
+  			   "load_particles"
+  			   "resize_particle_arrays"
+  			   "resize_1D_array_real"
+  			   "resize_2D_array_real"
+  			   "resize_3D_array_real"
+  			   "get_local_number_of_part"
+  			   "point_to_tile"
+  			   "set_particle_species_properties"
+  			   "get_are_tiles_reallocated"
+  			   "set_are_tiles_reallocated"
+  			   "estimate_tiles_memory_consumption"
+  			   "load_laser_species"
+  			   "load_laser"
+  			   "product_matrix_2c2"
+  			   "get_local_tile_mem"
+  			   "get_global_tile_mem"
+
+
+
+
+]
+
+
+
+
+
+        generic_modules_solver = ["fields","field_boundary"]
+        generic_routines_solver = []
+        generic_routines_pusher = []
+        generic_modules_pusher = [
+			 "grid_tilemodule",\
+			 "buff_exchange_part",\
+			 "antenna",\
+			 "particle_speciesmodule",\
+			 "particle_properties",\
+			 "particles",\
+			 "buff_exchange_part",\
+			 "sorting",\
+			 "particle_boundary" ]
+
+        generic_modules_depos = [
+			"grid_tilemodule",\
+			"tile_params",\
+			"tiling",\
+			"particle_tilemodule"]
+        generic_routines_depos = []
+	modules_spectral = [
+			"math_tools",\
+			"gpstd_solver",\
+			"fourier_psaotd",\
+			"fftw3_fortran",\
+			"mpi_fftw3",\
+			"fastfft",\
+			"matrix_data",\
+			"matrix_coefficients",\
+			"fourier",\
+			"group_parameters",\
+			"load_balance"]
+	routine_spectral  = [
+    mpi_routines.F90:END SUBROUTINE get_non_periodic_mpi_bcs
+    mpi_routines.F90:END SUBROUTINE setup_groups
+      mpi_routines.F90:END SUBROUTINE adjust_grid_mpi_global
+    mpi_routines.F90:  END SUBROUTINE mpi_minimal_init_fftw
+
+]
+
         if type_solver == 'all':
             self.list_available_modules = []
             self.list_available_routines = []
