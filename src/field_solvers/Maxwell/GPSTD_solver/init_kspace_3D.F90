@@ -550,7 +550,7 @@ MODULE gpstd_solver
   !> @date
   !> Creation 2017
   ! ______________________________________________________________________________________
-  SUBROUTINE delete_k_space
+  SUBROUTINE delete_k_space(nmatrixes2)
     USE matrix_coefficients, ONLY: kspace, at_op
     USE matrix_data, ONLY: nmatrixes2
     USE picsar_precision, ONLY: idp
@@ -561,7 +561,7 @@ MODULE gpstd_solver
     DO i=1,4
        DEALLOCATE(at_op(nmatrixes2)%block_vector(i)%block3dc)
     ENDDO
-    !DEALLOCATE(kxc,kxb,kxf,kyc,kyb,kyf,kzc,kzb,kzf)
+    DEALLOCATE(kxc,kxb,kxf,kyc,kyb,kyf,kzc,kzb,kzf)
 
   END SUBROUTINE delete_k_space
 
@@ -1038,7 +1038,7 @@ MODULE gpstd_solver
     !> Delete kspace and at_op blocks
     !> Might not delete these blocks if current filtering or field correction is
     !> needed in Fourier space
-    CALL delete_k_space
+    CALL delete_k_space(nmatrixes2)
     DEALLOCATE(is_usefull)
   END SUBROUTINE init_gpstd
 
@@ -1292,6 +1292,22 @@ MODULE gpstd_solver
     *AT_OP(nmatrixes2)%block_vector(1)%block3dc
     !> End contribution E to B
     END SUBROUTINE compute_cc_mat_splitted_fields
+
+
+
+    SUBROUTINE free_cc_mat(nmatrixes) 
+     USE matrix_coefficients
+       INTEGER(idp) :: i,j
+
+        DO i= 1, cc_mat(nmatrixes)%nblocks
+          DO j=1, cc_mat(nmatrixes)%nblocks
+            DEALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc)
+            cc_mat(nmatrixes)%block_matrix2d(i,j)%nx = 0
+            cc_mat(nmatrixes)%block_matrix2d(i,j)%ny = 0
+            cc_mat(nmatrixes)%block_matrix2d(i,j)%nz = 0
+          ENDDO
+        ENDDO
+    END SUBROUTINE free_cc_mat
 
   ! ______________________________________________________________________________________
   !> @brief

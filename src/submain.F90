@@ -489,6 +489,13 @@ SUBROUTINE init_pml_arrays
   ENDIF
 END SUBROUTINE init_pml_arrays
 
+
+SUBROUTINE delete_pml_arrays()
+  USE fields, ONLY : sigma_x_e,sigma_z_e,sigma_y_e,sigma_x_b,sigma_z_b,sigma_y_b
+  DEALLOCATE(sigma_x_e,sigma_z_e,sigma_y_e)
+  DEALLOCATE(sigma_x_b,sigma_z_b,sigma_y_b)
+
+END SUBROUTINE  delete_pml_arrays
 ! ________________________________________________________________________________________
 !> @brief
 !> Initialize the plasma and field arrays at it=0.
