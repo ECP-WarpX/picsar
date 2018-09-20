@@ -236,6 +236,7 @@ class MiniAppParser( object ):
 		            "get_field_energy",\
 		            "get_field_energy",\
 		            "get_loc_norm_2",\
+                            "system",\
 		            "get_norm_divErho",\
 			    "output_routines",\
 			    "output_temporal_diagnostics",\
@@ -713,8 +714,8 @@ class MiniAppParser( object ):
     	print "list of available  modules  ",self.list_available_modules
 
         #LIST ALL .F90 or .F files in current directory
-        #self.listfiles = self.create_listfiles('./src')
-        self.listfiles = ["boundary_conditions/field_boundaries.F90"]
+        self.listfiles = self.create_listfiles('./src')
+        #self.listfiles = ["boundary_conditions/field_boundaries.F90"]
 
         # Reconstruct PICSARlite
         for file in self.listfiles:
@@ -722,7 +723,7 @@ class MiniAppParser( object ):
 
         # Remove unavailable routines
         self.availablelistfiles = self.create_listfiles('./PICSARlite/src')
-        self.listfiles = self.availablelistfiles
+        #self.listfiles = self.availablelistfiles
 
         for file in self.availablelistfiles:
             self.comment_unavailable_routine(file)
@@ -924,7 +925,8 @@ class MiniAppParser( object ):
             if (("call" in curr_word_list) & (curr_line.find("!")==-1 )):
                 # Get the name of the following routine
                 indexcall = curr_word_list.index("call")
-                routine_name = curr_word_list[indexcall+1].split('(')[0]
+                routine_name = curr_word_list[indexcall+1].split('(')
+                routine_name = routine_name[0].split('\n')[0]
 
                 # If the routine is in the list, everything fine, if not the
                 # line and the block should be commented.
@@ -975,7 +977,7 @@ class MiniAppParser( object ):
                 formatting_line( nb_blanks[compt], \
                                        "WRITE(0,*) 'ABORT.',") + '\n' \
               + formatting_line( nb_blanks[compt]+11, \
-                    "'The subroutine %s', "%(list_routine_name[compt])) + '\n'\
+                    "'The trolol %s', "%(list_routine_name[compt])) + '\n'\
               + formatting_line( nb_blanks[compt]+11, \
                                 "'cannot be used in this configuration.'",  \
                                 add_ampersand=False)
