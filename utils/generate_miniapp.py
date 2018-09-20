@@ -279,6 +279,22 @@ class MiniAppParser( object ):
   			   "product_matrix_2c2"
   			   "get_local_tile_mem"
   			   "get_global_tile_mem"
+			   "default_init"
+			   "read_from_cl"
+			   "read_input_file"
+			   "read_cpusplit_section"
+			   "read_plasma_section"
+			   "read_solver_section"
+			   "read_sorting_section"
+			   "read_timestat_section"
+			   "read_main_section"
+			   "read_species_section"
+			   "read_particle_dumps_section"
+			   "read_output_section"
+			   "read_temporal_output_section"
+			   "read_antenna_section"
+			   "init_species_section"
+			   "initall"
 
 
 
@@ -290,7 +306,20 @@ class MiniAppParser( object ):
 
 
         generic_modules_solver = ["fields","field_boundary"]
-        generic_routines_solver = []
+        generic_routines_solver = [
+  "field_bc"
+  "exchange_mpi_3d_grid_array_with_guards"
+  "exchange_mpi_3d_grid_array_with_guards_nonblocking"
+  "summation_bcs"
+  "summation_bcs_nonblocking"
+  "summation_bcs_persistent_jx"
+  "summation_bcs_persistent_jy"
+  "summation_bcs_persistent_jz"
+  "efield_bcs"
+  "bfield_bcs"
+  "current_bcs"
+  "charge_bcs"
+]
         generic_routines_pusher = []
         generic_modules_pusher = [
 			 "grid_tilemodule",\
@@ -326,6 +355,76 @@ class MiniAppParser( object ):
     mpi_routines.F90:END SUBROUTINE setup_groups
       mpi_routines.F90:END SUBROUTINE adjust_grid_mpi_global
     mpi_routines.F90:  END SUBROUTINE mpi_minimal_init_fftw
+          END SUBROUTINE generalized_comms_group_l2g
+          END SUBROUTINE  sendrecv_l2g_generalized
+          END SUBROUTINE  sendrecv_l2g_generalized_non_blocking
+          END SUBROUTINE generalized_comms_group_g2l
+          END SUBROUTINE  sendrecv_g2l_generalized_non_blocking
+          END SUBROUTINE  sendrecv_g2l_generalized
+
+	END SUBROUTINE field_damping_bcs
+	END SUBROUTINE merge_fields
+	END SUBROUTINE merge_e_fields
+	END SUBROUTINE merge_b_fields
+  END SUBROUTINE push_psatd_ebfield
+	init_pml_arrays
+  END SUBROUTINE select_case_dims_local
+  END SUBROUTINE select_case_dims_global
+  END SUBROUTINE init_kspace
+  END SUBROUTINE delete_k_space
+  END SUBROUTINE compute_k_vec
+  END SUBROUTINE compute_k_1d
+  END SUBROUTINE fftfreq
+  END SUBROUTINE init_gpstd
+  END SUBROUTINE compute_cc_mat_splitted_fields
+  END SUBROUTINE compute_cc_mat_merged_fields
+  END SUBROUTINE FD_weights_hvincenti
+  END SUBROUTINE copy_field
+  END SUBROUTINE copy_field_forward
+  END SUBROUTINE copy_field_backward
+  END SUBROUTINE init_plans_fourier_mpi
+  END SUBROUTINE get_Ffields
+  END SUBROUTINE get_Ffields_mpi_lb 
+  END SUBROUTINE get_Ffields_mpi
+  END SUBROUTINE get_fields
+  END SUBROUTINE get_fields_mpi
+  END SUBROUTINE get_fields_mpi_lb
+  END SUBROUTINE fft_forward_r2c_local
+  END SUBROUTINE fft_forward_r2c_hybrid
+  END SUBROUTINE fft_backward_c2r_local
+  END SUBROUTINE fft_backward_c2r_hybrid
+  END SUBROUTINE push_psaotd_ebfielfs_2d
+  END SUBROUTINE push_psaotd_ebfielfs_3d
+  END SUBROUTINE init_plans_blocks
+
+fast_fftw_create_plan_r2c_3d_dft
+ fast_fftw_create_plan_c2r_3d_dft
+ fast_fftw_create_plan_r2c_2d_dft
+ fast_fftw_create_plan_c2r_2d_dft
+ fast_fftw3d_c2r_with_plan
+ fast_fftw3d_r2c_with_plan
+allocate_new_matrix_vector
+multiply_mat_vector
+multiply_unit_blocks
+
+
+
+
+]
+	fdtd_routines= [
+END SUBROUTINE push_bfield
+        END SUBROUTINE push_efield
+END SUBROUTINE push_bfield_2d
+END SUBROUTINE push_efield_2d
+END SUBROUTINE pxrpush_em3d_evec_norder
+END SUBROUTINE pxrpush_em2d_evec_norder
+END SUBROUTINE pxrpush_em2d_evec
+END SUBROUTINE pxrpush_em3d_evec
+END SUBROUTINE pxrpush_em3d_bvec_norder
+END SUBROUTINE pxrpush_em2d_bvec_norder
+END SUBROUTINE pxrpush_em2d_bvec
+END SUBROUTINE pxrpush_em3d_bvec
+
 
 ]
 
