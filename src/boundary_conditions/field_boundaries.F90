@@ -1781,7 +1781,7 @@ USE picsar_precision, ONLY: idp, num, isp
       CALL field_bc(ezx, nxguards, nyguards, nzguards, nx, ny, nz)
       CALL field_bc(ezy, nxguards, nyguards, nzguards, nx, ny, nz)
       !> When using absorbing bcs, the electric field is merged here
-      !> This is done here in order not to call merge_fields from warp 
+      !> This is done here in order not to call merge_e_fields from warp 
       CALL merge_e_fields()
 
     ENDIF

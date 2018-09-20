@@ -58,7 +58,7 @@ class Subroutines( object ):
                         i=i+1
 
                         if (i>=Nlines):
-                            sys.exit("ERROR: missing end subroutine block")
+                            sys.exit("ERROR: missing end subroutine block in "+file)
                         curr_line=listlines[i].lower()
 
                         # If an interface is defined in the subroutine,
@@ -202,8 +202,7 @@ class MiniAppParser( object ):
 
         # To be completed
         # Solver
-	generic_modules = [
-                           "diagnostics",\
+	generic_modules = ["diagnostics",\
                            "control_file",\
                            "simple_io",\
                            "PICSAR_precision",\
@@ -218,83 +217,83 @@ class MiniAppParser( object ):
                            "mem_status",\
                            "mpi_derived_types",\
                            "mpi_routines" ]
-        generic_routines = [
-		           "calc_diags",\
-		           "calc_field_div",\
-		           "calc_field_divB",\
-		           "init_diags",\
-		           "init_temp_diags",\
-		           "init_time_stat_output",\
-		           "get_loc_kinetic_energy",\
-		           "get_kinetic_energy",\
-		           "get_loc_field_energy_2d",\
-		           "get_loc_field_energy",\
-		           "get_field_energy_2d",\
-		           "get_field_energy",\
-		           "get_field_energy",\
-		           "get_loc_norm_2",\
-		           "get_norm_divErho",\
-			   "output_routines",\
-			   "output_temporal_diagnostics",\
-			   "write_3d_field_array_to_file",\
-			   "write_single_array_to_file",\
-			   "mpi_minimal_init",\
-			   "setup_communicator",\
-			   "mpi_initialise",\
-			   "compute_simulation_axis",\
-			   "allocate_grid_quantities",\
-			   "mpi_close",\
-			   "time_statistics",\
-			   "time_statistics_per_iteration",\
-			   "get_local_grid_mem ",\
-			   "get_global_grid_mem",\
-  			   "set_tile_split",\
-  			   "set_tile_split_for_species",\
-  			   "add_particle_to_species_2d",\
-  			   "add_particle_to_species",\
-  			   "add_particle_at_tile_2d",\
-  			   "add_particle_at_tile",\
-  			   "add_group_of_particles_at_tile",\
-  			   "rm_particles_from_species_with_mask",\
-  			   "rm_particles_from_species_2d",\
-  			   "rm_particles_from_species",\
-  			   "rm_particle_at_tile_2d",\
-  			   "rm_particle_at_tile",\
-  			   "allocate_tile_arrays",\
-  			   "init_tile_arrays",\
-  			   "init_tile_arrays_for_species",\
-  			   "load_particles",\
-  			   "resize_particle_arrays",\
-  			   "resize_1D_array_real",\
-  			   "resize_2D_array_real",\
-  			   "resize_3D_array_real",\
-  			   "get_local_number_of_part",\
-  			   "point_to_tile",\
-  			   "set_particle_species_properties",\
-  			   "get_are_tiles_reallocated",\
-  			   "set_are_tiles_reallocated",\
-  			   "estimate_tiles_memory_consumption",\
-  			   "load_laser_species",\
-  			   "load_laser",\
-  			   "product_matrix_2c2",\
-  			   "get_local_tile_mem",\
-  			   "get_global_tile_mem",\
-			   "default_init",\
-			   "read_from_cl",\
-			   "read_input_file",\
-			   "read_cpusplit_section",\
-			   "read_plasma_section",\
-			   "read_solver_section",\
-			   "read_sorting_section",\
-			   "read_timestat_section",\
-			   "read_main_section",\
-			   "read_species_section",\
-			   "read_particle_dumps_section",\
-			   "read_output_section",\
-			   "read_temporal_output_section",\
-			   "read_antenna_section",\
-			   "init_species_section",\
-			   "initall"]
+
+        generic_routines=["calc_diags",\
+		            "calc_field_div",\
+		            "calc_field_divB",\
+		            "init_diags",\
+		            "init_temp_diags",\
+		            "init_time_stat_output",\
+		            "get_loc_kinetic_energy",\
+		            "get_kinetic_energy",\
+		            "get_loc_field_energy_2d",\
+		            "get_loc_field_energy",\
+		            "get_field_energy_2d",\
+		            "get_field_energy",\
+		            "get_field_energy",\
+		            "get_loc_norm_2",\
+		            "get_norm_divErho",\
+			    "output_routines",\
+			    "output_temporal_diagnostics",\
+			    "write_3d_field_array_to_file",\
+			    "write_single_array_to_file",\
+			    "mpi_minimal_init",\
+			    "setup_communicator",\
+			    "mpi_initialise",\
+			    "compute_simulation_axis",\
+			    "allocate_grid_quantities",\
+			    "mpi_close",\
+			    "time_statistics",\
+			    "time_statistics_per_iteration",\
+			    "get_local_grid_mem ",\
+			    "get_global_grid_mem",\
+  			    "set_tile_split",\
+  			    "set_tile_split_for_species",\
+  			    "add_particle_to_species_2d",\
+  			    "add_particle_to_species",\
+  			    "add_particle_at_tile_2d",\
+  			    "add_particle_at_tile",\
+  			    "add_group_of_particles_at_tile",\
+  			    "rm_particles_from_species_with_mask",\
+  			    "rm_particles_from_species_2d",\
+  			    "rm_particles_from_species",\
+  			    "rm_particle_at_tile_2d",\
+  			    "rm_particle_at_tile",\
+  			    "allocate_tile_arrays",\
+  			    "init_tile_arrays",\
+  			    "init_tile_arrays_for_species",\
+  			    "load_particles",\
+  			    "resize_particle_arrays",\
+  			    "resize_1D_array_real",\
+  			    "resize_2D_array_real",\
+  			    "resize_3D_array_real",\
+  			    "get_local_number_of_part",\
+  			    "point_to_tile",\
+  			    "set_particle_species_properties",\
+  			    "get_are_tiles_reallocated",\
+  			    "set_are_tiles_reallocated",\
+  			    "estimate_tiles_memory_consumption",\
+  			    "load_laser_species",\
+  			    "load_laser",\
+  			    "product_matrix_2c2",\
+  			    "get_local_tile_mem",\
+  			    "get_global_tile_mem",\
+			    "default_init",\
+			    "read_from_cl",\
+			    "read_input_file",\
+			    "read_cpusplit_section",\
+			    "read_plasma_section",\
+			    "read_solver_section",\
+			    "read_sorting_section",\
+			    "read_timestat_section",\
+			    "read_main_section",\
+			    "read_species_section",\
+			    "read_particle_dumps_section",\
+			    "read_output_section",\
+			    "read_temporal_output_section",\
+			    "read_antenna_section",\
+			    "init_species_section",\
+			    "initall"]
 
         generic_modules_solver = ["fields","field_boundary"]
 
@@ -323,6 +322,7 @@ class MiniAppParser( object ):
                          "particle_boundary" ]
 
         generic_routines_pusher = [
+				   "set_tile_split",\
 				   "particle_bcs",\
 				   "particle_bcs_2d",\
 				   "particle_bcs_tiles",\
@@ -403,9 +403,9 @@ class MiniAppParser( object ):
 			"depose_jxjyjz_generic",\
 			"pxrdepose_currents_on_grid_jxjyjz"]
 
-	esirkepov_modules = []
+	esirkepov_modules=[]
 
-	esirkepov_routines = ["pxrdepose_currents_on_grid_jxjyjz_sub_openmp",\
+	esirkepov_routines=["pxrdepose_currents_on_grid_jxjyjz_sub_openmp",\
 			"pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp",\
 			"depose_jxjyjz_esirkepov",\
 			"depose_jxjyjz_esirkepov_1_1_1",\
@@ -505,6 +505,7 @@ class MiniAppParser( object ):
 		        "push_bfield",
 		        "push_efield",
 		        "init_stencil_coefficients",
+			"FD_weights",
 		        "push_bfield_2d",
 		        "push_efield_2d",
 		        "pxrpush_em3d_evec_norder",
@@ -593,9 +594,8 @@ class MiniAppParser( object ):
             print('- esirkepov')
             print('#########################################################' \
                               '#########')
-
-        self.list_available_routines = None
-        self.list_available_modules = None
+	print "list of available routines  ",self.list_available_routines
+	print "list of available  modules  ",self.list_available_modules
 
         #LIST ALL .F90 or .F files in current directory
         self.listfiles = self.create_listfiles('./src')
@@ -622,7 +622,7 @@ class MiniAppParser( object ):
         listfiles = []
         for root, subFolder, files in os.walk(folder):
             for file in files:
-                if len(root) > len(folder):
+                if len(root) > len(folder)-5:
                      listfiles.append('%s/%s'%(root[len(folder)+1:], file))
         return listfiles
 
@@ -873,9 +873,9 @@ class MiniAppParser( object ):
 
 arglist=sys.argv
 #try:
-type_parser = "all" #str(arglist[1])
-type_pusher = "all" #str(arglist[2])
-type_depos  = "all" #str(arglist[3])
+type_parser = str(arglist[1])
+type_pusher = str(arglist[2])
+type_depos  = str(arglist[3])
 miniapp = MiniAppParser(type_parser, type_pusher, type_depos)
 
 # except(IndexError):
