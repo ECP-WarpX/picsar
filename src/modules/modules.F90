@@ -700,7 +700,7 @@ MODULE params
   !> iteration number
   INTEGER(idp)         :: it=0_idp
   !> Total number of steps
-  INTEGER(idp)         :: nsteps
+  INTEGER(idp)         :: nsteps, nst2
   !> Initial frame Gamma factor (in the case of a moving frame)
   REAL(num)            :: g0
   !> Initial normalized frame velocity (sqrt(1.0_num-1.0_num/g0**2))

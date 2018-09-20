@@ -183,6 +183,7 @@ MODULE control_file
     ! --- sets max time in the simulation (in 1/w0)
     tmax = 0._num
     nsteps = 0
+    nst2 = 0
 
     !-------------------------------------------------------------------------------
     ! plasma parameters (cold plasma)
@@ -294,6 +295,9 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'nsteps') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) nsteps
+      ELSE IF (INDEX(buffer, 'nst2') .GT. 0) THEN
+        CALL GETARG(i+1, buffer)
+        READ(buffer, *) nst2
       ELSE IF (INDEX(buffer, 'dtcoef') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) dtcoef
@@ -384,6 +388,9 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'nsteps') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) nsteps
+      ELSE IF (INDEX(buffer, 'nst2') .GT. 0) THEN
+        CALL GETARG(i+1, buffer)
+        READ(buffer, *) nst2
       ELSE IF (INDEX(buffer, 'nguardsx') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) nxguards
@@ -878,6 +885,9 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'nsteps') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) nsteps
+      ELSE IF (INDEX(buffer, 'nst2') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) nst2
       ELSE IF (INDEX(buffer, 'dtcoef') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) dtcoef

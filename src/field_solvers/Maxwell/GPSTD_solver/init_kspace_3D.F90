@@ -550,16 +550,16 @@ MODULE gpstd_solver
   !> @date
   !> Creation 2017
   ! ______________________________________________________________________________________
-  SUBROUTINE delete_k_space(nmatrixes2)
+  SUBROUTINE delete_k_space(nm)
     USE matrix_coefficients, ONLY: kspace, at_op
-    USE matrix_data, ONLY: nmatrixes2
     USE picsar_precision, ONLY: idp
     INTEGER(idp)  :: i
+    INTEGER(idp) , INTENT(IN)  :: nm
     DO i = 1,10
-       DEALLOCATE(kspace(nmatrixes2)%block_vector(i)%block3dc)
+       DEALLOCATE(kspace(nm)%block_vector(i)%block3dc)
     ENDDO
     DO i=1,4
-       DEALLOCATE(at_op(nmatrixes2)%block_vector(i)%block3dc)
+       DEALLOCATE(at_op(nm)%block_vector(i)%block3dc)
     ENDDO
     DEALLOCATE(kxc,kxb,kxf,kyc,kyb,kyf,kzc,kzb,kzf)
 
@@ -876,7 +876,7 @@ MODULE gpstd_solver
       bzf, exf
     USE iso_c_binding
     USE matrix_coefficients, ONLY: vnew, kspace, cc_mat, at_op, vold
-    USE matrix_data, ONLY: nmatrixes, nmatrixes2
+    USE matrix_data, ONLY: nmatrixes, nmatrixes2, is_cc_mat_allocated
     USE mpi_fftw3, ONLY: fftw_alloc_complex, alloc_local
     USE omp_lib
     USE params, ONLY: dt
@@ -905,97 +905,99 @@ MODULE gpstd_solver
       ALLOCATE(is_usefull(33))
       is_usefull=is_usefull_per
     ENDIF
-  
-    CALL select_case_dims_local(nfftx, nffty, nfftz)
-    ii=DCMPLX(0.0_num, 1.0_num)
-    CALL allocate_new_matrix_vector(nbloc_ccmat)
-    nfftxr = nfftx/2+1
-    IF(p3dfft_flag) nfftxr = nfftx
-    CALL init_kspace
-    nkx = nfftxr
-    nky = nffty
-    nkz = nfftz
-    !> Allocates cc_mat  block matrix
-    !> cc_mat blocks are initally as an nbloc_ccmat x nbloc_ccmat block matrix 
-    !> At the end of the routine, useless blcoks are deleted  
-    incr = 1
-    DO i=1_idp, nbloc_ccmat
-      DO j=1_idp, nbloc_ccmat
-        lin_ind = (i-1)*nbloc_ccmat + (j-1) 
-        IF(is_usefull(incr) == lin_ind) THEN
-          ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(nfftxr, nffty,    &
-          nfftz))
-          cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = nfftxr
-          cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = nffty
-          cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = nfftz
-          incr = incr + 1
-        ELSE  
-          ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(1,1,1))
-          cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = 1_idp
-          cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = 1_idp
-          cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = 1_idp
-          
-        ENDIF
+ 
+    CALL init_kspace() 
+    IF(.NOT. is_cc_mat_allocated(nmatrixes+1)) THEN
+      CALL select_case_dims_local(nfftx, nffty, nfftz)
+      ii=DCMPLX(0.0_num, 1.0_num)
+      CALL allocate_new_matrix_vector(nbloc_ccmat)
+      nfftxr = nfftx/2+1
+      IF(p3dfft_flag) nfftxr = nfftx
+      nkx = nfftxr
+      nky = nffty
+      nkz = nfftz
+      !> Allocates cc_mat  block matrix
+      !> cc_mat blocks are initally as an nbloc_ccmat x nbloc_ccmat block matrix 
+      !> At the end of the routine, useless blcoks are deleted  
+      incr = 1
+      DO i=1_idp, nbloc_ccmat
+        DO j=1_idp, nbloc_ccmat
+          lin_ind = (i-1)*nbloc_ccmat + (j-1) 
+          IF(is_usefull(incr) == lin_ind) THEN
+            ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(nfftxr, nffty,    &
+            nfftz))
+            cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = nfftxr
+            cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = nffty
+            cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = nfftz
+            incr = incr + 1
+          ELSE  
+            ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(1,1,1))
+            cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = 1_idp
+            cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = 1_idp
+            cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = 1_idp
+            
+          ENDIF
+        ENDDO
       ENDDO
-    ENDDO
-
-    !> If g_spectral then psatd uses multiply_mat_vec routine in GPSTD.F90 
-    !> to perform the maxwell push in Fourier space
-    !> So we need to allocate vold/vnew vector blocks
-    !> else if g_spectral == false these arrays are not allocated, and
-    !> push_psaotd_ebfields_3d/2d is used to perform the maxwell push in Fourier space
-
-    !> When using absorbing_bcs, g_spectral = .TRUE. is needed
-    IF(g_spectral) THEN
-      IF(p3dfft_flag) THEN  ! hybrid with p3dfft
+  
+      !> If g_spectral then psatd uses multiply_mat_vec routine in GPSTD.F90 
+      !> to perform the maxwell push in Fourier space
+      !> So we need to allocate vold/vnew vector blocks
+      !> else if g_spectral == false these arrays are not allocated, and
+      !> push_psaotd_ebfields_3d/2d is used to perform the maxwell push in Fourier space
+  
+      !> When using absorbing_bcs, g_spectral = .TRUE. is needed
+      IF(g_spectral) THEN
+        IF(p3dfft_flag) THEN  ! hybrid with p3dfft
+          DO i = 1,nbloc_ccmat
+            ALLOCATE(vold(nmatrixes)%block_vector(i)%block3dc(nkx,nky,nkz))
+          ENDDO
+          DO i = 1,nbloc_vnew
+            ALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc(nkx,nky,nkz))
+          ENDDO
+        ELSE IF(fftw_with_mpi) THEN ! hybrid or global with fftw
+          DO i =1,nbloc_ccmat
+            cdata = fftw_alloc_complex(alloc_local)
+            CALL c_f_pointer(cdata, vold(nmatrixes)%block_vector(i)%block3dc, [nkx, nky, nkz])
+          ENDDO
+          DO i=1,nbloc_vnew
+            cdata = fftw_alloc_complex(alloc_local)
+            CALL c_f_pointer(cdata, vnew(nmatrixes)%block_vector(i)%block3dc,[nkx, nky, nkz])
+          ENDDO
+        ELSE IF(.NOT. fftw_with_mpi) THEN ! local psatd
+          DO i = 1,nbloc_ccmat
+            ALLOCATE(vold(nmatrixes)%block_vector(i)%block3dc(nkx,nky,nkz))
+          ENDDO
+          DO i = 1,nbloc_vnew
+            ALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc(nkx,nky,nkz))
+          ENDDO
+        ENDIF
         DO i = 1,nbloc_ccmat
-          ALLOCATE(vold(nmatrixes)%block_vector(i)%block3dc(nkx,nky,nkz))
-        ENDDO
-        DO i = 1,nbloc_vnew
-          ALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc(nkx,nky,nkz))
-        ENDDO
-      ELSE IF(fftw_with_mpi) THEN ! hybrid or global with fftw
-        DO i =1,nbloc_ccmat
-          cdata = fftw_alloc_complex(alloc_local)
-          CALL c_f_pointer(cdata, vold(nmatrixes)%block_vector(i)%block3dc, [nkx, nky, nkz])
+          vold(nmatrixes)%block_vector(i)%nx = nfftxr
+          vold(nmatrixes)%block_vector(i)%ny = nffty
+          vold(nmatrixes)%block_vector(i)%nz = nfftz
         ENDDO
         DO i=1,nbloc_vnew
-          cdata = fftw_alloc_complex(alloc_local)
-          CALL c_f_pointer(cdata, vnew(nmatrixes)%block_vector(i)%block3dc,[nkx, nky, nkz])
+          vnew(nmatrixes)%block_vector(i)%nx = nfftxr
+          vnew(nmatrixes)%block_vector(i)%ny = nffty
+          vnew(nmatrixes)%block_vector(i)%nz = nfftz
         ENDDO
-      ELSE IF(.NOT. fftw_with_mpi) THEN ! local psatd
-        DO i = 1,nbloc_ccmat
-          ALLOCATE(vold(nmatrixes)%block_vector(i)%block3dc(nkx,nky,nkz))
-        ENDDO
-        DO i = 1,nbloc_vnew
-          ALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc(nkx,nky,nkz))
+        DO i=nbloc_vnew + 1_idp,nbloc_ccmat
+          ALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc(1,1,1))
+          vnew(nmatrixes)%block_vector(i)%nx = 1
+          vnew(nmatrixes)%block_vector(i)%ny = 1
+          vnew(nmatrixes)%block_vector(i)%nz = 1
         ENDDO
       ENDIF
+  
+      !> Init all blocks to 0.0
       DO i = 1,nbloc_ccmat
-        vold(nmatrixes)%block_vector(i)%nx = nfftxr
-        vold(nmatrixes)%block_vector(i)%ny = nffty
-        vold(nmatrixes)%block_vector(i)%nz = nfftz
+        DO j=1,nbloc_ccmat
+          cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc = CMPLX(0.0_num,0.0_num)
+        ENDDO
       ENDDO
-      DO i=1,nbloc_vnew
-        vnew(nmatrixes)%block_vector(i)%nx = nfftxr
-        vnew(nmatrixes)%block_vector(i)%ny = nffty
-        vnew(nmatrixes)%block_vector(i)%nz = nfftz
-      ENDDO
-      DO i=nbloc_vnew + 1_idp,nbloc_ccmat
-        ALLOCATE(vnew(nmatrixes)%block_vector(i)%block3dc(1,1,1))
-        vnew(nmatrixes)%block_vector(i)%nx = 1
-        vnew(nmatrixes)%block_vector(i)%ny = 1
-        vnew(nmatrixes)%block_vector(i)%nz = 1
-      ENDDO
+      is_cc_mat_allocated(nmatrixes) = .TRUE.
     ENDIF
-
-    !> Init all blocks to 0.0
-    DO i = 1,nbloc_ccmat
-      DO j=1,nbloc_ccmat
-        cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc = CMPLX(0.0_num,0.0_num)
-      ENDDO
-    ENDDO
-
     IF (absorbing_bcs) THEN
       !> When using pmls, splitted fields EM equations are solved
       !> The following routine solved these pushes fourier splitted fields in
@@ -1294,20 +1296,6 @@ MODULE gpstd_solver
     END SUBROUTINE compute_cc_mat_splitted_fields
 
 
-
-    SUBROUTINE free_cc_mat(nmatrixes) 
-     USE matrix_coefficients
-       INTEGER(idp) :: i,j
-
-        DO i= 1, cc_mat(nmatrixes)%nblocks
-          DO j=1, cc_mat(nmatrixes)%nblocks
-            DEALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc)
-            cc_mat(nmatrixes)%block_matrix2d(i,j)%nx = 0
-            cc_mat(nmatrixes)%block_matrix2d(i,j)%ny = 0
-            cc_mat(nmatrixes)%block_matrix2d(i,j)%nz = 0
-          ENDDO
-        ENDDO
-    END SUBROUTINE free_cc_mat
 
   ! ______________________________________________________________________________________
   !> @brief

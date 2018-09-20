@@ -50,6 +50,7 @@ MODULE matrix_data
   USE constants
   ! Maximum number of instances (matrix_blocks and vector_blocks)
   INTEGER(idp), PARAMETER ::  ns_max=40
+  LOGICAL(lp):: is_cc_mat_allocated(ns_max) = .FALSE.
   INTEGER(idp) :: nmatrixes=0
   INTEGER(idp) :: nmatrixes2=0
 END MODULE matrix_data

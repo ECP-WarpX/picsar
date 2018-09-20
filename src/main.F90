@@ -55,6 +55,7 @@ PROGRAM main
   USE diagnostics
   USE mem_status, ONLY : global_grid_mem, global_grid_tiles_mem, global_part_tiles_mem
 #if defined(FFTW)
+  USE gpstd_solver , ONLY : init_gpstd
   USE mpi_fftw3
   USE fourier
   USE fastfft
@@ -130,6 +131,17 @@ PROGRAM main
   !----------------------------------------------
   IF (rank .EQ. 0) startsim=MPI_WTIME()
   CALL step(nsteps)
+  IF(nst2 .GT. 0) THEN
+  IF(rank .EQ. 0) WRITE(0,*) "Start second PIC loop" 
+    dt = dt*2._num
+    IF(absorbing_bcs) THEN
+      CALL init_pml_arrays
+    ENDIF
+#if defined(FFTW)
+    CALL init_gpstd()
+#endif
+    CALL step(nst2)
+  ENDIF
 
   IF (rank .EQ. 0) endsim=MPI_WTIME()
   IF (rank .EQ. 0) WRITE(0,*)  "Total runtime on ",nproc," CPUS =",                   &
