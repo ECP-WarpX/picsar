@@ -356,9 +356,9 @@ class MiniAppParser( object ):
 			    "mpi_recv",
 			    "mpi_isend",
 			    "mpi_irecv",
-			    "mpi_sendrecv", 
+			    "mpi_sendrecv",
 			    "mpi_wait",
-			    "mpi_waitall", 
+			    "mpi_waitall",
 			    "mpi_type_free",
 			    "mpi_start mpi_type_free",
 			    "mpi_send_init",
@@ -371,9 +371,9 @@ class MiniAppParser( object ):
 			    "mpi_comm_free",
 			    "mpi_comm_rank",
 			    "mpi_comm_size",
-			    "mpi_comm_group", 
+			    "mpi_comm_group",
 			    "mpi_comm_dup",
-			    "mpi_comm_split", 
+			    "mpi_comm_split",
 			    "mpi_comm_free",
 			    "mpi_cart_rank",
 			    "mpi_comm_group",
@@ -632,7 +632,7 @@ class MiniAppParser( object ):
 		        "pxrpush_em2d_bvec",
 		        "pxrpush_em3d_bvec"]
 
-	self.list_available_modules = generic_modules + generic_modules_solver + generic_modules_pusher + generic_modules_depos 
+	self.list_available_modules = generic_modules + generic_modules_solver + generic_modules_pusher + generic_modules_depos
 	self.list_available_routines =  generic_routines + generic_routines_solver + generic_routines_pusher + generic_routines_depos
         if type_solver == 'all':
             self.list_available_modules+= spectral_modules + fdtd_modules
@@ -644,7 +644,7 @@ class MiniAppParser( object ):
 
         elif type_solver == 'spectral':
             self.list_available_modules += spectral_modules
-            self.list_available_routines += spectral_routines 
+            self.list_available_routines += spectral_routines
 
         else:
             print('#########################################################' \
@@ -709,11 +709,12 @@ class MiniAppParser( object ):
             print('- esirkepov')
             print('#########################################################' \
                               '#########')
-	print "list of available routines  ",self.list_available_routines
-	print "list of available  modules  ",self.list_available_modules
+    	print "list of available routines  ",self.list_available_routines
+    	print "list of available  modules  ",self.list_available_modules
 
         #LIST ALL .F90 or .F files in current directory
-        self.listfiles = self.create_listfiles('./src')
+        #self.listfiles = self.create_listfiles('./src')
+        self.listfiles = ["boundary_conditions/field_boundaries.F90"]
 
         # Reconstruct PICSARlite
         for file in self.listfiles:
@@ -721,6 +722,8 @@ class MiniAppParser( object ):
 
         # Remove unavailable routines
         self.availablelistfiles = self.create_listfiles('./PICSARlite/src')
+        self.listfiles = self.availablelistfiles
+
         for file in self.availablelistfiles:
             self.comment_unavailable_routine(file)
 
@@ -909,6 +912,11 @@ class MiniAppParser( object ):
         list_routine_name = []
         nb_blanks = []
 
+        # Lower the case of the routines
+        lower_list_available_routines = []
+        for routine in self.list_available_routines:
+            lower_list_available_routines.append(routine.lower())
+
         for i in range(0, Nlines):
             curr_line=listlines[i].lower()
             curr_word_list=curr_line.split(" ")
@@ -920,8 +928,7 @@ class MiniAppParser( object ):
 
                 # If the routine is in the list, everything fine, if not the
                 # line and the block should be commented.
-                #if not routine_name in self.list_available_routines:
-                if 1:
+                if not routine_name in lower_list_available_routines:
                     list_routine_name.append(routine_name)
                     istart.append(i)
                     curr_line_old = curr_line
@@ -957,8 +964,11 @@ class MiniAppParser( object ):
                 # It is a call block
                 else:
                     # Comment the lines
-                    for iblock in range(iend[compt+1]-istart[compt+1]):
-                        listlines_new.append('!'+listlines[i+iblock][1:])
+                    if iend[compt+1] == istart[compt+1]:
+                        listlines_new.append('!'+listlines[i][1:])
+                    else:
+                        for iblock in range(iend[compt+1]-istart[compt+1]):
+                            listlines_new.append('!'+listlines[i+iblock][1:])
 
                     # Print error message
                     error_message = \
@@ -1033,13 +1043,16 @@ class MiniAppParser( object ):
                         "particles", "params", "shared_data", "mpi_routines", \
                         "control_file", "time_stat", "diagnostics"]
 
+        # Lower the case of the routines
+        lower_list_available_modules = []
+        for module in self.list_available_modules:
+            lower_list_available_modules.append(module.lower())
+
         for module in listmodulesmain:
-            #if module in self.list_available_modules:
-            if 1:
+            if module in lower_list_available_modules:
                 listlines.append('  USE %s \n'%module)
 
-        #if "mem_status" in self.list_available_modules:
-        if 1:
+        if "mem_status" in lower_list_available_modules:
             listlines.append('  USE mem_status, ONLY : global_grid_mem, '     \
                             +'global_grid_tiles_mem, global_part_tiles_mem\n\n')
 
