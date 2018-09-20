@@ -297,7 +297,97 @@ class MiniAppParser( object ):
 			    "read_temporal_output_section",\
 			    "read_antenna_section",\
 			    "init_species_section",\
-			    "initall"]
+			    "initall",\
+			    "pxr_gete2dxz_energy_conserving_vect_1_1",\
+			    "pxr_getb2dxz_energy_conserving_vect_1_1",\
+			    "pxr_gete2dxz_energy_conserving_vect_2_2",\
+			    "pxr_getb2dxz_energy_conserving_vect_2_2",\
+			    "pxr_gete2dxz_energy_conserving_vect_2_2",\
+			    "pxr_getb2dxz_energy_conserving_vect_2_2",\
+			    "pxr_gete2dxz_energy_conserving_scalar_3_3",\
+			    "pxr_gete2dxz_energy_conserving_vect_3_3",\
+			    "pxr_getb2dxz_energy_conserving_scalar_3_3",\
+			    "pxr_getb2dxz_energy_conserving_vect_3_3",\
+			    "pxr_geteb2dxz_energy_conserving_vect_3_3",\
+			    "pxr_gete2dxz_n_energy_conserving",\
+			    "pxr_getb2dxz_n_energy_conserving",\
+			    "gete3d_energy_conserving_scalar_1_1_1",\
+			    "getb3d_energy_conserving_scalar_1_1_1",\
+			    "gete3d_energy_conserving_vec_1_1_1",\
+			    "getb3d_energy_conserving_vec_1_1_1",\
+			    "geteb3d_energy_conserving_vecV1_1_1_1",\
+			    "geteb3d_energy_conserving_vecV2_1_1_1",\
+			    "geteb3d_energy_conserving_vecV3_1_1_1",\
+			    "geteb3d_energy_conserving_vecV4_1_1_1",\
+			    "geteb3d_energy_conserving_vec_1_1_1_v2",\
+			    "geteb3d_energy_conserving_vec_1_1_1_sub",\
+			    "gete3d_energy_conserving_scalar_2_2_2",\
+			    "getb3d_energy_conserving_scalar_2_2_2",\
+			    "gete3d_energy_conserving_vec_2_2_2",\
+			    "getb3d_energy_conserving_vec_2_2_2",\
+			    "geteb3d_energy_conserving_vecV1_2_2_2",\
+			    "geteb3d_energy_conserving_vecV2_2_2_2", \
+			    "geteb3d_energy_conserving_vecV3_2_2_2", \
+			    "geteb3d_energy_conserving_vecV4_2_2_2",\
+			    "gete3d_energy_conserving_scalar_3_3_3",\
+			    "getb3d_energy_conserving_scalar_3_3_3",\
+			    "gete3d_energy_conserving_linear_3_3_3", \
+			    "getb3d_energy_conserving_linear_3_3_3",\
+			    "gete3d_energy_conserving_vec_3_3_3", \
+			    "getb3d_energy_conserving_vec_3_3_3",\
+			    "gete3d_energy_conserving_vec2_3_3_3",\
+			    "getb3d_energy_conserving_vec2_3_3_3",\
+			    "geteb3d_energy_conserving_vec_3_3_3",\
+			    "geteb3d_energy_conserving_vecV2_3_3_3",\
+			    "geteb3d_energy_conserving_vecV3_3_3_3",\
+			    "geteb3d_energy_conserving_blockvec_3_3_3",\
+			    "geteb3d_energy_conserving_blockvec2_3_3_3",\
+			    "pxrgete3d_n_energy_conserving",\
+			    "pxrgetb3d_n_energy_conserving",\
+			    "pxr_getb3d_n_energy_conserving",\
+			    "pxr_gete3d_n_energy_conserving",\
+			    "geteb2dxz_energy_conserving",\
+			    "geteb2dxz_energy_conserving_generic",\
+			    "field_gathering",\
+			    "field_gathering_sub",\
+			    "geteb3d_energy_conserving",\
+			    "geteb3d_energy_conserving_generic"
+			    "mpi_send",
+			    "mpi_recv",
+			    "mpi_isend",
+			    "mpi_irecv",
+			    "mpi_sendrecv", 
+			    "mpi_wait",
+			    "mpi_waitall", 
+			    "mpi_type_free",
+			    "mpi_start mpi_type_free",
+			    "mpi_send_init",
+			    "mpi_type_commit",
+			    "mpi_type_vector",
+			    "mpi_reduce",
+			    "mpi_allgather",
+			    "mpi_abort",
+			    "mpi_bcast mpi_barrier",
+			    "mpi_comm_free",
+			    "mpi_comm_rank",
+			    "mpi_comm_size",
+			    "mpi_comm_group", 
+			    "mpi_comm_dup",
+			    "mpi_comm_split", 
+			    "mpi_comm_free",
+			    "mpi_cart_rank",
+			    "mpi_comm_group",
+			    "mpi_cart_shift",
+			    "mpi_cart_create",
+			    "mpi_dims_create",
+			    "mpi_init_thread",
+			    "mpi_initialized",
+			    "mpi_type_create_subarray",
+			    "mpi_type_commit",
+			    "mpi_type_vector",
+			    "mpi_type_commit",
+			    "mpi_type_create_struct",
+			    "mpi_type_size"]
 
         generic_modules_solver = ["fields","field_boundary"]
 
@@ -338,11 +428,11 @@ class MiniAppParser( object ):
 				   "particle_bcs_mpi_non_blocking",\
 				   "particle_bcs_mpi_non_blocking_2d",\
 				   "particle_bcs_tiles_and_mpi_3d",\
-				   "SUBROUTINE push_laser_particles",\
-				   "SUBROUTINE laserp_pusher_gaussian",\
-				   "SUBROUTINE laserp_pusher_hanning",\
-				   "SUBROUTINE gaussian_profile",\
-				   "SUBROUTINE hanning_profile",\
+				   "push_laser_particles",\
+				   "laserp_pusher_gaussian",\
+				   "laserp_pusher_hanning",\
+				   "gaussian_profile",\
+				   "hanning_profile",\
 				   "field_gathering_plus_particle_pusher_sub_2d",\
 				   "field_gathering_plus_particle_pusher",\
 				   "field_gathering_plus_particle_pusher_sub",\
@@ -405,7 +495,13 @@ class MiniAppParser( object ):
 			"pxrdepose_rho_on_grid_sub_openmp_3d_vecto",\
 			"depose_jxjyjz",\
 			"depose_jxjyjz_generic",\
-			"pxrdepose_currents_on_grid_jxjyjz"]
+			"pxrdepose_currents_on_grid_jxjyjz",\
+			"depose_jxjyjz_2d depose_jxjyjz_generic_2d",\
+	                "pxrdepose_currents_on_grid_jxjyjz_2d",\
+			"pxrdepose_currents_on_grid_jxjyjz_2d",\
+		        "curr_depo_sub",\
+			"func_order",\
+			]
 
 	esirkepov_modules=[]
 
@@ -419,7 +515,9 @@ class MiniAppParser( object ):
 			"pxr_depose_jxjyjz_esirkepov2d_n",\
 			"pxr_depose_jxjyjz_esirkepov2d_1_1",\
 			"pxr_depose_jxjyjz_esirkepov2d_2_2",\
-			"pxr_depose_jxjyjz_esirkepov2d_3_3" ]
+			"pxr_depose_jxjyjz_esirkepov2d_3_3",\
+                        "pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3",\
+			"  depose_jxjyjz_esirkepov_2d"]
 
 	direct_modules = []
 
@@ -454,9 +552,9 @@ class MiniAppParser( object ):
 			"setup_groups",
 			"adjust_grid_mpi_global",
 			"mpi_minimal_init_fftw",
-			"generalized_comms_group_l2g",
 			"sendrecv_l2g_generalized",
 			"sendrecv_l2g_generalized_non_blocking",
+                        "generalized_comms_group_l2g",
 			"generalized_comms_group_g2l",
 			"sendrecv_g2l_generalized_non_blocking",
 			"sendrecv_g2l_generalized",
@@ -502,7 +600,20 @@ class MiniAppParser( object ):
 			"fast_fftw3d_r2c_with_plan",
 			"allocate_new_matrix_vector",
 			"multiply_mat_vector",
-			"multiply_unit_blocks"]
+			"multiply_unit_blocks"
+			"fftw_mpi_local_size_3d" ,
+			"fftw_mpi_local_size_3d_transposed" ,
+			"fftw_mpi_local_size_2d p3dfft_setup" ,
+			"p3dfft_get_dims" ,
+			"dfftw_init_threads",
+			"fftw_mpi_init fftw_mpi_plan_dft_r2c_3d",
+			"fftw_mpi_plan_dft_c2r_3d",
+			"fftw_mpi_plan_dft_r2c_2d" ,
+			"fftw_mpi_plan_dft_c2r_2d" ,
+			"p3dfft_ftran_r2c" ,
+			"fftw_mpi_execute_dft_r2c",
+			"p3dfft_ftran_c2r" ,
+			"fftw_mpi_execute_dft_c2r"]
 	fdtd_modules = []
 
 	fdtd_routines = [
