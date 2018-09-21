@@ -220,7 +220,8 @@ class MiniAppParser( object ):
                            "shared_data",\
                            "mem_status",\
                            "mpi_derived_types",\
-                           "mpi_routines" ]
+                           "mpi_routines", \
+                           "python_pointers" ]
 
         generic_routines=["calc_diags",\
 		            "calc_field_div",\
@@ -715,7 +716,7 @@ class MiniAppParser( object ):
 
         #LIST ALL .F90 or .F files in current directory
         self.listfiles = self.create_listfiles('./src')
-        #self.listfiles = ["modules/modules.F90"]
+        #self.listfiles = ["parallelization/tiling/tiling.F90"]
 
         # Reconstruct PICSARlite
         for file in self.listfiles:
@@ -723,10 +724,9 @@ class MiniAppParser( object ):
 
         # Remove unavailable routines
         self.availablelistfiles = self.create_listfiles('./PICSARlite/src')
-        #self.availablelistfiles = self.listfiles
 
         for file in self.availablelistfiles:
-            self.comment_unavailable_routine(file)
+                self.comment_unavailable_routine(file)
 
         # Copy some extra needed folders
         self.copy_extra_files()
@@ -766,6 +766,10 @@ class MiniAppParser( object ):
         lower_list_available_modules = []
         for module in self.list_available_modules:
             lower_list_available_modules.append(module.lower())
+        # Lower the case of the routines
+        lower_list_available_routines = []
+        for routine in self.list_available_routines:
+            lower_list_available_routines.append(routine.lower())
 
         for module in m.names:
 
@@ -778,18 +782,6 @@ class MiniAppParser( object ):
 
                 self.copy_files_from_picsar(m, iname)
 
-                # Loop on the available routines
-                for iname in range(len(r.names)):
-                    if module == r.proceduremod[iname][:-1]:
-                        if self.list_available_routines is None:
-                            self.copy_files_from_picsar(r, iname)
-
-                        elif r.names[iname] in self.list_available_routines:
-                            self.copy_files_from_picsar(r, iname)
-
-                # End the module
-                self.end_module(r, module)
-
             # Modules without subroutines
             else:
                 if m.names[iname] in lower_list_available_modules:
@@ -798,10 +790,7 @@ class MiniAppParser( object ):
         # Add the subroutines out of modules
         for iname in range(len(r.names)):
             if r.proceduremod[iname] == '':
-                if self.list_available_routines is None:
-                    self.copy_files_from_picsar(r, iname)
-
-                elif r.names[iname] in self.list_available_routines:
+                if r.names[iname] in lower_list_available_routines:
                     self.copy_files_from_picsar(r, iname)
 
     def copy_files_from_picsar( self, routine, index ):
@@ -943,7 +932,7 @@ class MiniAppParser( object ):
         compt = 0
         for i in range(0, Nlines):
             # If no more wrong subroutines, finsh the file
-            if (compt == len(iend)-1) :
+            if (compt == len(iend)-1) & (i >= iend[compt]):
                 listlines_new.append(listlines[i])
 
             elif i >= iend[compt]:
@@ -958,7 +947,8 @@ class MiniAppParser( object ):
                         listlines_new.append('!'+listlines[i][1:])
                     else:
                         for iblock in range(iend[compt+1]-istart[compt+1]):
-                            listlines_new.append('!'+listlines[i+iblock][1:])
+                            line = listlines[i+iblock][1:].split('\n')[0]
+                            listlines_new.append('!'+line+'\n')
 
                     # Print error message
                     error_message = \
@@ -973,7 +963,7 @@ class MiniAppParser( object ):
                     listlines_new.append("\n" + error_message + "\n")
                     listlines_new.append(formatting_line( nb_blanks[compt], \
                                         "STOP", add_ampersand=False)+ "\n \n")
-                    if compt == len(iend)-2:
+                    if compt == len(iend)-1:
                         compt = 0
                     else:
                         compt += 1
