@@ -423,6 +423,7 @@ USE picsar_precision, ONLY: idp, num, isp
 #ifndef WARPX
   !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j), &
   !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdx, dtsdz), &
+  !$OMP SHARED(alphax, alphaz, betaxz, betazx), &
   !$OMP SHARED(ex, ey, ez, f)
   !$OMP DO COLLAPSE(2)
 #endif
@@ -536,6 +537,8 @@ USE picsar_precision, ONLY: idp, num, isp
 #ifndef WARPX
   !$OMP PARALLEL DEFAULT(NONE) PRIVATE(l, k, j), &
   !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdx, dtsdy, dtsdz), &
+  !$OMP SHARED(alphax, alphay, alphaz, gammax, gammay, gammaz), &
+  !$OMP SHARED(betaxy, betaxz, betayx, betayz, betazx, betazy), &
   !$OMP SHARED(ex, ey, ez, f)
   !$OMP DO COLLAPSE(3)
 #endif
