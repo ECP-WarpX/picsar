@@ -226,7 +226,7 @@ subroutine pxrpush_em2d_evec( &
      jz, jzlo, jzhi, &
      mudt, dtsdx, dtsdy, dtsdz)
      USE picsar_precision, ONLY: idp, num, isp
-     
+
 
 #ifdef WARPX
   integer(isp), intent(in) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
@@ -742,3 +742,168 @@ USE picsar_precision, ONLY: idp, num, isp
 #endif
 
 end subroutine pxrpush_em3d_bvec
+
+
+
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine pushes the electric field with charge-conserving term,
+!> using the 2D Yee FDTD scheme (order 2).
+!> This subroutine is general enough to be called by AMReX.
+!> OMP pragmas are ignored when compiled for WarpX.
+!> regions.
+!
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
+!> Weiqun Zhang
+!> Jean-Luc Vay
+!> Maxence Thevenet
+!> Remi Lehe
+!
+!> @date
+!> Creation 2018
+! ________________________________________________________________________________________
+subroutine pxrpush_em2d_evec_f( &
+     xlo, xhi, ylo, yhi, zlo, zhi, &
+     ex,exlo,exhi,&
+     ey,eylo, eyhi, &
+     ez,ezlo, ezhi, &
+     f, flo, fhi, &
+     dtsdx, dtsdy, dtsdz)
+USE picsar_precision, ONLY: idp, num, isp
+! ______________________________________________________________________________
+
+
+#ifdef WARPX
+  integer(isp) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
+       exlo(2),exhi(2),eylo(2),eyhi(2),ezlo(2),ezhi(2), flo(2), fhi(2)
+#else
+  integer(idp) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
+       exlo(2),exhi(2),eylo(2),eyhi(2),ezlo(2),ezhi(2), flo(2), fhi(2)
+#endif
+  real(num), intent(INOUT):: ex(exlo(1):exhi(1),exlo(2):exhi(2))
+  real(num), intent(INOUT):: ey(eylo(1):eyhi(1),eylo(2):eyhi(2))
+  real(num), intent(INOUT):: ez(ezlo(1):ezhi(1),ezlo(2):ezhi(2))
+
+  real(num), intent(IN):: f(flo(1):fhi(1),flo(2):fhi(2))
+
+  real(num), intent(IN) :: dtsdx, dtsdy, dtsdz
+
+  integer :: j,k
+
+  ! dtsdy should not be used.
+
+#ifndef WARPX
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j), &
+  !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdx, dtsdz), &
+  !$OMP SHARED(ex, ey, ez, f)
+  !$OMP DO COLLAPSE(2)
+#endif
+  do k   = xlo(2), xhi(2)
+    do j = xlo(1), xhi(1)
+        Ex(j,k) = Ex(j,k) + dtsdx * (F(j+1,k) - F(j  ,k))
+    end do
+  end do
+#ifndef WARPX
+  !$OMP END DO
+  !$OMP DO COLLAPSE(2)
+#endif
+  do k   = zlo(2), zhi(2)
+    do j = zlo(1), zhi(1)
+      Ez(j,k) = Ez(j,k) + dtsdz * (F(j,k+1) - F(j,k  ))
+    end do
+  end do
+#ifndef WARPX
+  !$OMP END DO
+  !$OMP END PARALLEL
+#endif
+end subroutine pxrpush_em2d_evec_f
+
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine pushes the electric field with charge-conserving term,
+!> using the 3D Yee FDTD scheme (order 2).
+!> This subroutine is general enough to be called by AMReX.
+!> OMP pragmas are ignored when compiled for WarpX.
+!
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
+!> Weiqun Zhang
+!> Jean-Luc Vay
+!> Maxence Thevenet
+!> Remi Lehe
+!
+!> @date
+!> Creation 2015
+! ________________________________________________________________________________________
+subroutine pxrpush_em3d_evec_f( &
+     xlo, xhi, ylo, yhi, zlo, zhi, &
+     ex,exlo,exhi,&
+     ey,eylo, eyhi, &
+     ez,ezlo, ezhi, &
+     f, flo, fhi, &
+     dtsdx,dtsdy,dtsdz)
+USE picsar_precision, ONLY: idp, num, isp
+! ______________________________________________________________________________
+
+
+#ifdef WARPX
+  integer(isp) :: xlo(3), xhi(3), ylo(3), yhi(3), zlo(3), zhi(3), &
+       exlo(3),exhi(3),eylo(3),eyhi(3),ezlo(3),ezhi(3),flo(3),fhi(3)
+#else
+  integer(idp) :: xlo(3), xhi(3), ylo(3), yhi(3), zlo(3), zhi(3), &
+       exlo(3),exhi(3),eylo(3),eyhi(3),ezlo(3),ezhi(3),flo(3),fhi(3)
+#endif
+  real(num), intent(INOUT):: ex(exlo(1):exhi(1),exlo(2):exhi(2),exlo(3):exhi(3))
+  real(num), intent(INOUT):: ey(eylo(1):eyhi(1),eylo(2):eyhi(2),eylo(3):eyhi(3))
+  real(num), intent(INOUT):: ez(ezlo(1):ezhi(1),ezlo(2):ezhi(2),ezlo(3):ezhi(3))
+
+  real(num), intent(IN):: f(flo(1):fhi(1),flo(2):fhi(2),flo(3):fhi(3))
+
+  real(num), intent(IN) :: dtsdx,dtsdy,dtsdz
+
+  integer :: j,k,l
+
+#ifndef WARPX
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(l, k, j), &
+  !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdx, dtsdy, dtsdz), &
+  !$OMP SHARED(ex, ey, ez, f)
+  !$OMP DO COLLAPSE(3)
+#endif
+  do l     = xlo(3), xhi(3)
+    do k   = xlo(2), xhi(2)
+      do j = xlo(1), xhi(1)
+         Ex(j,k,l) = Ex(j,k,l) + dtsdx * (F(j+1,k  ,l  ) - F(j,k,l))
+       end do
+    end do
+  end do
+#ifndef WARPX
+  !$OMP END DO
+  !$OMP DO COLLAPSE(3)
+#endif
+  do l     = ylo(3), yhi(3)
+    do k   = ylo(2), yhi(2)
+      do j = ylo(1), yhi(1)
+        Ey(j,k,l) = Ey(j,k,l) + dtsdy * (F(j  ,k+1,l  ) - F(j,k,l))
+      end do
+    end do
+  end do
+#ifndef WARPX
+  !$OMP END DO
+  !$OMP DO COLLAPSE(3)
+#endif
+  do l     = zlo(3), zhi(3)
+    do k   = zlo(2), zhi(2)
+      do j = zlo(1), zhi(1)
+        Ez(j,k,l) = Ez(j,k,l) + dtsdz * (F(j  ,k  ,l+1) - F(j,k,l))
+      end do
+    end do
+  end do
+#ifndef WARPX
+  !$OMP END DO
+  !$OMP END PARALLEL
+#endif
+
+end subroutine pxrpush_em3d_evec_f
