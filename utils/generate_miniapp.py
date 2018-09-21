@@ -715,7 +715,7 @@ class MiniAppParser( object ):
 
         #LIST ALL .F90 or .F files in current directory
         self.listfiles = self.create_listfiles('./src')
-        #self.listfiles = ["boundary_conditions/field_boundaries.F90"]
+        #self.listfiles = ["modules/modules.F90"]
 
         # Reconstruct PICSARlite
         for file in self.listfiles:
@@ -723,13 +723,13 @@ class MiniAppParser( object ):
 
         # Remove unavailable routines
         self.availablelistfiles = self.create_listfiles('./PICSARlite/src')
-        #self.listfiles = self.availablelistfiles
+        #self.availablelistfiles = self.listfiles
 
         for file in self.availablelistfiles:
             self.comment_unavailable_routine(file)
 
         # Copy some extra needed folders
-        self.copy_utils_example()
+        self.copy_extra_files()
         self.generate_main()
 
     def clean_folder(self):
@@ -762,50 +762,38 @@ class MiniAppParser( object ):
         for imodule in range(len(nb_modules)):
             nb_modules[imodule] = nb_modules[imodule][:-1]
 
+        # Lower the case of the modules
+        lower_list_available_modules = []
+        for module in self.list_available_modules:
+            lower_list_available_modules.append(module.lower())
+
         for module in m.names:
+
+            iname = m.names.index(module)
+
             # Loop on each module occurence, for each print the modules then
             # subroutines inside and finish by "end module"
-            if module in nb_modules:
-                if (self.list_available_modules is None):
-                    iname = m.names.index(module)
-                    self.copy_files_from_picsar(m, iname)
+            if (module in nb_modules) &                                  \
+               (module in lower_list_available_modules):
 
-                    # Loop on the available routines
-                    for iname in range(len(r.names)):
-                        if module == r.proceduremod[iname][:-1]:
-                            if self.list_available_routines is None:
-                                self.copy_files_from_picsar(r, iname)
+                self.copy_files_from_picsar(m, iname)
 
-                            elif r.names[iname] in self.list_available_routines:
-                                self.copy_files_from_picsar(r, iname)
+                # Loop on the available routines
+                for iname in range(len(r.names)):
+                    if module == r.proceduremod[iname][:-1]:
+                        if self.list_available_routines is None:
+                            self.copy_files_from_picsar(r, iname)
 
-                    # End the module
-                    self.end_module(r, module)
+                        elif r.names[iname] in self.list_available_routines:
+                            self.copy_files_from_picsar(r, iname)
 
-                elif (module in self.list_available_modules):
-                    iname = m.names.index(module)
-                    self.copy_files_from_picsar(m, iname)
+                # End the module
+                self.end_module(r, module)
 
-                    # Loop on the available routines
-                    for iname in range(len(r.names)):
-                        if module == r.proceduremod[iname][:-1]:
-                            if self.list_available_routines is None:
-                                self.copy_files_from_picsar(r, iname)
-
-                            elif r.names[iname] in self.list_available_routines:
-                                self.copy_files_from_picsar(r, iname)
-
-                    # End the module
-                    self.end_module(r, module)
+            # Modules without subroutines
             else:
-                    iname = m.names.index(module)
+                if m.names[iname] in lower_list_available_modules:
                     self.copy_files_from_picsar(m, iname)
-
-                    if self.list_available_modules is None:
-                        self.copy_files_from_picsar(m, iname)
-
-                    elif m.names[iname] in self.list_available_modules:
-                        self.copy_files_from_picsar(m, iname)
 
         # Add the subroutines out of modules
         for iname in range(len(r.names)):
@@ -977,7 +965,7 @@ class MiniAppParser( object ):
                 formatting_line( nb_blanks[compt], \
                                        "WRITE(0,*) 'ABORT.',") + '\n' \
               + formatting_line( nb_blanks[compt]+11, \
-                    "'The trolol %s', "%(list_routine_name[compt])) + '\n'\
+                    "'The routine %s', "%(list_routine_name[compt])) + '\n'\
               + formatting_line( nb_blanks[compt]+11, \
                                 "'cannot be used in this configuration.'",  \
                                 add_ampersand=False)
@@ -993,10 +981,11 @@ class MiniAppParser( object ):
         fnew.writelines(listlines_new)
         fnew.close()
 
-    def copy_utils_example(self):
+    def copy_extra_files(self):
         os.system('cp -r ./utils ./PICSARlite/utils')
         os.system('cp -r ./examples ./PICSARlite/examples')
-
+        os.system('cp ./configure ./PICSARlite/configure')
+        os.system('cp ./Makefile_Forthon.in ./PICSARlite/Makefile_Forthon.in')
 
     def generate_main( self ):
         file = 'main.F90'
