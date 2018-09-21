@@ -782,11 +782,11 @@ USE picsar_precision, ONLY: idp, num, isp
   integer(idp) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
        exlo(2),exhi(2),eylo(2),eyhi(2),ezlo(2),ezhi(2), flo(2), fhi(2)
 #endif
-  real(num), intent(IN):: ex(exlo(1):exhi(1),exlo(2):exhi(2))
-  real(num), intent(IN):: ey(eylo(1):eyhi(1),eylo(2):eyhi(2))
-  real(num), intent(IN):: ez(ezlo(1):ezhi(1),ezlo(2):ezhi(2))
+  real(num), intent(INOUT):: ex(exlo(1):exhi(1),exlo(2):exhi(2))
+  real(num), intent(INOUT):: ey(eylo(1):eyhi(1),eylo(2):eyhi(2))
+  real(num), intent(INOUT):: ez(ezlo(1):ezhi(1),ezlo(2):ezhi(2))
 
-  real(num), intent(INOUT):: f(flo(1):fhi(1),flo(2):fhi(2))
+  real(num), intent(IN):: f(flo(1):fhi(1),flo(2):fhi(2))
 
   real(num), intent(IN) :: dtsdx, dtsdy, dtsdz
 
@@ -856,11 +856,11 @@ USE picsar_precision, ONLY: idp, num, isp
   integer(idp) :: xlo(3), xhi(3), ylo(3), yhi(3), zlo(3), zhi(3), &
        exlo(3),exhi(3),eylo(3),eyhi(3),ezlo(3),ezhi(3),flo(3),fhi(3)
 #endif
-  real(num), intent(IN):: ex(exlo(1):exhi(1),exlo(2):exhi(2),exlo(3):exhi(3))
-  real(num), intent(IN):: ey(eylo(1):eyhi(1),eylo(2):eyhi(2),eylo(3):eyhi(3))
-  real(num), intent(IN):: ez(ezlo(1):ezhi(1),ezlo(2):ezhi(2),ezlo(3):ezhi(3))
+  real(num), intent(INOUT):: ex(exlo(1):exhi(1),exlo(2):exhi(2),exlo(3):exhi(3))
+  real(num), intent(INOUT):: ey(eylo(1):eyhi(1),eylo(2):eyhi(2),eylo(3):eyhi(3))
+  real(num), intent(INOUT):: ez(ezlo(1):ezhi(1),ezlo(2):ezhi(2),ezlo(3):ezhi(3))
 
-  real(num), intent(INOUT):: f(flo(1):fhi(1),flo(2):fhi(2),flo(3):fhi(3))
+  real(num), intent(IN):: f(flo(1):fhi(1),flo(2):fhi(2),flo(3):fhi(3))
 
   real(num), intent(IN) :: dtsdx,dtsdy,dtsdz
 
