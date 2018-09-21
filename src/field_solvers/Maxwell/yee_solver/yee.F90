@@ -770,7 +770,7 @@ subroutine pxrpush_em2d_evec_f( &
      ey,eylo, eyhi, &
      ez,ezlo, ezhi, &
      f, flo, fhi, &
-     dtsdx_c2, dtsdy_c2, dtsdz_c2)
+     dtsdx, dtsdy, dtsdz)
 USE picsar_precision, ONLY: idp, num, isp
 ! ______________________________________________________________________________
 
@@ -788,7 +788,7 @@ USE picsar_precision, ONLY: idp, num, isp
 
   real(num), intent(INOUT):: f(flo(1):fhi(1),flo(2):fhi(2))
 
-  real(num), intent(IN) :: dtsdx_c2, dtsdy_c2, dtsdz_c2
+  real(num), intent(IN) :: dtsdx, dtsdy, dtsdz
 
   integer :: j,k
 
@@ -796,13 +796,13 @@ USE picsar_precision, ONLY: idp, num, isp
 
 #ifndef WARPX
   !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j), &
-  !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdx_c2, dtsdz_c2), &
+  !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdx, dtsdz), &
   !$OMP SHARED(ex, ey, ez, f)
   !$OMP DO COLLAPSE(2)
 #endif
   do k   = xlo(2), xhi(2)
     do j = xlo(1), xhi(1)
-        Ex(j,k) = Ex(j,k) + dtsdx_c2 * (F(j+1,k) - F(j  ,k))
+        Ex(j,k) = Ex(j,k) + dtsdx * (F(j+1,k) - F(j  ,k))
     end do
   end do
 #ifndef WARPX
@@ -811,7 +811,7 @@ USE picsar_precision, ONLY: idp, num, isp
 #endif
   do k   = zlo(2), zhi(2)
     do j = zlo(1), zhi(1)
-      Ez(j,k) = Ez(j,k) + dtsdz_c2 * (F(j,k+1) - F(j,k  ))
+      Ez(j,k) = Ez(j,k) + dtsdz * (F(j,k+1) - F(j,k  ))
     end do
   end do
 #ifndef WARPX
@@ -844,7 +844,7 @@ subroutine pxrpush_em3d_evec_f( &
      ey,eylo, eyhi, &
      ez,ezlo, ezhi, &
      f, flo, fhi, &
-     dtsdx_c2,dtsdy_c2,dtsdz_c2)
+     dtsdx,dtsdy,dtsdz)
 USE picsar_precision, ONLY: idp, num, isp
 ! ______________________________________________________________________________
 
@@ -862,20 +862,20 @@ USE picsar_precision, ONLY: idp, num, isp
 
   real(num), intent(INOUT):: f(flo(1):fhi(1),flo(2):fhi(2),flo(3):fhi(3))
 
-  real(num), intent(IN) :: dtsdx_c2,dtsdy_c2,dtsdz_c2
+  real(num), intent(IN) :: dtsdx,dtsdy,dtsdz
 
   integer :: j,k,l
 
 #ifndef WARPX
   !$OMP PARALLEL DEFAULT(NONE) PRIVATE(l, k, j), &
-  !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdx_c2, dtsdy_c2, dtsdz_c2), &
+  !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdx, dtsdy, dtsdz), &
   !$OMP SHARED(ex, ey, ez, f)
   !$OMP DO COLLAPSE(3)
 #endif
   do l     = xlo(3), xhi(3)
     do k   = xlo(2), xhi(2)
       do j = xlo(1), xhi(1)
-         Ex(j,k,l) = Ex(j,k,l) + dtsdx_c2 * (F(j+1,k  ,l  ) - F(j,k,l))
+         Ex(j,k,l) = Ex(j,k,l) + dtsdx * (F(j+1,k  ,l  ) - F(j,k,l))
        end do
     end do
   end do
@@ -886,7 +886,7 @@ USE picsar_precision, ONLY: idp, num, isp
   do l     = ylo(3), yhi(3)
     do k   = ylo(2), yhi(2)
       do j = ylo(1), yhi(1)
-        Ey(j,k,l) = Ey(j,k,l) + dtsdy_c2 * (F(j  ,k+1,l  ) - F(j,k,l))
+        Ey(j,k,l) = Ey(j,k,l) + dtsdy * (F(j  ,k+1,l  ) - F(j,k,l))
       end do
     end do
   end do
@@ -897,7 +897,7 @@ USE picsar_precision, ONLY: idp, num, isp
   do l     = zlo(3), zhi(3)
     do k   = zlo(2), zhi(2)
       do j = zlo(1), zhi(1)
-        Ez(j,k,l) = Ez(j,k,l) + dtsdz_c2 * (F(j  ,k  ,l+1) - F(j,k,l))
+        Ez(j,k,l) = Ez(j,k,l) + dtsdz * (F(j  ,k  ,l+1) - F(j,k,l))
       end do
     end do
   end do
