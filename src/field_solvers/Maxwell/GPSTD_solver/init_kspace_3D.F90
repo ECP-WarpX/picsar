@@ -415,6 +415,8 @@ MODULE gpstd_solver
     !> takes into account norderx, nordery, norderz
     !> if norder == 0 then compute wave vector for an infinite order stencil
     CALL compute_k_vec(l_staggered)
+
+   !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(k,j,i) COLLAPSE(3)
     DO k = 1, nfftz
       DO j = 1, nffty
         DO i = 1, nfftxr
@@ -480,6 +482,7 @@ MODULE gpstd_solver
         ENDDO
       ENDDO
     ENDDO
+    !$OMP END PARALLEL DO
 
     !> Computes the norm of wave vector in fourier space 
     kspace(nmatrixes2)%block_vector(10)%block3dc=                                    &
