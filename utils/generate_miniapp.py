@@ -385,6 +385,7 @@ class MiniAppParser( object ):
 			    "mpi_initialized",
 			    "mpi_type_create_subarray",
 			    "mpi_type_commit",
+		            "mpi_type_contiguous",
 			    "mpi_type_vector",
 			    "mpi_type_commit",
 			    "mpi_type_create_struct",
