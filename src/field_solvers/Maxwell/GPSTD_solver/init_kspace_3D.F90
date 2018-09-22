@@ -1432,6 +1432,200 @@ MODULE gpstd_solver
     ENDIF
     !> End contribution of rho field to E field   
   END SUBROUTINE compute_cc_mat_merged_fields
+  
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine inits block matrixes with fields EM equations in cylindrical azimuthal modes when
+  !> NOT using PMLs
+  !
+  !> @author
+  !> Imene Zemzemi
+  !
+  !> @date
+  !> Creation September 2018
+  ! ______________________________________________________________________________________
+
+
+  SUBROUTINE compute_cc_mat_merged_fields_AM_rz()
+    USE shared_data
+    USE matrix_coefficients
+    USE constants
+    USE params, ONLY : dt
+    INTEGER(idp)  :: i,j   
+    COMPLEX(cpx) ::  ii
+    LOGICAL(lp)            :: switch
+    ii=DCMPLX(0.0_num, 1.0_num)
+
+    !> cc_mat_(nmatrixes)block_matrix2d(i,j) components are sorted using the
+    !>following nomenclature 
+    !> In this case cc_mat is a 6x11 block matrix
+    !> 1-> elf; 2->e+f; 3->e-f; 4->blf; 5->b+f; 6->b-f
+    !> 7->jlf; 8->j+f; 9->j-f; 10-> rhooldf; 11->rhof
+    !> cc_mat_(nmatrixes)block_matrix2d(i,j) is the contribution of the j-th
+    !> scalar field to the i-th scalar field 
+    
+
+  
+    !> Contribution of B field to E field update
+    cc_mat(nmatrixes)%block_matrix2d(1, 5)%block3dc =                                 &
+    ii*kspace(nmatrixes2)%block_vector(7)%block3dc*clight                             &
+    *at_op(nmatrixes2)%block_vector(1)%block3dc
+
+    cc_mat(nmatrixes)%block_matrix2d(1, 6)%block3dc =                                 &
+    ii*kspace(nmatrixes2)%block_vector(4)%block3dc*clight                             &
+    *at_op(nmatrixes2)%block_vector(1)%block3dc
+
+    cc_mat(nmatrixes)%block_matrix2d(2, 4)%block3dc = -                               &
+    ii*kspace(nmatrixes2)%block_vector(7)%block3dc*clight                             &
+    *0.5*at_op(nmatrixes2)%block_vector(1)%block3dc
+
+    cc_mat(nmatrixes)%block_matrix2d(2, 5)%block3dc =                                 &
+    kspace(nmatrixes2)%block_vector(1)%block3dc*clight                                &
+    *at_op(nmatrixes2)%block_vector(1)%block3dc
+
+    cc_mat(nmatrixes)%block_matrix2d(3, 4)%block3dc = -                               &
+    ii*kspace(nmatrixes2)%block_vector(4)%block3dc*clight                             &
+    *0.5*at_op(nmatrixes2)%block_vector(1)%block3dc
+
+    cc_mat(nmatrixes)%block_matrix2d(3, 6)%block3dc = -                               &
+    kspace(nmatrixes2)%block_vector(1)%block3dc*clight                             &
+    *at_op(nmatrixes2)%block_vector(1)%block3dc
+    
+    !> End contribution B field to E field
+    !> I STOPPED HERE !!! 
+    !> Contribution of E field to B field
+    cc_mat(nmatrixes)%block_matrix2d(4, 2)%block3dc = -                               &
+    ii*kspace(nmatrixes2)%block_vector(8)%block3dc/clight                             &
+    *at_op(nmatrixes2)%block_vector(1)%block3dc
+
+    cc_mat(nmatrixes)%block_matrix2d(4, 3)%block3dc =                                 &
+    -ii*kspace(nmatrixes2)%block_vector(5)%block3dc/clight                            &
+    *at_op(nmatrixes2)%block_vector(1)%block3dc
+
+    cc_mat(nmatrixes)%block_matrix2d(5, 1)%block3dc =                                 &
+    -ii*kspace(nmatrixes2)%block_vector(8)%block3dc/clight                            &
+    *at_op(nmatrixes2)%block_vector(1)%block3dc
+
+    cc_mat(nmatrixes)%block_matrix2d(5, 3)%block3dc =                                 &
+    ii*kspace(nmatrixes2)%block_vector(2)%block3dc/clight                             &
+    *at_op(nmatrixes2)%block_vector(1)%block3dc
+
+    cc_mat(nmatrixes)%block_matrix2d(6, 1)%block3dc =                                 &
+    ii*kspace(nmatrixes2)%block_vector(5)%block3dc/clight                             &
+    *at_op(nmatrixes2)%block_vector(1)%block3dc
+
+    cc_mat(nmatrixes)%block_matrix2d(6, 2)%block3dc =                                 &
+    -ii*kspace(nmatrixes2)%block_vector(2)%block3dc/clight                            &
+    *at_op(nmatrixes2)%block_vector(1)%block3dc
+   
+    !> End contribiton E field to B field
+ 
+    !> Contribution of E field to E field and B field to B field
+    DO i=1, 6
+      cc_mat(nmatrixes)%block_matrix2d(i, i)%block3dc =                               &
+      at_op(nmatrixes2)%block_vector(2)%block3dc
+    ENDDO
+    !> End contribution of E field To E field and B field to B field    
+
+    !> Contribution of J field to E field
+    DO i = 1, 3
+      cc_mat(nmatrixes)%block_matrix2d(i, i+6)%block3dc =                             &
+      (-1._num)*clight*mu0*at_op(nmatrixes2)%block_vector(1)%block3dc
+    ENDDO
+    ! End contribution of J field to E field
+
+    !> Contribution of J field to B field
+    cc_mat(nmatrixes)%block_matrix2d(4, 8)%block3dc = - mu0*                          &
+    ii*kspace(nmatrixes2)%block_vector(8)%block3dc*                                   &
+    at_op(nmatrixes2)%block_vector(3)%block3dc
+
+
+    cc_mat(nmatrixes)%block_matrix2d(4, 9)%block3dc = -                               &
+    mu0*(-ii)*kspace(nmatrixes2)%block_vector(5)%block3dc*                            &
+    at_op(nmatrixes2)%block_vector(3)%block3dc
+
+
+
+    cc_mat(nmatrixes)%block_matrix2d(5, 7)%block3dc = -                               &
+    mu0*(-ii)*kspace(nmatrixes2)%block_vector(8)%block3dc*                            &
+    at_op(nmatrixes2)%block_vector(3)%block3dc
+
+
+    cc_mat(nmatrixes)%block_matrix2d(5, 9)%block3dc = - mu0*                          &
+    ii*kspace(nmatrixes2)%block_vector(2)%block3dc*                                   &
+    at_op(nmatrixes2)%block_vector(3)%block3dc
+
+
+    cc_mat(nmatrixes)%block_matrix2d(6, 7)%block3dc = - mu0*                          &
+    ii*kspace(nmatrixes2)%block_vector(5)%block3dc*                                   &
+    at_op(nmatrixes2)%block_vector(3)%block3dc
+
+
+    cc_mat(nmatrixes)%block_matrix2d(6, 8)%block3dc =                                 &
+    -mu0*(-ii)*kspace(nmatrixes2)%block_vector(2)%block3dc*                           &
+    at_op(nmatrixes2)%block_vector(3)%block3dc
+    
+    !> End contribution of J field to B field
+
+    !> Contribution of rhoold field to E field
+
+    !> if current mpi task contains the null frequency then this processor it
+    !> tagged by switch = .TRUE. in order perform Taylor expansion
+    !> for certain blocks
+
+    switch = .FALSE.
+    !> Spots mpis that contain null frequency to perform Taylor expansion later
+    IF(ABS(kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)) .EQ. 0.0_num) THEN
+      kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1) = (1.0_num, 0.0_num)
+      switch = .TRUE.
+    ENDIF
+    DO i = 1, 3
+      cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc = DCMPLX(0.,               &
+      1.)*(at_op(nmatrixes2)%block_vector(2)%block3dc                                 &
+      -1./(clight*dt)*at_op(nmatrixes2)%block_vector(1)%block3dc)                     &
+      /kspace(nmatrixes2)%block_vector(10)%block3dc**2
+
+      cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc =                          &
+      cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc                            &
+      *kspace(nmatrixes2)%block_vector(3*i-1)%block3dc
+
+      !> If current mpi task contains null frequency then performs Taylor
+      !> expansion for cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc(1, 1,
+      !1)
+      IF(switch) THEN
+        cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc(1, 1, 1) =               &
+        -1.0_num/3.0_num*(0.0_num, 1.0_num)*(clight*dt)**2
+      ENDIF
+      cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc = 1.0_num/eps0             &
+      *cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc
+    ENDDO
+    !> End contribution of rhoold field to E field
+  
+    !> Contribution of rho field to E field
+    DO i = 1, 3
+      cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc = DCMPLX(0.,               &
+      1.)*(1./(clight*dt)* at_op(nmatrixes2)%block_vector(1)%block3dc -DCMPLX(1.,     &
+      0.))/kspace(nmatrixes2)%block_vector(10)%block3dc**2
+
+      cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc =                          &
+      cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc                            &
+      *kspace(nmatrixes2)%block_vector(3*i-1)%block3dc
+
+      !> If current mpi task contains null frequency then performs Taylor
+      !expansion for cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc(1, 1,
+      !1)
+      IF(switch) THEN
+        cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc(1, 1, 1) =               &
+        -1.0_num/6.0_num*(0.0_num, 1.0_num)*(clight*dt)**2
+      ENDIF
+      cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc = 1.0_num/eps0 *           &
+      cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc
+    ENDDO
+    IF(switch) THEN
+      kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)   = DCMPLX(0., 0.)
+    ENDIF
+    !> End contribution of rho field to E field   
+  END SUBROUTINE compute_cc_mat_merged_fields
 
   ! ______________________________________________________________________________________
   !> @brief
