@@ -1643,7 +1643,7 @@ MODULE gpstd_solver
       kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)   = DCMPLX(0., 0.)
     ENDIF
     !> End contribution of rho field to E field   
-  END SUBROUTINE compute_cc_mat_merged_fields
+  END SUBROUTINE compute_cc_mat_merged_fields_AM_rz
 
   ! ______________________________________________________________________________________
   !> @brief
