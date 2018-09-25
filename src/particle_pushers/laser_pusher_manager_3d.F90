@@ -106,6 +106,7 @@ SUBROUTINE laser_pusher_profile(ispecies, amp_x,amp_y,amp_z,n,source_vx,source_v
   USE params
   USE constants
   USE shared_data
+  USE omp_lib
   
   INTEGER(idp) , INTENT(IN) :: n, ispecies
   REAL(num)  , INTENT(IN),  DIMENSION(1:n) :: amp_x, amp_y, amp_z
@@ -114,19 +115,38 @@ SUBROUTINE laser_pusher_profile(ispecies, amp_x,amp_y,amp_z,n,source_vx,source_v
   TYPE(particle_tile), POINTER    :: curr_tile
   REAL(num)                       :: tdeb, tend, disp_max, ux, uy, uz
   REAL(num) , INTENT(IN)          :: source_vx,source_vy,source_vz
+  INTEGER(idp) , ALLOCATABLE, DIMENSION(:,:,:)      :: store_first_indexes
    
 #if defined(DEBUG)
   WRITE(0, *) "push_laser_particles python: start"
 #endif
 
-    counter = 0_idp
+
+    ALLOCATE(store_first_indexes(ntilex,ntiley,ntilez))
+    counter =  0_idp
     curr=>species_parray(ispecies)
+    DO iz=1, ntilez! LOOP ON TILES
+      DO iy=1, ntiley
+        DO ix=1, ntilex
+           curr_tile=>curr%array_of_tiles(ix, iy, iz)
+           count=curr_tile%np_tile(1)
+           store_first_indexes(ix,iy,iz) = counter
+           counter = counter + count
+        ENDDO
+      ENDDO
+    ENDDO
+
+   counter = 0_idp
+
+   !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(ix,iy,iz,counter,ux,uy,uz,count,curr_tile)
+   !$OMP DO COLLAPSE(3)
     DO iz=1, ntilez! LOOP ON TILES
       DO iy=1, ntiley
         DO ix=1, ntilex
           curr_tile=>curr%array_of_tiles(ix, iy, iz)
           count=curr_tile%np_tile(1)
           IF (count .EQ. 0) CYCLE
+          counter = store_first_indexes(ix,iy,iz)
           DO i =  1, count 
              ux = curr%charge*amp_x(i+counter)
              uy = curr%charge*amp_y(i+counter)
@@ -135,15 +155,18 @@ SUBROUTINE laser_pusher_profile(ispecies, amp_x,amp_y,amp_z,n,source_vx,source_v
              curr_tile%part_x(i)  = curr_tile%part_x(i) + dt*(ux + source_vx)
              curr_tile%part_y(i)  = curr_tile%part_y(i) + dt*(uy + source_vy)
              curr_tile%part_z(i)  = curr_tile%part_z(i) + dt*(uz + source_vz)     
-             
+
              curr_tile%part_ux(i) =  ux + source_vx
              curr_tile%part_uy(i) =  uy + source_vy
              curr_tile%part_uz(i) =  uz + source_vz
           ENDDO
-          counter = counter + count
         END DO
       END DO
     END DO! END LOOP ON TILES
+    !$OMP END DO
+    !$OMP END PARALLEL
+
+    DEALLOCATE(store_first_indexes)
 
 #if defined(DEBUG)
   WRITE(0, *) "push_laser_particles python: end"
