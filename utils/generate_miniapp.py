@@ -390,7 +390,8 @@ class MiniAppParser( object ):
 			    "mpi_type_vector",
 			    "mpi_type_commit",
 			    "mpi_type_create_struct",
-			    "mpi_type_size"]
+			    "mpi_type_size",
+                "step"]
 
         generic_modules_solver = ["fields","field_boundary"]
 
@@ -712,14 +713,13 @@ class MiniAppParser( object ):
             print('- esirkepov')
             print('#########################################################' \
                               '#########')
-    	print "list of available routines  ",self.list_available_routines
-    	print "list of available  modules  ",self.list_available_modules
 
         #LIST ALL .F90 or .F files in current directory
         self.listfiles = self.create_listfiles('./src')
         #self.listfiles = ["parallelization/tiling/tiling.F90"]
 
         # Reconstruct PICSARlite
+        print "Write routines in PICSARlite"
         for file in self.listfiles:
             self.write_available_routines(file)
 
@@ -730,8 +730,12 @@ class MiniAppParser( object ):
                 self.comment_unavailable_routine(file)
 
         # Copy some extra needed folders
+        print "Add extra files"
         self.copy_extra_files()
+        print "Generate main"
         self.generate_main()
+        print "Generate Makefile"
+        self.generate_makefile()
 
     def clean_folder(self):
 
@@ -743,8 +747,10 @@ class MiniAppParser( object ):
         listfiles = []
         for root, subFolder, files in os.walk(folder):
             for file in files:
-                if len(root) > len(folder)-5:
-                     listfiles.append('%s/%s'%(root[len(folder)+1:], file))
+                if len(root[len(folder)+1:]) > 0:
+                    listfiles.append('%s/%s'%(root[len(folder)+1:], file))
+                else:
+                    listfiles.append(file)
         return listfiles
 
     def write_available_routines(self, file):
@@ -1025,7 +1031,7 @@ class MiniAppParser( object ):
                         "particles", "params", "shared_data", "mpi_routines", \
                         "control_file", "time_stat", "diagnostics"]
 
-        # Lower the case of the routines
+        # Low the case of the routines
         lower_list_available_modules = []
         for module in self.list_available_modules:
             lower_list_available_modules.append(module.lower())
@@ -1181,6 +1187,126 @@ class MiniAppParser( object ):
 
         fnew.writelines(listlines)
         fnew.close()
+
+    def generate_makefile( self ):
+        file = 'Makefile'
+        fold = open('./%s'%file, "r")
+        listlines=fold.readlines()
+        Nlines = len(listlines)
+        listlinesnew = []
+
+        # Low the case of the available files and remove the .F90 if needed
+        lower_availablelistfiles = []
+        for availablefile in self.availablelistfiles:
+            if availablefile[-4:] == '.F90':
+                availablefile = availablefile[:-4]
+            lower_availablelistfiles.append(availablefile.lower())
+
+        for i in range(0, Nlines):
+            curr_line=listlines[i].lower()
+            curr_word_list=curr_line.split(" ")
+
+            if  "mode=" in curr_word_list:
+                if self.type_solver == 'spectral':
+                    line = listlines[i][:5] + "prod_spectral"
+                    listlinesnew.append(line)
+                else:
+                    line = listlines[i][:5] + "prod"
+                    listlinesnew.append(line)
+
+            # Copy the first part of the old Makefile
+            if curr_line.find("lib: echo createdir build_lib")==-1:
+                listlinesnew.append(listlines[i])
+
+            #Break before the build_lib
+            else:
+                listlinesnew.append(listlines[i])
+                break
+
+
+
+        # Append the existing files to the build
+        flag_end = False
+        while True:
+            i += 1
+            curr_line=listlines[i].lower()
+            curr_word_list= curr_line.split(" ")
+            # If clean is in the current line, it means that the build is done
+            if i >= Nlines:
+                break
+                #sys.exit("ERROR: missing end clean")
+            else:
+                if ("clean" in curr_line):
+                    break
+
+            while True:
+                if flag_end:
+                    break
+
+                if i >= Nlines:
+                    sys.exit("ERROR: missing end build block ")
+
+                else:
+                    if "endif" in curr_line:
+                        listlinesnew.append(listlines[i])
+                        flag_end = True
+                        break
+                    elif ("ifeq" in curr_line) | ("else" in curr_line):
+                        listlinesnew.append(listlines[i])
+                        break
+                    else:
+                        curr_line=listlines[i].lower()
+                        curr_word_list= curr_line.split(" ")
+                        if (len(curr_word_list) ==2) & \
+                            (curr_line.find('$(srcdir)') >0):
+                            if "build" in curr_line:
+                                if "build_lib" in curr_line:
+                                    curr_word_list= \
+                                            curr_line.split("build_lib:")[1]
+                                else:
+                                    curr_word_list= \
+                                                curr_line.split("build:")
+                                    print i, curr_word_list,'\n'
+                                    curr_word_list =curr_word_list[1]
+                                curr_word_list=curr_word_list.split("\t")
+                                routine = curr_word_list[0].split(' ')[0]
+                                routine = routine[10:-2]
+
+
+                            else:
+                                curr_word_list=curr_line.split("\t")
+                                routine = curr_word_list[1].split(' ')[0]
+                                routine = routine[10:-2]
+
+                            # Parse the ith line of build_lib, check if the file exists
+                            # If not skip the line
+                            if routine in lower_availablelistfiles:
+                                listlinesnew.append(listlines[i])
+
+                        else:
+                            listlinesnew.append(listlines[i])
+                        i += 1
+
+        # End the file until the acceptance tests
+        while True:
+
+            if i >= Nlines:
+                sys.exit("ERROR: missing acceptance tests ")
+            else:
+                curr_line=listlines[i].lower()
+                curr_word_list= curr_line.split(" ")
+                if "# __________________________________________" in curr_line:
+                    break
+                else:
+                    listlinesnew.append(listlines[i])
+                    i += 1
+
+        fnew = open('./PICSARlite/%s'%file, "w")
+        fnew.writelines(listlinesnew)
+        fnew.close()
+
+
+
 
 
 ###############################################################################
