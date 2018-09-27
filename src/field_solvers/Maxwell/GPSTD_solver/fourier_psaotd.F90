@@ -1663,6 +1663,114 @@ MODULE fourier_psaotd
     ENDIF
   END SUBROUTINE push_psaotd_ebfielfs_3d
 
+  SUBROUTINE push_psaotd_ebfielfs_AM_rz()
+    USE fields, ONLY: emf, jlf, rhooldf, rhof, blf, jmf, epf, jpf, bpf, bmf, elf
+    USE iso_c_binding
+    USE mpi
+    USE params, ONLY: it
+    USE picsar_precision, ONLY: idp, num, cpx
+    USE shared_data, ONLY: nkl, nkr, nmodes
+    USE time_stat, ONLY: timestat_itstart, localtimes
+
+    IMPLICIT NONE
+    INTEGER(idp) ::  ix, iy, iz, nxx, nyy, nzz
+    REAL(num) :: tmptime
+    COMPLEX(cpx) :: blfold, bpfold, bmfold, elfold, epfold, emfold,&
+        jlfold,jpfold,jmfold, rhofold,rhooldfold
+
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
+    nxx=nkx
+    nyy=nky
+    nzz=nmodes
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, exfold, eyfold, ezfold,     &
+    !$OMP bxfold, byfold, bzfold,jxfold,jyfold,jzfold,rhofold,rhooldfold) COLLAPSE(3)
+    DO iz=1, nzz
+      DO iy=1, nyy
+        DO ix=1, nxx
+          ! - Bx
+          elfold=elf(ix, iy, iz)
+          epfold=epf(ix, iy, iz)
+          emfold=emf(ix, iy, iz)
+          blfold=blf(ix, iy, iz)
+          bpfold=bpf(ix, iy, iz)
+          bmfold=bmf(ix, iy, iz)
+          jlfold=jlf(ix, iy, iz)
+          jpfold=jpf(ix, iy, iz)
+          jmfold=jmf(ix, iy, iz)
+          rhofold=rhof(ix, iy, iz)
+          rhooldfold=rhooldf(ix, iy, iz)
+
+
+          blf(ix, iy, iz) =                                                           &
+          cc_mat(nmatrixes)%block_matrix2d(4, 4)%block3dc(ix, iy,                     &
+          iz)*blfold + cc_mat(nmatrixes)%block_matrix2d(4, 2)%block3dc(ix, iy,        &
+          iz)*epfold + cc_mat(nmatrixes)%block_matrix2d(4, 3)%block3dc(ix, iy,        &
+          iz)*emfold + cc_mat(nmatrixes)%block_matrix2d(4, 8)%block3dc(ix, iy,        &
+          iz)*jpfold + cc_mat(nmatrixes)%block_matrix2d(4, 9)%block3dc(ix,            &
+          iy, iz)*jzfold
+
+          ! - By
+          bpf(ix, iy, iz) =                                                           &
+          cc_mat(nmatrixes)%block_matrix2d(5, 5)%block3dc(ix, iy,                     &
+          iz)*bpfold + cc_mat(nmatrixes)%block_matrix2d(5, 1)%block3dc(ix, iy,        &
+          iz)*elfold + cc_mat(nmatrixes)%block_matrix2d(5, 3)%block3dc(ix, iy,        &
+          iz)*emfold + cc_mat(nmatrixes)%block_matrix2d(5, 7)%block3dc(ix, iy,        &
+          iz)*jlfold + cc_mat(nmatrixes)%block_matrix2d(5, 9)%block3dc(ix,            &
+          iy, iz)*jzfold
+
+
+          ! - Bz
+          bmf(ix, iy, iz) =                                                           &
+          cc_mat(nmatrixes)%block_matrix2d(6, 6)%block3dc(ix, iy,                     &
+          iz)*bmfold + cc_mat(nmatrixes)%block_matrix2d(6, 1)%block3dc(ix, iy,        &
+          iz)*elfold+ cc_mat(nmatrixes)%block_matrix2d(6, 2)%block3dc(ix, iy,         &
+          iz)*epfold+ cc_mat(nmatrixes)%block_matrix2d(6, 7)%block3dc(ix, iy,         &
+          iz)*jlfold+ cc_mat(nmatrixes)%block_matrix2d(6, 8)%block3dc(ix,             &
+          iy, iz)*jyfold
+
+          ! Push E a full time step
+          ! - Ex
+          elf(ix, iy, iz) =                                                           &
+          cc_mat(nmatrixes)%block_matrix2d(1, 1)%block3dc(ix, iy,                     &
+          iz)*elfold + cc_mat(nmatrixes)%block_matrix2d(1, 5)%block3dc(ix, iy,        &
+          iz)*bpfold + cc_mat(nmatrixes)%block_matrix2d(1, 6)%block3dc(ix, iy,        &
+          iz)*bmfold + cc_mat(nmatrixes)%block_matrix2d(1, 7)%block3dc(ix, iy,        &
+          iz)*jlfold     + cc_mat(nmatrixes)%block_matrix2d(1,                        &
+          11)%block3dc(ix, iy, iz)*rhofold       +                                    &
+          cc_mat(nmatrixes)%block_matrix2d(1, 10)%block3dc(ix, iy, iz)*rhooldfold
+
+          ! - Ey
+          epf(ix, iy, iz) =                                                           &
+          cc_mat(nmatrixes)%block_matrix2d(2, 2)%block3dc(ix, iy,                     &
+          iz)*epfold + cc_mat(nmatrixes)%block_matrix2d(2, 4)%block3dc(ix, iy,        &
+          iz)*blfold  + cc_mat(nmatrixes)%block_matrix2d(2, 6)%block3dc(ix, iy,       &
+          iz)*bmfold  + cc_mat(nmatrixes)%block_matrix2d(2, 8)%block3dc(ix, iy,       &
+          iz)*jpfold + cc_mat(nmatrixes)%block_matrix2d(2, 11)%block3dc(ix,           &
+          iy, iz)*rhofold + cc_mat(nmatrixes)%block_matrix2d(2,                       &
+          10)%block3dc(ix, iy, iz)*rhooldfold
+
+
+          ! - Ez
+          emf(ix, iy, iz) =                                                           &
+          cc_mat(nmatrixes)%block_matrix2d(3, 3)%block3dc(ix, iy,                     &
+          iz)*emfold + cc_mat(nmatrixes)%block_matrix2d(3, 4)%block3dc(ix, iy,        &
+          iz)*blfold + cc_mat(nmatrixes)%block_matrix2d(3, 5)%block3dc(ix, iy,        &
+          iz)*bpfold + cc_mat(nmatrixes)%block_matrix2d(3, 9)%block3dc(ix, iy,        &
+          iz)*jmfold + cc_mat(nmatrixes)%block_matrix2d(3, 11)%block3dc(ix,           &
+          iy, iz)*rhofold + cc_mat(nmatrixes)%block_matrix2d(3,                       &
+          10)%block3dc(ix, iy, iz)*rhooldfold
+        END DO
+      END DO
+    END DO
+    !$OMP END PARALLEL DO
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime)
+    ENDIF
+  END SUBROUTINE push_psaotd_ebfielfs_AM_rz
+
+
   SUBROUTINE init_plans_blocks()
     USE fastfft
     USE fftw3_fortran, ONLY: fftw_measure, fftw_backward, fftw_forward

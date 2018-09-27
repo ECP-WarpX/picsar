@@ -133,6 +133,8 @@ MODULE fields
   LOGICAL(lp) :: l_nodalgrid
   !> Flag: use of PSAOTD spectral solver
   LOGICAL(lp) :: l_spectral
+  !> Flag: use of AM cylindrical spectral solver
+  LOGICAL(lp) :: l_AM_rz
   !> Flag: use psatd with multiply_mat_vector_routine (not suited for prod)
   LOGICAL(lp) :: g_spectral = .FALSE.
   !> Flag: use of staggered grid
@@ -192,6 +194,24 @@ MODULE fields
   REAL(num), POINTER, DIMENSION(:, :, :) :: jy
   !> MPI-domain current grid in z
   REAL(num), POINTER, DIMENSION(:, :, :) :: jz
+  !> MPI-domain current grid in l
+  REAL(num), POINTER, DIMENSION(:, :, :) :: el
+  !> MPI-domain electric field grid in r
+  REAL(num), POINTER, DIMENSION(:, :, :) :: er
+  !> MPI-domain electric field grid in t
+  REAL(num), POINTER, DIMENSION(:, :, :) :: et
+  !> MPI-domain magnetic field grid in l
+  REAL(num), POINTER, DIMENSION(:, :, :) :: bl
+  !> MPI-domain magnetic field grid in r
+  REAL(num), POINTER, DIMENSION(:, :, :) :: br
+  !> MPI-domain magnetic field grid in t
+  REAL(num), POINTER, DIMENSION(:, :, :) :: bt
+  !> MPI-domain current grid in l
+  REAL(num), POINTER, DIMENSION(:, :, :) :: jl
+  !> MPI-domain current grid in r
+  REAL(num), POINTER, DIMENSION(:, :, :) :: jr
+  !> MPI-domain current grid in t
+  REAL(num), POINTER, DIMENSION(:, :, :) :: jt
   !> MPI-domain electric field grid in x (auxiliary array for gather to particles)
   REAL(num), POINTER, DIMENSION(:, :, :) :: ex_p
   !> MPI-domain electric field grid in y (auxiliary array for gather to particles)
@@ -253,6 +273,24 @@ MODULE fields
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jyf
   !> MPI-domain current grid in z - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jzf
+  !> MPI-domain electric field grid in l - Fourier space
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: elf
+  !> MPI-domain electric field grid in p - Henkel space
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: epf
+  !> MPI-domain electric field grid in m - Henkel space
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: emf
+  !> MPI-domain magnetic field grid in l - Fourier space
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: blf
+  !> MPI-domain magnetic field grid in p - Henkel space
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bpf
+  !> MPI-domain magnetic field grid in m - Henkel space
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bmf
+  !> MPI-domain current grid in l - Fourier space
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jlf
+  !> MPI-domain current grid in p - Fourier space
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jpf
+  !> MPI-domain current grid in m - Fourier space
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jmf  
   !> MPI-domain current grid in z - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: rhof
   !> MPI-domain current grid in z - Fourier space
@@ -1391,6 +1429,12 @@ MODULE shared_data
   INTEGER(idp)                        :: nky
   !> local number of grid points in kz (Fourier Space)"
   INTEGER(idp)                        :: nkz
+  !> local number of grid points in kl (Fourier Space)
+  INTEGER(idp)                        :: nkl
+  !> local number of grid points in kr_p (Fourier Space)
+  INTEGER(idp)                        :: nkr
+  !> local number of grid po"
+  INTEGER(idp)                        :: nmodes
   !> global number of cells in x
   INTEGER(idp)                        :: nx_global
   !> global number of cells in y

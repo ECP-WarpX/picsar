@@ -1615,17 +1615,17 @@ MODULE gpstd_solver
     
     cc_mat(nmatrixes)%block_matrix2d(1, 11_idp)%block3dc = - DCMPLX(0.,1.)          &
     *kspace(nmatrixes2)%block_vector(8)%block3dc                                    & 
-    *(1.- 1./(clight*dt)* at_op(nmatrixes2)%block_vector(1)%block3dc)               &
+    *(DCMPLX(1.,0.)- 1./(clight*dt)* at_op(nmatrixes2)%block_vector(1)%block3dc)    &
     /kspace(nmatrixes2)%block_vector(10)%block3dc**2
 
     cc_mat(nmatrixes)%block_matrix2d(2, 11_idp)%block3dc =                          &
     kspace(nmatrixes2)%block_vector(2)%block3dc                                     & 
-    *(1.- 1./(clight*dt)* at_op(nmatrixes2)%block_vector(1)%block3dc)               &
+    *(DCMPLX(1.,0.)- 1./(clight*dt)* at_op(nmatrixes2)%block_vector(1)%block3dc)    &
     /(2.*kspace(nmatrixes2)%block_vector(10)%block3dc**2)
     
     cc_mat(nmatrixes)%block_matrix2d(3, 11_idp)%block3dc = -                        &
     kspace(nmatrixes2)%block_vector(5)%block3dc                                     & 
-    *(1.- 1./(clight*dt)* at_op(nmatrixes2)%block_vector(1)%block3dc)               &
+    *(DCMPLX(1.,0.)- 1./(clight*dt)* at_op(nmatrixes2)%block_vector(1)%block3dc)    &
     /(2.*kspace(nmatrixes2)%block_vector(10)%block3dc**2)
 
     !> If current mpi task contains null frequency then performs Taylor

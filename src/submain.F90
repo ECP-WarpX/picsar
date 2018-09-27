@@ -51,7 +51,7 @@
 SUBROUTINE step(nst)
 USE diagnostics
 USE field_boundary
-USE fields, ONLY: l_spectral, nzguards, nxguards, nyguards
+USE fields, ONLY: l_spectral, l_AM_rz,  nzguards, nxguards, nyguards
 #if defined(FFTW)
 USE gpstd_solver
 #endif
