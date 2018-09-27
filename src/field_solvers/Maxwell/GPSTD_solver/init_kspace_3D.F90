@@ -214,11 +214,11 @@ MODULE gpstd_solver
   !> @params[in,out] nfftz INTEGER(idp) - Number of points in spectral space along Z
   ! ______________________________________________________________________________________
   SUBROUTINE select_case_dims_global(nfftx, nffty, nfftz)
-    USE fields, ONLY: nzguards, nxguards, nyguards
+    USE fields, ONLY: nzguards, nxguards, nyguards, l_AM_rz
     USE group_parameters, ONLY: nx_group, ny_group, nz_group
     USE iso_c_binding
     USE picsar_precision, ONLY: idp
-    USE shared_data, ONLY: nz, ny, fftw_with_mpi, nx, p3dfft_stride, nx_global,      &
+    USE shared_data, ONLY: nmodes,nz, ny, fftw_with_mpi, nx, p3dfft_stride, nx_global,      &
       p3dfft_flag, ny_global, c_dim, nz_global, fftw_mpi_transpose, fftw_hybrid
     INTEGER(idp), INTENT(INOUT) :: nfftx, nffty, nfftz
     !> When using global or hybrid pseudo spectral solver
@@ -253,11 +253,22 @@ MODULE gpstd_solver
       nfftx = nx+2*nxguards+1
       nffty = ny+2*nyguards+1
       nfftz = nz+2*nzguards+1
+      IF (l_AM_rz) THEN 
+        nfftx = nx+2*nxguards+1
+        nffty = ny+2*nyguards+1
+        nfftz = nmodes
+       ENDIF
+
 #else
       !> When using only picsar
       nfftx = nx+2*nxguards
       nffty = ny+2*nyguards
       nfftz = nz+2*nzguards
+      IF (l_AM_rz) THEN
+        nfftx = nx+2*nxguards
+        nffty = ny+2*nyguards
+        nfftz = nmodes
+       ENDIF
 #endif
     ENDIF
     IF(c_dim ==2) THEN
