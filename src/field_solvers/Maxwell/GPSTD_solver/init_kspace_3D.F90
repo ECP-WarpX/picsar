@@ -218,7 +218,7 @@ MODULE gpstd_solver
     USE group_parameters, ONLY: nx_group, ny_group, nz_group
     USE iso_c_binding
     USE picsar_precision, ONLY: idp
-    USE shared_data, ONLY: nmodes,nz, ny, fftw_with_mpi, nx, p3dfft_stride, nx_global,      &
+    USE shared_data, ONLY: nz, ny, fftw_with_mpi, nx, p3dfft_stride, nx_global,      &
       p3dfft_flag, ny_global, c_dim, nz_global, fftw_mpi_transpose, fftw_hybrid
     INTEGER(idp), INTENT(INOUT) :: nfftx, nffty, nfftz
     !> When using global or hybrid pseudo spectral solver
@@ -254,9 +254,7 @@ MODULE gpstd_solver
       nffty = ny+2*nyguards+1
       nfftz = nz+2*nzguards+1
       IF (l_AM_rz) THEN 
-        nfftx = nx+2*nxguards+1
-        nffty = ny+2*nyguards+1
-        nfftz = nmodes
+        nfftz = 1
        ENDIF
 
 #else
@@ -265,9 +263,7 @@ MODULE gpstd_solver
       nffty = ny+2*nyguards
       nfftz = nz+2*nzguards
       IF (l_AM_rz) THEN
-        nfftx = nx+2*nxguards
-        nffty = ny+2*nyguards
-        nfftz = nmodes
+        nfftz = 1
        ENDIF
 #endif
     ENDIF
@@ -308,7 +304,7 @@ MODULE gpstd_solver
     USE matrix_coefficients, ONLY: kspace, at_op
     USE matrix_data, ONLY: ns_max, nmatrixes2
     USE omp_lib
-    USE fields, ONLY : nxguards, nyguards, nzguards, l_staggered
+    USE fields, ONLY : nxguards, nyguards, nzguards, l_staggered, l_AM_rz
     USE fields, ONLY : norderx, nordery, norderz
     USE params, ONLY : dt
     USE picsar_precision, ONLY: idp, num, lp, cpx
@@ -399,6 +395,13 @@ MODULE gpstd_solver
                 kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k)= (0.0_num,0.0_num)
                 kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k)= (0.0_num,0.0_num) 
               ENDIF
+              !> If we do spectral with azimutal modes in cylindrical then
+              !> ky=kz=kr 
+              IF (l_AM_rz) THEN
+                kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = kyf(k)
+                kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = kyb(k)
+                kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = kyc(k)
+              ENDIF         
               kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = kzf(k)
               kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = kzb(k)
               kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = kzc(k)
@@ -1522,7 +1525,7 @@ MODULE gpstd_solver
     *at_op(nmatrixes2)%block_vector(1)%block3dc
 
     cc_mat(nmatrixes)%block_matrix2d(6, 1)%block3dc =                                 &
-    ii*kspace(nmatrixes2)%block_vector(5)%block3dc/(2.*clight                         &
+    ii*kspace(nmatrixes2)%block_vector(5)%block3dc/(2.*clight)                        &
     *at_op(nmatrixes2)%block_vector(1)%block3dc
 
     cc_mat(nmatrixes)%block_matrix2d(6, 2)%block3dc = -                               &
@@ -1599,7 +1602,7 @@ MODULE gpstd_solver
 
 
     cc_mat(nmatrixes)%block_matrix2d(2, 10_idp)%block3dc = -                        &
-    *kspace(nmatrixes2)%block_vector(2)%block3dc                                    &
+    kspace(nmatrixes2)%block_vector(2)%block3dc                                     &
     *(at_op(nmatrixes2)%block_vector(2)%block3dc                                    &
     -1./(clight*dt)*at_op(nmatrixes2)%block_vector(1)%block3dc)                     &
     /(2.*kspace(nmatrixes2)%block_vector(10)%block3dc**2)

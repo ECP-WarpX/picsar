@@ -1681,11 +1681,11 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
-    nxx=nkx
-    nyy=nky
+    nxx=nkl
+    nyy=nkr
     nzz=nmodes
-    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, exfold, eyfold, ezfold,     &
-    !$OMP bxfold, byfold, bzfold,jxfold,jyfold,jzfold,rhofold,rhooldfold) COLLAPSE(3)
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, elfold, epfold, emfold,     &
+    !$OMP blfold, bpfold, bmfold,jlfold,jpfold,jmfold,rhofold,rhooldfold) COLLAPSE(3)
     DO iz=1, nzz
       DO iy=1, nyy
         DO ix=1, nxx
@@ -1709,7 +1709,7 @@ MODULE fourier_psaotd
           iz)*epfold + cc_mat(nmatrixes)%block_matrix2d(4, 3)%block3dc(ix, iy,        &
           iz)*emfold + cc_mat(nmatrixes)%block_matrix2d(4, 8)%block3dc(ix, iy,        &
           iz)*jpfold + cc_mat(nmatrixes)%block_matrix2d(4, 9)%block3dc(ix,            &
-          iy, iz)*jzfold
+          iy, iz)*jmfold
 
           ! - By
           bpf(ix, iy, iz) =                                                           &
@@ -1718,7 +1718,7 @@ MODULE fourier_psaotd
           iz)*elfold + cc_mat(nmatrixes)%block_matrix2d(5, 3)%block3dc(ix, iy,        &
           iz)*emfold + cc_mat(nmatrixes)%block_matrix2d(5, 7)%block3dc(ix, iy,        &
           iz)*jlfold + cc_mat(nmatrixes)%block_matrix2d(5, 9)%block3dc(ix,            &
-          iy, iz)*jzfold
+          iy, iz)*jmfold
 
 
           ! - Bz
@@ -1728,7 +1728,7 @@ MODULE fourier_psaotd
           iz)*elfold+ cc_mat(nmatrixes)%block_matrix2d(6, 2)%block3dc(ix, iy,         &
           iz)*epfold+ cc_mat(nmatrixes)%block_matrix2d(6, 7)%block3dc(ix, iy,         &
           iz)*jlfold+ cc_mat(nmatrixes)%block_matrix2d(6, 8)%block3dc(ix,             &
-          iy, iz)*jyfold
+          iy, iz)*jpfold
 
           ! Push E a full time step
           ! - Ex

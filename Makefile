@@ -25,7 +25,7 @@ COMP=gnu
 # - sde: sde profiling
 # - map: Allinea Map profiling
 # - library: create static and dynamic library
-MODE=prod
+MODE=prod_spectral
 
 # System (SYS)
 # - cori2
@@ -51,8 +51,8 @@ CC=mpicc
 FARGS= -g -fbounds-check -O3 -fopenmp -JModules 
 
 # External libs 
-FFTW3_LIB=/usr/lib/x86_64-linux-gnu
-FFTW3_INCLUDE=/usr/include
+FFTW3_LIB=/home/llr/galop/izemzemi/soft/picsar_and_dep/FFTW_INSTALL_DIR/lib
+FFTW3_INCLUDE= /home/llr/galop/izemzemi/soft/picsar_and_dep/FFTW_INSTALL_DIR/include
 VTUNEDIR=/opt/intel/vtune_amplifier_xe_2017.2.0.499904
 
 P3DFFT_INCLUDE=
@@ -332,7 +332,7 @@ FARGS+= $(LARCH)
 
 ifeq ($(MODE),$(filter $(MODE),prod_spectral debug_spectral))
 	FARGS += -I$(FFTW3_INCLUDE) -D FFTW=1 
-	LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_omp
+	LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_threads
 endif
 ifeq ($(IS_P3DFFT),true)
         FARGS += -I$(P3DFFT_INCLUDE)  -D P3DFFT
@@ -341,7 +341,7 @@ endif
 
 ifeq ($(MODE),library)
         FARGS += -fPIC -I$(FFTW3_INCLUDE) -D LIBRARY=1  -D  FFTW=1  
-        LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_omp
+        LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_threads
 endif
 
 
