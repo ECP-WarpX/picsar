@@ -224,6 +224,18 @@ MODULE fields
   REAL(num), POINTER, DIMENSION(:, :, :) :: by_p
   !> MPI-domain magnetic field grid in z (auxiliary array for gather to particles)
   REAL(num), POINTER, DIMENSION(:, :, :) :: bz_p
+  !> MPI-domain electric field grid in x (auxiliary array for gather to particles)
+  REAL(num), POINTER, DIMENSION(:, :, :) :: el_p
+  !> MPI-domain electric field grid in y (auxiliary array for gather to particles)
+  REAL(num), POINTER, DIMENSION(:, :, :) :: er_p
+  !> MPI-domain electric field grid in z (auxiliary array for gather to particles)
+  REAL(num), POINTER, DIMENSION(:, :, :) :: et_p
+  !> MPI-domain magnetic field grid in x (auxiliary array for gather to particles)
+  REAL(num), POINTER, DIMENSION(:, :, :) :: bl_p
+  !> MPI-domain magnetic field grid in y (auxiliary array for gather to particles)
+  REAL(num), POINTER, DIMENSION(:, :, :) :: br_p
+  !> MPI-domain magnetic field grid in z (auxiliary array for gather to particles)
+  REAL(num), POINTER, DIMENSION(:, :, :) :: bt_p 
   !> MPI-domain current grid in x
   !> MPI-domain electric field grid in x
   REAL(num), POINTER, DIMENSION(:, :, :) :: ex_r
@@ -243,6 +255,24 @@ MODULE fields
   REAL(num), POINTER, DIMENSION(:, :, :) :: jy_r
   !> MPI-domain current grid in z
   REAL(num), POINTER, DIMENSION(:, :, :) :: jz_r
+  !> MPI-domain electric field grid in x
+  REAL(num), POINTER, DIMENSION(:, :, :) :: el_r
+  !> MPI-domain electric field grid in y
+  REAL(num), POINTER, DIMENSION(:, :, :) :: ep_r
+  !> MPI-domain electric field grid in z
+  REAL(num), POINTER, DIMENSION(:, :, :) :: em_r
+  !> MPI-domain magnetic field grid in x
+  REAL(num), POINTER, DIMENSION(:, :, :) :: bl_r
+  !> MPI-domain magnetic field grid in y
+  REAL(num), POINTER, DIMENSION(:, :, :) :: bp_r
+  !> MPI-domain magnetic field grid in z
+  REAL(num), POINTER, DIMENSION(:, :, :) :: bm_r
+  !> MPI-domain current grid in x
+  REAL(num), POINTER, DIMENSION(:, :, :) :: jl_r
+  !> MPI-domain current grid in y
+  REAL(num), POINTER, DIMENSION(:, :, :) :: jp_r
+  !> MPI-domain current grid in z
+  REAL(num), POINTER, DIMENSION(:, :, :) :: jm_r 
   !> MPI-domain current grid in z - Fourier space
   REAL(num), POINTER, DIMENSION(:, :, :) :: rho_r
   !> MPI-domain current grid in z - Fourier space

@@ -1758,6 +1758,7 @@ USE mpi_fftw3, ONLY: fftw_alloc_complex, local_ny_tr, fftw_alloc_real, local_ny,
 USE fourier
 USE group_parameters
 USE picsar_precision, ONLY: idp
+USE fields, ONLY: l_AM_rz
 #endif
 IMPLICIT NONE
 #if defined(FFTW)
@@ -1772,6 +1773,15 @@ ALLOCATE(ez(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards)
 ALLOCATE(bx(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 ALLOCATE(by(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 ALLOCATE(bz(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+IF (l_AM_rz) THEN 
+  ! --- Allocate regular grid quantities in cylindrical geometry (in Azimutal modes)
+  ALLOCATE(el(-nxguards:nx+nxguards, -nyguards:ny+nyguards, 0:nmodes-1))
+  ALLOCATE(er(-nxguards:nx+nxguards, -nyguards:ny+nyguards, 0:nmodes-1))
+  ALLOCATE(et(-nxguards:nx+nxguards, -nyguards:ny+nyguards, 0:nmodes-1))
+  ALLOCATE(bl(-nxguards:nx+nxguards, -nyguards:ny+nyguards, 0:nmodes-1))
+  ALLOCATE(br(-nxguards:nx+nxguards, -nyguards:ny+nyguards, 0:nmodes-1))
+  ALLOCATE(bt(-nxguards:nx+nxguards, -nyguards:ny+nyguards, 0:nmodes-1))
+ENDIF
 ! > When using absorbing_bcs , allocate splitted fields 
 IF(absorbing_bcs) THEN
   ALLOCATE(exy(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
@@ -1793,6 +1803,14 @@ ALLOCATE(jy(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                   
 -nzjguards:nz+nzjguards))
 ALLOCATE(jz(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
 -nzjguards:nz+nzjguards))
+IF (l_AM_rz) THEN 
+  ALLOCATE(jl(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
+  0:nmodes-1))
+  ALLOCATE(jr(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
+  0:nmodes-1))
+  ALLOCATE(jt(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
+  0:nmodes-1))
+ENDIF
 ALLOCATE(rho(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                    &
 -nzjguards:nz+nzjguards))
 ALLOCATE(rhoold(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                 &
@@ -1808,8 +1826,14 @@ ez_p => ez
 bx_p => bx
 by_p => by
 bz_p => bz
-
-
+IF (l_AM_rz) THEN
+  el_p => el
+  er_p => er
+  et_p => et
+  bl_p => bl
+  br_p => br
+  bt_p => bt
+ENDIF
 #if defined(FFTW)
 ! ---  Allocate grid quantities in Fourier space
 IF (l_spectral) THEN
@@ -1980,68 +2004,110 @@ IF (l_spectral) THEN
     ENDIF      
   ! Case of local FFTs (purely local pseudo-spectral solver)
   ELSE IF(.NOT. fftw_with_mpi) THEN
-    nkx=(2*nxguards+nx)/2+1! Real To Complex Transform
-    nky=(2*nyguards+ny)
-    nkz=(2*nzguards+nz)
-    IF(c_dim == 2) THEN
-      nky =1_idp
-    ENDIF
-    IF(.NOT. g_spectral) THEN
-    ! - Allocate complex FFT arrays
-      ALLOCATE(exf(nkx, nky, nkz))
-      ALLOCATE(eyf(nkx, nky, nkz))
-      ALLOCATE(ezf(nkx, nky, nkz))
-      ALLOCATE(bxf(nkx, nky, nkz))
-      ALLOCATE(byf(nkx, nky, nkz))
-      ALLOCATE(bzf(nkx, nky, nkz))
-      ALLOCATE(jxf(nkx, nky, nkz))
-      ALLOCATE(jyf(nkx, nky, nkz))
-      ALLOCATE(jzf(nkx, nky, nkz))
-      ALLOCATE(rhof(nkx, nky, nkz))
-      ALLOCATE(rhooldf(nkx, nky, nkz))
-    ENDIF
-    ! - Allocate real FFT arrays 
-    imn=-nxguards; imx=nx+nxguards-1
-    jmn=-nyguards;jmx=ny+nyguards-1
-    kmn=-nzguards;kmx=nz+nzguards-1
-    IF(c_dim == 2) THEN
-      jmn = 0
-      jmx = 0
-    ENDIF
-    IF (.NOT. absorbing_bcs) THEN
-    ! - When using absorbing_bcs, merged fields are not allocated in fourier space
-    ! - neither ex_r,ey_r ... components
-    ! - In this case only splitted fields are allocated  
-    ! - The merge is done using local fields (ex = exy+exz )
-      ALLOCATE(ex_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(ey_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(ez_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(bx_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(by_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(bz_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(jx_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(jy_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(jz_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
-    ELSE IF(absorbing_bcs) THEN
-      ALLOCATE(exy_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(exz_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(eyx_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(eyz_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(ezx_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(ezy_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(bxy_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(bxz_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(byx_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(byz_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(bzx_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(bzy_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(jx_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(jy_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(jz_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
+    IF (.NOT. l_AM_rz) THEN
+      nkx=(2*nxguards+nx)/2+1! Real To Complex Transform
+      nky=(2*nyguards+ny)
+      nkz=(2*nzguards+nz)
+      IF(c_dim == 2) THEN
+        nky =1_idp
+      ENDIF
+      IF(.NOT. g_spectral) THEN
+      ! - Allocate complex FFT arrays
+        ALLOCATE(exf(nkx, nky, nkz))
+        ALLOCATE(eyf(nkx, nky, nkz))
+        ALLOCATE(ezf(nkx, nky, nkz))
+        ALLOCATE(bxf(nkx, nky, nkz))
+        ALLOCATE(byf(nkx, nky, nkz))
+        ALLOCATE(bzf(nkx, nky, nkz))
+        ALLOCATE(jxf(nkx, nky, nkz))
+        ALLOCATE(jyf(nkx, nky, nkz))
+        ALLOCATE(jzf(nkx, nky, nkz))
+        ALLOCATE(rhof(nkx, nky, nkz))
+        ALLOCATE(rhooldf(nkx, nky, nkz))
+      ENDIF
+      ! - Allocate real FFT arrays 
+      imn=-nxguards; imx=nx+nxguards-1
+      jmn=-nyguards;jmx=ny+nyguards-1
+      kmn=-nzguards;kmx=nz+nzguards-1
+      IF(c_dim == 2) THEN
+        jmn = 0
+        jmx = 0
+      ENDIF
+      IF (.NOT. absorbing_bcs) THEN
+      ! - When using absorbing_bcs, merged fields are not allocated in fourier space
+      ! - neither ex_r,ey_r ... components
+      ! - In this case only splitted fields are allocated  
+      ! - The merge is done using local fields (ex = exy+exz )
+        ALLOCATE(ex_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(ey_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(ez_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(bx_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(by_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(bz_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(jx_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(jy_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(jz_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
+      ELSE IF(absorbing_bcs) THEN
+        ALLOCATE(exy_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(exz_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(eyx_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(eyz_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(ezx_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(ezy_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(bxy_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(bxz_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(byx_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(byz_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(bzx_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(bzy_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(jx_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(jy_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(jz_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
+      ENDIF
+     ELSE IF (l_AM_rz) THEN
+      !> To be added for rz geometry !!! 
+      nkx=(2*nxguards+nx)/2+1! Real To Complex Transform
+      nky=(2*nyguards+ny)
+      nkz= nmodes
+      IF (.NOT. g_spectral) THEN
+      ! - Allocate complex FFT arrays
+        ALLOCATE(elf(nkx, nky, nkz))
+        ALLOCATE(epf(nkx, nky, nkz))
+        ALLOCATE(emf(nkx, nky, nkz))
+        ALLOCATE(blf(nkx, nky, nkz))
+        ALLOCATE(bpf(nkx, nky, nkz))
+        ALLOCATE(bmf(nkx, nky, nkz))
+        ALLOCATE(jlf(nkx, nky, nkz))
+        ALLOCATE(jpf(nkx, nky, nkz))
+        ALLOCATE(jmf(nkx, nky, nkz))
+        ALLOCATE(rhof(nkx, nky, nkz))
+        ALLOCATE(rhooldf(nkx, nky, nkz))
+      ENDIF
+      ! - Allocate real FFT arrays 
+      imn=-nxguards; imx=nx+nxguards-1
+      jmn=-nyguards;jmx=ny+nyguards-1
+      kmn=0;kmx=nmodes-1
+      IF (.NOT. absorbing_bcs) THEN
+      ! - When using absorbing_bcs, merged fields are not allocated in fourier space
+      ! - neither ex_r,ey_r ... components
+      ! - In this case only splitted fields are allocated  
+      ! - The merge is done using local fields (ex = exy+exz )
+        ALLOCATE(el_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(ep_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(ep_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(bl_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(bp_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(bm_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(jl_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(jp_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(jm_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
+      ENDIF
     ENDIF
   ENDIF
 ENDIF
