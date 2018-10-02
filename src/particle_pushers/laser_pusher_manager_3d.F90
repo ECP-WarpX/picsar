@@ -13,13 +13,18 @@
 ! ________________________________________________________________________________________
 
 SUBROUTINE push_laser_particles
-  USE particles
-  USE constants
-  USE fields
-  USE params
-  USE shared_data
+  USE output_data, ONLY: pushtime
+  USE params, ONLY: dt, it
+  USE particle_properties, ONLY: nspecies, npid
+  USE particle_speciesmodule, ONLY: particle_species
+  USE particle_tilemodule, ONLY: particle_tile
+  USE particles, ONLY: species_parray
+  USE picsar_precision, ONLY: idp, num
+  USE shared_data, ONLY: y, z, x
+  USE tile_params, ONLY: ntilez, ntilex, ntiley
   USE tiling
-  USE time_stat
+  USE time_stat, ONLY: timestat_itstart, localtimes
+
   IMPLICIT NONE
   INTEGER(idp) :: ispecies, ix, iy, iz, count
   TYPE(particle_species), POINTER :: curr
@@ -100,13 +105,11 @@ END SUBROUTINE push_laser_particles
 
 
 SUBROUTINE laser_pusher_profile(ispecies, amp_x,amp_y,amp_z,n,source_vx,source_vy,source_vz)
-  USE particles
-  USE time_stat
+  USE particles, ONLY: species_parray
   USE tiling
-  USE params
-  USE constants
-  USE shared_data
+  USE picsar_precision, ONLY: idp, num
   USE omp_lib
+  USE params, ONLY: dt
   
   INTEGER(idp) , INTENT(IN) :: n, ispecies
   REAL(num)  , INTENT(IN),  DIMENSION(1:n) :: amp_x, amp_y, amp_z
@@ -190,16 +193,12 @@ SUBROUTINE laserp_pusher_gaussian(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gam
   dtt, lvect, emax, emax1, emax2, polvector1, polvector2, k0_laser, q_z, charge,      &  
   laser_tau,  real_time, t_peak, temporal_order, polangle)
 
-  USE shared_data
+  USE constants, ONLY: clight
   USE omp_lib
-  USE constants
-  USE params
-  USE particles
-  USE particle_speciesmodule
-  USE particle_properties
-  USE antenna
-  USE particle_tilemodule
-  use fields
+  USE params, ONLY: dt
+  USE picsar_precision, ONLY: idp, num, cpx
+  USE shared_data, ONLY: z, c_dim
+
   INTEGER(idp), INTENT(IN)                :: np
   INTEGER(idp), INTENT(IN)                :: npidd
   INTEGER(idp), INTENT(IN)                :: lvect
@@ -279,16 +278,12 @@ END SUBROUTINE laserp_pusher_gaussian
 SUBROUTINE laserp_pusher_hanning(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gaminv,   &
   dtt, lvect, emax, emax1, emax2, polvector1, polvector2, k0_laser, q_z, charge,      &
   real_time, t_peak, temporal_order, polangle)
-  USE shared_data
+
+  USE constants, ONLY: clight
   USE omp_lib
-  USE constants
-  USE params
-  USE particles
-  USE particle_speciesmodule
-  USE particle_properties
-  USE antenna
-  USE particle_tilemodule
-  use fields
+  USE params, ONLY: dt
+  USE picsar_precision, ONLY: idp, num, cpx
+  USE shared_data, ONLY: z, c_dim
 
   INTEGER(idp), INTENT(IN)                :: np
   INTEGER(idp), INTENT(IN)                :: npidd
@@ -381,10 +376,11 @@ SUBROUTINE gaussian_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvec
   !DIR$ k0_laser, q_z, laser_tau, real_time, t_peak, &
   !DIR$ temporal_order, polangle)  :: gaussian_profile
 #endif
-  USE constants
-  USE params
-  USE shared_data
+  USE constants, ONLY: pi, clight
   USE omp_lib
+  USE picsar_precision, ONLY: idp, num, cpx
+  USE shared_data, ONLY: z
+
   REAL(num), INTENT(INOUT)   :: amp1, amp2, amp3
   REAL(num), DIMENSION(3), INTENT(IN)       :: polvector1, polvector2
   REAL(num), INTENT(IN)                      :: emax, emax1, emax2, k0_laser,         &
@@ -440,10 +436,11 @@ SUBROUTINE hanning_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvect
   !DIR$ :: hanning_profile
 #endif
 
-  USE shared_data
-  USE constants
-  USE params
+  USE constants, ONLY: pi, clight
   USE omp_lib
+  USE picsar_precision, ONLY: idp, num, cpx
+  USE shared_data, ONLY: z
+
   REAL(num), INTENT(INOUT) :: amp1, amp2, amp3
   REAL(num), DIMENSION(3), INTENT(IN)    :: polvector1, polvector2
   REAL(num), INTENT(IN)                  :: emax, emax1, emax2, k0_laser, real_time,  &
