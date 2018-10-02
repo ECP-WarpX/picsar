@@ -20,7 +20,6 @@ SUBROUTINE push_laser_particles
   USE particle_tilemodule, ONLY: particle_tile
   USE particles, ONLY: species_parray
   USE picsar_precision, ONLY: idp, num
-  USE shared_data, ONLY: y, z, x
   USE tile_params, ONLY: ntilez, ntilex, ntiley
   USE tiling
   USE time_stat, ONLY: timestat_itstart, localtimes
@@ -197,7 +196,7 @@ SUBROUTINE laserp_pusher_gaussian(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gam
   USE omp_lib
   USE params, ONLY: dt
   USE picsar_precision, ONLY: idp, num, cpx
-  USE shared_data, ONLY: z, c_dim
+  USE shared_data, ONLY:  c_dim
 
   INTEGER(idp), INTENT(IN)                :: np
   INTEGER(idp), INTENT(IN)                :: npidd
@@ -283,7 +282,7 @@ SUBROUTINE laserp_pusher_hanning(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gami
   USE omp_lib
   USE params, ONLY: dt
   USE picsar_precision, ONLY: idp, num, cpx
-  USE shared_data, ONLY: z, c_dim
+  USE shared_data, ONLY:  c_dim
 
   INTEGER(idp), INTENT(IN)                :: np
   INTEGER(idp), INTENT(IN)                :: npidd
@@ -379,7 +378,6 @@ SUBROUTINE gaussian_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvec
   USE constants, ONLY: pi, clight
   USE omp_lib
   USE picsar_precision, ONLY: idp, num, cpx
-  USE shared_data, ONLY: z
 
   REAL(num), INTENT(INOUT)   :: amp1, amp2, amp3
   REAL(num), DIMENSION(3), INTENT(IN)       :: polvector1, polvector2
@@ -439,7 +437,6 @@ SUBROUTINE hanning_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvect
   USE constants, ONLY: pi, clight
   USE omp_lib
   USE picsar_precision, ONLY: idp, num, cpx
-  USE shared_data, ONLY: z
 
   REAL(num), INTENT(INOUT) :: amp1, amp2, amp3
   REAL(num), DIMENSION(3), INTENT(IN)    :: polvector1, polvector2
