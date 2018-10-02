@@ -839,7 +839,7 @@ MODULE gpstd_solver
   SUBROUTINE init_gpstd()
     USE constants, ONLY: mu0, eps0, clight
     USE fields, ONLY: ezf, jxf, rhooldf, rhof, bxf, g_spectral, jzf, eyf, jyf, byf,  &
-      bzf, exf
+      bzf, exf, l_AM_rz
     USE iso_c_binding
     USE matrix_coefficients, ONLY: vnew, kspace, cc_mat, at_op, vold
     USE matrix_data, ONLY: nmatrixes, nmatrixes2
@@ -848,7 +848,7 @@ MODULE gpstd_solver
     USE params, ONLY: dt
     USE picsar_precision, ONLY: idp, num, lp, cpx
     USE shared_data, ONLY: nz, ny, nx, fftw_with_mpi, nkx, nky, nkz,  p3dfft_flag,   &
-                           absorbing_bcs
+                           absorbing_bcs, nmodes
 
     INTEGER(idp)           :: i, j
     COMPLEX(cpx)           :: ii
@@ -875,16 +875,19 @@ MODULE gpstd_solver
     nkx = nfftxr
     nky = nffty
     nkz = nfftz
+    IF (l_AM_rz) THEN
+      nkz= nmodes
+    ENDIF
     !> Allocates cc_mat  block matrix
     !> cc_mat blocks are initally as an nbloc_ccmat x nbloc_ccmat block matrix 
     !> At the end of the routine, useless blcoks are deleted  
     DO i=1_idp, nbloc_ccmat
       DO j=1_idp, nbloc_ccmat
-        ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(nfftxr, nffty,    &
-        nfftz))
-        cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = nfftxr
-        cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = nffty
-        cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = nfftz
+        ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(nkx, nky,    &
+        nkz))
+        cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = nkx
+        cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = nky
+        cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = nkz
       ENDDO
     ENDDO
 
@@ -961,7 +964,11 @@ MODULE gpstd_solver
     ELSE IF(.NOT. absorbing_bcs) THEN  
       !> When not using absorbing bcs, standard EM equations are solved in
       ! fourier space
-      CALL compute_cc_mat_merged_fields()
+      IF (l_AM_rz) THEN
+        CALL compute_cc_mat_merged_fields_AM_rz()
+      ELSE
+        CALL compute_cc_mat_merged_fields()
+      ENDIF
     ENDIF
   
  
@@ -974,7 +981,9 @@ MODULE gpstd_solver
     ! Introduce fft normalisation factor in mat bloc mult
     CALL select_case_dims_global(nfftx,nffty,nfftz)
     coeff_norm = 1.0_num/(nfftx*nffty*nfftz)
-
+    IF (l_AM_rz) THEN
+      coeff_norm = 1.0_num/(nfftx*nffty)
+    ENDIF
     DO i=1,nbloc_ccmat
       DO j=1,nbloc_ccmat
           cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc =                            &
