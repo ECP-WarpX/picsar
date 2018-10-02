@@ -194,460 +194,486 @@ class Modules( object ):
 
 class MiniAppParser( object ):
 
-    def __init__( self, type_solver, type_pusher, type_depos ):
+    def __init__( self, type_solver, type_pusher, type_depos,
+                  flag_optimization ):
 
         self.clean_folder()
         self.type_solver = type_solver
         self.type_pusher = type_pusher
         self.type_depos  = type_depos
+        self.flag_optimization = flag_optimization
 
         # Create the folder for the mini app
         os.makedirs('./PICSARlite')
 
         # To be completed
         # Solver
-	generic_modules = ["diagnostics",\
-                           "control_file",\
-                           "simple_io",\
-                           "PICSAR_precision",\
-                           "constants",\
-                           "precomputed",\
-                           "params",\
-                           "mpi_type_constants",\
-                           "communications",\
-                           "time_stat",\
-                           "output_data",\
-                           "shared_data",\
-                           "mem_status",\
-                           "mpi_derived_types",\
-                           "mpi_routines", \
-                           "python_pointers" ]
+        generic_modules = [
+                        "diagnostics",\
+                        "control_file",\
+                        "simple_io",\
+                        "PICSAR_precision",\
+                        "constants",\
+                        "precomputed",\
+                        "params",\
+                        "mpi_type_constants",\
+                        "communications",\
+                        "time_stat",\
+                        "output_data",\
+                        "shared_data",\
+                        "mem_status",\
+                        "mpi_derived_types",\
+                        "mpi_routines", \
+                        "python_pointers" ]
 
-        generic_routines=["calc_diags",\
-		            "calc_field_div",\
-		            "calc_field_divB",\
-		            "init_diags",\
-		            "init_temp_diags",\
-		            "init_time_stat_output",\
-		            "get_loc_kinetic_energy",\
-		            "get_kinetic_energy",\
-		            "get_loc_field_energy_2d",\
-		            "get_loc_field_energy",\
-		            "get_field_energy_2d",\
-		            "get_field_energy",\
-		            "get_field_energy",\
-		            "get_loc_norm_2",\
-                            "system",\
-		            "get_norm_divErho",\
-			    "output_routines",\
-			    "output_temporal_diagnostics",\
-			    "write_3d_field_array_to_file",\
-			    "write_single_array_to_file",\
-			    "mpi_minimal_init",\
-			    "setup_communicator",\
-			    "mpi_initialise",\
-			    "compute_simulation_axis",\
-			    "allocate_grid_quantities",\
-			    "mpi_close",\
-			    "time_statistics",\
-			    "time_statistics_per_iteration",\
-			    "get_local_grid_mem ",\
-			    "get_global_grid_mem",\
-  			    "set_tile_split",\
-  			    "set_tile_split_for_species",\
-  			    "add_particle_to_species_2d",\
-  			    "add_particle_to_species",\
-  			    "add_particle_at_tile_2d",\
-  			    "add_particle_at_tile",\
-  			    "add_group_of_particles_at_tile",\
-  			    "rm_particles_from_species_with_mask",\
-  			    "rm_particles_from_species_2d",\
-  			    "rm_particles_from_species",\
-  			    "rm_particle_at_tile_2d",\
-  			    "rm_particle_at_tile",\
-  			    "allocate_tile_arrays",\
-  			    "init_tile_arrays",\
-  			    "init_tile_arrays_for_species",\
-  			    "load_particles",\
-  			    "resize_particle_arrays",\
-  			    "resize_1D_array_real",\
-  			    "resize_2D_array_real",\
-  			    "resize_3D_array_real",\
-  			    "get_local_number_of_part",\
-  			    "point_to_tile",\
-  			    "set_particle_species_properties",\
-  			    "get_are_tiles_reallocated",\
-  			    "set_are_tiles_reallocated",\
-  			    "estimate_tiles_memory_consumption",\
-  			    "load_laser_species",\
-  			    "load_laser",\
-  			    "product_matrix_2c2",\
-  			    "get_local_tile_mem",\
-  			    "get_global_tile_mem",\
-			    "default_init",\
-			    "read_from_cl",\
-			    "read_input_file",\
-			    "read_cpusplit_section",\
-			    "read_plasma_section",\
-			    "read_solver_section",\
-			    "read_sorting_section",\
-			    "read_timestat_section",\
-			    "read_main_section",\
-			    "read_species_section",\
-			    "read_particle_dumps_section",\
-			    "read_output_section",\
-			    "read_temporal_output_section",\
-			    "read_antenna_section",\
-			    "init_species_section",\
-			    "initall",\
-			    "pxr_gete2dxz_energy_conserving_vect_1_1",\
-			    "pxr_getb2dxz_energy_conserving_vect_1_1",\
-			    "pxr_gete2dxz_energy_conserving_vect_2_2",\
-			    "pxr_getb2dxz_energy_conserving_vect_2_2",\
-			    "pxr_gete2dxz_energy_conserving_vect_2_2",\
-			    "pxr_getb2dxz_energy_conserving_vect_2_2",\
-			    "pxr_gete2dxz_energy_conserving_scalar_3_3",\
-			    "pxr_gete2dxz_energy_conserving_vect_3_3",\
-			    "pxr_getb2dxz_energy_conserving_scalar_3_3",\
-			    "pxr_getb2dxz_energy_conserving_vect_3_3",\
-			    "pxr_geteb2dxz_energy_conserving_vect_3_3",\
-			    "pxr_gete2dxz_n_energy_conserving",\
-			    "pxr_getb2dxz_n_energy_conserving",\
-			    "gete3d_energy_conserving_scalar_1_1_1",\
-			    "getb3d_energy_conserving_scalar_1_1_1",\
-			    "gete3d_energy_conserving_vec_1_1_1",\
-			    "getb3d_energy_conserving_vec_1_1_1",\
-			    "geteb3d_energy_conserving_vecV1_1_1_1",\
-			    "geteb3d_energy_conserving_vecV2_1_1_1",\
-			    "geteb3d_energy_conserving_vecV3_1_1_1",\
-			    "geteb3d_energy_conserving_vecV4_1_1_1",\
-			    "geteb3d_energy_conserving_vec_1_1_1_v2",\
-			    "geteb3d_energy_conserving_vec_1_1_1_sub",\
-			    "gete3d_energy_conserving_scalar_2_2_2",\
-			    "getb3d_energy_conserving_scalar_2_2_2",\
-			    "gete3d_energy_conserving_vec_2_2_2",\
-			    "getb3d_energy_conserving_vec_2_2_2",\
-			    "geteb3d_energy_conserving_vecV1_2_2_2",\
-			    "geteb3d_energy_conserving_vecV2_2_2_2", \
-			    "geteb3d_energy_conserving_vecV3_2_2_2", \
-			    "geteb3d_energy_conserving_vecV4_2_2_2",\
-			    "gete3d_energy_conserving_scalar_3_3_3",\
-			    "getb3d_energy_conserving_scalar_3_3_3",\
-			    "gete3d_energy_conserving_linear_3_3_3", \
-			    "getb3d_energy_conserving_linear_3_3_3",\
-			    "gete3d_energy_conserving_vec_3_3_3", \
-			    "getb3d_energy_conserving_vec_3_3_3",\
-			    "gete3d_energy_conserving_vec2_3_3_3",\
-			    "getb3d_energy_conserving_vec2_3_3_3",\
-			    "geteb3d_energy_conserving_vec_3_3_3",\
-			    "geteb3d_energy_conserving_vecV2_3_3_3",\
-			    "geteb3d_energy_conserving_vecV3_3_3_3",\
-			    "geteb3d_energy_conserving_blockvec_3_3_3",\
-			    "geteb3d_energy_conserving_blockvec2_3_3_3",\
-			    "pxrgete3d_n_energy_conserving",\
-			    "pxrgetb3d_n_energy_conserving",\
-			    "pxr_getb3d_n_energy_conserving",\
-			    "pxr_gete3d_n_energy_conserving",\
-			    "geteb2dxz_energy_conserving",\
-			    "geteb2dxz_energy_conserving_generic",\
-			    "field_gathering",\
-			    "field_gathering_sub",\
-			    "geteb3d_energy_conserving",\
-			    "geteb3d_energy_conserving_generic"
-			    "mpi_send",
-			    "mpi_recv",
-			    "mpi_isend",
-			    "mpi_irecv",
-			    "mpi_sendrecv",
-			    "mpi_wait",
-			    "mpi_waitall",
-			    "mpi_type_free",
-			    "mpi_start mpi_type_free",
-			    "mpi_send_init",
-			    "mpi_type_commit",
-			    "mpi_type_vector",
-			    "mpi_reduce",
-			    "mpi_allgather",
-			    "mpi_abort",
-			    "mpi_bcast mpi_barrier",
-			    "mpi_comm_free",
-			    "mpi_comm_rank",
-			    "mpi_comm_size",
-			    "mpi_comm_group",
-			    "mpi_comm_dup",
-			    "mpi_comm_split",
-			    "mpi_comm_free",
-			    "mpi_cart_rank",
-			    "mpi_comm_group",
-			    "mpi_cart_shift",
-			    "mpi_cart_create",
-			    "mpi_dims_create",
-			    "mpi_init_thread",
-			    "mpi_initialized",
-			    "mpi_type_create_subarray",
-			    "mpi_type_commit",
-		            "mpi_type_contiguous",
-			    "mpi_type_vector",
-			    "mpi_type_commit",
-			    "mpi_type_create_struct",
-			    "mpi_type_size",
-                "step"]
+        generic_routines=[
+                        "calc_diags",\
+                        "calc_field_div",\
+                        "calc_field_divB",\
+                        "init_diags",\
+                        "init_temp_diags",\
+                        "init_time_stat_output",\
+                        "get_loc_kinetic_energy",\
+                        "get_kinetic_energy",\
+                        "get_loc_field_energy_2d",\
+                        "get_loc_field_energy",\
+                        "get_field_energy",\
+                        "get_field_energy_2d",\
+                        "get_field_energy",\
+                        "get_loc_norm_2",\
+                        "system",\
+                        "get_norm_divErho",\
+                        "output_routines",\
+                        "output_temporal_diagnostics",\
+                        "write_3d_field_array_to_file",\
+                        "write_single_array_to_file",\
+                        "mpi_minimal_init",\
+                        "setup_communicator",\
+                        "mpi_initialise",\
+                        "compute_simulation_axis",\
+                        "allocate_grid_quantities",\
+                        "mpi_close",\
+                        "time_statistics",\
+                        "time_statistics_per_iteration",\
+                        "get_local_grid_mem ",\
+                        "get_global_grid_mem",\
+                        "set_tile_split",\
+                        "set_tile_split_for_species",\
+                        "add_particle_to_species_2d",\
+                        "add_particle_to_species",\
+                        "add_particle_at_tile_2d",\
+                        "add_particle_at_tile",\
+                        "add_group_of_particles_at_tile",\
+                        "rm_particles_from_species_with_mask",\
+                        "rm_particles_from_species_2d",\
+                        "rm_particles_from_species",\
+                        "rm_particle_at_tile_2d",\
+                        "rm_particle_at_tile",\
+                        "allocate_tile_arrays",\
+                        "init_tile_arrays",\
+                        "init_tile_arrays_for_species",\
+                        "load_particles",\
+                        "resize_particle_arrays",\
+                        "resize_1D_array_real",\
+                        "resize_2D_array_real",\
+                        "resize_3D_array_real",\
+                        "get_local_number_of_part",\
+                        "point_to_tile",\
+                        "set_particle_species_properties",\
+                        "get_are_tiles_reallocated",\
+                        "set_are_tiles_reallocated",\
+                        "estimate_tiles_memory_consumption",\
+                        "load_laser_species",\
+                        "load_laser",\
+                        "product_matrix_2c2",\
+                        "get_local_tile_mem",\
+                        "get_global_tile_mem",\
+                        "default_init",\
+                        "read_from_cl",\
+                        "read_input_file",\
+                        "read_cpusplit_section",\
+                        "read_plasma_section",\
+                        "read_solver_section",\
+                        "read_sorting_section",\
+                        "read_timestat_section",\
+                        "read_main_section",\
+                        "read_species_section",\
+                        "read_particle_dumps_section",\
+                        "read_output_section",\
+                        "read_temporal_output_section",\
+                        "read_antenna_section",\
+                        "init_species_section",\
+                        "initall",\
+                        "pxr_gete2dxz_energy_conserving_vect_1_1",\
+                        "pxr_getb2dxz_energy_conserving_vect_1_1",\
+                        "pxr_gete2dxz_energy_conserving_vect_2_2",\
+                        "pxr_getb2dxz_energy_conserving_vect_2_2",\
+                        "pxr_gete2dxz_energy_conserving_vect_2_2",\
+                        "pxr_getb2dxz_energy_conserving_vect_2_2",\
+                        "pxr_gete2dxz_energy_conserving_scalar_3_3",\
+                        "pxr_gete2dxz_energy_conserving_vect_3_3",\
+                        "pxr_getb2dxz_energy_conserving_scalar_3_3",\
+                        "pxr_getb2dxz_energy_conserving_vect_3_3",\
+                        "pxr_geteb2dxz_energy_conserving_vect_3_3",\
+                        "pxr_gete2dxz_n_energy_conserving",\
+                        "pxr_getb2dxz_n_energy_conserving",\
+                        "gete3d_energy_conserving_scalar_1_1_1",\
+                        "getb3d_energy_conserving_scalar_1_1_1",\
+                        "gete3d_energy_conserving_vec_1_1_1",\
+                        "getb3d_energy_conserving_vec_1_1_1",\
+                        "geteb3d_energy_conserving_vecV1_1_1_1",\
+                        "geteb3d_energy_conserving_vecV2_1_1_1",\
+                        "geteb3d_energy_conserving_vecV3_1_1_1",\
+                        "geteb3d_energy_conserving_vecV4_1_1_1",\
+                        "geteb3d_energy_conserving_vec_1_1_1_v2",\
+                        "geteb3d_energy_conserving_vec_1_1_1_sub",\
+                        "gete3d_energy_conserving_scalar_2_2_2",\
+                        "gete3d_energy_conserving_vec_2_2_2",\
+                        "getb3d_energy_conserving_scalar_2_2_2",\
+                        "getb3d_energy_conserving_vec_2_2_2",\
+                        "geteb3d_energy_conserving_vecV1_2_2_2",\
+                        "geteb3d_energy_conserving_vecV2_2_2_2", \
+                        "geteb3d_energy_conserving_vecV3_2_2_2", \
+                        "geteb3d_energy_conserving_vecV4_2_2_2",\
+                        "gete3d_energy_conserving_scalar_3_3_3",\
+                        "getb3d_energy_conserving_scalar_3_3_3",\
+                        "gete3d_energy_conserving_linear_3_3_3", \
+                        "getb3d_energy_conserving_linear_3_3_3",\
+                        "gete3d_energy_conserving_vec_3_3_3", \
+                        "getb3d_energy_conserving_vec_3_3_3",\
+                        "gete3d_energy_conserving_vec2_3_3_3",\
+                        "getb3d_energy_conserving_vec2_3_3_3",\
+                        "geteb3d_energy_conserving_vec_3_3_3",\
+                        "geteb3d_energy_conserving_vecV2_3_3_3",\
+                        "geteb3d_energy_conserving_vecV3_3_3_3",\
+                        "geteb3d_energy_conserving_blockvec_3_3_3",\
+                        "geteb3d_energy_conserving_blockvec2_3_3_3",\
+                        "pxrgete3d_n_energy_conserving",\
+                        "pxrgetb3d_n_energy_conserving",\
+                        "pxr_getb3d_n_energy_conserving",\
+                        "pxr_gete3d_n_energy_conserving",\
+                        "geteb2dxz_energy_conserving",\
+                        "geteb2dxz_energy_conserving_generic",\
+                        "field_gathering",\
+                        "field_gathering_sub",\
+                        "geteb3d_energy_conserving",\
+                        "geteb3d_energy_conserving_generic"
+                        "mpi_send",
+                        "mpi_recv",
+                        "mpi_isend",
+                        "mpi_irecv",
+                        "mpi_sendrecv",
+                        "mpi_wait",
+                        "mpi_waitall",
+                        "mpi_type_free",
+                        "mpi_send_init",
+                        "mpi_start mpi_type_free",
+                        "mpi_type_commit",
+                        "mpi_type_vector",
+                        "mpi_reduce",
+                        "mpi_allgather",
+                        "mpi_abort",
+                        "mpi_bcast mpi_barrier",
+                        "mpi_comm_free",
+                        "mpi_comm_rank",
+                        "mpi_comm_size",
+                        "mpi_comm_group",
+                        "mpi_comm_split",
+                        "mpi_comm_free",
+                        "mpi_comm_dup",
+                        "mpi_cart_rank",
+                        "mpi_comm_group",
+                        "mpi_cart_shift",
+                        "mpi_cart_create",
+                        "mpi_dims_create",
+                        "mpi_init_thread",
+                        "mpi_initialized",
+                        "mpi_type_create_subarray",
+                        "mpi_type_commit",
+                        "mpi_type_contiguous",
+                        "mpi_type_vector",
+                        "mpi_type_commit",
+                        "mpi_type_create_struct",
+                        "mpi_type_size",
+                        "step"]
 
         generic_modules_solver = ["fields","field_boundary"]
 
         generic_routines_solver = [
-				   "field_bc",\
- 				   "exchange_mpi_3d_grid_array_with_guards",\
- 				   "exchange_mpi_3d_grid_array_with_guards_nonblocking",\
- 				   "summation_bcs",\
- 				   "summation_bcs_nonblocking",\
- 				   "summation_bcs_persistent_jx",\
- 				   "summation_bcs_persistent_jy",\
- 				   "summation_bcs_persistent_jz",\
- 				   "efield_bcs",\
- 				   "bfield_bcs",\
- 				   "current_bcs",\
- 				   "charge_bcs"]
+                        "field_bc",\
+                        "exchange_mpi_3d_grid_array_with_guards",\
+                        "exchange_mpi_3d_grid_array_with_guards_nonblocking",\
+                        "summation_bcs",\
+                        "summation_bcs_nonblocking",\
+                        "summation_bcs_persistent_jx",\
+                        "summation_bcs_persistent_jy",\
+                        "summation_bcs_persistent_jz",\
+                        "efield_bcs",\
+                        "bfield_bcs",\
+                        "current_bcs",\
+                        "charge_bcs"]
+
         generic_modules_pusher = [
-                         "grid_tilemodule",\
-                         "buff_exchange_part",\
-                         "antenna",\
-                         "particle_speciesmodule",\
-                         "particle_properties",\
-                         "particles",\
-                         "buff_exchange_part",\
-                         "sorting",\
-                         "particle_boundary" ]
+                        "grid_tilemodule",\
+                        "buff_exchange_part",\
+                        "antenna",\
+                        "particle_speciesmodule",\
+                        "particle_properties",\
+                        "particles",\
+                        "buff_exchange_part",\
+                        "sorting",\
+                        "particle_boundary" ]
 
         generic_routines_pusher = [
-				   "set_tile_split",\
-				   "particle_bcs",\
-				   "particle_bcs_2d",\
-				   "particle_bcs_tiles",\
-				   "particle_bcs_tiles_openmp",\
-				   "particle_bcs_tiles_2d",\
-				   "particle_bcs_tiles_2d_openmp",\
-				   "particle_bsc_openmp_reordering",\
-				   "particle_bcs_mpi_blocking",\
-				   "particle_bcs_mpi_non_blocking",\
-				   "particle_bcs_mpi_non_blocking_2d",\
-				   "particle_bcs_tiles_and_mpi_3d",\
-				   "push_laser_particles",\
-				   "laserp_pusher_gaussian",\
-				   "laserp_pusher_hanning",\
-				   "gaussian_profile",\
-				   "hanning_profile",\
-				   "field_gathering_plus_particle_pusher_sub_2d",\
-				   "field_gathering_plus_particle_pusher",\
-				   "field_gathering_plus_particle_pusher_sub",\
-				   "field_gathering_plus_particle_pusher_cacheblock_sub",\
-				   "particle_pusher_sub",\
-				   "pxrpush_particles_part1",\
-				   "pxrpush_particles_part1_sub",\
-				   "pxrpush_particles_part2",\
-				   "field_gathering_plus_particle_pusher_1_1_1",\
-				   "field_gathering_plus_particle_pusher_2_2_2",\
-				   "field_gathering_plus_particle_pusher_3_3_3",\
-				   "pxr_pushxyz",\
-				   "pxr_push2dxz",\
-				   "pxr_pushxz"]
+                        "set_tile_split",\
+                        "particle_bcs",\
+                        "particle_bcs_2d",\
+                        "particle_bcs_tiles",\
+                        "particle_bcs_tiles_openmp",\
+                        "particle_bcs_tiles_2d",\
+                        "particle_bcs_tiles_2d_openmp",\
+                        "particle_bsc_openmp_reordering",\
+                        "particle_bcs_mpi_blocking",\
+                        "particle_bcs_mpi_non_blocking",\
+                        "particle_bcs_mpi_non_blocking_2d",\
+                        "particle_bcs_tiles_and_mpi_3d",\
+                        "push_laser_particles",\
+                        "laserp_pusher_gaussian",\
+                        "laserp_pusher_hanning",\
+                        "gaussian_profile",\
+                        "hanning_profile",\
+                        "field_gathering_plus_particle_pusher_sub_2d",\
+                        "field_gathering_plus_particle_pusher",\
+                        "field_gathering_plus_particle_pusher_sub",\
+                        "field_gathering_plus_particle_pusher_cacheblock_sub",\
+                        "particle_pusher_sub",\
+                        "pxrpush_particles_part1",\
+                        "pxrpush_particles_part1_sub",\
+                        "pxrpush_particles_part2",\
+                        "field_gathering_plus_particle_pusher_1_1_1",\
+                        "field_gathering_plus_particle_pusher_2_2_2",\
+                        "field_gathering_plus_particle_pusher_3_3_3",\
+                        "pxr_pushxyz",\
+                        "pxr_push2dxz",\
+                        "pxr_pushxz"]
 
 
-	boris_modules = []
-	boris_routines = [
-			  "pxr_pushxz",\
-			  "pxr_push2dxz",\
-			  "pxr_boris_push_u_3d",\
-			  "pxr_boris_push_rr_S09_u_3d",\
-			  "pxr_boris_push_rr_B08_u_3d",\
-			  "pxr_boris_push_rr_LL_u_3d",\
-			  "pxr_boris_push_u_3d_block",\
-			  "pxr_pushxyz",\
-			  "pxr_epush_v",\
-			  "pxr_bpush_v",\
-			  "pxr_set_gamma"]
+        boris_modules = []
+        boris_routines_scalar = [
+                        "pxr_pushxz",\
+                        "pxr_push2dxz",\
+                        "pxr_boris_push_u_3d",\
+                        "pxr_pushxyz",\
+                        "pxr_epush_v",\
+                        "pxr_bpush_v",\
+                        "pxr_set_gamma"]
 
-	vay_pusher_modules = []
+        boris_routines_vector = [
+                        "pxr_boris_push_rr_S09_u_3d",\
+                        "pxr_boris_push_rr_B08_u_3d",\
+                        "pxr_boris_push_rr_LL_u_3d",\
+                        "pxr_boris_push_u_3d_block"]
 
-	vay_pusher_routines= ["pxr_ebcancelpush3d" ]
+        vay_pusher_modules = []
+
+        vay_pusher_routines= ["pxr_ebcancelpush3d" ]
 
         generic_modules_depos = [
-			"grid_tilemodule",\
-			"tile_params",\
-			"tiling",\
-			"particle_tilemodule"]
-        generic_routines_depos = [
-			"depose_rho_scalar_1_1_1",\
-			"depose_rho_scalar_2_2_2",\
-			"depose_rho_scalar_3_3_3",\
-			"depose_rho_vecSH_1_1_1",\
-			"depose_rho_vecNOY_1_1_1",\
-			"depose_rho_vecHV_1_1_1",\
-			"depose_rho_vecHVv2_1_1_1",\
-			"depose_rho_vecHVv2_2_2_2",\
-			"depose_rho_vecHVv2_3_3_3",\
-			"depose_rho_vecHVv3_3_3_3",\
-			"depose_rho_vecHVv4_3_3_3",\
-			"pxr_depose_rho_n",\
-			"pxr_depose_rho_n_2dxz",\
-			"pxr_depose_rhoold_n_2dxz",\
-			"pxrdepose_rho_on_grid",\
-			"pxrdepose_rho_on_grid_sub_openmp_3d_n",\
-			"pxrdepose_rho_on_grid_sub_openmp_3d",\
-			"pxrdepose_rho_on_grid_sub_openmp_2d",\
-			"pxrdepose_rho_on_grid_sub_openmp_3d_scalar",\
-			"pxrdepose_rho_on_grid_sub_openmp_3d_vecto",\
-			"depose_jxjyjz",\
-			"depose_jxjyjz_generic",\
-			"pxrdepose_currents_on_grid_jxjyjz",\
-			"depose_jxjyjz_2d depose_jxjyjz_generic_2d",\
-	                "pxrdepose_currents_on_grid_jxjyjz_2d",\
-			"pxrdepose_currents_on_grid_jxjyjz_2d",\
-		        "curr_depo_sub",\
-			"func_order",\
-			]
+                        "grid_tilemodule",\
+                        "tile_params",\
+                        "tiling",\
+                        "particle_tilemodule"]
 
-	esirkepov_modules=[]
+        generic_routines_depos_scalar = [
+                        "depose_rho_scalar_1_1_1",\
+                        "depose_rho_scalar_2_2_2",\
+                        "depose_rho_scalar_3_3_3",\
+                        "pxr_depose_rho_n",\
+                        "pxr_depose_rho_n_2dxz",\
+                        "pxr_depose_rhoold_n_2dxz",\
+                        "pxrdepose_rho_on_grid",\
+                        "pxrdepose_rho_on_grid_sub_openmp_3d_n",\
+                        "pxrdepose_rho_on_grid_sub_openmp_3d",\
+                        "pxrdepose_rho_on_grid_sub_openmp_2d",\
+                        "pxrdepose_rho_on_grid_sub_openmp_3d_scalar",\
+                        "depose_jxjyjz",\
+                        "depose_jxjyjz_generic",\
+                        "pxrdepose_currents_on_grid_jxjyjz",\
+                        "depose_jxjyjz_2d depose_jxjyjz_generic_2d",\
+                        "pxrdepose_currents_on_grid_jxjyjz_2d",\
+                        "pxrdepose_currents_on_grid_jxjyjz_2d",\
+                        "curr_depo_sub",\
+                        "func_order",\
+                        ]
 
-	esirkepov_routines=["pxrdepose_currents_on_grid_jxjyjz_sub_openmp",\
-			"pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp",\
-			"depose_jxjyjz_esirkepov",\
-			"depose_jxjyjz_esirkepov_1_1_1",\
-			"depose_jxjyjz_esirkepov_2_2_2",\
-			"depose_jxjyjz_esirkepov_3_3_3",\
-			"pxr_depose_jxjyjz_esirkepov_n",\
-			"pxr_depose_jxjyjz_esirkepov2d_n",\
-			"pxr_depose_jxjyjz_esirkepov2d_1_1",\
-			"pxr_depose_jxjyjz_esirkepov2d_2_2",\
-			"pxr_depose_jxjyjz_esirkepov2d_3_3",\
-                        "pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3",\
-			"  depose_jxjyjz_esirkepov_2d"]
+        generic_routines_depos_vector = [
+                        "depose_rho_vecSH_1_1_1",\
+                        "depose_rho_vecNOY_1_1_1",\
+                        "depose_rho_vecHV_1_1_1",\
+                        "depose_rho_vecHVv2_1_1_1",\
+                        "depose_rho_vecHVv2_2_2_2",\
+                        "depose_rho_vecHVv2_3_3_3",\
+                        "depose_rho_vecHVv3_3_3_3",\
+                        "depose_rho_vecHVv4_3_3_3",\
+                        "pxrdepose_rho_on_grid_sub_openmp_3d_vecto",\
+                        ]
 
-	direct_modules = []
+        esirkepov_modules=[]
 
-	direct_routines = ["depose_jxjyjz_scalar_1_1_1",\
-			"depose_jxjyjz_vecHVv2_1_1_1",\
-			"depose_jxjyjz_vecHV_vnr_1_1_1",\
-			"depose_jxjyjz_scalar_2_2_2",\
-			"depose_jxjyjz_vecHVv2_2_2_2",\
-			"depose_jxjyjz_vecHV_vnr_2_2_2",\
-			"depose_jxjyjz_scalar_3_3_3",\
-			"depose_jxjyjz_vecHVv3_3_3_3",\
-			"depose_jxjyjz_vecHV_vnr_3_3_3",\
-			"current_reduction_1_1_1",\
-			"current_reduction_2_2_2",\
-			"current_reduction_3_3_3"]
+        esirkepov_routines_scalar=[
+                        "pxrdepose_currents_on_grid_jxjyjz_sub_openmp",\
+                        "pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp",\
+                        "depose_jxjyjz_esirkepov",\
+                        "depose_jxjyjz_esirkepov_1_1_1",\
+                        "depose_jxjyjz_esirkepov_2_2_2",\
+                        "depose_jxjyjz_esirkepov_3_3_3",\
+                        "pxr_depose_jxjyjz_esirkepov_n",\
+                        "pxr_depose_jxjyjz_esirkepov2d_n",\
+                        "pxr_depose_jxjyjz_esirkepov2d_1_1",\
+                        "pxr_depose_jxjyjz_esirkepov2d_2_2",\
+                        "pxr_depose_jxjyjz_esirkepov2d_3_3",\
+                        "depose_jxjyjz_esirkepov_2d"]
 
-	spectral_modules= [
-			"math_tools",\
-			"gpstd_solver",\
-			"fourier_psaotd",\
-			"fftw3_fortran",\
-			"mpi_fftw3",\
-			"fastfft",\
-			"matrix_data",\
-			"matrix_coefficients",\
-			"fourier",\
-			"group_parameters",\
-			"load_balance"]
+        esirkepov_routines_vector=["pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3"]
 
-	spectral_routines  = [
-			"get_non_periodic_mpi_bcs",
-			"setup_groups",
-			"adjust_grid_mpi_global",
-			"mpi_minimal_init_fftw",
-			"sendrecv_l2g_generalized",
-			"sendrecv_l2g_generalized_non_blocking",
+        direct_modules = []
+
+        direct_routines_scalar = ["depose_jxjyjz_scalar_1_1_1",\
+                        "depose_jxjyjz_scalar_2_2_2",\
+                        "depose_jxjyjz_scalar_3_3_3"]
+
+        direct_routines_vector = ["depose_jxjyjz_vecHVv2_1_1_1",\
+                        "depose_jxjyjz_vecHV_vnr_1_1_1",\
+                        "depose_jxjyjz_vecHVv2_2_2_2",\
+                        "depose_jxjyjz_vecHV_vnr_2_2_2",\
+                        "depose_jxjyjz_vecHVv3_3_3_3",\
+                        "depose_jxjyjz_vecHV_vnr_3_3_3",\
+                        "current_reduction_1_1_1",\
+                        "current_reduction_2_2_2",\
+                        "current_reduction_3_3_3"]
+
+
+        spectral_modules= [
+                        "math_tools",\
+                        "gpstd_solver",\
+                        "fourier_psaotd",\
+                        "fftw3_fortran",\
+                        "mpi_fftw3",\
+                        "fastfft",\
+                        "matrix_data",\
+                        "matrix_coefficients",\
+                        "fourier",\
+                        "group_parameters",\
+                        "load_balance"]
+
+        spectral_routines  = [
+                        "get_non_periodic_mpi_bcs",
+                        "setup_groups",
+                        "adjust_grid_mpi_global",
+                        "mpi_minimal_init_fftw",
+                        "sendrecv_l2g_generalized",
+                        "sendrecv_l2g_generalized_non_blocking",
                         "generalized_comms_group_l2g",
-			"generalized_comms_group_g2l",
-			"sendrecv_g2l_generalized_non_blocking",
-			"sendrecv_g2l_generalized",
-			"field_damping_bcs",
-			"merge_fields",
-			"merge_e_fields",
-			"merge_b_fields",
-			"push_psatd_ebfield",
-			"init_pml_arrays",
-			"select_case_dims_local",
-			"select_case_dims_global",
-			"init_kspace",
-			"delete_k_space",
-			"compute_k_vec",
-			"compute_k_1d",
-			"fftfreq",
-			"init_gpstd",
-			"compute_cc_mat_splitted_fields",
-			"compute_cc_mat_merged_fields",
-			"FD_weights_hvincenti",
-			"copy_field",
-			"copy_field_forward",
-			"copy_field_backward",
-			"init_plans_fourier_mpi",
-			"get_Ffields",
-			"get_Ffields_mpi_lb",
-			"get_Ffields_mpi",
-			"get_fields",
-			"get_fields_mpi",
-			"get_fields_mpi_lb",
-			"fft_forward_r2c_local",
-			"fft_forward_r2c_hybrid",
-			"fft_backward_c2r_local",
-			"fft_backward_c2r_hybrid",
-			"push_psaotd_ebfielfs_2d",
-			"push_psaotd_ebfielfs_3d",
-			"init_plans_blocks",
-			"fast_fftw_create_plan_r2c_3d_dft",
-			"fast_fftw_create_plan_c2r_3d_dft",
-			"fast_fftw_create_plan_r2c_2d_dft",
-			"fast_fftw_create_plan_c2r_2d_dft",
-			"fast_fftw3d_c2r_with_plan",
-			"fast_fftw3d_r2c_with_plan",
-			"allocate_new_matrix_vector",
-			"multiply_mat_vector",
-			"multiply_unit_blocks"
-			"fftw_mpi_local_size_3d" ,
-			"fftw_mpi_local_size_3d_transposed" ,
-			"fftw_mpi_local_size_2d p3dfft_setup" ,
-			"p3dfft_get_dims" ,
-			"dfftw_init_threads",
-			"fftw_mpi_init fftw_mpi_plan_dft_r2c_3d",
-			"fftw_mpi_plan_dft_c2r_3d",
-			"fftw_mpi_plan_dft_r2c_2d" ,
-			"fftw_mpi_plan_dft_c2r_2d" ,
-			"p3dfft_ftran_r2c" ,
-			"fftw_mpi_execute_dft_r2c",
-			"p3dfft_ftran_c2r" ,
-			"fftw_mpi_execute_dft_c2r"]
-	fdtd_modules = []
+                        "generalized_comms_group_g2l",
+                        "sendrecv_g2l_generalized_non_blocking",
+                        "sendrecv_g2l_generalized",
+                        "field_damping_bcs",
+                        "merge_fields",
+                        "merge_e_fields",
+                        "merge_b_fields",
+                        "push_psatd_ebfield",
+                        "init_pml_arrays",
+                        "select_case_dims_local",
+                        "select_case_dims_global",
+                        "init_kspace",
+                        "delete_k_space",
+                        "compute_k_vec",
+                        "compute_k_1d",
+                        "fftfreq",
+                        "init_gpstd",
+                        "compute_cc_mat_splitted_fields",
+                        "compute_cc_mat_merged_fields",
+                        "FD_weights_hvincenti",
+                        "copy_field",
+                        "copy_field_forward",
+                        "copy_field_backward",
+                        "init_plans_fourier_mpi",
+                        "get_Ffields",
+                        "get_Ffields_mpi_lb",
+                        "get_Ffields_mpi",
+                        "get_fields",
+                        "get_fields_mpi",
+                        "get_fields_mpi_lb",
+                        "fft_forward_r2c_local",
+                        "fft_forward_r2c_hybrid",
+                        "fft_backward_c2r_local",
+                        "fft_backward_c2r_hybrid",
+                        "push_psaotd_ebfielfs_2d",
+                        "push_psaotd_ebfielfs_3d",
+                        "init_plans_blocks",
+                        "fast_fftw_create_plan_r2c_3d_dft",
+                        "fast_fftw_create_plan_c2r_3d_dft",
+                        "fast_fftw_create_plan_r2c_2d_dft",
+                        "fast_fftw_create_plan_c2r_2d_dft",
+                        "fast_fftw3d_c2r_with_plan",
+                        "fast_fftw3d_r2c_with_plan",
+                        "allocate_new_matrix_vector",
+                        "multiply_mat_vector",
+                        "multiply_unit_blocks"
+                        "fftw_mpi_local_size_3d" ,
+                        "fftw_mpi_local_size_3d_transposed" ,
+                        "fftw_mpi_local_size_2d p3dfft_setup" ,
+                        "p3dfft_get_dims" ,
+                        "dfftw_init_threads",
+                        "fftw_mpi_init fftw_mpi_plan_dft_r2c_3d",
+                        "fftw_mpi_plan_dft_c2r_3d",
+                        "fftw_mpi_plan_dft_r2c_2d" ,
+                        "fftw_mpi_plan_dft_c2r_2d" ,
+                        "p3dfft_ftran_r2c" ,
+                        "fftw_mpi_execute_dft_r2c",
+                        "p3dfft_ftran_c2r" ,
+                        "fftw_mpi_execute_dft_c2r"]
+        fdtd_modules = []
 
-	fdtd_routines = [
-		        "push_bfield",
-		        "push_efield",
-		        "init_stencil_coefficients",
-			"FD_weights",
-		        "push_bfield_2d",
-		        "push_efield_2d",
-		        "pxrpush_em3d_evec_norder",
-		        "pxrpush_em2d_evec_norder",
-		        "pxrpush_em2d_evec",
-		        "pxrpush_em3d_evec",
-		        "pxrpush_em3d_bvec_norder",
-		        "pxrpush_em2d_bvec_norder",
-		        "pxrpush_em2d_bvec",
-		        "pxrpush_em3d_bvec"]
+        fdtd_routines = [
+                        "push_bfield",
+                        "push_efield",
+                        "init_stencil_coefficients",
+                        "FD_weights",
+                        "push_bfield_2d",
+                        "push_efield_2d",
+                        "pxrpush_em3d_evec_norder",
+                        "pxrpush_em2d_evec_norder",
+                        "pxrpush_em2d_evec",
+                        "pxrpush_em3d_evec",
+                        "pxrpush_em3d_bvec_norder",
+                        "pxrpush_em2d_bvec_norder",
+                        "pxrpush_em2d_bvec",
+                        "pxrpush_em3d_bvec"]
 
-	self.list_available_modules = generic_modules + generic_modules_solver + generic_modules_pusher + generic_modules_depos
-	self.list_available_routines =  generic_routines + generic_routines_solver + generic_routines_pusher + generic_routines_depos
+        self.list_available_modules = generic_modules                        \
+                                    + generic_modules_solver                 \
+                                    + generic_modules_pusher                 \
+                                    + generic_modules_depos
+
+        self.list_available_routines = generic_routines                      \
+                                     + generic_routines_solver               \
+                                     + generic_routines_pusher               \
+                                     + generic_routines_depos_scalar
+
+        if self.flag_optimization == 'on':
+            self.list_available_routines += generic_routines_depos_vector
+
         if type_solver == 'all':
-            self.list_available_modules+= spectral_modules + fdtd_modules
+            self.list_available_modules  += spectral_modules  + fdtd_modules
             self.list_available_routines += spectral_routines + fdtd_routines
 
         elif type_solver == 'fdtd':
-            self.list_available_modules+= fdtd_modules
-            self.list_available_routines+= fdtd_routines
+            self.list_available_modules  += fdtd_modules
+            self.list_available_routines += fdtd_routines
 
         elif type_solver == 'spectral':
-            self.list_available_modules += spectral_modules
+            self.list_available_modules  += spectral_modules
             self.list_available_routines += spectral_routines
 
         else:
@@ -668,16 +694,21 @@ class MiniAppParser( object ):
 
         # Pusher
         if type_pusher == 'all':
-            self.list_available_modules +=  vay_pusher_modules + boris_modules
-            self.list_available_routines +=  vay_pusher_routines + boris_routines
+            self.list_available_modules  += vay_pusher_modules  + boris_modules
+            self.list_available_routines += vay_pusher_routines              \
+                                         + boris_routines_scalar
+            if self.flag_optimization == 'on':
+                self.list_available_routines += boris_routines_vector
 
         elif type_pusher == 'boris':
-            self.list_available_modules += boris_modules
-            self.list_available_routines += boris_routines
+            self.list_available_modules  += boris_modules
+            self.list_available_routines += boris_routines_scalar
+            if self.flag_optimization == 'on':
+                self.list_available_routines += boris_routines_vector
 
         elif type_pusher == 'vay':
-            self.list_available_modules += vay_pusher_modules
-            self.list_available_routines +=vay_pusher_routines
+            self.list_available_modules  += vay_pusher_modules
+            self.list_available_routines += vay_pusher_routines
 
         else:
             print('#########################################################' \
@@ -692,16 +723,24 @@ class MiniAppParser( object ):
 
         # Deposition
         if type_depos == 'all':
-            self.list_available_modules += direct_modules + esirkepov_modules
-            self.list_available_routines += direct_routines + esirkepov_routines
+            self.list_available_modules  += direct_modules  + esirkepov_modules
+            self.list_available_routines += direct_routines_scalar          \
+                                         + esirkepov_routines_scalar
+            if self.flag_optimization == 'on':
+                self.list_available_routines += direct_routines_vector      \
+                                             + esirkepov_routines_vector    \
 
         elif type_depos == 'direct':
-            self.list_available_modules += direct_modules
-            self.list_available_routines += direct_routines
+            self.list_available_modules  += direct_modules
+            self.list_available_routines += direct_routines_scalar
+            if self.flag_optimization == 'on':
+                self.list_available_routines += direct_routines_vector
 
         elif type_depos == 'esirkepov':
-            self.list_available_modules += esirkepov_modules
-            self.list_available_routines +=esirkepov_routines
+            self.list_available_modules  += esirkepov_modules
+            self.list_available_routines += esirkepov_routines_scalar
+            if self.flag_optimization == 'on':
+                self.list_available_routines += esirkepov_routines_vector
 
         else:
             print('#########################################################' \
@@ -717,7 +756,7 @@ class MiniAppParser( object ):
         #LIST ALL .F90 or .F files in current directory
         self.listfiles = self.create_listfiles('./src')
         #self.listfiles = ["parallelization/tiling/tiling.F90"]
-
+        print self.list_available_routines
         # Reconstruct PICSARlite
         print "Write routines in PICSARlite"
         for file in self.listfiles:
@@ -1306,26 +1345,47 @@ class MiniAppParser( object ):
         fnew.close()
 
 
-
-
-
 ###############################################################################
-# Main
+import argparse
 
-arglist=sys.argv
-#try:
-type_parser = str(arglist[1])
-type_pusher = str(arglist[2])
-type_depos  = str(arglist[3])
-miniapp = MiniAppParser(type_parser, type_pusher, type_depos)
+parser = argparse.ArgumentParser(description='Parse inputs to generate_miniapp.',
+                                 formatter_class=argparse.RawTextHelpFormatter)
 
-# except(IndexError):
-#     print('##################################################################')
-#     print('Some arguments are needed there.')
-#     print('The list of available solvers is:')
-#     print('- all: every routines and modules from picsar')
-#     print('- fdtd: every routines and modules related to the Finate Domain')
-#     print('        Time Domain Maxwell solver in 3D.')
-#     print('- spectral: every routines and modules related to the Pseudo-')
-#     print('        Spectral Analytical Time Domain Maxwell solver in 3D.')
-#     print('##################################################################')
+parser.add_argument('--solver', dest='type_solver', default='all',
+                    choices = ['all','fdtd','spectral'],
+                    help = 'Maxwell solvers among: \n'\
+                    +'- fdtd:     3D-Finate Domain Time Domain Maxwell '\
+                    + 'solver\n'\
+                    + '- spectral: 3D-Pseudo-Spectral Analytical Time Domain' \
+                    + ' Maxwell solver. \n'       \
+                    + '- all:      both solvers \n'    \
+                    + 'Default all.\n\n')
+
+parser.add_argument('--pusher', dest='type_pusher', default='all',
+                    choices = ['all','boris','vay'],
+                    help='Particle pushers among: \n'\
+                    + '- boris: Boris pusher \n- vay:   Vay pusher\n' \
+                    + '- all:   both particle pushers \n'    \
+                    + 'Default all.\n\n')
+
+parser.add_argument('--depos',  dest='type_depos',  default='all',
+                    choices = ['all','direct','esirkepov'],
+                    help='Particle depositions among: \n'\
+                    + '- direct:    Direct deposition \n'\
+                    + '- esirkepov: Esirkepov deposition\n' \
+                    + '- all:       both particle depositions\n'   \
+                    + 'Default all.\n\n')
+
+parser.add_argument('--optimization',  dest='flag_optimization', default='on',
+                    choices = ['on','off'],
+                    help='flag optimization \n' \
+                    +'Default on.\n')
+
+args=parser.parse_args()
+
+type_solver = args.type_solver
+type_pusher = args.type_pusher
+type_depos  = args.type_depos
+flag_optimization = args.flag_optimization
+
+miniapp = MiniAppParser(type_solver, type_pusher, type_depos, flag_optimization)
