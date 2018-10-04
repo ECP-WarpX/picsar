@@ -107,6 +107,221 @@ MODULE math_tools !#do not parse
     ENDIF
     RETURN
   END FUNCTION sinc
+
+
+  SUBROUTINE jyndd ( n, x, bjn, djn, fjn, byn, dyn, fyn )
+  !*****************************************************************************80
+  !
+  !! JYNDD: Bessel functions Jn(x) and Yn(x), first and second
+  !derivatives.
+  !
+  !  Licensing:
+  !
+  !    This routine is copyrighted by Shanjie Zhang and Jianming Jin.
+  !    However, 
+  !    they give permission to incorporate this routine into a user
+  !    program 
+  !    provided that the copyright is acknowledged.
+  !
+  !  Modified:
+  !
+  !    02 August 2012
+  !
+  !  Author:
+  !
+  !    Shanjie Zhang, Jianming Jin
+  !
+  !  Reference:
+  !
+  !    Shanjie Zhang, Jianming Jin,
+  !    Computation of Special Functions,
+  !    Wiley, 1996,
+  !    ISBN: 0-471-11963-6,
+  !    LC: QA351.C45.
+  !
+  !  Parameters:
+  !
+  !    Input, integer ( kind = 4 ) N, the order.
+  !
+  !    Input, real ( kind = 8 ) X, the argument.
+  !
+  !    Output, real ( kind = 8 ) BJN, DJN, FJN, BYN, DYN, FYN, the values
+  !    of
+  !    Jn(x), Jn'(x), Jn"(x), Yn(x), Yn'(x), Yn"(x).
+  !
+    IMPLICIT NONE
+  
+    REAL ( KIND = 8 ) bj(102)
+    REAL ( KIND = 8 ) bjn
+    REAL ( KIND = 8 ) byn
+    REAL ( KIND = 8 ) bs
+    REAL ( KIND = 8 ) by(102)
+    REAL ( KIND = 8 ) djn
+    REAL ( KIND = 8 ) dyn
+    REAL ( KIND = 8 ) e0
+    REAL ( KIND = 8 ) ec
+    REAL ( KIND = 8 ) f
+    REAL ( KIND = 8 ) f0
+    REAL ( KIND = 8 ) f1
+    REAL ( KIND = 8 ) fjn
+    REAL ( KIND = 8 ) fyn
+    INTEGER ( KIND = 4 ) k
+    INTEGER ( KIND = 4 ) m
+    INTEGER ( KIND = 4 ) mt
+    INTEGER ( KIND = 4 ) n
+    INTEGER ( KIND = 4 ) nt
+    REAL ( KIND = 8 ) s1
+    REAL ( KIND = 8 ) su
+    REAL ( KIND = 8 ) x
+  
+    DO nt = 1, 900
+      mt = int ( 0.5D+00 * log10 ( 6.28D+00 * nt ) &
+        - nt * log10 ( 1.36D+00 * abs ( x ) / nt ) )
+      IF ( 20 < mt ) THEN
+        EXIT
+      END IF 
+    END DO
+  
+    m = nt
+    bs = 0.0D+00
+    f0 = 0.0D+00
+    f1 = 1.0D-35
+    su = 0.0D+00
+    DO k = m, 0, -1
+      f = 2.0D+00 * ( k + 1.0D+00 ) * f1 / x - f0
+      IF ( k <= n + 1 ) THEN
+        bj(k+1) = f
+      END IF
+      IF ( k == 2 * int ( k / 2 ) ) THEN
+        bs = bs + 2.0D+00 * f
+        IF ( k /= 0 ) THEN
+          su = su + ( -1.0D+00 ) ** ( k / 2 ) * f / k
+        END IF
+      END IF
+      f0 = f1
+      f1 = f
+    END DO
+  
+    DO k = 0, n + 1
+      bj(k+1) = bj(k+1) / ( bs - f )
+    END DO
+  
+    bjn = bj(n+1)
+    ec = 0.5772156649015329D+00
+    e0 = 0.3183098861837907D+00
+    s1 = 2.0D+00 * e0 * ( log ( x / 2.0D+00 ) + ec ) * bj(1)
+    f0 = s1 - 8.0D+00 * e0 * su / ( bs - f )
+    f1 = ( bj(2) * f0 - 2.0D+00 * e0 / x ) / bj(1)
+  
+    by(1) = f0
+    by(2) = f1
+    DO k = 2, n + 1 
+      f = 2.0D+00 * ( k - 1.0D+00 ) * f1 / x - f0
+      by(k+1) = f
+      f0 = f1
+      f1 = f
+    END DO
+  
+    byn = by(n+1)
+    djn = - bj(n+2) + n * bj(n+1) / x
+    dyn = - by(n+2) + n * by(n+1) / x
+    fjn = ( n * n / ( x * x ) - 1.0D+00 ) * bjn - djn / x
+    fyn = ( n * n / ( x * x ) - 1.0D+00 ) * byn - dyn / x
+  
+    RETURN
+  END SUBROUTINE jyndd
+  
+  
+  
+  SUBROUTINE jyzo ( n, nt, rj0 )
+  
+  !*****************************************************************************80
+  !
+  !! JYZO computes the zeros of Bessel functions Jn(x), Yn(x) and derivatives.
+  !
+  !  Licensing:
+  !
+  !    This routine is copyrighted by Shanjie Zhang and Jianming Jin.  However, 
+  !    they give permission to incorporate this routine into a user program 
+  !    provided that the copyright is acknowledged.
+  !
+  !  Modified:
+  !
+  !    28 July 2012
+  !
+  !  Author:
+  !
+  !    Shanjie Zhang, Jianming Jin
+  !
+  !  Reference:
+  !
+  !    Shanjie Zhang, Jianming Jin,
+  !    Computation of Special Functions,
+  !    Wiley, 1996,
+  !    ISBN: 0-471-11963-6,
+  !    LC: QA351.C45.
+  !
+  !  Parameters:
+  !
+  !    Input, integer ( kind = 4 ) N, the order of the Bessel functions.
+  !
+  !    Input, integer ( kind = 4 ) NT, the number of zeros.
+  !
+  !    Output, real ( kind = 8 ) RJ0(NT), RJ1(NT), RY0(NT), RY1(NT), the zeros 
+  !    of Jn(x), Jn'(x), Yn(x), Yn'(x).
+  !
+    IMPLICIT NONE
+  
+    INTEGER ( KIND = 4 ) nt
+  
+    REAL ( KIND = 8 ) bjn
+    REAL ( KIND = 8 ) byn
+    REAL ( KIND = 8 ) djn
+    REAL ( KIND = 8 ) dyn
+    REAL ( KIND = 8 ) fjn
+    REAL ( KIND = 8 ) fyn
+    INTEGER ( KIND = 4 ) l
+    INTEGER ( KIND = 4 ) n
+    REAL ( KIND = 8 ) n_r8
+    REAL ( KIND = 8 ) rj0(nt)
+    REAL ( KIND = 8 ) x
+    REAL ( KIND = 8 ) x0
+  
+    n_r8 = REAL ( n, KIND = 8 )
+  
+    IF ( n <= 20 ) THEN
+      x = 2.82141D+00 + 1.15859D+00 * n_r8 
+    ELSE
+      x = n + 1.85576D+00 * n_r8 ** 0.33333D+00 &
+        + 1.03315D+00 / n_r8 ** 0.33333D+00
+    END IF
+  
+    l = 0
+  
+    DO
+  
+      x0 = x
+      call jyndd ( n, x, bjn, djn, fjn, byn, dyn, fyn )
+      x = x - bjn / djn
+  
+      IF ( 1.0D-09 < abs ( x - x0 ) ) THEN
+        CYCLE
+      END IF
+  
+      l = l + 1
+      rj0(l) = x
+      x = x + 3.1416D+00 + ( 0.0972D+00 + 0.0679D+00 * n_r8 &
+        - 0.000354D+00 * n_r8 ** 2 ) / l
+  
+      IF ( nt <= l ) THEN
+        EXIT
+      END IF
+  
+    END DO 
+  
+    RETURN
+  END SUBROUTINE jyzo 
+
 END MODULE math_tools
 
 
@@ -772,6 +987,45 @@ MODULE gpstd_solver
 
      DEALLOCATE(onesp,ones)
   END SUBROUTINE compute_k_1d
+
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine computes a 1D k-vector along r  direction using the zeros
+  !> of Bessel  functions
+  !> PS : kr is always centred for the moment and we calculate the exact value !  
+  !> for the moment l_stg is always false and norder should be only 0 
+  !> @author
+  !> Imen Zemzemi
+  !
+  !> @params[in] nfft INTEGER(idp) - number of points on which the FFT is performed on
+  !> current axis
+  !> @params[in] norder - INTEGER(idp) - stencil spatial order
+  !> @params[in] d  - REAL(num) - sampling period in real space
+  !> @params[in] l_stg - LOGICAL(lp) - Assumes staggered grid for l_stg==.TRUE.
+  !> @params[in,out] kvec - array of REAL(num) - kvector
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
+  SUBROUTINE compute_kr_1d(nmode,nfft,kvec)
+     USE constants, ONLY: pi
+     USE picsar_precision, ONLY: idp, cpx
+     INTEGER(KIND =4) , INTENT(IN) :: nmode, nfft
+     COMPLEX(cpx) , DIMENSION(:) , ALLOCATABLE , INTENT(INOUT) :: kvec
+     COMPLEX(cpx), ALLOCATABLE, DIMENSION(:)     ::  ones
+     REAL ( KIND = 8 ), ALLOCATABLE, DIMENSION(:) :: nu 
+     
+     ALLOCATE (nu(nfft))
+     ALLOCATE(ones(nfft))
+     ALLOCATE(kvec(nfft))
+     kvec=(0._num, 0._num)
+     !kr = 2*np.pi * self.trans[m].dht0.get_nu()
+     CALL  jyzo  (nmode,nfft,nu)
+     kvec = 2*PI*ones*nu 
+
+ 
+
+  END SUBROUTINE compute_kr_1d
 
   ! ______________________________________________________________________________________
   !> @brief

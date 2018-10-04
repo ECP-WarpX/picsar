@@ -1697,11 +1697,16 @@ IF (.NOT. l_axis_allocated) THEN
   ! Allocate arrays of axis
   ALLOCATE(x(-nxguards:nx+nxguards))
   ALLOCATE(y(-nyguards:ny+nyguards))
-  ALLOCATE(z(-nzguards:nz+nzguards))
   ALLOCATE(x_global(-nxguards:nx_global+nxguards))
   ALLOCATE(y_global(-nyguards:ny_global+nyguards))
-  ALLOCATE(z_global(-nzguards:nz_global+nzguards))
+  IF (l_AM_rz) THEN
+    ALLOCATE (z(0:nmodes-1))
+    ALLOCATE(z_global(0:nmodes-1))
+  ELSE
+    ALLOCATE(z(-nzguards:nz+nzguards))
+    ALLOCATE(z_global(-nzguards:nz_global+nzguards))
   l_axis_allocated=.TRUE.
+  ENDIF 
 ENDIF
 !!! --- Set up global grid
 DO ix = -nxguards, nx_global+nxguards
@@ -1758,7 +1763,6 @@ USE mpi_fftw3, ONLY: fftw_alloc_complex, local_ny_tr, fftw_alloc_real, local_ny,
 USE fourier
 USE group_parameters
 USE picsar_precision, ONLY: idp
-USE fields, ONLY: l_AM_rz
 #endif
 IMPLICIT NONE
 #if defined(FFTW)
