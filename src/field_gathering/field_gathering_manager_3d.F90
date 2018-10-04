@@ -208,6 +208,7 @@ SUBROUTINE field_gathering_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
             ! - Init current tile variables
 
             curr=>species_parray(ispecies)
+            IF (curr%is_antenna) CYCLE
             curr_tile=>curr%array_of_tiles(ix, iy, iz)
             count=curr_tile%np_tile(1)
             IF (count .EQ. 0) CYCLE

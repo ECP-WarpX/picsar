@@ -151,7 +151,6 @@ section::antenna
   laser_w0 = 1000000
   #1.8e-6
   # Focusing length 
-  focal_length = 0.
   temporal_order = 0 
   # Time profile (0 - constant, 1-Hanning)
   window = 0
