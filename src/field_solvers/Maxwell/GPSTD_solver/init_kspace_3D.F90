@@ -110,6 +110,7 @@ MODULE math_tools !#do not parse
 
 
   SUBROUTINE jyndd ( n, x, bjn, djn, fjn, byn, dyn, fyn )
+  USE picsar_precision
   !*****************************************************************************80
   !
   !! JYNDD: Bessel functions Jn(x) and Yn(x), first and second
@@ -151,28 +152,28 @@ MODULE math_tools !#do not parse
   !
     IMPLICIT NONE
   
-    REAL ( KIND = 8 ) bj(102)
-    REAL ( KIND = 8 ) bjn
-    REAL ( KIND = 8 ) byn
-    REAL ( KIND = 8 ) bs
-    REAL ( KIND = 8 ) by(102)
-    REAL ( KIND = 8 ) djn
-    REAL ( KIND = 8 ) dyn
-    REAL ( KIND = 8 ) e0
-    REAL ( KIND = 8 ) ec
-    REAL ( KIND = 8 ) f
-    REAL ( KIND = 8 ) f0
-    REAL ( KIND = 8 ) f1
-    REAL ( KIND = 8 ) fjn
-    REAL ( KIND = 8 ) fyn
-    INTEGER ( KIND = 4 ) k
-    INTEGER ( KIND = 4 ) m
-    INTEGER ( KIND = 4 ) mt
-    INTEGER ( KIND = 4 ) n
-    INTEGER ( KIND = 4 ) nt
-    REAL ( KIND = 8 ) s1
-    REAL ( KIND = 8 ) su
-    REAL ( KIND = 8 ) x
+    REAL ( num ) bj(102)
+    REAL ( num ) bjn
+    REAL ( num ) byn
+    REAL ( num ) bs
+    REAL ( num ) by(102)
+    REAL ( num ) djn
+    REAL ( num ) dyn
+    REAL ( num ) e0
+    REAL ( num ) ec
+    REAL ( num ) f
+    REAL ( num ) f0
+    REAL ( num ) f1
+    REAL ( num ) fjn
+    REAL ( num ) fyn
+    INTEGER ( idp ) k
+    INTEGER ( idp ) m
+    INTEGER ( idp ) mt
+    INTEGER ( idp ) n
+    INTEGER ( idp ) nt
+    REAL ( idp ) s1
+    REAL ( idp ) su
+    REAL ( idp ) x
   
     DO nt = 1, 900
       mt = int ( 0.5D+00 * log10 ( 6.28D+00 * nt ) &
@@ -234,7 +235,7 @@ MODULE math_tools !#do not parse
   
   
   SUBROUTINE jyzo ( n, nt, rj0 )
-  
+  USE picsar_precision 
   !*****************************************************************************80
   !
   !! JYZO computes the zeros of Bessel functions Jn(x), Yn(x) and derivatives.
@@ -272,22 +273,22 @@ MODULE math_tools !#do not parse
   !
     IMPLICIT NONE
   
-    INTEGER ( KIND = 4 ) nt
+    INTEGER ( idp ) nt
   
-    REAL ( KIND = 8 ) bjn
-    REAL ( KIND = 8 ) byn
-    REAL ( KIND = 8 ) djn
-    REAL ( KIND = 8 ) dyn
-    REAL ( KIND = 8 ) fjn
-    REAL ( KIND = 8 ) fyn
-    INTEGER ( KIND = 4 ) l
-    INTEGER ( KIND = 4 ) n
-    REAL ( KIND = 8 ) n_r8
-    REAL ( KIND = 8 ) rj0(nt)
-    REAL ( KIND = 8 ) x
-    REAL ( KIND = 8 ) x0
+    REAL ( num ) bjn
+    REAL ( num ) byn
+    REAL ( num ) djn
+    REAL ( num ) dyn
+    REAL ( num ) fjn
+    REAL ( num ) fyn
+    INTEGER ( idp ) l
+    INTEGER ( idp ) n
+    REAL ( num ) n_r8
+    REAL ( num ) rj0(nt)
+    REAL ( num ) x
+    REAL ( num ) x0
   
-    n_r8 = REAL ( n, KIND = 8 )
+    n_r8 = REAL ( n, num )
   
     IF ( n <= 20 ) THEN
       x = 2.82141D+00 + 1.15859D+00 * n_r8 
@@ -759,19 +760,19 @@ MODULE gpstd_solver
   !> Creation 2017
   ! ______________________________________________________________________________________
   SUBROUTINE compute_k_vec(l_stg)
-    USE fields, ONLY: nordery, norderz, norderx
+    USE fields, ONLY: nordery, norderz, norderx, l_AM_rz
     USE group_parameters, ONLY: p3d_fsize, p3d_fstart, p3d_fend
     USE iso_c_binding
     USE mpi_fftw3, ONLY: local_z0_tr, local_z0, local_nz, local_nz_tr
     USE picsar_precision, ONLY: idp, num, lp, cpx
-    USE shared_data, ONLY: nz, fftw_with_mpi, p3dfft_stride, p3dfft_flag, dx,        &
+    USE shared_data, ONLY: nmodes, nz, fftw_with_mpi, p3dfft_stride, p3dfft_flag, dx,        &
       fftw_mpi_transpose, dy, dz
     IMPLICIT NONE
     LOGICAL(lp), INTENT(IN)                     :: l_stg
     COMPLEX(cpx), ALLOCATABLE, DIMENSION(:)     ::                                     &
      kxct,kxbt,kxft,kyct,kybt,kyft,kzct,kzbt,kzft, k_temp
     COMPLEX(cpx)                                  :: ii
-    INTEGER(idp)                                  :: nfftx, nffty, nfftz
+    INTEGER(idp)                                  :: i, nfftx, nffty, nfftz
     REAL(num)                                     :: sd
     INTEGER(idp)                                  :: temp_order
 
@@ -825,8 +826,14 @@ MODULE gpstd_solver
 
     !> computes wave vector components in each direction
     CALL compute_k_1d( nfftx,kxc,kxf,kxb,norderx,dx,l_stg)
-    CALL compute_k_1d( nffty,kyc,kyf,kyb,nordery,dy,l_stg)
-    CALL compute_k_1d( nfftz,kzc,kzf,kzb,norderz,dz,l_stg)
+    IF (l_AM_rz) THEN
+      DO i=1, nmodes
+        CALL  compute_kr_1d(i,nffty,kyc) 
+      END DO
+    ELSE 
+      CALL compute_k_1d( nffty,kyc,kyf,kyb,nordery,dy,l_stg)
+      CALL compute_k_1d( nfftz,kzc,kzf,kzb,norderz,dz,l_stg)
+    END IF
 
     ! Selects only haf of  kx because r2c and c2r ffts
     IF(.NOT. p3dfft_flag) THEN
@@ -1008,22 +1015,27 @@ MODULE gpstd_solver
   !> Creation 2017
   ! ______________________________________________________________________________________
   SUBROUTINE compute_kr_1d(nmode,nfft,kvec)
-     USE constants, ONLY: pi
+     USE shared_data, ONLY: ny, dy
      USE picsar_precision, ONLY: idp, cpx
-     INTEGER(KIND =4) , INTENT(IN) :: nmode, nfft
+     INTEGER(idp) , INTENT(IN) :: nmode, nfft
      COMPLEX(cpx) , DIMENSION(:) , ALLOCATABLE , INTENT(INOUT) :: kvec
      COMPLEX(cpx), ALLOCATABLE, DIMENSION(:)     ::  ones
      REAL ( KIND = 8 ), ALLOCATABLE, DIMENSION(:) :: nu 
-     
+     INTEGER(idp) ::  i
      ALLOCATE (nu(nfft))
      ALLOCATE(ones(nfft))
      ALLOCATE(kvec(nfft))
      kvec=(0._num, 0._num)
      !kr = 2*np.pi * self.trans[m].dht0.get_nu()
      CALL  jyzo  (nmode,nfft,nu)
-     kvec = 2*PI*ones*nu 
-
- 
+     IF (nmode == 0) THEN
+       kvec = nu/(ny*dy) 
+     ELSE
+       kvec(1)=0._num 
+       DO i=2_idp,nfft
+         kvec(i)=nu(i)/(ny*dy)
+       END DO
+     END IF
 
   END SUBROUTINE compute_kr_1d
 
