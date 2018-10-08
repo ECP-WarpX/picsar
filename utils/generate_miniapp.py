@@ -171,6 +171,7 @@ class Modules( object ):
         self.proceduremod = proceduremod
         self.isroutine    = False
 
+
     ### Remove comments from current line
     def rm_comments(self, line):
         icomm=line.find("!")
@@ -191,6 +192,69 @@ class Modules( object ):
         else:
             linecopy=line
         return linecopy
+
+class Interface( object ):
+    def __init__( self, file ):
+
+        f = open('./src/%s'%file,"r")
+        listlines=f.readlines()
+
+        istart=[]
+        # Init iend with -1 to avoid code duplication, this element is removed
+        # afterwards
+        iend=[-1]
+        Nlines=len(listlines)
+        proc_mod=True
+        for i in range(0,Nlines):
+            curr_line=listlines[i].lower()
+            curr_word_list=curr_line.split(" ")
+
+            # This is a subroutine block
+            if ((curr_line.find("interface")>=0) \
+                & (curr_line.find("!")==-1)):
+                if i > iend[-1]:
+                    istart.append(i)
+
+                    while True: # get end of block
+                        i=i+1
+
+                        if (i>=Nlines):
+                            sys.exit("ERROR: missing end interface block in "+file)
+                        curr_line=listlines[i].lower()
+
+                        if (curr_line.find("end interface")>=0):
+                          break
+                    iend.append(i)
+
+        # Remove the -1 value of iend
+        iend.remove(-1)
+
+        # Create a file with only the interface in it and apply the subroutine
+        # class to it.
+        for j in range(len(istart)):
+            ftemp = open('./src/%s_temp_%s'%(file, j), "w")
+            listlines_temp = []
+            for i in range(istart[j]+1, iend[j], 1):
+                listlines_temp.append(listlines[i])
+
+            ftemp.writelines(listlines_temp)
+            ftemp.close()
+
+        self.file         = file
+        self.istart       = istart
+        self.iend         = iend
+
+        self.routine_istart = []
+        self.routine_iend   = []
+        self.routine_names  = []
+
+        for j in range(len(istart)):
+            r = Subroutines('%s_temp_%s'%(file, j))
+            self.routine_istart.append(r.istart)
+            self.routine_iend.append(r.iend)
+            self.routine_names.append(r.names)
+            os.system('rm ./src/%s_temp_%s'%(file, j))
+
 
 class MiniAppParser( object ):
 
@@ -755,8 +819,7 @@ class MiniAppParser( object ):
 
         #LIST ALL .F90 or .F files in current directory
         self.listfiles = self.create_listfiles('./src')
-        #self.listfiles = ["parallelization/tiling/tiling.F90"]
-        print self.list_available_routines
+
         # Reconstruct PICSARlite
         print "Write routines in PICSARlite"
         for file in self.listfiles:
@@ -839,6 +902,9 @@ class MiniAppParser( object ):
                 if r.names[iname] in lower_list_available_routines:
                     self.copy_files_from_picsar(r, iname)
 
+        if os.path.exists('./PICSARlite/src/%s'%file):
+            self.manage_routine_interface(file)
+
     def copy_files_from_picsar( self, routine, index ):
         # routine is an instance of the class Routines or Modules
 
@@ -898,6 +964,174 @@ class MiniAppParser( object ):
         f = open('./PICSARlite/src/%s'%file, 'aw')
         f.writelines('END MODULE %s'%module +'\n')
         f.close()
+
+    def manage_routine_interface(self, file):
+
+        # Reopen the file to track the interface
+        interface = Interface('../PICSARlite/src/%s'%file)
+        if len(interface.istart) < 1:
+            return
+
+        lower_list_available_routines = []
+        for routine in self.list_available_routines:
+            lower_list_available_routines.append(routine.lower())
+
+        f = open('PICSARlite/src/%s'%file, 'r')
+        listlines = f.readlines()
+        Nlines = len(listlines)
+        compt = 0
+        istart = [-1]; istart += interface.istart
+        iend   = [-1]; iend += interface.iend
+
+        fnew =  open('./PICSARlite/src/%s'%file, 'w')
+        listlines_new = []
+        for i in range(Nlines):
+            if (compt == len(iend)-1) & (i >= iend[compt]):
+                listlines_new.append(listlines[i])
+
+            elif i >= iend[compt]:
+                if i != istart[compt+1]:
+                    listlines_new.append(listlines[i])
+
+                # Begin the interface
+                else:
+                    listlines_new.append(listlines[i])
+                    for index in range(len(interface.routine_istart[compt])):
+                        if interface.routine_names[compt][index] in \
+                                                lower_list_available_routines:
+                            istart_routine = \
+                interface.routine_istart[compt][index] + istart[compt+1]+1
+                            iend_routine = \
+                interface.routine_iend[compt][index] + istart[compt+1] + 1
+                            for line in listlines[istart_routine:\
+                                                  iend_routine+1]:
+                                listlines_new.append(line)
+                    if compt == len(iend)-1:
+                        compt = 0
+                    else:
+                        compt += 1
+
+        fnew.writelines(listlines_new)
+        fnew.close()
+
+        # Comment calls if needed
+        self.clean_call_interface(file, interface )
+
+    def clean_call_interface(self, file, interface):
+
+        def formatting_line(nb_blanks, str, add_ampersand=True):
+            "Add the & symbol at the 87th place."
+            L = len(str)+nb_blanks
+            space = ' '
+            strnew = ''
+            # Add nb_blanks at the beginning
+            for n in range(nb_blanks):
+             strnew += space
+
+            strnew += str
+
+            for n in range(86-L):
+             strnew += space
+            if add_ampersand:
+             strnew += '&'
+            return strnew
+
+        # Find the unwanted call
+        f = open('./PICSARlite/src/%s'%file,"r")
+        listlines=f.readlines()
+        Nlines = len(listlines)
+        istart = [-1]
+        iend   = [-1]
+        list_routine_name = []
+        nb_blanks = []
+
+        # Lower the case of the routines
+        lower_list_available_routines = []
+        for routine in self.list_available_routines:
+            lower_list_available_routines.append(routine.lower())
+
+        interface_routine_names = []
+        for i in range(len(interface.routine_names)):
+            interface_routine_names += interface.routine_names[i]
+
+        for i in range(0, Nlines):
+            curr_line=listlines[i].lower()
+            curr_word_list=curr_line.split(" ")
+            # We find a CALL
+            if (("call" in curr_word_list) & (curr_line.find("!")==-1 )):
+                # Get the name of the following routine
+                indexcall = curr_word_list.index("call")
+                routine_name = curr_word_list[indexcall+1].split('(')
+                routine_name = routine_name[1].split(',')[0]
+                routine_name = routine_name.split('\n')[0]
+
+                # If the routine is in the list, everything fine, if not the
+                # line and the block should be commented.
+                if ((not routine_name in lower_list_available_routines) \
+                 & (routine_name in interface_routine_names)):
+                    list_routine_name.append(routine_name)
+                    istart.append(i)
+                    curr_line_old = curr_line
+
+                    # Store the number of blanks before the call
+                    nb_blanks.append(indexcall)
+
+                    while True:
+                        if (i>=Nlines):
+                            sys.exit("ERROR: missing end call block")
+                        if not "&" in curr_line_old:
+                            break
+                        else:
+                            curr_line_old = curr_line
+                            i += 1
+                            curr_line=listlines[i].lower()
+                    iend.append(i)
+
+
+        # Comment and stop the code
+        fnew = open('./PICSARlite/src/%s'%file,"w")
+        listlines_new = []
+        compt = 0
+        for i in range(0, Nlines):
+            # If no more wrong subroutines, finsh the file
+            if (compt == len(iend)-1) & (i >= iend[compt]):
+                listlines_new.append(listlines[i])
+
+            elif i >= iend[compt]:
+                # It is regular lines
+                if i != istart[compt+1]:
+                    listlines_new.append(listlines[i])
+
+                # It is a call block
+                else:
+                    # Comment the lines
+                    if iend[compt+1] == istart[compt+1]:
+                        listlines_new.append('!'+listlines[i][1:])
+                    else:
+                        for iblock in range(iend[compt+1]-istart[compt+1]):
+                            line = listlines[i+iblock][1:].split('\n')[0]
+                            listlines_new.append('!'+line+'\n')
+
+                    # Print error message
+                    error_message = \
+                formatting_line( nb_blanks[compt], \
+                                       "WRITE(0,*) 'ABORT.',") + '\n' \
+              + formatting_line( nb_blanks[compt]+11, \
+                    "'The routine %s', "%(list_routine_name[compt])) + '\n'\
+              + formatting_line( nb_blanks[compt]+11, \
+                                "'cannot be used in this configuration.'",  \
+                                add_ampersand=False)
+
+                    listlines_new.append("\n" + error_message + "\n")
+                    listlines_new.append(formatting_line( nb_blanks[compt], \
+                                        "STOP", add_ampersand=False)+ "\n \n")
+                    if compt == len(iend)-1:
+                        compt = 0
+                    else:
+                        compt += 1
+
+        fnew.writelines(listlines_new)
+        fnew.close()
 
     def comment_unavailable_routine(self, file):
         """
@@ -1305,7 +1539,6 @@ class MiniAppParser( object ):
                                 else:
                                     curr_word_list= \
                                                 curr_line.split("build:")
-                                    print i, curr_word_list,'\n'
                                     curr_word_list =curr_word_list[1]
                                 curr_word_list=curr_word_list.split("\t")
                                 routine = curr_word_list[0].split(' ')[0]
