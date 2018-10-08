@@ -332,6 +332,7 @@ MODULE gpstd_solver
   IMPLICIT NONE
   COMPLEX(cpx), DIMENSION(:), ALLOCATABLE :: kxc, kxb, kxf, kyc, kyb, kyf, kzc, kzb,  &
   kzf
+  COMPLEX(cpx), DIMENSION(:,:), ALLOCATABLE :: krc
   CONTAINS
 #if defined(FFTW)
   ! ______________________________________________________________________________________
@@ -352,7 +353,7 @@ MODULE gpstd_solver
   !> @params[in,out] nfftz INTEGER(idp) - Number of points in spectral space along Z
   ! ______________________________________________________________________________________
   SUBROUTINE select_case_dims_local(nfftx, nffty, nfftz)
-    USE fields, ONLY: nzguards, nxguards, nyguards
+    USE fields, ONLY: nzguards, nxguards, nyguards, l_AM_rz
     USE group_parameters, ONLY: p3d_fsize, nx_group, ny_group, nz_group
     USE iso_c_binding
     USE mpi_fftw3, ONLY: local_nz, local_nz_tr
@@ -400,6 +401,9 @@ MODULE gpstd_solver
       nfftx = nx+2*nxguards+1
       nffty = ny+2*nyguards+1
       nfftz = nz+2*nzguards+1
+      IF (l_AM_rz) THEN
+        nfftz = nmodes
+       ENDIF
 #else
       !> When using picsar
       nfftx = nx+2*nxguards
@@ -434,7 +438,7 @@ MODULE gpstd_solver
     USE group_parameters, ONLY: nx_group, ny_group, nz_group
     USE iso_c_binding
     USE picsar_precision, ONLY: idp
-    USE shared_data, ONLY: nz, ny, fftw_with_mpi, nx, p3dfft_stride, nx_global,      &
+    USE shared_data, ONLY: nmodes,nz, ny, fftw_with_mpi, nx, p3dfft_stride, nx_global,      &
       p3dfft_flag, ny_global, c_dim, nz_global, fftw_mpi_transpose, fftw_hybrid
     INTEGER(idp), INTENT(INOUT) :: nfftx, nffty, nfftz
     !> When using global or hybrid pseudo spectral solver
@@ -470,7 +474,7 @@ MODULE gpstd_solver
       nffty = ny+2*nyguards+1
       nfftz = nz+2*nzguards+1
       IF (l_AM_rz) THEN 
-        nfftz = 1
+        nfftz = nmodes
        ENDIF
 
 #else
@@ -578,6 +582,9 @@ MODULE gpstd_solver
 
     CALL select_case_dims_local(nfftx, nffty, nfftz)
     nfftxr = nfftx/2+1
+    IF (l_AM_rz) THEN 
+      nfftxr = nfftx
+    ENDIF 
     IF(p3dfft_flag) nfftxr = nfftx
     DO i = 1_idp, 10_idp
       ALLOCATE(kspace(nmatrixes2)%block_vector(i)%block3dc(nfftxr, nffty, nfftz))
@@ -600,9 +607,15 @@ MODULE gpstd_solver
               kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kxb(i)
               kspace(nmatrixes2)%block_vector(3)%block3dc(i, j, k) = kxc(i)
               IF(c_dim == 3) THEN
-                kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k) = kyf(j)
-                kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k) = kyb(j)
-                kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k) = kyc(j)
+                IF (l_AM_rz) THEN
+                  kspace(nmatrixes2)%block_vector(4)%block3dc(i,j, k) = krc(j,k)
+                  kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k) = krc(j,k)
+                  kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k) = krc(j,k)
+                ELSE
+                  kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k) = kyf(j)
+                  kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k) = kyb(j)
+                  kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k) = kyc(j)
+                ENDIF 
               ELSE IF(c_dim == 2) THEN
                 !> If c_dim == 2 Then y derivative is null
                 !> c_dim = 2 cannot be used with p3dfft or fftw_mpi_transpose
@@ -614,9 +627,9 @@ MODULE gpstd_solver
               !> If we do spectral with azimutal modes in cylindrical then
               !> ky=kz=kr 
               IF (l_AM_rz) THEN
-                kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = kyf(k)
-                kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = kyb(k)
-                kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = kyc(k)
+                kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = krc(j,k)
+                kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = krc(j,k)
+                kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = krc(j,k)
               ENDIF         
               kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = kzf(k)
               kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = kzb(k)
@@ -669,6 +682,11 @@ MODULE gpstd_solver
     SQRT(ABS(kspace(nmatrixes2)%block_vector(9)%block3dc)**2 +                       &
         ABS(kspace(nmatrixes2)%block_vector(6)%block3dc)**2 +                        &
         ABS(kspace(nmatrixes2)%block_vector(3)%block3dc)**2)
+    IF (l_AM_rz) THEN 
+      kspace(nmatrixes2)%block_vector(10)%block3dc=                                  &
+      SQRT(ABS(kspace(nmatrixes2)%block_vector(3)%block3dc)**2 +                     &
+        ABS(kspace(nmatrixes2)%block_vector(6)%block3dc)**2) 
+    END IF
     switch = .FALSE.
 
     ALLOCATE(temp(nfftxr, nffty, nfftz))
@@ -745,6 +763,7 @@ MODULE gpstd_solver
        DEALLOCATE(at_op(nmatrixes2)%block_vector(i)%block3dc)
     ENDDO
     DEALLOCATE(kxc,kxb,kxf,kyc,kyb,kyf,kzc,kzb,kzf)
+    DEALLOCATE(krc)
   END SUBROUTINE delete_k_space
 
   ! ______________________________________________________________________________________
@@ -827,16 +846,14 @@ MODULE gpstd_solver
     !> computes wave vector components in each direction
     CALL compute_k_1d( nfftx,kxc,kxf,kxb,norderx,dx,l_stg)
     IF (l_AM_rz) THEN
-      DO i=1, nmodes
-        CALL  compute_kr_1d(i,nffty,kyc) 
-      END DO
+      CALL  compute_kr_1d(nffty,krc,dy,nmodes) 
     ELSE 
       CALL compute_k_1d( nffty,kyc,kyf,kyb,nordery,dy,l_stg)
       CALL compute_k_1d( nfftz,kzc,kzf,kzb,norderz,dz,l_stg)
     END IF
 
     ! Selects only haf of  kx because r2c and c2r ffts
-    IF(.NOT. p3dfft_flag) THEN
+    IF((.NOT. p3dfft_flag) .AND. (.NOT. l_AM_rz) ) THEN
       ALLOCATE(k_temp(nfftx));
       k_temp = kxc;
       DEALLOCATE(kxc); ALLOCATE(kxc(nfftx/2+1)) ; kxc = k_temp(1:nfftx/2+1)
@@ -1014,28 +1031,31 @@ MODULE gpstd_solver
   !> @date
   !> Creation 2017
   ! ______________________________________________________________________________________
-  SUBROUTINE compute_kr_1d(nmode,nfft,kvec)
-     USE shared_data, ONLY: ny, dy
+  SUBROUTINE compute_kr_1d(nfft,kvec,d,nmodes)
+     USE shared_data, ONLY: ny
      USE picsar_precision, ONLY: idp, cpx
-     INTEGER(idp) , INTENT(IN) :: nmode, nfft
-     COMPLEX(cpx) , DIMENSION(:) , ALLOCATABLE , INTENT(INOUT) :: kvec
+     REAL(num) , INTENT(IN)  :: d
+     INTEGER(idp) , INTENT(IN) :: nfft,nmodes
+     COMPLEX(cpx) , DIMENSION(:,:) , ALLOCATABLE , INTENT(INOUT) :: kvec
      COMPLEX(cpx), ALLOCATABLE, DIMENSION(:)     ::  ones
      REAL ( KIND = 8 ), ALLOCATABLE, DIMENSION(:) :: nu 
-     INTEGER(idp) ::  i
+     INTEGER(idp) ::  i,k
      ALLOCATE (nu(nfft))
      ALLOCATE(ones(nfft))
-     ALLOCATE(kvec(nfft))
+     ALLOCATE(kvec(nfft,nmodes))
      kvec=(0._num, 0._num)
      !kr = 2*np.pi * self.trans[m].dht0.get_nu()
-     CALL  jyzo  (nmode,nfft,nu)
-     IF (nmode == 0) THEN
-       kvec = nu/(ny*dy) 
-     ELSE
-       kvec(1)=0._num 
-       DO i=2_idp,nfft
-         kvec(i)=nu(i)/(ny*dy)
-       END DO
-     END IF
+     DO k=1,nmodes
+       CALL  jyzo  (k,nfft,nu)
+       IF (k == 1) THEN
+         kvec(:,k) = nu/(ny*d) 
+       ELSE
+         kvec(1,k)=0._num 
+         DO i=2_idp,nfft
+           kvec(i,k)=nu(i)/(ny*d)
+         END DO
+       END IF
+     END DO
 
   END SUBROUTINE compute_kr_1d
 
