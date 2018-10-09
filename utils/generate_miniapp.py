@@ -368,60 +368,6 @@ class MiniAppParser( object ):
                         "read_antenna_section",\
                         "init_species_section",\
                         "initall",\
-                        "pxr_gete2dxz_energy_conserving_vect_1_1",\
-                        "pxr_getb2dxz_energy_conserving_vect_1_1",\
-                        "pxr_gete2dxz_energy_conserving_vect_2_2",\
-                        "pxr_getb2dxz_energy_conserving_vect_2_2",\
-                        "pxr_gete2dxz_energy_conserving_vect_2_2",\
-                        "pxr_getb2dxz_energy_conserving_vect_2_2",\
-                        "pxr_gete2dxz_energy_conserving_scalar_3_3",\
-                        "pxr_gete2dxz_energy_conserving_vect_3_3",\
-                        "pxr_getb2dxz_energy_conserving_scalar_3_3",\
-                        "pxr_getb2dxz_energy_conserving_vect_3_3",\
-                        "pxr_geteb2dxz_energy_conserving_vect_3_3",\
-                        "pxr_gete2dxz_n_energy_conserving",\
-                        "pxr_getb2dxz_n_energy_conserving",\
-                        "gete3d_energy_conserving_scalar_1_1_1",\
-                        "getb3d_energy_conserving_scalar_1_1_1",\
-                        "gete3d_energy_conserving_vec_1_1_1",\
-                        "getb3d_energy_conserving_vec_1_1_1",\
-                        "geteb3d_energy_conserving_vecV1_1_1_1",\
-                        "geteb3d_energy_conserving_vecV2_1_1_1",\
-                        "geteb3d_energy_conserving_vecV3_1_1_1",\
-                        "geteb3d_energy_conserving_vecV4_1_1_1",\
-                        "geteb3d_energy_conserving_vec_1_1_1_v2",\
-                        "geteb3d_energy_conserving_vec_1_1_1_sub",\
-                        "gete3d_energy_conserving_scalar_2_2_2",\
-                        "gete3d_energy_conserving_vec_2_2_2",\
-                        "getb3d_energy_conserving_scalar_2_2_2",\
-                        "getb3d_energy_conserving_vec_2_2_2",\
-                        "geteb3d_energy_conserving_vecV1_2_2_2",\
-                        "geteb3d_energy_conserving_vecV2_2_2_2", \
-                        "geteb3d_energy_conserving_vecV3_2_2_2", \
-                        "geteb3d_energy_conserving_vecV4_2_2_2",\
-                        "gete3d_energy_conserving_scalar_3_3_3",\
-                        "getb3d_energy_conserving_scalar_3_3_3",\
-                        "gete3d_energy_conserving_linear_3_3_3", \
-                        "getb3d_energy_conserving_linear_3_3_3",\
-                        "gete3d_energy_conserving_vec_3_3_3", \
-                        "getb3d_energy_conserving_vec_3_3_3",\
-                        "gete3d_energy_conserving_vec2_3_3_3",\
-                        "getb3d_energy_conserving_vec2_3_3_3",\
-                        "geteb3d_energy_conserving_vec_3_3_3",\
-                        "geteb3d_energy_conserving_vecV2_3_3_3",\
-                        "geteb3d_energy_conserving_vecV3_3_3_3",\
-                        "geteb3d_energy_conserving_blockvec_3_3_3",\
-                        "geteb3d_energy_conserving_blockvec2_3_3_3",\
-                        "pxrgete3d_n_energy_conserving",\
-                        "pxrgetb3d_n_energy_conserving",\
-                        "pxr_getb3d_n_energy_conserving",\
-                        "pxr_gete3d_n_energy_conserving",\
-                        "geteb2dxz_energy_conserving",\
-                        "geteb2dxz_energy_conserving_generic",\
-                        "field_gathering",\
-                        "field_gathering_sub",\
-                        "geteb3d_energy_conserving",\
-                        "geteb3d_energy_conserving_generic"
                         "mpi_send",
                         "mpi_recv",
                         "mpi_isend",
@@ -438,6 +384,7 @@ class MiniAppParser( object ):
                         "mpi_allgather",
                         "mpi_abort",
                         "mpi_bcast mpi_barrier",
+                        "mpi_bcast",
                         "mpi_comm_free",
                         "mpi_comm_rank",
                         "mpi_comm_size",
@@ -459,6 +406,63 @@ class MiniAppParser( object ):
                         "mpi_type_commit",
                         "mpi_type_create_struct",
                         "mpi_type_size",
+                        "mpi_recv_init",
+                        "mpi_start",
+                        "mpi_barrier",
+                        "mpi_allreduce",
+                        "mpi_file_open",
+                        "mpi_file_set_view",
+                        "mpi_file_write_all",
+                        "mpi_file_close",
+                        "mpi_finalize",
+                        "omp_set_nested",
+                        "select_quantity",
+                        "start_vtune_collection",
+                        "start_sde_collection",
+                        "stop_vtune_collection",
+                        "stop_sde_collection",
+                        "pxr_convertindtoproc",
+                        "remap_em_2dfields",
+                        "remap_em_3dfields",
+                        "get_2dintersection",
+                        "get_3dintersection",
+                        "compute_send_recv_sizes_and_index_g2l_copies",
+                        "compute_send_recv_sizes_and_index_l2g_copies",
+                        "create_derived_types_groups",
+                        "compute_effective_communication_setup",
+                        "get_projected_load_on_x",
+                        "get_projected_load_on_y",
+                        "get_projected_load_on_z",
+                        "get_local_grid_mem",
+                        "balance_in_dir",
+                        "get_proc_interval",
+                        "pxr_particle_sorting",
+                        "particle_sorting_sub",
+                        "pxr_particle_bin_sorting",
+                        "pxr_particle_bin_sorting_2d",
+                        "binary_search",
+                        "get_local_number_of_particles_from_species",
+                        "write_particles_to_file",
+                        "get_particles_to_dump",
+                        "concatenate_particle_variable",
+                        "write_particle_variable",
+                        "output_time_statistics",
+                        "start_collection",
+                        "stop_collection",
+                        "random_number",
+                        "get_loc_norm_diverho",
+                        "getarg",
+                        "get_command_argument",
+                        "abort",
+                        "mpi_cart_coords",
+                        "allinea_start_sampling",
+                        "allinea_stop_sampling",
+                        "dfp_main_start",
+                        "dfp_main_stop",
+                        "dfp_final_start",
+                        "final_output_time_statistics",
+                        "estimate_total_memory_consumption",
+                        "init_splitted_fields_random",
                         "step"]
 
         generic_modules_solver = ["fields","field_boundary"]
@@ -562,11 +566,15 @@ class MiniAppParser( object ):
                         "pxrdepose_rho_on_grid_sub_openmp_3d_scalar",\
                         "depose_jxjyjz",\
                         "depose_jxjyjz_generic",\
+                        "depose_jxjyjz_2d",\
+                        "depose_jxjyjz_generic_2d",\
                         "pxrdepose_currents_on_grid_jxjyjz",\
                         "depose_jxjyjz_2d depose_jxjyjz_generic_2d",\
                         "pxrdepose_currents_on_grid_jxjyjz_2d",\
                         "pxrdepose_currents_on_grid_jxjyjz_2d",\
                         "curr_depo_sub",\
+                        "pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq",\
+                        "pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq",\
                         "func_order",\
                         ]
 
@@ -580,6 +588,71 @@ class MiniAppParser( object ):
                         "depose_rho_vecHVv3_3_3_3",\
                         "depose_rho_vecHVv4_3_3_3",\
                         "pxrdepose_rho_on_grid_sub_openmp_3d_vecto",\
+                        "pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp",\
+                        "pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp",\
+                        "pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2",\
+                        "curr_reduc_sub",\
+                        ]
+
+        
+        generic_routines_gather_scalar = [
+                        "pxr_gete2dxz_n_energy_conserving",\
+                        "pxr_getb2dxz_n_energy_conserving",\
+                        "pxr_gete2dxz_energy_conserving_scalar_3_3",\
+                        "pxr_getb2dxz_energy_conserving_scalar_3_3",\
+                        "gete3d_energy_conserving_scalar_1_1_1",\
+                        "getb3d_energy_conserving_scalar_1_1_1",\
+                        "gete3d_energy_conserving_scalar_2_2_2",\
+                        "getb3d_energy_conserving_scalar_2_2_2",\
+                        "gete3d_energy_conserving_scalar_3_3_3",\
+                        "getb3d_energy_conserving_scalar_3_3_3",\
+                        "gete3d_energy_conserving_linear_3_3_3", \
+                        "getb3d_energy_conserving_linear_3_3_3",\
+                        "pxrgete3d_n_energy_conserving",\
+                        "pxrgetb3d_n_energy_conserving",\
+                        "pxr_getb3d_n_energy_conserving",\
+                        "pxr_gete3d_n_energy_conserving",\
+                        "geteb2dxz_energy_conserving",\
+                        "geteb2dxz_energy_conserving_generic",\
+                        "field_gathering",\
+                        "field_gathering_sub",\
+                        "geteb3d_energy_conserving",\
+                        "geteb3d_energy_conserving_generic"
+                        ]
+
+        generic_routines_gather_vector = [
+                        "pxr_gete2dxz_energy_conserving_vect_1_1",\
+                        "pxr_getb2dxz_energy_conserving_vect_1_1",\
+                        "pxr_gete2dxz_energy_conserving_vect_2_2",\
+                        "pxr_getb2dxz_energy_conserving_vect_2_2",\
+                        "pxr_gete2dxz_energy_conserving_vect_2_2",\
+                        "pxr_getb2dxz_energy_conserving_vect_2_2",\
+                        "pxr_gete2dxz_energy_conserving_vect_3_3",\
+                        "pxr_getb2dxz_energy_conserving_vect_3_3",\
+                        "pxr_geteb2dxz_energy_conserving_vect_3_3",\
+                        "gete3d_energy_conserving_vec_1_1_1",\
+                        "getb3d_energy_conserving_vec_1_1_1",\
+                        "geteb3d_energy_conserving_vecV1_1_1_1",\
+                        "geteb3d_energy_conserving_vecV2_1_1_1",\
+                        "geteb3d_energy_conserving_vecV3_1_1_1",\
+                        "geteb3d_energy_conserving_vecV4_1_1_1",\
+                        "geteb3d_energy_conserving_vec_1_1_1_v2",\
+                        "geteb3d_energy_conserving_vec_1_1_1_sub",\
+                        "gete3d_energy_conserving_vec_2_2_2",\
+                        "getb3d_energy_conserving_vec_2_2_2",\
+                        "geteb3d_energy_conserving_vecV1_2_2_2",\
+                        "geteb3d_energy_conserving_vecV2_2_2_2", \
+                        "geteb3d_energy_conserving_vecV3_2_2_2", \
+                        "geteb3d_energy_conserving_vecV4_2_2_2",\
+                        "gete3d_energy_conserving_vec_3_3_3", \
+                        "getb3d_energy_conserving_vec_3_3_3",\
+                        "gete3d_energy_conserving_vec2_3_3_3",\
+                        "getb3d_energy_conserving_vec2_3_3_3",\
+                        "geteb3d_energy_conserving_vec_3_3_3",\
+                        "geteb3d_energy_conserving_vecV2_3_3_3",\
+                        "geteb3d_energy_conserving_vecV3_3_3_3",\
+                        "geteb3d_energy_conserving_blockvec_3_3_3",\
+                        "geteb3d_energy_conserving_blockvec2_3_3_3",\
                         ]
 
         esirkepov_modules=[]
@@ -683,12 +756,30 @@ class MiniAppParser( object ):
                         "fast_fftw3d_r2c_with_plan",
                         "allocate_new_matrix_vector",
                         "multiply_mat_vector",
-                        "multiply_unit_blocks"
+                        "multiply_unit_blocks",
                         "fftw_mpi_local_size_3d" ,
                         "fftw_mpi_local_size_3d_transposed" ,
                         "fftw_mpi_local_size_2d p3dfft_setup" ,
+                        "get2d_intersection_group_mpi",
+                        "c_f_pointer",
                         "p3dfft_get_dims" ,
+                        "p3dfft_setup",
                         "dfftw_init_threads",
+                        "dfftw_plan_with_nthreads",
+                        "dfftw_plan_dft_1d",
+                        "dfftw_plan_dft_2d",
+                        "dfftw_plan_dft_3d",
+                        "dfftw_plan_dft_r2c_1d",
+                        "dfftw_plan_dft_c2r_1d",
+                        "dfftw_plan_dft_r2c_2d",
+                        "dfftw_plan_dft_c2r_2d",
+                        "dfftw_plan_dft_r2c_3d",
+                        "dfftw_plan_dft_c2r_3d",
+                        "dfftw_execute_dft",
+                        "dfftw_execute_dft_r2c",
+                        "dfftw_execute_dft_c2r",
+                        "dfftw_destroy_plan",
+                        "fftw_mpi_init",
                         "fftw_mpi_init fftw_mpi_plan_dft_r2c_3d",
                         "fftw_mpi_plan_dft_c2r_3d",
                         "fftw_mpi_plan_dft_r2c_2d" ,
@@ -696,7 +787,9 @@ class MiniAppParser( object ):
                         "p3dfft_ftran_r2c" ,
                         "fftw_mpi_execute_dft_r2c",
                         "p3dfft_ftran_c2r" ,
-                        "fftw_mpi_execute_dft_c2r"]
+                        "fftw_mpi_execute_dft_c2r",
+                        "p3dfft_btran_c2r",
+                        ]
         fdtd_modules = []
 
         fdtd_routines = [
@@ -727,6 +820,11 @@ class MiniAppParser( object ):
 
         if self.flag_optimization == 'on':
             self.list_available_routines += generic_routines_depos_vector
+
+        # Add gather subroutines
+        self.list_available_routines += generic_routines_gather_scalar
+        if self.flag_optimization == 'on':
+            self.list_available_routines += generic_routines_gather_vector
 
         if type_solver == 'all':
             self.list_available_modules  += spectral_modules  + fdtd_modules
