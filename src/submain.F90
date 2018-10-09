@@ -121,7 +121,7 @@ USE sorting
         !IF (rank .EQ. 0) PRINT *, "#3"
 #if defined(FFTW)
         IF (l_spectral) THEN
-          CALL  copy_field(rhoold, nx+2*nxguards+1, ny+2*nyguards+1,      &
+          CALL copy_field(rhoold, nx+2*nxguards+1, ny+2*nyguards+1,      &
                 nz+2*nzguards+1, rho, nx+2*nxguards+1, ny+2*nyguards+1,   &
                 nz+2*nzguards+1)
           CALL pxrdepose_rho_on_grid
@@ -223,7 +223,7 @@ USE sorting
       CALL current_bcs
 #if defined(FFTW)
         IF (l_spectral) THEN
-          CALL  copy_field(rhoold, nx+2*nxguards+1, ny+2*nyguards+1,      &
+          CALL copy_field(rhoold, nx+2*nxguards+1, ny+2*nyguards+1,      &
                 nz+2*nzguards+1, rho, nx+2*nxguards+1, ny+2*nyguards+1,   &
                 nz+2*nzguards+1)
           CALL pxrdepose_rho_on_grid

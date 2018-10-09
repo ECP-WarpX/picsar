@@ -942,7 +942,7 @@ LOGICAL(isp)                               :: is_in_place
       errcode)
       CALL MPI_BCAST(nz_group_global_array,INT(nb_group,isp),MPI_INTEGER8,        &
       0_isp,mpi_comm_group_id(i),errcode)
-      CALL  MPI_BCAST(nx_group_global_array,INT(nb_group,isp),MPI_INTEGER8,       &
+      CALL MPI_BCAST(nx_group_global_array,INT(nb_group,isp),MPI_INTEGER8,       &
       0_isp,mpi_comm_group_id(i),errcode)
       CALL MPI_BCAST(ny_group_global_array,INT(nb_group,isp),MPI_INTEGER8,        &
       0_isp,mpi_comm_group_id(i),errcode)

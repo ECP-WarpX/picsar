@@ -79,7 +79,7 @@ MODULE fourier_psaotd
     nopenmp_cint=nopenmp
     IF(.NOT. p3dfft_flag) THEN
       IF  (fftw_threads_ok) THEN
-        CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
+        CALL DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
       ENDIF
     ENDIF
     !> If fftw_mpi_transpose then use FFTW_MPI_TRANSPOSED_OUT/IN plans
