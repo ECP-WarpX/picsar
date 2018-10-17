@@ -582,7 +582,7 @@ MODULE diagnostics
           DO ix=1, ntilex
             curr_tile=>curr%array_of_tiles(ix,iy,iz)
             np = curr_tile%np_tile(1)
-
+            IF(np == 0_idp) CYCLE
             SELECT CASE (quantity)
               CASE  (1)
                 quantityarray(compt:compt+np-1) = curr_tile%part_x(1:np)
@@ -648,7 +648,7 @@ MODULE diagnostics
       TYPE(particle_species), POINTER :: curr
 
       curr=>species_parray(ispecies)
-      compt = 1
+      compt = 1_idp
 
       ! Loop over the tiles
       DO iz=1, ntilez
@@ -656,6 +656,7 @@ MODULE diagnostics
           DO ix=1, ntilex
             curr_tile=>curr%array_of_tiles(ix, iy, iz)
             np = curr_tile%np_tile(1)
+            IF(np == 0_idp) CYCLE
             quantityarray(compt:compt+np-1) = curr_tile%pid(1:np, quantitypid)
             compt = compt + np
           END DO

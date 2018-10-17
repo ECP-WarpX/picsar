@@ -62,19 +62,19 @@
 !> @param[in] zlo the lowest indices (in 3D) at which to update the Bz field
 !> @param[in] zhi the highest indices (in 3D) at which to update the Bz field
 !> @param[inout] bx the array of values of the Bx field
-!> @param[in] bxlo the lowest bound (in 3D) of the array `bx` 
+!> @param[in] bxlo the lowest bound (in 3D) of the array `bx`
 !> (`bxlo` is always lower than `xlo`)
-!> @param[in] bxhi the highest bound (in 3D) of the array `bx` 
+!> @param[in] bxhi the highest bound (in 3D) of the array `bx`
 !> (`bxlo` is always higher than `xlo`)
 !> @param[inout] by the array of values of the by field
-!> @param[in] bylo the lowest bound (in 3D) of the array `by` 
+!> @param[in] bylo the lowest bound (in 3D) of the array `by`
 !> (`bylo` is always lower than `ylo`)
 !> @param[in] byhi the highest bound (in 3D) of the array `by`
 !>  (`bylo` is always higher than `ylo`)
 !> @param[inout] bz the array of values of the bz field
-!> @param[in] bzlo the lowest bound (in 3D) of the array `bz` 
+!> @param[in] bzlo the lowest bound (in 3D) of the array `bz`
 !> (`bzlo` is always lower than `zlo`)
-!> @param[in] bzhi the highest bound (in 3D) of the array `bz` 
+!> @param[in] bzhi the highest bound (in 3D) of the array `bz`
 !> (`bzlo` is always higher than `zlo`)
 !
 !> @date
@@ -109,9 +109,9 @@ USE picsar_precision, ONLY: num
 
   integer :: j,k,l
 
-  real(num) :: delta, rx, ry, rz, betaxz, betaxy, betayx, betayz, betazx, betazy 
+  real(num) :: delta, rx, ry, rz, betaxz, betaxy, betayx, betayz, betazx, betazy
   real(num) :: beta, alphax, alphay, alphaz, gammax, gammay, gammaz
-  
+
   ! CKC push
   ! computes coefficients according to Cowan - PRST-AB 16, 041303 (2013)
   delta = max(dtsdx,dtsdy,dtsdz)
@@ -290,7 +290,7 @@ USE picsar_precision, ONLY: idp, num, isp
   real(num), intent(IN) :: dtsdx,dtsdy,dtsdz
 
   integer :: j,k
-  
+
   real(num) :: delta, rx, rz, betaxz, betazx, alphax, alphaz
 
   ! dtsdy should not be used.
@@ -352,3 +352,252 @@ USE picsar_precision, ONLY: idp, num, isp
   !$OMP END PARALLEL
 #endif
 end subroutine pxrpush_em2d_bvec_ckc
+
+
+
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine pushes the electric field with charge-conserving term,
+!> using the 2D CKC FDTD scheme (order 2).
+!> This subroutine is general enough to be called by AMReX.
+!> OMP pragmas are ignored when compiled for WarpX.
+!> regions.
+!
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
+!> Weiqun Zhang
+!> Jean-Luc Vay
+!> Maxence Thevenet
+!> Remi Lehe
+!
+!> @date
+!> Creation 2018
+! ________________________________________________________________________________________
+subroutine pxrpush_em2d_evec_f_ckc( &
+     xlo, xhi, ylo, yhi, zlo, zhi, &
+     ex,exlo,exhi,&
+     ey,eylo, eyhi, &
+     ez,ezlo, ezhi, &
+     f, flo, fhi, &
+     dtsdx, dtsdy, dtsdz)
+USE picsar_precision, ONLY: idp, num, isp
+! ______________________________________________________________________________
+
+
+#ifdef WARPX
+  integer(isp) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
+       exlo(2),exhi(2),eylo(2),eyhi(2),ezlo(2),ezhi(2), flo(2), fhi(2)
+#else
+  integer(idp) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
+       exlo(2),exhi(2),eylo(2),eyhi(2),ezlo(2),ezhi(2), flo(2), fhi(2)
+#endif
+  real(num), intent(INOUT):: ex(exlo(1):exhi(1),exlo(2):exhi(2))
+  real(num), intent(INOUT):: ey(eylo(1):eyhi(1),eylo(2):eyhi(2))
+  real(num), intent(INOUT):: ez(ezlo(1):ezhi(1),ezlo(2):ezhi(2))
+
+  real(num), intent(IN):: f(flo(1):fhi(1),flo(2):fhi(2))
+
+  real(num), intent(IN) :: dtsdx, dtsdy, dtsdz
+
+  integer :: j,k
+
+  real(num) :: delta, rx, rz, betaxz, betazx, alphax, alphaz
+
+  ! dtsdy should not be used.
+  ! Cole-Karkkainen-Cowan push
+  ! computes coefficients according to Cowan - PRST-AB 16, 041303 (2013)
+  delta = max(dtsdx,dtsdz)
+  rx = (dtsdx/delta)**2
+  rz = (dtsdz/delta)**2
+  betaxz = 1.0_num/8.0_num*rz
+  betazx = 1.0_num/8.0_num*rx
+  alphax = 1.0_num - 2.0_num*betaxz
+  alphaz = 1.0_num - 2.0_num*betazx
+
+  betaxz = dtsdx*betaxz
+  betazx = dtsdz*betazx
+  alphax = dtsdx*alphax
+  alphaz = dtsdz*alphaz
+
+#ifndef WARPX
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j), &
+  !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdx, dtsdz), &
+  !$OMP SHARED(alphax, alphaz, betaxz, betazx), &
+  !$OMP SHARED(ex, ey, ez, f)
+  !$OMP DO COLLAPSE(2)
+#endif
+  do k   = xlo(2), xhi(2)
+    do j = xlo(1), xhi(1)
+        Ex(j,k) = Ex(j,k) + alphax * (F(j+1,k  ) - F(j  ,k  )) &
+                          + betaxz * (F(j+1,k+1) - F(j  ,k+1) &
+                                   +  F(j+1,k-1) - F(j  ,k-1))
+    end do
+  end do
+#ifndef WARPX
+  !$OMP END DO
+  !$OMP DO COLLAPSE(2)
+#endif
+  do k   = zlo(2), zhi(2)
+    do j = zlo(1), zhi(1)
+      Ez(j,k) = Ez(j,k) + alphaz * (F(j  ,k+1) - F(j  ,k  )) &
+                        + betazx * (F(j+1,k+1) - F(j+1,k  ) &
+                                 +  F(j-1,k+1) - F(j-1,k  ))
+    end do
+  end do
+#ifndef WARPX
+  !$OMP END DO
+  !$OMP END PARALLEL
+#endif
+end subroutine pxrpush_em2d_evec_f_ckc
+
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine pushes the electric field with charge-conserving term,
+!> using the 3D CKC FDTD scheme (order 2).
+!> This subroutine is general enough to be called by AMReX.
+!> OMP pragmas are ignored when compiled for WarpX.
+!
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
+!> Weiqun Zhang
+!> Jean-Luc Vay
+!> Maxence Thevenet
+!> Remi Lehe
+!
+!> @date
+!> Creation 2015
+! ________________________________________________________________________________________
+subroutine pxrpush_em3d_evec_f_ckc( &
+     xlo, xhi, ylo, yhi, zlo, zhi, &
+     ex,exlo,exhi,&
+     ey,eylo, eyhi, &
+     ez,ezlo, ezhi, &
+     f, flo, fhi, &
+     dtsdx,dtsdy,dtsdz)
+USE picsar_precision, ONLY: idp, num, isp
+! ______________________________________________________________________________
+
+
+#ifdef WARPX
+  integer(isp) :: xlo(3), xhi(3), ylo(3), yhi(3), zlo(3), zhi(3), &
+       exlo(3),exhi(3),eylo(3),eyhi(3),ezlo(3),ezhi(3),flo(3),fhi(3)
+#else
+  integer(idp) :: xlo(3), xhi(3), ylo(3), yhi(3), zlo(3), zhi(3), &
+       exlo(3),exhi(3),eylo(3),eyhi(3),ezlo(3),ezhi(3),flo(3),fhi(3)
+#endif
+  real(num), intent(INOUT):: ex(exlo(1):exhi(1),exlo(2):exhi(2),exlo(3):exhi(3))
+  real(num), intent(INOUT):: ey(eylo(1):eyhi(1),eylo(2):eyhi(2),eylo(3):eyhi(3))
+  real(num), intent(INOUT):: ez(ezlo(1):ezhi(1),ezlo(2):ezhi(2),ezlo(3):ezhi(3))
+
+  real(num), intent(IN):: f(flo(1):fhi(1),flo(2):fhi(2),flo(3):fhi(3))
+
+  real(num), intent(IN) :: dtsdx,dtsdy,dtsdz
+
+  integer :: j,k,l
+
+  real(num) :: delta, rx, ry, rz, betaxz, betaxy, betayx, betayz, betazx, betazy
+  real(num) :: beta, alphax, alphay, alphaz, gammax, gammay, gammaz
+
+  ! CKC push
+  ! computes coefficients according to Cowan - PRST-AB 16, 041303 (2013)
+  delta = max(dtsdx,dtsdy,dtsdz)
+  rx = (dtsdx/delta)**2
+  ry = (dtsdy/delta)**2
+  rz = (dtsdz/delta)**2
+  beta = 1.0_num/8.0_num*(1.-rx*ry*rz/(ry*rz+rz*rx+rx*ry))
+  betaxy = ry*beta
+  betaxz = rz*beta
+  betayx = rx*beta
+  betayz = rz*beta
+  betazx = rx*beta
+  betazy = ry*beta
+  gammax = ry*rz*(1.0_num/16.0_num-1.0_num/8.0_num*ry*rz/(ry*rz+rz*rx+rx*ry))
+  gammay = rx*rz*(1.0_num/16.0_num-1.0_num/8.0_num*rx*rz/(ry*rz+rz*rx+rx*ry))
+  gammaz = rx*ry*(1.0_num/16.0_num-1.0_num/8.0_num*rx*ry/(ry*rz+rz*rx+rx*ry))
+  alphax = 1.0_num - 2.0_num*betaxy - 2.0_num* betaxz - 4.0_num*gammax
+  alphay = 1.0_num - 2.0_num*betayx - 2.0_num* betayz - 4.0_num*gammay
+  alphaz = 1.0_num - 2.0_num*betazx - 2.0_num* betazy - 4.0_num*gammaz
+
+  betaxy = dtsdx*betaxy
+  betaxz = dtsdx*betaxz
+  betayx = dtsdy*betayx
+  betayz = dtsdy*betayz
+  betazx = dtsdz*betazx
+  betazy = dtsdz*betazy
+  alphax = dtsdx*alphax
+  alphay = dtsdy*alphay
+  alphaz = dtsdz*alphaz
+  gammax = dtsdx*gammax
+  gammay = dtsdy*gammay
+  gammaz = dtsdz*gammaz
+
+
+#ifndef WARPX
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(l, k, j), &
+  !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdx, dtsdy, dtsdz), &
+  !$OMP SHARED(alphax, alphay, alphaz, gammax, gammay, gammaz), &
+  !$OMP SHARED(betaxy, betaxz, betayx, betayz, betazx, betazy), &
+  !$OMP SHARED(ex, ey, ez, f)
+  !$OMP DO COLLAPSE(3)
+#endif
+  do l     = xlo(3), xhi(3)
+    do k   = xlo(2), xhi(2)
+      do j = xlo(1), xhi(1)
+         Ex(j,k,l) = Ex(j,k,l) + alphax * (F(j+1,k  ,l  ) - F(j,  k,  l  )) &
+                               + betaxy * (F(j+1,k+1,l  ) - F(j  ,k+1,l  )  &
+                                        +  F(j+1,k-1,l  ) - F(j  ,k-1,l  )) &
+                               + betaxz * (F(j+1,k  ,l+1) - F(j  ,k  ,l+1)  &
+                                        +  F(j+1,k  ,l-1) - F(j  ,k  ,l-1)) &
+                               + gammax * (F(j+1,k+1,l+1) - F(j  ,k+1,l+1)  &
+                                        +  F(j+1,k-1,l+1) - F(j  ,k-1,l+1)  &
+                                        +  F(j+1,k+1,l-1) - F(j  ,k+1,l-1)  &
+                                        +  F(j+1,k-1,l-1) - F(j  ,k-1,l-1))
+       end do
+    end do
+  end do
+#ifndef WARPX
+  !$OMP END DO
+  !$OMP DO COLLAPSE(3)
+#endif
+  do l     = ylo(3), yhi(3)
+    do k   = ylo(2), yhi(2)
+      do j = ylo(1), yhi(1)
+        Ey(j,k,l) = Ey(j,k,l) + alphay * (F(j  ,k+1,l  ) - F(j  ,k  ,l  )) &
+                              + betayx * (F(j+1,k+1,l  ) - F(j+1,k  ,l  )  &
+                                       +  F(j-1,k+1,l  ) - F(j-1,k  ,l  )) &
+                              + betayz * (F(j  ,k+1,l+1) - F(j  ,k  ,l+1)  &
+                                       +  F(j  ,k+1,l-1) - F(j  ,k  ,l-1)) &
+                              + gammay * (F(j+1,k+1,l+1) - F(j+1,k  ,l+1)  &
+                                       +  F(j-1,k+1,l+1) - F(j-1,k  ,l+1)  &
+                                       +  F(j+1,k+1,l-1) - F(j+1,k  ,l-1)  &
+                                       +  F(j-1,k+1,l-1) - F(j-1,k  ,l-1))
+      end do
+    end do
+  end do
+#ifndef WARPX
+  !$OMP END DO
+  !$OMP DO COLLAPSE(3)
+#endif
+  do l     = zlo(3), zhi(3)
+    do k   = zlo(2), zhi(2)
+      do j = zlo(1), zhi(1)
+        Ez(j,k,l) = Ez(j,k,l) + alphaz * (F(j  ,k  ,l+1) - F(j,  k,  l  )) &
+                              + betazx * (F(j+1,k  ,l+1) - F(j+1,k  ,l  )  &
+                                       +  F(j-1,k  ,l+1) - F(j-1,k  ,l  )) &
+                              + betazy * (F(j  ,k+1,l+1) - F(j  ,k+1,l  )  &
+                                       +  F(j  ,k-1,l+1) - F(j  ,k-1,l  )) &
+                              + gammaz * (F(j+1,k+1,l+1) - F(j+1,k+1,l  )  &
+                                       +  F(j-1,k+1,l+1) - F(j-1,k+1,l  )  &
+                                       +  F(j+1,k-1,l+1) - F(j+1,k-1,l  )  &
+                                       +  F(j-1,k-1,l+1) - F(j-1,k-1,l  ))
+      end do
+    end do
+  end do
+#ifndef WARPX
+  !$OMP END DO
+  !$OMP END PARALLEL
+#endif
+
+end subroutine pxrpush_em3d_evec_f_ckc

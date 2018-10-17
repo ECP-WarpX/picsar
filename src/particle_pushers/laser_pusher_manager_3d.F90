@@ -13,7 +13,6 @@
 ! ________________________________________________________________________________________
 
 SUBROUTINE push_laser_particles
-  USE mpi
   USE output_data, ONLY: pushtime
   USE params, ONLY: dt, it
   USE particle_properties, ONLY: nspecies, npid
@@ -21,10 +20,10 @@ SUBROUTINE push_laser_particles
   USE particle_tilemodule, ONLY: particle_tile
   USE particles, ONLY: species_parray
   USE picsar_precision, ONLY: idp, num
-  USE shared_data, ONLY: y, z, x
   USE tile_params, ONLY: ntilez, ntilex, ntiley
   USE tiling
   USE time_stat, ONLY: timestat_itstart, localtimes
+
   IMPLICIT NONE
   INTEGER(idp) :: ispecies, ix, iy, iz, count
   TYPE(particle_species), POINTER :: curr
@@ -59,8 +58,8 @@ SUBROUTINE push_laser_particles
             curr%antenna_params%Emax, curr%antenna_params%Emax_laser_1,               &
             curr%antenna_params%Emax_laser_2, curr%antenna_params%polvector1,         &
             curr%antenna_params%polvector2, curr%antenna_params%k0_laser,             &
-            curr%antenna_params%q_z, curr%antenna_params%laser_tau, real_time,        &
-            curr%antenna_params%t_peak, curr%antenna_params%temporal_order,           &
+            curr%antenna_params%q_z, curr%charge, curr%antenna_params%laser_tau,      &
+            real_time, curr%antenna_params%t_peak, curr%antenna_params%temporal_order,&
             curr%antenna_params%polangle)
           ELSE
             CALL laserp_pusher_hanning(count, npid, curr_tile%pid(1:count, 1:npid),   &
@@ -69,8 +68,9 @@ SUBROUTINE push_laser_particles
             curr%antenna_params%Emax, curr%antenna_params%Emax_laser_1,               &
             curr%antenna_params%Emax_laser_2, curr%antenna_params%polvector1,         &
             curr%antenna_params%polvector2, curr%antenna_params%k0_laser,             &
-            curr%antenna_params%q_z, real_time, curr%antenna_params%t_peak,           &
-            curr%antenna_params%temporal_order, curr%antenna_params%polangle)
+            curr%antenna_params%q_z, curr%charge, real_time,                          &
+            curr%antenna_params%t_peak, curr%antenna_params%temporal_order,           &
+            curr%antenna_params%polangle)
           ENDIF
         END DO! END LOOP ON SPECIES
       END DO
@@ -89,6 +89,94 @@ SUBROUTINE push_laser_particles
 #endif
 END SUBROUTINE push_laser_particles
 
+! ______________________________________________________________________________________
+!> @brief
+!> Push the antenna particles given the amplitude ampx, ampy, ampz given by python.
+!
+!> @author
+!> Haithem Kallala
+!> Guillaume Blaclard
+!
+!> @date
+!> Creation: 2018
+!
+! ______________________________________________________________________________________
+
+
+SUBROUTINE laser_pusher_profile(ispecies, amp_x,amp_y,amp_z,n,source_vx,source_vy,source_vz)
+  USE particles, ONLY: species_parray
+  USE tiling
+  USE picsar_precision, ONLY: idp, num
+  USE omp_lib
+  USE params, ONLY: dt
+  
+  INTEGER(idp) , INTENT(IN) :: n, ispecies
+  REAL(num)  , INTENT(IN),  DIMENSION(1:n) :: amp_x, amp_y, amp_z
+  INTEGER(idp) :: ix, iy, iz, count, counter, i
+  TYPE(particle_species), POINTER :: curr
+  TYPE(particle_tile), POINTER    :: curr_tile
+  REAL(num)                       :: tdeb, tend, disp_max, ux, uy, uz
+  REAL(num) , INTENT(IN)          :: source_vx,source_vy,source_vz
+  INTEGER(idp) , ALLOCATABLE, DIMENSION(:,:,:)      :: store_first_indexes
+   
+#if defined(DEBUG)
+  WRITE(0, *) "push_laser_particles python: start"
+#endif
+
+
+    ALLOCATE(store_first_indexes(ntilex,ntiley,ntilez))
+    counter =  0_idp
+    curr=>species_parray(ispecies)
+    DO iz=1, ntilez! LOOP ON TILES
+      DO iy=1, ntiley
+        DO ix=1, ntilex
+           curr_tile=>curr%array_of_tiles(ix, iy, iz)
+           count=curr_tile%np_tile(1)
+           store_first_indexes(ix,iy,iz) = counter
+           counter = counter + count
+        ENDDO
+      ENDDO
+    ENDDO
+
+   counter = 0_idp
+
+   !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(ix,iy,iz,counter,ux,uy,uz,count,curr_tile)
+   !$OMP DO COLLAPSE(3)
+    DO iz=1, ntilez! LOOP ON TILES
+      DO iy=1, ntiley
+        DO ix=1, ntilex
+          curr_tile=>curr%array_of_tiles(ix, iy, iz)
+          count=curr_tile%np_tile(1)
+          IF (count .EQ. 0) CYCLE
+          counter = store_first_indexes(ix,iy,iz)
+          DO i =  1, count 
+             ux = curr%charge*amp_x(i+counter)
+             uy = curr%charge*amp_y(i+counter)
+             uz = curr%charge*amp_z(i+counter)
+ 
+             curr_tile%part_x(i)  = curr_tile%part_x(i) + dt*(ux + source_vx)
+             curr_tile%part_y(i)  = curr_tile%part_y(i) + dt*(uy + source_vy)
+             curr_tile%part_z(i)  = curr_tile%part_z(i) + dt*(uz + source_vz)     
+
+             curr_tile%part_ux(i) =  ux + source_vx
+             curr_tile%part_uy(i) =  uy + source_vy
+             curr_tile%part_uz(i) =  uz + source_vz
+          ENDDO
+        END DO
+      END DO
+    END DO! END LOOP ON TILES
+    !$OMP END DO
+    !$OMP END PARALLEL
+
+    DEALLOCATE(store_first_indexes)
+
+#if defined(DEBUG)
+  WRITE(0, *) "push_laser_particles python: end"
+#endif
+
+END SUBROUTINE laser_pusher_profile
+
+
 ! ________________________________________________________________________________________
 !> @brief
 !> Subroutine for pushing particles of type antenna
@@ -101,13 +189,15 @@ END SUBROUTINE push_laser_particles
 ! ________________________________________________________________________________________
 
 SUBROUTINE laserp_pusher_gaussian(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gaminv,  &
-  dtt, lvect, emax, emax1, emax2, polvector1, polvector2, k0_laser, q_z, laser_tau,     &
-  real_time, t_peak, temporal_order, polangle)
+  dtt, lvect, emax, emax1, emax2, polvector1, polvector2, k0_laser, q_z, charge,      &  
+  laser_tau,  real_time, t_peak, temporal_order, polangle)
+
   USE constants, ONLY: clight
   USE omp_lib
   USE params, ONLY: dt
   USE picsar_precision, ONLY: idp, num, cpx
-  USE shared_data, ONLY: z, c_dim
+  USE shared_data, ONLY:  c_dim
+
   INTEGER(idp), INTENT(IN)                :: np
   INTEGER(idp), INTENT(IN)                :: npidd
   INTEGER(idp), INTENT(IN)                :: lvect
@@ -117,7 +207,7 @@ SUBROUTINE laserp_pusher_gaussian(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gam
   REAL(num), INTENT(IN)                   :: dtt
   REAL(num), DIMENSION(3), INTENT(IN)     :: polvector1, polvector2
   REAL(num), INTENT(IN)                   :: emax, emax1, emax2, k0_laser, laser_tau,  &
-  real_time, t_peak, polangle
+  real_time, t_peak, polangle, charge
   COMPLEX(cpx), INTENT(IN)                :: q_z
   INTEGER(idp), INTENT(IN)                :: temporal_order
   INTEGER(idp)                            :: n, nn, ip, blocksize
@@ -156,9 +246,9 @@ SUBROUTINE laserp_pusher_gaussian(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gam
       polvector2, k0_laser, q_z, laser_tau, real_time, t_peak, temporal_order,        &
       polangle)
       ! --- Update particle momenta based on laser electric field
-      uxp(nn) = amp1*coeff_ampli
-      uyp(nn) = amp2*coeff_ampli
-      uzp(nn) = amp3*coeff_ampli
+      uxp(nn) = charge*amp1*coeff_ampli
+      uyp(nn) = charge*amp2*coeff_ampli
+      uzp(nn) = charge*amp3*coeff_ampli
       ! --- Update gaminv
       gaminv(nn) = 1.0_num
       ! --- Push x, y, z
@@ -185,13 +275,15 @@ END SUBROUTINE laserp_pusher_gaussian
 !> Creation 2017
 ! ________________________________________________________________________________________
 SUBROUTINE laserp_pusher_hanning(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gaminv,   &
-  dtt, lvect, emax, emax1, emax2, polvector1, polvector2, k0_laser, q_z, real_time,     &
-  t_peak, temporal_order, polangle)
+  dtt, lvect, emax, emax1, emax2, polvector1, polvector2, k0_laser, q_z, charge,      &
+  real_time, t_peak, temporal_order, polangle)
+
   USE constants, ONLY: clight
   USE omp_lib
   USE params, ONLY: dt
   USE picsar_precision, ONLY: idp, num, cpx
-  USE shared_data, ONLY: z, c_dim
+  USE shared_data, ONLY:  c_dim
+
   INTEGER(idp), INTENT(IN)                :: np
   INTEGER(idp), INTENT(IN)                :: npidd
   INTEGER(idp), INTENT(IN)                :: lvect
@@ -201,7 +293,7 @@ SUBROUTINE laserp_pusher_hanning(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gami
   REAL(num), INTENT(IN)                   :: dtt
   REAL(num), DIMENSION(3), INTENT(IN)    :: polvector1, polvector2
   REAL(num), INTENT(IN)                  :: emax, emax1, emax2, k0_laser, real_time,  &
-  t_peak, polangle
+  t_peak, polangle, charge
   COMPLEX(cpx), INTENT(IN)                :: q_z
   INTEGER(idp), INTENT(IN)                :: temporal_order
   INTEGER(idp)                            :: n, nn, ip, blocksize
@@ -239,9 +331,9 @@ SUBROUTINE laserp_pusher_hanning(np, npidd, pid, xp, yp, zp, uxp, uyp, uzp, gami
       CALL hanning_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvector1,  &
       polvector2, k0_laser, q_z, real_time, t_peak, temporal_order, polangle)
       ! --- Update particle momenta based on laser electric field
-      uxp(nn) = amp1*coeff_ampli
-      uyp(nn) = amp2*coeff_ampli
-      uzp(nn) = amp3*coeff_ampli
+      uxp(nn) = charge*amp1*coeff_ampli
+      uyp(nn) = charge*amp2*coeff_ampli
+      uzp(nn) = charge*amp3*coeff_ampli
       ! --- Update gaminv
       gaminv(nn) = 1.0_num
       ! --- Push x, y, z
@@ -271,10 +363,6 @@ END SUBROUTINE laserp_pusher_hanning
 
 SUBROUTINE gaussian_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvector1, &
   polvector2, k0_laser, q_z, laser_tau, real_time, t_peak, temporal_order, polangle)
-  USE constants, ONLY: pi, clight
-  USE omp_lib
-  USE picsar_precision, ONLY: idp, num, cpx
-  USE shared_data, ONLY: z
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !!$OMP DECLARE SIMD(gaussian_profile) UNIFORM(emax, emax1, emax2, polvector1,        &
@@ -287,6 +375,10 @@ SUBROUTINE gaussian_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvec
   !DIR$ k0_laser, q_z, laser_tau, real_time, t_peak, &
   !DIR$ temporal_order, polangle)  :: gaussian_profile
 #endif
+  USE constants, ONLY: pi, clight
+  USE omp_lib
+  USE picsar_precision, ONLY: idp, num, cpx
+
   REAL(num), INTENT(INOUT)   :: amp1, amp2, amp3
   REAL(num), DIMENSION(3), INTENT(IN)       :: polvector1, polvector2
   REAL(num), INTENT(IN)                      :: emax, emax1, emax2, k0_laser,         &
@@ -298,7 +390,7 @@ SUBROUTINE gaussian_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvec
   COMPLEX(cpx)                               :: j, u1, u2
 
   j=(0.0_num, 1.0_num)
-  IF (temporal_order .EQ. 0_idp) THEN
+  IF (temporal_order .EQ. 0_idp) THEN 
     u1 = j*k0_laser*clight*(real_time-t_peak) - j*k0_laser*(xx**2+yy**2)/(2*q_z)
     u2 = j*k0_laser*clight*(real_time-t_peak) - j*k0_laser*(xx**2+yy**2)/(2*q_z)
   ELSE
@@ -306,7 +398,7 @@ SUBROUTINE gaussian_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvec
     ((real_time - t_peak )/laser_tau)**temporal_order
     u2 = j*k0_laser*clight*(real_time-t_peak) - j*k0_laser*(xx**2+yy**2)/(2*q_z) -      &
     ((real_time - t_peak )/laser_tau)**temporal_order+polangle*2.0_num*pi*j
-  ENDIF
+  ENDIF 
   u1 = EXP(u1)*emax1
   u2 = EXP(u2)*emax2
   arg(1) = (u1*polvector1(1) + u2*polvector2(1))
@@ -329,10 +421,6 @@ END SUBROUTINE gaussian_profile
 
 SUBROUTINE hanning_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvector1,  &
   polvector2, k0_laser, q_z, real_time, t_peak, temporal_order, polangle)
-  USE constants, ONLY: pi, clight
-  USE omp_lib
-  USE picsar_precision, ONLY: idp, num, cpx
-  USE shared_data, ONLY: z
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !!$OMP DECLARE SIMD(hanning_profile) UNIFORM(emax, emax1, emax2, polvector1,         &
@@ -345,6 +433,10 @@ SUBROUTINE hanning_profile(xx, yy, amp1, amp2, amp3, emax, emax1, emax2, polvect
   !DIR$ real_time, t_peak, temporal_order, polangle) &
   !DIR$ :: hanning_profile
 #endif
+
+  USE constants, ONLY: pi, clight
+  USE omp_lib
+  USE picsar_precision, ONLY: idp, num, cpx
 
   REAL(num), INTENT(INOUT) :: amp1, amp2, amp3
   REAL(num), DIMENSION(3), INTENT(IN)    :: polvector1, polvector2
