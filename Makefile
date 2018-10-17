@@ -1244,18 +1244,18 @@ test_plane_wave_fdtd_2d:
 	# 1 OpenMP vary number of MPIs
 	export OMP_NUM_THREADS=1
 	cd Acceptance_testing/Gcov_tests && \
-	mpirun -np 1 ./maxwell_2d_test --nsteps 161 --l_spectral .FALSE. &&\
-	mpirun -np 2 ./maxwell_2d_test --nsteps 161 --l_spectral .FALSE. --nprocz 2 &&\
-	mpirun -np 4 ./maxwell_2d_test --nsteps 161 --l_spectral .FALSE. --nprocz 2 --nprocx 2 
+	mpirun -np 1 ./maxwell_2d_test input_file.pixr --nsteps 161 --l_spectral .FALSE. &&\
+	mpirun -np 2 ./maxwell_2d_test input_file.pixr --nsteps 161 --l_spectral .FALSE. --nprocz 2 &&\
+	mpirun -np 4 ./maxwell_2d_test input_file.pixr --nsteps 161 --l_spectral .FALSE. --nprocz 2 --nprocx 2 
 test_plane_wave_psatd_2d: 
 	cp examples/example_decks_fortran/plane_wave_test_2d.pixr \
 	Acceptance_testing/Gcov_tests/input_file.pixr
 	# 1 OpenMP vary number of MPIs
 	export OMP_NUM_THREADS=1
 	cd Acceptance_testing/Gcov_tests && \
-	mpirun -np 1 ./maxwell_2d_test --nsteps 81 --l_spectral .TRUE. &&\
-	mpirun -np 2 ./maxwell_2d_test --nsteps 81 --l_spectral .TRUE. --nprocz 2 &&\
-	mpirun -np 4 ./maxwell_2d_test --nsteps 81 --l_spectral .TRUE. --nprocz 2 --nprocx 2
+	mpirun -np 1 ./maxwell_2d_test input_file.pixr --nsteps 81 --l_spectral .TRUE. &&\
+	mpirun -np 2 ./maxwell_2d_test input_file.pixr --nsteps 81 --l_spectral .TRUE. --nprocz 2 &&\
+	mpirun -np 4 ./maxwell_2d_test input_file.pixr --nsteps 81 --l_spectral .TRUE. --nprocz 2 --nprocx 2
 
 test_plane_wave_fdtd_3d:
 	cp examples/example_decks_fortran/plane_wave_test.pixr \
@@ -1263,35 +1263,35 @@ test_plane_wave_fdtd_3d:
 	# 1 OpenMP vary number of MPIs
 	cd Acceptance_testing/Gcov_tests && \
 	export OMP_NUM_THREADS=1 && \
-	mpirun -np 2 ./maxwell_3d_test --l_spectral .FALSE. --nsteps 106 && \
-	mpirun -np 4 ./maxwell_3d_test --l_spectral .FALSE. --nsteps 106 && \
-	mpirun -np 8 ./maxwell_3d_test --l_spectral .FALSE. --nsteps 106
+	mpirun -np 2 ./maxwell_3d_test input_file.pixr --l_spectral .FALSE. --nsteps 106 && \
+	mpirun -np 4 ./maxwell_3d_test input_file.pixr --l_spectral .FALSE. --nsteps 106 && \
+	mpirun -np 8 ./maxwell_3d_test input_file.pixr --l_spectral .FALSE. --nsteps 106
 	# 4 OpenMP vary number of MPIs 
 	cd Acceptance_testing/Gcov_tests && \
 	export OMP_NUM_THREADS=4 && \
-	mpirun -np 1 ./maxwell_3d_test --l_spectral .FALSE. --nsteps 106 && \
-	mpirun -np 2 ./maxwell_3d_test --l_spectral .FALSE. --nsteps 106 && \
-	mpirun -np 4 ./maxwell_3d_test --l_spectral .FALSE. --nsteps 106
+	mpirun -np 1 ./maxwell_3d_test input_file.pixr --l_spectral .FALSE. --nsteps 106 && \
+	mpirun -np 2 ./maxwell_3d_test input_file.pixr --l_spectral .FALSE. --nsteps 106 && \
+	mpirun -np 4 ./maxwell_3d_test input_file.pixr --l_spectral .FALSE. --nsteps 106
 test_plane_wave_psatd_3d:
 	cd Acceptance_testing/Gcov_tests && \
 	export OMP_NUM_THREADS=1 && \
-	mpirun -np 1 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 && \
-	mpirun -np 1 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 --norderz 8 --nordery 8 --norderx 8  && \
-	mpirun -np 2 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 && \
-	mpirun -np 4 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 && \
-	mpirun -np 8 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61
+	mpirun -np 1 ./maxwell_3d_test input_file.pixr --l_spectral .TRUE. --nsteps 61 && \
+	mpirun -np 1 ./maxwell_3d_test input_file.pixr --l_spectral .TRUE. --nsteps 61 --norderz 8 --nordery 8 --norderx 8  && \
+	mpirun -np 2 ./maxwell_3d_test input_file.pixr --l_spectral .TRUE. --nsteps 61 && \
+	mpirun -np 4 ./maxwell_3d_test input_file.pixr --l_spectral .TRUE. --nsteps 61 && \
+	mpirun -np 8 ./maxwell_3d_test input_file.pixr --l_spectral .TRUE. --nsteps 61
 test_plane_wave_psatd_global_3d:
 	cd Acceptance_testing/Gcov_tests && \
 	export OMP_NUM_THREADS=4 && \
-	mpirun -np 1 ./maxwell_3d_test --l_spectral .TRUE. --fftw_with_mpi .TRUE. --nsteps 61  && \
-	mpirun -np 2 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 --fftw_with_mpi .TRUE. && \
-	mpirun -np 2 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 --fftw_with_mpi .TRUE. && \
-	mpirun -np 2 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 --fftw_with_mpi .TRUE. --fftw_hybrid .TRUE. --nb_group 1 \
-	mpirun -np 2 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 --fftw_with_mpi .TRUE. --fftw_hybrid .TRUE. --nb_group 1 \
+	mpirun -np 1 ./maxwell_3d_test input_file.pixr --l_spectral .TRUE. --fftw_with_mpi .TRUE. --nsteps 61  && \
+	mpirun -np 2 ./maxwell_3d_test input_file.pixr --l_spectral .TRUE. --nsteps 61 --fftw_with_mpi .TRUE. && \
+	mpirun -np 2 ./maxwell_3d_test input_file.pixr --l_spectral .TRUE. --nsteps 61 --fftw_with_mpi .TRUE. && \
+	mpirun -np 2 ./maxwell_3d_test input_file.pixr --l_spectral .TRUE. --nsteps 61 --fftw_with_mpi .TRUE. --fftw_hybrid .TRUE. --nb_group 1 \
+	mpirun -np 2 ./maxwell_3d_test input_file.pixr --l_spectral .TRUE. --nsteps 61 --fftw_with_mpi .TRUE. --fftw_hybrid .TRUE. --nb_group 1 \
 	--fftw_mpi_tr .TRUE. 
 
 test_lb:
 	cd Acceptance_testing/Gcov_tests && \
 	export OMP_NUM_THREADS=1 &&\
-	mpirun -np 8 ./maxwell_2d_test --l_spectral .TRUE. --nsteps 81 --nprocz 8 --fftw_with_mpi .TRUE. --fftw_hybrid .TRUE. --nb_group 1 \
+	mpirun -np 8 ./maxwell_2d_test input_file.pixr --l_spectral .TRUE. --nsteps 81 --nprocz 8 --fftw_with_mpi .TRUE. --fftw_hybrid .TRUE. --nb_group 1 \
 	is_lb_grp .TRUE.	
