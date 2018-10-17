@@ -416,36 +416,19 @@ class MiniAppParser( object ):
                         "mpi_file_close",
                         "mpi_finalize",
                         "omp_set_nested",
-                        "select_quantity",
                         "start_vtune_collection",
                         "start_sde_collection",
                         "stop_vtune_collection",
                         "stop_sde_collection",
-                        "pxr_convertindtoproc",
-                        "remap_em_2dfields",
-                        "remap_em_3dfields",
-                        "get_2dintersection",
-                        "get_3dintersection",
                         "compute_send_recv_sizes_and_index_g2l_copies",
                         "compute_send_recv_sizes_and_index_l2g_copies",
                         "create_derived_types_groups",
-                        "compute_effective_communication_setup",
-                        "get_projected_load_on_x",
-                        "get_projected_load_on_y",
-                        "get_projected_load_on_z",
                         "get_local_grid_mem",
-                        "balance_in_dir",
-                        "get_proc_interval",
                         "pxr_particle_sorting",
                         "particle_sorting_sub",
                         "pxr_particle_bin_sorting",
                         "pxr_particle_bin_sorting_2d",
-                        "binary_search",
                         "get_local_number_of_particles_from_species",
-                        "write_particles_to_file",
-                        "get_particles_to_dump",
-                        "concatenate_particle_variable",
-                        "write_particle_variable",
                         "output_time_statistics",
                         "start_collection",
                         "stop_collection",
@@ -463,7 +446,25 @@ class MiniAppParser( object ):
                         "final_output_time_statistics",
                         "estimate_total_memory_consumption",
                         "init_splitted_fields_random",
-                        "step"]
+                        "step",
+#                         "select_quantity",
+#                         "pxr_convertindtoproc",
+#                         "remap_em_2dfields",
+#                         "remap_em_3dfields",
+#                         "get_2dintersection",
+#                         "get_3dintersection",
+#                         "get_projected_load_on_x",
+#                         "get_projected_load_on_y",
+#                         "get_projected_load_on_z",
+#                         "balance_in_dir",
+#                         "get_proc_interval",
+#                         "binary_search",
+#                         "compute_effective_communication_setup",
+                         "write_particles_to_file",
+                         "get_particles_to_dump",
+                         "concatenate_particle_variable",
+                         "write_particle_variable",
+                        ]
 
         generic_modules_solver = ["fields","field_boundary"]
 
@@ -658,8 +659,6 @@ class MiniAppParser( object ):
         esirkepov_modules=[]
 
         esirkepov_routines_scalar=[
-                        "pxrdepose_currents_on_grid_jxjyjz_sub_openmp",\
-                        "pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp",\
                         "depose_jxjyjz_esirkepov",\
                         "depose_jxjyjz_esirkepov_1_1_1",\
                         "depose_jxjyjz_esirkepov_2_2_2",\
@@ -685,6 +684,8 @@ class MiniAppParser( object ):
                         "depose_jxjyjz_vecHV_vnr_2_2_2",\
                         "depose_jxjyjz_vecHVv3_3_3_3",\
                         "depose_jxjyjz_vecHV_vnr_3_3_3",\
+                        "pxrdepose_currents_on_grid_jxjyjz_sub_openmp",\
+                        "pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp",\
                         "current_reduction_1_1_1",\
                         "current_reduction_2_2_2",\
                         "current_reduction_3_3_3"]
@@ -766,11 +767,11 @@ class MiniAppParser( object ):
                         "p3dfft_setup",
                         "dfftw_init_threads",
                         "dfftw_plan_with_nthreads",
-                        "dfftw_plan_dft_1d",
-                        "dfftw_plan_dft_2d",
-                        "dfftw_plan_dft_3d",
-                        "dfftw_plan_dft_r2c_1d",
-                        "dfftw_plan_dft_c2r_1d",
+#                         "dfftw_plan_dft_1d",
+#                         "dfftw_plan_dft_2d",
+#                         "dfftw_plan_dft_3d",
+#                         "dfftw_plan_dft_r2c_1d",
+#                         "dfftw_plan_dft_c2r_1d",
                         "dfftw_plan_dft_r2c_2d",
                         "dfftw_plan_dft_c2r_2d",
                         "dfftw_plan_dft_r2c_3d",
@@ -1664,6 +1665,11 @@ class MiniAppParser( object ):
                 sys.exit("ERROR: missing acceptance tests ")
             else:
                 curr_line=listlines[i].lower()
+
+                # --- removes 'cleantest'
+                if ("clean:" in curr_line) and ("clean_test" in curr_line):
+                    listlines[i] = listlines[i].replace("clean_test","")
+
                 curr_word_list= curr_line.split(" ")
                 if "# __________________________________________" in curr_line:
                     break
