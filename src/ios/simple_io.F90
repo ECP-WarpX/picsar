@@ -89,9 +89,11 @@ MODULE simple_io
 
     WRITE(strtemp, '(I5)') it
     IF (output_frequency .GE. 1) THEN
-      tmptime2 = MPI_WTIME()
       IF ((it .GE. output_step_min) .AND. (it .LE. output_step_max) .AND.             &
       (MOD(it-output_step_min, output_frequency) .EQ. 0)) THEN
+
+      tmptime2 = MPI_WTIME()
+
       !!! --- Write output to disk
       !! -- Write grid quantities
       IF (c_output_ex .EQ. 1) THEN
@@ -196,9 +198,10 @@ MODULE simple_io
         nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global, nz_global)
       ENDIF
 
+      tmptime2 = MPI_WTIME() - tmptime2
+      IF (rank .EQ. 0) PRINT *, "Fields dump in ", tmptime2, " (s)"
+
     ENDIF
-    tmptime2 = MPI_WTIME() - tmptime2
-    IF (rank .EQ. 0) PRINT *, "Fields dump in ", tmptime2, " (s)"
   ENDIF
 
   IF (it.ge.timestat_itstart) THEN
