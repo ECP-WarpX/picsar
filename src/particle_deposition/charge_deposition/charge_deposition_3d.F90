@@ -97,6 +97,8 @@ SUBROUTINE depose_rho_scalar_1_1_1(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, 
 
   ! Prevent the compiler to vectorize (dependencies)
   !DIR$ NOVECTOR
+  !$acc parallel deviceptr(rho, xp, yp, zp, w)
+  !$acc loop gang vector private(sx(0:1), sy(0:1), sz(0:1))
   DO ip=1, np
     ! --- computes current position in grid units
     x = (xp(ip)-xmin)*dxi
@@ -120,15 +122,25 @@ SUBROUTINE depose_rho_scalar_1_1_1(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, 
     sz( 0) = 1.0_num-zint
     sz( 1) = zint
     ! --- add charge density contributions
+    !$acc atomic update
     rho(j, k, l)      = rho(j, k, l)+sx(0)*sy(0)*sz(0)*wq
+    !$acc atomic update
     rho(j+1, k, l)    = rho(j+1, k, l)+sx(1)*sy(0)*sz(0)*wq
+    !$acc atomic update
     rho(j, k+1, l)    = rho(j, k+1, l)+sx(0)*sy(1)*sz(0)*wq
+    !$acc atomic update
     rho(j+1, k+1, l)  = rho(j+1, k+1, l)+sx(1)*sy(1)*sz(0)*wq
+    !$acc atomic update
     rho(j, k, l+1)    = rho(j, k, l+1)+sx(0)*sy(0)*sz(1)*wq
+    !$acc atomic update
     rho(j+1, k, l+1)  = rho(j+1, k, l+1)+sx(1)*sy(0)*sz(1)*wq
+    !$acc atomic update
     rho(j, k+1, l+1)  = rho(j, k+1, l+1)+sx(0)*sy(1)*sz(1)*wq
+    !$acc atomic update
     rho(j+1, k+1, l+1)= rho(j+1, k+1, l+1)+sx(1)*sy(1)*sz(1)*wq
   END DO
+  !$acc end loop
+  !$acc end parallel
   RETURN
 END SUBROUTINE depose_rho_scalar_1_1_1
 
@@ -180,6 +192,8 @@ SUBROUTINE depose_rho_scalar_2_2_2(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, 
   dzi = 1.0_num/dz
   invvol = dxi*dyi*dzi
   !DIR$ NOVECTOR
+  !$acc parallel deviceptr(rho, xp, yp, zp, w)
+  !$acc loop gang vector private(sx(-1:1), sy(-1:1), sz(-1:1))
   DO ip=1, np
 
     ! --- computes current position in grid units
@@ -220,34 +234,63 @@ SUBROUTINE depose_rho_scalar_2_2_2(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, 
     sx9=sx(1)*sy(1)
     ! --- add charge density contributions to the 27
     ! --- nearest vertices
+    !$acc atomic update
     rho(j-1, k-1, l-1) = rho(j-1, k-1, l-1)   + sx1*sz(-1)
+    !$acc atomic update
     rho(j, k-1, l-1)   = rho(j, k-1, l-1)     + sx2*sz(-1)
+    !$acc atomic update
     rho(j+1, k-1, l-1) = rho(j+1, k-1, l-1)   + sx3*sz(-1)
+    !$acc atomic update
     rho(j-1, k, l-1)   = rho(j-1, k, l-1)     + sx4*sz(-1)
+    !$acc atomic update
     rho(j, k, l-1)     = rho(j, k, l-1)       + sx5*sz(-1)
+    !$acc atomic update
     rho(j+1, k, l-1)   = rho(j+1, k, l-1)     + sx6*sz(-1)
+    !$acc atomic update
     rho(j-1, k+1, l-1) = rho(j-1, k+1, l-1)   + sx7*sz(-1)
+    !$acc atomic update
     rho(j, k+1, l-1)   = rho(j, k+1, l-1)     + sx8*sz(-1)
+    !$acc atomic update
     rho(j+1, k+1, l-1) = rho(j+1, k+1, l-1)   + sx9*sz(-1)
+    !$acc atomic update
     rho(j-1, k-1, l)   = rho(j-1, k-1, l)     + sx1*sz(0)
+    !$acc atomic update
     rho(j, k-1, l)     = rho(j, k-1, l)       + sx2*sz(0)
+    !$acc atomic update
     rho(j+1, k-1, l)   = rho(j+1, k-1, l)     + sx3*sz(0)
+    !$acc atomic update
     rho(j-1, k, l)     = rho(j-1, k, l)       + sx4*sz(0)
+    !$acc atomic update
     rho(j, k, l)       = rho(j, k, l)         + sx5*sz(0)
+    !$acc atomic update
     rho(j+1, k, l)     = rho(j+1, k, l)       + sx6*sz(0)
+    !$acc atomic update
     rho(j-1, k+1, l)   = rho(j-1, k+1, l)     + sx7*sz(0)
+    !$acc atomic update
     rho(j, k+1, l)     = rho(j, k+1, l)       + sx8*sz(0)
+    !$acc atomic update
     rho(j+1, k+1, l)   = rho(j+1, k+1, l)     + sx9*sz(0)
+    !$acc atomic update
     rho(j-1, k-1, l+1) = rho(j-1, k-1, l+1)   + sx1*sz(1)
+    !$acc atomic update
     rho(j, k-1, l+1)   = rho(j, k-1, l+1)     + sx2*sz(1)
+    !$acc atomic update
     rho(j+1, k-1, l+1) = rho(j+1, k-1, l+1)   + sx3*sz(1)
+    !$acc atomic update
     rho(j-1, k, l+1)   = rho(j-1, k, l+1)     + sx4*sz(1)
+    !$acc atomic update
     rho(j, k, l+1)     = rho(j, k, l+1)       + sx5*sz(1)
+    !$acc atomic update
     rho(j+1, k, l+1)   = rho(j+1, k, l+1)     + sx6*sz(1)
+    !$acc atomic update
     rho(j-1, k+1, l+1) = rho(j-1, k+1, l+1)   + sx7*sz(1)
+    !$acc atomic update
     rho(j, k+1, l+1)   = rho(j, k+1, l+1)     + sx8*sz(1)
+    !$acc atomic update
     rho(j+1, k+1, l+1) = rho(j+1, k+1, l+1)   + sx9*sz(1)
   END DO
+  !$acc end loop
+  !$acc end parallel
   RETURN
 END SUBROUTINE depose_rho_scalar_2_2_2
 
@@ -300,6 +343,8 @@ SUBROUTINE depose_rho_scalar_3_3_3(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, 
   dzi = 1.0_num/dz
   invvol = dxi*dyi*dzi
   !DIR$ NOVECTOR
+  !$acc parallel deviceptr(rho, xp, yp, zp, w)
+  !$acc loop gang vector private(sx(-1:2), sy(-1:2), sz(-1:2))
   DO ip=1, np
     ! --- computes current position in grid units
     x = (xp(ip)-xmin)*dxi
@@ -340,71 +385,137 @@ SUBROUTINE depose_rho_scalar_3_3_3(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, 
     ! --- add charge density contributions to the 64
     ! --- nearest vertices
     ! --- add charge density contributions
+    !$acc atomic update
     rho(j-1, k-1, l-1)=rho(j-1, k-1, l-1)+sx(-1)*sy(-1)*sz(-1)*wq
+    !$acc atomic update
     rho(j, k-1, l-1)=rho(j, k-1, l-1)+sx(0)*sy(-1)*sz(-1)*wq
+    !$acc atomic update
     rho(j+1, k-1, l-1)=rho(j+1, k-1, l-1)+sx(1)*sy(-1)*sz(-1)*wq
+    !$acc atomic update
     rho(j+2, k-1, l-1)=rho(j+2, k-1, l-1)+sx(2)*sy(-1)*sz(-1)*wq
+    !$acc atomic update
     rho(j-1, k, l-1)=rho(j-1, k, l-1)+sx(-1)*sy(0)*sz(-1)*wq
+    !$acc atomic update
     rho(j, k, l-1)=rho(j, k, l-1)+sx(0)*sy(0)*sz(-1)*wq
+    !$acc atomic update
     rho(j+1, k, l-1)=rho(j+1, k, l-1)+sx(1)*sy(0)*sz(-1)*wq
+    !$acc atomic update
     rho(j+2, k, l-1)=rho(j+2, k, l-1)+sx(2)*sy(0)*sz(-1)*wq
+    !$acc atomic update
     rho(j-1, k+1, l-1)=rho(j-1, k+1, l-1)+sx(-1)*sy(1)*sz(-1)*wq
+    !$acc atomic update
     rho(j, k+1, l-1)=rho(j, k+1, l-1)+sx(0)*sy(1)*sz(-1)*wq
+    !$acc atomic update
     rho(j+1, k+1, l-1)=rho(j+1, k+1, l-1)+sx(1)*sy(1)*sz(-1)*wq
+    !$acc atomic update
     rho(j+2, k+1, l-1)=rho(j+2, k+1, l-1)+sx(2)*sy(1)*sz(-1)*wq
+    !$acc atomic update
     rho(j-1, k+2, l-1)=rho(j-1, k+2, l-1)+sx(-1)*sy(2)*sz(-1)*wq
+    !$acc atomic update
     rho(j, k+2, l-1)=rho(j, k+2, l-1)+sx(0)*sy(2)*sz(-1)*wq
+    !$acc atomic update
     rho(j+1, k+2, l-1)=rho(j+1, k+2, l-1)+sx(1)*sy(2)*sz(-1)*wq
+    !$acc atomic update
     rho(j+2, k+2, l-1)=rho(j+2, k+2, l-1)+sx(2)*sy(2)*sz(-1)*wq
+    !$acc atomic update
     rho(j-1, k-1, l)=rho(j-1, k-1, l)+sx(-1)*sy(-1)*sz(0)*wq
+    !$acc atomic update
     rho(j, k-1, l)=rho(j, k-1, l)+sx(0)*sy(-1)*sz(0)*wq
+    !$acc atomic update
     rho(j+1, k-1, l)=rho(j+1, k-1, l)+sx(1)*sy(-1)*sz(0)*wq
+    !$acc atomic update
     rho(j+2, k-1, l)=rho(j+2, k-1, l)+sx(2)*sy(-1)*sz(0)*wq
+    !$acc atomic update
     rho(j-1, k, l)=rho(j-1, k, l)+sx(-1)*sy(0)*sz(0)*wq
+    !$acc atomic update
     rho(j, k, l)=rho(j, k, l)+sx(0)*sy(0)*sz(0)*wq
+    !$acc atomic update
     rho(j+1, k, l)=rho(j+1, k, l)+sx(1)*sy(0)*sz(0)*wq
+    !$acc atomic update
     rho(j+2, k, l)=rho(j+2, k, l)+sx(2)*sy(0)*sz(0)*wq
+    !$acc atomic update
     rho(j-1, k+1, l)=rho(j-1, k+1, l)+sx(-1)*sy(1)*sz(0)*wq
+    !$acc atomic update
     rho(j, k+1, l)=rho(j, k+1, l)+sx(0)*sy(1)*sz(0)*wq
+    !$acc atomic update
     rho(j+1, k+1, l)=rho(j+1, k+1, l)+sx(1)*sy(1)*sz(0)*wq
+    !$acc atomic update
     rho(j+2, k+1, l)=rho(j+2, k+1, l)+sx(2)*sy(1)*sz(0)*wq
+    !$acc atomic update
     rho(j-1, k+2, l)=rho(j-1, k+2, l)+sx(-1)*sy(2)*sz(0)*wq
+    !$acc atomic update
     rho(j, k+2, l)=rho(j, k+2, l)+sx(0)*sy(2)*sz(0)*wq
+    !$acc atomic update
     rho(j+1, k+2, l)=rho(j+1, k+2, l)+sx(1)*sy(2)*sz(0)*wq
+    !$acc atomic update
     rho(j+2, k+2, l)=rho(j+2, k+2, l)+sx(2)*sy(2)*sz(0)*wq
+    !$acc atomic update
     rho(j-1, k-1, l+1)=rho(j-1, k-1, l+1)+sx(-1)*sy(-1)*sz(1)*wq
+    !$acc atomic update
     rho(j, k-1, l+1)=rho(j, k-1, l+1)+sx(0)*sy(-1)*sz(1)*wq
+    !$acc atomic update
     rho(j+1, k-1, l+1)=rho(j+1, k-1, l+1)+sx(1)*sy(-1)*sz(1)*wq
+    !$acc atomic update
     rho(j+2, k-1, l+1)=rho(j+2, k-1, l+1)+sx(2)*sy(-1)*sz(1)*wq
+    !$acc atomic update
     rho(j-1, k, l+1)=rho(j-1, k, l+1)+sx(-1)*sy(0)*sz(1)*wq
+    !$acc atomic update
     rho(j, k, l+1)=rho(j, k, l+1)+sx(0)*sy(0)*sz(1)*wq
+    !$acc atomic update
     rho(j+1, k, l+1)=rho(j+1, k, l+1)+sx(1)*sy(0)*sz(1)*wq
+    !$acc atomic update
     rho(j+2, k, l+1)=rho(j+2, k, l+1)+sx(2)*sy(0)*sz(1)*wq
+    !$acc atomic update
     rho(j-1, k+1, l+1)=rho(j-1, k+1, l+1)+sx(-1)*sy(1)*sz(1)*wq
+    !$acc atomic update
     rho(j, k+1, l+1)=rho(j, k+1, l+1)+sx(0)*sy(1)*sz(1)*wq
+    !$acc atomic update
     rho(j+1, k+1, l+1)=rho(j+1, k+1, l+1)+sx(1)*sy(1)*sz(1)*wq
+    !$acc atomic update
     rho(j+2, k+1, l+1)=rho(j+2, k+1, l+1)+sx(2)*sy(1)*sz(1)*wq
+    !$acc atomic update
     rho(j-1, k+2, l+1)=rho(j-1, k+2, l+1)+sx(-1)*sy(2)*sz(1)*wq
+    !$acc atomic update
     rho(j, k+2, l+1)=rho(j, k+2, l+1)+sx(0)*sy(2)*sz(1)*wq
+    !$acc atomic update
     rho(j+1, k+2, l+1)=rho(j+1, k+2, l+1)+sx(1)*sy(2)*sz(1)*wq
+    !$acc atomic update
     rho(j+2, k+2, l+1)=rho(j+2, k+2, l+1)+sx(2)*sy(2)*sz(1)*wq
+    !$acc atomic update
     rho(j-1, k-1, l+2)=rho(j-1, k-1, l+2)+sx(-1)*sy(-1)*sz(2)*wq
+    !$acc atomic update
     rho(j, k-1, l+2)=rho(j, k-1, l+2)+sx(0)*sy(-1)*sz(2)*wq
+    !$acc atomic update
     rho(j+1, k-1, l+2)=rho(j+1, k-1, l+2)+sx(1)*sy(-1)*sz(2)*wq
+    !$acc atomic update
     rho(j+2, k-1, l+2)=rho(j+2, k-1, l+2)+sx(2)*sy(-1)*sz(2)*wq
+    !$acc atomic update
     rho(j-1, k, l+2)=rho(j-1, k, l+2)+sx(-1)*sy(0)*sz(2)*wq
+    !$acc atomic update
     rho(j, k, l+2)=rho(j, k, l+2)+sx(0)*sy(0)*sz(2)*wq
+    !$acc atomic update
     rho(j+1, k, l+2)=rho(j+1, k, l+2)+sx(1)*sy(0)*sz(2)*wq
+    !$acc atomic update
     rho(j+2, k, l+2)=rho(j+2, k, l+2)+sx(2)*sy(0)*sz(2)*wq
+    !$acc atomic update
     rho(j-1, k+1, l+2)=rho(j-1, k+1, l+2)+sx(-1)*sy(1)*sz(2)*wq
+    !$acc atomic update
     rho(j, k+1, l+2)=rho(j, k+1, l+2)+sx(0)*sy(1)*sz(2)*wq
+    !$acc atomic update
     rho(j+1, k+1, l+2)=rho(j+1, k+1, l+2)+sx(1)*sy(1)*sz(2)*wq
+    !$acc atomic update
     rho(j+2, k+1, l+2)=rho(j+2, k+1, l+2)+sx(2)*sy(1)*sz(2)*wq
+    !$acc atomic update
     rho(j-1, k+2, l+2)=rho(j-1, k+2, l+2)+sx(-1)*sy(2)*sz(2)*wq
+    !$acc atomic update
     rho(j, k+2, l+2)=rho(j, k+2, l+2)+sx(0)*sy(2)*sz(2)*wq
+    !$acc atomic update
     rho(j+1, k+2, l+2)=rho(j+1, k+2, l+2)+sx(1)*sy(2)*sz(2)*wq
+    !$acc atomic update
     rho(j+2, k+2, l+2)=rho(j+2, k+2, l+2)+sx(2)*sy(2)*sz(2)*wq
   END DO
+  !$acc end loop
+  !$acc end parallel
   RETURN
 END SUBROUTINE depose_rho_scalar_3_3_3
 
