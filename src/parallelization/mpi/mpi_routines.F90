@@ -84,6 +84,7 @@ MODULE mpi_routines
     IF (.NOT. isinitialized) THEN
       CALL MPI_INIT_THREAD(MPI_THREAD_FUNNELED, provided, errcode)
 #if defined(FFTW)
+    IF (.NOT. cuda_fft) THEN
       IF (provided >= MPI_THREAD_FUNNELED) THEN
         CALL DFFTW_INIT_THREADS(iret)
         fftw_threads_ok = .TRUE.
@@ -91,6 +92,7 @@ MODULE mpi_routines
         fftw_threads_ok=.FALSE.
       ENDIF
       CALL FFTW_MPI_INIT()
+    ENDIF
 #endif
     ENDIF
     CALL MPI_COMM_DUP(MPI_COMM_WORLD, comm, errcode)
@@ -135,14 +137,15 @@ MODULE mpi_routines
     CALL MPI_COMM_RANK(comm, rank_in_comm, errcode)
     rank=INT(rank_in_comm, idp)
 #if defined(FFTW)
-    IF (.NOT. p3dfft_flag) THEN
-      CALL DFFTW_INIT_THREADS(iret)
-      IF( fftw_with_mpi) THEN
-        CALL FFTW_MPI_INIT()
+    IF (.NOT. cuda_fft) THEN
+      IF (.NOT. p3dfft_flag) THEN
+        CALL DFFTW_INIT_THREADS(iret)
+        IF( fftw_with_mpi) THEN
+          CALL FFTW_MPI_INIT()
+        ENDIF
       ENDIF
     ENDIF
 #endif
-
 
   END SUBROUTINE mpi_minimal_init_python
 

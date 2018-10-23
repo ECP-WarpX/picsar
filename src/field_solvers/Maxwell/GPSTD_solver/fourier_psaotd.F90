@@ -1669,14 +1669,18 @@ MODULE fourier_psaotd
     USE fastfft
     USE fftw3_fortran, ONLY: fftw_measure, fftw_backward, fftw_forward
     USE fields, ONLY: ex_r, nzguards, nxguards, g_spectral, nyguards, exf, exy_r
-    USE fourier, ONLY: plan_c2r, plan_r2c
+    USE fourier, ONLY: plan_c2r, plan_r2c, plan_c2r_cuda, plan_r2c_cuda
     USE iso_c_binding
     USE omp_lib
     USE picsar_precision, ONLY: idp
     USE shared_data, ONLY: nz, ny, fftw_with_mpi, nx, nx_global, p3dfft_flag,        &
-      ny_global, c_dim, nz_global, rank, absorbing_bcs
+      ny_global, c_dim, nz_global, rank, absorbing_bcs,cuda_fft
+#if defined(CUDA_FFT)
+USE cufft
+#endif
 
     INTEGER(idp) :: nfftx, nffty, nfftz, nopenmp
+    INTEGER(isp) :: err_cu_r2c, err_cu_c2r
 #ifdef _OPENMP
     nopenmp=OMP_GET_MAX_THREADS()
 #else
@@ -1702,7 +1706,6 @@ MODULE fourier_psaotd
     CALL init_gpstd()
     IF(rank==0) WRITE(0, *) 'INIT GPSTD MATRIX DONE'
 
-
     !> If g_spectral == .TRUE. then exf is not initialized in mpi_routine.F90
     !> Instead, vector blocks structures are used to store fourier fields
     !> and multiply_mat_vector(GPSTD.F90) is used to push fields in Fourier
@@ -1726,16 +1729,34 @@ MODULE fourier_psaotd
         CALL init_plans_fourier_mpi(nopenmp)
       !> If local psatd, plans are initialized here
       ELSE IF(.NOT. fftw_with_mpi) THEN
-        IF(c_dim ==3) THEN
-          CALL fast_fftw_create_plan_r2c_3d_dft(nopenmp, nfftx, nffty, nfftz,ex_r, exf,  &
-          plan_r2c, INT(FFTW_MEASURE, idp), INT(FFTW_FORWARD, idp))
-          CALL fast_fftw_create_plan_c2r_3d_dft(nopenmp, nfftx, nffty, nfftz, exf,ex_r,  &
-          plan_c2r, INT(FFTW_MEASURE, idp), INT(FFTW_BACKWARD, idp))
-        ELSE IF(c_dim == 2) THEN
-          CALL fast_fftw_create_plan_r2c_2d_dft(nopenmp, nfftx, nfftz, ex_r, exf,        &
-          plan_r2c, INT(FFTW_MEASURE, idp), INT(FFTW_FORWARD, idp))
-          CALL fast_fftw_create_plan_c2r_2d_dft(nopenmp, nfftx, nfftz, exf, ex_r,        &
-          plan_c2r, INT(FFTW_MEASURE, idp), INT(FFTW_BACKWARD, idp))
+        IF(.NOT. cuda_fft) THEN
+          IF(c_dim ==3) THEN
+            CALL fast_fftw_create_plan_r2c_3d_dft(nopenmp, nfftx, nffty, nfftz,ex_r, exf,  &
+            plan_r2c, INT(FFTW_MEASURE, idp), INT(FFTW_FORWARD, idp))
+            CALL fast_fftw_create_plan_c2r_3d_dft(nopenmp, nfftx, nffty, nfftz, exf,ex_r,  &
+            plan_c2r, INT(FFTW_MEASURE, idp), INT(FFTW_BACKWARD, idp))
+          ELSE IF(c_dim == 2) THEN
+            CALL fast_fftw_create_plan_r2c_2d_dft(nopenmp, nfftx, nfftz, ex_r, exf,        &
+            plan_r2c, INT(FFTW_MEASURE, idp), INT(FFTW_FORWARD, idp))
+            CALL fast_fftw_create_plan_c2r_2d_dft(nopenmp, nfftx, nfftz, exf, ex_r,        &
+            plan_c2r, INT(FFTW_MEASURE, idp), INT(FFTW_BACKWARD, idp))
+          ENDIF
+        ELSE
+#if defined(CUDA_FFT)
+
+          !!!!!$acc host_data
+          IF(c_dim ==3) THEN
+            err_cu_r2c=CUFFTPLAN3D(plan_r2c_cuda,INT(nfftz,isp),INT(nffty,isp),INT(nfftx,isp),CUFFT_D2Z)
+            err_cu_c2r=CUFFTPLAN3D(plan_c2r_cuda,INT(nfftz,isp),INT(nffty,isp),INT(nfftx,isp),CUFFT_Z2D)
+            
+          ELSE IF (c_dim == 2) THEN
+            err_cu_r2c=CUFFTPLAN2D(plan_r2c_cuda,INT(nfftz,isp),INT(nfftx,isp),CUFFT_D2Z)
+            err_cu_c2r=CUFFTPLAN2D(plan_c2r_cuda,INT(nfftz,isp),INT(nfftx,isp),CUFFT_Z2D)
+
+
+          ENDIF
+          !!!!$acc end host_data
+#endif
         ENDIF
       ENDIF
       IF(rank==0) WRITE(0, *) 'INIT GPSTD PLANS DONE'

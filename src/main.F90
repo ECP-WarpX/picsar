@@ -172,15 +172,16 @@ PROGRAM main
   				  " "//trim(adjustl(str7))
   	CLOSE(12)
   ENDIF 
-
 #if defined(FFTW)
   IF(l_spectral) THEN
-    IF(fftw_with_mpi) THEN
-      CALL DFFTW_DESTROY_PLAN(plan_r2c_mpi)
-      CALL DFFTW_DESTROY_PLAN(plan_c2r_mpi)
-    ELSE
-      CALL fast_fftw_destroy_plan_dft(plan_r2c)
-      CALL fast_fftw_destroy_plan_dft(plan_c2r)
+    IF(.NOT. cuda_fft) THEN
+      IF(fftw_with_mpi) THEN
+        CALL DFFTW_DESTROY_PLAN(plan_r2c_mpi)
+        CALL DFFTW_DESTROY_PLAN(plan_c2r_mpi)
+      ELSE
+        CALL fast_fftw_destroy_plan_dft(plan_r2c)
+        CALL fast_fftw_destroy_plan_dft(plan_c2r)
+      ENDIF
     ENDIF
   ENDIF
 #endif

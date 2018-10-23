@@ -1226,7 +1226,7 @@ MODULE shared_data
   ! MPI subdomain data
   !----------------------------------------------------------------------------
   !> FFTW distributed
-  LOGICAL(idp) :: fftw_with_mpi, fftw_mpi_transpose, fftw_threads_ok, fftw_hybrid
+  LOGICAL(idp) :: fftw_with_mpi, fftw_mpi_transpose, fftw_threads_ok, fftw_hybrid,cuda_fft
   !> Number of groups (this is a parameter in the input file)
   INTEGER(idp)    ::  nb_group
   !> Number of groups in each direction
@@ -1581,6 +1581,9 @@ MODULE fourier!#do not parse
   USE PICSAR_precision
   USE constants
   INTEGER(idp), DIMENSION(1) :: plan_r2c, plan_c2r
+#if defined(CUDA_FFT)
+  INTEGER(isp) :: plan_r2c_cuda, plan_c2r_cuda
+#endif
 END MODULE fourier
 #endif
 
