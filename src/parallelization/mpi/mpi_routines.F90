@@ -1757,6 +1757,9 @@ USE iso_c_binding
 USE mpi_fftw3, ONLY: fftw_alloc_complex, local_ny_tr, fftw_alloc_real, local_ny,     &
   local_nx_tr, alloc_local, local_nx, local_nz, local_nz_tr
 #endif
+#if defined(CUDA_FFT)
+USE cufft
+#endif
 #if defined(FFTW)
 USE fourier
 USE group_parameters
@@ -1775,6 +1778,11 @@ ALLOCATE(ez(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards)
 ALLOCATE(bx(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 ALLOCATE(by(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 ALLOCATE(bz(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+#if defined(CUDA_FFT)
+      IF(cuda_fft) THEN
+      !$acc enter data create(ex,ey,ez,bx,by,bz)
+      ENDIF
+#endif
 ! > When using absorbing_bcs , allocate splitted fields 
 IF(absorbing_bcs) THEN
   ALLOCATE(exy(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
@@ -1789,6 +1797,11 @@ IF(absorbing_bcs) THEN
   ALLOCATE(byz(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
   ALLOCATE(bzx(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
   ALLOCATE(bzy(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
+#if defined(CUDA_FFT)
+      IF(cuda_fft) THEN
+      !$acc enter data create (exy,exz,eyx,eyz,ezx,ezy,bxy,bxz,byx,byz,bzx,bzy)
+      ENDIF
+#endif
 ENDIF
 ALLOCATE(jx(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
 -nzjguards:nz+nzjguards))
@@ -1804,6 +1817,12 @@ ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards,                     
 -nzguards:nz+nzguards))
 ALLOCATE(divj(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 ALLOCATE(divb(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+#if defined(CUDA_FFT)
+      IF(cuda_fft) THEN
+      !$acc enter data create (jx,jy,jz,rho,rhoold,dive,divb,divj)
+      ENDIF
+#endif
+
 ! --- Initialize auxiliary field arrays for gather to particles
 ex_p => ex
 ey_p => ey
@@ -2002,6 +2021,11 @@ IF (l_spectral) THEN
       ALLOCATE(jzf(nkx, nky, nkz))
       ALLOCATE(rhof(nkx, nky, nkz))
       ALLOCATE(rhooldf(nkx, nky, nkz))
+#if defined(CUDA_FFT)
+      IF(cuda_fft) THEN
+      !$acc enter data create (exf,eyf,ezf,bxf,byf,bzf,jxf,jyf,jzf,rhof,rhooldf)
+      ENDIF
+#endif
     ENDIF
     ! - Allocate real FFT arrays 
     imn=-nxguards; imx=nx+nxguards-1
@@ -2027,6 +2051,11 @@ IF (l_spectral) THEN
       ALLOCATE(jz_r(imn:imx, jmn:jmx, kmn:kmx))
       ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
       ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
+#if defined(CUDA_FFT)
+      IF(cuda_fft) THEN
+      !$acc enter data create  (ex_r,ey_r,ez_r,bx_r,by_r,bz_r,jx_r,jy_r,jz_r,rhoold_r,rho_r)
+      ENDIF
+#endif
     ELSE IF(absorbing_bcs) THEN
       ALLOCATE(exy_r(imn:imx, jmn:jmx, kmn:kmx))
       ALLOCATE(exz_r(imn:imx, jmn:jmx, kmn:kmx))
@@ -2045,6 +2074,11 @@ IF (l_spectral) THEN
       ALLOCATE(jz_r(imn:imx, jmn:jmx, kmn:kmx))
       ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
       ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
+#if defined(CUDA_FFT)
+      IF(cuda_fft) THEN
+      !$acc enter data create  (exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r,byx_r,byz_r,bzx_r,bzy_r,jx_r,jy_r,jz_r,rhoold_r,rho_r)
+      ENDIF
+#endif
     ENDIF
   ENDIF
 ENDIF
