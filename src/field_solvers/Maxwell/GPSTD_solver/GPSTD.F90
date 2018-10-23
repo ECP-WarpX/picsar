@@ -465,7 +465,7 @@ SUBROUTINE multiply_unit_blocks(anew, block1, n1, n2, n3, coeff1, nc1, nc2, nc3,
       !$acc parallel present(anew,block1,coeff1)
       !$acc loop gang vector collapse(3)
 #else
-      !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(k, j, i) SHARED(anew, block1, n1, n2,   &
+      !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(k, j, i) SHARED(anew, block1,coeff1, n1, n2,   &
       !$OMP n3) NUM_THREADS(nthreads)
 #endif
       DO k=1, n3
@@ -488,7 +488,7 @@ SUBROUTINE multiply_unit_blocks(anew, block1, n1, n2, n3, coeff1, nc1, nc2, nc3,
       !$acc parallel present(anew,block1,coeff1)
       !$acc loop gang vector collapse(3)
 #else
-      !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(k, j, i) SHARED(anew, block1, n1,n2,   &
+      !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(k, j, i) SHARED(anew, block1,coeff1, n1,n2,   &
       !$OMP n3) NUM_THREADS(nthreads)
 #endif
 
