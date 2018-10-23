@@ -98,6 +98,9 @@ MODULE simple_io
         ! - Write current density ex
 
         IF (rank.eq.0) WRITE(0, *) "Write electric field ex"
+#if defined(CUDA_FFT)
+!$acc update self(ex)
+#endif
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileex))//       &
         TRIM(ADJUSTL(strtemp))//'.pxr', ex, xmin, xmax, ymin, ymax, zmin, zmax,       &
         nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global, nz_global)
@@ -106,6 +109,9 @@ MODULE simple_io
       IF (c_output_ey .EQ. 1) THEN
         ! - Write current density ey
         IF (rank.eq.0) WRITE(0, *) "Write electric field ey"
+#if defined(CUDA_FFT)
+!$acc update self(ey)
+#endif
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileey))//       &
         TRIM(ADJUSTL(strtemp))//'.pxr', ey, xmin, xmax, ymin, ymax, zmin, zmax,       &
         nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global, nz_global)
@@ -113,6 +119,9 @@ MODULE simple_io
       IF (c_output_ez .EQ. 1) THEN
         ! - Write current density ez
         IF (rank.eq.0) WRITE(0, *) "Write electric field ez"
+#if defined(CUDA_FFT)
+!$acc update self(ez)
+#endif
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileez))//       &
         TRIM(ADJUSTL(strtemp))//'.pxr', ez, xmin, xmax, ymin, ymax, zmin, zmax,       &
         nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global, nz_global)
@@ -120,6 +129,9 @@ MODULE simple_io
       IF (c_output_bx .EQ. 1) THEN
         ! - Write magnetic field bx
         IF (rank.eq.0) WRITE(0, *) "Write magnetic field bx"
+#if defined(CUDA_FFT)
+!$acc update self(bx)
+#endif
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebx))//       &
         TRIM(ADJUSTL(strtemp))//'.pxr', bx, xmin, xmax, ymin, ymax, zmin, zmax,       &
         nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global, nz_global)
@@ -127,12 +139,18 @@ MODULE simple_io
       IF (c_output_by .EQ. 1) THEN
         ! - Write current density by
         IF (rank.eq.0) WRITE(0, *) "Write magnetic field by"
+#if defined(CUDA_FFT)
+!$acc update self(by)
+#endif
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileby))//       &
         TRIM(ADJUSTL(strtemp))//'.pxr', by, xmin, xmax, ymin, ymax, zmin, zmax,       &
         nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global, nz_global)
       ENDIF
       IF (c_output_bz .EQ. 1) THEN
         ! - Write current density bz
+#if defined(CUDA_FFT)
+!$acc update self(bz)
+#endif
         IF (rank.eq.0) WRITE(0, *) "Write magnetic field bz"
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebz))//       &
         TRIM(ADJUSTL(strtemp))//'.pxr', bz, xmin, xmax, ymin, ymax, zmin, zmax,       &
@@ -141,6 +159,9 @@ MODULE simple_io
       IF (c_output_jx .EQ. 1) THEN
         ! - Write current density jx
         IF (rank.eq.0) WRITE(0, *) "Write current density jx"
+#if defined(CUDA_FFT)
+!$acc update self(jx)
+#endif
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filejx))//       &
         TRIM(ADJUSTL(strtemp))//'.pxr', jx, xmin, xmax, ymin, ymax, zmin, zmax,       &
         nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global, nz_global)
@@ -148,6 +169,9 @@ MODULE simple_io
       IF (c_output_jy .EQ. 1) THEN
         ! - Write current density jy
         IF (rank.eq.0) WRITE(0, *) "Write current density jy"
+#if defined(CUDA_FFT)
+!$acc update self(jy)
+#endif
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filejy))//       &
         TRIM(ADJUSTL(strtemp))//'.pxr', jy, xmin, xmax, ymin, ymax, zmin, zmax,       &
         nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global, nz_global)
@@ -155,6 +179,9 @@ MODULE simple_io
       IF (c_output_jz .EQ. 1) THEN
         ! - Write current density jz
         IF (rank.eq.0) WRITE(0, *) "Write current density jz"
+#if defined(CUDA_FFT)
+!$acc update self(jz)
+#endif
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filejz))//       &
         TRIM(ADJUSTL(strtemp))//'.pxr', jz, xmin, xmax, ymin, ymax, zmin, zmax,       &
         nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global, nz_global)
@@ -191,6 +218,9 @@ MODULE simple_io
       IF (c_output_rho .EQ. 1) THEN
         ! - Write total charge density rho
         IF (rank.eq.0) WRITE(0, *) "Write total charge density rho"
+#if defined(CUDA_FFT)
+!$acc update self(rho)
+#endif
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filerho))//      &
         TRIM(ADJUSTL(strtemp))//'.pxr', rho, xmin, xmax, ymin, ymax, zmin, zmax,      &
         nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global, nz_global)

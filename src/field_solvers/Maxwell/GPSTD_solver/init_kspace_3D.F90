@@ -428,14 +428,19 @@ MODULE gpstd_solver
     IF(p3dfft_flag) nfftxr = nfftx
     DO i = 1_idp, 10_idp
       ALLOCATE(kspace(nmatrixes2)%block_vector(i)%block3dc(nfftxr, nffty, nfftz))
-#if defined(CUDA_FFT)
-      IF(cuda_fft) THEN
-      !$acc enter data copyin(kspace(nmatrixes2)%block_vector(i)%%block3dc)
-      ENDIF
-#endif
+!#if defined(CUDA_FFT)
+!      IF(cuda_fft) THEN
+!      !$acc enter data copyin(kspace(nmatrixes2)%block_vector(i)%block3dc)
+!      ENDIF
+!#endif
     ENDDO
     DO i = 1_idp, 4_idp
       ALLOCATE(at_op(nmatrixes2)%block_vector(i)%block3dc(nfftxr, nffty, nfftz))
+!#if defined(CUDA_FFT)
+!      IF(cuda_fft) THEN
+!      !$acc enter data copyin(at_op(nmatrixes2)%block_vector(i)%block3dc)
+!      ENDIF
+!#endif
     ENDDO
     !construct kspace
     ii=DCMPLX(0.0_num, 1.0_num)
@@ -566,6 +571,17 @@ MODULE gpstd_solver
       kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)=DCMPLX(0._num, 0._num)
     ENDIF
     DEALLOCATE(temp, temp2)
+#if defined(CUDA_FFT)
+      IF(cuda_fft) THEN
+        DO i=1,10
+        !$acc enter data copyin(kspace(nmatrixes2)%block_vector(i)%block3dc)
+        ENDDO
+        DO i=1,4
+        !$acc enter data copyin(at_op(nmatrixes2)%block_vector(i)%block3dc)
+        ENDDO
+      ENDIF
+#endif
+
   END SUBROUTINE init_kspace
 
   ! ______________________________________________________________________________________
@@ -582,12 +598,23 @@ MODULE gpstd_solver
     USE matrix_coefficients, ONLY: kspace, at_op
     USE matrix_data, ONLY: nmatrixes2
     USE picsar_precision, ONLY: idp
+    USE shared_data , ONLY : cuda_fft
     INTEGER(idp)  :: i
     DO i = 1,10
-       DEALLOCATE(kspace(nmatrixes2)%block_vector(i)%block3dc)
+      DEALLOCATE(kspace(nmatrixes2)%block_vector(i)%block3dc)
+      IF(cuda_fft) THEN
+#if defined(CUDA_FFT) 
+        !$acc exit data delete(kspace(nmatrixes2)%block_vector(i)%block3dc)
+#endif
+      ENDIF
     ENDDO
     DO i=1,4
-       DEALLOCATE(at_op(nmatrixes2)%block_vector(i)%block3dc)
+      DEALLOCATE(at_op(nmatrixes2)%block_vector(i)%block3dc)
+      IF(cuda_fft) THEN
+#if defined(CUDA_FFT) 
+        !$acc exit data delete(at_op(nmatrixes2)%block_vector(i)%block3dc)
+#endif
+      ENDIF
     ENDDO
     !DEALLOCATE(kxc,kxb,kxf,kyc,kyb,kyf,kzc,kzb,kzf)
 
@@ -757,6 +784,7 @@ MODULE gpstd_solver
         norderx = temp_order
       ENDIF
     ENDIF
+
   END SUBROUTINE compute_k_vec
 
   ! ______________________________________________________________________________________
@@ -910,7 +938,7 @@ MODULE gpstd_solver
     USE params, ONLY: dt
     USE picsar_precision, ONLY: idp, num, lp, cpx
     USE shared_data, ONLY: nz, ny, nx, fftw_with_mpi, nkx, nky, nkz,  p3dfft_flag,   &
-                           absorbing_bcs,c_dim
+                           absorbing_bcs,c_dim,cuda_fft
 
     INTEGER(idp)           :: i, j,incr, lin_ind
     COMPLEX(cpx)           :: ii
@@ -956,6 +984,7 @@ MODULE gpstd_solver
           cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = nfftxr
           cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = nffty
           cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = nfftz
+
           incr = incr + 1
         ELSE  
           ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(1,1,1))
@@ -1060,6 +1089,16 @@ MODULE gpstd_solver
           coeff_norm*cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc
       ENDDO
     ENDDO
+#if defined(CUDA_FFT)
+      IF(cuda_fft) THEN
+      DO i=1,nbloc_ccmat
+        DO j=1,nbloc_ccmat
+          !$acc enter data copyin(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc)
+        ENDDO
+      ENDDO
+      ENDIF
+#endif
+
 
 
 
@@ -1563,17 +1602,30 @@ MODULE gpstd_solver
     INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz, n1, n2, n3
     REAL(num), DIMENSION(nxx, nyy, nzz), INTENT(IN OUT) :: ex_in
     REAL(num), DIMENSION(n1, n2, n3), INTENT(IN OUT) :: ex_out
-    INTEGER(idp) :: ix, iy, iz
-
+    INTEGER(idp) :: ix, iy, iz,nxdata,nydata,nzdata
+    nxdata=MIN(nxx, n1)
+    nydata=MIN(nyy, n2)
+    nzdata=MIN(nzz, n3)
+#if defined(CUDA_FFT)
+    !$acc parallel present(ex_in,ex_out)
+    !$acc loop gang vector collapse(3)
+#else
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-    DO iz=1, MIN(nzz, n3)
-      DO iy=1, MIN(nyy, n2)
-        DO ix=1, MIN(nxx, n1)
+#endif
+    DO iz=1, nzdata
+      DO iy=1, nydata
+        DO ix=1, nxdata
           ex_out(ix, iy, iz)=ex_in(ix, iy, iz)
         END DO
       END DO
     END DO
+#if defined(CUDA_FFT)
+    !$acc end loop
+    !$acc end parallel
+#else
     !$OMP END PARALLEL DO
+#endif
+
   END SUBROUTINE copy_field
 
   SUBROUTINE copy_field_forward()
@@ -1585,7 +1637,7 @@ MODULE gpstd_solver
                        byz_r, bzx_r, bzy_r
     USE omp_lib
     USE picsar_precision, ONLY: idp
-    USE shared_data, ONLY: rho, rhoold, nz, ny, nx, absorbing_bcs
+    USE shared_data, ONLY: rho, rhoold, nz, ny, nx, absorbing_bcs,cuda_fft
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz, ixx, iyy, izz, ixxx, iyyy, izzz
     INTEGER(idp) , dimension(3) :: lbound_r, ubound_r, lbound_p ,ubound_p,lbound_s, ubound_s
@@ -1604,11 +1656,28 @@ MODULE gpstd_solver
        ubound_p = UBOUND(ex)
        lbound_s = LBOUND(jx)
        ubound_s = UBOUND(jx)
+
     ENDIF
+#if defined(CUDA_FFT)
+    IF(cuda_fft) THEN
+       !$acc enter data copyin(lbound_r)
+       !$acc enter data copyin(lbound_p)
+       !$acc enter data copyin(ubound_r)
+       !$acc enter data copyin(ubound_p)
+       !$acc enter data copyin(lbound_s)
+       !$acc enter data copyin(ubound_s)
+    ENDIF
+#endif
+
     ! When using periodic bcs, standard EM fields are communicated 
     ! Else, when using absorbing bcs, splitted EM fields are communicated 
     IF(.NOT. absorbing_bcs) THEN
+#if !defined(CUDA_FFT)
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx, iyy ,izz,ixxx,iyyy,izzz) COLLAPSE(3)
+#else
+      !$acc parallel present(ex_r,ey_r,ez_r,bx_r,by_r,bz_r,jx_r,jy_r,jz_r,rhoold_r,rho_r,ex,ey,ez,bx,by,bz,jx,jy,jz,rho,rhoold)
+      !$acc loop gang vector collapse(3)
+#endif
       DO iz=lbound_r(3),ubound_r(3)
         DO iy=lbound_r(2),ubound_r(2)
           DO ix=lbound_r(1),ubound_r(1)
@@ -1633,10 +1702,21 @@ MODULE gpstd_solver
           END DO
         END DO
       END DO
+#if defined(CUDA_FFT)
+      !$acc end loop
+      !$acc end parallel
+#else
       !$OMP END PARALLEL DO
+#endif
     ELSE IF(absorbing_bcs) THEN
-
+#if !defined(CUDA_FFT)
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx, iyy , izz, ixxx, iyyy , izzz) COLLAPSE(3)
+#else
+      !$acc parallel present(exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r,byx_r,byz_r,bzx_r,bzy_r,exy,exz,eyx,eyz,ezx,ezy,bxy,bxz,byx,byz,bzx,bzy,jx,jy,jz,rhoold,rho,jx_r,jy_r,jz_r,rhoold_r,rho_r)
+      !$acc loop gang vector collapse(3)
+
+#endif
+
       DO iz=lbound_r(3),ubound_r(3)
         DO iy=lbound_r(2),ubound_r(2)
           DO ix=lbound_r(1),ubound_r(1)
@@ -1666,7 +1746,12 @@ MODULE gpstd_solver
           END DO
         END DO
       END DO
+#if defined(CUDA_FFT)
+      !$acc end loop
+      !$acc end parallel
+#else
       !$OMP END PARALLEL DO  
+#endif
     ENDIF
   END SUBROUTINE copy_field_forward
 
@@ -1678,7 +1763,7 @@ MODULE gpstd_solver
                        byz_r, bzx_r, bzy_r
     USE omp_lib
     USE picsar_precision, ONLY: idp
-    USE shared_data, ONLY:  nz, ny, nx, absorbing_bcs
+    USE shared_data, ONLY:  nz, ny, nx, absorbing_bcs, cuda_fft
 
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz, ixx ,iyy , izz
@@ -1695,11 +1780,24 @@ MODULE gpstd_solver
        ubound_r = UBOUND(ex_r)
        ubound_p = UBOUND(ex)
     ENDIF
+#if defined(CUDA_FFT)
+    IF(cuda_fft) THEN
+       !$acc enter data copyin(lbound_r)
+       !$acc enter data copyin(lbound_p)
+       !$acc enter data copyin(ubound_r)
+       !$acc enter data copyin(ubound_p)
+    ENDIF
+#endif
 
     ! When using periodic bcs, standard EM fields are communicated 
     ! Else, when using absorbing bcs, splitted EM fields are communicated 
     IF(.NOT. absorbing_bcs) THEN
+#if !defined(CUDA_FFT) 
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx , iyy ,izz) COLLAPSE(3)
+#else
+      !$acc parallel  present (ex_r,ey_r,ez_r,bx_r,by_r,bz_r,ex,ey,ez,bx,by,bz)
+      !$acc loop gang vector collapse(3)
+#endif
       DO iz=lbound_r(3),ubound_r(3)
         DO iy=lbound_r(2),ubound_r(2)
           DO ix=lbound_r(1),ubound_r(1)
@@ -1715,9 +1813,20 @@ MODULE gpstd_solver
           END DO
         END DO
       END DO
-      !$OMP END PARALLEL DO
+#if defined(CUDA_FFT)
+      !$acc end loop
+      !$acc end parallel
+#else
+      !$OMP END PARALLEL DO  
+#endif
     ELSE IF(absorbing_bcs) THEN
-      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx, iyy , izz) COLLAPSE(3)
+#if !defined(CUDA_FFT) 
+      !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx , iyy ,izz)
+      !COLLAPSE(3)
+#else
+      !$acc parallel present(exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r,byx_r,byz_r,bzx_r,bzy_r,exy,exz,eyx,eyz,ezx,ezy,bxy,bxz,byx,byz,bzx,bzy)
+      !$acc loop gang vector collapse(3)
+#endif
       DO iz=lbound_r(3),ubound_r(3)
         DO iy=lbound_r(2),ubound_r(2)
           DO ix=lbound_r(1),ubound_r(1)
@@ -1739,9 +1848,13 @@ MODULE gpstd_solver
           END DO
         END DO
       END DO
-      !$OMP END PARALLEL DO
+#if defined(CUDA_FFT)
+      !$acc end loop
+      !$acc end parallel
+#else
+      !$OMP END PARALLEL DO  
+#endif
     ENDIF
   END SUBROUTINE copy_field_backward
-
 #endif
 END MODULE gpstd_solver
