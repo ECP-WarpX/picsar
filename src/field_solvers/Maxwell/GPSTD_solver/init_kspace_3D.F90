@@ -348,7 +348,8 @@ MODULE gpstd_solver
     USE fields, ONLY : norderx, nordery, norderz
     USE params, ONLY : dt
     USE picsar_precision, ONLY: idp, num, lp, cpx
-    USE shared_data, ONLY: p3dfft_stride, p3dfft_flag, c_dim, fftw_mpi_transpose
+    USE shared_data, ONLY: p3dfft_stride, p3dfft_flag, c_dim, fftw_mpi_transpose,     &
+                           cuda_fft
 
     REAL(num), ALLOCATABLE, DIMENSION(:, :, :)    :: temp, temp2
     INTEGER(idp)                                  :: i, j, k
@@ -392,19 +393,46 @@ MODULE gpstd_solver
 
     IF(.NOT. ASSOCIATED(kspace)) THEN
       ALLOCATE(kspace(ns_max))
+#if defined(CUDA_FFT)
+      IF(cuda_fft) THEN
+      !$acc enter data copyin(kspace)
+      ENDIF
+#endif
     ENDIF
     ALLOCATE(kspace(nmatrixes2)%block_vector(10_idp))
+#if defined(CUDA_FFT)
+      IF(cuda_fft) THEN
+      !$acc enter data copyin(kspace(nmatrixes2)%block_vector(1:10))
+      ENDIF
+#endif
+
+
 
     IF(.NOT. ASSOCIATED(at_op)) THEN
       ALLOCATE(at_op(ns_max))
+#if defined(CUDA_FFT)
+      IF(cuda_fft) THEN
+      !$acc enter data copyin(at_op)
+      ENDIF
+#endif
     ENDIF
     ALLOCATE(at_op(nmatrixes2)%block_vector(4_idp))
+#if defined(CUDA_FFT)
+      IF(cuda_fft) THEN
+      !$acc enter data copyin(kspace(nmatrixes2)%block_vector(1:4))
+      ENDIF
+#endif
 
     CALL select_case_dims_local(nfftx, nffty, nfftz)
     nfftxr = nfftx/2+1
     IF(p3dfft_flag) nfftxr = nfftx
     DO i = 1_idp, 10_idp
       ALLOCATE(kspace(nmatrixes2)%block_vector(i)%block3dc(nfftxr, nffty, nfftz))
+#if defined(CUDA_FFT)
+      IF(cuda_fft) THEN
+      !$acc enter data copyin(kspace(nmatrixes2)%block_vector(i)%%block3dc)
+      ENDIF
+#endif
     ENDDO
     DO i = 1_idp, 4_idp
       ALLOCATE(at_op(nmatrixes2)%block_vector(i)%block3dc(nfftxr, nffty, nfftz))

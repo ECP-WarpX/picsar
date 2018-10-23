@@ -71,6 +71,7 @@ END MODULE matrix_data
 MODULE matrix_coefficients!#do not parse
   USE PICSAR_precision
   USE matrix_data
+  USE shared_data, ONLY : cuda_fft
   IMPLICIT NONE
   TYPE block3d
     COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: block3dc
@@ -280,24 +281,47 @@ SUBROUTINE allocate_new_matrix_vector(nvar)
   USE matrix_coefficients, ONLY: vnew, cc_mat, vold
   USE matrix_data, ONLY: ns_max, nmatrixes
   USE picsar_precision, ONLY: idp
+  USE shared_data, ONLY : cuda_fft
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN) :: nvar
 
   IF (.NOT. ASSOCIATED(cc_mat)) THEN
     ALLOCATE(cc_mat(ns_max))
+#if defined(CUDA_FFT)
+    IF(cuda_fft) THEN
+    !$acc enter data copyin(cc_mat)
+    ENDIF
+#endif
   ENDIF
 
   IF (.NOT. ASSOCIATED(vold)) THEN
     ALLOCATE(vold(ns_max))
+#if defined(CUDA_FFT)
+    IF(cuda_fft) THEN
+    !$acc enter data copyin(vold)
+    ENDIF
+#endif
+
   ENDIF
 
   IF (.NOT. ASSOCIATED(vnew)) THEN
     ALLOCATE(vnew(ns_max))
+#if defined(CUDA_FFT)
+    IF(cuda_fft) THEN
+    !$acc enter data copyin(vnew)
+    ENDIF
+#endif
   ENDIF
 
   nmatrixes=nmatrixes+1
   ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(nvar, nvar),                              &
   vold(nmatrixes)%block_vector(nvar), vnew(nmatrixes)%block_vector(nvar))
+#if defined(CUDA_FFT)
+    IF(cuda_fft) THEN
+    !$acc enter data copyin(cc_mat(nmatrixes)%block_matrix2d(nvar,nvar),vold(nmatrixes)%block_vector(nvar),vnew(nmatrixes)%block_vector(nvar))
+    ENDIF
+#endif
+
   cc_mat(nmatrixes)%nblocks=nvar
   vold(nmatrixes)%nblocks=nvar
   vnew(nmatrixes)%nblocks=nvar
