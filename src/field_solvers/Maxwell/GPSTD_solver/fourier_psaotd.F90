@@ -177,7 +177,7 @@ MODULE fourier_psaotd
     USE params, ONLY: it
     USE picsar_precision, ONLY: idp, num
     USE shared_data, ONLY: nz, ny, nx, absorbing_bcs, absorbing_bcs_x,                &
-                           absorbing_bcs_y, absorbing_bcs_z, c_dim
+                           absorbing_bcs_y, absorbing_bcs_z, c_dim,cuda_fft
     USE shared_data, ONLY : x_max_boundary, y_max_boundary, z_max_boundary
     USE shared_data, ONLY : x_min_boundary, y_min_boundary, z_min_boundary
 
@@ -327,7 +327,13 @@ MODULE fourier_psaotd
     ENDIF
     
     ! Perform local forward FFTs R2C of all grid arrays 
-    CALL fft_forward_r2c_local(nfftx,nffty,nfftz)
+    IF(cuda_fft) THEN 
+#if defined(CUDA_FFT)
+      CALL  fft_forward_r2c_local_cuda(nfftx,nffty,nfftz)
+#endif
+    ELSE
+      CALL fft_forward_r2c_local(nfftx,nffty,nfftz)
+    ENDIF
 
   END SUBROUTINE get_Ffields
  
@@ -751,7 +757,7 @@ MODULE fourier_psaotd
     USE mpi
     USE params, ONLY: it
     USE picsar_precision, ONLY: idp, num
-    USE shared_data, ONLY: nz, ny, nx
+    USE shared_data, ONLY: nz, ny, nx,cuda_fft
     USE time_stat, ONLY: timestat_itstart, localtimes
     IMPLICIT NONE
     REAL(num) :: tmptime
@@ -767,7 +773,13 @@ MODULE fourier_psaotd
     nfftz=nz+2*nzguards
 #endif
     ! Get Inverse Fourier transform of all fields components 
-    CALL fft_backward_c2r_local(nfftx,nffty,nfftz)
+    IF(cuda_fft) THEN
+#if defined(CUDA_FFT)
+      CALL fft_backward_c2r_local_cuda(nfftx,nffty,nfftz)
+#endif
+    ELSE
+      CALL fft_backward_c2r_local(nfftx,nffty,nfftz)
+    ENDIF
 
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
@@ -1263,6 +1275,166 @@ MODULE fourier_psaotd
 
   END SUBROUTINE fft_forward_r2c_hybrid
 
+#if defined(CUDA_FFT)
+  SUBROUTINE fft_forward_r2c_local_cuda(nfftx,nffty,nfftz)
+    USE fastfft
+    USE fields, ONLY: g_spectral
+    USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
+    USE fields, ONLY : ex_r, ey_r, ez_r, bx_r, by_r, bz_r, jx_r, jy_r, jz_r,rho_r,   &
+                       rhoold_r
+    USE fields, ONLY : exy, exz, eyx,  eyz, ezx, ezy , bxy, bxz, byx, byz, bzx,bzy
+    USE fields, ONLY : exy_r, exz_r, eyx_r,  eyz_r, ezx_r, ezy_r, bxy_r, bxz_r,byx_r,&
+                       byz_r, bzx_r, bzy_r
+    USE fields, ONLY : exf, eyf, ezf, bxf, byf, bzf, jxf, jyf, jzf, rhof,   &
+                       rhooldf
+    USE shared_data, ONLY : absorbing_bcs
+
+    USE fourier, ONLY: plan_r2c_cuda
+    USE cufft
+    USE mpi
+    USE params, ONLY: it
+    USE picsar_precision, ONLY: idp, num
+    USE time_stat, ONLY: timestat_itstart, localtimes
+    REAL(num)   :: tmptime
+    INTEGER(idp), INTENT(IN)    ::   nfftx,nffty,nfftz
+    INTEGER(isp) :: err_cuda
+
+
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
+    IF(g_spectral) THEN
+      IF(.NOT. absorbing_bcs) THEN
+       !$acc host_data use_device(vold,ex_r,ey_r,ez_r,bx_r,by_r,bz_r,jx_r,jy_r,jz_r,rho_r,rhoold_r)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,ex_r,vold(nmatrixes)%block_vector(1)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,ey_r,vold(nmatrixes)%block_vector(2)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,ez_r,vold(nmatrixes)%block_vector(3)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,bx_r,vold(nmatrixes)%block_vector(4)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,by_r,vold(nmatrixes)%block_vector(5)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,bz_r,vold(nmatrixes)%block_vector(6)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,jx_r,vold(nmatrixes)%block_vector(7)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,jy_r,vold(nmatrixes)%block_vector(8)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,jz_r,vold(nmatrixes)%block_vector(9)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,rhoold_r,vold(nmatrixes)%block_vector(10)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,rho_r,vold(nmatrixes)%block_vector(11)%block3dc)
+       !$acc end host_data
+      ELSE IF(absorbing_bcs) THEN
+       !$acc host_data use_device(vold,exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r,byx_r,byz_r,bzx_r,bzy_r,jx_r,jy_r,jz_r,rho_r,rhoold_r)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,exy_r,vold(nmatrixes)%block_vector(1)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,exz_r,vold(nmatrixes)%block_vector(2)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,eyx_r,vold(nmatrixes)%block_vector(3)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,eyz_r,vold(nmatrixes)%block_vector(4)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,ezx_r,vold(nmatrixes)%block_vector(5)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,ezy_r,vold(nmatrixes)%block_vector(6)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,bxy_r,vold(nmatrixes)%block_vector(7)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,bxz_r,vold(nmatrixes)%block_vector(8)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,byx_r,vold(nmatrixes)%block_vector(9)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,byz_r,vold(nmatrixes)%block_vector(10)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,bzx_r,vold(nmatrixes)%block_vector(11)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,bzy_r,vold(nmatrixes)%block_vector(12)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,jx_r,vold(nmatrixes)%block_vector(13)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,jy_r,vold(nmatrixes)%block_vector(14)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,jz_r,vold(nmatrixes)%block_vector(15)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,rhoold_r,vold(nmatrixes)%block_vector(16)%block3dc)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,rho_r,vold(nmatrixes)%block_vector(17)%block3dc)
+       !$acc end host_data
+      ENDIF
+    ELSE IF (.NOT. g_spectral) THEN
+      !$acc host_data use_device(exf,eyf,ezf,bxf,byf,bzf,jxf,jyf,jzf,rhof,rhooldf,ex_r,ey_r,ez_r,bx_r,by_r,bz_r,jx_r,jy_r,jz_r,rho_r,rhoold_r)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,ex_r,exf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,ey_r,eyf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,ez_r,ezf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,bx_r,bxf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,by_r,byf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,bz_r,bzf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,jx_r,jxf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,jy_r,jyf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,jz_r,jzf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,rhoold_r,rhooldf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,rho_r,rhof)
+
+      !$acc end host_data
+    ENDIF
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
+    ENDIF
+
+  END SUBROUTINE fft_forward_r2c_local_cuda
+#endif
+
+
+
+
+#if defined(CUDA_FFT)
+   SUBROUTINE fft_backward_c2r_local_cuda(nfftx,nffty,nfftz)
+     USE fastfft
+     USE cufft
+     USE fields, ONLY: g_spectral
+     USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
+     USE fields, ONLY : ex_r, ey_r, ez_r, bx_r, by_r, bz_r, jx_r, jy_r, jz_r, rho_r,   &
+                        rhoold_r
+     USE fields, ONLY : exy, exz, eyx,  eyz, ezx, ezy , bxy, bxz, byx, byz, bzx, bzy
+     USE fields, ONLY : exy_r, exz_r, eyx_r,  eyz_r, ezx_r, ezy_r, bxy_r, bxz_r, byx_r,&
+                        byz_r, bzx_r, bzy_r
+     USE fields, ONLY : exf, eyf, ezf, bxf, byf, bzf, jxf, jyf, jzf, rhof,   &
+                        rhooldf
+     USE fourier, ONLY : plan_c2r_cuda
+     USE mpi
+     USE params, ONLY: it
+     USE picsar_precision, ONLY: idp, num
+     USE time_stat, ONLY: timestat_itstart, localtimes
+     USE shared_data, ONLY: absorbing_bcs
+     REAL(num)   :: tmptime
+     INTEGER(idp), INTENT(IN)     :: nfftx,nffty,nfftz
+     INTEGER(isp) :: err_cuda
+     INTEGER(idp) :: ind
+ 
+ 
+     IF (it.ge.timestat_itstart) THEN
+       tmptime = MPI_WTIME()
+     ENDIF
+     IF(.NOT. g_spectral) THEN
+       !$acc host_data use_device(exf,eyf,ezf,bxf,byf,bzf,ex_r,ey_r,ez_r,bx_r,by_r,bz_r)
+       err_cuda = CUFFTEXECZ2D(plan_c2r_cuda,exf,ex_r)
+       err_cuda = CUFFTEXECZ2D(plan_c2r_cuda,eyf,ey_r)
+       err_cuda = CUFFTEXECZ2D(plan_c2r_cuda,ezf,ez_r)
+       err_cuda = CUFFTEXECZ2D(plan_c2r_cuda,bxf,bx_r)
+       err_cuda = CUFFTEXECZ2D(plan_c2r_cuda,byf,by_r)
+       err_cuda = CUFFTEXECZ2D(plan_c2r_cuda,bzf,bz_r)
+       !$acc end host_data
+     ELSE IF(g_spectral) THEN
+      IF(absorbing_bcs) THEN
+        !$acc host_data use_device(vnew,exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r,byx_r,byz_r,bzx_r,bzy_r)
+        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(1)%block3dc,exy_r)
+        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(2)%block3dc,exz_r)
+        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(3)%block3dc,eyx_r)
+        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(4)%block3dc,eyz_r)
+        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(5)%block3dc,ezx_r)
+        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(6)%block3dc,ezy_r)
+        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(7)%block3dc,bxy_r)
+        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(8)%block3dc,bxz_r)
+        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(9)%block3dc,byx_r)
+        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(10)%block3dc,byz_r)
+        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(11)%block3dc,bzx_r)
+        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(12)%block3dc,bzy_r)
+        !$acc end host_data
+      ELSE IF(.NOT. absorbing_bcs) THEN
+        !$acc host_data use_device(vnew,ex_r,ey_r,ez_r,bx_r,by_r,bz_r)
+        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(1)%block3dc,ex_r)
+        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(2)%block3dc,ey_r)
+        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(3)%block3dc,ez_r)
+        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(4)%block3dc,bx_r)
+        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(5)%block3dc,by_r)
+        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(6)%block3dc,bz_r)
+        !$acc end host_data
+      ENDIF
+    ENDIF
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
+    ENDIF
+   END SUBROUTINE fft_backward_c2r_local_cuda
+#endif
+
   SUBROUTINE fft_backward_c2r_local(nfftx,nffty,nfftz)
     USE fastfft
     USE fields, ONLY: g_spectral
@@ -1746,21 +1918,21 @@ USE cufft
             plan_c2r, INT(FFTW_MEASURE, idp), INT(FFTW_BACKWARD, idp))
           ENDIF
         ELSE
-!!#if defined(CUDA_FFT)
-!!
-!!          !$acc host_data
-!!          IF(c_dim ==3) THEN
-!!            err_cu_r2c=CUFFTPLAN3D(plan_r2c_cuda,INT(nfftz,isp),INT(nffty,isp),INT(nfftx,isp),CUFFT_D2Z)
-!!            err_cu_c2r=CUFFTPLAN3D(plan_c2r_cuda,INT(nfftz,isp),INT(nffty,isp),INT(nfftx,isp),CUFFT_Z2D)
-!!            
-!!          ELSE IF (c_dim == 2) THEN
-!!            err_cu_r2c=CUFFTPLAN2D(plan_r2c_cuda,INT(nfftz,isp),INT(nfftx,isp),CUFFT_D2Z)
-!!            err_cu_c2r=CUFFTPLAN2D(plan_c2r_cuda,INT(nfftz,isp),INT(nfftx,isp),CUFFT_Z2D)
-!!
-!!
-!!          ENDIF
-!!          !$acc end host_data
-!!#endif
+#if defined(CUDA_FFT)
+
+          !$acc host_data
+          IF(c_dim ==3) THEN
+            err_cu_r2c=CUFFTPLAN3D(plan_r2c_cuda,INT(nfftz,isp),INT(nffty,isp),INT(nfftx,isp),CUFFT_D2Z)
+            err_cu_c2r=CUFFTPLAN3D(plan_c2r_cuda,INT(nfftz,isp),INT(nffty,isp),INT(nfftx,isp),CUFFT_Z2D)
+            
+          ELSE IF (c_dim == 2) THEN
+            err_cu_r2c=CUFFTPLAN2D(plan_r2c_cuda,INT(nfftz,isp),INT(nfftx,isp),CUFFT_D2Z)
+            err_cu_c2r=CUFFTPLAN2D(plan_c2r_cuda,INT(nfftz,isp),INT(nfftx,isp),CUFFT_Z2D)
+
+
+          ENDIF
+          !$acc end host_data
+#endif
         ENDIF
       ENDIF
       IF(rank==0) WRITE(0, *) 'INIT GPSTD PLANS DONE'
