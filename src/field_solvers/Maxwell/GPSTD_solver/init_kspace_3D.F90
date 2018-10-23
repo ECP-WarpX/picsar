@@ -598,12 +598,23 @@ MODULE gpstd_solver
     USE matrix_coefficients, ONLY: kspace, at_op
     USE matrix_data, ONLY: nmatrixes2
     USE picsar_precision, ONLY: idp
+    USE shared_data , ONLY : cuda_fft
     INTEGER(idp)  :: i
     DO i = 1,10
-       DEALLOCATE(kspace(nmatrixes2)%block_vector(i)%block3dc)
+      DEALLOCATE(kspace(nmatrixes2)%block_vector(i)%block3dc)
+      IF(cuda_fft) THEN
+#if defined(CUDA_FFT) 
+        !$acc exit data delete(kspace(nmatrixes2)%block_vector(i)%block3dc)
+#endif
+      ENDIF
     ENDDO
     DO i=1,4
-       DEALLOCATE(at_op(nmatrixes2)%block_vector(i)%block3dc)
+      DEALLOCATE(at_op(nmatrixes2)%block_vector(i)%block3dc)
+      IF(cuda_fft) THEN
+#if defined(CUDA_FFT) 
+        !$acc exit data delete(at_op(nmatrixes2)%block_vector(i)%block3dc)
+#endif
+      ENDIF
     ENDDO
     !DEALLOCATE(kxc,kxb,kxf,kyc,kyb,kyf,kzc,kzb,kzf)
 
