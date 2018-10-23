@@ -1493,8 +1493,12 @@ MODULE fourier_psaotd
     nzz=nkz
     iy=1_idp
 
+#if !defined(CUDA_FFT)
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iz, exfold, eyfold, ezfold,     &
     !$OMP bxfold, byfold, bzfold) COLLAPSE(2)
+#else
+    !!!!$acc parallel loop present(cc_mat,cc_mat(nmatrixes),cc_mat(nmatrixes)%block_matrix2d,)
+#endif
     DO iz=1, nzz
         DO ix=1, nxx
           ! - Bx
@@ -1744,7 +1748,7 @@ USE cufft
         ELSE
 #if defined(CUDA_FFT)
 
-          !!!!!$acc host_data
+          !$acc host_data
           IF(c_dim ==3) THEN
             err_cu_r2c=CUFFTPLAN3D(plan_r2c_cuda,INT(nfftz,isp),INT(nffty,isp),INT(nfftx,isp),CUFFT_D2Z)
             err_cu_c2r=CUFFTPLAN3D(plan_c2r_cuda,INT(nfftz,isp),INT(nffty,isp),INT(nfftx,isp),CUFFT_Z2D)
@@ -1755,7 +1759,7 @@ USE cufft
 
 
           ENDIF
-          !!!!$acc end host_data
+          !$acc end host_data
 #endif
         ENDIF
       ENDIF
