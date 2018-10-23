@@ -1733,7 +1733,7 @@ USE cufft
         CALL init_plans_fourier_mpi(nopenmp)
       !> If local psatd, plans are initialized here
       ELSE IF(.NOT. fftw_with_mpi) THEN
-        IF(.NOT. cuda_fft) THEN
+        IF(.TRUE.) THEN ! .NOT. cuda_fft) THEN
           IF(c_dim ==3) THEN
             CALL fast_fftw_create_plan_r2c_3d_dft(nopenmp, nfftx, nffty, nfftz,ex_r, exf,  &
             plan_r2c, INT(FFTW_MEASURE, idp), INT(FFTW_FORWARD, idp))
@@ -1746,21 +1746,21 @@ USE cufft
             plan_c2r, INT(FFTW_MEASURE, idp), INT(FFTW_BACKWARD, idp))
           ENDIF
         ELSE
-#if defined(CUDA_FFT)
-
-          !$acc host_data
-          IF(c_dim ==3) THEN
-            err_cu_r2c=CUFFTPLAN3D(plan_r2c_cuda,INT(nfftz,isp),INT(nffty,isp),INT(nfftx,isp),CUFFT_D2Z)
-            err_cu_c2r=CUFFTPLAN3D(plan_c2r_cuda,INT(nfftz,isp),INT(nffty,isp),INT(nfftx,isp),CUFFT_Z2D)
-            
-          ELSE IF (c_dim == 2) THEN
-            err_cu_r2c=CUFFTPLAN2D(plan_r2c_cuda,INT(nfftz,isp),INT(nfftx,isp),CUFFT_D2Z)
-            err_cu_c2r=CUFFTPLAN2D(plan_c2r_cuda,INT(nfftz,isp),INT(nfftx,isp),CUFFT_Z2D)
-
-
-          ENDIF
-          !$acc end host_data
-#endif
+!!#if defined(CUDA_FFT)
+!!
+!!          !$acc host_data
+!!          IF(c_dim ==3) THEN
+!!            err_cu_r2c=CUFFTPLAN3D(plan_r2c_cuda,INT(nfftz,isp),INT(nffty,isp),INT(nfftx,isp),CUFFT_D2Z)
+!!            err_cu_c2r=CUFFTPLAN3D(plan_c2r_cuda,INT(nfftz,isp),INT(nffty,isp),INT(nfftx,isp),CUFFT_Z2D)
+!!            
+!!          ELSE IF (c_dim == 2) THEN
+!!            err_cu_r2c=CUFFTPLAN2D(plan_r2c_cuda,INT(nfftz,isp),INT(nfftx,isp),CUFFT_D2Z)
+!!            err_cu_c2r=CUFFTPLAN2D(plan_c2r_cuda,INT(nfftz,isp),INT(nfftx,isp),CUFFT_Z2D)
+!!
+!!
+!!          ENDIF
+!!          !$acc end host_data
+!!#endif
         ENDIF
       ENDIF
       IF(rank==0) WRITE(0, *) 'INIT GPSTD PLANS DONE'
