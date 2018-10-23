@@ -145,19 +145,22 @@ MODULE field_boundary
     ENDIF
 
     ! MOVE EDGES ALONG X
+    !$acc data create(temp)
+    !$acc host_data use_device(field,temp)
     CALL MPI_SENDRECV(field(0, -nyg, -nzg), 1_isp, mpi_dtypes(1), INT(proc_x_min,     &
     isp), tag, temp, sz, basetype, INT(proc_x_max, isp), tag, comm, status, errcode)
-
+    
     IF (proc_x_max .NE. MPI_PROC_NULL) THEN
-      n = 1
+      !$acc parallel loop present(field,temp) collapse(3)
       DO k = -nzg, subsizes(3)-nzg-1
         DO j = -nyg, subsizes(2)-nyg-1
           DO i = nx_local, subsizes(1)+nx_local-1
+            n=i-nx_local+1+(j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)
             field(i, j, k) = temp(n)
-            n = n + 1
           ENDDO
         ENDDO
       ENDDO
+      !$acc end parallel loop
     ENDIF
 
     CALL MPI_SENDRECV(field(nx_local-nxg, -nyg, -nzg), 1_isp, mpi_dtypes(1),          &
@@ -165,15 +168,16 @@ MODULE field_boundary
     status, errcode)
 
     IF (proc_x_min .NE. MPI_PROC_NULL) THEN
-      n = 1
+      !$acc parallel loop present(field,temp) collapse(3)
       DO k = -nzg, subsizes(3)-nzg-1
         DO j = -nyg, subsizes(2)-nyg-1
           DO i = -nxg, subsizes(1)-nxg-1
-            field(i, j, k) = temp(n)
-            n = n + 1
+           n=i+nxg+1+(j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)
+           field(i, j, k) = temp(n)
           ENDDO
         ENDDO
       ENDDO
+      !$acc end parallel loop
     ENDIF
 
     subsizes(1) = sizes(1)
@@ -192,15 +196,16 @@ MODULE field_boundary
     isp), tag, temp, sz, basetype, INT(proc_y_max, isp), tag, comm, status, errcode)
 
     IF (proc_y_max .NE. MPI_PROC_NULL) THEN
-      n = 1
+      !$acc parallel loop present(field,temp) collapse(3)
       DO k = -nzg, subsizes(3)-nzg-1
         DO j = ny_local, subsizes(2)+ny_local-1
           DO i = -nxg, subsizes(1)-nxg-1
-            field(i, j, k) = temp(n)
-            n = n + 1
+             n=i+nxg+1+(j-ny_local)*subsizes(1)+(k+nzg)*subsizes(2)
+             field(i, j, k) = temp(n)
           ENDDO
         ENDDO
       ENDDO
+      !$acc end parallel loop
     ENDIF
 
     CALL MPI_SENDRECV(field(-nxg, ny_local-nyg, -nzg), 1_isp, mpi_dtypes(2),          &
@@ -208,15 +213,16 @@ MODULE field_boundary
     status, errcode)
 
     IF (proc_y_min .NE. MPI_PROC_NULL) THEN
-      n = 1
+      !$acc parallel loop present(field,temp) collapse(3)
       DO k = -nzg, subsizes(3)-nzg-1
         DO j = -nyg, subsizes(2)-nyg-1
           DO i = -nxg, subsizes(1)-nxg-1
+            n=i+nxg+1+(j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)
             field(i, j, k) = temp(n)
-            n = n + 1
           ENDDO
         ENDDO
       ENDDO
+      !$acc end parallel loop
     ENDIF
 
 
@@ -237,15 +243,16 @@ MODULE field_boundary
     isp), tag, temp, sz, basetype, INT(proc_z_max, isp), tag, comm, status, errcode)
 
     IF (proc_z_max .NE. MPI_PROC_NULL) THEN
-      n = 1
+      !$acc parallel loop present(field,temp) collapse(3)
       DO k = nz_local, subsizes(3)+nz_local-1
         DO j = -nyg, subsizes(2)-nyg-1
           DO i = -nxg, subsizes(1)-nxg-1
+            n=i+nxg+1+(j+nyg)*subsizes(1)+(k-nz_local)*subsizes(2)
             field(i, j, k) = temp(n)
-            n = n + 1
           ENDDO
         ENDDO
       ENDDO
+      !$acc end parallel loop 
     ENDIF
 
     CALL MPI_SENDRECV(field(-nxg, -nyg, nz_local-nzg), 1_isp, mpi_dtypes(3),          &
@@ -253,17 +260,19 @@ MODULE field_boundary
     status, errcode)
 
     IF (proc_z_min .NE. MPI_PROC_NULL) THEN
-      n = 1
+      !$acc parallel loop present(field,temp) collapse(3)
       DO k = -nzg, subsizes(3)-nzg-1
         DO j = -nyg, subsizes(2)-nyg-1
           DO i = -nxg, subsizes(1)-nxg-1
+            n=i+nxg+1+(j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)
             field(i, j, k) = temp(n)
-            n = n + 1
           ENDDO
         ENDDO
       ENDDO
+      !$acc end parallel loop 
     ENDIF
-
+    !$omp acc end host_data
+    !$omp acc end data 
     DEALLOCATE(temp)
 
   END SUBROUTINE exchange_mpi_3d_grid_array_with_guards
@@ -309,6 +318,7 @@ MODULE field_boundary
     ENDIF
 
     ! --- +X
+    !$acc host_data use_device(field)
     CALL MPI_ISEND(field(0, -nyg, -nzg), 1_isp, mpi_dtypes(4), INT(proc_x_min, isp),  &
     tag, comm, requests(1), errcode)
     CALL MPI_IRECV(field(nx_local, -nyg, -nzg), 1_isp, mpi_dtypes(4), INT(proc_x_max, &
@@ -384,7 +394,7 @@ MODULE field_boundary
     isp), tag, comm, requests(2), errcode)
 
     CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
-
+    !$acc end host_data
 
   END SUBROUTINE exchange_mpi_3d_grid_array_with_guards_nonblocking
 
@@ -427,19 +437,26 @@ MODULE field_boundary
 
     sz = subsizes(1) * subsizes(2) * subsizes(3)
     ALLOCATE(temp(subsizes(1), subsizes(2), subsizes(3)))
-
+    !$acc data create(temp)
+    !$acc kernels 
     temp = 0.0_num
+    !$acc end kernels 
+    !$acc host_data use_device(array,temp)
     CALL MPI_SENDRECV(array(nn, -nyg, -nzg), 1_isp, mpi_dtypes(7), INT(neighbour( 1,  &
     0, 0), isp), tag, temp, sz, mpidbl, INT(neighbour(-1, 0, 0), isp), tag, comm,     &
     status, errcode)
+    !$acc kernels 
     array(0:nxg, :, :) = array(0:nxg, :, :) + temp
-
     temp = 0.0_num
+    !$acc end kernels
     CALL MPI_SENDRECV(array(-nxg, -nyg, -nzg), 1_isp, mpi_dtypes(7),                  &
     INT(neighbour(-1, 0, 0), isp), tag, temp, sz, mpidbl, INT(neighbour( 1, 0, 0),    &
     isp), tag, comm, status, errcode)
+    !$acc kernels
     array(nn-nxg:nn, :, :) = array(nn-nxg:nn, :, :) + temp
-
+    !$acc end kernels
+    !$acc end host_data
+    !$acc end data
     DEALLOCATE(temp)
     IF(c_dim == 3) THEN
       !! -- Summation along Y- direction
@@ -455,19 +472,26 @@ MODULE field_boundary
 
       sz = subsizes(1) * subsizes(2) * subsizes(3)
       ALLOCATE(temp(subsizes(1), subsizes(2), subsizes(3)))
-
+      !$acc data create(temp)
+      !$acc kernels 
       temp = 0.0_num
+      !$acc end kernels 
+      !$acc host_data use_device(array,temp)
       CALL MPI_SENDRECV(array(-nxg, nn, -nzg), 1_isp, mpi_dtypes(8), INT(neighbour(0,   &
       1, 0), isp), tag, temp, sz, mpidbl, INT(neighbour(0, -1, 0), isp), tag, comm,     &
       status, errcode)
+      !$acc kernels
       array(:, 0:nyg, :) = array(:, 0:nyg, :) + temp
-
       temp = 0.0_num
+      !$acc end kernels
       CALL MPI_SENDRECV(array(-nxg, -nyg, -nzg), 1_isp, mpi_dtypes(8), INT(neighbour(0, &
       -1, 0), isp), tag, temp, sz, mpidbl, INT(neighbour(0, 1, 0), isp), tag, comm,     &
       status, errcode)
+      !$acc kernels
       array(:, nn-nyg:nn, :) = array(:, nn-nyg:nn, :) + temp
-    
+      !$acc end kernels
+      !$acc end host_data
+      !$acc end data 
       DEALLOCATE(temp)
     ENDIF
     !! -- Summation along Z- direction
@@ -483,19 +507,26 @@ MODULE field_boundary
 
     sz = subsizes(1) * subsizes(2) * subsizes(3)
     ALLOCATE(temp(subsizes(1), subsizes(2), subsizes(3)))
-
+    !$acc data create(temp)
+    !$acc kernels
     temp = 0.0_num
+    !$acc end kernels
+    !$acc host_data use_device(array,temp)
     CALL MPI_SENDRECV(array(-nxg, -nyg, nn), 1_isp, mpi_dtypes(9), INT(neighbour(0,   &
     0, 1), isp), tag, temp, sz, mpidbl, INT(neighbour(0, 0, -1), isp), tag, comm,     &
     status, errcode)
+    !$acc kernels
     array(:, :, 0:nzg) = array(:, :, 0:nzg) + temp
-
     temp = 0.0_num
+    !$acc end kernels
     CALL MPI_SENDRECV(array(-nxg, -nyg, -nzg), 1_isp, mpi_dtypes(9), INT(neighbour(0, &
     0, -1), isp), tag, temp, sz, mpidbl, INT(neighbour(0, 0, 1), isp), tag, comm,     &
     status, errcode)
+    !$acc kernels
     array(:, :, nn-nzg:nn) = array(:, :, nn-nzg:nn) + temp
-
+    !$acc end kernels
+    !$acc end host_data
+    !$acc end data
     DEALLOCATE(temp)
 
     CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
@@ -1158,9 +1189,12 @@ USE picsar_precision, ONLY: idp, num, isp
     sz = subsizes(1) * subsizes(2) * subsizes(3)
     ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)), temp2(subsizes(1),         &
     subsizes(2), subsizes(3)))
-
+    !$acc data create(temp1,temp2)
+    !$acc kernels
     temp1  = 0.0_num
     temp2 = 0.0_num
+    !$acc end kernels
+    !$acc host_data use_device(array,temp1,temp2)
     CALL MPI_ISEND(array(nn, -nyg, -nzg), 1_isp, mpi_dtypes(10), INT(proc_x_max,      &
     isp), tag, comm, requests(1), errcode)
     CALL MPI_IRECV(temp1, sz, mpidbl, INT(proc_x_min, isp), tag, comm, requests(2),   &
@@ -1170,10 +1204,12 @@ USE picsar_precision, ONLY: idp, num, isp
     CALL MPI_IRECV(temp2, sz, mpidbl, INT(proc_x_max, isp), tag, comm, requests(4),   &
     errcode)
     CALL MPI_WAITALL(4_isp, requests, MPI_STATUSES_IGNORE, errcode)
-
+    !$acc kernels
     array(0:nxg, :, :) = array(0:nxg, :, :) + temp1
     array(nn-nxg:nn, :, :) = array(nn-nxg:nn, :, :) + temp2
-
+    !$acc end kernels
+    !$acc end host_data
+    !$acc end data 
     DEALLOCATE(temp1, temp2)
     IF(c_dim == 3) THEN
       !! -- Summation along Y- direction
@@ -1190,9 +1226,12 @@ USE picsar_precision, ONLY: idp, num, isp
       sz = subsizes(1) * subsizes(2) * subsizes(3)
       ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)), temp2(subsizes(1),         &
       subsizes(2), subsizes(3)))
-  
+      !$acc data create(temp1, temp2)
+      !$acc kernels 
       temp1  = 0.0_num
       temp2 = 0.0_num
+      !$acc end kernels
+      !$acc host_data use_device(array, temp1, temp2)
       CALL MPI_ISEND(array(-nxg, nn, -nzg), 1_isp, mpi_dtypes(11), INT(proc_y_max,      &
       isp), tag, comm, requests(1), errcode)
       CALL MPI_IRECV(temp1, sz, mpidbl, INT(proc_y_min, isp), tag, comm, requests(2),   &
@@ -1202,10 +1241,12 @@ USE picsar_precision, ONLY: idp, num, isp
       CALL MPI_IRECV(temp2, sz, mpidbl, INT(proc_y_max, isp), tag, comm, requests(4),   &
       errcode)
       CALL MPI_WAITALL(4_isp, requests, MPI_STATUSES_IGNORE, errcode)
-  
+      !$acc kernels
       array(:, 0:nyg, :) = array(:, 0:nyg, :) + temp1
       array(:, nn-nyg:nn, :) = array(:, nn-nyg:nn, :) + temp2
-  
+      !$acc end kernels
+      !$acc end host_data
+      !$acc end data 
       DEALLOCATE(temp1, temp2)
     ENDIF
     !! -- Summation along Z- direction
@@ -1222,9 +1263,12 @@ USE picsar_precision, ONLY: idp, num, isp
     sz = subsizes(1) * subsizes(2) * subsizes(3)
     ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)), temp2(subsizes(1),         &
     subsizes(2), subsizes(3)))
-
+    !$acc data create(temp1,temp2)
+    !$acc kernels
     temp1  = 0.0_num
     temp2 = 0.0_num
+    !$acc end kernels
+    !$acc host_data use_device(array, temp1, temp2)
     CALL MPI_ISEND(array(-nxg, -nyg, nn), 1_isp, mpi_dtypes(12), INT(proc_z_max,      &
     isp), tag, comm, requests(1), errcode)
     CALL MPI_IRECV(temp1, sz, mpidbl, INT(proc_z_min, isp), tag, comm, requests(2),   &
@@ -1234,10 +1278,13 @@ USE picsar_precision, ONLY: idp, num, isp
     CALL MPI_IRECV(temp2, sz, mpidbl, INT(proc_z_max, isp), tag, comm, requests(4),   &
     errcode)
     CALL MPI_WAITALL(4_isp, requests, MPI_STATUSES_IGNORE, errcode)
-
+    !$acc end host_data
+    !$acc kernels
     array(:, :, 0:nzg) = array(:, :, 0:nzg) + temp1
     array(:, :, nn-nzg:nn) = array(:, :, nn-nzg:nn) + temp2
-
+    !$acc end kernels
+    !$acc end host_data
+    !$acc end data 
     DEALLOCATE(temp1, temp2)
 
     CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
