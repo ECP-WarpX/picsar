@@ -245,6 +245,810 @@ SUBROUTINE depose_jxjyjz_esirkepov_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguar
   RETURN
 END SUBROUTINE depose_jxjyjz_esirkepov_1_1_1
 
+
+
+SUBROUTINE depose_jxjyjz_esirkepov_gpu_1_1_1(jx, jx_nguard, jx_nvalid, jy, jy_nguard, &
+                                      jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, &
+                                      xmin, ymin, zmin, dt, dx, dy, dz)
+  USE constants
+  IMPLICIT NONE
+  INTEGER(idp) :: np
+  INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), jy_nguard(3), jy_nvalid(3), &
+  jz_nguard(3), jz_nvalid(3)
+  REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1,&
+                              -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1,&
+                              -jx_nguard(3):jx_nvalid(3)+jx_nguard(3)-1 )
+  REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1,&
+                              -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1,&
+                              -jy_nguard(3):jy_nvalid(3)+jy_nguard(3)-1 )
+  REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1,&
+                              -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1,&
+                              -jz_nguard(3):jz_nvalid(3)+jz_nguard(3)-1 )
+  REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
+  REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
+  REAL(num) :: dxi,dyi,dzi,dtsdx,dtsdy,dtsdz,xint,yint,zint
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: sdx,sdy,sdz
+  REAL(num) :: clghtisq,usq,xold,yold,zold,xmid,ymid,zmid,x,y,z,wq,wqx,wqy,wqz,tmp,vx,vy,vz, &
+               s1x,s2x,s1y,s2y,s1z,s2z,invvol,invdtdx,invdtdy,invdtdz,&
+               oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq, &
+               dtsdx0,dtsdy0,dtsdz0
+  REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num
+  REAL(num), PARAMETER :: onethird=1.0_num/3.0_num
+  REAL(num), PARAMETER :: twothird=2.0_num/3.0_num
+  REAL(num), DIMENSION(:), ALLOCATABLE:: sx, sx0, dsx
+  REAL(num), DIMENSION(:), ALLOCATABLE :: sy, sy0, dsy
+  REAL(num), DIMENSION(:), ALLOCATABLE :: sz, sz0, dsz
+  INTEGER(idp) :: iixp0,ijxp0,ikxp0
+  INTEGER(idp) :: iixp,ijxp,ikxp,dix,diy,diz,idx,idy,idz,i,j,k,ic,jc,kc, &
+                  ixmin, ixmax, iymin, iymax, izmin, izmax
+  INTEGER(isp) :: n,nn
+  LOGICAL(idp) :: l_particles_weight,l4symtry
+
+  ! PARAMETER INIT
+  dxi = 1.0_num/dx
+  dyi = 1.0_num/dy
+  dzi = 1.0_num/dz
+  dtsdx0 = dt*dxi
+  dtsdy0 = dt*dyi
+  dtsdz0 = dt*dzi
+  invvol = 1.0_num/(dx*dy*dz)
+  invdtdx = 1.0_num/(dt*dy*dz)
+  invdtdy = 1.0_num/(dt*dx*dz)
+  invdtdz = 1.0_num/(dt*dx*dy)
+  ALLOCATE(sdx(-1:2,-1:2,-1:2),sdy(-1:2,-1:2,-1:2),sdz(-1:2,-1:2,-1:2))
+  ALLOCATE(sx(-1:2), sx0(-1:2), dsx(-1:2))
+  ALLOCATE(sy(-1:2), sy0(-1:2), dsy(-1:2))
+  ALLOCATE(sz(-1:2), sz0(-1:2), dsz(-1:2))
+  clghtisq = 1.0_num/clight**2
+  sx0=0.0_num;sy0=0.0_num;sz0=0.0_num
+  sdx=0.0_num;sdy=0.0_num;sdz=0.0_num
+  dtsdz0 = dt*dzi
+  !$acc parallel deviceptr(jx, jy, jz, xp, yp, zp, uxp, uyp, uzp, w, gaminv)
+  !$acc loop gang vector private(sx(0:1), sy(0:1), sz(0:1), sx0(0:1), sy0(0:1), sz0(0:1))
+  DO ip=1,np
+    ! --- computes current position in grid units
+    x = (xp(ip)-xmin)*dxi
+    y = (yp(ip)-ymin)*dyi
+    z = (zp(ip)-zmin)*dzi
+    ! --- computes velocity
+    vx = uxp(ip)*gaminv(ip)
+    vy = uyp(ip)*gaminv(ip)
+    vz = uzp(ip)*gaminv(ip)
+    ! --- computes old position in grid units
+    xold=x-dtsdx0*vx
+    yold=y-dtsdy0*vy
+    zold=z-dtsdz0*vz
+    ! --- computes particles weights
+    wq=q*w(ip)
+    wqx = wq*invdtdx
+    wqy = wq*invdtdy
+    wqz = wq*invdtdz
+    ! --- finds node of cell containing particles for current positions
+    iixp0=floor(x)
+    ijxp0=floor(y)
+    ikxp0=floor(z)
+    ! --- computes distance between particle and node for current positions
+    xint=x-iixp0
+    yint=y-ijxp0
+    zint=z-ikxp0
+    ! --- computes coefficients for node centered quantities
+    sx0=0.0_num;sy0=0.0_num;sz0=0.0_num
+    sdx=0.0_num;sdy=0.0_num;sdz=0.0_num
+    sx0( 0) = 1.0_num-xint
+    sx0( 1) = xint
+    sy0( 0) = 1.0_num-yint
+    sy0( 1) = yint
+    sz0( 0) = 1.0_num-zint
+    sz0( 1) = zint
+    ! --- finds node of cell containing particles for old positions
+    iixp=floor(xold)
+    ijxp=floor(yold)
+    ikxp=floor(zold)
+    ! --- computes distance between particle and node for old positions
+    xint = xold-iixp
+    yint = yold-ijxp
+    zint = zold-ikxp
+    ! --- computes node separation between old and current positions
+    dix = iixp-iixp0
+    diy = ijxp-ijxp0
+    diz = ikxp-ikxp0
+    ! --- zero out coefficients (needed because of different dix and diz for each particle)
+    sx(-1)=0.0_num;sy(-1)=0.0_num;sz(-1)=0.0_num
+    sx(0)=0.0_num;sy(0)=0.0_num;sz(0)=0.0_num
+    sx(1)=0.0_num;sy(1)=0.0_num;sz(1)=0.0_num
+    sx(2)=0.0_num;sy(2)=0.0_num;sz(2)=0.0_num
+    ! --- computes coefficients for quantities centered between nodes
+    sx( 0+dix) = 1.0_num-xint
+    sx( 1+dix) = xint
+    sy( 0+diy) = 1.0_num-yint
+    sy( 1+diy) = yint
+    sz( 0+diz) = 1.0_num-zint
+    sz( 1+diz) = zint
+    ! --- computes coefficients difference
+    dsx = sx - sx0
+    dsy = sy - sy0
+    dsz = sz - sz0
+    
+    ! --- add current contributions
+    sdx(-1,-1,-1)  = wqx*dsx(-1)*((sy0(-1)+0.5_num*dsy(-1))*sz0(-1) + &
+    (0.5_num*sy0(-1)+onethird*dsy(-1))*dsz(-1))
+    !$acc atomic update
+    jx(iixp0-1,ijxp0-1,ikxp0-1) = jx(iixp0-1,ijxp0-1,ikxp0-1) + sdx(-1,-1,-1)
+    sdy(-1,-1,-1)  = wqy*dsy(-1)*((sz0(-1)+0.5_num*dsz(-1))*sx0(-1) + &
+    (0.5_num*sz0(-1)+onethird*dsz(-1))*dsx(-1))
+    !$acc atomic update
+    jy(iixp0-1,ijxp0-1,ikxp0-1) = jy(iixp0-1,ijxp0-1,ikxp0-1) + sdy(-1,-1,-1)
+    sdz(-1,-1,-1)  = wqz*dsz(-1)*((sx0(-1)+0.5_num*dsx(-1))*sy0(-1) + &
+    (0.5_num*sx0(-1)+onethird*dsx(-1))*dsy(-1))
+    !$acc atomic update
+    jz(iixp0-1,ijxp0-1,ikxp0-1) = jz(iixp0-1,ijxp0-1,ikxp0-1) + sdz(-1,-1,-1)
+    sdx(0,-1,-1)  = wqx*dsx(0)*((sy0(-1)+0.5_num*dsy(-1))*sz0(-1) + &
+    (0.5_num*sy0(-1)+onethird*dsy(-1))*dsz(-1))
+    sdx(0,-1,-1)=sdx(0,-1,-1)+sdx(-1,-1,-1)
+    !$acc atomic update
+    jx(iixp0,ijxp0-1,ikxp0-1) = jx(iixp0,ijxp0-1,ikxp0-1) + sdx(0,-1,-1)
+    sdy(0,-1,-1)  = wqy*dsy(-1)*((sz0(-1)+0.5_num*dsz(-1))*sx0(0) + &
+    (0.5_num*sz0(-1)+onethird*dsz(-1))*dsx(0))
+    !$acc atomic update
+    jy(iixp0,ijxp0-1,ikxp0-1) = jy(iixp0,ijxp0-1,ikxp0-1) + sdy(0,-1,-1)
+    sdz(0,-1,-1)  = wqz*dsz(-1)*((sx0(0)+0.5_num*dsx(0))*sy0(-1) + &
+    (0.5_num*sx0(0)+onethird*dsx(0))*dsy(-1))
+    !$acc atomic update
+    jz(iixp0,ijxp0-1,ikxp0-1) = jz(iixp0,ijxp0-1,ikxp0-1) + sdz(0,-1,-1)
+    sdx(1,-1,-1)  = wqx*dsx(1)*((sy0(-1)+0.5_num*dsy(-1))*sz0(-1) + &
+    (0.5_num*sy0(-1)+onethird*dsy(-1))*dsz(-1))
+    sdx(1,-1,-1)=sdx(1,-1,-1)+sdx(0,-1,-1)
+    !$acc atomic update
+    jx(iixp0+1,ijxp0-1,ikxp0-1) = jx(iixp0+1,ijxp0-1,ikxp0-1) + sdx(1,-1,-1)
+    sdy(1,-1,-1)  = wqy*dsy(-1)*((sz0(-1)+0.5_num*dsz(-1))*sx0(1) + &
+    (0.5_num*sz0(-1)+onethird*dsz(-1))*dsx(1))
+    !$acc atomic update
+    jy(iixp0+1,ijxp0-1,ikxp0-1) = jy(iixp0+1,ijxp0-1,ikxp0-1) + sdy(1,-1,-1)
+    sdz(1,-1,-1)  = wqz*dsz(-1)*((sx0(1)+0.5_num*dsx(1))*sy0(-1) + &
+    (0.5_num*sx0(1)+onethird*dsx(1))*dsy(-1))
+    !$acc atomic update
+    jz(iixp0+1,ijxp0-1,ikxp0-1) = jz(iixp0+1,ijxp0-1,ikxp0-1) + sdz(1,-1,-1)
+    sdy(2,-1,-1)  = wqy*dsy(-1)*((sz0(-1)+0.5_num*dsz(-1))*sx0(2) + &
+    (0.5_num*sz0(-1)+onethird*dsz(-1))*dsx(2))
+    !$acc atomic update
+    jy(iixp0+2,ijxp0-1,ikxp0-1) = jy(iixp0+2,ijxp0-1,ikxp0-1) + sdy(2,-1,-1)
+    sdz(2,-1,-1)  = wqz*dsz(-1)*((sx0(2)+0.5_num*dsx(2))*sy0(-1) + &
+    (0.5_num*sx0(2)+onethird*dsx(2))*dsy(-1))
+    !$acc atomic update
+    jz(iixp0+2,ijxp0-1,ikxp0-1) = jz(iixp0+2,ijxp0-1,ikxp0-1) + sdz(2,-1,-1)
+    sdx(-1,0,-1)  = wqx*dsx(-1)*((sy0(0)+0.5_num*dsy(0))*sz0(-1) + &
+    (0.5_num*sy0(0)+onethird*dsy(0))*dsz(-1))
+    !$acc atomic update
+    jx(iixp0-1,ijxp0,ikxp0-1) = jx(iixp0-1,ijxp0,ikxp0-1) + sdx(-1,0,-1)
+    sdy(-1,0,-1)  = wqy*dsy(0)*((sz0(-1)+0.5_num*dsz(-1))*sx0(-1) + &
+    (0.5_num*sz0(-1)+onethird*dsz(-1))*dsx(-1))
+    sdy(-1,0,-1)=sdy(-1,0,-1)+sdy(-1,-1,-1)
+    !$acc atomic update
+    jy(iixp0-1,ijxp0,ikxp0-1) = jy(iixp0-1,ijxp0,ikxp0-1) + sdy(-1,0,-1)
+    sdz(-1,0,-1)  = wqz*dsz(-1)*((sx0(-1)+0.5_num*dsx(-1))*sy0(0) + &
+    (0.5_num*sx0(-1)+onethird*dsx(-1))*dsy(0))
+    !$acc atomic update
+    jz(iixp0-1,ijxp0,ikxp0-1) = jz(iixp0-1,ijxp0,ikxp0-1) + sdz(-1,0,-1)
+    sdx(0,0,-1)  = wqx*dsx(0)*((sy0(0)+0.5_num*dsy(0))*sz0(-1) + &
+    (0.5_num*sy0(0)+onethird*dsy(0))*dsz(-1))
+    sdx(0,0,-1)=sdx(0,0,-1)+sdx(-1,0,-1)
+    !$acc atomic update
+    jx(iixp0,ijxp0,ikxp0-1) = jx(iixp0,ijxp0,ikxp0-1) + sdx(0,0,-1)
+    sdy(0,0,-1)  = wqy*dsy(0)*((sz0(-1)+0.5_num*dsz(-1))*sx0(0) + &
+    (0.5_num*sz0(-1)+onethird*dsz(-1))*dsx(0))
+    sdy(0,0,-1)=sdy(0,0,-1)+sdy(0,-1,-1)
+    !$acc atomic update
+    jy(iixp0,ijxp0,ikxp0-1) = jy(iixp0,ijxp0,ikxp0-1) + sdy(0,0,-1)
+    sdz(0,0,-1)  = wqz*dsz(-1)*((sx0(0)+0.5_num*dsx(0))*sy0(0) + &
+    (0.5_num*sx0(0)+onethird*dsx(0))*dsy(0))
+    !$acc atomic update
+    jz(iixp0,ijxp0,ikxp0-1) = jz(iixp0,ijxp0,ikxp0-1) + sdz(0,0,-1)
+    sdx(1,0,-1)  = wqx*dsx(1)*((sy0(0)+0.5_num*dsy(0))*sz0(-1) + &
+    (0.5_num*sy0(0)+onethird*dsy(0))*dsz(-1))
+    sdx(1,0,-1)=sdx(1,0,-1)+sdx(0,0,-1)
+    !$acc atomic update
+    jx(iixp0+1,ijxp0,ikxp0-1) = jx(iixp0+1,ijxp0,ikxp0-1) + sdx(1,0,-1)
+    sdy(1,0,-1)  = wqy*dsy(0)*((sz0(-1)+0.5_num*dsz(-1))*sx0(1) + &
+    (0.5_num*sz0(-1)+onethird*dsz(-1))*dsx(1))
+    sdy(1,0,-1)=sdy(1,0,-1)+sdy(1,-1,-1)
+    !$acc atomic update
+    jy(iixp0+1,ijxp0,ikxp0-1) = jy(iixp0+1,ijxp0,ikxp0-1) + sdy(1,0,-1)
+    sdz(1,0,-1)  = wqz*dsz(-1)*((sx0(1)+0.5_num*dsx(1))*sy0(0) + &
+    (0.5_num*sx0(1)+onethird*dsx(1))*dsy(0))
+    !$acc atomic update
+    jz(iixp0+1,ijxp0,ikxp0-1) = jz(iixp0+1,ijxp0,ikxp0-1) + sdz(1,0,-1)
+    sdy(2,0,-1)  = wqy*dsy(0)*((sz0(-1)+0.5_num*dsz(-1))*sx0(2) + &
+    (0.5_num*sz0(-1)+onethird*dsz(-1))*dsx(2))
+    sdy(2,0,-1)=sdy(2,0,-1)+sdy(2,-1,-1)
+    !$acc atomic update
+    jy(iixp0+2,ijxp0,ikxp0-1) = jy(iixp0+2,ijxp0,ikxp0-1) + sdy(2,0,-1)
+    sdz(2,0,-1)  = wqz*dsz(-1)*((sx0(2)+0.5_num*dsx(2))*sy0(0) + &
+    (0.5_num*sx0(2)+onethird*dsx(2))*dsy(0))
+    !$acc atomic update
+    jz(iixp0+2,ijxp0,ikxp0-1) = jz(iixp0+2,ijxp0,ikxp0-1) + sdz(2,0,-1)
+    sdx(-1,1,-1)  = wqx*dsx(-1)*((sy0(1)+0.5_num*dsy(1))*sz0(-1) + &
+    (0.5_num*sy0(1)+onethird*dsy(1))*dsz(-1))
+    !$acc atomic update
+    jx(iixp0-1,ijxp0+1,ikxp0-1) = jx(iixp0-1,ijxp0+1,ikxp0-1) + sdx(-1,1,-1)
+    sdy(-1,1,-1)  = wqy*dsy(1)*((sz0(-1)+0.5_num*dsz(-1))*sx0(-1) + &
+    (0.5_num*sz0(-1)+onethird*dsz(-1))*dsx(-1))
+    sdy(-1,1,-1)=sdy(-1,1,-1)+sdy(-1,0,-1)
+    !$acc atomic update
+    jy(iixp0-1,ijxp0+1,ikxp0-1) = jy(iixp0-1,ijxp0+1,ikxp0-1) + sdy(-1,1,-1)
+    sdz(-1,1,-1)  = wqz*dsz(-1)*((sx0(-1)+0.5_num*dsx(-1))*sy0(1) + &
+    (0.5_num*sx0(-1)+onethird*dsx(-1))*dsy(1))
+    !$acc atomic update
+    jz(iixp0-1,ijxp0+1,ikxp0-1) = jz(iixp0-1,ijxp0+1,ikxp0-1) + sdz(-1,1,-1)
+    sdx(0,1,-1)  = wqx*dsx(0)*((sy0(1)+0.5_num*dsy(1))*sz0(-1) + &
+    (0.5_num*sy0(1)+onethird*dsy(1))*dsz(-1))
+    sdx(0,1,-1)=sdx(0,1,-1)+sdx(-1,1,-1)
+    !$acc atomic update
+    jx(iixp0,ijxp0+1,ikxp0-1) = jx(iixp0,ijxp0+1,ikxp0-1) + sdx(0,1,-1)
+    sdy(0,1,-1)  = wqy*dsy(1)*((sz0(-1)+0.5_num*dsz(-1))*sx0(0) + &
+    (0.5_num*sz0(-1)+onethird*dsz(-1))*dsx(0))
+    sdy(0,1,-1)=sdy(0,1,-1)+sdy(0,0,-1)
+    !$acc atomic update
+    jy(iixp0,ijxp0+1,ikxp0-1) = jy(iixp0,ijxp0+1,ikxp0-1) + sdy(0,1,-1)
+    sdz(0,1,-1)  = wqz*dsz(-1)*((sx0(0)+0.5_num*dsx(0))*sy0(1) + &
+    (0.5_num*sx0(0)+onethird*dsx(0))*dsy(1))
+    !$acc atomic update
+    jz(iixp0,ijxp0+1,ikxp0-1) = jz(iixp0,ijxp0+1,ikxp0-1) + sdz(0,1,-1)
+    sdx(1,1,-1)  = wqx*dsx(1)*((sy0(1)+0.5_num*dsy(1))*sz0(-1) + &
+    (0.5_num*sy0(1)+onethird*dsy(1))*dsz(-1))
+    sdx(1,1,-1)=sdx(1,1,-1)+sdx(0,1,-1)
+    !$acc atomic update
+    jx(iixp0+1,ijxp0+1,ikxp0-1) = jx(iixp0+1,ijxp0+1,ikxp0-1) + sdx(1,1,-1)
+    sdy(1,1,-1)  = wqy*dsy(1)*((sz0(-1)+0.5_num*dsz(-1))*sx0(1) + &
+    (0.5_num*sz0(-1)+onethird*dsz(-1))*dsx(1))
+    sdy(1,1,-1)=sdy(1,1,-1)+sdy(1,0,-1)
+    !$acc atomic update
+    jy(iixp0+1,ijxp0+1,ikxp0-1) = jy(iixp0+1,ijxp0+1,ikxp0-1) + sdy(1,1,-1)
+    sdz(1,1,-1)  = wqz*dsz(-1)*((sx0(1)+0.5_num*dsx(1))*sy0(1) + &
+    (0.5_num*sx0(1)+onethird*dsx(1))*dsy(1))
+    !$acc atomic update
+    jz(iixp0+1,ijxp0+1,ikxp0-1) = jz(iixp0+1,ijxp0+1,ikxp0-1) + sdz(1,1,-1)
+    sdy(2,1,-1)  = wqy*dsy(1)*((sz0(-1)+0.5_num*dsz(-1))*sx0(2) + &
+    (0.5_num*sz0(-1)+onethird*dsz(-1))*dsx(2))
+    sdy(2,1,-1)=sdy(2,1,-1)+sdy(2,0,-1)
+    !$acc atomic update
+    jy(iixp0+2,ijxp0+1,ikxp0-1) = jy(iixp0+2,ijxp0+1,ikxp0-1) + sdy(2,1,-1)
+    sdz(2,1,-1)  = wqz*dsz(-1)*((sx0(2)+0.5_num*dsx(2))*sy0(1) + &
+    (0.5_num*sx0(2)+onethird*dsx(2))*dsy(1))
+    !$acc atomic update
+    jz(iixp0+2,ijxp0+1,ikxp0-1) = jz(iixp0+2,ijxp0+1,ikxp0-1) + sdz(2,1,-1)
+    sdx(-1,2,-1)  = wqx*dsx(-1)*((sy0(2)+0.5_num*dsy(2))*sz0(-1) + &
+    (0.5_num*sy0(2)+onethird*dsy(2))*dsz(-1))
+    !$acc atomic update
+    jx(iixp0-1,ijxp0+2,ikxp0-1) = jx(iixp0-1,ijxp0+2,ikxp0-1) + sdx(-1,2,-1)
+    sdz(-1,2,-1)  = wqz*dsz(-1)*((sx0(-1)+0.5_num*dsx(-1))*sy0(2) + &
+    (0.5_num*sx0(-1)+onethird*dsx(-1))*dsy(2))
+    !$acc atomic update
+    jz(iixp0-1,ijxp0+2,ikxp0-1) = jz(iixp0-1,ijxp0+2,ikxp0-1) + sdz(-1,2,-1)
+    sdx(0,2,-1)  = wqx*dsx(0)*((sy0(2)+0.5_num*dsy(2))*sz0(-1) + &
+    (0.5_num*sy0(2)+onethird*dsy(2))*dsz(-1))
+    sdx(0,2,-1)=sdx(0,2,-1)+sdx(-1,2,-1)
+    !$acc atomic update
+    jx(iixp0,ijxp0+2,ikxp0-1) = jx(iixp0,ijxp0+2,ikxp0-1) + sdx(0,2,-1)
+    sdz(0,2,-1)  = wqz*dsz(-1)*((sx0(0)+0.5_num*dsx(0))*sy0(2) + &
+    (0.5_num*sx0(0)+onethird*dsx(0))*dsy(2))
+    !$acc atomic update
+    jz(iixp0,ijxp0+2,ikxp0-1) = jz(iixp0,ijxp0+2,ikxp0-1) + sdz(0,2,-1)
+    sdx(1,2,-1)  = wqx*dsx(1)*((sy0(2)+0.5_num*dsy(2))*sz0(-1) + &
+    (0.5_num*sy0(2)+onethird*dsy(2))*dsz(-1))
+    sdx(1,2,-1)=sdx(1,2,-1)+sdx(0,2,-1)
+    !$acc atomic update
+    jx(iixp0+1,ijxp0+2,ikxp0-1) = jx(iixp0+1,ijxp0+2,ikxp0-1) + sdx(1,2,-1)
+    sdz(1,2,-1)  = wqz*dsz(-1)*((sx0(1)+0.5_num*dsx(1))*sy0(2) + &
+    (0.5_num*sx0(1)+onethird*dsx(1))*dsy(2))
+    !$acc atomic update
+    jz(iixp0+1,ijxp0+2,ikxp0-1) = jz(iixp0+1,ijxp0+2,ikxp0-1) + sdz(1,2,-1)
+    sdz(2,2,-1)  = wqz*dsz(-1)*((sx0(2)+0.5_num*dsx(2))*sy0(2) + &
+    (0.5_num*sx0(2)+onethird*dsx(2))*dsy(2))
+    !$acc atomic update
+    jz(iixp0+2,ijxp0+2,ikxp0-1) = jz(iixp0+2,ijxp0+2,ikxp0-1) + sdz(2,2,-1)
+    sdx(-1,-1,0)  = wqx*dsx(-1)*((sy0(-1)+0.5_num*dsy(-1))*sz0(0) + &
+    (0.5_num*sy0(-1)+onethird*dsy(-1))*dsz(0))
+    !$acc atomic update
+    jx(iixp0-1,ijxp0-1,ikxp0) = jx(iixp0-1,ijxp0-1,ikxp0) + sdx(-1,-1,0)
+    sdy(-1,-1,0)  = wqy*dsy(-1)*((sz0(0)+0.5_num*dsz(0))*sx0(-1) + &
+    (0.5_num*sz0(0)+onethird*dsz(0))*dsx(-1))
+    !$acc atomic update
+    jy(iixp0-1,ijxp0-1,ikxp0) = jy(iixp0-1,ijxp0-1,ikxp0) + sdy(-1,-1,0)
+    sdz(-1,-1,0)  = wqz*dsz(0)*((sx0(-1)+0.5_num*dsx(-1))*sy0(-1) + &
+    (0.5_num*sx0(-1)+onethird*dsx(-1))*dsy(-1))
+    sdz(-1,-1,0)=sdz(-1,-1,0)+sdz(-1,-1,-1)
+    !$acc atomic update
+    jz(iixp0-1,ijxp0-1,ikxp0) = jz(iixp0-1,ijxp0-1,ikxp0) + sdz(-1,-1,0)
+    sdx(0,-1,0)  = wqx*dsx(0)*((sy0(-1)+0.5_num*dsy(-1))*sz0(0) + &
+    (0.5_num*sy0(-1)+onethird*dsy(-1))*dsz(0))
+    sdx(0,-1,0)=sdx(0,-1,0)+sdx(-1,-1,0)
+    !$acc atomic update
+    jx(iixp0,ijxp0-1,ikxp0) = jx(iixp0,ijxp0-1,ikxp0) + sdx(0,-1,0)
+    sdy(0,-1,0)  = wqy*dsy(-1)*((sz0(0)+0.5_num*dsz(0))*sx0(0) + &
+    (0.5_num*sz0(0)+onethird*dsz(0))*dsx(0))
+    !$acc atomic update
+    jy(iixp0,ijxp0-1,ikxp0) = jy(iixp0,ijxp0-1,ikxp0) + sdy(0,-1,0)
+    sdz(0,-1,0)  = wqz*dsz(0)*((sx0(0)+0.5_num*dsx(0))*sy0(-1) + &
+    (0.5_num*sx0(0)+onethird*dsx(0))*dsy(-1))
+    sdz(0,-1,0)=sdz(0,-1,0)+sdz(0,-1,-1)
+    !$acc atomic update
+    jz(iixp0,ijxp0-1,ikxp0) = jz(iixp0,ijxp0-1,ikxp0) + sdz(0,-1,0)
+    sdx(1,-1,0)  = wqx*dsx(1)*((sy0(-1)+0.5_num*dsy(-1))*sz0(0) + &
+    (0.5_num*sy0(-1)+onethird*dsy(-1))*dsz(0))
+    sdx(1,-1,0)=sdx(1,-1,0)+sdx(0,-1,0)
+    !$acc atomic update
+    jx(iixp0+1,ijxp0-1,ikxp0) = jx(iixp0+1,ijxp0-1,ikxp0) + sdx(1,-1,0)
+    sdy(1,-1,0)  = wqy*dsy(-1)*((sz0(0)+0.5_num*dsz(0))*sx0(1) + &
+    (0.5_num*sz0(0)+onethird*dsz(0))*dsx(1))
+    !$acc atomic update
+    jy(iixp0+1,ijxp0-1,ikxp0) = jy(iixp0+1,ijxp0-1,ikxp0) + sdy(1,-1,0)
+    sdz(1,-1,0)  = wqz*dsz(0)*((sx0(1)+0.5_num*dsx(1))*sy0(-1) + &
+    (0.5_num*sx0(1)+onethird*dsx(1))*dsy(-1))
+    sdz(1,-1,0)=sdz(1,-1,0)+sdz(1,-1,-1)
+    !$acc atomic update
+    jz(iixp0+1,ijxp0-1,ikxp0) = jz(iixp0+1,ijxp0-1,ikxp0) + sdz(1,-1,0)
+    sdy(2,-1,0)  = wqy*dsy(-1)*((sz0(0)+0.5_num*dsz(0))*sx0(2) + &
+    (0.5_num*sz0(0)+onethird*dsz(0))*dsx(2))
+    !$acc atomic update
+    jy(iixp0+2,ijxp0-1,ikxp0) = jy(iixp0+2,ijxp0-1,ikxp0) + sdy(2,-1,0)
+    sdz(2,-1,0)  = wqz*dsz(0)*((sx0(2)+0.5_num*dsx(2))*sy0(-1) + &
+    (0.5_num*sx0(2)+onethird*dsx(2))*dsy(-1))
+    sdz(2,-1,0)=sdz(2,-1,0)+sdz(2,-1,-1)
+    !$acc atomic update
+    jz(iixp0+2,ijxp0-1,ikxp0) = jz(iixp0+2,ijxp0-1,ikxp0) + sdz(2,-1,0)
+    sdx(-1,0,0)  = wqx*dsx(-1)*((sy0(0)+0.5_num*dsy(0))*sz0(0) + &
+    (0.5_num*sy0(0)+onethird*dsy(0))*dsz(0))
+    !$acc atomic update
+    jx(iixp0-1,ijxp0,ikxp0) = jx(iixp0-1,ijxp0,ikxp0) + sdx(-1,0,0)
+    sdy(-1,0,0)  = wqy*dsy(0)*((sz0(0)+0.5_num*dsz(0))*sx0(-1) + &
+    (0.5_num*sz0(0)+onethird*dsz(0))*dsx(-1))
+    sdy(-1,0,0)=sdy(-1,0,0)+sdy(-1,-1,0)
+    !$acc atomic update
+    jy(iixp0-1,ijxp0,ikxp0) = jy(iixp0-1,ijxp0,ikxp0) + sdy(-1,0,0)
+    sdz(-1,0,0)  = wqz*dsz(0)*((sx0(-1)+0.5_num*dsx(-1))*sy0(0) + &
+    (0.5_num*sx0(-1)+onethird*dsx(-1))*dsy(0))
+    sdz(-1,0,0)=sdz(-1,0,0)+sdz(-1,0,-1)
+    !$acc atomic update
+    jz(iixp0-1,ijxp0,ikxp0) = jz(iixp0-1,ijxp0,ikxp0) + sdz(-1,0,0)
+    sdx(0,0,0)  = wqx*dsx(0)*((sy0(0)+0.5_num*dsy(0))*sz0(0) + &
+    (0.5_num*sy0(0)+onethird*dsy(0))*dsz(0))
+    sdx(0,0,0)=sdx(0,0,0)+sdx(-1,0,0)
+    !$acc atomic update
+    jx(iixp0,ijxp0,ikxp0) = jx(iixp0,ijxp0,ikxp0) + sdx(0,0,0)
+    sdy(0,0,0)  = wqy*dsy(0)*((sz0(0)+0.5_num*dsz(0))*sx0(0) + &
+    (0.5_num*sz0(0)+onethird*dsz(0))*dsx(0))
+    sdy(0,0,0)=sdy(0,0,0)+sdy(0,-1,0)
+    !$acc atomic update
+    jy(iixp0,ijxp0,ikxp0) = jy(iixp0,ijxp0,ikxp0) + sdy(0,0,0)
+    sdz(0,0,0)  = wqz*dsz(0)*((sx0(0)+0.5_num*dsx(0))*sy0(0) + &
+    (0.5_num*sx0(0)+onethird*dsx(0))*dsy(0))
+    sdz(0,0,0)=sdz(0,0,0)+sdz(0,0,-1)
+    !$acc atomic update
+    jz(iixp0,ijxp0,ikxp0) = jz(iixp0,ijxp0,ikxp0) + sdz(0,0,0)
+    sdx(1,0,0)  = wqx*dsx(1)*((sy0(0)+0.5_num*dsy(0))*sz0(0) + &
+    (0.5_num*sy0(0)+onethird*dsy(0))*dsz(0))
+    sdx(1,0,0)=sdx(1,0,0)+sdx(0,0,0)
+    !$acc atomic update
+    jx(iixp0+1,ijxp0,ikxp0) = jx(iixp0+1,ijxp0,ikxp0) + sdx(1,0,0)
+    sdy(1,0,0)  = wqy*dsy(0)*((sz0(0)+0.5_num*dsz(0))*sx0(1) + &
+    (0.5_num*sz0(0)+onethird*dsz(0))*dsx(1))
+    sdy(1,0,0)=sdy(1,0,0)+sdy(1,-1,0)
+    !$acc atomic update
+    jy(iixp0+1,ijxp0,ikxp0) = jy(iixp0+1,ijxp0,ikxp0) + sdy(1,0,0)
+    sdz(1,0,0)  = wqz*dsz(0)*((sx0(1)+0.5_num*dsx(1))*sy0(0) + &
+    (0.5_num*sx0(1)+onethird*dsx(1))*dsy(0))
+    sdz(1,0,0)=sdz(1,0,0)+sdz(1,0,-1)
+    !$acc atomic update
+    jz(iixp0+1,ijxp0,ikxp0) = jz(iixp0+1,ijxp0,ikxp0) + sdz(1,0,0)
+    sdy(2,0,0)  = wqy*dsy(0)*((sz0(0)+0.5_num*dsz(0))*sx0(2) + &
+    (0.5_num*sz0(0)+onethird*dsz(0))*dsx(2))
+    sdy(2,0,0)=sdy(2,0,0)+sdy(2,-1,0)
+    !$acc atomic update
+    jy(iixp0+2,ijxp0,ikxp0) = jy(iixp0+2,ijxp0,ikxp0) + sdy(2,0,0)
+    sdz(2,0,0)  = wqz*dsz(0)*((sx0(2)+0.5_num*dsx(2))*sy0(0) + &
+    (0.5_num*sx0(2)+onethird*dsx(2))*dsy(0))
+    sdz(2,0,0)=sdz(2,0,0)+sdz(2,0,-1)
+    !$acc atomic update
+    jz(iixp0+2,ijxp0,ikxp0) = jz(iixp0+2,ijxp0,ikxp0) + sdz(2,0,0)
+    sdx(-1,1,0)  = wqx*dsx(-1)*((sy0(1)+0.5_num*dsy(1))*sz0(0) + &
+    (0.5_num*sy0(1)+onethird*dsy(1))*dsz(0))
+    !$acc atomic update
+    jx(iixp0-1,ijxp0+1,ikxp0) = jx(iixp0-1,ijxp0+1,ikxp0) + sdx(-1,1,0)
+    sdy(-1,1,0)  = wqy*dsy(1)*((sz0(0)+0.5_num*dsz(0))*sx0(-1) + &
+    (0.5_num*sz0(0)+onethird*dsz(0))*dsx(-1))
+    sdy(-1,1,0)=sdy(-1,1,0)+sdy(-1,0,0)
+    !$acc atomic update
+    jy(iixp0-1,ijxp0+1,ikxp0) = jy(iixp0-1,ijxp0+1,ikxp0) + sdy(-1,1,0)
+    sdz(-1,1,0)  = wqz*dsz(0)*((sx0(-1)+0.5_num*dsx(-1))*sy0(1) + &
+    (0.5_num*sx0(-1)+onethird*dsx(-1))*dsy(1))
+    sdz(-1,1,0)=sdz(-1,1,0)+sdz(-1,1,-1)
+    !$acc atomic update
+    jz(iixp0-1,ijxp0+1,ikxp0) = jz(iixp0-1,ijxp0+1,ikxp0) + sdz(-1,1,0)
+    sdx(0,1,0)  = wqx*dsx(0)*((sy0(1)+0.5_num*dsy(1))*sz0(0) + &
+    (0.5_num*sy0(1)+onethird*dsy(1))*dsz(0))
+    sdx(0,1,0)=sdx(0,1,0)+sdx(-1,1,0)
+    !$acc atomic update
+    jx(iixp0,ijxp0+1,ikxp0) = jx(iixp0,ijxp0+1,ikxp0) + sdx(0,1,0)
+    sdy(0,1,0)  = wqy*dsy(1)*((sz0(0)+0.5_num*dsz(0))*sx0(0) + &
+    (0.5_num*sz0(0)+onethird*dsz(0))*dsx(0))
+    sdy(0,1,0)=sdy(0,1,0)+sdy(0,0,0)
+    !$acc atomic update
+    jy(iixp0,ijxp0+1,ikxp0) = jy(iixp0,ijxp0+1,ikxp0) + sdy(0,1,0)
+    sdz(0,1,0)  = wqz*dsz(0)*((sx0(0)+0.5_num*dsx(0))*sy0(1) + &
+    (0.5_num*sx0(0)+onethird*dsx(0))*dsy(1))
+    sdz(0,1,0)=sdz(0,1,0)+sdz(0,1,-1)
+    !$acc atomic update
+    jz(iixp0,ijxp0+1,ikxp0) = jz(iixp0,ijxp0+1,ikxp0) + sdz(0,1,0)
+    sdx(1,1,0)  = wqx*dsx(1)*((sy0(1)+0.5_num*dsy(1))*sz0(0) + &
+    (0.5_num*sy0(1)+onethird*dsy(1))*dsz(0))
+    sdx(1,1,0)=sdx(1,1,0)+sdx(0,1,0)
+    !$acc atomic update
+    jx(iixp0+1,ijxp0+1,ikxp0) = jx(iixp0+1,ijxp0+1,ikxp0) + sdx(1,1,0)
+    sdy(1,1,0)  = wqy*dsy(1)*((sz0(0)+0.5_num*dsz(0))*sx0(1) + &
+    (0.5_num*sz0(0)+onethird*dsz(0))*dsx(1))
+    sdy(1,1,0)=sdy(1,1,0)+sdy(1,0,0)
+    !$acc atomic update
+    jy(iixp0+1,ijxp0+1,ikxp0) = jy(iixp0+1,ijxp0+1,ikxp0) + sdy(1,1,0)
+    sdz(1,1,0)  = wqz*dsz(0)*((sx0(1)+0.5_num*dsx(1))*sy0(1) + &
+    (0.5_num*sx0(1)+onethird*dsx(1))*dsy(1))
+    sdz(1,1,0)=sdz(1,1,0)+sdz(1,1,-1)
+    !$acc atomic update
+    jz(iixp0+1,ijxp0+1,ikxp0) = jz(iixp0+1,ijxp0+1,ikxp0) + sdz(1,1,0)
+    sdy(2,1,0)  = wqy*dsy(1)*((sz0(0)+0.5_num*dsz(0))*sx0(2) + &
+    (0.5_num*sz0(0)+onethird*dsz(0))*dsx(2))
+    sdy(2,1,0)=sdy(2,1,0)+sdy(2,0,0)
+    !$acc atomic update
+    jy(iixp0+2,ijxp0+1,ikxp0) = jy(iixp0+2,ijxp0+1,ikxp0) + sdy(2,1,0)
+    sdz(2,1,0)  = wqz*dsz(0)*((sx0(2)+0.5_num*dsx(2))*sy0(1) + &
+    (0.5_num*sx0(2)+onethird*dsx(2))*dsy(1))
+    sdz(2,1,0)=sdz(2,1,0)+sdz(2,1,-1)
+    !$acc atomic update
+    jz(iixp0+2,ijxp0+1,ikxp0) = jz(iixp0+2,ijxp0+1,ikxp0) + sdz(2,1,0)
+    sdx(-1,2,0)  = wqx*dsx(-1)*((sy0(2)+0.5_num*dsy(2))*sz0(0) + &
+    (0.5_num*sy0(2)+onethird*dsy(2))*dsz(0))
+    !$acc atomic update
+    jx(iixp0-1,ijxp0+2,ikxp0) = jx(iixp0-1,ijxp0+2,ikxp0) + sdx(-1,2,0)
+    sdz(-1,2,0)  = wqz*dsz(0)*((sx0(-1)+0.5_num*dsx(-1))*sy0(2) + &
+    (0.5_num*sx0(-1)+onethird*dsx(-1))*dsy(2))
+    sdz(-1,2,0)=sdz(-1,2,0)+sdz(-1,2,-1)
+    !$acc atomic update
+    jz(iixp0-1,ijxp0+2,ikxp0) = jz(iixp0-1,ijxp0+2,ikxp0) + sdz(-1,2,0)
+    sdx(0,2,0)  = wqx*dsx(0)*((sy0(2)+0.5_num*dsy(2))*sz0(0) + &
+    (0.5_num*sy0(2)+onethird*dsy(2))*dsz(0))
+    sdx(0,2,0)=sdx(0,2,0)+sdx(-1,2,0)
+    !$acc atomic update
+    jx(iixp0,ijxp0+2,ikxp0) = jx(iixp0,ijxp0+2,ikxp0) + sdx(0,2,0)
+    sdz(0,2,0)  = wqz*dsz(0)*((sx0(0)+0.5_num*dsx(0))*sy0(2) + &
+    (0.5_num*sx0(0)+onethird*dsx(0))*dsy(2))
+    sdz(0,2,0)=sdz(0,2,0)+sdz(0,2,-1)
+    !$acc atomic update
+    jz(iixp0,ijxp0+2,ikxp0) = jz(iixp0,ijxp0+2,ikxp0) + sdz(0,2,0)
+    sdx(1,2,0)  = wqx*dsx(1)*((sy0(2)+0.5_num*dsy(2))*sz0(0) + &
+    (0.5_num*sy0(2)+onethird*dsy(2))*dsz(0))
+    sdx(1,2,0)=sdx(1,2,0)+sdx(0,2,0)
+    !$acc atomic update
+    jx(iixp0+1,ijxp0+2,ikxp0) = jx(iixp0+1,ijxp0+2,ikxp0) + sdx(1,2,0)
+    sdz(1,2,0)  = wqz*dsz(0)*((sx0(1)+0.5_num*dsx(1))*sy0(2) + &
+    (0.5_num*sx0(1)+onethird*dsx(1))*dsy(2))
+    sdz(1,2,0)=sdz(1,2,0)+sdz(1,2,-1)
+    !$acc atomic update
+    jz(iixp0+1,ijxp0+2,ikxp0) = jz(iixp0+1,ijxp0+2,ikxp0) + sdz(1,2,0)
+    sdz(2,2,0)  = wqz*dsz(0)*((sx0(2)+0.5_num*dsx(2))*sy0(2) + &
+    (0.5_num*sx0(2)+onethird*dsx(2))*dsy(2))
+    sdz(2,2,0)=sdz(2,2,0)+sdz(2,2,-1)
+    !$acc atomic update
+    jz(iixp0+2,ijxp0+2,ikxp0) = jz(iixp0+2,ijxp0+2,ikxp0) + sdz(2,2,0)
+    sdx(-1,-1,1)  = wqx*dsx(-1)*((sy0(-1)+0.5_num*dsy(-1))*sz0(1) + &
+    (0.5_num*sy0(-1)+onethird*dsy(-1))*dsz(1))
+    !$acc atomic update
+    jx(iixp0-1,ijxp0-1,ikxp0+1) = jx(iixp0-1,ijxp0-1,ikxp0+1) + sdx(-1,-1,1)
+    sdy(-1,-1,1)  = wqy*dsy(-1)*((sz0(1)+0.5_num*dsz(1))*sx0(-1) + &
+    (0.5_num*sz0(1)+onethird*dsz(1))*dsx(-1))
+    !$acc atomic update
+    jy(iixp0-1,ijxp0-1,ikxp0+1) = jy(iixp0-1,ijxp0-1,ikxp0+1) + sdy(-1,-1,1)
+    sdz(-1,-1,1)  = wqz*dsz(1)*((sx0(-1)+0.5_num*dsx(-1))*sy0(-1) + &
+    (0.5_num*sx0(-1)+onethird*dsx(-1))*dsy(-1))
+    sdz(-1,-1,1)=sdz(-1,-1,1)+sdz(-1,-1,0)
+    !$acc atomic update
+    jz(iixp0-1,ijxp0-1,ikxp0+1) = jz(iixp0-1,ijxp0-1,ikxp0+1) + sdz(-1,-1,1)
+    sdx(0,-1,1)  = wqx*dsx(0)*((sy0(-1)+0.5_num*dsy(-1))*sz0(1) + &
+    (0.5_num*sy0(-1)+onethird*dsy(-1))*dsz(1))
+    sdx(0,-1,1)=sdx(0,-1,1)+sdx(-1,-1,1)
+    !$acc atomic update
+    jx(iixp0,ijxp0-1,ikxp0+1) = jx(iixp0,ijxp0-1,ikxp0+1) + sdx(0,-1,1)
+    sdy(0,-1,1)  = wqy*dsy(-1)*((sz0(1)+0.5_num*dsz(1))*sx0(0) + &
+    (0.5_num*sz0(1)+onethird*dsz(1))*dsx(0))
+    !$acc atomic update
+    jy(iixp0,ijxp0-1,ikxp0+1) = jy(iixp0,ijxp0-1,ikxp0+1) + sdy(0,-1,1)
+    sdz(0,-1,1)  = wqz*dsz(1)*((sx0(0)+0.5_num*dsx(0))*sy0(-1) + &
+    (0.5_num*sx0(0)+onethird*dsx(0))*dsy(-1))
+    sdz(0,-1,1)=sdz(0,-1,1)+sdz(0,-1,0)
+    !$acc atomic update
+    jz(iixp0,ijxp0-1,ikxp0+1) = jz(iixp0,ijxp0-1,ikxp0+1) + sdz(0,-1,1)
+    sdx(1,-1,1)  = wqx*dsx(1)*((sy0(-1)+0.5_num*dsy(-1))*sz0(1) + &
+    (0.5_num*sy0(-1)+onethird*dsy(-1))*dsz(1))
+    sdx(1,-1,1)=sdx(1,-1,1)+sdx(0,-1,1)
+    !$acc atomic update
+    jx(iixp0+1,ijxp0-1,ikxp0+1) = jx(iixp0+1,ijxp0-1,ikxp0+1) + sdx(1,-1,1)
+    sdy(1,-1,1)  = wqy*dsy(-1)*((sz0(1)+0.5_num*dsz(1))*sx0(1) + &
+    (0.5_num*sz0(1)+onethird*dsz(1))*dsx(1))
+    !$acc atomic update
+    jy(iixp0+1,ijxp0-1,ikxp0+1) = jy(iixp0+1,ijxp0-1,ikxp0+1) + sdy(1,-1,1)
+    sdz(1,-1,1)  = wqz*dsz(1)*((sx0(1)+0.5_num*dsx(1))*sy0(-1) + &
+    (0.5_num*sx0(1)+onethird*dsx(1))*dsy(-1))
+    sdz(1,-1,1)=sdz(1,-1,1)+sdz(1,-1,0)
+    !$acc atomic update
+    jz(iixp0+1,ijxp0-1,ikxp0+1) = jz(iixp0+1,ijxp0-1,ikxp0+1) + sdz(1,-1,1)
+    sdy(2,-1,1)  = wqy*dsy(-1)*((sz0(1)+0.5_num*dsz(1))*sx0(2) + &
+    (0.5_num*sz0(1)+onethird*dsz(1))*dsx(2))
+    !$acc atomic update
+    jy(iixp0+2,ijxp0-1,ikxp0+1) = jy(iixp0+2,ijxp0-1,ikxp0+1) + sdy(2,-1,1)
+    sdz(2,-1,1)  = wqz*dsz(1)*((sx0(2)+0.5_num*dsx(2))*sy0(-1) + &
+    (0.5_num*sx0(2)+onethird*dsx(2))*dsy(-1))
+    sdz(2,-1,1)=sdz(2,-1,1)+sdz(2,-1,0)
+    !$acc atomic update
+    jz(iixp0+2,ijxp0-1,ikxp0+1) = jz(iixp0+2,ijxp0-1,ikxp0+1) + sdz(2,-1,1)
+    sdx(-1,0,1)  = wqx*dsx(-1)*((sy0(0)+0.5_num*dsy(0))*sz0(1) + &
+    (0.5_num*sy0(0)+onethird*dsy(0))*dsz(1))
+    !$acc atomic update
+    jx(iixp0-1,ijxp0,ikxp0+1) = jx(iixp0-1,ijxp0,ikxp0+1) + sdx(-1,0,1)
+    sdy(-1,0,1)  = wqy*dsy(0)*((sz0(1)+0.5_num*dsz(1))*sx0(-1) + &
+    (0.5_num*sz0(1)+onethird*dsz(1))*dsx(-1))
+    sdy(-1,0,1)=sdy(-1,0,1)+sdy(-1,-1,1)
+    !$acc atomic update
+    jy(iixp0-1,ijxp0,ikxp0+1) = jy(iixp0-1,ijxp0,ikxp0+1) + sdy(-1,0,1)
+    sdz(-1,0,1)  = wqz*dsz(1)*((sx0(-1)+0.5_num*dsx(-1))*sy0(0) + &
+    (0.5_num*sx0(-1)+onethird*dsx(-1))*dsy(0))
+    sdz(-1,0,1)=sdz(-1,0,1)+sdz(-1,0,0)
+    !$acc atomic update
+    jz(iixp0-1,ijxp0,ikxp0+1) = jz(iixp0-1,ijxp0,ikxp0+1) + sdz(-1,0,1)
+    sdx(0,0,1)  = wqx*dsx(0)*((sy0(0)+0.5_num*dsy(0))*sz0(1) + &
+    (0.5_num*sy0(0)+onethird*dsy(0))*dsz(1))
+    sdx(0,0,1)=sdx(0,0,1)+sdx(-1,0,1)
+    !$acc atomic update
+    jx(iixp0,ijxp0,ikxp0+1) = jx(iixp0,ijxp0,ikxp0+1) + sdx(0,0,1)
+    sdy(0,0,1)  = wqy*dsy(0)*((sz0(1)+0.5_num*dsz(1))*sx0(0) + &
+    (0.5_num*sz0(1)+onethird*dsz(1))*dsx(0))
+    sdy(0,0,1)=sdy(0,0,1)+sdy(0,-1,1)
+    !$acc atomic update
+    jy(iixp0,ijxp0,ikxp0+1) = jy(iixp0,ijxp0,ikxp0+1) + sdy(0,0,1)
+    sdz(0,0,1)  = wqz*dsz(1)*((sx0(0)+0.5_num*dsx(0))*sy0(0) + &
+    (0.5_num*sx0(0)+onethird*dsx(0))*dsy(0))
+    sdz(0,0,1)=sdz(0,0,1)+sdz(0,0,0)
+    !$acc atomic update
+    jz(iixp0,ijxp0,ikxp0+1) = jz(iixp0,ijxp0,ikxp0+1) + sdz(0,0,1)
+    sdx(1,0,1)  = wqx*dsx(1)*((sy0(0)+0.5_num*dsy(0))*sz0(1) + &
+    (0.5_num*sy0(0)+onethird*dsy(0))*dsz(1))
+    sdx(1,0,1)=sdx(1,0,1)+sdx(0,0,1)
+    !$acc atomic update
+    jx(iixp0+1,ijxp0,ikxp0+1) = jx(iixp0+1,ijxp0,ikxp0+1) + sdx(1,0,1)
+    sdy(1,0,1)  = wqy*dsy(0)*((sz0(1)+0.5_num*dsz(1))*sx0(1) + &
+    (0.5_num*sz0(1)+onethird*dsz(1))*dsx(1))
+    sdy(1,0,1)=sdy(1,0,1)+sdy(1,-1,1)
+    !$acc atomic update
+    jy(iixp0+1,ijxp0,ikxp0+1) = jy(iixp0+1,ijxp0,ikxp0+1) + sdy(1,0,1)
+    sdz(1,0,1)  = wqz*dsz(1)*((sx0(1)+0.5_num*dsx(1))*sy0(0) + &
+    (0.5_num*sx0(1)+onethird*dsx(1))*dsy(0))
+    sdz(1,0,1)=sdz(1,0,1)+sdz(1,0,0)
+    !$acc atomic update
+    jz(iixp0+1,ijxp0,ikxp0+1) = jz(iixp0+1,ijxp0,ikxp0+1) + sdz(1,0,1)
+    sdy(2,0,1)  = wqy*dsy(0)*((sz0(1)+0.5_num*dsz(1))*sx0(2) + &
+    (0.5_num*sz0(1)+onethird*dsz(1))*dsx(2))
+    sdy(2,0,1)=sdy(2,0,1)+sdy(2,-1,1)
+    !$acc atomic update
+    jy(iixp0+2,ijxp0,ikxp0+1) = jy(iixp0+2,ijxp0,ikxp0+1) + sdy(2,0,1)
+    sdz(2,0,1)  = wqz*dsz(1)*((sx0(2)+0.5_num*dsx(2))*sy0(0) + &
+    (0.5_num*sx0(2)+onethird*dsx(2))*dsy(0))
+    sdz(2,0,1)=sdz(2,0,1)+sdz(2,0,0)
+    !$acc atomic update
+    jz(iixp0+2,ijxp0,ikxp0+1) = jz(iixp0+2,ijxp0,ikxp0+1) + sdz(2,0,1)
+    sdx(-1,1,1)  = wqx*dsx(-1)*((sy0(1)+0.5_num*dsy(1))*sz0(1) + &
+    (0.5_num*sy0(1)+onethird*dsy(1))*dsz(1))
+    !$acc atomic update
+    jx(iixp0-1,ijxp0+1,ikxp0+1) = jx(iixp0-1,ijxp0+1,ikxp0+1) + sdx(-1,1,1)
+    sdy(-1,1,1)  = wqy*dsy(1)*((sz0(1)+0.5_num*dsz(1))*sx0(-1) + &
+    (0.5_num*sz0(1)+onethird*dsz(1))*dsx(-1))
+    sdy(-1,1,1)=sdy(-1,1,1)+sdy(-1,0,1)
+    !$acc atomic update
+    jy(iixp0-1,ijxp0+1,ikxp0+1) = jy(iixp0-1,ijxp0+1,ikxp0+1) + sdy(-1,1,1)
+    sdz(-1,1,1)  = wqz*dsz(1)*((sx0(-1)+0.5_num*dsx(-1))*sy0(1) + &
+    (0.5_num*sx0(-1)+onethird*dsx(-1))*dsy(1))
+    sdz(-1,1,1)=sdz(-1,1,1)+sdz(-1,1,0)
+    !$acc atomic update
+    jz(iixp0-1,ijxp0+1,ikxp0+1) = jz(iixp0-1,ijxp0+1,ikxp0+1) + sdz(-1,1,1)
+    sdx(0,1,1)  = wqx*dsx(0)*((sy0(1)+0.5_num*dsy(1))*sz0(1) + &
+    (0.5_num*sy0(1)+onethird*dsy(1))*dsz(1))
+    sdx(0,1,1)=sdx(0,1,1)+sdx(-1,1,1)
+    !$acc atomic update
+    jx(iixp0,ijxp0+1,ikxp0+1) = jx(iixp0,ijxp0+1,ikxp0+1) + sdx(0,1,1)
+    sdy(0,1,1)  = wqy*dsy(1)*((sz0(1)+0.5_num*dsz(1))*sx0(0) + &
+    (0.5_num*sz0(1)+onethird*dsz(1))*dsx(0))
+    sdy(0,1,1)=sdy(0,1,1)+sdy(0,0,1)
+    !$acc atomic update
+    jy(iixp0,ijxp0+1,ikxp0+1) = jy(iixp0,ijxp0+1,ikxp0+1) + sdy(0,1,1)
+    sdz(0,1,1)  = wqz*dsz(1)*((sx0(0)+0.5_num*dsx(0))*sy0(1) + &
+    (0.5_num*sx0(0)+onethird*dsx(0))*dsy(1))
+    sdz(0,1,1)=sdz(0,1,1)+sdz(0,1,0)
+    !$acc atomic update
+    jz(iixp0,ijxp0+1,ikxp0+1) = jz(iixp0,ijxp0+1,ikxp0+1) + sdz(0,1,1)
+    sdx(1,1,1)  = wqx*dsx(1)*((sy0(1)+0.5_num*dsy(1))*sz0(1) + &
+    (0.5_num*sy0(1)+onethird*dsy(1))*dsz(1))
+    sdx(1,1,1)=sdx(1,1,1)+sdx(0,1,1)
+    !$acc atomic update
+    jx(iixp0+1,ijxp0+1,ikxp0+1) = jx(iixp0+1,ijxp0+1,ikxp0+1) + sdx(1,1,1)
+    sdy(1,1,1)  = wqy*dsy(1)*((sz0(1)+0.5_num*dsz(1))*sx0(1) + &
+    (0.5_num*sz0(1)+onethird*dsz(1))*dsx(1))
+    sdy(1,1,1)=sdy(1,1,1)+sdy(1,0,1)
+    !$acc atomic update
+    jy(iixp0+1,ijxp0+1,ikxp0+1) = jy(iixp0+1,ijxp0+1,ikxp0+1) + sdy(1,1,1)
+    sdz(1,1,1)  = wqz*dsz(1)*((sx0(1)+0.5_num*dsx(1))*sy0(1) + &
+    (0.5_num*sx0(1)+onethird*dsx(1))*dsy(1))
+    sdz(1,1,1)=sdz(1,1,1)+sdz(1,1,0)
+    !$acc atomic update
+    jz(iixp0+1,ijxp0+1,ikxp0+1) = jz(iixp0+1,ijxp0+1,ikxp0+1) + sdz(1,1,1)
+    sdy(2,1,1)  = wqy*dsy(1)*((sz0(1)+0.5_num*dsz(1))*sx0(2) + &
+    (0.5_num*sz0(1)+onethird*dsz(1))*dsx(2))
+    sdy(2,1,1)=sdy(2,1,1)+sdy(2,0,1)
+    !$acc atomic update
+    jy(iixp0+2,ijxp0+1,ikxp0+1) = jy(iixp0+2,ijxp0+1,ikxp0+1) + sdy(2,1,1)
+    sdz(2,1,1)  = wqz*dsz(1)*((sx0(2)+0.5_num*dsx(2))*sy0(1) + &
+    (0.5_num*sx0(2)+onethird*dsx(2))*dsy(1))
+    sdz(2,1,1)=sdz(2,1,1)+sdz(2,1,0)
+    !$acc atomic update
+    jz(iixp0+2,ijxp0+1,ikxp0+1) = jz(iixp0+2,ijxp0+1,ikxp0+1) + sdz(2,1,1)
+    sdx(-1,2,1)  = wqx*dsx(-1)*((sy0(2)+0.5_num*dsy(2))*sz0(1) + &
+    (0.5_num*sy0(2)+onethird*dsy(2))*dsz(1))
+    !$acc atomic update
+    jx(iixp0-1,ijxp0+2,ikxp0+1) = jx(iixp0-1,ijxp0+2,ikxp0+1) + sdx(-1,2,1)
+    sdz(-1,2,1)  = wqz*dsz(1)*((sx0(-1)+0.5_num*dsx(-1))*sy0(2) + &
+    (0.5_num*sx0(-1)+onethird*dsx(-1))*dsy(2))
+    sdz(-1,2,1)=sdz(-1,2,1)+sdz(-1,2,0)
+    !$acc atomic update
+    jz(iixp0-1,ijxp0+2,ikxp0+1) = jz(iixp0-1,ijxp0+2,ikxp0+1) + sdz(-1,2,1)
+    sdx(0,2,1)  = wqx*dsx(0)*((sy0(2)+0.5_num*dsy(2))*sz0(1) + &
+    (0.5_num*sy0(2)+onethird*dsy(2))*dsz(1))
+    sdx(0,2,1)=sdx(0,2,1)+sdx(-1,2,1)
+    !$acc atomic update
+    jx(iixp0,ijxp0+2,ikxp0+1) = jx(iixp0,ijxp0+2,ikxp0+1) + sdx(0,2,1)
+    sdz(0,2,1)  = wqz*dsz(1)*((sx0(0)+0.5_num*dsx(0))*sy0(2) + &
+    (0.5_num*sx0(0)+onethird*dsx(0))*dsy(2))
+    sdz(0,2,1)=sdz(0,2,1)+sdz(0,2,0)
+    !$acc atomic update
+    jz(iixp0,ijxp0+2,ikxp0+1) = jz(iixp0,ijxp0+2,ikxp0+1) + sdz(0,2,1)
+    sdx(1,2,1)  = wqx*dsx(1)*((sy0(2)+0.5_num*dsy(2))*sz0(1) + &
+    (0.5_num*sy0(2)+onethird*dsy(2))*dsz(1))
+    sdx(1,2,1)=sdx(1,2,1)+sdx(0,2,1)
+    !$acc atomic update
+    jx(iixp0+1,ijxp0+2,ikxp0+1) = jx(iixp0+1,ijxp0+2,ikxp0+1) + sdx(1,2,1)
+    sdz(1,2,1)  = wqz*dsz(1)*((sx0(1)+0.5_num*dsx(1))*sy0(2) + &
+    (0.5_num*sx0(1)+onethird*dsx(1))*dsy(2))
+    sdz(1,2,1)=sdz(1,2,1)+sdz(1,2,0)
+    !$acc atomic update
+    jz(iixp0+1,ijxp0+2,ikxp0+1) = jz(iixp0+1,ijxp0+2,ikxp0+1) + sdz(1,2,1)
+    sdz(2,2,1)  = wqz*dsz(1)*((sx0(2)+0.5_num*dsx(2))*sy0(2) + &
+    (0.5_num*sx0(2)+onethird*dsx(2))*dsy(2))
+    sdz(2,2,1)=sdz(2,2,1)+sdz(2,2,0)
+    !$acc atomic update
+    jz(iixp0+2,ijxp0+2,ikxp0+1) = jz(iixp0+2,ijxp0+2,ikxp0+1) + sdz(2,2,1)
+    sdx(-1,-1,2)  = wqx*dsx(-1)*((sy0(-1)+0.5_num*dsy(-1))*sz0(2) + &
+    (0.5_num*sy0(-1)+onethird*dsy(-1))*dsz(2))
+    !$acc atomic update
+    jx(iixp0-1,ijxp0-1,ikxp0+2) = jx(iixp0-1,ijxp0-1,ikxp0+2) + sdx(-1,-1,2)
+    sdy(-1,-1,2)  = wqy*dsy(-1)*((sz0(2)+0.5_num*dsz(2))*sx0(-1) + &
+    (0.5_num*sz0(2)+onethird*dsz(2))*dsx(-1))
+    !$acc atomic update
+    jy(iixp0-1,ijxp0-1,ikxp0+2) = jy(iixp0-1,ijxp0-1,ikxp0+2) + sdy(-1,-1,2)
+    sdx(0,-1,2)  = wqx*dsx(0)*((sy0(-1)+0.5_num*dsy(-1))*sz0(2) + &
+    (0.5_num*sy0(-1)+onethird*dsy(-1))*dsz(2))
+    sdx(0,-1,2)=sdx(0,-1,2)+sdx(-1,-1,2)
+    !$acc atomic update
+    jx(iixp0,ijxp0-1,ikxp0+2) = jx(iixp0,ijxp0-1,ikxp0+2) + sdx(0,-1,2)
+    sdy(0,-1,2)  = wqy*dsy(-1)*((sz0(2)+0.5_num*dsz(2))*sx0(0) + &
+    (0.5_num*sz0(2)+onethird*dsz(2))*dsx(0))
+    !$acc atomic update
+    jy(iixp0,ijxp0-1,ikxp0+2) = jy(iixp0,ijxp0-1,ikxp0+2) + sdy(0,-1,2)
+    sdx(1,-1,2)  = wqx*dsx(1)*((sy0(-1)+0.5_num*dsy(-1))*sz0(2) + &
+    (0.5_num*sy0(-1)+onethird*dsy(-1))*dsz(2))
+    sdx(1,-1,2)=sdx(1,-1,2)+sdx(0,-1,2)
+    !$acc atomic update
+    jx(iixp0+1,ijxp0-1,ikxp0+2) = jx(iixp0+1,ijxp0-1,ikxp0+2) + sdx(1,-1,2)
+    sdy(1,-1,2)  = wqy*dsy(-1)*((sz0(2)+0.5_num*dsz(2))*sx0(1) + &
+    (0.5_num*sz0(2)+onethird*dsz(2))*dsx(1))
+    !$acc atomic update
+    jy(iixp0+1,ijxp0-1,ikxp0+2) = jy(iixp0+1,ijxp0-1,ikxp0+2) + sdy(1,-1,2)
+    sdy(2,-1,2)  = wqy*dsy(-1)*((sz0(2)+0.5_num*dsz(2))*sx0(2) + &
+    (0.5_num*sz0(2)+onethird*dsz(2))*dsx(2))
+    !$acc atomic update
+    jy(iixp0+2,ijxp0-1,ikxp0+2) = jy(iixp0+2,ijxp0-1,ikxp0+2) + sdy(2,-1,2)
+    sdx(-1,0,2)  = wqx*dsx(-1)*((sy0(0)+0.5_num*dsy(0))*sz0(2) + &
+    (0.5_num*sy0(0)+onethird*dsy(0))*dsz(2))
+    !$acc atomic update
+    jx(iixp0-1,ijxp0,ikxp0+2) = jx(iixp0-1,ijxp0,ikxp0+2) + sdx(-1,0,2)
+    sdy(-1,0,2)  = wqy*dsy(0)*((sz0(2)+0.5_num*dsz(2))*sx0(-1) + &
+    (0.5_num*sz0(2)+onethird*dsz(2))*dsx(-1))
+    sdy(-1,0,2)=sdy(-1,0,2)+sdy(-1,-1,2)
+    !$acc atomic update
+    jy(iixp0-1,ijxp0,ikxp0+2) = jy(iixp0-1,ijxp0,ikxp0+2) + sdy(-1,0,2)
+    sdx(0,0,2)  = wqx*dsx(0)*((sy0(0)+0.5_num*dsy(0))*sz0(2) + &
+    (0.5_num*sy0(0)+onethird*dsy(0))*dsz(2))
+    sdx(0,0,2)=sdx(0,0,2)+sdx(-1,0,2)
+    !$acc atomic update
+    jx(iixp0,ijxp0,ikxp0+2) = jx(iixp0,ijxp0,ikxp0+2) + sdx(0,0,2)
+    sdy(0,0,2)  = wqy*dsy(0)*((sz0(2)+0.5_num*dsz(2))*sx0(0) + &
+    (0.5_num*sz0(2)+onethird*dsz(2))*dsx(0))
+    sdy(0,0,2)=sdy(0,0,2)+sdy(0,-1,2)
+    !$acc atomic update
+    jy(iixp0,ijxp0,ikxp0+2) = jy(iixp0,ijxp0,ikxp0+2) + sdy(0,0,2)
+    sdx(1,0,2)  = wqx*dsx(1)*((sy0(0)+0.5_num*dsy(0))*sz0(2) + &
+    (0.5_num*sy0(0)+onethird*dsy(0))*dsz(2))
+    sdx(1,0,2)=sdx(1,0,2)+sdx(0,0,2)
+    !$acc atomic update
+    jx(iixp0+1,ijxp0,ikxp0+2) = jx(iixp0+1,ijxp0,ikxp0+2) + sdx(1,0,2)
+    sdy(1,0,2)  = wqy*dsy(0)*((sz0(2)+0.5_num*dsz(2))*sx0(1) + &
+    (0.5_num*sz0(2)+onethird*dsz(2))*dsx(1))
+    sdy(1,0,2)=sdy(1,0,2)+sdy(1,-1,2)
+    !$acc atomic update
+    jy(iixp0+1,ijxp0,ikxp0+2) = jy(iixp0+1,ijxp0,ikxp0+2) + sdy(1,0,2)
+    sdy(2,0,2)  = wqy*dsy(0)*((sz0(2)+0.5_num*dsz(2))*sx0(2) + &
+    (0.5_num*sz0(2)+onethird*dsz(2))*dsx(2))
+    sdy(2,0,2)=sdy(2,0,2)+sdy(2,-1,2)
+    !$acc atomic update
+    jy(iixp0+2,ijxp0,ikxp0+2) = jy(iixp0+2,ijxp0,ikxp0+2) + sdy(2,0,2)
+    sdx(-1,1,2)  = wqx*dsx(-1)*((sy0(1)+0.5_num*dsy(1))*sz0(2) + &
+    (0.5_num*sy0(1)+onethird*dsy(1))*dsz(2))
+    !$acc atomic update
+    jx(iixp0-1,ijxp0+1,ikxp0+2) = jx(iixp0-1,ijxp0+1,ikxp0+2) + sdx(-1,1,2)
+    sdy(-1,1,2)  = wqy*dsy(1)*((sz0(2)+0.5_num*dsz(2))*sx0(-1) + &
+    (0.5_num*sz0(2)+onethird*dsz(2))*dsx(-1))
+    sdy(-1,1,2)=sdy(-1,1,2)+sdy(-1,0,2)
+    !$acc atomic update
+    jy(iixp0-1,ijxp0+1,ikxp0+2) = jy(iixp0-1,ijxp0+1,ikxp0+2) + sdy(-1,1,2)
+    sdx(0,1,2)  = wqx*dsx(0)*((sy0(1)+0.5_num*dsy(1))*sz0(2) + &
+    (0.5_num*sy0(1)+onethird*dsy(1))*dsz(2))
+    sdx(0,1,2)=sdx(0,1,2)+sdx(-1,1,2)
+    !$acc atomic update
+    jx(iixp0,ijxp0+1,ikxp0+2) = jx(iixp0,ijxp0+1,ikxp0+2) + sdx(0,1,2)
+    sdy(0,1,2)  = wqy*dsy(1)*((sz0(2)+0.5_num*dsz(2))*sx0(0) + &
+    (0.5_num*sz0(2)+onethird*dsz(2))*dsx(0))
+    sdy(0,1,2)=sdy(0,1,2)+sdy(0,0,2)
+    !$acc atomic update
+    jy(iixp0,ijxp0+1,ikxp0+2) = jy(iixp0,ijxp0+1,ikxp0+2) + sdy(0,1,2)
+    sdx(1,1,2)  = wqx*dsx(1)*((sy0(1)+0.5_num*dsy(1))*sz0(2) + &
+    (0.5_num*sy0(1)+onethird*dsy(1))*dsz(2))
+    sdx(1,1,2)=sdx(1,1,2)+sdx(0,1,2)
+    !$acc atomic update
+    jx(iixp0+1,ijxp0+1,ikxp0+2) = jx(iixp0+1,ijxp0+1,ikxp0+2) + sdx(1,1,2)
+    sdy(1,1,2)  = wqy*dsy(1)*((sz0(2)+0.5_num*dsz(2))*sx0(1) + &
+    (0.5_num*sz0(2)+onethird*dsz(2))*dsx(1))
+    sdy(1,1,2)=sdy(1,1,2)+sdy(1,0,2)
+    !$acc atomic update
+    jy(iixp0+1,ijxp0+1,ikxp0+2) = jy(iixp0+1,ijxp0+1,ikxp0+2) + sdy(1,1,2)
+    sdy(2,1,2)  = wqy*dsy(1)*((sz0(2)+0.5_num*dsz(2))*sx0(2) + &
+    (0.5_num*sz0(2)+onethird*dsz(2))*dsx(2))
+    sdy(2,1,2)=sdy(2,1,2)+sdy(2,0,2)
+    !$acc atomic update
+    jy(iixp0+2,ijxp0+1,ikxp0+2) = jy(iixp0+2,ijxp0+1,ikxp0+2) + sdy(2,1,2)
+    sdx(-1,2,2)  = wqx*dsx(-1)*((sy0(2)+0.5_num*dsy(2))*sz0(2) + &
+    (0.5_num*sy0(2)+onethird*dsy(2))*dsz(2))
+    !$acc atomic update
+    jx(iixp0-1,ijxp0+2,ikxp0+2) = jx(iixp0-1,ijxp0+2,ikxp0+2) + sdx(-1,2,2)
+    sdx(0,2,2)  = wqx*dsx(0)*((sy0(2)+0.5_num*dsy(2))*sz0(2) + &
+    (0.5_num*sy0(2)+onethird*dsy(2))*dsz(2))
+    sdx(0,2,2)=sdx(0,2,2)+sdx(-1,2,2)
+    !$acc atomic update
+    jx(iixp0,ijxp0+2,ikxp0+2) = jx(iixp0,ijxp0+2,ikxp0+2) + sdx(0,2,2)
+    sdx(1,2,2)  = wqx*dsx(1)*((sy0(2)+0.5_num*dsy(2))*sz0(2) + &
+    (0.5_num*sy0(2)+onethird*dsy(2))*dsz(2))
+    sdx(1,2,2)=sdx(1,2,2)+sdx(0,2,2)
+    !$acc atomic update
+    jx(iixp0+1,ijxp0+2,ikxp0+2) = jx(iixp0+1,ijxp0+2,ikxp0+2) + sdx(1,2,2)
+  END DO
+  !$acc end loop
+  !$acc end parallel
+DEALLOCATE(sdx,sdy,sdz,sx,sx0,dsx,sy,sy0,dsy,sz,sz0,dsz)
+RETURN
+END SUBROUTINE depose_jxjyjz_esirkepov_gpu_1_1_1
+
 #if defined (DEV)
 ! ________________________________________________________________________________________
 !> @brief
