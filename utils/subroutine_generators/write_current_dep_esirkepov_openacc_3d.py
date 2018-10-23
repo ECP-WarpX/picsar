@@ -55,6 +55,8 @@ fh.write("SUBROUTINE "+subroutine_deposej+"(jx, jx_nguard, jx_nvalid, jy, jy_ngu
 fh.write(indent_cont_1+"jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, &\n");
 fh.write(indent_cont_1+"xmin, ymin, zmin, dt, dx, dy, dz)\n");
 fh.write(indent_1+"USE constants\n");
+fh.write(indent_1+"USE constants, ONLY: clight\n");
+fh.write(indent_1+"USE picsar_precision, ONLY: idp, num\n");
 fh.write(indent_1+"IMPLICIT NONE\n");
 fh.write(indent_1+"INTEGER(idp) :: np\n");
 fh.write(indent_1+"INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), jy_nguard(3), jy_nvalid(3), &\n");
