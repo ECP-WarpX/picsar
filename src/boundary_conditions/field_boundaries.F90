@@ -144,9 +144,10 @@ MODULE field_boundary
       is_dtype_init(1) = .FALSE.
     ENDIF
 
-    ! MOVE EDGES ALONG X
+!!    ! MOVE EDGES ALONG X
     !$acc data create(temp)
     !$acc host_data use_device(field,temp)
+
     CALL MPI_SENDRECV(field(0, -nyg, -nzg), 1_isp, mpi_dtypes(1), INT(proc_x_min,     &
     isp), tag, temp, sz, basetype, INT(proc_x_max, isp), tag, comm, status, errcode)
     
@@ -271,8 +272,8 @@ MODULE field_boundary
       ENDDO
       !$acc end parallel loop 
     ENDIF
-    !$omp acc end host_data
-    !$omp acc end data 
+    !$acc end host_data
+    !$acc end data 
     DEALLOCATE(temp)
 
   END SUBROUTINE exchange_mpi_3d_grid_array_with_guards
@@ -1278,7 +1279,6 @@ USE picsar_precision, ONLY: idp, num, isp
     CALL MPI_IRECV(temp2, sz, mpidbl, INT(proc_z_max, isp), tag, comm, requests(4),   &
     errcode)
     CALL MPI_WAITALL(4_isp, requests, MPI_STATUSES_IGNORE, errcode)
-    !$acc end host_data
     !$acc kernels
     array(:, :, 0:nzg) = array(:, :, 0:nzg) + temp1
     array(:, :, nn-nzg:nn) = array(:, :, nn-nzg:nn) + temp2
