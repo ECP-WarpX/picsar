@@ -1924,6 +1924,13 @@ MODULE tiling
     END DO
   END SUBROUTINE load_laser
 
+  SUBROUTINE pxr_freeze_particle_species(ispecies)
+    INTEGER(idp), INTENT(IN) :: ispecies 
+    TYPE(particle_species), POINTER :: curr
+    curr=>species_parray(ispecies)
+    curr%lfreeze=.TRUE.
+    curr%ldodepos=.FALSE. 
+  END SUBROUTINE pxr_freeze_particle_species
 
   SUBROUTINE product_matrix_2c2(M1, M2, M3)
     REAL(num), INTENT(IN), DIMENSION(2, 2)     :: M1, M2
