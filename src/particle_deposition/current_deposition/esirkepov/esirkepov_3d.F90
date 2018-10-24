@@ -79,7 +79,7 @@
 !> @param[in] l4symtry
 !>
 ! ________________________________________________________________________________________
-SUBROUTINE depose_jxjyjz_esirkepov_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,    &
+SUBROUTINE depose_jxjyjz_esirkepov_1_1_1_OLD( jx, jx_nguard, jx_nvalid, jy, jy_nguard,    &
   jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
   xmin, ymin, zmin, dt, dx, dy, dz)    !#do not wrap
   USE constants, ONLY: clight
@@ -104,16 +104,16 @@ SUBROUTINE depose_jxjyjz_esirkepov_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguar
 
   ! Internal parameters
   REAL(num)                                :: dxi, dyi, dzi, xint, yint, zint
-  REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: sdx, sdy, sdz
   REAL(num)                                :: clghtisq, xold, yold, zold, x, y, z,    &
   wq, wqx, wqy, wqz, vx, vy, vz
   REAL(num)                                :: invvol, invdtdx, invdtdy, invdtdz
   REAL(num)                                :: dtsdx0, dtsdy0, dtsdz0
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num,                   &
   twothird=2.0_num/3.0_num
-  REAL(num), DIMENSION(:), ALLOCATABLE :: sx, sx0, dsx
-  REAL(num), DIMENSION(:), ALLOCATABLE :: sy, sy0, dsy
-  REAL(num), DIMENSION(:), ALLOCATABLE :: sz, sz0, dsz
+  REAL(num), DIMENSION(4,4,4) :: sdx(-1:2, -1:2, -1:2), sdy(-1:2, -1:2, -1:2), sdz(-1:2, -1:2, -1:2)
+  REAL(num), DIMENSION(4) :: sx(-1:2), sx0(-1:2), dsx(-1:2)
+  REAL(num), DIMENSION(4) :: sy(-1:2), sy0(-1:2), dsy(-1:2)
+  REAL(num), DIMENSION(4) :: sz(-1:2), sz0(-1:2), dsz(-1:2)
   INTEGER(idp)                         :: iixp0, ijxp0, ikxp0
   INTEGER(idp)                         :: iixp, ijxp, ikxp
   INTEGER(idp)                         :: ip, dix, diy, diz, i, j, k, ic, jc, kc,     &
@@ -131,17 +131,28 @@ SUBROUTINE depose_jxjyjz_esirkepov_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguar
   invdtdx = 1.0_num/(dt*dy*dz)
   invdtdy = 1.0_num/(dt*dx*dz)
   invdtdz = 1.0_num/(dt*dx*dy)
-  ALLOCATE(sdx(-1:2, -1:2, -1:2), sdy(-1:2, -1:2, -1:2), sdz(-1:2, -1:2, -1:2))
-  ALLOCATE(sx(-1:2), sx0(-1:2), dsx(-1:2))
-  ALLOCATE(sy(-1:2), sy0(-1:2), dsy(-1:2))
-  ALLOCATE(sz(-1:2), sz0(-1:2), dsz(-1:2))
   clghtisq = 1.0_num/clight**2
   dtsdz0 = dt*dzi
-  sx0=0.0_num;sy0=0.0_num;sz0=0.0_num
-  sdx=0.0_num;sdy=0.0_num;sdz=0.0_num
-
+!$acc parallel deviceptr(jx, jy, jz, xp, yp, zp, uxp, uyp, uzp, w, gaminv)
+!$acc loop gang vector private(sx(-1:2), sy(-1:2), sz(-1:2), &
+!$acc&                         sx0(-1:2), sy0(-1:2), sz0(-1:2), &
+!$acc&                         dsx(-1:2), dsy(-1:2), dsz(-1:2), &
+!$acc&                         sdx(-1:2, -1:2, -1:2), &
+!$acc&                         sdy(-1:2, -1:2, -1:2), &
+!$acc&                         sdz(-1:2, -1:2, -1:2) )
   DO ip=1, np
-
+     sx = 0.0_num
+     sy = 0.0_num
+     sz = 0.0_num
+     sx0 = 0.0_num
+     sy0 = 0.0_num
+     sz0 = 0.0_num
+     dsx = 0.0_num
+     dsy = 0.0_num
+     dsz = 0.0_num
+     sdx = 0.0_num
+     sdy = 0.0_num
+     sdz = 0.0_num
     ! --- computes current position in grid units
     x = (xp(ip)-xmin)*dxi
     y = (yp(ip)-ymin)*dyi
@@ -169,7 +180,6 @@ SUBROUTINE depose_jxjyjz_esirkepov_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguar
     zint=z-ikxp0
 
     ! --- computes coefficients for node centered quantities
-    sx0=0.0_num;sy0=0.0_num;sz0=0.0_num
     sx0( 0) = 1.0_num-xint
     sx0( 1) = xint
     sy0( 0) = 1.0_num-yint
@@ -188,9 +198,6 @@ SUBROUTINE depose_jxjyjz_esirkepov_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguar
     dix = iixp-iixp0
     diy = ijxp-ijxp0
     diz = ikxp-ikxp0
-    ! --- zero out coefficients
-    ! --- (needed because of different dix and diz for each particle)
-    sx=0.0_num;sy=0.0_num;sz=0.0_num
     ! --- computes coefficients for quantities centered between nodes
     sx( 0+dix) = 1.0_num-xint
     sx( 1+dix) = xint
@@ -222,18 +229,21 @@ SUBROUTINE depose_jxjyjz_esirkepov_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguar
             sdx(i, j, k)  = wqx*dsx(i)*((sy0(j)+0.5_num*dsy(j))*sz0(k) +              &
             (0.5_num*sy0(j)+onethird*dsy(j))*dsz(k))
             IF (i>ixmin) sdx(i, j, k)=sdx(i, j, k)+sdx(i-1, j, k)
+            !$acc atomic update
             jx(ic, jc, kc) = jx(ic, jc, kc) + sdx(i, j, k)
           END IF
           IF(j<iymax) THEN
             sdy(i, j, k)  = wqy*dsy(j)*((sz0(k)+0.5_num*dsz(k))*sx0(i) +              &
             (0.5_num*sz0(k)+onethird*dsz(k))*dsx(i))
             IF (j>iymin) sdy(i, j, k)=sdy(i, j, k)+sdy(i, j-1, k)
+            !$acc atomic update
             jy(ic, jc, kc) = jy(ic, jc, kc) + sdy(i, j, k)
           END IF
           IF(k<izmax) THEN
             sdz(i, j, k)  = wqz*dsz(k)*((sx0(i)+0.5_num*dsx(i))*sy0(j) +              &
             (0.5_num*sx0(i)+onethird*dsx(i))*dsy(j))
             IF (k>izmin) sdz(i, j, k)=sdz(i, j, k)+sdz(i, j, k-1)
+            !$acc atomic update
             jz(ic, jc, kc) = jz(ic, jc, kc) + sdz(i, j, k)
           END IF
         END DO
@@ -241,13 +251,12 @@ SUBROUTINE depose_jxjyjz_esirkepov_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguar
     END DO
 
   ENDDO
-  DEALLOCATE(sdx, sdy, sdz, sx, sx0, dsx, sy, sy0, dsy, sz, sz0, dsz)
+!$acc end loop
+!$acc end parallel
   RETURN
-END SUBROUTINE depose_jxjyjz_esirkepov_1_1_1
+END SUBROUTINE depose_jxjyjz_esirkepov_1_1_1_OLD
 
-
-
-SUBROUTINE depose_jxjyjz_esirkepov_gpu_1_1_1(jx, jx_nguard, jx_nvalid, jy, jy_nguard, &
+SUBROUTINE depose_jxjyjz_esirkepov_1_1_1(jx, jx_nguard, jx_nvalid, jy, jy_nguard, &
                                       jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, &
                                       xmin, ymin, zmin, dt, dx, dy, dz)
   USE constants, ONLY: clight
@@ -268,7 +277,6 @@ SUBROUTINE depose_jxjyjz_esirkepov_gpu_1_1_1(jx, jx_nguard, jx_nvalid, jy, jy_ng
   REAL(num), DIMENSION(np) :: xp,yp,zp,uxp,uyp,uzp, w, gaminv
   REAL(num) :: q,dt,dx,dy,dz,xmin,ymin,zmin
   REAL(num) :: dxi,dyi,dzi,dtsdx,dtsdy,dtsdz,xint,yint,zint
-  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: sdx,sdy,sdz
   REAL(num) :: clghtisq,usq,xold,yold,zold,xmid,ymid,zmid,x,y,z,wq,wqx,wqy,wqz,tmp,vx,vy,vz, &
                s1x,s2x,s1y,s2y,s1z,s2z,invvol,invdtdx,invdtdy,invdtdz,&
                oxint,oyint,ozint,xintsq,yintsq,zintsq,oxintsq,oyintsq,ozintsq, &
@@ -276,13 +284,14 @@ SUBROUTINE depose_jxjyjz_esirkepov_gpu_1_1_1(jx, jx_nguard, jx_nvalid, jy, jy_ng
   REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER :: onethird=1.0_num/3.0_num
   REAL(num), PARAMETER :: twothird=2.0_num/3.0_num
-  REAL(num), DIMENSION(:), ALLOCATABLE:: sx, sx0, dsx
-  REAL(num), DIMENSION(:), ALLOCATABLE :: sy, sy0, dsy
-  REAL(num), DIMENSION(:), ALLOCATABLE :: sz, sz0, dsz
+  REAL(num), DIMENSION(4,4,4) :: sdx(-1:2, -1:2, -1:2), sdy(-1:2, -1:2, -1:2), sdz(-1:2, -1:2, -1:2)
+  REAL(num), DIMENSION(4) :: sx(-1:2), sx0(-1:2), dsx(-1:2)
+  REAL(num), DIMENSION(4) :: sy(-1:2), sy0(-1:2), dsy(-1:2)
+  REAL(num), DIMENSION(4) :: sz(-1:2), sz0(-1:2), dsz(-1:2)
   INTEGER(idp) :: iixp0,ijxp0,ikxp0
   INTEGER(idp) :: iixp,ijxp,ikxp,dix,diy,diz,idx,idy,idz,i,j,k,ic,jc,kc, &
                   ixmin, ixmax, iymin, iymax, izmin, izmax
-  INTEGER(isp) :: n,nn
+  INTEGER(idp) :: ip
   LOGICAL(idp) :: l_particles_weight,l4symtry
 
   ! PARAMETER INIT
@@ -296,17 +305,37 @@ SUBROUTINE depose_jxjyjz_esirkepov_gpu_1_1_1(jx, jx_nguard, jx_nvalid, jy, jy_ng
   invdtdx = 1.0_num/(dt*dy*dz)
   invdtdy = 1.0_num/(dt*dx*dz)
   invdtdz = 1.0_num/(dt*dx*dy)
-  ALLOCATE(sdx(-1:2,-1:2,-1:2),sdy(-1:2,-1:2,-1:2),sdz(-1:2,-1:2,-1:2))
-  ALLOCATE(sx(-1:2), sx0(-1:2), dsx(-1:2))
-  ALLOCATE(sy(-1:2), sy0(-1:2), dsy(-1:2))
-  ALLOCATE(sz(-1:2), sz0(-1:2), dsz(-1:2))
   clghtisq = 1.0_num/clight**2
+  sx=0.0_num;sy=0.0_num;sz=0.0_num
   sx0=0.0_num;sy0=0.0_num;sz0=0.0_num
   sdx=0.0_num;sdy=0.0_num;sdz=0.0_num
+  dsx=0.0_num;dsy=0.0_num;dsz=0.0_num
+  ! --- zero out coefficients (needed because of different dix and diz for each particle)
+  sx(-1)=0.0_num;sy(-1)=0.0_num;sz(-1)=0.0_num
+  sx(0)=0.0_num;sy(0)=0.0_num;sz(0)=0.0_num
+  sx(1)=0.0_num;sy(1)=0.0_num;sz(1)=0.0_num
+  sx(2)=0.0_num;sy(2)=0.0_num;sz(2)=0.0_num
   dtsdz0 = dt*dzi
-  !$acc parallel deviceptr(jx, jy, jz, xp, yp, zp, uxp, uyp, uzp, w, gaminv)
-  !$acc loop gang vector private(sx(0:1), sy(0:1), sz(0:1), sx0(0:1), sy0(0:1), sz0(0:1))
+!$acc parallel deviceptr(jx, jy, jz, xp, yp, zp, uxp, uyp, uzp, w, gaminv)
+!$acc loop gang vector private(sx(-1:2), sy(-1:2), sz(-1:2), &
+!$acc&                         sx0(-1:2), sy0(-1:2), sz0(-1:2), &
+!$acc&                         dsx(-1:2), dsy(-1:2), dsz(-1:2), &
+!$acc&                         sdx(-1:2, -1:2, -1:2), &
+!$acc&                         sdy(-1:2, -1:2, -1:2), &
+!$acc&                         sdz(-1:2, -1:2, -1:2) )
   DO ip=1,np
+    sx = 0.0_num
+    sy = 0.0_num
+    sz = 0.0_num
+    sx0 = 0.0_num
+    sy0 = 0.0_num
+    sz0 = 0.0_num
+    dsx = 0.0_num
+    dsy = 0.0_num
+    dsz = 0.0_num
+    sdx = 0.0_num
+    sdy = 0.0_num
+    sdz = 0.0_num
     ! --- computes current position in grid units
     x = (xp(ip)-xmin)*dxi
     y = (yp(ip)-ymin)*dyi
@@ -333,8 +362,6 @@ SUBROUTINE depose_jxjyjz_esirkepov_gpu_1_1_1(jx, jx_nguard, jx_nvalid, jy, jy_ng
     yint=y-ijxp0
     zint=z-ikxp0
     ! --- computes coefficients for node centered quantities
-    sx0=0.0_num;sy0=0.0_num;sz0=0.0_num
-    sdx=0.0_num;sdy=0.0_num;sdz=0.0_num
     sx0( 0) = 1.0_num-xint
     sx0( 1) = xint
     sy0( 0) = 1.0_num-yint
@@ -353,11 +380,6 @@ SUBROUTINE depose_jxjyjz_esirkepov_gpu_1_1_1(jx, jx_nguard, jx_nvalid, jy, jy_ng
     dix = iixp-iixp0
     diy = ijxp-ijxp0
     diz = ikxp-ikxp0
-    ! --- zero out coefficients (needed because of different dix and diz for each particle)
-    sx(-1)=0.0_num;sy(-1)=0.0_num;sz(-1)=0.0_num
-    sx(0)=0.0_num;sy(0)=0.0_num;sz(0)=0.0_num
-    sx(1)=0.0_num;sy(1)=0.0_num;sz(1)=0.0_num
-    sx(2)=0.0_num;sy(2)=0.0_num;sz(2)=0.0_num
     ! --- computes coefficients for quantities centered between nodes
     sx( 0+dix) = 1.0_num-xint
     sx( 1+dix) = xint
@@ -1044,11 +1066,10 @@ SUBROUTINE depose_jxjyjz_esirkepov_gpu_1_1_1(jx, jx_nguard, jx_nvalid, jy, jy_ng
     !$acc atomic update
     jx(iixp0+1,ijxp0+2,ikxp0+2) = jx(iixp0+1,ijxp0+2,ikxp0+2) + sdx(1,2,2)
   END DO
-  !$acc end loop
-  !$acc end parallel
-DEALLOCATE(sdx,sdy,sdz,sx,sx0,dsx,sy,sy0,dsy,sz,sz0,dsz)
+!$acc end loop
+!$acc end parallel
 RETURN
-END SUBROUTINE depose_jxjyjz_esirkepov_gpu_1_1_1
+END SUBROUTINE depose_jxjyjz_esirkepov_1_1_1
 
 #if defined (DEV)
 ! ________________________________________________________________________________________
