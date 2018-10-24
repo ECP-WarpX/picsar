@@ -403,12 +403,15 @@ MODULE gpstd_solver
       nfftz = nz+2*nzguards+1
       IF (l_AM_rz) THEN
         nfftz = nmodes
-       ENDIF
+      ENDIF
 #else
       !> When using picsar
       nfftx = nx+2*nxguards
       nffty = ny+2*nyguards
       nfftz = nz+2*nzguards
+      IF (l_AM_rz) THEN
+        nfftz = nmodes
+      ENDIF
 #endif
       IF(c_dim ==2) THEN
         nffty = 1
@@ -483,7 +486,7 @@ MODULE gpstd_solver
       nffty = ny+2*nyguards
       nfftz = nz+2*nzguards
       IF (l_AM_rz) THEN
-        nfftz = 1
+        nfftz = nmodes
        ENDIF
 #endif
     ENDIF

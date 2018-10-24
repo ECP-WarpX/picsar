@@ -2074,7 +2074,7 @@ IF (l_spectral) THEN
       ENDIF
      ELSE IF (l_AM_rz) THEN
       !> To be added for rz geometry !!! 
-      nkx=(2*nxguards+nx)/2+1! Real To Complex Transform
+      nkx=(2*nxguards+nx)! Careful in the case of RZ spectral it's Complex To Complex Transform
       nky=(2*nyguards+ny)
       nkz= nmodes
       IF (.NOT. g_spectral) THEN

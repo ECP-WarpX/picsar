@@ -779,6 +779,49 @@ MODULE fourier_psaotd
     ENDIF
   END SUBROUTINE get_fields
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine computes backward C2R local FFTs only in one direction the longitudinal one
+  !>  - concerns only the local 
+  !> pseudo-spectral solver
+  !
+  !> @author
+  !> Imen Zemzemi
+  !
+  !> @date
+  !> Creation 2018
+  ! ______________________________________________________________________________________
+  SUBROUTINE get_fields_AM_rz()
+    USE fastfft
+    USE fields, ONLY:  nxguards
+    USE mpi
+    USE params, ONLY: it
+    USE picsar_precision, ONLY: idp, num
+    USE shared_data, ONLY: nmodes nx
+    USE time_stat, ONLY: timestat_itstart, localtimes
+    IMPLICIT NONE
+    REAL(num) :: tmptime
+    INTEGER(idp) :: ix, nxx, nfftx
+    nxx=nx+2*nxguards+1;
+#if defined(LIBRARY)
+    nfftx=nx+2*nxguards+1
+#else
+    nfftx=nx+2*nxguards
+#endif
+    ! Get Inverse Fourier transform of all fields components 
+    CALL fft_backward_c2r_local(nfftx,nffty,nfftz)
+
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
+
+#if !defined (LIBRARY)
+     CALL copy_field_backward
+#endif
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
+    ENDIF
+  END SUBROUTINE get_fields_AM_rz
  ! _______________________________________________________________________________________
  !> @brief
  !> This subroutine is used perform backward C2R distributed FFTs with fftw_with_mpi=true
@@ -1681,8 +1724,8 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
-    nxx=nkl
-    nyy=nkr
+    nxx=nkr
+    nyy=nkl
     nzz=nmodes
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, elfold, epfold, emfold,     &
     !$OMP blfold, bpfold, bmfold,jlfold,jpfold,jmfold,rhofold,rhooldfold) COLLAPSE(3)
