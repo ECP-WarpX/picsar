@@ -457,7 +457,7 @@ END SUBROUTINE push_efield_2d
 !> Creation March 29 2017
 
   SUBROUTINE push_psatd_ebfield
-  USE fields, ONLY: g_spectral
+  USE fields, ONLY: g_spectral, l_AM_rz
 #if defined(FFTW)
   USE fourier_psaotd
 #endif
@@ -501,8 +501,12 @@ END SUBROUTINE push_efield_2d
       localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime_m)
     ENDIF
   ELSE 
-    IF(c_dim == 3) THEN
-      CALL push_psaotd_ebfielfs_3d! - PUSH PSATD
+    IF (c_dim == 3)  THEN
+      IF (.NOT. l_AM_rz) THEN
+        CALL push_psaotd_ebfielfs_3d! - PUSH PSATD
+      ELSE IF (l_AM_rz) THEN 
+        CALL push_psaotd_ebfielfs_AM_rz !- push psatd in azimuthal cylindrical
+      END IF 
     ELSE IF(c_dim == 2) THEN
       CALL push_psaotd_ebfielfs_2d
     ENDIF
