@@ -58,6 +58,9 @@ USE gpstd_solver
 #if defined(FFTW)
 USE iso_c_binding
 #endif
+#if defined(CUDA_FFT)
+USE cufft
+#endif
 USE mpi
 USE mpi_routines
 USE output_data, ONLY: dive_computed, timeit, pushtime, startit
@@ -144,6 +147,7 @@ USE sorting
       IF (l_spectral) THEN
 
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
+        CALL harris_pulse(dt*i,0*pi/4._num,10_idp)
         CALL push_psatd_ebfield
         !IF (rank .EQ. 0) PRINT *, "#0"
         !!! --- Boundary conditions for E AND B
@@ -236,6 +240,8 @@ USE sorting
 #if defined(FFTW)
       IF (l_spectral) THEN
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
+        CALL harris_pulse(dt*i,0*pi/4._num,10_idp)
+     
         CALL push_psatd_ebfield
         !IF (rank .EQ. 0) PRINT *, "#0"
         !!! --- Boundary conditions for E AND B
@@ -1029,5 +1035,47 @@ SUBROUTINE current_debug
   !jz(nx, ny, nz) = 0.5
   !!! --- End debug
 END SUBROUTINE current_debug
+
+
+subroutine  harris_pulse(t,thetaa,n)
+use fields
+use shared_data
+use constants
+use params
+use field_boundary
+REAL(num) :: t_harris,arg,kz,freq,L,lambda,k,w_num
+integer(idp) :: i,j,n
+real(num)  :: t,thetaa
+
+L=0.5*dx*(nx)
+t_harris = 0.5*nx*dx/clight
+arg = 0._num
+if(t .LE. t_harris)  then
+arg = pi*clight *t/(L)
+arg = 1./32 * ( 10. - 15. * cos(2.*arg) + 6. * cos (4. * arg) - cos(6. * arg) )
+else
+arg = 0
+endif
+arg=arg/mu0/dt/clight**2
+lambda = L/n/cos(thetaa)
+k=2*pi/lambda
+!print*,"lamn",lambda/dx
+freq = clight/lambda/cos(thetaa)
+kx = k*cos(thetaa)
+kz=k*sin(thetaa)
+w_num = (1.0_num/dx*sin(kx*dx/2._num))**2+(1.0_num/dz*sin(kz*dz/2._num))**2
+w_num = w_num *clight**2*dt**2
+
+w_num = asin(sqrt(w_num))
+w_num = w_num *2._num/dt
+w_num  = w_num/cos(thetaa)
+!$acc parallel loop present(jy) 
+do i = -nzguards,nz+nzguards
+jy(nx/2,:,i) =sin(w_num*t +  k*dz *i*sin(thetaa)+k*dx*cos(thetaa))*arg/mu0
+enddo
+!$acc end parallel loop
+
+end subroutine harris_pulse
+
 
 ! ______________________________________

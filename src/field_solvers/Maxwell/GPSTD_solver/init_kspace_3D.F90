@@ -1675,7 +1675,8 @@ MODULE gpstd_solver
 #if !defined(CUDA_FFT)
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx, iyy ,izz,ixxx,iyyy,izzz) COLLAPSE(3)
 #else
-      !$acc parallel present(ex_r,ey_r,ez_r,bx_r,by_r,bz_r,jx_r,jy_r,jz_r,rhoold_r,rho_r,ex,ey,ez,bx,by,bz,jx,jy,jz,rho,rhoold)
+      !$acc parallel present(ex_r,ey_r,ez_r,bx_r,by_r,bz_r,jx_r,jy_r,jz_r,rhoold_r, &
+      !$acc& rho_r,ex,ey,ez,bx,by,bz,jx,jy,jz,rho,rhoold) 
       !$acc loop gang vector collapse(3)
 #endif
       DO iz=lbound_r(3),ubound_r(3)
@@ -1712,8 +1713,10 @@ MODULE gpstd_solver
 #if !defined(CUDA_FFT)
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx, iyy , izz, ixxx, iyyy , izzz) COLLAPSE(3)
 #else
-      !$acc parallel present(exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r,byx_r,byz_r,bzx_r,bzy_r,exy,exz,eyx,eyz,ezx,ezy,bxy,bxz,byx,byz,bzx,bzy,jx,jy,jz,rhoold,rho,jx_r,jy_r,jz_r,rhoold_r,rho_r)
-      !$acc loop gang vector collapse(3)
+      !$acc parallel present(exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r,byx_r,byz_r, &
+      !$acc& bzx_r,bzy_r,exy,exz,eyx,eyz,ezx,ezy,bxy,bxz,byx,byz,bzx,bzy,jx,jy,jz,rhoold, &
+      !$acc& rho,jx_r,jy_r,jz_r,rhoold_r,rho_r) private(ixx,iyy,izz,ixxx,iyyy,izzz)
+      !$acc loop gang vector collapse(3) 
 
 #endif
 
@@ -1795,7 +1798,7 @@ MODULE gpstd_solver
 #if !defined(CUDA_FFT) 
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx , iyy ,izz) COLLAPSE(3)
 #else
-      !$acc parallel  present (ex_r,ey_r,ez_r,bx_r,by_r,bz_r,ex,ey,ez,bx,by,bz)
+      !$acc parallel  present (ex_r,ey_r,ez_r,bx_r,by_r,bz_r,ex,ey,ez,bx,by,bz) 
       !$acc loop gang vector collapse(3)
 #endif
       DO iz=lbound_r(3),ubound_r(3)
@@ -1824,7 +1827,8 @@ MODULE gpstd_solver
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx , iyy ,izz)
       !COLLAPSE(3)
 #else
-      !$acc parallel present(exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r,byx_r,byz_r,bzx_r,bzy_r,exy,exz,eyx,eyz,ezx,ezy,bxy,bxz,byx,byz,bzx,bzy)
+      !$acc parallel present(exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r&
+      !$acc& ,byx_r,byz_r,bzx_r,bzy_r,exy,exz,eyx,eyz,ezx,ezy,bxy,bxz,byx,byz,bzx,bzy) private(ixx,iyy,izz)
       !$acc loop gang vector collapse(3)
 #endif
       DO iz=lbound_r(3),ubound_r(3)
