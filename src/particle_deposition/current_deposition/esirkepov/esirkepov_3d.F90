@@ -1778,8 +1778,6 @@ SUBROUTINE depose_jxjyjz_esirkepov_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguar
   invdtdy = 1.0_num/(dt*dx*dz)
   invdtdz = 1.0_num/(dt*dx*dy)
   clghtisq = 1.0_num/clight**2
-  sx0=0.0_num;sy0=0.0_num;sz0=0.0_num
-  sdx=0.0_num;sdy=0.0_num;sdz=0.0_num
   dtsdz0 = dt*dzi
 
 !$acc parallel deviceptr(jx, jy, jz, xp, yp, zp, uxp, uyp, uzp, w, gaminv)
