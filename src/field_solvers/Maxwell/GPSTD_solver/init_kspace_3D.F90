@@ -428,19 +428,9 @@ MODULE gpstd_solver
     IF(p3dfft_flag) nfftxr = nfftx
     DO i = 1_idp, 10_idp
       ALLOCATE(kspace(nmatrixes2)%block_vector(i)%block3dc(nfftxr, nffty, nfftz))
-!#if defined(CUDA_FFT)
-!      IF(cuda_fft) THEN
-!      !$acc enter data copyin(kspace(nmatrixes2)%block_vector(i)%block3dc)
-!      ENDIF
-!#endif
     ENDDO
     DO i = 1_idp, 4_idp
       ALLOCATE(at_op(nmatrixes2)%block_vector(i)%block3dc(nfftxr, nffty, nfftz))
-!#if defined(CUDA_FFT)
-!      IF(cuda_fft) THEN
-!      !$acc enter data copyin(at_op(nmatrixes2)%block_vector(i)%block3dc)
-!      ENDIF
-!#endif
     ENDDO
     !construct kspace
     ii=DCMPLX(0.0_num, 1.0_num)
@@ -1033,6 +1023,16 @@ MODULE gpstd_solver
         vold(nmatrixes)%block_vector(i)%ny = nffty
         vold(nmatrixes)%block_vector(i)%nz = nfftz
       ENDDO
+#if defined(CUDA_FFT)
+      IF(cuda_fft) THEN
+        DO i=1,nbloc_ccmat
+          !$acc enter data
+          !copyin(vold(nmatrixes)%block_matrix2d(i)%block3dc)
+        ENDDO
+      ENDIF
+#endif
+
+
       DO i=1,nbloc_vnew
         vnew(nmatrixes)%block_vector(i)%nx = nfftxr
         vnew(nmatrixes)%block_vector(i)%ny = nffty
@@ -1044,6 +1044,15 @@ MODULE gpstd_solver
         vnew(nmatrixes)%block_vector(i)%ny = 1
         vnew(nmatrixes)%block_vector(i)%nz = 1
       ENDDO
+#if defined(CUDA_FFT)
+      IF(cuda_fft) THEN
+        DO i=1,nbloc_ccmat
+          !$acc enter data
+          !copyin(vnew(nmatrixes)%block_matrix2d(i)%block3dc)
+        ENDDO
+      ENDIF
+#endif
+
     ENDIF
 
     !> Init all blocks to 0.0
