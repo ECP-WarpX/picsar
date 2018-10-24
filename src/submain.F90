@@ -208,27 +208,29 @@ USE sorting
       divE_computed = .False.
 
       !!! --- Field gather & particle push
-      CALL field_gathering_plus_particle_pusher
-      call push_laser_particles()
+      IF(l_plasma) THEN
+        CALL field_gathering_plus_particle_pusher
+        call push_laser_particles()
 
-      !!! --- Apply BC on particles
-      CALL particle_bcs_2d
+        !!! --- Apply BC on particles
+        CALL particle_bcs_2d
 
-      !!! --- Deposit current of particle species on the grid
-      CALL pxr_particle_sorting
+        !!! --- Deposit current of particle species on the grid
+        CALL pxr_particle_sorting
 
-      CALL pxrdepose_currents_on_grid_jxjyjz_2d
+        CALL pxrdepose_currents_on_grid_jxjyjz_2d
 
-      !!! --- Boundary conditions for currents
-      CALL current_bcs
+        !!! --- Boundary conditions for currents
+        CALL current_bcs
 #if defined(FFTW)
         IF (l_spectral) THEN
           CALL  copy_field(rhoold, nx+2*nxguards+1, ny+2*nyguards+1,      &
-                nz+2*nzguards+1, rho, nx+2*nxguards+1, ny+2*nyguards+1,   &
-                nz+2*nzguards+1)
+                  nz+2*nzguards+1, rho, nx+2*nxguards+1, ny+2*nyguards+1,   &
+                  nz+2*nzguards+1)
           CALL pxrdepose_rho_on_grid
           CALL charge_bcs
         ENDIF
+      ENDIF
 #endif
 
 #if defined(FFTW)
