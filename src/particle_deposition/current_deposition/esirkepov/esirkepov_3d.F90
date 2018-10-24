@@ -120,7 +120,7 @@ SUBROUTINE depose_jxjyjz_esirkepov_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguar
   REAL(num), PARAMETER :: onethird = 1.0_num/3.0_num
   REAL(num)                 :: sdxim1,            sdxi
   REAL(num), DIMENSION(4)   :: sdyjm1(-1:2),      sdyj(-1:2)
-  REAL(num), DIMENSION(4:4) :: sdzkm1(-1:2,-1:2), sdzk(-1:2,-1:2)
+  REAL(num), DIMENSION(4,4) :: sdzkm1(-1:2,-1:2), sdzk(-1:2,-1:2)
 
   ! PARAMETER INIT
   dxi = 1.0_num/dx
@@ -1750,16 +1750,18 @@ SUBROUTINE depose_jxjyjz_esirkepov_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguar
   REAL(num), DIMENSION(np) :: xp, yp, zp, uxp, uyp, uzp, w, gaminv
   REAL(num) :: q, dt, dx, dy, dz, xmin, ymin, zmin
   REAL(num) :: dxi, dyi, dzi, xint, yint, zint
-  REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: sdx, sdy, sdz
   REAL(num) :: clghtisq, xold, yold, zold, x, y, z, wq, wqx, wqy, wqz, vx, vy, vz
   REAL(num) :: invvol, invdtdx, invdtdy, invdtdz
   REAL(num) :: xintsq, yintsq, zintsq
   REAL(num) :: dtsdx0, dtsdy0, dtsdz0
   REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER :: twothird=2.0_num/3.0_num
-  REAL(num), DIMENSION(:), ALLOCATABLE:: sx, sx0, dsx
-  REAL(num), DIMENSION(:), ALLOCATABLE :: sy, sy0, dsy
-  REAL(num), DIMENSION(:), ALLOCATABLE :: sz, sz0, dsz
+  REAL(num), DIMENSION(5)   ::  sx(-2:2),  sy(-2:2),  sz(-2:2)
+  REAL(num), DIMENSION(5)   :: sx0(-2:2), sy0(-2:2), sz0(-2:2)
+  REAL(num), DIMENSION(5)   :: dsx(-2:2), dsy(-2:2), dsz(-2:2)
+  REAL(num)                 :: sdxim1,            sdxi
+  REAL(num), DIMENSION(5)   :: sdyjm1(-2:2),      sdyj(-2:2)
+  REAL(num), DIMENSION(5,5) :: sdzkm1(-2:2,-2:2), sdzk(-2:2,-2:2)
   INTEGER :: iixp0, ijxp0, ikxp0, iixp, ijxp, ikxp, ip, dix, diy, diz, i, j, k, ic,   &
   jc, kc
   INTEGER :: ixmin, ixmax, iymin, iymax, izmin, izmax
@@ -1775,16 +1777,29 @@ SUBROUTINE depose_jxjyjz_esirkepov_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguar
   invdtdx = 1.0_num/(dt*dy*dz)
   invdtdy = 1.0_num/(dt*dx*dz)
   invdtdz = 1.0_num/(dt*dx*dy)
-  ALLOCATE(sdx(-2:2, -2:2, -2:2), sdy(-2:2, -2:2, -2:2), sdz(-2:2, -2:2, -2:2))
-  ALLOCATE(sx(-2:2), sx0(-2:2), dsx(-2:2))
-  ALLOCATE(sy(-2:2), sy0(-2:2), dsy(-2:2))
-  ALLOCATE(sz(-2:2), sz0(-2:2), dsz(-2:2))
   clghtisq = 1.0_num/clight**2
   sx0=0.0_num;sy0=0.0_num;sz0=0.0_num
   sdx=0.0_num;sdy=0.0_num;sdz=0.0_num
-
   dtsdz0 = dt*dzi
+
+!$acc parallel deviceptr(jx, jy, jz, xp, yp, zp, uxp, uyp, uzp, w, gaminv)
+!$acc loop gang vector private(sx(-2:2), sy(-2:2), sz(-2:2), &
+!$acc&                         sx0(-2:2), sy0(-2:2), sz0(-2:2), &
+!$acc&                         sdyj(-2:2), sdyjm1(-2:2), &
+!$acc&                         sdzk(-2:2,-2:2), sdzkm1(-2:2,-2:2) )
   DO ip=1, np
+    sdxi=0.0_num
+    sdxim1=0.0_num
+    sdyj=0.0_num
+    sdyjm1=0.0_num
+    sdzk = 0.0_num
+    sdzkm1 = 0.0_num
+    sx = 0.0_num
+    sy = 0.0_num
+    sz = 0.0_num
+    sx0 = 0.0_num
+    sy0 = 0.0_num
+    sz0 = 0.0_num
     ! --- computes current position in grid units
     x = (xp(ip)-xmin)*dxi
     y = (yp(ip)-ymin)*dyi
@@ -1836,8 +1851,6 @@ SUBROUTINE depose_jxjyjz_esirkepov_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguar
     diy = ijxp-ijxp0
     diz = ikxp-ikxp0
     ! --- zero out coefficients
-    ! ---  (needed because of different dix and diz for each particle)
-    sx=0.0_num;sy=0.0_num;sz=0.0_num
     ! --- computes coefficients for quantities centered between nodes
     xintsq = xint*xint
     sx(-1+dix) = 0.5_num*(0.5_num-xint)**2
@@ -1872,28 +1885,35 @@ SUBROUTINE depose_jxjyjz_esirkepov_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguar
           jc = ijxp0+j
           kc = ikxp0+k
           IF(i<ixmax) THEN
-            sdx(i, j, k)  = wqx*dsx(i)*((sy0(j)+0.5_num*dsy(j))*sz0(k) +              &
+            sdxi  = wqx*dsx(i)*((sy0(j)+0.5_num*dsy(j))*sz0(k) +              &
             (0.5_num*sy0(j)+1.0_num/3.0_num*dsy(j))*dsz(k))
-            IF (i>ixmin) sdx(i, j, k)=sdx(i, j, k)+sdx(i-1, j, k)
-            jx(ic, jc, kc) = jx(ic, jc, kc) + sdx(i, j, k)
+            IF (i>ixmin) sdxi = sdxi + sdxim1
+            !$acc atomic update
+            jx(ic, jc, kc) = jx(ic, jc, kc) + sdxi
           END IF
           IF(j<iymax) THEN
-            sdy(i, j, k)  = wqy*dsy(j)*((sz0(k)+0.5_num*dsz(k))*sx0(i) +              &
+            sdyj(i)  = wqy*dsy(j)*((sz0(k)+0.5_num*dsz(k))*sx0(i) +              &
             (0.5_num*sz0(k)+1.0_num/3.0_num*dsz(k))*dsx(i))
-            IF (j>iymin) sdy(i, j, k)=sdy(i, j, k)+sdy(i, j-1, k)
-            jy(ic, jc, kc) = jy(ic, jc, kc) + sdy(i, j, k)
+            IF (j>iymin) sdyj(i) = sdyj(i) + sdyjm1(i)
+            !$acc atomic update
+            jy(ic, jc, kc) = jy(ic, jc, kc) + sdyj(i)
           END IF
           IF(k<izmax) THEN
-            sdz(i, j, k)  = wqz*dsz(k)*((sx0(i)+0.5_num*dsx(i))*sy0(j) +              &
+            sdzk(i,j)  = wqz*dsz(k)*((sx0(i)+0.5_num*dsx(i))*sy0(j) +              &
             (0.5_num*sx0(i)+1.0_num/3.0_num*dsx(i))*dsy(j))
-            IF (k>izmin) sdz(i, j, k)=sdz(i, j, k)+sdz(i, j, k-1)
-            jz(ic, jc, kc) = jz(ic, jc, kc) + sdz(i, j, k)
+            IF (k>izmin) sdzk(i,j) = sdzk(i,j) + sdzkm1(i,j)
+            !$acc atomic update
+            jz(ic, jc, kc) = jz(ic, jc, kc) + sdzk(i,j)
           END IF
+          sdxim1 = sdxi
         END DO
+        sdyjm1 = sdyj
       END DO
+      sdzkm1 = sdzk
     END DO
   END DO
-  DEALLOCATE(sdx, sdy, sdz, sx, sx0, dsx, sy, sy0, dsy, sz, sz0, dsz)
+!$acc end loop
+!$acc end parallel
   RETURN
 END SUBROUTINE depose_jxjyjz_esirkepov_2_2_2
 
