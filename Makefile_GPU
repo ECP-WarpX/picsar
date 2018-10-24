@@ -263,7 +263,7 @@ ifeq ($(COMP),gnu)
 	  FARGS= -O3   -g   -Wunused-variable -fcheck=bound  
 	else ifeq($(MODE),prod_spectral)
 	  FC=mpif90
-	  FARGS= -O3 -Mcudalib=cufft -acc -ta=tesla
+	  FARGS= -O3 -Mcudalib=cufft -acc -ta=tesla -Minfo=all  -g 
 	else ifeq($(MODE),debug_spectral)
 	  FC=mpif90
 	  FARGS= -O3     -Wunused-variable  
@@ -338,7 +338,7 @@ ifeq ($(MODE),$(filter $(MODE),prod_spectral debug_spectral))
         FARGS += -I$(FFTW3_INCLUDE) -D FFTW=1 
         LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_threads
         FARGS+= -I$(CUDAFFT_INCLUDE) -D CUDA_FFT=1  
-        LDFLAGS+= -L $(CUDAFFT_LIB)  -lcufft
+        LDFLAGS+= -L $(CUDAFFT_LIB)  -lcufft -lcufftw
 
 endif
 ifeq ($(IS_P3DFFT),true)
