@@ -263,7 +263,7 @@ ifeq ($(COMP),gnu)
 	  FARGS= -O3   -g   -Wunused-variable -fcheck=bound  
 	else ifeq($(MODE),prod_spectral)
 	  FC=mpif90
-	  FARGS= -O3 -Mcudalib=cufft -acc -ta=tesla -Minfo=all  -g 
+	  FARGS= -O3 -Mcudalib=cufft -acc -ta=tesla:managed -Minfo=all  -g 
 	else ifeq($(MODE),debug_spectral)
 	  FC=mpif90
 	  FARGS= -O3     -Wunused-variable  
