@@ -1783,6 +1783,7 @@ SUBROUTINE depose_jxjyjz_esirkepov_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguar
 !$acc parallel deviceptr(jx, jy, jz, xp, yp, zp, uxp, uyp, uzp, w, gaminv)
 !$acc loop gang vector private(sx(-2:2), sy(-2:2), sz(-2:2), &
 !$acc&                         sx0(-2:2), sy0(-2:2), sz0(-2:2), &
+!$acc&                         dsx(-2:2), dsy(-2:2), dsz(-2:2), &
 !$acc&                         sdyj(-2:2), sdyjm1(-2:2), &
 !$acc&                         sdzk(-2:2,-2:2), sdzkm1(-2:2,-2:2) )
   DO ip=1, np
@@ -3309,10 +3310,11 @@ SUBROUTINE depose_jxjyjz_esirkepov_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguar
   clghtisq = 1.0_num/clight**2
   dtsdz0 = dt*dzi
 !$acc parallel deviceptr(jx, jy, jz, xp, yp, zp, uxp, uyp, uzp, w, gaminv)
-!$acc loop gang vector private(sx(-1:2), sy(-1:2), sz(-1:2), &
-!$acc&                         sx0(-1:2), sy0(-1:2), sz0(-1:2), &
-!$acc&                         sdyj(-1:2), sdyjm1(-1:2), &
-!$acc&                         sdzk(-1:2,-1:2), sdzkm1(-1:2,-1:2) )
+!$acc loop gang vector private(sx(-2:3), sy(-2:3), sz(-2:3), &
+!$acc&                         sx0(-2:3), sy0(-2:3), sz0(-2:3), &
+!$acc&                         dsx(-2:3), dsy(-2:3), dsz(-2:3), &
+!$acc&                         sdyj(-2:3), sdyjm1(-2:3), &
+!$acc&                         sdzk(-2:3,-2:3), sdzkm1(-2:3,-2:3) )
   DO ip=1, np
     sdxi=0.0_num
     sdxim1=0.0_num
