@@ -115,7 +115,7 @@ MODULE field_boundary
     REAL(num), DIMENSION(-nxg:nx_local+nxg, -nyg:ny_local+nyg, -nzg:nz_local+nzg),    &
     INTENT(INOUT) :: field
     INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
-    INTEGER(isp) :: basetype, sz, szmax, i, j, k, n
+    INTEGER(isp) :: basetype, sz, szmax,sztemp, i, j, k, n
     REAL(num), ALLOCATABLE :: temp(:) ,temp2(:)
 
     basetype = mpidbl
@@ -131,8 +131,10 @@ MODULE field_boundary
     sz = sizes(2) * sizes(3) * (nxg+1)
     IF (sz .GT. szmax) szmax = sz
 
-    ALLOCATE(temp(szmax))
-    ALLOCATE(temp2(szmax))
+    sztemp = MAX(sizes(1)*sizes(2)*(nzg+1),sizes(1)*sizes(3)*(nyg+1))
+    sztemp = MAX(sztemp,sizes(2)*sizes(3)*(nxg+1))
+    ALLOCATE(temp(sz))
+    ALLOCATE(temp2(sz))
 
     subsizes(1) = nxg+1
     subsizes(2) = sizes(2)
@@ -159,7 +161,7 @@ MODULE field_boundary
     !$acc kernels
     temp2(:)=0._num
     !$acc end kernels
- !   !$acc host_data use_device(field,temp(1:sz),temp2(1:sz))
+ !   !$acc host_data use_device(field,temp,temp2)
 
     IF (proc_x_min .NE. MPI_PROC_NULL) THEN
       !$acc parallel loop present(field,temp2) collapse(3)
@@ -328,7 +330,7 @@ MODULE field_boundary
     ENDIF
 
     !$acc host_data use_device(field,temp(1:sz),temp2(1:sz))
-    CALL MPI_SENDRECV(field(-nxg, -nyg, 0), 1_isp, mpi_dtypes(3), INT(proc_z_min,     &
+    CALL MPI_SENDRECV(temp2,sz,mpidbl, INT(proc_z_min,     &
     isp), tag, temp, sz, basetype, INT(proc_z_max, isp), tag, comm, status, errcode)
     !$acc end host_data
 
