@@ -135,18 +135,18 @@ SUBROUTINE depose_jxjyjz_esirkepov_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguar
   invdtdz = 1.0_num/(dt*dx*dy)
   dtsdz0 = dt*dzi
 
+  sdxi=0.0_num
+  sdxim1=0.0_num
+  sdyj=0.0_num
+  sdyjm1=0.0_num
+  sdzk = 0.0_num
+  sdzkm1 = 0.0_num
 !$acc parallel deviceptr(jx, jy, jz, xp, yp, zp, uxp, uyp, uzp, w, gaminv)
-!$acc loop gang vector private(sx(-1:2), sy(-1:2), sz(-1:2), &
+!$acc loop gang vector private(sx(-1:2), sy(-1:2), sz(-1:2), sdxi, sdxim1, &
 !$acc&                         sx0(-1:2), sy0(-1:2), sz0(-1:2), &
 !$acc&                         sdyj(-1:2), sdyjm1(-1:2), &
 !$acc&                         sdzk(-1:2,-1:2), sdzkm1(-1:2,-1:2) )
   DO ip=1, np
-    sdxi=0.0_num
-    sdxim1=0.0_num
-    sdyj=0.0_num
-    sdyjm1=0.0_num
-    sdzk = 0.0_num
-    sdzkm1 = 0.0_num
     sx = 0.0_num
     sy = 0.0_num
     sz = 0.0_num
@@ -167,7 +167,6 @@ SUBROUTINE depose_jxjyjz_esirkepov_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguar
     iixp0=floor(x)
     ijxp0=floor(y)
     ikxp0=floor(z)
-
     ! --- computes coefficients for node centered quantities
     ! --- x-iixp0: distance between particle and node for current positions
     sx0( 0) = 1.0_num-(x-iixp0)
@@ -1779,20 +1778,19 @@ SUBROUTINE depose_jxjyjz_esirkepov_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguar
   invdtdz = 1.0_num/(dt*dx*dy)
   clghtisq = 1.0_num/clight**2
   dtsdz0 = dt*dzi
-
+  sdxi=0.0_num
+  sdxim1=0.0_num
+  sdyj=0.0_num
+  sdyjm1=0.0_num
+  sdzk = 0.0_num
+  sdzkm1 = 0.0_num
 !$acc parallel deviceptr(jx, jy, jz, xp, yp, zp, uxp, uyp, uzp, w, gaminv)
-!$acc loop gang vector private(sx(-2:2), sy(-2:2), sz(-2:2), &
+!$acc loop gang vector private(sx(-2:2), sy(-2:2), sz(-2:2), sdxi, sdxim1, &
 !$acc&                         sx0(-2:2), sy0(-2:2), sz0(-2:2), &
 !$acc&                         dsx(-2:2), dsy(-2:2), dsz(-2:2), &
 !$acc&                         sdyj(-2:2), sdyjm1(-2:2), &
 !$acc&                         sdzk(-2:2,-2:2), sdzkm1(-2:2,-2:2) )
   DO ip=1, np
-    sdxi=0.0_num
-    sdxim1=0.0_num
-    sdyj=0.0_num
-    sdyjm1=0.0_num
-    sdzk = 0.0_num
-    sdzkm1 = 0.0_num
     sx = 0.0_num
     sy = 0.0_num
     sz = 0.0_num
@@ -3309,19 +3307,19 @@ SUBROUTINE depose_jxjyjz_esirkepov_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguar
   invdtdz = 1.0_num/(dt*dx*dy)
   clghtisq = 1.0_num/clight**2
   dtsdz0 = dt*dzi
+  sdxi=0.0_num
+  sdxim1=0.0_num
+  sdyj=0.0_num
+  sdyjm1=0.0_num
+  sdzk = 0.0_num
+  sdzkm1 = 0.0_num
 !$acc parallel deviceptr(jx, jy, jz, xp, yp, zp, uxp, uyp, uzp, w, gaminv)
-!$acc loop gang vector private(sx(-2:3), sy(-2:3), sz(-2:3), &
+!$acc loop gang vector private(sx(-2:3), sy(-2:3), sz(-2:3), sdxi, sdxim1, &
 !$acc&                         sx0(-2:3), sy0(-2:3), sz0(-2:3), &
 !$acc&                         dsx(-2:3), dsy(-2:3), dsz(-2:3), &
 !$acc&                         sdyj(-2:3), sdyjm1(-2:3), &
 !$acc&                         sdzk(-2:3,-2:3), sdzkm1(-2:3,-2:3) )
   DO ip=1, np
-    sdxi=0.0_num
-    sdxim1=0.0_num
-    sdyj=0.0_num
-    sdyjm1=0.0_num
-    sdzk = 0.0_num
-    sdzkm1 = 0.0_num
     sx = 0.0_num
     sy = 0.0_num
     sz = 0.0_num
