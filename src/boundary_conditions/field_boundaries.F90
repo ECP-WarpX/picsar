@@ -319,7 +319,8 @@ MODULE field_boundary
     ENDIF
 
     ! --- +X
-    !$acc host_data use_device(field)
+    !$acc update self(field)
+  !!  !$acc host_data use_device(field)
     CALL MPI_ISEND(field(0, -nyg, -nzg), 1_isp, mpi_dtypes(4), INT(proc_x_min, isp),  &
     tag, comm, requests(1), errcode)
     CALL MPI_IRECV(field(nx_local, -nyg, -nzg), 1_isp, mpi_dtypes(4), INT(proc_x_max, &
@@ -395,7 +396,8 @@ MODULE field_boundary
     isp), tag, comm, requests(2), errcode)
 
     CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
-    !$acc end host_data
+    !!!$acc end host_data
+    !$acc update device(field)
 
   END SUBROUTINE exchange_mpi_3d_grid_array_with_guards_nonblocking
 
