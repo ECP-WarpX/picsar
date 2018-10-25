@@ -116,7 +116,7 @@ MODULE field_boundary
     INTENT(INOUT) :: field
     INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
     INTEGER(isp) :: basetype, sz, szmax, i, j, k, n
-    REAL(num), ALLOCATABLE :: temp(:)
+    REAL(num), ALLOCATABLE :: temp(:) ,temp2(:)
 
     basetype = mpidbl
 
@@ -132,6 +132,7 @@ MODULE field_boundary
     IF (sz .GT. szmax) szmax = sz
 
     ALLOCATE(temp(szmax))
+    ALLOCATE(temp2(szmax))
 
     subsizes(1) = nxg+1
     subsizes(2) = sizes(2)
@@ -145,27 +146,45 @@ MODULE field_boundary
     ENDIF
 
 !!    ! MOVE EDGES ALONG X
-    !$acc data create(temp)
-    !!$acc host_data use_device(field,temp)
+!!    !$acc host_data use_device(field,temp,temp2)
+    !!$acc update self(field(0:nxg, :,:))
+    !!$acc update self(field(nx_local-nxg:nx_local, :,:))
+    !!$acc update self(field(:,0:nyg, :))
+    !!$acc update self(field(:,ny_local-nyg:ny_local, :))
+    !!$acc update self(field(:,:,0:nzg))
+    !!$acc update self(field(:,:,nz_local-nzg:nz_local))
 
-    !$acc update self(field(0:nxg, :,:))
-    !$acc update self(field(nx_local-nxg:nx_local, :,:))
-    !$acc update self(field(:,0:nyg, :))
-    !$acc update self(field(:,ny_local-nyg:ny_local, :))
-    !$acc update self(field(:,:,0:nzg))
-    !$acc update self(field(:,:,nz_local-nzg:nz_local))
+  
+    !$acc data create(temp,temp2)
+    !$acc kernels
+    temp2(:)=0._num
+    !$acc end kernels
+ !   !$acc host_data use_device(field,temp(1:sz),temp2(1:sz))
 
+    IF (proc_x_min .NE. MPI_PROC_NULL) THEN
+      !$acc parallel loop present(field,temp2) collapse(3)
+      DO k = -nzg, subsizes(3)-nzg-1
+        DO j = -nyg, subsizes(2)-nyg-1
+          DO i = 0, subsizes(1)-1
+            n=i+1+(j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
+            temp2(n) = field(i, j, k)
+          ENDDO
+        ENDDO
+      ENDDO
+      !$acc end parallel loop
+    ENDIF
 
-
-    CALL MPI_SENDRECV(field(0, -nyg, -nzg), 1_isp, mpi_dtypes(1), INT(proc_x_min,     &
+    !$acc host_data use_device(field,temp(1:sz),temp2(1:sz))
+    CALL MPI_SENDRECV(temp2,sz,mpidbl, INT(proc_x_min,     &
     isp), tag, temp, sz, basetype, INT(proc_x_max, isp), tag, comm, status, errcode)
+    !$acc end host_data
     
     IF (proc_x_max .NE. MPI_PROC_NULL) THEN
       !$acc parallel loop present(field,temp) collapse(3)
       DO k = -nzg, subsizes(3)-nzg-1
         DO j = -nyg, subsizes(2)-nyg-1
           DO i = nx_local, subsizes(1)+nx_local-1
-            n=i-nx_local+1+(j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)
+            n=i-nx_local+1+(j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
             field(i, j, k) = temp(n)
           ENDDO
         ENDDO
@@ -173,16 +192,32 @@ MODULE field_boundary
       !$acc end parallel loop
     ENDIF
 
-    CALL MPI_SENDRECV(field(nx_local-nxg, -nyg, -nzg), 1_isp, mpi_dtypes(1),          &
+    IF (proc_x_max .NE. MPI_PROC_NULL) THEN
+      !$acc parallel loop present(field,temp2) collapse(3)
+      DO k = -nzg, subsizes(3)-nzg-1
+        DO j = -nyg, subsizes(2)-nyg-1
+          DO i = nx_local- subsizes(1)+1,nx_local
+            n=i-nx_local+subsizes(1)+(j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
+            temp2(n) = field(i, j, k)
+          ENDDO
+        ENDDO
+      ENDDO
+      !$acc end parallel loop
+    ENDIF
+
+
+    !$acc host_data use_device(field,temp(1:sz),temp2(1:sz))
+    CALL MPI_SENDRECV(temp2,sz,mpidbl,          &
     INT(proc_x_max, isp), tag, temp, sz, basetype, INT(proc_x_min, isp), tag, comm,   &
     status, errcode)
+    !$acc end host_data
 
     IF (proc_x_min .NE. MPI_PROC_NULL) THEN
       !$acc parallel loop present(field,temp) collapse(3)
       DO k = -nzg, subsizes(3)-nzg-1
         DO j = -nyg, subsizes(2)-nyg-1
           DO i = -nxg, subsizes(1)-nxg-1
-           n=i+nxg+1+(j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)
+           n=i+nxg+1+(j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
            field(i, j, k) = temp(n)
           ENDDO
         ENDDO
@@ -202,15 +237,30 @@ MODULE field_boundary
     ENDIF
 
     ! MOVE EDGES ALONG Y
-    CALL MPI_SENDRECV(field(-nxg, 0, -nzg), 1_isp, mpi_dtypes(2), INT(proc_y_min,     &
+    IF (proc_y_min .NE. MPI_PROC_NULL) THEN
+      !$acc parallel loop present(field,temp2) collapse(3)
+      DO k = -nzg, subsizes(3)-nzg-1
+        DO j = 0 , subsizes(2)-1
+          DO i = nxg, subsizes(1)-nxg-1
+            n=i-nxg+1+(j)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
+            temp2(n) = field(i, j, k)
+          ENDDO
+        ENDDO
+      ENDDO
+      !$acc end parallel loop
+    ENDIF
+
+    !$acc host_data use_device(field,temp(1:sz),temp2(1:sz))
+    CALL MPI_SENDRECV(temp2,sz,mpidbl, INT(proc_y_min,     &
     isp), tag, temp, sz, basetype, INT(proc_y_max, isp), tag, comm, status, errcode)
+    !$acc end host_data
 
     IF (proc_y_max .NE. MPI_PROC_NULL) THEN
       !$acc parallel loop present(field,temp) collapse(3)
       DO k = -nzg, subsizes(3)-nzg-1
         DO j = ny_local, subsizes(2)+ny_local-1
           DO i = -nxg, subsizes(1)-nxg-1
-             n=i+nxg+1+(j-ny_local)*subsizes(1)+(k+nzg)*subsizes(2)
+             n=i+nxg+1+(j-ny_local)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
              field(i, j, k) = temp(n)
           ENDDO
         ENDDO
@@ -218,16 +268,31 @@ MODULE field_boundary
       !$acc end parallel loop
     ENDIF
 
-    CALL MPI_SENDRECV(field(-nxg, ny_local-nyg, -nzg), 1_isp, mpi_dtypes(2),          &
+    IF (proc_y_max .NE. MPI_PROC_NULL) THEN
+      !$acc parallel loop present(field,temp2) collapse(3)
+      DO k = -nzg, subsizes(3)-nzg-1
+        DO j = ny_local- subsizes(2)-1,ny_local
+          DO i = -nxg, subsizes(1)-nxg-1
+            n=i+nxg+1+(j-(ny_local- subsizes(2)-1))*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
+            temp2(n) = field(i, j, k)
+          ENDDO
+        ENDDO
+      ENDDO
+      !$acc end parallel loop
+    ENDIF
+
+    !$acc host_data use_device(field,temp(1:sz),temp2(1:sz))
+    CALL MPI_SENDRECV(temp2,sz,mpidbl,          &
     INT(proc_y_max, isp), tag, temp, sz, basetype, INT(proc_y_min, isp), tag, comm,   &
     status, errcode)
+    !$acc end host_data
 
     IF (proc_y_min .NE. MPI_PROC_NULL) THEN
       !$acc parallel loop present(field,temp) collapse(3)
       DO k = -nzg, subsizes(3)-nzg-1
         DO j = -nyg, subsizes(2)-nyg-1
           DO i = -nxg, subsizes(1)-nxg-1
-            n=i+nxg+1+(j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)
+            n=i+nxg+1+(j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
             field(i, j, k) = temp(n)
           ENDDO
         ENDDO
@@ -249,49 +314,80 @@ MODULE field_boundary
 
 
     ! MOVE EDGES ALONG Z
+    IF (proc_z_min .NE. MPI_PROC_NULL) THEN
+      !$acc parallel loop present(field,temp2) collapse(3)
+      DO k = 0, subsizes(3)-1
+        DO j = -nyg, subsizes(2)-nyg-1
+          DO i =-nxg, subsizes(1)-nxg-1
+            n=i+nxg+1+(j+nyg)*subsizes(1)+(k)*subsizes(2)*subsizes(1)
+            temp2(n) = field(i, j, k)
+          ENDDO
+        ENDDO
+      ENDDO
+      !$acc end parallel loop
+    ENDIF
+
+    !$acc host_data use_device(field,temp(1:sz),temp2(1:sz))
     CALL MPI_SENDRECV(field(-nxg, -nyg, 0), 1_isp, mpi_dtypes(3), INT(proc_z_min,     &
     isp), tag, temp, sz, basetype, INT(proc_z_max, isp), tag, comm, status, errcode)
+    !$acc end host_data
+
 
     IF (proc_z_max .NE. MPI_PROC_NULL) THEN
       !$acc parallel loop present(field,temp) collapse(3)
       DO k = nz_local, subsizes(3)+nz_local-1
         DO j = -nyg, subsizes(2)-nyg-1
           DO i = -nxg, subsizes(1)-nxg-1
-            n=i+nxg+1+(j+nyg)*subsizes(1)+(k-nz_local)*subsizes(2)
+            n=i+nxg+1+(j+nyg)*subsizes(1)+(k-nz_local)*subsizes(2)*subsizes(1)
             field(i, j, k) = temp(n)
           ENDDO
         ENDDO
       ENDDO
       !$acc end parallel loop 
     ENDIF
+    IF (proc_z_max .NE. MPI_PROC_NULL) THEN
+      !$acc parallel loop present(field,temp2) collapse(3)
+      DO k = nz_local- subsizes(3)-1,nz_local
+        DO j = -nyg, subsizes(2)-nyg-1
+          DO i = -nxg, subsizes(1)-nxg-1
+            n=i+nxg+1+(j+nyg)*subsizes(1)+(k-(nz_local- subsizes(3)-1))*subsizes(2)*subsizes(1)
+            temp2(n) = field(i, j, k)
+          ENDDO
+        ENDDO
+      ENDDO
+      !$acc end parallel loop
+    ENDIF
 
-    CALL MPI_SENDRECV(field(-nxg, -nyg, nz_local-nzg), 1_isp, mpi_dtypes(3),          &
+
+    !$acc host_data use_device(field,temp(1:sz),temp2(1:sz))
+    CALL MPI_SENDRECV(temp2,sz,mpidbl,          &
     INT(proc_z_max, isp), tag, temp, sz, basetype, INT(proc_z_min, isp), tag, comm,   &
     status, errcode)
+    !$acc end host_data
+
 
     IF (proc_z_min .NE. MPI_PROC_NULL) THEN
       !$acc parallel loop present(field,temp) collapse(3)
       DO k = -nzg, subsizes(3)-nzg-1
         DO j = -nyg, subsizes(2)-nyg-1
           DO i = -nxg, subsizes(1)-nxg-1
-            n=i+nxg+1+(j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)
+            n=i+nxg+1+(j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
             field(i, j, k) = temp(n)
           ENDDO
         ENDDO
       ENDDO
       !$acc end parallel loop 
     ENDIF
-!    !$acc end host_data
-
     !$acc end data 
-    !$acc update self(field(-nxg:0, :,:))
-    !$acc update self(field(nx_local:nx_local+nxg, :,:))
-    !$acc update self(field(:,-nyg:0, :))
-    !$acc update self(field(:,ny_local:ny_local+nyg, :))
-    !$acc update self(field(:,:,-nzg:0))
-    !$acc update self(field(:,:,nz_local:nz_local+nzg))
 
-    DEALLOCATE(temp)
+    !!$acc update self(field(-nxg:0, :,:))
+    !!$acc update self(field(nx_local:nx_local+nxg, :,:))
+    !!$acc update self(field(:,-nyg:0, :))
+    !!$acc update self(field(:,ny_local:ny_local+nyg, :))
+    !!$acc update self(field(:,:,-nzg:0))
+    !!$acc update self(field(:,:,nz_local:nz_local+nzg))
+
+    DEALLOCATE(temp,temp2)
 
   END SUBROUTINE exchange_mpi_3d_grid_array_with_guards
 
