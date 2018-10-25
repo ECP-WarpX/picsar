@@ -222,10 +222,13 @@ SUBROUTINE depose_jxjyjz_esirkepov_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguar
             !$acc atomic update
             jz(ic, jc, kc) = jz(ic, jc, kc) + sdzk(i, j)
           END IF
+          ! REAL
           sdxim1 = sdxi
         END DO
+        ! array of 4 REAL
         sdyjm1 = sdyj
       END DO
+      ! array of 4 x 4 REAL
       sdzkm1 = sdzk
     END DO
 
