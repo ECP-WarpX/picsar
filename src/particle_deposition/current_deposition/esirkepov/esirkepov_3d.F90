@@ -250,8 +250,7 @@ END SUBROUTINE depose_jxjyjz_esirkepov_1_1_1
 SUBROUTINE depose_jxjyjz_esirkepov_gpu_1_1_1(jx, jx_nguard, jx_nvalid, jy, jy_nguard, &
                                       jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, &
                                       xmin, ymin, zmin, dt, dx, dy, dz)
-  USE constants, ONLY: clight
-  USE picsar_precision, ONLY: idp, num
+  USE constants
   IMPLICIT NONE
   INTEGER(idp) :: np
   INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), jy_nguard(3), jy_nvalid(3), &
