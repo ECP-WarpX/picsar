@@ -146,7 +146,16 @@ MODULE field_boundary
 
 !!    ! MOVE EDGES ALONG X
     !$acc data create(temp)
-    !$acc host_data use_device(field,temp)
+    !!$acc host_data use_device(field,temp)
+
+    !$acc update self(field(0:nxg, :,:))
+    !$acc update self(field(nx_local-nxg:nx_local, :,:))
+    !$acc update self(field(:,0:nyg, :))
+    !$acc update self(field(:,ny_local-nyg:ny_local, :))
+    !$acc update self(field(:,:,0:nzg))
+    !$acc update self(field(:,:,nz_local-nzg:nz_local))
+
+
 
     CALL MPI_SENDRECV(field(0, -nyg, -nzg), 1_isp, mpi_dtypes(1), INT(proc_x_min,     &
     isp), tag, temp, sz, basetype, INT(proc_x_max, isp), tag, comm, status, errcode)
@@ -272,8 +281,16 @@ MODULE field_boundary
       ENDDO
       !$acc end parallel loop 
     ENDIF
-    !$acc end host_data
+!    !$acc end host_data
+
     !$acc end data 
+    !$acc update self(field(-nxg:0, :,:))
+    !$acc update self(field(nx_local:nx_local+nxg, :,:))
+    !$acc update self(field(:,-nyg:0, :))
+    !$acc update self(field(:,ny_local:ny_local+nyg, :))
+    !$acc update self(field(:,:,-nzg:0))
+    !$acc update self(field(:,:,nz_local:nz_local+nzg))
+
     DEALLOCATE(temp)
 
   END SUBROUTINE exchange_mpi_3d_grid_array_with_guards
@@ -319,7 +336,15 @@ MODULE field_boundary
     ENDIF
 
     ! --- +X
-    !$acc update self(field)
+    !$acc update self(field(0:nxg, :,:))
+    !$acc update self(field(nx_local-nxg:nx_local, :,:))
+    !$acc update self(field(:,0:nyg, :))
+    !$acc update self(field(:,ny_local-nyg:ny_local, :))
+    !$acc update self(field(:,:,0:nzg))
+    !$acc update self(field(:,:,nz_local-nzg:nz_local))
+
+
+
   !!  !$acc host_data use_device(field)
     CALL MPI_ISEND(field(0, -nyg, -nzg), 1_isp, mpi_dtypes(4), INT(proc_x_min, isp),  &
     tag, comm, requests(1), errcode)
@@ -397,7 +422,15 @@ MODULE field_boundary
 
     CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
     !!!$acc end host_data
-    !$acc update device(field)
+!    !$acc update device(field)
+    !$acc update self(field(-nxg:0, :,:))
+    !$acc update self(field(nx_local:nx_local+nxg, :,:))
+    !$acc update self(field(:,-nyg:0, :))
+    !$acc update self(field(:,ny_local:ny_local+nyg, :))
+    !$acc update self(field(:,:,-nzg:0))
+    !$acc update self(field(:,:,nz_local:nz_local+nzg))
+
+
 
   END SUBROUTINE exchange_mpi_3d_grid_array_with_guards_nonblocking
 
