@@ -358,7 +358,7 @@ MODULE gpstd_solver
     USE iso_c_binding
     USE mpi_fftw3, ONLY: local_nz, local_nz_tr
     USE picsar_precision, ONLY: idp
-    USE shared_data, ONLY: nz, ny, fftw_with_mpi, nx, nx_global, p3dfft_flag,        &
+    USE shared_data, ONLY: nz, ny,nmodes, fftw_with_mpi, nx, nx_global, p3dfft_flag,        &
       ny_global, c_dim, nz_global, fftw_mpi_transpose, fftw_hybrid
     INTEGER(idp), INTENT(INOUT) :: nfftx, nffty, nfftz
 

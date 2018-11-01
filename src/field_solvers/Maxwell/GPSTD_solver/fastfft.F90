@@ -413,6 +413,56 @@ SUBROUTINE fast_fftw_create_plan_c2r_1d_dft(nopenmp,nx,array_in,array_out, &
 
 END SUBROUTINE fast_fftw_create_plan_c2r_1d_dft
 
+! Subroutine that creates a 1D complex to complex plan for a 3d array 
+! according to the second dimension of the array (which is z in the case of azimuthal spectral)
+
+SUBROUTINE fast_fftw_create_plan_1d_3darray_dft(nopenmp,nr,nz,nmodes, &
+                                array_in,array_out,plan,plan_type,dir)
+
+  USE fftw3_fortran, ONLY: plans_cint, nplan
+  USE iso_c_binding
+  USE omp_lib
+  USE picsar_precision, ONLY: idp, num, cpx
+  INTEGER(idp), INTENT(IN) ::  nopenmp, nz,nr,nmodes
+  COMPLEX(cpx), DIMENSION(nr,nz,nmodes), INTENT(IN OUT)  ::array_in,array_out
+  INTEGER(idp),DIMENSION(1), INTENT(IN OUT) :: plan
+  INTEGER(idp), INTENT(IN) :: plan_type, dir
+  INTEGER(C_INT), DIMENSION(1):: nz_cint
+  INTEGER(C_INT), DIMENSION(2)::  howmany_n, howmany_istride, howmany_ostride
+  INTEGER(C_INT) :: iret,nopenmp_cint,plan_type_cint, dir_cint,       &
+                       rank_cint,howmany_rank_cint,                   &
+                       istride_cint, ostride_cint
+
+  ! Conversion integer idp to C_INT
+
+  nz_cint(1)=nz
+  nopenmp_cint=nopenmp
+  dir_cint=dir
+  plan_type_cint=plan_type
+  rank_cint =1
+  howmany_rank_cint =2
+  istride_cint = nr
+  ostride_cint= istride_cint
+  howmany_n(1)= nr
+  howmany_istride(1)= 1
+  howmany_ostride(1)= 1
+  howmany_n(2)= nmodes
+  howmany_istride(2)= nz*nr
+  howmany_ostride(2)= nz*nr
+
+  ! Plan creation
+  nplan=nplan+1
+  CALL  DFFTW_INIT_THREADS(iret)
+  CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
+  CALL  dfftw_plan_guru_dft(plans_cint(nplan),rank_cint, nz_cint,istride_cint,ostride_cint,howmany_rank_cint, howmany_n, &
+                             howmany_istride, howmany_ostride ,array_in,array_out, &
+                             dir_cint,plan_type_cint)
+
+  ! return index of plan
+  plan(1)=nplan
+END SUBROUTINE fast_fftw_create_plan_1d_3darray_dft
+
+
 !**********************************************
 !* SECTION 3: FFTW EXECUTION 1D/2D/3D
 !* C2C, C2R, R2C
@@ -584,6 +634,23 @@ SUBROUTINE fast_fftw1d_c2r_with_plan(nx,array_in, array_out, plan)
     iplan=plan(1)
     CALL  DFFTW_EXECUTE_DFT_C2R(plans_cint(iplan), array_in, array_out)
 END SUBROUTINE fast_fftw1d_c2r_with_plan
+
+
+SUBROUTINE  fast_fftw1d_3d_array_with_plan (nr,nz,nmodes,array_in, array_out,plan)
+  USE fftw3_fortran, ONLY: plans_cint
+  USE iso_c_binding
+  USE omp_lib
+  USE picsar_precision, ONLY: idp, cpx
+  INTEGER(idp), INTENT(IN) ::  nr, nz,nmodes
+  COMPLEX(cpx), DIMENSION(nr,nz,nmodes), INTENT(IN OUT)  :: array_in
+  COMPLEX(cpx), DIMENSION(nr,nz,nmodes), INTENT(IN OUT)  :: array_out
+  INTEGER(idp),DIMENSION(1), INTENT(IN OUT) :: plan
+  INTEGER(idp) :: iplan
+
+  iplan=plan(1)
+  CALL  dfftw_execute_dft(plans_cint(iplan), array_in, array_out)
+
+END SUBROUTINE  fast_fftw1d_3d_array_with_plan
 
 !**********************************************
 !* SECTION 4: plan destruction (1D,2D,3D)
