@@ -1658,9 +1658,12 @@ END SUBROUTINE compute_simulation_axis
 ! ______________________________________________________________________________________
 SUBROUTINE allocate_grid_quantities()
 USE iso_c_binding
-#if defined(FFTW)
-USE mpi_fftw3, ONLY: fftw_alloc_complex, local_ny_tr, fftw_alloc_real, local_ny,     &
+#if defined(SPECTRAL)
+USE mpi_fftw3, ONLY:  local_ny_tr,  local_ny,     &
   local_nx_tr, alloc_local, local_nx, local_nz, local_nz_tr
+#endif
+#if defined(FFTW)
+USE mpi_fftw3, ONLY: fftw_alloc_complex,fftw_alloc_rea
 #endif
 #if defined(CUDA_FFT)
 USE cufft
@@ -1668,14 +1671,15 @@ USE cufft
 #if defined(FFTW)
 USE fourier
 USE group_parameters
-USE picsar_precision, ONLY: idp
 #endif
+USE picsar_precision, ONLY: idp
 IMPLICIT NONE
 #if defined(FFTW)
 TYPE(C_PTR) :: cdata, cin
+#endif
+
 INTEGER(idp) :: imn, imx, jmn, jmx, kmn, kmx
 INTEGER(idp) :: nxx, nyy, nzz
-#endif
 ! --- Allocate regular grid quantities (in real space)
 ALLOCATE(ex(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 ALLOCATE(ey(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
@@ -1731,7 +1735,7 @@ by_p => by
 bz_p => bz
 
 
-#if defined(FFTW)
+#if defined(SPECTRAL)
 ! ---  Allocate grid quantities in Fourier space
 IF (l_spectral) THEN
 
@@ -1763,6 +1767,7 @@ IF (l_spectral) THEN
     ! - Case when FFTW is used for the distributed FFT
     ELSE IF(.NOT. p3dfft_flag) THEN
       IF(.NOT. g_spectral) THEN
+#if defined(FFTW)
         cdata = fftw_alloc_complex(alloc_local)
         CALL c_f_pointer(cdata, exf, [nkx, nky, nkz])
         cdata = fftw_alloc_complex(alloc_local)
@@ -1785,6 +1790,7 @@ IF (l_spectral) THEN
         CALL c_f_pointer(cdata, rhof, [nkx, nky, nkz])
         cdata = fftw_alloc_complex(alloc_local)
         CALL c_f_pointer(cdata, rhooldf, [nkx, nky, nkz])
+#endif
       ENDIF
     ENDIF
     ! - Allocate real FFT arrays 
@@ -1801,6 +1807,7 @@ IF (l_spectral) THEN
     ! - In this case only splitted fields are allocated  
     ! - The merge is done using local fields (ex = exy+exz )
      IF(.NOT. absorbing_bcs) THEN
+#if defined(FFTW)
        cin = fftw_alloc_real(2 * alloc_local);
        CALL c_f_pointer(cin, ex_r, [nxx, nyy, nzz])
        cin = fftw_alloc_real(2 * alloc_local);
@@ -1860,6 +1867,7 @@ IF (l_spectral) THEN
        cin = fftw_alloc_real(2 * alloc_local);
        CALL c_f_pointer(cin, rhoold_r, [nxx, nyy, nzz])
        cin = fftw_alloc_real(2 * alloc_local);
+#endif
       ENDIF
     ! - Case when FFTW is used for the distributed FFT
     ELSE IF(p3dfft_flag) THEN

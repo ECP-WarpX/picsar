@@ -61,7 +61,6 @@ MODULE fourier_psaotd
     USE group_parameters, ONLY: nx_group, ny_group, mpi_comm_group_id,              &
       nz_group
     USE iso_c_binding
-
     USE fourier
 #if defined(CUDA_FFT)
    USE cufft
@@ -1918,7 +1917,9 @@ MODULE fourier_psaotd
 
   SUBROUTINE init_plans_blocks()
     USE fastfft
+#if defined(FFTW)
     USE fftw3_fortran, ONLY: fftw_measure, fftw_backward, fftw_forward
+#endif
     USE fields, ONLY: ex_r, nzguards, nxguards, g_spectral, nyguards, exf, exy_r
     USE fourier, ONLY: plan_c2r, plan_r2c, plan_c2r_cuda, plan_r2c_cuda
     USE iso_c_binding

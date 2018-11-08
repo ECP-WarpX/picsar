@@ -122,7 +122,7 @@ USE sorting
         !!! --- Apply BC on particles
         CALL particle_bcs
         !IF (rank .EQ. 0) PRINT *, "#3"
-#if defined(FFTW)
+#if defined(SPECTRAL)
         IF (l_spectral) THEN
           CALL  copy_field(rhoold, nx+2*nxguards+1, ny+2*nyguards+1,      &
                 nz+2*nzguards+1, rho, nx+2*nxguards+1, ny+2*nyguards+1,   &
@@ -143,7 +143,7 @@ USE sorting
         !WRITE(0, *), 'Current_bcs'
         CALL current_bcs
       ENDIF
-#if defined(FFTW)
+#if defined(SPECTRAL)
       IF (l_spectral) THEN
 
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
@@ -177,7 +177,7 @@ USE sorting
         !IF (rank .EQ. 0) PRINT *, "#11"
         !!! --- Boundary conditions for B
         CALL bfield_bcs
-#if defined(FFTW)
+#if defined(SPECTRAL)
       ENDIF
 #endif
       !IF (rank .EQ. 0) PRINT *, "#12"
@@ -225,7 +225,7 @@ USE sorting
 
         !!! --- Boundary conditions for currents
         CALL current_bcs
-#if defined(FFTW)
+#if defined(SPECTRAL)
         IF (l_spectral) THEN
           CALL  copy_field(rhoold, nx+2*nxguards+1, ny+2*nyguards+1,      &
                   nz+2*nzguards+1, rho, nx+2*nxguards+1, ny+2*nyguards+1,   &
@@ -236,7 +236,7 @@ USE sorting
       ENDIF
 #endif
 
-#if defined(FFTW)
+#if defined(SPECTRAL)
       IF (l_spectral) THEN
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
    !     CALL harris_pulse(dt*i,0*pi/4._num,10_idp)
@@ -271,7 +271,7 @@ USE sorting
         !!! --- Boundary conditions for B
         CALL bfield_bcs
 
-#if defined(FFTW)
+#if defined(SPECTRAL)
       ENDIF
 #endif
       !IF (rank .EQ. 0) PRINT *, "#12"
@@ -515,7 +515,7 @@ SUBROUTINE initall
   USE constants, ONLY: eps0, emass, pi, echarge, clight
   USE fields, ONLY: ez, nox, noy, noz, jz, l_spectral, xcoeffs, bz, nzguards,        &
     nxguards, nyguards, jy, jx, ex, bx, by, ey
-#if defined(FFTW)
+#if defined(SPECTRAL)
   USE fourier_psaotd
   USE gpstd_solver
   USE shared_data, ONLY: nb_group_x, nb_group_y, nb_group_z
@@ -702,6 +702,9 @@ SUBROUTINE initall
     IF(l_spectral) THEN
 
 #if defined(SPECTRAL)
+#if defined(CUDA_FFT)
+      WRITE(0, '(" CUDA_FFT IS ON)')
+#else
       WRITE(0, '(" FFTW - parameters ")')
       IF (g_spectral)    WRITE(0, '(" G_spectral = TRUE")')
       IF (fftw_with_mpi) WRITE(0, '(" FFTW distributed version - MPI ")')
@@ -713,6 +716,7 @@ SUBROUTINE initall
       IF(fftw_hybrid) WRITE(0, '(" nb guards groups :", I5, X, I5, X, I5)') nxg_group,nyg_group,nzg_group
       IF (fftw_threads_ok) WRITE(0, '(" FFTW MPI - Threaded support enabled ")')
       IF (fftw_mpi_transpose) WRITE(0, '(" FFTW MPI Transpose plans enabled ")')
+#endif
 #endif
     ELSE
       WRITE(0,'(" FDTD_SOLVER ")')

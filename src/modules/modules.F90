@@ -1576,7 +1576,7 @@ MODULE shared_data
   INTEGER(idp) :: npart_global
 END MODULE shared_data
 
-#if defined(FFTW)
+#if defined(SPECTRAL)
 MODULE fourier!#do not parse
   USE PICSAR_precision
   USE constants
