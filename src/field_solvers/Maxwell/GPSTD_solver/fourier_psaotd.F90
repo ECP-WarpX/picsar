@@ -1631,7 +1631,7 @@ MODULE fourier_psaotd
     USE mpi
     USE params, ONLY: it
     USE picsar_precision, ONLY: idp, num, cpx
-    USE shared_data, ONLY: nkx, nkz
+    USE shared_data, ONLY: nkx, nkz, absorbing_bcs
     USE time_stat, ONLY: timestat_itstart, localtimes
 
     IMPLICIT NONE
@@ -1690,9 +1690,6 @@ MODULE fourier_psaotd
     !$acc& cc_mat(nmatrixes)%block_matrix2d(3,10)%block3dc)
     !$acc loop gang vector collapse(2)
 #endif
-
-
-
     DO iz=1, nzz
         DO ix=1, nxx
           ! - Bx
@@ -1764,18 +1761,21 @@ MODULE fourier_psaotd
 
   SUBROUTINE push_psaotd_ebfielfs_3d()
     USE fields, ONLY: ezf, jxf, rhooldf, rhof, bxf, jzf, eyf, jyf, byf, bzf, exf
+    USE fields, ONLY: exyf,exzf,eyxf,eyzf,ezxf,ezyf,bxyf,bxzf,byxf,byzf,bzxf,bzyf
     USE iso_c_binding
     USE mpi
     USE params, ONLY: it
     USE picsar_precision, ONLY: idp, num, cpx
-    USE shared_data, ONLY: nkx, nky, nkz
+    USE shared_data, ONLY: nkx, nky, nkz,shared_data, absorbing_bcs
     USE time_stat, ONLY: timestat_itstart, localtimes
 
     IMPLICIT NONE
     INTEGER(idp) ::  ix, iy, iz, nxx, nyy, nzz
     REAL(num) :: tmptime
     COMPLEX(cpx) :: bxfold, byfold, bzfold, exfold, eyfold, ezfold,&
-        jxfold,jyfold,jzfold, rhofold,rhooldfold
+        jxfold,jyfold,jzfold, rhofold,rhooldfold, exyfold,exzfold, &
+        eyxfold,eyzfold,ezxfold,ezyfold,bxyfold,bxzfold,byxfold,   &
+        byzfold,bzxfold,bzyfold
 
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
@@ -1783,6 +1783,7 @@ MODULE fourier_psaotd
     nxx=nkx
     nyy=nky
     nzz=nkz
+    IF (.NOT.absorbing_bcs) THEN   
 #if !defined(CUDA_FFT)
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, exfold, eyfold, ezfold,     &
     !$OMP bxfold, byfold, bzfold,jxfold,jyfold,jzfold,rhofold,rhooldfold) COLLAPSE(3)
@@ -1842,7 +1843,6 @@ MODULE fourier_psaotd
           rhofold=rhof(ix, iy, iz)
           rhooldfold=rhooldf(ix, iy, iz)
 
-
           bxf(ix, iy, iz) =                                                           &
           cc_mat(nmatrixes)%block_matrix2d(4, 4)%block3dc(ix, iy,                     &
           iz)*bxfold + cc_mat(nmatrixes)%block_matrix2d(4, 2)%block3dc(ix, iy,        &
@@ -1859,7 +1859,6 @@ MODULE fourier_psaotd
           iz)*ezfold + cc_mat(nmatrixes)%block_matrix2d(5, 7)%block3dc(ix, iy,        &
           iz)*jxfold + cc_mat(nmatrixes)%block_matrix2d(5, 9)%block3dc(ix,            &
           iy, iz)*jzfold
-
 
           ! - Bz
           bzf(ix, iy, iz) =                                                           &
@@ -1891,7 +1890,6 @@ MODULE fourier_psaotd
           iy, iz)*rhofold + cc_mat(nmatrixes)%block_matrix2d(2,                       &
           10)%block3dc(ix, iy, iz)*rhooldfold
 
-
           ! - Ez
           ezf(ix, iy, iz) =                                                           &
           cc_mat(nmatrixes)%block_matrix2d(3, 3)%block3dc(ix, iy,                     &
@@ -1910,6 +1908,161 @@ MODULE fourier_psaotd
     !$acc end loop
     !$acc end parallel
 #endif
+    ELSE 
+#if !defined(CUDA_FFT)
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, !iz,jxfold,jyfold, &
+    !$OMP jzfold,rhofold,rhooldfold  , exyfold,exzfold,  eyxfold,eyzfold, &
+    !$OMP ezxfold,ezyfold,bxyfold,bxzfold,byxfold, byzfold,bzxfold,bzyfold)
+    !COLLAPSE(3)
+#else
+    !$acc parallel present(exyf,exzf,eyxf,eyzf,ezxf,ezyf,bxyf , &
+    !$acc& bxzf,byxf,byzf,bzxf,bzyf,jxf,jyf,jzf,rhof,rhooldf,cc_mat,cc_mat(nmatrixes)) &
+    !$acc& attach(&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,1)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,11)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,12)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,16)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,17)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,13)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(2,2)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(2,9)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(2,10)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,3)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,11)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,12)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,16)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,17)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,14)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(4,4)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(4,7)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(4,8)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,5)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,9)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,10)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,16)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,17)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,15)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(6,6)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(6,7)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(6,8)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(7,7)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(7,5)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(7,6)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(7,14)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(7,15)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(8,8)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(8,3)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(8,4)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,9)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,5)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,6)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,13)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,15)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(10,10)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(10,1)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(10,2)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,11)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,3)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,4)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,13)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,14)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(12,12)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(12,1)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(12,2)%block3dc )
+    !$acc loop gang vector collapse(3)
+#endif
+    DO iz=1, nzz
+      DO iy=1, nyy
+        DO ix=1, nxx
+          exyfold=exyf(ix, iy, iz)
+          exzfold=exzf(ix, iy, iz)
+          eyxfold=eyxf(ix, iy, iz)
+          eyzfold=eyzf(ix, iy, iz)
+          ezxfold=ezxf(ix, iy, iz)
+          ezyfold=ezyf(ix, iy, iz)
+          jxfold=jxf(ix, iy, iz)
+          jyfold=jyf(ix, iy, iz)
+          jzfold=jzf(ix, iy, iz)
+          rhofold=rhof(ix, iy, iz)
+          rhooldfold=rhooldf(ix, iy, iz)
+          exyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(1,1)%block3dc(ix,iy,iz)*exyfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(1,11)%block3dc(ix,iy,iz)*bzxfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(1,12)%block3dc(ix,iy,iz)*bzyfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(1,16)%block3dc(ix,iy,iz)*rhooldfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(1,17)%block3dc(ix,iy,iz)*rhofold + & 
+        cc_mat(nmatrixes)%block_matrix2d(1,13)%block3dc(ix,iy,iz)*jxfold 
+      
+          exzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(2,2)%block3dc(ix,iy,iz)*exzfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(2,9)%block3dc(ix,iy,iz)*byxfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(2,10)%block3dc(ix,iy,iz)*byzfold 
+      
+          eyxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(3,3)%block3dc(ix,iy,iz)*eyxfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(3,11)%block3dc(ix,iy,iz)*bzxfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(3,12)%block3dc(ix,iy,iz)*bzyfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(3,16)%block3dc(ix,iy,iz)*rhooldfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(3,17)%block3dc(ix,iy,iz)*rhofold + & 
+        cc_mat(nmatrixes)%block_matrix2d(3,14)%block3dc(ix,iy,iz)*jyfold 
+      
+          eyzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(4,4)%block3dc(ix,iy,iz)*eyzfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(4,7)%block3dc(ix,iy,iz)*bxyfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(4,8)%block3dc(ix,iy,iz)*bxzfold 
+      
+          ezxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(5,5)%block3dc(ix,iy,iz)*ezxfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(5,9)%block3dc(ix,iy,iz)*byxfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(5,10)%block3dc(ix,iy,iz)*byzfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(5,16)%block3dc(ix,iy,iz)*rhooldfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(5,17)%block3dc(ix,iy,iz)*rhofold + & 
+        cc_mat(nmatrixes)%block_matrix2d(5,15)%block3dc(ix,iy,iz)*jzfold 
+      
+          ezyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(6,6)%block3dc(ix,iy,iz)*ezyfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(6,7)%block3dc(ix,iy,iz)*bxyfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(6,8)%block3dc(ix,iy,iz)*bxzfold 
+      
+          bxyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(7,7)%block3dc(ix,iy,iz)*bxyfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(7,5)%block3dc(ix,iy,iz)*ezxfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(7,6)%block3dc(ix,iy,iz)*ezyfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(7,14)%block3dc(ix,iy,iz)*jyfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(7,15)%block3dc(ix,iy,iz)*jzfold 
+      
+          bxzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(8,8)%block3dc(ix,iy,iz)*bxzfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(8,3)%block3dc(ix,iy,iz)*eyxfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(8,4)%block3dc(ix,iy,iz)*eyzfold 
+      
+          byxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(9,9)%block3dc(ix,iy,iz)*byxfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(9,5)%block3dc(ix,iy,iz)*ezxfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(9,6)%block3dc(ix,iy,iz)*ezyfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(9,13)%block3dc(ix,iy,iz)*jxfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(9,15)%block3dc(ix,iy,iz)*jzfold 
+      
+          byzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(10,10)%block3dc(ix,iy,iz)*byzfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(10,1)%block3dc(ix,iy,iz)*exyfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(10,2)%block3dc(ix,iy,iz)*exzfold 
+      
+          bzxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(11,11)%block3dc(ix,iy,iz)*bzxfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(11,3)%block3dc(ix,iy,iz)*eyxfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(11,4)%block3dc(ix,iy,iz)*eyzfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(11,13)%block3dc(ix,iy,iz)*jxfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(11,14)%block3dc(ix,iy,iz)*jyfold 
+      
+          bzyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(12,12)%block3dc(ix,iy,iz)*bzyfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(12,1)%block3dc(ix,iy,iz)*exyfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(12,2)%block3dc(ix,iy,iz)*exzfold 
+
+        ENDDO
+      ENDDO     
+    ENDDO
+
+
+
+
+#if !defined(CUDA_FFT)
+    !$OMP END PARALLEL DO
+#else
+    !$acc end loop
+    !$acc end parallel
+#endif
+
+    ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime)
     ENDIF
