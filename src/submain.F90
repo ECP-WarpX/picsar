@@ -147,7 +147,7 @@ USE sorting
       IF (l_spectral) THEN
 
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
-        CALL harris_pulse(dt*i,0*pi/4._num,10_idp)
+!        CALL harris_pulse(dt*i,0*pi/4._num,10_idp)
         CALL push_psatd_ebfield
         !IF (rank .EQ. 0) PRINT *, "#0"
         !!! --- Boundary conditions for E AND B
@@ -155,7 +155,6 @@ USE sorting
         CALL bfield_bcs
         IF(absorbing_bcs) THEN
           CALL field_damping_bcs()
-          CALL merge_fields()
         ENDIF
       ELSE
 #endif
@@ -240,7 +239,7 @@ USE sorting
 #if defined(FFTW)
       IF (l_spectral) THEN
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
-        CALL harris_pulse(dt*i,0*pi/4._num,10_idp)
+   !     CALL harris_pulse(dt*i,0*pi/4._num,10_idp)
      
         CALL push_psatd_ebfield
         !IF (rank .EQ. 0) PRINT *, "#0"
@@ -249,7 +248,6 @@ USE sorting
         CALL bfield_bcs
         IF (absorbing_bcs) THEN
           CALL field_damping_bcs()
-          CALL merge_fields()
         ENDIF
       ELSE
 #endif
@@ -495,6 +493,14 @@ SUBROUTINE init_pml_arrays
     sigma_z_e = 1.0_num
     sigma_z_b = 1.0_num
   ENDIF
+#if defined(CUDA_FFT)
+      IF(cuda_fft) THEN
+          !$acc enter data copyin(sigma_x_e,sigma_x_b, &
+          !$acc& sigma_x_e,sigma_x_b,sigma_y_e,sigma_y_b, &
+          !$acc& sigma_z_b,sigma_z_e)
+      ENDIF
+#endif
+
 END SUBROUTINE init_pml_arrays
 
 ! ________________________________________________________________________________________
@@ -811,6 +817,10 @@ SUBROUTINE initall
   ex=0.0_num;ey=0.0_num;ez=0.0_num
   bx=0.0_num;by=0.0_num;bz=0.0_num
   jx=0.0_num;jy=0.0_num;jz=0.0_num
+  rho=0.0_num; rhoold = 0.0_num
+#if defined(CUDA_FFT)
+  !$acc enter data copyin(ex,ey,ez,bx,by,bz,jx,jy,jz,rho,rhoold)
+#endif
   IF(absorbing_bcs) THEN
     CALL init_splitted_fields_random()
   ENDIF

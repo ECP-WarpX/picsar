@@ -163,7 +163,13 @@ SUBROUTINE field_damping_bcs
     tmptime = MPI_WTIME()
   ENDIF
   IF(c_dim == 3) THEN 
+#if !defined(CUDA_FFT)
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+#else
+    !$acc parallel present(exy,exz,eyx,eyz,ezx,ezy,bxy,bxz,byx,byz,bzx,bzy,&
+    !$acc& sigma_x_e,sigma_y_e,sigma_z_e,sigma_x_b, sigma_y_b, sigma_z_b)
+    !$acc loop gang vector collapse(3)
+#endif
     DO iz = -nzguards,nz+nzguards-1
       DO iy = -nyguards,ny+nyguards-1
         DO ix = -nxguards,nx+nxguards-1
@@ -182,10 +188,21 @@ SUBROUTINE field_damping_bcs
         ENDDO
       ENDDO
     ENDDO
+#if !defined(CUDA_FFT)
     !$OMP END PARALLEL DO
+#else
+    !$acc end loop
+    !$acc end parallel
+#endif
   ELSE IF(c_dim==2) THEN
     iy=0_idp
+#if !defined(CUDA_FFT)
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,  iz) COLLAPSE(2)
+#else
+    !$acc parallel present(exz,eyx,eyz,ezx,bxz,byx,byz,bzx,&
+    !$acc& sigma_x_e,sigma_z_e,sigma_x_b, sigma_z_b)
+    !$acc loop gang vector collapse(2)
+#endif
     DO iz = -nzguards,nz+nzguards-1
         DO ix = -nxguards,nx+nxguards-1
           exz(ix,iy,iz) = sigma_z_e(iz) *exz(ix,iy,iz)
@@ -198,7 +215,12 @@ SUBROUTINE field_damping_bcs
           bzx(ix,iy,iz) = sigma_x_b(ix) *bzx(ix,iy,iz)
         ENDDO
       ENDDO
+#if !defined(CUDA_FFT)
     !$OMP END PARALLEL DO
+#else
+    !$acc end loop
+    !$acc end parallel
+#endif
   ENDIF
 
    
@@ -240,7 +262,13 @@ SUBROUTINE merge_fields()
   ubound_f = UBOUND(ex)
   lbound_f = LBOUND(ex)
 
-  !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz,ixx ,iyy, izz) COLLAPSE(3)
+#if !defined(CUDA_FFT)
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+#else
+    !$acc parallel present(exy,exz,eyx,eyz,ezx,ezy,bxy,bxz,byx,byz,bzx,bzy)
+    !$acc loop gang vector collapse(3)
+#endif
+
   DO iz = lbound_f(3),ubound_f(3)
     DO iy = lbound_f(2),ubound_f(2)
       DO ix = lbound_f(1),ubound_f(1)
@@ -257,7 +285,13 @@ SUBROUTINE merge_fields()
       ENDDO
     ENDDO
   ENDDO
-  !$OMP END PARALLEL DO
+#if !defined(CUDA_FFT)
+    !$OMP END PARALLEL DO
+#else
+    !$acc end loop
+    !$acc end parallel
+#endif
+
 
   IF (it.ge.timestat_itstart) THEN
     localtimes(26) = localtimes(26) + (MPI_WTIME() - tmptime)
@@ -296,7 +330,13 @@ SUBROUTINE merge_e_fields()
   ubound_f = UBOUND(ex)
   lbound_f = LBOUND(ex)
 
-  !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz,ixx ,iyy, izz) COLLAPSE(3)
+#if !defined(CUDA_FFT)
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+#else
+    !$acc parallel present(exy,exz,eyx,eyz,ezx,ezy)
+    !$acc loop gang vector collapse(3)
+#endif
+
   DO iz = lbound_f(3),ubound_f(3)
     DO iy = lbound_f(2),ubound_f(2)
       DO ix = lbound_f(1),ubound_f(1)
@@ -310,7 +350,13 @@ SUBROUTINE merge_e_fields()
       ENDDO
     ENDDO
   ENDDO
-  !$OMP END PARALLEL DO
+#if !defined(CUDA_FFT)
+    !$OMP END PARALLEL DO
+#else
+    !$acc end loop
+    !$acc end parallel
+#endif
+
 
   IF (it.ge.timestat_itstart) THEN
     localtimes(26) = localtimes(26) + (MPI_WTIME() - tmptime)
@@ -349,7 +395,13 @@ SUBROUTINE merge_b_fields()
   ubound_f = UBOUND(bx)
   lbound_f = LBOUND(bx)
 
-  !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz,ixx ,iyy, izz) COLLAPSE(3)
+#if !defined(CUDA_FFT)
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+#else
+    !$acc parallel present(bxy,bxz,byx,byz,bzx,bzy)
+    !$acc loop gang vector collapse(3)
+#endif
+
   DO iz = lbound_f(3),ubound_f(3)
     DO iy = lbound_f(2),ubound_f(2)
       DO ix = lbound_f(1),ubound_f(1)
@@ -363,7 +415,14 @@ SUBROUTINE merge_b_fields()
       ENDDO
     ENDDO
   ENDDO
-  !$OMP END PARALLEL DO
+#if !defined(CUDA_FFT)
+    !$OMP END PARALLEL DO
+#else
+    !$acc end loop
+    !$acc end parallel
+#endif
+
+
 
   IF (it.ge.timestat_itstart) THEN
     localtimes(26) = localtimes(26) + (MPI_WTIME() - tmptime)
@@ -598,13 +657,17 @@ END SUBROUTINE push_efield_2d
       CALL get_Ffields_mpi! - global-hybrid FFT
     ENDIF
   ELSE
+        WRITE(0, *) "enter get_Ffields"
     CALL get_Ffields! - local FFT
+        WRITE(0, *) "success get_Ffields"
   ENDIF
   IF(g_spectral) THEN
     IF (it.ge.timestat_itstart) THEN
       tmptime_m = MPI_WTIME()
     ENDIF
+  WRITE(0, *) "before multiply mat vec"
     CALL multiply_mat_vector(nmatrixes)
+  WRITE(0, *) "after multiply mat vec "
     IF (it.ge.timestat_itstart) THEN
       localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime_m)
     ENDIF

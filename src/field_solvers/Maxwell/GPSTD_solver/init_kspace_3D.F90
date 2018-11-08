@@ -1025,9 +1025,11 @@ MODULE gpstd_solver
       ENDDO
 #if defined(CUDA_FFT)
       IF(cuda_fft) THEN
+        !$acc enter data copyin(vold)
+        !$acc enter data copyin(vold(nmatrixes))
+        !$acc enter data copyin(vold(nmatrixes)%block_vector)
         DO i=1,nbloc_ccmat
-          !$acc enter data
-          !copyin(vold(nmatrixes)%block_matrix2d(i)%block3dc)
+          !$acc enter data copyin(vold(nmatrixes)%block_vector(i)%block3dc)
         ENDDO
       ENDIF
 #endif
@@ -1046,9 +1048,12 @@ MODULE gpstd_solver
       ENDDO
 #if defined(CUDA_FFT)
       IF(cuda_fft) THEN
+        !$acc enter data copyin(vnew)
+        !$acc enter data copyin(vnew(nmatrixes))
+        !$acc enter data copyin(vnew(nmatrixes)%block_vector)
+
         DO i=1,nbloc_ccmat
-          !$acc enter data
-          !copyin(vnew(nmatrixes)%block_matrix2d(i)%block3dc)
+          !$acc enter data copyin(vnew(nmatrixes)%block_vector(i)%block3dc)
         ENDDO
       ENDIF
 #endif
@@ -1650,6 +1655,7 @@ MODULE gpstd_solver
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz, ixx, iyy, izz, ixxx, iyyy, izzz
     INTEGER(idp) , dimension(3) :: lbound_r, ubound_r, lbound_p ,ubound_p,lbound_s, ubound_s
+     ! WRITE(0,*)"started copyfield bac"
 
     IF(absorbing_bcs) THEN 
        lbound_r = LBOUND(exy_r)
@@ -1684,6 +1690,8 @@ MODULE gpstd_solver
 #if !defined(CUDA_FFT)
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx, iyy ,izz,ixxx,iyyy,izzz) COLLAPSE(3)
 #else
+!      WRITE(0,*)"started acc section of copy field forward"
+
       !$acc parallel present(ex_r,ey_r,ez_r,bx_r,by_r,bz_r,jx_r,jy_r,jz_r,rhoold_r, &
       !$acc& rho_r,ex,ey,ez,bx,by,bz,jx,jy,jz,rho,rhoold) 
       !$acc loop gang vector collapse(3)
@@ -1715,6 +1723,7 @@ MODULE gpstd_solver
 #if defined(CUDA_FFT)
       !$acc end loop
       !$acc end parallel
+      !WRITE(0,*)"started acc section of copy field forward"
 #else
       !$OMP END PARALLEL DO
 #endif
@@ -1807,6 +1816,7 @@ MODULE gpstd_solver
 #if !defined(CUDA_FFT) 
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx , iyy ,izz) COLLAPSE(3)
 #else
+       !WRITE(*,*),"started acc section of copy field backward"
       !$acc parallel  present (ex_r,ey_r,ez_r,bx_r,by_r,bz_r,ex,ey,ez,bx,by,bz) 
       !$acc loop gang vector collapse(3)
 #endif
@@ -1828,6 +1838,8 @@ MODULE gpstd_solver
 #if defined(CUDA_FFT)
       !$acc end loop
       !$acc end parallel
+   !    WRITE(*,*),"left acc section of copy field backward"
+
 #else
       !$OMP END PARALLEL DO  
 #endif
