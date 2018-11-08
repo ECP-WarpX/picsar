@@ -1103,7 +1103,7 @@ MODULE output_data!#do not parse
 END MODULE output_data
 
 !MODULE FOR GROUP params
-#if defined(FFTW)
+#if defined(SPECTRAL)
 MODULE group_parameters !#do not parse
   USE mpi_type_constants
   USE picsar_precision
@@ -1226,7 +1226,7 @@ MODULE shared_data
   ! MPI subdomain data
   !----------------------------------------------------------------------------
   !> FFTW distributed
-  LOGICAL(idp) :: fftw_with_mpi, fftw_mpi_transpose, fftw_threads_ok, fftw_hybrid,cuda_fft
+  LOGICAL(idp) :: fftw_with_mpi, fftw_mpi_transpose, fftw_threads_ok, fftw_hybrid
   !> Number of groups (this is a parameter in the input file)
   INTEGER(idp)    ::  nb_group
   !> Number of groups in each direction

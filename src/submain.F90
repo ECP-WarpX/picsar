@@ -52,10 +52,10 @@ SUBROUTINE step(nst)
 USE diagnostics
 USE field_boundary
 USE fields, ONLY: l_spectral, nzguards, nxguards, nyguards
-#if defined(FFTW)
+#if defined(SPECTRAL)
 USE gpstd_solver
 #endif
-#if defined(FFTW)
+#if defined(SPECTRAL)
 USE iso_c_binding
 #endif
 #if defined(CUDA_FFT)
@@ -493,12 +493,10 @@ SUBROUTINE init_pml_arrays
     sigma_z_e = 1.0_num
     sigma_z_b = 1.0_num
   ENDIF
-#if defined(CUDA_FFT)
-      IF(cuda_fft) THEN
-          !$acc enter data copyin(sigma_x_e,sigma_x_b, &
-          !$acc& sigma_x_e,sigma_x_b,sigma_y_e,sigma_y_b, &
-          !$acc& sigma_z_b,sigma_z_e)
-      ENDIF
+#if defined(CUDA)
+ !$acc enter data copyin(sigma_x_e,sigma_x_b, &
+ !$acc& sigma_x_e,sigma_x_b,sigma_y_e,sigma_y_b, &
+ !$acc& sigma_z_b,sigma_z_e)
 #endif
 
 END SUBROUTINE init_pml_arrays
@@ -703,7 +701,7 @@ SUBROUTINE initall
 
     IF(l_spectral) THEN
 
-#if defined(FFTW)
+#if defined(SPECTRAL)
       WRITE(0, '(" FFTW - parameters ")')
       IF (g_spectral)    WRITE(0, '(" G_spectral = TRUE")')
       IF (fftw_with_mpi) WRITE(0, '(" FFTW distributed version - MPI ")')
@@ -802,7 +800,7 @@ SUBROUTINE initall
     CALL init_pml_arrays
   ENDIF
 
-#if defined(FFTW)
+#if defined(SPECTRAL)
   ! -Init Fourier
   IF (l_spectral) THEN
     CALL init_plans_blocks
@@ -818,7 +816,7 @@ SUBROUTINE initall
   bx=0.0_num;by=0.0_num;bz=0.0_num
   jx=0.0_num;jy=0.0_num;jz=0.0_num
   rho=0.0_num; rhoold = 0.0_num
-#if defined(CUDA_FFT)
+#if defined(CUDA)
   !$acc enter data copyin(ex,ey,ez,bx,by,bz,jx,jy,jz,rho,rhoold)
 #endif
   IF(absorbing_bcs) THEN

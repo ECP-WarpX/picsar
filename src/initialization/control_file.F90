@@ -230,7 +230,6 @@ MODULE control_file
 
     ! SET FFTW WITH MPI FLAG
     fftw_with_mpi = .FALSE.
-    cuda_fft = .FALSE.
     fftw_hybrid = .FALSE.
     fftw_mpi_transpose = .FALSE.
     p3dfft_flag = .FALSE.
@@ -358,10 +357,6 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'fftw_with_mpi') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) fftw_with_mpi
-      ELSE IF (INDEX(buffer, 'cuda_fft') .GT. 0) THEN
-        CALL GETARG(i+1, buffer)
-        READ(buffer, *) cuda_fft
-
       ELSE IF (INDEX(buffer, 'fftw_hybrid') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) fftw_hybrid
@@ -485,6 +480,12 @@ MODULE control_file
       END IF
     END DO
     RETURN
+#if defined(CUDA_FFT)
+    fftw_with_mpi = .FALSE.
+    fftw_hybrid = .FALSE.
+    p3dfft_flag = .FALSE.
+    p3dfft_stride = .FALSE.
+#endif
   END SUBROUTINE read_input_file
 
   ! ______________________________________________________________________________________
@@ -675,9 +676,6 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'fftw_with_mpi') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) fftw_with_mpi
-      ELSE IF (INDEX(buffer, 'cuda_fft') .GT. 0) THEN
-        ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), *) cuda_fft
       ELSE IF (INDEX(buffer, 'fftw_mpi_tr') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) fftw_mpi_transpose

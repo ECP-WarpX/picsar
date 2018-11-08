@@ -67,10 +67,12 @@ MODULE fourier_psaotd
    USE cufft
 #endif
     USE mpi
+#if defined(FFTW)
     USE mpi_fftw3, ONLY: plan_r2c_mpi, fftw_mpi_transposed_out, fftw_estimate,       &
       fftw_mpi_plan_dft_c2r_3d, fftw_mpi_plan_dft_c2r_2d, plan_c2r_mpi,              &
       fftw_mpi_plan_dft_r2c_3d, fftw_mpi_transposed_in, fftw_measure,                &
       fftw_mpi_plan_dft_r2c_2d
+#endif
     USE picsar_precision, ONLY: idp, isp
     USE shared_data, ONLY: fftw_plan_measure, nx_global, ny_global, fftw_threads_ok, &
       comm, c_dim, nz_global, fftw_mpi_transpose, fftw_hybrid, nb_group,             &
@@ -95,14 +97,10 @@ MODULE fourier_psaotd
           ELSE IF (c_dim == 2) THEN
             err_cu_r2c=CUFFTPLAN2D(plan_r2c_cuda,INT(nfftz,isp),INT(nfftx,isp),CUFFT_D2Z)
             err_cu_c2r=CUFFTPLAN2D(plan_c2r_cuda,INT(nfftz,isp),INT(nfftx,isp),CUFFT_Z2D)
-
-
           ENDIF
           !$acc end host_data
-#else
+#else ifdef (FFTW)
     nopenmp_cint=nopenmp
-
-
     IF(.NOT. p3dfft_flag) THEN
       IF  (fftw_threads_ok) THEN
         CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
@@ -204,7 +202,7 @@ MODULE fourier_psaotd
     USE params, ONLY: it
     USE picsar_precision, ONLY: idp, num
     USE shared_data, ONLY: nz, ny, nx, absorbing_bcs, absorbing_bcs_x,                &
-                           absorbing_bcs_y, absorbing_bcs_z, c_dim,cuda_fft
+                           absorbing_bcs_y, absorbing_bcs_z, c_dim
     USE shared_data, ONLY : x_max_boundary, y_max_boundary, z_max_boundary
     USE shared_data, ONLY : x_min_boundary, y_min_boundary, z_min_boundary
 
@@ -354,13 +352,11 @@ MODULE fourier_psaotd
     ENDIF
     
     ! Perform local forward FFTs R2C of all grid arrays 
-    IF(cuda_fft) THEN 
 #if defined(CUDA_FFT)
       CALL  fft_forward_r2c_local_cuda(nfftx,nffty,nfftz)
-#endif
-    ELSE
+#else
       CALL fft_forward_r2c_local(nfftx,nffty,nfftz)
-    ENDIF
+#endif
 
   END SUBROUTINE get_Ffields
  
@@ -708,68 +704,6 @@ MODULE fourier_psaotd
 
   END SUBROUTINE get_Ffields_mpi_lb 
 
- ! _______________________________________________________________________________________
- !> @brief
- !> This subroutine is used perform forward R2C distributed FFTs with fftw_with_mpi=true
- !> and without MPI groups 
- !> N.B: this routine is deprecated and will be integrally replaced by get_Ffields_mpi_lb 
- !> in the future 
- !>  
- !> @author
- !> Henri Vincenti
- !
- !> @date
- !> Creation 2017
- ! _______________________________________________________________________________________
-  SUBROUTINE get_Ffields_mpi
-    USE field_boundary
-    USE fields, ONLY: ez_r, ez, jx_r, ey_r, ex_r, bx_r, jz, by_r, rho_r, bz, bz_r,   &
-      jy, jx, ex, bx, jz_r, jy_r, by, rhoold_r, ey
-    USE iso_c_binding
-    USE mpi
-    USE params, ONLY: it
-    USE picsar_precision, ONLY: idp, num
-    USE shared_data, ONLY: rho, rhoold, iy_max_r, iz_max_r, iz_min_r, ix_min_r,      &
-      ix_max_r, iy_min_r
-    USE time_stat, ONLY: timestat_itstart, localtimes
-    IMPLICIT NONE
-    INTEGER(idp) :: ix, iy, iz
-    REAL(num)    :: tmptime
-
-    IF (it.ge.timestat_itstart) THEN
-      tmptime = MPI_WTIME()
-    ENDIF
-#if defined(CUDA_FFT)
-    CALL get_Ffields()
-    RETURN
-#endif
-    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-    DO iz=iz_min_r, iz_max_r
-      DO iy=iy_min_r, iy_max_r
-        DO ix=ix_min_r, ix_max_r
-          ex_r(ix, iy, iz)=ex(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)
-          ey_r(ix, iy, iz)=ey(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)
-          ez_r(ix, iy, iz)=ez(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)
-          bx_r(ix, iy, iz)=bx(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)
-          by_r(ix, iy, iz)=by(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)
-          bz_r(ix, iy, iz)=bz(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)
-          jx_r(ix, iy, iz)=jx(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)
-          jy_r(ix, iy, iz)=jy(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)
-          jz_r(ix, iy, iz)=jz(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)
-          rho_r(ix, iy, iz)=rho(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)
-          rhoold_r(ix, iy, iz)=rhoold(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)
-        END DO
-      END DO
-    END DO
-    !$OMP END PARALLEL DO
-    IF (it.ge.timestat_itstart) THEN
-      localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
-    ENDIF
-    ! Get global Fourier transform of all fields components and currents
-    CALL fft_forward_r2c_hybrid
-
-  END SUBROUTINE get_Ffields_mpi
-
   ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine computes backward C2R local FFTs - concerns only the local 
@@ -788,7 +722,7 @@ MODULE fourier_psaotd
     USE mpi
     USE params, ONLY: it
     USE picsar_precision, ONLY: idp, num
-    USE shared_data, ONLY: nz, ny, nx,cuda_fft
+    USE shared_data, ONLY: nz, ny, nx
     USE time_stat, ONLY: timestat_itstart, localtimes
     IMPLICIT NONE
     REAL(num) :: tmptime
@@ -804,13 +738,11 @@ MODULE fourier_psaotd
     nfftz=nz+2*nzguards
 #endif
     ! Get Inverse Fourier transform of all fields components 
-    IF(cuda_fft) THEN
 #if defined(CUDA_FFT)
       CALL fft_backward_c2r_local_cuda(nfftx,nffty,nfftz)
-#endif
-    ELSE
+#else
       CALL fft_backward_c2r_local(nfftx,nffty,nfftz)
-    ENDIF
+#endif
 
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
@@ -823,63 +755,6 @@ MODULE fourier_psaotd
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
   END SUBROUTINE get_fields
-
- ! _______________________________________________________________________________________
- !> @brief
- !> This subroutine is used perform backward C2R distributed FFTs with fftw_with_mpi=true
- !> and without MPI groups 
- !> N.B: this routine is deprecated and will be integrally replaced by get_fields_mpi_lb 
- !> in the future 
- !> 
- !> @author
- !> Henri Vincenti
- !
- !> @date
- !> Creation 2017
- ! _______________________________________________________________________________________
-  SUBROUTINE get_fields_mpi
-    USE fields, ONLY: ez_r, ez, ey_r, ex_r, bx_r, by_r, bz, bz_r, ex, bx, by, ey
-    USE iso_c_binding
-    USE mpi
-    USE params, ONLY: it
-    USE picsar_precision, ONLY: idp, num
-    USE shared_data, ONLY: iy_max_r, iz_max_r, iz_min_r, ix_min_r, ix_max_r,         &
-      iy_min_r
-    USE time_stat, ONLY: timestat_itstart, localtimes
-    IMPLICIT NONE
-    REAL(num) :: tmptime
-    INTEGER(idp) :: ix, iy, iz
-
-    ! Get global Fourier transform of all fields components 
-#if defined(CUDA_FFT)
-    CALL get_fields()
-    RETURN
-#endif
-    CALL fft_backward_c2r_hybrid
-    IF (it.ge.timestat_itstart) THEN
-      tmptime = MPI_WTIME()
-    ENDIF
-
-    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
-    DO iz=iz_min_r, iz_max_r
-      DO iy=iy_min_r, iy_max_r
-        DO ix=ix_min_r, ix_max_r
-          ex(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)=ex_r(ix, iy, iz)
-          ey(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)=ey_r(ix, iy, iz)
-          ez(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)=ez_r(ix, iy, iz)
-          bx(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)=bx_r(ix, iy, iz)
-          by(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)=by_r(ix, iy, iz)
-          bz(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)=bz_r(ix, iy, iz)
-        END DO
-      END DO
-    END DO
-      !$OMP END PARALLEL DO
-    IF (it.ge.timestat_itstart) THEN
-      localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
-    ENDIF
-
-  END SUBROUTINE get_fields_mpi
-
 
   ! ______________________________________________________________________________________
   !> @brief
@@ -1069,6 +944,7 @@ MODULE fourier_psaotd
     ENDIF
     IF(g_spectral) THEN
       IF(.NOT. absorbing_bcs) THEN
+#if defined(FFTW)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ex_r,                      &
              vold(nmatrixes)%block_vector(1)%block3dc, plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ey_r,                      &
@@ -1091,7 +967,9 @@ MODULE fourier_psaotd
             vold(nmatrixes)%block_vector(10)%block3dc,plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rho_r,                     &
             vold(nmatrixes)%block_vector(11)%block3dc, plan_r2c)
+#endif
       ELSE IF(absorbing_bcs) THEN
+#if defined(FFTW)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, exy_r,                      & 
              vold(nmatrixes)%block_vector(1)%block3dc, plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, exz_r,                      & 
@@ -1126,8 +1004,10 @@ MODULE fourier_psaotd
             vold(nmatrixes)%block_vector(16)%block3dc,plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rho_r,                     & 
             vold(nmatrixes)%block_vector(17)%block3dc, plan_r2c) 
+#endif
       ENDIF
     ELSE IF (.NOT. g_spectral) THEN
+#if defined(FFTW)
       CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ex_r, exf, plan_r2c)
       CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ey_r, eyf, plan_r2c)
       CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ez_r, ezf, plan_r2c)
@@ -1139,6 +1019,7 @@ MODULE fourier_psaotd
       CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jz_r, jzf, plan_r2c)
       CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rhoold_r, rhooldf,plan_r2c)
       CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rho_r, rhof, plan_r2c) 
+#endif
     ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
@@ -1161,7 +1042,9 @@ MODULE fourier_psaotd
 
     USE iso_c_binding
     USE mpi
+#if defined(FFTW)
     USE mpi_fftw3, ONLY: plan_r2c_mpi, fftw_mpi_execute_dft_r2c
+#endif
 #if defined(P3DFFT) 
     USE p3dfft
 #endif
@@ -1179,6 +1062,7 @@ MODULE fourier_psaotd
       IF(.NOT. p3dfft_flag) THEN
 #endif
        IF(absorbing_bcs) THEN
+#if defined(FFTW)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, exy_r,&
          vold(nmatrixes)%block_vector(1)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, exz_r,&
@@ -1213,8 +1097,10 @@ MODULE fourier_psaotd
             vold(nmatrixes)%block_vector(16)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rho_r,&
             vold(nmatrixes)%block_vector(17)%block3dc)
+#endif
 
        ELSE IF(.NOT. absorbing_bcs) THEN
+#if defined(FFTW)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ex_r,                           &
             vold(nmatrixes)%block_vector(1)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ey_r,                           &
@@ -1237,6 +1123,7 @@ MODULE fourier_psaotd
             vold(nmatrixes)%block_vector(10)%block3dc)
          CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rho_r,                          &
             vold(nmatrixes)%block_vector(11)%block3dc)
+#endif
        ENDIF
 #if defined(P3DFFT)
       ELSE IF(p3dfft_flag) THEN
@@ -1277,6 +1164,7 @@ MODULE fourier_psaotd
 #if defined(P3DFFT)
       IF(.NOT. p3dfft_flag) THEN
 #endif
+#if defined(FFTW)
         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ex_r, exf)
         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ey_r, eyf)
         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, ez_r, ezf)
@@ -1288,6 +1176,7 @@ MODULE fourier_psaotd
         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, jz_r, jzf)
         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rho_r, rhof)
         CALL fftw_mpi_execute_dft_r2c(plan_r2c_mpi, rhoold_r, rhooldf)
+#endif
 #if defined(P3DFFT)
       ELSE IF(p3dfft_flag) THEN
         CALL p3dfft_ftran_r2c (ex_r,exf,'fft')
@@ -1546,15 +1435,18 @@ MODULE fourier_psaotd
       tmptime = MPI_WTIME()
     ENDIF
     IF(.NOT. g_spectral) THEN
+#if defined(FFTW)
       CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, exf, ex_r, plan_c2r)
       CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, eyf, ey_r, plan_c2r)
       CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, ezf, ez_r, plan_c2r)
       CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, bxf, bx_r, plan_c2r)
       CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, byf, by_r, plan_c2r)
       CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, bzf, bz_r, plan_c2r)
+#endif
 
     ELSE IF(g_spectral) THEN
       IF(absorbing_bcs) THEN
+#if defined(FFTW)
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           & 
         vnew(nmatrixes)%block_vector(1)%block3dc, exy_r, plan_c2r)
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
@@ -1579,7 +1471,9 @@ MODULE fourier_psaotd
         vnew(nmatrixes)%block_vector(11)%block3dc, bzx_r, plan_c2r)
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
         vnew(nmatrixes)%block_vector(12)%block3dc, bzy_r, plan_c2r)
+#endif
       ELSE IF(.NOT. absorbing_bcs) THEN
+#if defined(FFTW)
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
         vnew(nmatrixes)%block_vector(1)%block3dc, ex_r, plan_c2r)
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
@@ -1592,14 +1486,12 @@ MODULE fourier_psaotd
         vnew(nmatrixes)%block_vector(5)%block3dc, by_r, plan_c2r)
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
         vnew(nmatrixes)%block_vector(6)%block3dc, bz_r, plan_c2r)
+#endif
       ENDIF
     ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
     ENDIF
-
-
-
   END SUBROUTINE fft_backward_c2r_local
 
   SUBROUTINE fft_backward_c2r_hybrid()
@@ -1617,7 +1509,9 @@ MODULE fourier_psaotd
 
     USE iso_c_binding
     USE mpi
+#if defined(FFTW)
     USE mpi_fftw3, ONLY: plan_c2r_mpi, fftw_mpi_execute_dft_c2r
+#endif
 #if defined(P3DFFT)
     USE p3dfft
 #endif
@@ -1634,13 +1528,14 @@ MODULE fourier_psaotd
 #if defined(P3DFFT)
     IF(.NOT. p3dfft_flag) THEN
 #endif
-
+#if defined(FFTW)
       CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, exf, ex_r)
       CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, eyf, ey_r)
       CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, ezf, ez_r)
       CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bxf, bx_r)
       CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, byf, by_r)
       CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi, bzf, bz_r)
+#endif
 
 #if defined(P3DFFT)
     ELSE IF(p3dfft_flag) THEN
@@ -1658,6 +1553,7 @@ MODULE fourier_psaotd
       IF(.NOT. p3dfft_flag) THEN
 #endif
         IF(.NOT. absorbing_bcs) THEN
+#if defined(FFTW)
           CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
           vnew(nmatrixes)%block_vector(1)%block3dc,ex_r)
           CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
@@ -1695,6 +1591,7 @@ MODULE fourier_psaotd
           vnew(nmatrixes)%block_vector(11)%block3dc,bzx_r)
           CALL fftw_mpi_execute_dft_c2r(plan_c2r_mpi,                                    &
           vnew(nmatrixes)%block_vector(12)%block3dc,bzy_r)
+#endif
         ENDIF
 #if defined(P3DFFT)
       ELSE IF(p3dfft_flag) THEN
@@ -2028,7 +1925,7 @@ MODULE fourier_psaotd
     USE omp_lib
     USE picsar_precision, ONLY: idp
     USE shared_data, ONLY: nz, ny, fftw_with_mpi, nx, nx_global, p3dfft_flag,        &
-      ny_global, c_dim, nz_global, rank, absorbing_bcs,cuda_fft
+      ny_global, c_dim, nz_global, rank, absorbing_bcs
 #if defined(CUDA_FFT)
 USE cufft
 #endif
@@ -2083,7 +1980,7 @@ USE cufft
         CALL init_plans_fourier_mpi(nopenmp)
       !> If local psatd, plans are initialized here
       ELSE IF(.NOT. fftw_with_mpi) THEN
-        IF( .NOT. cuda_fft) THEN
+#if !defined(CUDA_FFT)
           IF(c_dim ==3) THEN
             CALL fast_fftw_create_plan_r2c_3d_dft(nopenmp, nfftx, nffty, nfftz,ex_r, exf,  &
             plan_r2c, INT(FFTW_MEASURE, idp), INT(FFTW_FORWARD, idp))
@@ -2096,22 +1993,17 @@ USE cufft
             plan_c2r, INT(FFTW_MEASURE, idp), INT(FFTW_BACKWARD, idp))
           ENDIF
         ELSE
-#if defined(CUDA_FFT)
-
+#else
           !$acc host_data
           IF(c_dim ==3) THEN
             err_cu_r2c=CUFFTPLAN3D(plan_r2c_cuda,INT(nfftz,isp),INT(nffty,isp),INT(nfftx,isp),CUFFT_D2Z)
             err_cu_c2r=CUFFTPLAN3D(plan_c2r_cuda,INT(nfftz,isp),INT(nffty,isp),INT(nfftx,isp),CUFFT_Z2D)
-            
           ELSE IF (c_dim == 2) THEN
             err_cu_r2c=CUFFTPLAN2D(plan_r2c_cuda,INT(nfftz,isp),INT(nfftx,isp),CUFFT_D2Z)
             err_cu_c2r=CUFFTPLAN2D(plan_c2r_cuda,INT(nfftz,isp),INT(nfftx,isp),CUFFT_Z2D)
-
-
           ENDIF
           !$acc end host_data
 #endif
-        ENDIF
       ENDIF
       IF(rank==0) WRITE(0, *) 'INIT GPSTD PLANS DONE'
     ENDIF

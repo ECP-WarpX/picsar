@@ -625,10 +625,8 @@ END SUBROUTINE push_efield_2d
 
   SUBROUTINE push_psatd_ebfield
   USE fields, ONLY: g_spectral
-#if defined(FFTW)
+#if defined(SPECTRAL)
   USE fourier_psaotd
-#endif
-#if defined(FFTW)
   USE matrix_data, ONLY: nmatrixes
 #endif
   USE mpi
@@ -648,13 +646,11 @@ END SUBROUTINE push_efield_2d
     tmptime = MPI_WTIME()
   ENDIF
 
-#if defined(FFTW)
+#if defined(SPECTRAL)
   ! - Fourier Transform R2C
   IF (fftw_with_mpi) THEN
     IF(fftw_hybrid) THEN
       CALL get_Ffields_mpi_lb!  -global-hybrid balanced FFT
-    ELSE
-      CALL get_Ffields_mpi! - global-hybrid FFT
     ENDIF
   ELSE
         WRITE(0, *) "enter get_Ffields"
@@ -682,8 +678,6 @@ END SUBROUTINE push_efield_2d
   IF (fftw_with_mpi) THEN
     IF(fftw_hybrid) THEN
       CALL get_fields_mpi_lb! -global-hybrid balanced IFFT
-    ELSE
-      CALL get_fields_mpi! global-hybrid IFFT
     ENDIF
   ELSE
     CALL get_fields! local IFFT

@@ -402,7 +402,7 @@ MODULE field_boundary
     sizes(3) = nz_local + 1 + 2 * nzg
     starts = 1
 
-#if defined(CUDA_FFT)
+#if defined(CUDA)
     szmax = sizes(1) * sizes(2) * (nzg+1)
     sz = sizes(1) * sizes(3) * (nyg+1)
     IF (sz .GT. szmax) szmax = sz
@@ -425,7 +425,7 @@ MODULE field_boundary
     subsizes(3) = sizes(3)
     sz = subsizes(1) * subsizes(2) * subsizes(3)
 
-#if !defined(CUDA_FFT)
+#if !defined(CUDA)
     IF (is_dtype_init(4)) THEN
       mpi_dtypes(4) = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
       is_dtype_init(4) = .FALSE.
@@ -520,7 +520,7 @@ write(0,*) "finished ixmin to xmax"
       subsizes(2) = nyg+1
       subsizes(3) = sizes(3)
       sz = subsizes(1)*subsizes(2)*subsizes(3) 
-#if !defined(CUDA_FFT)
+#if !defined(CUDA)
       IF (is_dtype_init(5)) THEN
         mpi_dtypes(5) = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
         is_dtype_init(5) = .FALSE.
@@ -565,7 +565,7 @@ write(0,*) "finished ixmin to xmax"
       ENDIF
 #endif
 
-#if !defined(CUDA_FFT)
+#if !defined(CUDA)
       ! --- -Y
       CALL MPI_ISEND(field(-nxg, ny_local-nyg, -nzg), 1_isp, mpi_dtypes(5),             &
       INT(proc_y_max, isp), tag, comm, requests(1), errcode)
@@ -613,7 +613,7 @@ write(0,*) "finished ixmin to xmax"
     subsizes(3) = nzg+1
     sz = subsizes(1) * subsizes(2) * subsizes(3)
   
-#if !defined(CUDA_FFT)
+#if !defined(CUDA)
     IF (is_dtype_init(6)) THEN
       mpi_dtypes(6) = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
       is_dtype_init(6) = .FALSE.
@@ -658,7 +658,7 @@ write(0,*) "finished ixmin to xmax"
 #endif
 
     ! --- -Z
-#if !defined(CUDA_FFT)
+#if !defined(CUDA)
     CALL MPI_ISEND(field(-nxg, -nyg, nz_local-nzg), 1_isp, mpi_dtypes(6),             &
     INT(proc_z_max, isp), tag, comm, requests(1), errcode)
     CALL MPI_IRECV(field(-nxg, -nyg, -nzg), 1_isp, mpi_dtypes(6), INT(proc_z_min,     &
@@ -2605,7 +2605,7 @@ USE mpi
       CALL summation_bcs(jz, nxjguards, nyjguards, nzjguards, nx, ny, nz)
 
     ELSE
-#if !defined(CUDA_FFT)
+#if !defined(CUDA)
       CALL summation_bcs_nonblocking(jx, nxjguards, nyjguards, nzjguards, nx, ny, nz)
       CALL summation_bcs_nonblocking(jy, nxjguards, nyjguards, nzjguards, nx, ny, nz)
       CALL summation_bcs_nonblocking(jz, nxjguards, nyjguards, nzjguards, nx, ny, nz)
@@ -2648,7 +2648,7 @@ USE mpi
     IF (mpicom_curr.EQ.1) THEN
       CALL summation_bcs(rho, nxjguards, nyjguards, nzjguards, nx, ny, nz)
     ELSE
-#if !defined(CUDA_FFT)
+#if !defined(CUDA)
       CALL summation_bcs_nonblocking(rho, nxjguards, nyjguards, nzjguards, nx, ny,    &
       ,nz)
 #else

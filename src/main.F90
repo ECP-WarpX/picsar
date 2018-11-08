@@ -59,6 +59,9 @@ PROGRAM main
   USE fourier
   USE fastfft
   USE fftw3_fortran
+#if defined(PDFFT)
+  USE p3dfft
+#endif
 #endif
 
 ! Vtune profiling
@@ -172,16 +175,24 @@ PROGRAM main
   				  " "//trim(adjustl(str7))
   	CLOSE(12)
   ENDIF 
-#if defined(FFTW)
+#if defined(SPECTRAL)
   IF(l_spectral) THEN
-    IF(.NOT. cuda_fft) THEN
-      IF(fftw_with_mpi) THEN
+    IF(fftw_with_mpi ) THEN
+      IF(p3dfft_flag) THEN
+#if defined(P3DFFT)
+       CALL p3dfft_clean
+#endif
+      ELSE
+#if defined(FFTW)
         CALL DFFTW_DESTROY_PLAN(plan_r2c_mpi)
         CALL DFFTW_DESTROY_PLAN(plan_c2r_mpi)
-      ELSE
-        CALL fast_fftw_destroy_plan_dft(plan_r2c)
-        CALL fast_fftw_destroy_plan_dft(plan_c2r)
+#endif
       ENDIF
+    ELSE 
+#if defined(FFTW)
+      CALL fast_fftw_destroy_plan_dft(plan_r2c)
+      CALL fast_fftw_destroy_plan_dft(plan_c2r)
+#endif
     ENDIF
   ENDIF
 #endif

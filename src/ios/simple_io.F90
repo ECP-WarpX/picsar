@@ -98,7 +98,7 @@ MODULE simple_io
         ! - Write current density ex
 
         IF (rank.eq.0) WRITE(0, *) "Write electric field ex"
-#if defined(CUDA_FFT)
+#if defined(CUDA)
 !$acc update self(ex)
 #endif
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileex))//       &
@@ -109,7 +109,7 @@ MODULE simple_io
       IF (c_output_ey .EQ. 1) THEN
         ! - Write current density ey
         IF (rank.eq.0) WRITE(0, *) "Write electric field ey"
-#if defined(CUDA_FFT)
+#if defined(CUDA)
 !$acc update self(ey)
 #endif
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileey))//       &
@@ -119,7 +119,7 @@ MODULE simple_io
       IF (c_output_ez .EQ. 1) THEN
         ! - Write current density ez
         IF (rank.eq.0) WRITE(0, *) "Write electric field ez"
-#if defined(CUDA_FFT)
+#if defined(CUDA)
 !$acc update self(ez)
 #endif
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileez))//       &
@@ -129,7 +129,7 @@ MODULE simple_io
       IF (c_output_bx .EQ. 1) THEN
         ! - Write magnetic field bx
         IF (rank.eq.0) WRITE(0, *) "Write magnetic field bx"
-#if defined(CUDA_FFT)
+#if defined(CUDA)
 !$acc update self(bx)
 #endif
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebx))//       &
@@ -139,7 +139,7 @@ MODULE simple_io
       IF (c_output_by .EQ. 1) THEN
         ! - Write current density by
         IF (rank.eq.0) WRITE(0, *) "Write magnetic field by"
-#if defined(CUDA_FFT)
+#if defined(CUDA)
 !$acc update self(by)
 #endif
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileby))//       &
@@ -148,7 +148,7 @@ MODULE simple_io
       ENDIF
       IF (c_output_bz .EQ. 1) THEN
         ! - Write current density bz
-#if defined(CUDA_FFT)
+#if defined(CUDA)
 !$acc update self(bz)
 #endif
         IF (rank.eq.0) WRITE(0, *) "Write magnetic field bz"
@@ -159,7 +159,7 @@ MODULE simple_io
       IF (c_output_jx .EQ. 1) THEN
         ! - Write current density jx
         IF (rank.eq.0) WRITE(0, *) "Write current density jx"
-#if defined(CUDA_FFT)
+#if defined(CUDA)
 !$acc update self(jx)
 #endif
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filejx))//       &
@@ -169,7 +169,7 @@ MODULE simple_io
       IF (c_output_jy .EQ. 1) THEN
         ! - Write current density jy
         IF (rank.eq.0) WRITE(0, *) "Write current density jy"
-#if defined(CUDA_FFT)
+#if defined(CUDA)
 !$acc update self(jy)
 #endif
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filejy))//       &
@@ -179,7 +179,7 @@ MODULE simple_io
       IF (c_output_jz .EQ. 1) THEN
         ! - Write current density jz
         IF (rank.eq.0) WRITE(0, *) "Write current density jz"
-#if defined(CUDA_FFT)
+#if defined(CUDA)
 !$acc update self(jz)
 #endif
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filejz))//       &
@@ -218,7 +218,7 @@ MODULE simple_io
       IF (c_output_rho .EQ. 1) THEN
         ! - Write total charge density rho
         IF (rank.eq.0) WRITE(0, *) "Write total charge density rho"
-#if defined(CUDA_FFT)
+#if defined(CUDA)
 !$acc update self(rho)
 #endif
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filerho))//      &

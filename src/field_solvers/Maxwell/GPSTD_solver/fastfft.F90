@@ -42,7 +42,9 @@
 MODULE fftw3_fortran !#do not parse
   use, intrinsic :: iso_c_binding
   use PICSAR_precision 
+#if defined(FFTW)
   include 'fftw3.f03'
+#endif
   integer(idp), parameter :: nmaxplan=100000
   ! > Fortran Integer Array where C integer pointers to plans are stored
   integer(idp), DIMENSION(nmaxplan) :: plans_cint
@@ -52,7 +54,9 @@ END MODULE fftw3_fortran
 MODULE mpi_fftw3 !#do not parse
   use, intrinsic :: iso_c_binding
   use PICSAR_precision 
+#if defined(FFTW)
   include 'fftw3-mpi.f03'
+#endif
   integer(idp), parameter :: nmaxplan_mpi=100000
   ! > Fortran Integer Array where C integer pointers to plans are stored
   integer(idp), DIMENSION(nmaxplan_mpi) :: plans_cint_mpi
@@ -88,6 +92,7 @@ CONTAINS
 ! plan_type can either be FFTW_ESTIMATE (low overhead, low optimization)
 ! FFTW_MEASURE (moderate to high overhead, high optimization)
 ! FFTW_EXHAUSTIVE (very high overhead, brute force optimization)
+#if defined(FFTW)
 SUBROUTINE fast_fftw_create_plan_3d_dft(nopenmp,nx,ny,nz,array_in,array_out, &
     plan,plan_type,dir)
     USE fftw3_fortran, ONLY: plans_cint, nplan
@@ -602,5 +607,6 @@ SUBROUTINE fast_fftw_destroy_plan_dft(plan)
     CALL  DFFTW_DESTROY_PLAN(plans_cint(iplan))
 
 END SUBROUTINE fast_fftw_destroy_plan_dft
+#endif
 
 END MODULE fastfft

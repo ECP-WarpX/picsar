@@ -84,7 +84,7 @@ MODULE mpi_routines
     IF (.NOT. isinitialized) THEN
       CALL MPI_INIT_THREAD(MPI_THREAD_FUNNELED, provided, errcode)
 #if defined(FFTW)
-    IF (.NOT. cuda_fft) THEN
+#if !defined(CUDA_FFT)
       IF (provided >= MPI_THREAD_FUNNELED) THEN
         CALL DFFTW_INIT_THREADS(iret)
         fftw_threads_ok = .TRUE.
@@ -92,7 +92,7 @@ MODULE mpi_routines
         fftw_threads_ok=.FALSE.
       ENDIF
       CALL FFTW_MPI_INIT()
-    ENDIF
+#endif
 #endif
     ENDIF
     CALL MPI_COMM_DUP(MPI_COMM_WORLD, comm, errcode)
@@ -137,14 +137,14 @@ MODULE mpi_routines
     CALL MPI_COMM_RANK(comm, rank_in_comm, errcode)
     rank=INT(rank_in_comm, idp)
 #if defined(FFTW)
-    IF (.NOT. cuda_fft) THEN
+#if !defined(CUDA_FFT)
       IF (.NOT. p3dfft_flag) THEN
         CALL DFFTW_INIT_THREADS(iret)
         IF( fftw_with_mpi) THEN
           CALL FFTW_MPI_INIT()
         ENDIF
       ENDIF
-    ENDIF
+#endif
 #endif
 
   END SUBROUTINE mpi_minimal_init_python
@@ -1224,93 +1224,6 @@ LOGICAL(isp)                               :: is_in_place
 #endif
 END SUBROUTINE setup_groups
 
-! ______________________________________________________________________________________
-!> @brief
-!> This routine gathers on all ranks, the sizes of the distributed FFT array along z 
-!> on each rank. This is useful to obtain the grid decomposition performed by the 
-!> FFTW distributed FFT library - This is used when fftw_with_mpi=.TRUE. 
-!> and fftw_hybrid=.FALSE.
-!> @ author 
-!> H. Kallala
-!> 2018
-! ______________________________________________________________________________________
-SUBROUTINE adjust_grid_mpi_global
-#if defined(FFTW)
-USE iso_c_binding
-USE mpi
-USE mpi_fftw3, ONLY: local_y0_tr, local_z0_tr, local_x0, local_ny_tr, local_ny,      &
-  local_nx_tr, local_nx, local_x0_tr, local_nz, local_y0, local_nz_tr
-#endif
-#if defined(FFTW)
-USE picsar_precision, ONLY: idp, isp
-USE shared_data, ONLY: nz_global_grid_min, nz, ny, fftw_with_mpi, errcode,           &
-  cell_z_max, nz_global_grid_max, iy_max_r, nx, z_coords, nz_grid, iz_max_r,         &
-  nx_global, ny_global, nprocz, iz_min_r, cell_z_min, ix_min_r, ix_max_r, comm,      &
-  nz_global, iy_min_r, fftw_mpi_transpose, fftw_hybrid
-#endif
-
-#if defined(FFTW)
-  INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: all_nz
-  INTEGER(idp)  :: idim
-  nz = local_nz
-  nz_grid = nz + 1
-  ALLOCATE(all_nz(1:nprocz))
-
-  CALL MPI_ALLGATHER(nz, 1_isp, MPI_INTEGER8, all_nz, 1_isp, MPI_INTEGER8,    &
-  comm, errcode)
-
-  cell_z_min(1) = 0
-  cell_z_max(1) = all_nz(1)-1
-
-  DO idim=2, nprocz
-    cell_z_min(idim) = cell_z_max(idim-1)+1
-    cell_z_max(idim) = cell_z_min(idim) + all_nz(idim)-1
-  ENDDO
-
-  nz_global_grid_min = cell_z_min(z_coords+1)
-  nz_global_grid_max = cell_z_max(z_coords+1)+1
-
-  DEALLOCATE(all_nz)
-
-  ix_min_r = 1
-  ix_max_r = nx_global
-
-  iy_min_r = 1
-  iy_max_r = ny_global
-
-  iz_min_r = 1
-  iz_max_r = local_nz
-  
-  ! - Get local sizes of FFT input/output arrays along directions orthogonal to 
-  ! - the direction of MPI CPU-split (FFTW-MPI only)
-  IF ((.NOT. fftw_hybrid) .AND. (fftw_with_mpi)) THEN 
-    IF (fftw_mpi_transpose) THEN 
-      ! - Starting indexes/local sizes of FFT real arrays along Y
-      local_ny=ny_global
-      local_y0=0
-      ! - Starting indexes/local sizes of FFT Fourier arrays along Y
-      local_ny_tr=nz_global
-      local_y0_tr=0
-    ELSE
-      ! - Starting indexes/local sizes of FFT input arrays along Y
-      local_ny=ny_global
-      local_y0=0
-      ! - Starting indexes/local sizes of FFT output arrays along Y and Z
-      local_ny_tr=local_ny
-      local_y0_tr=local_y0
-      local_nz_tr=local_nz
-      local_z0_tr=0
-    ENDIF 
-    ! - Starting indexes/local sizes of FFT input arrays along X
-    local_nx=(nx_global/2_idp+1)*2_idp
-    local_x0=0
-    ! - Starting indexes/local sizes of FFT output arrays along X
-    local_nx_tr=local_nx/2_idp
-    local_x0_tr=local_x0
-  ENDIF 
-#endif
-
-END SUBROUTINE adjust_grid_mpi_global
 
 ! ______________________________________________________________________________________
 !> @brief
@@ -1526,14 +1439,6 @@ IF(fftw_with_mpi) THEN
   IF(fftw_hybrid) THEN
     CALL setup_groups
   ! -- Case of totally global FFT
-  ELSE
-    ! -- adjust nz to be equal to local_nz (since
-    !!! --- it is computed differently by distributed FFT libraries)
-    CALL adjust_grid_mpi_global
-    IF(nz .NE. cell_z_max(z_coords+1) - cell_z_min(z_coords+1)+1) THEN
-      WRITE(0, *) 'ERROR IN AJUSTING THE GRID 1'
-      STOP
-    ENDIF
   ENDIF
 ENDIF
 
@@ -1779,9 +1684,7 @@ ALLOCATE(bx(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards)
 ALLOCATE(by(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 ALLOCATE(bz(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 #if defined(CUDA_FFT)
-      IF(cuda_fft) THEN
       !$acc enter data create(ex,ey,ez,bx,by,bz)
-      ENDIF
 #endif
 ! > When using absorbing_bcs , allocate splitted fields 
 IF(absorbing_bcs) THEN
@@ -1798,9 +1701,7 @@ IF(absorbing_bcs) THEN
   ALLOCATE(bzx(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
   ALLOCATE(bzy(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
 #if defined(CUDA_FFT)
-      IF(cuda_fft) THEN
       !$acc enter data create (exy,exz,eyx,eyz,ezx,ezy,bxy,bxz,byx,byz,bzx,bzy)
-      ENDIF
 #endif
 ENDIF
 ALLOCATE(jx(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
@@ -1818,9 +1719,7 @@ ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards,                     
 ALLOCATE(divj(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 ALLOCATE(divb(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 #if defined(CUDA_FFT)
-      IF(cuda_fft) THEN
       !$acc enter data create (jx,jy,jz,rho,rhoold,dive,divb,divj)
-      ENDIF
 #endif
 
 ! --- Initialize auxiliary field arrays for gather to particles
@@ -2022,9 +1921,7 @@ IF (l_spectral) THEN
       ALLOCATE(rhof(nkx, nky, nkz))
       ALLOCATE(rhooldf(nkx, nky, nkz))
 #if defined(CUDA_FFT)
-      IF(cuda_fft) THEN
       !$acc enter data create (exf,eyf,ezf,bxf,byf,bzf,jxf,jyf,jzf,rhof,rhooldf)
-      ENDIF
 #endif
     ENDIF
     ! - Allocate real FFT arrays 
@@ -2052,9 +1949,7 @@ IF (l_spectral) THEN
       ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
       ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
 #if defined(CUDA_FFT)
-      IF(cuda_fft) THEN
       !$acc enter data create  (ex_r,ey_r,ez_r,bx_r,by_r,bz_r,jx_r,jy_r,jz_r,rhoold_r,rho_r)
-      ENDIF
 #endif
     ELSE IF(absorbing_bcs) THEN
       ALLOCATE(exy_r(imn:imx, jmn:jmx, kmn:kmx))
@@ -2075,9 +1970,7 @@ IF (l_spectral) THEN
       ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
       ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
 #if defined(CUDA_FFT)
-      IF(cuda_fft) THEN
       !$acc enter data create  (exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r,byx_r,byz_r,bzx_r,bzy_r,jx_r,jy_r,jz_r,rhoold_r,rho_r)
-      ENDIF
 #endif
     ENDIF
   ENDIF

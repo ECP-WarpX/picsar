@@ -39,7 +39,8 @@ SYS=default
 # - ivy
 # - hsw
 # - host
-ARCH=
+# - GPU
+ARCH=GPU
 
 
 # User Compiler Parameters (that can be tuned by the user)
@@ -263,7 +264,7 @@ ifeq ($(COMP),gnu)
 	  FARGS= -O3   -g   -Wunused-variable -fcheck=bound  
 	else ifeq($(MODE),prod_spectral)
 	  FC=mpif90
-	  FARGS= -O3 -Mcudalib=cufft -acc -ta=tesla:managed -Minfo=all  -g 
+	  FARGS= -O3 -fopenmp -JModules -ftree-vectorize 
 	else ifeq($(MODE),debug_spectral)
 	  FC=mpif90
 	  FARGS= -O3     -Wunused-variable  
@@ -323,8 +324,14 @@ else ifeq ($(COMP),intel)
   endif
 
 endif
-
 FARGS+= $(LARCH)
+
+
+ifeq ($(ARCH),GPU)
+        FARGS=-O3 -Mcudalib=cufft -acc -openmp -ta=tesla -Minfo=all  -g
+        FARGS+= -D CUDA
+        APPNAME=picsar_gpu
+endif
 
 # ________________________________________________________
 # Not used for the moment
@@ -334,16 +341,20 @@ FARGS+= $(LARCH)
 #-include $(FDEPT)
 # ________________________________________________________
 
-ifeq ($(MODE),$(filter $(MODE),prod_spectral debug_spectral))
-        FARGS += -I$(FFTW3_INCLUDE) -D FFTW=1 
-        LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_threads
-        FARGS+= -I$(CUDAFFT_INCLUDE) -D CUDA_FFT=1  
-        LDFLAGS+= -L $(CUDAFFT_LIB)  -lcufft -lcufftw
 
-endif
-ifeq ($(IS_P3DFFT),true)
-        FARGS += -I$(P3DFFT_INCLUDE)  -D P3DFFT
-        LDFLAGS += $(P3DFFT_LIB)/libp3dfft.a
+ifeq ($(MODE),$(filter $(MODE),prod_spectral debug_spectral))
+        FARGS += -D SPECTRAL=1 
+        ifeq ($(ARCH),GPU)
+                FARGS+= -I$(CUDAFFT_INCLUDE) -D CUDA_FFT  
+                LDFLAGS+= -L $(CUDAFFT_LIB)  -lcufft
+        else
+                FARGS += -I$(FFTW3_INCLUDE) -D FFTW=1
+                LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_threads
+                ifeq ($(IS_P3DFFT),true)
+                  FARGS += -I$(P3DFFT_INCLUDE)  -D P3DFFT
+                  LDFLAGS += $(P3DFFT_LIB)/libp3dfft.a
+                endif
+        endif
 endif
 
 ifeq ($(MODE),library)
@@ -519,6 +530,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o $(LDFLAGS)
 	mkdir -p $(BINDIR)
 	mv $(APPNAME) $(BINDIR)
+	cp $(BINDIR)/$(APPNAME) $(SCRATCH)
 else
 build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
