@@ -252,6 +252,21 @@ MODULE fields
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: byf
   !> MPI-domain magnetic field grid in z - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bzf
+  !> Splitted Fourier fields
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: exyf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: exzf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: eyxf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: eyzf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: ezxf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: ezyf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bxyf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bxzf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: byxf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: byzf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bzxf
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bzyf
+  !> Endif
+
   !> MPI-domain current grid in x - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jxf
   !> MPI-domain current grid in y - Fourier space
@@ -262,6 +277,7 @@ MODULE fields
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: rhof
   !> MPI-domain current grid in z - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: rhooldf
+
   !> Fonberg coefficients in x
   REAL(num), POINTER, DIMENSION(:) :: xcoeffs
   !> Fonberg coefficients in y

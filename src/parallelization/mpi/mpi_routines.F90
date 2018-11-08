@@ -1681,23 +1681,29 @@ TYPE(C_PTR) :: cdata, cin
 INTEGER(idp) :: imn, imx, jmn, jmx, kmn, kmx
 INTEGER(idp) :: nxx, nyy, nzz
 ! --- Allocate regular grid quantities (in real space)
-ALLOCATE(ex(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-ALLOCATE(ey(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-ALLOCATE(ez(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-ALLOCATE(bx(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-ALLOCATE(by(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-ALLOCATE(bz(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+ALLOCATE(ex(-nxguards:nx+nxguards, -nyguards:ny+nyguards,&
+-nzguards:nz+nzguards))
+ALLOCATE(ey(-nxguards:nx+nxguards, -nyguards:ny+nyguards,&
+-nzguards:nz+nzguards))
+ALLOCATE(ez(-nxguards:nx+nxguards, -nyguards:ny+nyguards,&
+-nzguards:nz+nzguards))
+ALLOCATE(bx(-nxguards:nx+nxguards, -nyguards:ny+nyguards,&
+-nzguards:nz+nzguards))
+ALLOCATE(by(-nxguards:nx+nxguards, -nyguards:ny+nyguards,&
+-nzguards:nz+nzguards))
+ALLOCATE(bz(-nxguards:nx+nxguards, -nyguards:ny+nyguards,&
+-nzguards:nz+nzguards))
 #if defined(CUDA_FFT)
       !$acc enter data create(ex,ey,ez,bx,by,bz)
 #endif
 ! > When using absorbing_bcs , allocate splitted fields 
 IF(absorbing_bcs) THEN
-  ALLOCATE(exy(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
-  ALLOCATE(exz(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
-  ALLOCATE(eyx(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
-  ALLOCATE(eyz(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
-  ALLOCATE(ezx(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
-  ALLOCATE(ezy(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
+  ALLOCATE(exy(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
+  ALLOCATE(exz(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
+  ALLOCATE(eyx(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
+  ALLOCATE(eyz(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
+  ALLOCATE(ezx(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
+  ALLOCATE(ezy(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
   ALLOCATE(bxy(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
   ALLOCATE(bxz(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
   ALLOCATE(byx(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
@@ -1708,20 +1714,20 @@ IF(absorbing_bcs) THEN
       !$acc enter data create (exy,exz,eyx,eyz,ezx,ezy,bxy,bxz,byx,byz,bzx,bzy)
 #endif
 ENDIF
-ALLOCATE(jx(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
+ALLOCATE(jx(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,&
 -nzjguards:nz+nzjguards))
-ALLOCATE(jy(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
+ALLOCATE(jy(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,&
 -nzjguards:nz+nzjguards))
-ALLOCATE(jz(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
+ALLOCATE(jz(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,&
 -nzjguards:nz+nzjguards))
-ALLOCATE(rho(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                    &
+ALLOCATE(rho(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,&
 -nzjguards:nz+nzjguards))
-ALLOCATE(rhoold(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                 &
+ALLOCATE(rhoold(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,&
 -nzjguards:nz+nzjguards))
-ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards,                       &
+ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards,&
 -nzguards:nz+nzguards))
-ALLOCATE(divj(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-ALLOCATE(divb(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+ALLOCATE(divj(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
+ALLOCATE(divb(-nxguards:nx+nxguards, -nyguards:ny+nyguards,-nzguards:nz+nzguards))
 #if defined(CUDA_FFT)
       !$acc enter data create (jx,jy,jz,rho,rhoold,dive,divb,divj)
 #endif
@@ -1734,104 +1740,127 @@ bx_p => bx
 by_p => by
 bz_p => bz
 
-
 #if defined(SPECTRAL)
-! ---  Allocate grid quantities in Fourier space
-IF (l_spectral) THEN
-
-  ! - Case when fftw_with_mpi is .TRUE. (distributed FFT)
-  IF (fftw_with_mpi) THEN
-    ! - FFT arrays dimensions in Fourier space along X,Y,Z
-    nkx=local_nx_tr
-    nky=local_ny_tr
-    nkz=local_nz_tr
-    IF(c_dim == 2) THEN
-      nky = 1_idp
-    ENDIF
-    ! - Allocate complex FFT arrays
-    ! - Case when p3dfft_flag is .TRUE. (p3dfft is used for distributed FFT)
-    IF(p3dfft_flag) THEN
-      IF(.NOT. g_spectral) THEN
-        ALLOCATE(exf(nkx,nky,nkz))
-        ALLOCATE(eyf(nkx,nky,nkz))
-        ALLOCATE(ezf(nkx,nky,nkz))
-        ALLOCATE(bxf(nkx,nky,nkz))
-        ALLOCATE(byf(nkx,nky,nkz))
-        ALLOCATE(bzf(nkx,nky,nkz))
-        ALLOCATE(jxf(nkx,nky,nkz))
-        ALLOCATE(jyf(nkx,nky,nkz))
-        ALLOCATE(jzf(nkx,nky,nkz))
-        ALLOCATE(rhof(nkx,nky,nkz))
-        ALLOCATE(rhooldf(nkx,nky,nkz))
-      ENDIF
-    ! - Case when FFTW is used for the distributed FFT
-    ELSE IF(.NOT. p3dfft_flag) THEN
-      IF(.NOT. g_spectral) THEN
-#if defined(FFTW)
-        cdata = fftw_alloc_complex(alloc_local)
-        CALL c_f_pointer(cdata, exf, [nkx, nky, nkz])
-        cdata = fftw_alloc_complex(alloc_local)
-        CALL c_f_pointer(cdata, eyf, [nkx, nky, nkz])
-        cdata = fftw_alloc_complex(alloc_local)
-        CALL c_f_pointer(cdata, ezf, [nkx, nky, nkz])
-        cdata = fftw_alloc_complex(alloc_local)
-        CALL c_f_pointer(cdata, bxf, [nkx, nky, nkz])
-        cdata = fftw_alloc_complex(alloc_local)
-        CALL c_f_pointer(cdata, byf, [nkx, nky, nkz])
-        cdata = fftw_alloc_complex(alloc_local)
-        CALL c_f_pointer(cdata, bzf, [nkx, nky, nkz])
-        cdata = fftw_alloc_complex(alloc_local)
-        CALL c_f_pointer(cdata, jxf, [nkx, nky, nkz])
-        cdata = fftw_alloc_complex(alloc_local)
-        CALL c_f_pointer(cdata, jyf, [nkx, nky, nkz])
-        cdata = fftw_alloc_complex(alloc_local)
-        CALL c_f_pointer(cdata, jzf, [nkx, nky, nkz])
-        cdata = fftw_alloc_complex(alloc_local)
-        CALL c_f_pointer(cdata, rhof, [nkx, nky, nkz])
-        cdata = fftw_alloc_complex(alloc_local)
-        CALL c_f_pointer(cdata, rhooldf, [nkx, nky, nkz])
+IF(l_spectral) THEN
+! Case 1 : p3dfft or local
+  IF(fftw_with_mpi .EQV. .FALSE. .OR. (fftw_with_mpi .AND. p3dfft_flag)) THEN
+     IF(p3dfft_flag) THEN
+       nkx=local_nx_tr
+       nky=local_ny_tr
+       nkz=local_nz_tr
+       nxx = local_nx
+       nyy = local_ny
+       nzz = local_nz
+     ELSE
+       nkx=(2*nxguards+nx)/2+1! Real To Complex Transform
+       nky=(2*nyguards+ny)
+       nkz=(2*nzguards+nz)
+       IF(c_dim == 2) THEN
+         nky =1_idp
+       ENDIF
+       imn=-nxguards; imx=nx+nxguards-1
+       jmn=-nyguards;jmx=ny+nyguards-1
+       kmn=-nzguards;kmx=nz+nzguards-1
+       IF(c_dim == 2) THEN
+         jmn = 0
+         jmx = 0
+       ENDIF
+       nxx = imx - imn + 1_idp
+       nyy = jmx - jmn + 1_idp
+       nzz = kmx - kmn + 1_idp
+     ENDIF
+     ALLOCATE(rho_r(nxx,nyy,nzz))
+     ALLOCATE(rhoold_r(nxx,nyy,nzz))
+     ALLOCATE(jx_r(nxx,nyy,nzz))
+     ALLOCATE(jy_r(nxx,nyy,nzz))
+     ALLOCATE(jz_r(nxx,nyy,nzz))
+     
+     ALLOCATE(rhof(nkx,nky,nkz))
+     ALLOCATE(rhooldf(nkx,nky,nkz))
+     ALLOCATE(jxf(nkx,nky,nkz)) 
+     ALLOCATE(jyf(nkx,nky,nkz))
+     ALLOCATE(jzf(nkx,nky,nkz))
+     
+     IF(absorbing_bcs) THEN
+       ALLOCATE(exy_r(nxx,nyy,nzz))
+       ALLOCATE(exz_r(nxx,nyy,nzz))
+       ALLOCATE(eyx_r(nxx,nyy,nzz))
+       ALLOCATE(eyz_r(nxx,nyy,nzz))
+       ALLOCATE(ezx_r(nxx,nyy,nzz))
+       ALLOCATE(ezy_r(nxx,nyy,nzz))
+       ALLOCATE(bxy_r(nxx,nyy,nzz))
+       ALLOCATE(bxz_r(nxx,nyy,nzz))
+       ALLOCATE(byx_r(nxx,nyy,nzz))
+       ALLOCATE(byz_r(nxx,nyy,nzz))
+       ALLOCATE(bzx_r(nxx,nyy,nzz))
+       ALLOCATE(bzy_r(nxx,nyy,nzz))
+  
+       ALLOCATE(exyf(nkx,nky,nkz))
+       ALLOCATE(exzf(nkx,nky,nkz))
+       ALLOCATE(eyxf(nkx,nky,nkz))
+       ALLOCATE(eyzf(nkx,nky,nkz))
+       ALLOCATE(ezxf(nkx,nky,nkz))
+       ALLOCATE(ezyf(nkx,nky,nkz))
+       ALLOCATE(bxyf(nkx,nky,nkz))
+       ALLOCATE(bxzf(nkx,nky,nkz))
+       ALLOCATE(byxf(nkx,nky,nkz))
+       ALLOCATE(byzf(nkx,nky,nkz))
+       ALLOCATE(bzxf(nkx,nky,nkz))
+       ALLOCATE(bzyf(nkx,nky,nkz))     
+#if defined(CUDA_FFT)
+       !$acc enter data create (exyf,exzf,eyxf,eyzf,ezxf,ezyf,bxyf,bxzf,byxf,byzf,bzxf,bzyf,jxf,jyf,jzf,rhooldf,rhof)
+       !$acc enter data create (exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r,byx_r,byz_r,bzx_r,bzy_r,jx_r,jy_r,jz_r,rhoold_r,rho_r)
 #endif
-      ENDIF
-    ENDIF
-    ! - Allocate real FFT arrays 
-    nxx = local_nx
-    nyy = local_ny
-    nzz = local_nz
-    IF(c_dim == 2) THEN
-      nyy = 1_idp
-    ENDIF
-    ! - Case when p3dfft_flag is .TRUE. (p3dfft is used for distributed FFT)
-    IF(.NOT. p3dfft_flag) THEN
-    ! - When using absorbing_bcs, merged fields are not allocated in fourier space
-    ! - neither ex_r,ey_r ... components
-    ! - In this case only splitted fields are allocated  
-    ! - The merge is done using local fields (ex = exy+exz )
-     IF(.NOT. absorbing_bcs) THEN
+     ELSE IF(.NOT. absorbing_bcs) THEN
+       ALLOCATE(ex_r(nxx,nyy,nzz))
+       ALLOCATE(ey_r(nxx,nyy,nzz))
+       ALLOCATE(ez_r(nxx,nyy,nzz))
+       ALLOCATE(bx_r(nxx,nyy,nzz))
+       ALLOCATE(by_r(nxx,nyy,nzz))
+       ALLOCATE(bz_r(nxx,nyy,nzz))
+  
+       ALLOCATE(exf(nkx,nky,nkz))
+       ALLOCATE(eyf(nkx,nky,nkz))
+       ALLOCATE(ezf(nkx,nky,nkz))
+       ALLOCATE(bxf(nkx,nky,nkz))
+       ALLOCATE(byf(nkx,nky,nkz))
+       ALLOCATE(bzf(nkx,nky,nkz))        
+#if defined(CUDA_FFT)
+      !$acc enter data create (exf,eyf,ezf,bxf,byf,bzf,jxf,jyf,jzf,rhof,rhooldf)
+      !$acc enter data create (ex_r,ey_r,ez_r,bx_r,by_r,bz_r,jx_r,jy_r,jz_r,rhoold_r,rho_r)
+#endif
+     ENDIF
+  ELSE IF(fftw_with_mpi .AND. .NOT. p3dfft_flag) THEN
 #if defined(FFTW)
-       cin = fftw_alloc_real(2 * alloc_local);
-       CALL c_f_pointer(cin, ex_r, [nxx, nyy, nzz])
-       cin = fftw_alloc_real(2 * alloc_local);
-       CALL c_f_pointer(cin, ey_r, [nxx, nyy, nzz])
-       cin = fftw_alloc_real(2 * alloc_local);
-       CALL c_f_pointer(cin, ez_r, [nxx, nyy, nzz])
-       cin = fftw_alloc_real(2 * alloc_local);
-       CALL c_f_pointer(cin, bx_r, [nxx, nyy, nzz])
-       cin = fftw_alloc_real(2 * alloc_local);
-       CALL c_f_pointer(cin, by_r, [nxx, nyy, nzz])
-       cin = fftw_alloc_real(2 * alloc_local);
-       CALL c_f_pointer(cin, bz_r, [nxx, nyy, nzz])
-       cin = fftw_alloc_real(2 * alloc_local);
-       CALL c_f_pointer(cin, jx_r, [nxx, nyy, nzz])
-       cin = fftw_alloc_real(2 * alloc_local);
-       CALL c_f_pointer(cin, jy_r, [nxx, nyy, nzz])
-       cin = fftw_alloc_real(2 * alloc_local);
-       CALL c_f_pointer(cin, jz_r, [nxx, nyy, nzz])
-       cin = fftw_alloc_real(2 * alloc_local);
-       CALL c_f_pointer(cin, rho_r, [nxx, nyy, nzz])
-       cin = fftw_alloc_real(2 * alloc_local);
-       CALL c_f_pointer(cin, rhoold_r, [nxx, nyy, nzz])
-       cin = fftw_alloc_real(2 * alloc_local);
-     ELSE IF(absorbing_bcs) THEN
+     nkx=local_nx_tr
+     nky=local_ny_tr
+     nkz=local_nz_tr
+     IF(c_dim == 2) THEN
+       nky = 1_idp
+     ENDIF
+     cin = fftw_alloc_real(2 * alloc_local);
+     CALL c_f_pointer(cin, jx_r, [nxx, nyy, nzz])
+     cin = fftw_alloc_real(2 * alloc_local);
+     CALL c_f_pointer(cin, jy_r, [nxx, nyy, nzz])
+     cin = fftw_alloc_real(2 * alloc_local);
+     CALL c_f_pointer(cin, jz_r, [nxx, nyy, nzz])
+     cin = fftw_alloc_real(2 * alloc_local);
+     CALL c_f_pointer(cin, rho_r, [nxx, nyy, nzz])
+     cin = fftw_alloc_real(2 * alloc_local);
+     CALL c_f_pointer(cin, rhoold_r, [nxx, nyy, nzz])
+     
+     cdata = fftw_alloc_complex(alloc_local)
+     CALL c_f_pointer(cdata, jxf, [nkx, nky, nkz])
+     cdata = fftw_alloc_complex(alloc_local)
+     CALL c_f_pointer(cdata, jyf, [nkx, nky, nkz])
+     cdata = fftw_alloc_complex(alloc_local)
+     CALL c_f_pointer(cdata, jzf, [nkx, nky, nkz])
+     cdata = fftw_alloc_complex(alloc_local)
+     CALL c_f_pointer(cdata, rhof, [nkx, nky, nkz])
+     cdata = fftw_alloc_complex(alloc_local)
+     CALL c_f_pointer(cdata, rhooldf, [nkx, nky, nkz])
+     
+     IF(absorbing_bcs) THEN
        cin = fftw_alloc_real(2 * alloc_local);
        CALL c_f_pointer(cin, exy_r, [nxx, nyy, nzz])
        cin = fftw_alloc_real(2 * alloc_local);
@@ -1856,134 +1885,65 @@ IF (l_spectral) THEN
        CALL c_f_pointer(cin, bzx_r, [nxx, nyy, nzz])
        cin = fftw_alloc_real(2 * alloc_local);
        CALL c_f_pointer(cin, bzy_r, [nxx, nyy, nzz])
+  
+       cdata = fftw_alloc_complex(alloc_local)
+       CALL c_f_pointer(cdata, exyf, [nkx, nky, nkz])
+       cdata = fftw_alloc_complex(alloc_local)
+       CALL c_f_pointer(cdata, exzf, [nkx, nky, nkz])
+       cdata = fftw_alloc_complex(alloc_local)
+       CALL c_f_pointer(cdata, eyxf, [nkx, nky, nkz])
+       cdata = fftw_alloc_complex(alloc_local)
+       CALL c_f_pointer(cdata, eyzf, [nkx, nky, nkz])
+       cdata = fftw_alloc_complex(alloc_local)
+       CALL c_f_pointer(cdata, ezxf, [nkx, nky, nkz])
+       cdata = fftw_alloc_complex(alloc_local)
+       CALL c_f_pointer(cdata, ezyf, [nkx, nky, nkz])
+       cdata = fftw_alloc_complex(alloc_local)
+       CALL c_f_pointer(cdata, exyf, [nkx, nky, nkz])
+       cdata = fftw_alloc_complex(alloc_local)
+       CALL c_f_pointer(cdata, exzf, [nkx, nky, nkz])
+       cdata = fftw_alloc_complex(alloc_local)
+       CALL c_f_pointer(cdata, eyxf, [nkx, nky, nkz])
+       cdata = fftw_alloc_complex(alloc_local)
+       CALL c_f_pointer(cdata, eyzf, [nkx, nky, nkz])
+       cdata = fftw_alloc_complex(alloc_local)
+       CALL c_f_pointer(cdata, ezxf, [nkx, nky, nkz])
+       cdata = fftw_alloc_complex(alloc_local)
+       CALL c_f_pointer(cdata, ezyf, [nkx, nky, nkz])
+  
+     ELSE IF(.NOT. absorbing_bcs) THEN
        cin = fftw_alloc_real(2 * alloc_local);
-       CALL c_f_pointer(cin, jx_r, [nxx, nyy, nzz])
+       CALL c_f_pointer(cin, ex_r, [nxx, nyy, nzz])
        cin = fftw_alloc_real(2 * alloc_local);
-       CALL c_f_pointer(cin, jy_r, [nxx, nyy, nzz])
+       CALL c_f_pointer(cin, ey_r, [nxx, nyy, nzz])
        cin = fftw_alloc_real(2 * alloc_local);
-       CALL c_f_pointer(cin, jz_r, [nxx, nyy, nzz])
+       CALL c_f_pointer(cin, ez_r, [nxx, nyy, nzz])
        cin = fftw_alloc_real(2 * alloc_local);
-       CALL c_f_pointer(cin, rho_r, [nxx, nyy, nzz])
+       CALL c_f_pointer(cin, bx_r, [nxx, nyy, nzz])
        cin = fftw_alloc_real(2 * alloc_local);
-       CALL c_f_pointer(cin, rhoold_r, [nxx, nyy, nzz])
+       CALL c_f_pointer(cin, by_r, [nxx, nyy, nzz])
        cin = fftw_alloc_real(2 * alloc_local);
-#endif
-      ENDIF
-    ! - Case when FFTW is used for the distributed FFT
-    ELSE IF(p3dfft_flag) THEN
-    ! - When using absorbing_bcs, merged fields are not allocated in fourier space
-    ! - neither ex_r,ey_r ... components
-    ! - In this case only splitted fields are allocated  
-    ! - The merge is done using local fields (ex = exy+exz )
-      IF(.NOT. absorbing_bcs) THEN
-        ALLOCATE(ex_r(nxx,nyy,nzz))
-        ALLOCATE(ey_r(nxx,nyy,nzz))
-        ALLOCATE(ez_r(nxx,nyy,nzz))
-        ALLOCATE(bx_r(nxx,nyy,nzz))
-        ALLOCATE(by_r(nxx,nyy,nzz))
-        ALLOCATE(bz_r(nxx,nyy,nzz))
-        ALLOCATE(jx_r(nxx,nyy,nzz))
-        ALLOCATE(jy_r(nxx,nyy,nzz))
-        ALLOCATE(jz_r(nxx,nyy,nzz))
-        ALLOCATE(rho_r(nxx,nyy,nzz))
-        ALLOCATE(rhoold_r(nxx,nyy,nzz))
-      ELSE IF(absorbing_bcs) THEN
-        ALLOCATE(exy_r(nxx,nyy,nzz))
-        ALLOCATE(exz_r(nxx,nyy,nzz))
-        ALLOCATE(eyx_r(nxx,nyy,nzz))
-        ALLOCATE(eyz_r(nxx,nyy,nzz))
-        ALLOCATE(ezx_r(nxx,nyy,nzz))
-        ALLOCATE(ezy_r(nxx,nyy,nzz))
-        ALLOCATE(bxy_r(nxx,nyy,nzz))
-        ALLOCATE(bxz_r(nxx,nyy,nzz))
-        ALLOCATE(byx_r(nxx,nyy,nzz))
-        ALLOCATE(byz_r(nxx,nyy,nzz))
-        ALLOCATE(bzx_r(nxx,nyy,nzz))
-        ALLOCATE(bzy_r(nxx,nyy,nzz))
-        ALLOCATE(jx_r(nxx,nyy,nzz))
-        ALLOCATE(jy_r(nxx,nyy,nzz))
-        ALLOCATE(jz_r(nxx,nyy,nzz))
-        ALLOCATE(rho_r(nxx,nyy,nzz))
-        ALLOCATE(rhoold_r(nxx,nyy,nzz))
-      ENDIF
-    ENDIF      
-  ! Case of local FFTs (purely local pseudo-spectral solver)
-  ELSE IF(.NOT. fftw_with_mpi) THEN
-    nkx=(2*nxguards+nx)/2+1! Real To Complex Transform
-    nky=(2*nyguards+ny)
-    nkz=(2*nzguards+nz)
-    IF(c_dim == 2) THEN
-      nky =1_idp
-    ENDIF
-    IF(.NOT. g_spectral) THEN
-    ! - Allocate complex FFT arrays
-      ALLOCATE(exf(nkx, nky, nkz))
-      ALLOCATE(eyf(nkx, nky, nkz))
-      ALLOCATE(ezf(nkx, nky, nkz))
-      ALLOCATE(bxf(nkx, nky, nkz))
-      ALLOCATE(byf(nkx, nky, nkz))
-      ALLOCATE(bzf(nkx, nky, nkz))
-      ALLOCATE(jxf(nkx, nky, nkz))
-      ALLOCATE(jyf(nkx, nky, nkz))
-      ALLOCATE(jzf(nkx, nky, nkz))
-      ALLOCATE(rhof(nkx, nky, nkz))
-      ALLOCATE(rhooldf(nkx, nky, nkz))
-#if defined(CUDA_FFT)
-      !$acc enter data create (exf,eyf,ezf,bxf,byf,bzf,jxf,jyf,jzf,rhof,rhooldf)
-#endif
-    ENDIF
-    ! - Allocate real FFT arrays 
-    imn=-nxguards; imx=nx+nxguards-1
-    jmn=-nyguards;jmx=ny+nyguards-1
-    kmn=-nzguards;kmx=nz+nzguards-1
-    IF(c_dim == 2) THEN
-      jmn = 0
-      jmx = 0
-    ENDIF
-    IF (.NOT. absorbing_bcs) THEN
-    ! - When using absorbing_bcs, merged fields are not allocated in fourier space
-    ! - neither ex_r,ey_r ... components
-    ! - In this case only splitted fields are allocated  
-    ! - The merge is done using local fields (ex = exy+exz )
-      ALLOCATE(ex_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(ey_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(ez_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(bx_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(by_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(bz_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(jx_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(jy_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(jz_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
-#if defined(CUDA_FFT)
-      !$acc enter data create  (ex_r,ey_r,ez_r,bx_r,by_r,bz_r,jx_r,jy_r,jz_r,rhoold_r,rho_r)
-#endif
-    ELSE IF(absorbing_bcs) THEN
-      ALLOCATE(exy_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(exz_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(eyx_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(eyz_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(ezx_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(ezy_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(bxy_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(bxz_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(byx_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(byz_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(bzx_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(bzy_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(jx_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(jy_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(jz_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
-      ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
-#if defined(CUDA_FFT)
-      !$acc enter data create  (exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r,byx_r,byz_r,bzx_r,bzy_r,jx_r,jy_r,jz_r,rhoold_r,rho_r)
-#endif
-    ENDIF
+       CALL c_f_pointer(cin, bz_r, [nxx, nyy, nzz])
+       cin = fftw_alloc_real(2 * alloc_local);
+  
+        cdata = fftw_alloc_complex(alloc_local)
+        CALL c_f_pointer(cdata, exf, [nkx, nky, nkz])
+        cdata = fftw_alloc_complex(alloc_local)
+        CALL c_f_pointer(cdata, eyf, [nkx, nky, nkz])
+        cdata = fftw_alloc_complex(alloc_local)
+        CALL c_f_pointer(cdata, ezf, [nkx, nky, nkz])
+        cdata = fftw_alloc_complex(alloc_local)
+        CALL c_f_pointer(cdata, bxf, [nkx, nky, nkz])
+        cdata = fftw_alloc_complex(alloc_local)
+        CALL c_f_pointer(cdata, byf, [nkx, nky, nkz])
+        cdata = fftw_alloc_complex(alloc_local)
+        CALL c_f_pointer(cdata, bzf, [nkx, nky, nkz])
+     ENDIF
+#endif 
+  
   ENDIF
 ENDIF
-#endif
+#endif     
 
 ! --- Quantities used by the dynamic load balancer for distributed FFTs
 ALLOCATE(new_cell_x_min(1:nprocx), new_cell_x_max(1:nprocx))
@@ -1991,6 +1951,10 @@ ALLOCATE(new_cell_y_min(1:nprocy), new_cell_y_max(1:nprocy))
 ALLOCATE(new_cell_z_min(1:nprocz), new_cell_z_max(1:nprocz))
 
 END SUBROUTINE allocate_grid_quantities
+
+
+
+
 
 ! ______________________________________________________________________________________
 !> This subroutine finalizes MPI with some time information.
