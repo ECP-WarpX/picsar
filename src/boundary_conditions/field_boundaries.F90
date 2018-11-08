@@ -431,7 +431,7 @@ MODULE field_boundary
       is_dtype_init(4) = .FALSE.
     ENDIF
 #endif
-
+write(0,*) "finished init"
 #if !defined(CUAD_FFT) 
     CALL MPI_ISEND(field(0, -nyg, -nzg), 1_isp, mpi_dtypes(4), INT(proc_x_min, isp),  &
     tag, comm, requests(1), errcode)
@@ -453,8 +453,8 @@ MODULE field_boundary
       !$acc end parallel loop
     ENDIF
     !$acc host_data use_device(temp2,temp)
-    CALL MPI_ISEND(temp2,sz,mpidbl,INT(proc_x_min),tag,comm,requests(1),errcode)
-    CALL MPI_IRECV(temp,sz,mpidbl,INT(proc_x_max),tag,comm,requests(1),errcode)
+    CALL MPI_ISEND(temp2,sz,basetype,INT(proc_x_min),tag,comm,requests(1),errcode)
+    CALL MPI_IRECV(temp,sz,basetype,INT(proc_x_max),tag,comm,requests(2),errcode)
     CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
     !$acc end host_data
     IF (proc_x_max .NE. MPI_PROC_NULL) THEN
@@ -470,6 +470,8 @@ MODULE field_boundary
       !$acc end parallel loop
     ENDIF
 #endif
+write(0,*) "finished ixmin to xmax"
+
 
     ! --- -X
 #if !defined(CUAD_FFT) 
@@ -494,7 +496,7 @@ MODULE field_boundary
     ENDIF
     !$acc host_data use_device(temp2,temp)
     CALL MPI_ISEND(temp2,sz,mpidbl,INT(proc_x_max),tag,comm,requests(1),errcode)
-    CALL MPI_IRECV(temp,sz,mpidbl,INT(proc_x_min),tag,comm,requests(1),errcode)
+    CALL MPI_IRECV(temp,sz,mpidbl,INT(proc_x_min),tag,comm,requests(2),errcode)
     CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
     !$acc end host_data
     IF (proc_x_min .NE. MPI_PROC_NULL) THEN
@@ -611,7 +613,7 @@ MODULE field_boundary
     subsizes(3) = nzg+1
     sz = subsizes(1) * subsizes(2) * subsizes(3)
   
-#if defined(CUDA_FFT)
+#if !defined(CUDA_FFT)
     IF (is_dtype_init(6)) THEN
       mpi_dtypes(6) = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
       is_dtype_init(6) = .FALSE.
@@ -638,7 +640,7 @@ MODULE field_boundary
     ENDIF
     !$acc host_data use_device(field,temp(1:sz),temp2(1:sz))
     CALL MPI_ISEND(temp2, sz, mpidbl, INT(proc_z_min, isp), tag,comm,requests(1), errcode)
-    CALL MPI_IRECV(temp, sz, mpidbl, INT(proc_zmax, isp), tag,comm,requests(2), errcode)
+    CALL MPI_IRECV(temp, sz, mpidbl, INT(proc_z_max, isp), tag,comm,requests(2), errcode)
     CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
     !$acc end host_data
     IF (proc_z_max .NE. MPI_PROC_NULL) THEN
@@ -693,8 +695,10 @@ MODULE field_boundary
       ENDDO
       !$acc end parallel loop 
     ENDIF
-    !$acc end data 
 #endif
+  DEALLOCATE(temp,temp2)
+  !$acc end data 
+
 
 
   END SUBROUTINE exchange_mpi_3d_grid_array_with_guards_nonblocking
@@ -716,14 +720,29 @@ MODULE field_boundary
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
     REAL(num), DIMENSION(-nxg:nx_local+nxg, -nyg:ny_local+nyg, -nzg:nz_local+nzg),    &
     INTENT(INOUT) :: array
-    REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: temp
+    REAL(num), DIMENSION(:), ALLOCATABLE :: temp, temp2
     INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
-    INTEGER(isp) :: nn, sz
+    INTEGER(isp) :: nn, sz, szmax
+    INTEGER(idp) :: i, j ,k ,n
 
     sizes(1) = nx_local + 1 + 2 * nxg
     sizes(2) = ny_local + 1 + 2 * nyg
     sizes(3) = nz_local + 1 + 2 * nzg
     starts = 1
+    szmax = sizes(1) * sizes(2) * (nzg+1)
+    sz = sizes(1) * sizes(3) * (nyg+1)
+    IF (sz .GT. szmax) szmax = sz
+    sz = sizes(2) * sizes(3) * (nxg+1)
+    IF (sz .GT. szmax) szmax = sz
+
+    ALLOCATE(temp(szmax))
+    ALLOCATE(temp2(szmax))
+    !$acc data create(temp,temp2)
+    !$acc kernels 
+    temp = 0.0_num
+    temp2 =0.0_num
+    !$acc end kernels 
+
 
     !! -- Summation along X- direction
     subsizes(1) = nxg+1
@@ -731,104 +750,209 @@ MODULE field_boundary
     subsizes(3) = sizes(3)
     nn =  nx_local
 
-    IF (is_dtype_init(7)) THEN
-      mpi_dtypes(7) = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
-      is_dtype_init(7) = .FALSE.
+    sz = subsizes(1) * subsizes(2) * subsizes(3)
+    IF (proc_x_max .NE. MPI_PROC_NULL) THEN
+      !$acc parallel loop present(array,temp2) collapse(3)
+      DO k = -nzg, subsizes(3)-nzg-1
+        DO j = -nyg, subsizes(2)-nyg-1
+          DO i = nx_local, nx_local+subsizes(1)-1
+            n=(i-nx_local)+1+(j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
+            temp2(n) = array(i, j, k)
+          ENDDO
+        ENDDO
+      ENDDO
+      !$acc end parallel loop
     ENDIF
 
-    sz = subsizes(1) * subsizes(2) * subsizes(3)
-    ALLOCATE(temp(subsizes(1), subsizes(2), subsizes(3)))
-    !$acc data create(temp)
-    !$acc kernels 
-    temp = 0.0_num
-    !$acc end kernels 
-    !$acc host_data use_device(array,temp)
-    CALL MPI_SENDRECV(array(nn, -nyg, -nzg), 1_isp, mpi_dtypes(7), INT(neighbour( 1,  &
-    0, 0), isp), tag, temp, sz, mpidbl, INT(neighbour(-1, 0, 0), isp), tag, comm,     &
-    status, errcode)
-    !$acc kernels 
-    array(0:nxg, :, :) = array(0:nxg, :, :) + temp
-    temp = 0.0_num
-    !$acc end kernels
-    CALL MPI_SENDRECV(array(-nxg, -nyg, -nzg), 1_isp, mpi_dtypes(7),                  &
-    INT(neighbour(-1, 0, 0), isp), tag, temp, sz, mpidbl, INT(neighbour( 1, 0, 0),    &
-    isp), tag, comm, status, errcode)
-    !$acc kernels
-    array(nn-nxg:nn, :, :) = array(nn-nxg:nn, :, :) + temp
-    !$acc end kernels
+    !$acc host_data use_device(temp,temp2)
+    CALL MPI_SENDRECV(temp2, sz, mpidbl ,INT(proc_x_max,isp), tag, temp, sz,        &
+    mpidbl, INT(proc_x_min,isp), tag, comm, status, errcode)
     !$acc end host_data
-    !$acc end data
+
+    IF(proc_x_min .NE. MPI_PROC_NULL) THEN 
+      !$acc parallel loop present(array,temp) collapse(3)
+      DO k = -nzg, subsizes(3)-nzg-1
+        DO j = -nyg, subsizes(2)-nyg-1
+          DO i = 0,nxg
+            n = i+1 + (j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
+            array(i, j, k) = array(i, j, k) + temp(n)
+          ENDDO
+        ENDDO
+      ENDDO
+      !$acc end parallel loop
+    ENDIF
+
+    IF (proc_x_min .NE. MPI_PROC_NULL) THEN
+      !$acc parallel loop present(array,temp2) collapse(3)
+      DO k = -nzg, subsizes(3)-nzg-1
+        DO j = -nyg, subsizes(2)-nyg-1
+          DO i = -nxg,0
+            n=(i+nxg)+1+(j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
+            temp2(n) = array(i, j, k)
+          ENDDO
+        ENDDO
+      ENDDO
+      !$acc end parallel loop
+    ENDIF
+
+    !$acc host_data use_device(temp,temp2)
+    CALL MPI_SENDRECV(temp2, sz, mpidbl, INT(proc_x_min,isp), tag, temp, sz, mpidbl,  &
+    INT(proc_x_max, isp), tag, comm, status, errcode)
+    !$acc end host_data
+    IF(proc_x_max .NE. MPI_PROC_NULL) THEN
+      !$acc parallel loop present(array,temp) collapse(3)
+      DO k = -nzg, subsizes(3)-nzg-1
+        DO j = -nyg, subsizes(2)-nyg-1
+          DO i = nx_local - nxg, nx_local
+            n = i-nx_local+1 + (j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
+            array(i, j, k) = array(i, j, k) + temp(n)
+          ENDDO
+        ENDDO
+      ENDDO
+      !$acc end parallel loop
+    ENDIF
+
     DEALLOCATE(temp)
     IF(c_dim == 3) THEN
-      !! -- Summation along Y- direction
       subsizes(1) = sizes(1)
       subsizes(2) = nyg+1
       subsizes(3) = sizes(3)
       nn =  ny_local
-
-      IF (is_dtype_init(8)) THEN
-        mpi_dtypes(8) = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
-        is_dtype_init(8) = .FALSE.
-      ENDIF
-
       sz = subsizes(1) * subsizes(2) * subsizes(3)
-      ALLOCATE(temp(subsizes(1), subsizes(2), subsizes(3)))
-      !$acc data create(temp)
-      !$acc kernels 
-      temp = 0.0_num
-      !$acc end kernels 
-      !$acc host_data use_device(array,temp)
-      CALL MPI_SENDRECV(array(-nxg, nn, -nzg), 1_isp, mpi_dtypes(8), INT(neighbour(0,   &
-      1, 0), isp), tag, temp, sz, mpidbl, INT(neighbour(0, -1, 0), isp), tag, comm,     &
-      status, errcode)
-      !$acc kernels
-      array(:, 0:nyg, :) = array(:, 0:nyg, :) + temp
-      temp = 0.0_num
-      !$acc end kernels
-      CALL MPI_SENDRECV(array(-nxg, -nyg, -nzg), 1_isp, mpi_dtypes(8), INT(neighbour(0, &
-      -1, 0), isp), tag, temp, sz, mpidbl, INT(neighbour(0, 1, 0), isp), tag, comm,     &
-      status, errcode)
-      !$acc kernels
-      array(:, nn-nyg:nn, :) = array(:, nn-nyg:nn, :) + temp
-      !$acc end kernels
+      
+      IF (proc_y_max .NE. MPI_PROC_NULL) THEN
+        !$acc parallel loop present(array,temp2) collapse(3)
+        DO k = -nzg, subsizes(3)-nzg-1
+          DO j = ny_local, ny_local+subsizes(2)-1
+            DO i=-nxg, subsizes(2)-nxg-1
+              n=(i+nxg)+1+(j-ny_local)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
+              temp2(n) = array(i, j, k)
+            ENDDO
+          ENDDO
+        ENDDO
+        !$acc end parallel loop
+      ENDIF
+  
+      !$acc host_data use_device(temp,temp2)
+      CALL MPI_SENDRECV(temp2, sz, mpidbl ,INT(proc_y_max,isp), tag, temp, sz,&
+      mpidbl, INT(proc_y_min,isp), tag, comm, status, errcode)
       !$acc end host_data
-      !$acc end data 
-      DEALLOCATE(temp)
+  
+      IF(proc_y_min .NE. MPI_PROC_NULL) THEN
+        !$acc parallel loop present(array,temp) collapse(3)
+        DO k = -nzg, subsizes(3)-nzg-1
+          DO j = 0,nyg
+            DO i=-nxg, subsizes(2)-nxg-1
+              n = i+nxg+1 + (j)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
+              array(i, j, k) = array(i, j, k) + temp(n)
+            ENDDO
+          ENDDO
+        ENDDO
+        !$acc end parallel loop
+      ENDIF
+  
+      IF (proc_y_min .NE. MPI_PROC_NULL) THEN
+        !$acc parallel loop present(array,temp2) collapse(3)
+        DO k = -nzg, subsizes(3)-nzg-1
+          DO j = -nyg, 0
+            DO i=-nxg, subsizes(2)-nxg-1
+              n=(i+nxg)+1+(j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
+              temp2(n) = array(i, j, k)
+            ENDDO
+          ENDDO
+        ENDDO
+        !$acc end parallel loop
+      ENDIF
+  
+      !$acc host_data use_device(temp,temp2)
+      CALL MPI_SENDRECV(temp2, sz, mpidbl, INT(proc_y_min,isp), tag, temp, sz,mpidbl,  &
+      INT(proc_y_max, isp), tag, comm, status, errcode)
+      !$acc end host_data
+      
+      IF(proc_y_max .NE. MPI_PROC_NULL) THEN
+        !$acc parallel loop present(array,temp) collapse(3)
+        DO k = -nzg, subsizes(3)-nzg-1
+          DO j = ny_local - nyg, ny_local
+            DO i = -nxg, subsizes(2)-nxg-1
+              n = i+nxg+1 +(j-ny_local)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
+              array(i, j, k) = array(i, j, k) + temp(n)
+            ENDDO
+          ENDDO
+        ENDDO
+        !$acc end parallel loop
+      ENDIF
     ENDIF
-    !! -- Summation along Z- direction
     subsizes(1) = sizes(1)
-    subsizes(2) = sizes(2)
+    subsizes(2) = sizes(1)
     subsizes(3) = nzg+1
     nn =  nz_local
-
-    IF (is_dtype_init(9)) THEN
-      mpi_dtypes(9) = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
-      is_dtype_init(9) = .FALSE.
+    sz = subsizes(1) * subsizes(2) * subsizes(3)
+    
+    IF (proc_z_max .NE. MPI_PROC_NULL) THEN
+      !$acc parallel loop present(array,temp2) collapse(3)
+      DO k = nz_local, nz_local+subsizes(3)-1
+        DO j = -nyg, subsizes(2)-nyg-1
+          DO i=-nxg, subsizes(2)-nxg-1
+            n=(i+nxg)+1+(j+nyg)*subsizes(1)+(k-nz_local)*subsizes(2)*subsizes(1)
+            temp2(n) = array(i, j, k)
+          ENDDO
+        ENDDO
+      ENDDO
+      !$acc end parallel loop
     ENDIF
 
-    sz = subsizes(1) * subsizes(2) * subsizes(3)
-    ALLOCATE(temp(subsizes(1), subsizes(2), subsizes(3)))
-    !$acc data create(temp)
-    !$acc kernels
-    temp = 0.0_num
-    !$acc end kernels
-    !$acc host_data use_device(array,temp)
-    CALL MPI_SENDRECV(array(-nxg, -nyg, nn), 1_isp, mpi_dtypes(9), INT(neighbour(0,   &
-    0, 1), isp), tag, temp, sz, mpidbl, INT(neighbour(0, 0, -1), isp), tag, comm,     &
-    status, errcode)
-    !$acc kernels
-    array(:, :, 0:nzg) = array(:, :, 0:nzg) + temp
-    temp = 0.0_num
-    !$acc end kernels
-    CALL MPI_SENDRECV(array(-nxg, -nyg, -nzg), 1_isp, mpi_dtypes(9), INT(neighbour(0, &
-    0, -1), isp), tag, temp, sz, mpidbl, INT(neighbour(0, 0, 1), isp), tag, comm,     &
-    status, errcode)
-    !$acc kernels
-    array(:, :, nn-nzg:nn) = array(:, :, nn-nzg:nn) + temp
-    !$acc end kernels
+    !$acc host_data use_device(temp,temp2)
+    CALL MPI_SENDRECV(temp2, sz, mpidbl ,INT(proc_z_max,isp), tag, temp, sz,&
+    mpidbl, INT(proc_z_min,isp), tag, comm, status, errcode)
     !$acc end host_data
-    !$acc end data
-    DEALLOCATE(temp)
+
+    IF(proc_z_min .NE. MPI_PROC_NULL) THEN
+      !$acc parallel loop present(array,temp) collapse(3)
+      DO k = 0,nzg
+        DO j = -nyg, subsizes(2)-nyg-1
+          DO i=-nxg, subsizes(2)-nxg-1
+            n = i+nxg+1 + (j+nyg)*subsizes(1)+(k)*subsizes(2)*subsizes(1)
+            array(i, j, k) = array(i, j, k) + temp(n)
+          ENDDO
+        ENDDO
+      ENDDO
+      !$acc end parallel loop
+    ENDIF
+
+    IF (proc_z_min .NE. MPI_PROC_NULL) THEN
+      !$acc parallel loop present(array,temp2) collapse(3)
+      DO k = -nzg, 0
+        DO j = -nyg, subsizes(2)-nyg-1
+          DO i=-nxg, subsizes(2)-nxg-1
+            n=(i+nxg)+1+(j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
+            temp2(n) = array(i, j, k)
+          ENDDO
+        ENDDO
+      ENDDO
+      !$acc end parallel loop
+    ENDIF
+
+    !$acc host_data use_device(temp,temp2)
+    CALL MPI_SENDRECV(temp2, sz, mpidbl, INT(proc_z_min,isp), tag, temp, sz,mpidbl,  &
+    INT(proc_z_max, isp), tag, comm, status, errcode)
+    !$acc end host_data
+    
+    IF(proc_z_max .NE. MPI_PROC_NULL) THEN
+      !$acc parallel loop present(array,temp) collapse(3)
+      DO k = nz_local - nzg, nz_local
+        DO j = -nyg, subsizes(2)-nyg-1
+          DO i = -nxg, subsizes(2)-nxg-1
+            n = i+nxg+1 +(j+nyg)*subsizes(1)+(k-nz_local)*subsizes(2)*subsizes(1)
+            array(i, j, k) = array(i, j, k) + temp(n)
+          ENDDO
+        ENDDO
+      ENDDO
+      !$acc end parallel loop
+    ENDIF
+
+
+    !$acc end data 
+    DEALLOCATE(temp,temp2)
 
     CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
 
@@ -1447,6 +1571,259 @@ USE picsar_precision, ONLY: idp, num, isp
     ENDDO
 #endif
   END SUBROUTINE  sendrecv_g2l_generalized
+
+
+
+  SUBROUTINE summation_bcs_non_blocking_gpgpu(array, nxg, nyg, nzg, nx_local,ny_local, nz_local)
+    INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
+    INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
+    REAL(num), DIMENSION(-nxg:nx_local+nxg, -nyg:ny_local+nyg,-nzg:nz_local+nzg),    &
+    INTENT(INOUT) :: array
+    REAL(num), DIMENSION(:), ALLOCATABLE :: temp, temp2
+    INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
+    INTEGER(isp) :: nn, sz, szmax
+    INTEGER(idp) :: i, j ,k ,n
+    INTEGER(isp):: requests(2)
+
+    sizes(1) = nx_local + 1 + 2 * nxg
+    sizes(2) = ny_local + 1 + 2 * nyg
+    sizes(3) = nz_local + 1 + 2 * nzg
+    starts = 1
+    szmax = sizes(1) * sizes(2) * (nzg+1)
+    sz = sizes(1) * sizes(3) * (nyg+1)
+    IF (sz .GT. szmax) szmax = sz
+    sz = sizes(2) * sizes(3) * (nxg+1)
+    IF (sz .GT. szmax) szmax = sz
+
+    ALLOCATE(temp(szmax))
+    ALLOCATE(temp2(szmax))
+    !$acc data create(temp,temp2)
+    !$acc kernels 
+    temp = 0.0_num
+    temp2 =0.0_num
+    !$acc end kernels 
+
+
+    !! -- Summation along X- direction
+    subsizes(1) = nxg+1
+    subsizes(2) = sizes(2)
+    subsizes(3) = sizes(3)
+    nn =  nx_local
+
+    sz = subsizes(1) * subsizes(2) * subsizes(3)
+    IF (proc_x_max .NE. MPI_PROC_NULL) THEN
+      !$acc parallel loop present(array,temp2) collapse(3)
+      DO k = -nzg, subsizes(3)-nzg-1
+        DO j = -nyg, subsizes(2)-nyg-1
+          DO i = nx_local, nx_local+subsizes(1)-1
+            n=(i-nx_local)+1+(j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
+            temp2(n) = array(i, j, k)
+          ENDDO
+        ENDDO
+      ENDDO
+      !$acc end parallel loop
+    ENDIF
+
+    !$acc host_data use_device(temp,temp2)    
+    CALL MPI_ISEND(temp2, sz, mpidbl, INT(proc_x_max, isp),tag,comm,requests(1),errcode)
+    CALL MPI_IRECV(temp, sz, mpidbl, INT(proc_x_min, isp),tag,comm,requests(2),errcode)
+    CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
+    !$acc end host_data
+
+    IF(proc_x_min .NE. MPI_PROC_NULL) THEN 
+      !$acc parallel loop present(array,temp) collapse(3)
+      DO k = -nzg, subsizes(3)-nzg-1
+        DO j = -nyg, subsizes(2)-nyg-1
+          DO i = 0,nxg
+            n = i+1 + (j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
+            array(i, j, k) = array(i, j, k) + temp(n)
+          ENDDO
+        ENDDO
+      ENDDO
+      !$acc end parallel loop
+    ENDIF
+
+    IF (proc_x_min .NE. MPI_PROC_NULL) THEN
+      !$acc parallel loop present(array,temp2) collapse(3)
+      DO k = -nzg, subsizes(3)-nzg-1
+        DO j = -nyg, subsizes(2)-nyg-1
+          DO i = -nxg,0
+            n=(i+nxg)+1+(j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
+            temp2(n) = array(i, j, k)
+          ENDDO
+        ENDDO
+      ENDDO
+      !$acc end parallel loop
+    ENDIF
+
+    !$acc host_data use_device(temp,temp2)
+    CALL MPI_ISEND(temp2, sz, mpidbl, INT(proc_x_min, isp),tag,comm,requests(1),errcode)
+    CALL MPI_IRECV(temp, sz, mpidbl, INT(proc_x_max, isp),tag,comm,requests(2),errcode)
+    CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
+    !$acc end host_data
+    IF(proc_x_max .NE. MPI_PROC_NULL) THEN
+      !$acc parallel loop present(array,temp) collapse(3)
+      DO k = -nzg, subsizes(3)-nzg-1
+        DO j = -nyg, subsizes(2)-nyg-1
+          DO i = nx_local - nxg, nx_local
+            n = i-nx_local+1 +(j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
+            array(i, j, k) = array(i, j, k) + temp(n)
+          ENDDO
+        ENDDO
+      ENDDO
+      !$acc end parallel loop
+    ENDIF
+
+    DEALLOCATE(temp)
+    IF(c_dim == 3) THEN
+      subsizes(1) = sizes(1)
+      subsizes(2) = nyg+1
+      subsizes(3) = sizes(3)
+      nn =  ny_local
+      sz = subsizes(1) * subsizes(2) * subsizes(3)
+      
+      IF (proc_y_max .NE. MPI_PROC_NULL) THEN
+        !$acc parallel loop present(array,temp2) collapse(3)
+        DO k = -nzg, subsizes(3)-nzg-1
+          DO j = ny_local, ny_local+subsizes(2)-1
+            DO i=-nxg, subsizes(2)-nxg-1
+              n=(i+nxg)+1+(j-ny_local)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
+              temp2(n) = array(i, j, k)
+            ENDDO
+          ENDDO
+        ENDDO
+        !$acc end parallel loop
+      ENDIF
+  
+      !$acc host_data use_device(temp,temp2)
+      CALL MPI_ISEND(temp2, sz, mpidbl, INT(proc_y_max,isp),tag,comm,requests(1), errcode)
+      CALL MPI_IRECV(temp, sz, mpidbl, INT(proc_y_min, isp),tag,comm,requests(2),errcode)
+      CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
+      !$acc end host_data
+  
+      IF(proc_y_min .NE. MPI_PROC_NULL) THEN
+        !$acc parallel loop present(array,temp) collapse(3)
+        DO k = -nzg, subsizes(3)-nzg-1
+          DO j = 0,nyg
+            DO i=-nxg, subsizes(2)-nxg-1
+              n = i+nxg+1 + (j)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
+              array(i, j, k) = array(i, j, k) + temp(n)
+            ENDDO
+          ENDDO
+        ENDDO
+        !$acc end parallel loop
+      ENDIF
+  
+      IF (proc_y_min .NE. MPI_PROC_NULL) THEN
+        !$acc parallel loop present(array,temp2) collapse(3)
+        DO k = -nzg, subsizes(3)-nzg-1
+          DO j = -nyg, 0
+            DO i=-nxg, subsizes(2)-nxg-1
+              n=(i+nxg)+1+(j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
+              temp2(n) = array(i, j, k)
+            ENDDO
+          ENDDO
+        ENDDO
+        !$acc end parallel loop
+      ENDIF
+  
+      !$acc host_data use_device(temp,temp2)
+      CALL MPI_ISEND(temp2, sz, mpidbl, INT(proc_y_min,isp),tag,comm,requests(1), errcode)
+      CALL MPI_IRECV(temp, sz, mpidbl, INT(proc_y_max, isp),tag,comm,requests(2),errcode)
+      CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
+      !$acc end host_data
+      
+      IF(proc_y_max .NE. MPI_PROC_NULL) THEN
+        !$acc parallel loop present(array,temp) collapse(3)
+        DO k = -nzg, subsizes(3)-nzg-1
+          DO j = ny_local - nyg, ny_local
+            DO i = -nxg, subsizes(2)-nxg-1
+              n = i+nxg+1+(j-ny_local)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
+              array(i, j, k) = array(i, j, k) + temp(n)
+            ENDDO
+          ENDDO
+        ENDDO
+        !$acc end parallel loop
+      ENDIF
+    ENDIF
+    subsizes(1) = sizes(1)
+    subsizes(2) = sizes(1)
+    subsizes(3) = nzg+1
+    nn =  nz_local
+    sz = subsizes(1) * subsizes(2) * subsizes(3)
+    
+    IF (proc_z_max .NE. MPI_PROC_NULL) THEN
+      !$acc parallel loop present(array,temp2) collapse(3)
+      DO k = nz_local, nz_local+subsizes(3)-1
+        DO j = -nyg, subsizes(2)-nyg-1
+          DO i=-nxg, subsizes(2)-nxg-1
+            n=(i+nxg)+1+(j+nyg)*subsizes(1)+(k-nz_local)*subsizes(2)*subsizes(1)
+            temp2(n) = array(i, j, k)
+          ENDDO
+        ENDDO
+      ENDDO
+      !$acc end parallel loop
+    ENDIF
+
+    !$acc host_data use_device(temp,temp2)
+    CALL MPI_ISEND(temp2, sz, mpidbl, INT(proc_z_max, isp),tag,comm,requests(1),errcode)
+    CALL MPI_IRECV(temp, sz, mpidbl, INT(proc_z_min, isp),tag,comm,requests(2),errcode)
+    CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
+    !$acc end host_data
+
+    IF(proc_z_min .NE. MPI_PROC_NULL) THEN
+      !$acc parallel loop present(array,temp) collapse(3)
+      DO k = 0,nzg
+        DO j = -nyg, subsizes(2)-nyg-1
+          DO i=-nxg, subsizes(2)-nxg-1
+            n = i+nxg+1 + (j+nyg)*subsizes(1)+(k)*subsizes(2)*subsizes(1)
+            array(i, j, k) = array(i, j, k) + temp(n)
+          ENDDO
+        ENDDO
+      ENDDO
+      !$acc end parallel loop
+    ENDIF
+
+    IF (proc_z_min .NE. MPI_PROC_NULL) THEN
+      !$acc parallel loop present(array,temp2) collapse(3)
+      DO k = -nzg, 0
+        DO j = -nyg, subsizes(2)-nyg-1
+          DO i=-nxg, subsizes(2)-nxg-1
+            n=(i+nxg)+1+(j+nyg)*subsizes(1)+(k+nzg)*subsizes(2)*subsizes(1)
+            temp2(n) = array(i, j, k)
+          ENDDO
+        ENDDO
+      ENDDO
+      !$acc end parallel loop
+    ENDIF
+
+    !$acc host_data use_device(temp,temp2)
+    CALL MPI_ISEND(temp2, sz, mpidbl, INT(proc_z_min, isp),tag,comm,requests(1),errcode)
+    CALL MPI_IRECV(temp, sz, mpidbl, INT(proc_z_max, isp),tag,comm,requests(2),errcode)
+    CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
+    !$acc end host_data
+    
+    IF(proc_z_max .NE. MPI_PROC_NULL) THEN
+      !$acc parallel loop present(array,temp) collapse(3)
+      DO k = nz_local - nzg, nz_local
+        DO j = -nyg, subsizes(2)-nyg-1
+          DO i = -nxg, subsizes(2)-nxg-1
+            n = i+nxg+1+(j+nyg)*subsizes(1)+(k-nz_local)*subsizes(2)*subsizes(1)
+            array(i, j, k) = array(i, j, k) + temp(n)
+          ENDDO
+        ENDDO
+      ENDDO
+      !$acc end parallel loop
+    ENDIF
+
+
+    !$acc end data 
+    DEALLOCATE(temp,temp2)
+
+    CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
+
+  END SUBROUTINE summation_bcs_non_blocking_gpgpu
+
     
   ! ______________________________________________________________________________________
   !> Routine for adding current contributions fron adjacent subdomains
@@ -2228,10 +2605,15 @@ USE mpi
       CALL summation_bcs(jz, nxjguards, nyjguards, nzjguards, nx, ny, nz)
 
     ELSE
-
+#if !defined(CUDA_FFT)
       CALL summation_bcs_nonblocking(jx, nxjguards, nyjguards, nzjguards, nx, ny, nz)
       CALL summation_bcs_nonblocking(jy, nxjguards, nyjguards, nzjguards, nx, ny, nz)
       CALL summation_bcs_nonblocking(jz, nxjguards, nyjguards, nzjguards, nx, ny, nz)
+#else
+      CALL summation_bcs_non_blocking_gpgpu(jx, nxjguards, nyjguards, nzjguards, nx,ny, nz)
+      CALL summation_bcs_non_blocking_gpgpu(jy, nxjguards, nyjguards, nzjguards, nx,ny, nz)
+      CALL summation_bcs_non_blocking_gpgpu(jz, nxjguards, nyjguards, nzjguards, nx,ny, nz)
+#endif
 
     ENDIF
     IF (it.ge.timestat_itstart) THEN
@@ -2266,8 +2648,14 @@ USE mpi
     IF (mpicom_curr.EQ.1) THEN
       CALL summation_bcs(rho, nxjguards, nyjguards, nzjguards, nx, ny, nz)
     ELSE
+#if !defined(CUDA_FFT)
       CALL summation_bcs_nonblocking(rho, nxjguards, nyjguards, nzjguards, nx, ny,    &
-      nz)
+      ,nz)
+#else
+      CALL summation_bcs_non_blocking_gpgpu(rho, nxjguards, nyjguards, nzjguards,      &
+      nx,ny, nz)
+#endif
+
     ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(13) = localtimes(13) + (MPI_WTIME() - tmptime)
