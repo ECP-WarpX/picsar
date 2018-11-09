@@ -211,6 +211,7 @@ MODULE fourier_psaotd
     IMPLICIT NONE
     INTEGER(idp) :: nfftx, nffty, nfftz, nxx, nyy, nzz
     INTEGER(idp) :: ix,iy,iz
+    INTEGER(idp) :: l_bound(3), u_bound(3)
     REAL(num)    :: tmptime
     nxx=nx+2*nxguards+1; nyy=ny+2*nyguards+1; nzz=nz+2*nzguards+1;
 #if defined(LIBRARY)
@@ -230,9 +231,20 @@ MODULE fourier_psaotd
      CALL copy_field_forward()
 #endif
    ! reflective bcs after pml
+    IF(absorbing_bcs) THEN
+       l_bound = LBOUND(exy_r)
+       u_bound = UBOUND(exy_r)
+#if defined(CUDA_FFT)
+    !$acc enter data copyin(l_bound)
+    !$acc enter data copyin(u_bound)
+#endif
+
+    ENDIF
+
     IF(absorbing_bcs_x) THEN
       IF(x_min_boundary) THEN
-        DO ix = -nxguards,-nxguards+shift_x_pml-1
+        !$acc parallel present(exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r,byx_r,byz_r,bzx_r,bzy_r)
+        DO ix = l_bound(1),l_bound(1)+shift_x_pml-1
           exy_r(ix,:,:) = 0.0_num
           exz_r(ix,:,:) = 0.0_num
           eyx_r(ix,:,:) = 0.0_num
@@ -246,9 +258,11 @@ MODULE fourier_psaotd
           bzx_r(ix,:,:) = 0.0_num
           bzy_r(ix,:,:) = 0.0_num
         ENDDO
+        !$acc end parallel
       ENDIF
       IF(x_max_boundary) THEN
-        DO ix=nx+nxguards-shift_x_pml,nx+nxguards-1 
+        !$acc parallel  present(exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r,byx_r,byz_r,bzx_r,bzy_r)
+        DO ix=u_bound(1)+1-shift_x_pml,u_bound(1)
           exy_r(ix,:,:) = 0.0_num
           exz_r(ix,:,:) = 0.0_num
           eyx_r(ix,:,:) = 0.0_num
@@ -262,16 +276,20 @@ MODULE fourier_psaotd
           bzx_r(ix-1,:,:) = 0.0_num
           bzy_r(ix-1,:,:) = 0.0_num
         ENDDO
-        byx_r(nx+nxguards-1,:,:) = 0.0_num
-        byz_r(nx+nxguards-1,:,:) = 0.0_num
-        bzx_r(nx+nxguards-1,:,:) = 0.0_num
-        bzy_r(nx+nxguards-1,:,:) = 0.0_num
+        !$acc end parallel
+        !$acc kernels 
+        byx_r(u_bound(1),:,:) = 0.0_num
+        byz_r(u_bound(1),:,:) = 0.0_num
+        bzx_r(u_bound(1),:,:) = 0.0_num
+        bzy_r(u_bound(1),:,:) = 0.0_num
+        !$acc end kernels
       ENDIF
     ENDIF
     IF(c_dim == 3) THEN 
       IF(absorbing_bcs_y) THEN
         IF(y_min_boundary) THEN
-          DO iy = -nyguards,-nyguards+shift_y_pml-1
+          !$acc parallel present(exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r,byx_r,byz_r,bzx_r,bzy_r)
+          DO iy = l_bound(2),l_bound(2)+shift_y_pml-1
             exy_r(:,iy,:) = 0.0_num
             exz_r(:,iy,:) = 0.0_num
             eyx_r(:,iy,:) = 0.0_num
@@ -285,9 +303,11 @@ MODULE fourier_psaotd
             bzx_r(:,iy,:) = 0.0_num
             bzy_r(:,iy,:) = 0.0_num
           ENDDO
+          !$acc end parallel
         ENDIF
         IF(y_max_boundary) THEN
-          DO iy=ny+nyguards-shift_y_pml,ny+nyguards-1  
+        !$acc parallel present(exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r,byx_r,byz_r,bzx_r,bzy_r)
+          DO iy=u_bound(2)-1-shift_y_pml,u_bound(2)  
             exy_r(:,iy,:) = 0.0_num
             exz_r(:,iy,:) = 0.0_num
             eyx_r(:,iy,:) = 0.0_num
@@ -301,16 +321,20 @@ MODULE fourier_psaotd
             bzx_r(:,iy-1,:) = 0.0_num
             bzy_r(:,iy-1,:) = 0.0_num
           ENDDO
-          bxy_r(:,ny+nyguards-1,:) = 0.0_num
-          bxz_r(:,ny+nyguards-1,:) = 0.0_num
-          bzx_r(:,ny+nyguards-1,:) = 0.0_num
-          bzy_r(:,ny+nyguards-1,:) = 0.0_num
+          !$acc end parallel
+          !$acc kernels 
+          bxy_r(:,u_bound(2),:) = 0.0_num
+          bxz_r(:,u_bound(2),:) = 0.0_num
+          bzx_r(:,u_bound(2),:) = 0.0_num
+          bzy_r(:,u_bound(2),:) = 0.0_num
+          !$acc end kernels
         ENDIF
       ENDIF
     ENDIF
     IF(absorbing_bcs_z) THEN
       IF(z_min_boundary) THEN
-        DO iz = -nzguards,-nzguards+shift_z_pml-1
+        !$acc parallel present(exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r,byx_r,byz_r,bzx_r,bzy_r)
+        DO iz = l_bound(3),l_bound(3)+shift_z_pml-1
           exy_r(:,:,iz) = 0.0_num
           exz_r(:,:,iz) = 0.0_num
           eyx_r(:,:,iz) = 0.0_num
@@ -324,9 +348,12 @@ MODULE fourier_psaotd
           bzx_r(:,:,iz) = 0.0_num
           bzy_r(:,:,iz) = 0.0_num
         ENDDO
+        !$acc end parallel
+
       ENDIF
       IF(z_max_boundary) THEN
-        DO iz=nz + nzguards-shift_z_pml,nz+nzguards-1  
+        !$acc parallel present(exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r,byx_r,byz_r,bzx_r,bzy_r)
+        DO iz=u_bound(3)-1-shift_z_pml,u_bound(3)
           exy_r(:,:,iz) = 0.0_num
           exz_r(:,:,iz) = 0.0_num
           eyx_r(:,:,iz) = 0.0_num
@@ -340,10 +367,13 @@ MODULE fourier_psaotd
           bzx_r(:,:,iz) = 0.0_num
           bzy_r(:,:,iz) = 0.0_num
         ENDDO
-        bxy_r(:,:,nz+nzguards-1) = 0.0_num
-        bxz_r(:,:,nz+nzguards-1) = 0.0_num
-        byx_r(:,:,nz+nzguards-1) = 0.0_num
-        byz_r(:,:,nz+nzguards-1) = 0.0_num
+        !$acc end parallel
+        !$acc kernels 
+        bxy_r(:,:,u_bound(3)) = 0.0_num
+        bxz_r(:,:,u_bound(3)) = 0.0_num
+        byx_r(:,:,u_bound(3)) = 0.0_num
+        byz_r(:,:,u_bound(3)) = 0.0_num
+        !$acc end kernels
       ENDIF
     ENDIF
     IF (it.ge.timestat_itstart) THEN
@@ -587,6 +617,7 @@ MODULE fourier_psaotd
             bzx_r(ixx,:,:) = 0.0_num
             bzy_r(ixx,:,:) = 0.0_num
           ENDDO
+
         ENDIF
         IF(is_group_x_boundary_max) THEN
           DO ix=nx_global ,cell_x_max_g(x_coords+1) 
