@@ -1211,6 +1211,9 @@ MODULE fourier_psaotd
     USE fields, ONLY : exf, eyf, ezf, bxf, byf, bzf, jxf, jyf, jzf, rhof,   &
                        rhooldf
     USE shared_data, ONLY : absorbing_bcs
+    USE fields , ONLY : exyf,exzf,eyxf,eyzf,ezxf,ezyf,bxyf,bxzf,byxf,byzf,bzxf,bzyf
+
+    
 
     USE fourier, ONLY: plan_r2c_cuda
     USE cufft
@@ -1226,72 +1229,7 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
-    IF(g_spectral) THEN
-      IF(.NOT. absorbing_bcs) THEN
-       !$acc host_data use_device(vold,ex_r,ey_r,ez_r,bx_r,by_r,bz_r,jx_r,jy_r,jz_r,rho_r,rhoold_r,&
-       !$acc& vold(nmatrixes)%block_vector(1)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(2)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(3)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(4)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(5)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(6)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(7)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(8)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(9)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(10)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(11)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,ex_r,vold(nmatrixes)%block_vector(1)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,ey_r,vold(nmatrixes)%block_vector(2)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,ez_r,vold(nmatrixes)%block_vector(3)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,bx_r,vold(nmatrixes)%block_vector(4)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,by_r,vold(nmatrixes)%block_vector(5)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,bz_r,vold(nmatrixes)%block_vector(6)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,jx_r,vold(nmatrixes)%block_vector(7)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,jy_r,vold(nmatrixes)%block_vector(8)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,jz_r,vold(nmatrixes)%block_vector(9)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,rhoold_r,vold(nmatrixes)%block_vector(10)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,rho_r,vold(nmatrixes)%block_vector(11)%block3dc)
-       !$acc end host_data
-      ELSE IF(absorbing_bcs) THEN
-       !$acc host_data use_device(vold,exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r,byx_r,byz_r,bzx_r,bzy_r,jx_r,jy_r,jz_r,rho_r,rhoold_r,&
-       !$acc& vold(nmatrixes)%block_vector(1)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(2)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(3)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(4)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(5)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(6)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(7)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(8)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(9)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(10)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(11)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(12)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(13)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(14)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(15)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(16)%block3dc,&
-       !$acc& vold(nmatrixes)%block_vector(17)%block3dc)
-
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,exy_r,vold(nmatrixes)%block_vector(1)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,exz_r,vold(nmatrixes)%block_vector(2)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,eyx_r,vold(nmatrixes)%block_vector(3)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,eyz_r,vold(nmatrixes)%block_vector(4)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,ezx_r,vold(nmatrixes)%block_vector(5)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,ezy_r,vold(nmatrixes)%block_vector(6)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,bxy_r,vold(nmatrixes)%block_vector(7)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,bxz_r,vold(nmatrixes)%block_vector(8)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,byx_r,vold(nmatrixes)%block_vector(9)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,byz_r,vold(nmatrixes)%block_vector(10)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,bzx_r,vold(nmatrixes)%block_vector(11)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,bzy_r,vold(nmatrixes)%block_vector(12)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,jx_r,vold(nmatrixes)%block_vector(13)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,jy_r,vold(nmatrixes)%block_vector(14)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,jz_r,vold(nmatrixes)%block_vector(15)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,rhoold_r,vold(nmatrixes)%block_vector(16)%block3dc)
-!       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,rho_r,vold(nmatrixes)%block_vector(17)%block3dc)
-       !$acc end host_data
-      ENDIF
-    ELSE IF (.NOT. g_spectral) THEN
+    IF(.NOT. absorbing_bcs) THEN
       !$acc host_data use_device(exf,eyf,ezf,bxf,byf,bzf,jxf,jyf,jzf,rhof,rhooldf,ex_r,ey_r,ez_r,bx_r,by_r,bz_r,jx_r,jy_r,jz_r,rho_r,rhoold_r)
        err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,ex_r,exf)
        err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,ey_r,eyf)
@@ -1304,8 +1242,29 @@ MODULE fourier_psaotd
        err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,jz_r,jzf)
        err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,rhoold_r,rhooldf)
        err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,rho_r,rhof)
-
       !$acc end host_data
+    ELSE IF(absorbing_bcs) THEN
+       !$acc host_data use_device(exyf,exzf,eyxf,eyzf,ezxf,ezyf,bxyf,bxzf,byxf,byzf,bzxf,bzyf,&
+       !$acc& exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r,byx_r,byz_r,bzx_r,bzy_r,jxf,jyf,jzf,rhof,rhooldf,&
+       !$acc& jx_r,jy_r,jz_r,rho_r,rhoold_r)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,exy_r,exyf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,exz_r,exzf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,eyx_r,eyxf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,eyz_r,eyzf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,ezx_r,ezxf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,ezy_r,ezyf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,exy_r,exyf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,exz_r,exzf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,eyx_r,eyxf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,eyz_r,eyzf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,ezx_r,ezxf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,ezy_r,ezyf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,jx_r,jxf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,jy_r,jyf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,jz_r,jzf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,rhoold_r,rhooldf)
+       err_cuda = CUFFTEXECD2Z(plan_r2c_cuda,rho_r,rhof)
+       !$acc end host_data
     ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
@@ -1331,6 +1290,7 @@ MODULE fourier_psaotd
      USE fields, ONLY : exf, eyf, ezf, bxf, byf, bzf, jxf, jyf, jzf, rhof,   &
                         rhooldf
      USE fourier, ONLY : plan_c2r_cuda
+     USE fields , ONLY : exyf,exzf,eyxf,eyzf,ezxf,ezyf,bxyf,bxzf,byxf,byzf,bzxf,bzyf
      USE mpi
      USE params, ONLY: it
      USE picsar_precision, ONLY: idp, num
@@ -1345,7 +1305,7 @@ MODULE fourier_psaotd
      IF (it.ge.timestat_itstart) THEN
        tmptime = MPI_WTIME()
      ENDIF
-     IF(.NOT. g_spectral) THEN
+     IF(.NOT. absorbing_bcs) THEN
        !$acc host_data use_device(exf,eyf,ezf,bxf,byf,bzf,ex_r,ey_r,ez_r,bx_r,by_r,bz_r)
        err_cuda = CUFFTEXECZ2D(plan_c2r_cuda,exf,ex_r)
        err_cuda = CUFFTEXECZ2D(plan_c2r_cuda,eyf,ey_r)
@@ -1354,52 +1314,22 @@ MODULE fourier_psaotd
        err_cuda = CUFFTEXECZ2D(plan_c2r_cuda,byf,by_r)
        err_cuda = CUFFTEXECZ2D(plan_c2r_cuda,bzf,bz_r)
        !$acc end host_data
-     ELSE IF(g_spectral) THEN
-      IF(absorbing_bcs) THEN
-        !$acc host_data use_device(vnew,exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r,byx_r,byz_r,bzx_r,bzy_r, &
-        !$acc& vnew(nmatrixes)%block_vector(1)%block3dc,&
-        !$acc& vnew(nmatrixes)%block_vector(2)%block3dc,&
-        !$acc& vnew(nmatrixes)%block_vector(3)%block3dc,&
-        !$acc& vnew(nmatrixes)%block_vector(4)%block3dc,&
-        !$acc& vnew(nmatrixes)%block_vector(5)%block3dc,&
-        !$acc& vnew(nmatrixes)%block_vector(6)%block3dc,&
-        !$acc& vnew(nmatrixes)%block_vector(7)%block3dc,&
-        !$acc& vnew(nmatrixes)%block_vector(8)%block3dc,&
-        !$acc& vnew(nmatrixes)%block_vector(9)%block3dc,&
-        !$acc& vnew(nmatrixes)%block_vector(10)%block3dc,&
-        !$acc& vnew(nmatrixes)%block_vector(11)%block3dc,&
-        !$acc& vnew(nmatrixes)%block_vector(12)%block3dc)
-
-!        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(1)%block3dc,exy_r)
-!        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(2)%block3dc,exz_r)
-!        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(3)%block3dc,eyx_r)
-!        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(4)%block3dc,eyz_r)
-!        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(5)%block3dc,ezx_r)
-!        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(6)%block3dc,ezy_r)
-!        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(7)%block3dc,bxy_r)
-!        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(8)%block3dc,bxz_r)
-!        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(9)%block3dc,byx_r)
-!        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(10)%block3dc,byz_r)
-!        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(11)%block3dc,bzx_r)
-!        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(12)%block3dc,bzy_r)
-        !$acc end host_data
-      ELSE IF(.NOT. absorbing_bcs) THEN
-        !$acc host_data use_device(vnew,ex_r,ey_r,ez_r,bx_r,by_r,bz_r, &
-        !$acc& vnew(nmatrixes)%block_vector(1)%block3dc,&
-        !$acc& vnew(nmatrixes)%block_vector(2)%block3dc,&
-        !$acc& vnew(nmatrixes)%block_vector(3)%block3dc,&
-        !$acc& vnew(nmatrixes)%block_vector(4)%block3dc,&
-        !$acc& vnew(nmatrixes)%block_vector(5)%block3dc,&
-        !$acc& vnew(nmatrixes)%block_vector(6)%block3dc)
-
-
-!        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(1)%block3dc,ex_r)
-!        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(2)%block3dc,ey_r)
-!        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(3)%block3dc,ez_r)
-!        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(4)%block3dc,bx_r)
-!        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(5)%block3dc,by_r)
-!        err_cuda =CUFFTEXECZ2D(plan_c2r_cuda,vnew(nmatrixes)%block_vector(6)%block3dc,bz_r)
-        !$acc end host_data
+     IF(absorbing_bcs) THEN
+       !$acc host_data use_device(exyf,exzf,eyxf,eyzf,ezxf,ezyf,bxyf,bxzf,byxf,byzf,bzxf,bzyf, &
+       !$acc& exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r,byx_r,byz_r,bzx_r,bzy_r)
+       err_cuda = CUFFTEXECZ2D(plan_c2r_cuda,exyf,exy_r)
+       err_cuda = CUFFTEXECZ2D(plan_c2r_cuda,eyzf,exz_r)
+       err_cuda = CUFFTEXECZ2D(plan_c2r_cuda,eyxf,eyx_r)
+       err_cuda = CUFFTEXECZ2D(plan_c2r_cuda,eyzf,eyz_r)
+       err_cuda = CUFFTEXECZ2D(plan_c2r_cuda,ezxf,ezx_r)
+       err_cuda = CUFFTEXECZ2D(plan_c2r_cuda,ezyf,ezy_r)
+       err_cuda = CUFFTEXECZ2D(plan_c2r_cuda,bxyf,bxy_r)
+       err_cuda = CUFFTEXECZ2D(plan_c2r_cuda,byzf,bxz_r)
+       err_cuda = CUFFTEXECZ2D(plan_c2r_cuda,byxf,byx_r)
+       err_cuda = CUFFTEXECZ2D(plan_c2r_cuda,byzf,byz_r)
+       err_cuda = CUFFTEXECZ2D(plan_c2r_cuda,bzxf,bzx_r)
+       err_cuda = CUFFTEXECZ2D(plan_c2r_cuda,bzyf,bzy_r)
+       !$acc end host_data
       ENDIF
     ENDIF
     IF (it.ge.timestat_itstart) THEN
@@ -1627,6 +1557,7 @@ MODULE fourier_psaotd
 
   SUBROUTINE push_psaotd_ebfielfs_2d()
     USE fields, ONLY: ezf, jxf, rhooldf, rhof, bxf, jzf, eyf, jyf, byf, bzf, exf
+    USE fields, ONLY : exyf,exzf,eyxf,eyzf,ezxf,ezyf,bxyf,bxzf,byxf,byzf,bzxf,bzyf
     USE iso_c_binding
     USE mpi
     USE params, ONLY: it
@@ -1637,7 +1568,8 @@ MODULE fourier_psaotd
     IMPLICIT NONE
     INTEGER(idp) ::  ix, iy, iz, nxx, nzz
     REAL(num) :: tmptime
-    COMPLEX(cpx) :: bxfold, byfold, bzfold, exfold, eyfold, ezfold
+    COMPLEX(cpx) :: bxfold, byfold, bzfold, exfold, eyfold, ezfold,jxfold,jyfold,jzfold,rhofold,rhooldfold
+    COMPLEX(cpx) :: exyfold,exzfold,eyxfold,eyzfold,ezxfold,ezyfold,bxyfold,bxzfold,byxfold,byzfold,bzxfold,bzyfold 
 
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
@@ -1646,10 +1578,10 @@ MODULE fourier_psaotd
     nzz=nkz
     iy=1_idp
 
+    IF(.NOT. absorbing_bcs ) THEN
 #if !defined(CUDA_FFT)
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix,  iz, exfold, eyfold, ezfold,     &
-    !$OMP bxfold, byfold, bzfold,jxfold,jyfold,jzfold,rhofold,rhooldfold)
-    !COLLAPSE(2)
+    !$OMP bxfold, byfold, bzfold,jxfold,jyfold,jzfold,rhofold,rhooldfold) COLLAPSE(2)
 #else
     !$acc parallel present(exf,eyf,ezf,bxf,byf,bzf,jxf, &
     !$acc& jyf,jzf,rhof,rhooldf,cc_mat,cc_mat(nmatrixes)) &
@@ -1753,6 +1685,137 @@ MODULE fourier_psaotd
     !$acc end loop
     !$acc end parallel
 #endif
+    ELSE IF(absorbing_bcs) THEN
+#if !defined(CUDA_FFT)
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz,jxfold,jyfold, &
+    !$OMP jzfold,rhofold,rhooldfold  , exyfold,exzfold,  eyxfold,eyzfold, &
+    !$OMP ezxfold,ezyfold,bxyfold,bxzfold,byxfold, byzfold,bzxfold,bzyfold)
+    !$OMP COLLAPSE(2)
+#else
+    !$acc parallel present(exyf,exzf,eyxf,eyzf,ezxf,ezyf,bxyf , &
+    !$acc& bxzf,byxf,byzf,bzxf,bzyf,jxf,jyf,jzf,rhof,rhooldf,cc_mat,cc_mat(nmatrixes)) &
+    !$acc& attach(&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,1)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,16)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,17)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,13)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(2,2)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(2,9)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(2,10)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,3)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,11)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,12)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,14)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(4,4)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(4,7)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(4,8)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,5)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,9)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,10)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,16)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,17)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,15)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(6,6)%block3dc ,&   
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(7,7)%block3dc ,&   
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(7,14)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(7,15)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(8,8)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(8,3)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(8,4)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,9)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,5)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,6)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,13)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,15)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(10,10)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(10,1)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(10,2)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,11)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,3)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,4)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,14)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(12,12)%block3dc)
+    !$acc loop gang vector collapse(2)
+#endif
+    DO iz=1, nzz
+      DO ix=1, nxx
+        exyfold=exyf(ix, iy, iz)
+        exzfold=exzf(ix, iy, iz)
+        eyxfold=eyxf(ix, iy, iz)
+        eyzfold=eyzf(ix, iy, iz)
+        ezxfold=ezxf(ix, iy, iz)
+        ezyfold=ezyf(ix, iy, iz)
+        jxfold=jxf(ix, iy, iz)
+        jyfold=jyf(ix, iy, iz)
+        jzfold=jzf(ix, iy, iz)
+        rhofold=rhof(ix, iy, iz)
+        rhooldfold=rhooldf(ix, iy, iz)
+          exyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(1,1)%block3dc(ix,iy,iz)*exyfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(1,16)%block3dc(ix,iy,iz)*rhooldfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(1,17)%block3dc(ix,iy,iz)*rhofold + & 
+        cc_mat(nmatrixes)%block_matrix2d(1,13)%block3dc(ix,iy,iz)*jxfold 
+      
+          exzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(2,2)%block3dc(ix,iy,iz)*exzfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(2,9)%block3dc(ix,iy,iz)*byxfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(2,10)%block3dc(ix,iy,iz)*byzfold 
+      
+          eyxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(3,3)%block3dc(ix,iy,iz)*eyxfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(3,11)%block3dc(ix,iy,iz)*bzxfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(3,12)%block3dc(ix,iy,iz)*bzyfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(3,16)%block3dc(ix,iy,iz)*rhooldfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(3,17)%block3dc(ix,iy,iz)*rhofold + & 
+        cc_mat(nmatrixes)%block_matrix2d(3,14)%block3dc(ix,iy,iz)*jyfold 
+      
+          eyzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(4,4)%block3dc(ix,iy,iz)*eyzfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(4,7)%block3dc(ix,iy,iz)*bxyfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(4,8)%block3dc(ix,iy,iz)*bxzfold 
+      
+          ezxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(5,5)%block3dc(ix,iy,iz)*ezxfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(5,9)%block3dc(ix,iy,iz)*byxfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(5,10)%block3dc(ix,iy,iz)*byzfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(5,16)%block3dc(ix,iy,iz)*rhooldfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(5,17)%block3dc(ix,iy,iz)*rhofold + & 
+        cc_mat(nmatrixes)%block_matrix2d(5,15)%block3dc(ix,iy,iz)*jzfold 
+      
+          ezyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(6,6)%block3dc(ix,iy,iz)*ezyfold 
+      
+          bxyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(7,7)%block3dc(ix,iy,iz)*bxyfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(7,14)%block3dc(ix,iy,iz)*jyfold 
+      
+          bxzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(8,8)%block3dc(ix,iy,iz)*bxzfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(8,3)%block3dc(ix,iy,iz)*eyxfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(8,4)%block3dc(ix,iy,iz)*eyzfold 
+      
+          byxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(9,9)%block3dc(ix,iy,iz)*byxfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(9,5)%block3dc(ix,iy,iz)*ezxfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(9,6)%block3dc(ix,iy,iz)*ezyfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(9,13)%block3dc(ix,iy,iz)*jxfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(9,15)%block3dc(ix,iy,iz)*jzfold 
+      
+          byzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(10,10)%block3dc(ix,iy,iz)*byzfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(10,1)%block3dc(ix,iy,iz)*exyfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(10,2)%block3dc(ix,iy,iz)*exzfold 
+      
+          bzxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(11,11)%block3dc(ix,iy,iz)*bzxfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(11,3)%block3dc(ix,iy,iz)*eyxfold + & 
+        cc_mat(nmatrixes)%block_matrix2d(11,4)%block3dc(ix,iy,iz)*eyzfold + &
+        cc_mat(nmatrixes)%block_matrix2d(11,14)%block3dc(ix,iy,iz)*jyfold 
+      
+          bzyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(12,12)%block3dc(ix,iy,iz)*bzyfold  
+
+      ENDDO
+    ENDDO
+
+#if !defined(CUDA_FFT)
+    !$OMP END PARALLEL DO
+#else
+    !$acc end loop
+    !$acc end parallel
+#endif
+
+    ENDIF
+
+
 
     IF (it.ge.timestat_itstart) THEN
       localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime)
@@ -1910,10 +1973,9 @@ MODULE fourier_psaotd
 #endif
     ELSE 
 #if !defined(CUDA_FFT)
-    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, !iz,jxfold,jyfold, &
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz,jxfold,jyfold, &
     !$OMP jzfold,rhofold,rhooldfold  , exyfold,exzfold,  eyxfold,eyzfold, &
-    !$OMP ezxfold,ezyfold,bxyfold,bxzfold,byxfold, byzfold,bzxfold,bzyfold)
-    !COLLAPSE(3)
+    !$OMP ezxfold,ezyfold,bxyfold,bxzfold,byxfold, byzfold,bzxfold,bzyfold) COLLAPSE(3)
 #else
     !$acc parallel present(exyf,exzf,eyxf,eyzf,ezxf,ezyf,bxyf , &
     !$acc& bxzf,byxf,byzf,bzxf,bzyf,jxf,jyf,jzf,rhof,rhooldf,cc_mat,cc_mat(nmatrixes)) &
@@ -2051,9 +2113,6 @@ MODULE fourier_psaotd
         ENDDO
       ENDDO     
     ENDDO
-
-
-
 
 #if !defined(CUDA_FFT)
     !$OMP END PARALLEL DO

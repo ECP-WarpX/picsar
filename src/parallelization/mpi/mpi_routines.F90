@@ -1454,6 +1454,9 @@ IF(absorbing_bcs .AND. l_spectral) THEN
   g_spectral = .TRUE. ! absorbing_bcs push only available with mult_mat_vec
                         ! routine
 ENDIF
+#if(defined CUDA_FFT)  
+   g_spectral = .FALSE.
+#endif
 IF(absorbing_bcs .AND. .NOT. l_spectral) THEN
  IF(rank==0)  WRITE(0, *)'ERROR , pmls are not available yet with FDTD'
  STOP
@@ -1774,12 +1777,13 @@ IF(l_spectral) THEN
      ALLOCATE(jx_r(nxx,nyy,nzz))
      ALLOCATE(jy_r(nxx,nyy,nzz))
      ALLOCATE(jz_r(nxx,nyy,nzz))
-     
-     ALLOCATE(rhof(nkx,nky,nkz))
-     ALLOCATE(rhooldf(nkx,nky,nkz))
-     ALLOCATE(jxf(nkx,nky,nkz)) 
-     ALLOCATE(jyf(nkx,nky,nkz))
-     ALLOCATE(jzf(nkx,nky,nkz))
+     IF(.NOT. g_spectral ) THEN
+       ALLOCATE(rhof(nkx,nky,nkz))
+       ALLOCATE(rhooldf(nkx,nky,nkz))
+       ALLOCATE(jxf(nkx,nky,nkz)) 
+       ALLOCATE(jyf(nkx,nky,nkz))
+       ALLOCATE(jzf(nkx,nky,nkz))
+     ENDIF
      
      IF(absorbing_bcs) THEN
        ALLOCATE(exy_r(nxx,nyy,nzz))
@@ -1794,19 +1798,20 @@ IF(l_spectral) THEN
        ALLOCATE(byz_r(nxx,nyy,nzz))
        ALLOCATE(bzx_r(nxx,nyy,nzz))
        ALLOCATE(bzy_r(nxx,nyy,nzz))
-  
-       ALLOCATE(exyf(nkx,nky,nkz))
-       ALLOCATE(exzf(nkx,nky,nkz))
-       ALLOCATE(eyxf(nkx,nky,nkz))
-       ALLOCATE(eyzf(nkx,nky,nkz))
-       ALLOCATE(ezxf(nkx,nky,nkz))
-       ALLOCATE(ezyf(nkx,nky,nkz))
-       ALLOCATE(bxyf(nkx,nky,nkz))
-       ALLOCATE(bxzf(nkx,nky,nkz))
-       ALLOCATE(byxf(nkx,nky,nkz))
-       ALLOCATE(byzf(nkx,nky,nkz))
-       ALLOCATE(bzxf(nkx,nky,nkz))
-       ALLOCATE(bzyf(nkx,nky,nkz))     
+       IF(.NOT. g_spectral) THEN 
+         ALLOCATE(exyf(nkx,nky,nkz))
+         ALLOCATE(exzf(nkx,nky,nkz))
+         ALLOCATE(eyxf(nkx,nky,nkz))
+         ALLOCATE(eyzf(nkx,nky,nkz))
+         ALLOCATE(ezxf(nkx,nky,nkz))
+         ALLOCATE(ezyf(nkx,nky,nkz))
+         ALLOCATE(bxyf(nkx,nky,nkz))
+         ALLOCATE(bxzf(nkx,nky,nkz))
+         ALLOCATE(byxf(nkx,nky,nkz))
+         ALLOCATE(byzf(nkx,nky,nkz))
+         ALLOCATE(bzxf(nkx,nky,nkz))
+         ALLOCATE(bzyf(nkx,nky,nkz))     
+       ENDIF
 #if defined(CUDA_FFT)
        !$acc enter data create (exyf,exzf,eyxf,eyzf,ezxf,ezyf,bxyf,bxzf,byxf,byzf,bzxf,bzyf,jxf,jyf,jzf,rhooldf,rhof)
        !$acc enter data create (exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r,byx_r,byz_r,bzx_r,bzy_r,jx_r,jy_r,jz_r,rhoold_r,rho_r)
@@ -1818,13 +1823,14 @@ IF(l_spectral) THEN
        ALLOCATE(bx_r(nxx,nyy,nzz))
        ALLOCATE(by_r(nxx,nyy,nzz))
        ALLOCATE(bz_r(nxx,nyy,nzz))
-  
-       ALLOCATE(exf(nkx,nky,nkz))
-       ALLOCATE(eyf(nkx,nky,nkz))
-       ALLOCATE(ezf(nkx,nky,nkz))
-       ALLOCATE(bxf(nkx,nky,nkz))
-       ALLOCATE(byf(nkx,nky,nkz))
-       ALLOCATE(bzf(nkx,nky,nkz))        
+       IF(g_spectral)THEN
+         ALLOCATE(exf(nkx,nky,nkz))
+         ALLOCATE(eyf(nkx,nky,nkz))
+         ALLOCATE(ezf(nkx,nky,nkz))
+         ALLOCATE(bxf(nkx,nky,nkz))
+         ALLOCATE(byf(nkx,nky,nkz))
+         ALLOCATE(bzf(nkx,nky,nkz))        
+       ENDIF
 #if defined(CUDA_FFT)
       !$acc enter data create (exf,eyf,ezf,bxf,byf,bzf,jxf,jyf,jzf,rhof,rhooldf)
       !$acc enter data create (ex_r,ey_r,ez_r,bx_r,by_r,bz_r,jx_r,jy_r,jz_r,rhoold_r,rho_r)
@@ -1848,17 +1854,18 @@ IF(l_spectral) THEN
      CALL c_f_pointer(cin, rho_r, [nxx, nyy, nzz])
      cin = fftw_alloc_real(2 * alloc_local);
      CALL c_f_pointer(cin, rhoold_r, [nxx, nyy, nzz])
-     
-     cdata = fftw_alloc_complex(alloc_local)
-     CALL c_f_pointer(cdata, jxf, [nkx, nky, nkz])
-     cdata = fftw_alloc_complex(alloc_local)
-     CALL c_f_pointer(cdata, jyf, [nkx, nky, nkz])
-     cdata = fftw_alloc_complex(alloc_local)
-     CALL c_f_pointer(cdata, jzf, [nkx, nky, nkz])
-     cdata = fftw_alloc_complex(alloc_local)
-     CALL c_f_pointer(cdata, rhof, [nkx, nky, nkz])
-     cdata = fftw_alloc_complex(alloc_local)
-     CALL c_f_pointer(cdata, rhooldf, [nkx, nky, nkz])
+     IF(.NOT. g_spectral) THEN  
+       cdata = fftw_alloc_complex(alloc_local)
+       CALL c_f_pointer(cdata, jxf, [nkx, nky, nkz])
+       cdata = fftw_alloc_complex(alloc_local)
+       CALL c_f_pointer(cdata, jyf, [nkx, nky, nkz])
+       cdata = fftw_alloc_complex(alloc_local)
+       CALL c_f_pointer(cdata, jzf, [nkx, nky, nkz])
+       cdata = fftw_alloc_complex(alloc_local)
+       CALL c_f_pointer(cdata, rhof, [nkx, nky, nkz])
+       cdata = fftw_alloc_complex(alloc_local)
+       CALL c_f_pointer(cdata, rhooldf, [nkx, nky, nkz])
+     ENDIF
      
      IF(absorbing_bcs) THEN
        cin = fftw_alloc_real(2 * alloc_local);
@@ -1885,31 +1892,32 @@ IF(l_spectral) THEN
        CALL c_f_pointer(cin, bzx_r, [nxx, nyy, nzz])
        cin = fftw_alloc_real(2 * alloc_local);
        CALL c_f_pointer(cin, bzy_r, [nxx, nyy, nzz])
-  
-       cdata = fftw_alloc_complex(alloc_local)
-       CALL c_f_pointer(cdata, exyf, [nkx, nky, nkz])
-       cdata = fftw_alloc_complex(alloc_local)
-       CALL c_f_pointer(cdata, exzf, [nkx, nky, nkz])
-       cdata = fftw_alloc_complex(alloc_local)
-       CALL c_f_pointer(cdata, eyxf, [nkx, nky, nkz])
-       cdata = fftw_alloc_complex(alloc_local)
-       CALL c_f_pointer(cdata, eyzf, [nkx, nky, nkz])
-       cdata = fftw_alloc_complex(alloc_local)
-       CALL c_f_pointer(cdata, ezxf, [nkx, nky, nkz])
-       cdata = fftw_alloc_complex(alloc_local)
-       CALL c_f_pointer(cdata, ezyf, [nkx, nky, nkz])
-       cdata = fftw_alloc_complex(alloc_local)
-       CALL c_f_pointer(cdata, exyf, [nkx, nky, nkz])
-       cdata = fftw_alloc_complex(alloc_local)
-       CALL c_f_pointer(cdata, exzf, [nkx, nky, nkz])
-       cdata = fftw_alloc_complex(alloc_local)
-       CALL c_f_pointer(cdata, eyxf, [nkx, nky, nkz])
-       cdata = fftw_alloc_complex(alloc_local)
-       CALL c_f_pointer(cdata, eyzf, [nkx, nky, nkz])
-       cdata = fftw_alloc_complex(alloc_local)
-       CALL c_f_pointer(cdata, ezxf, [nkx, nky, nkz])
-       cdata = fftw_alloc_complex(alloc_local)
-       CALL c_f_pointer(cdata, ezyf, [nkx, nky, nkz])
+       IF(.NOT. g_spectral) THEN 
+         cdata = fftw_alloc_complex(alloc_local)
+         CALL c_f_pointer(cdata, exyf, [nkx, nky, nkz])
+         cdata = fftw_alloc_complex(alloc_local)
+         CALL c_f_pointer(cdata, exzf, [nkx, nky, nkz])
+         cdata = fftw_alloc_complex(alloc_local)
+         CALL c_f_pointer(cdata, eyxf, [nkx, nky, nkz])
+         cdata = fftw_alloc_complex(alloc_local)
+         CALL c_f_pointer(cdata, eyzf, [nkx, nky, nkz])
+         cdata = fftw_alloc_complex(alloc_local)
+         CALL c_f_pointer(cdata, ezxf, [nkx, nky, nkz])
+         cdata = fftw_alloc_complex(alloc_local)
+         CALL c_f_pointer(cdata, ezyf, [nkx, nky, nkz])
+         cdata = fftw_alloc_complex(alloc_local)
+         CALL c_f_pointer(cdata, exyf, [nkx, nky, nkz])
+         cdata = fftw_alloc_complex(alloc_local)
+         CALL c_f_pointer(cdata, exzf, [nkx, nky, nkz])
+         cdata = fftw_alloc_complex(alloc_local)
+         CALL c_f_pointer(cdata, eyxf, [nkx, nky, nkz])
+         cdata = fftw_alloc_complex(alloc_local)
+         CALL c_f_pointer(cdata, eyzf, [nkx, nky, nkz])
+         cdata = fftw_alloc_complex(alloc_local)
+         CALL c_f_pointer(cdata, ezxf, [nkx, nky, nkz])
+         cdata = fftw_alloc_complex(alloc_local)
+         CALL c_f_pointer(cdata, ezyf, [nkx, nky, nkz])
+       ENDIF
   
      ELSE IF(.NOT. absorbing_bcs) THEN
        cin = fftw_alloc_real(2 * alloc_local);
@@ -1925,19 +1933,20 @@ IF(l_spectral) THEN
        cin = fftw_alloc_real(2 * alloc_local);
        CALL c_f_pointer(cin, bz_r, [nxx, nyy, nzz])
        cin = fftw_alloc_real(2 * alloc_local);
-  
-        cdata = fftw_alloc_complex(alloc_local)
-        CALL c_f_pointer(cdata, exf, [nkx, nky, nkz])
-        cdata = fftw_alloc_complex(alloc_local)
-        CALL c_f_pointer(cdata, eyf, [nkx, nky, nkz])
-        cdata = fftw_alloc_complex(alloc_local)
-        CALL c_f_pointer(cdata, ezf, [nkx, nky, nkz])
-        cdata = fftw_alloc_complex(alloc_local)
-        CALL c_f_pointer(cdata, bxf, [nkx, nky, nkz])
-        cdata = fftw_alloc_complex(alloc_local)
-        CALL c_f_pointer(cdata, byf, [nkx, nky, nkz])
-        cdata = fftw_alloc_complex(alloc_local)
-        CALL c_f_pointer(cdata, bzf, [nkx, nky, nkz])
+       IF(.NOT. g_spectral) THEN 
+         cdata = fftw_alloc_complex(alloc_local)
+         CALL c_f_pointer(cdata, exf, [nkx, nky, nkz])
+         cdata = fftw_alloc_complex(alloc_local)
+         CALL c_f_pointer(cdata, eyf, [nkx, nky, nkz])
+         cdata = fftw_alloc_complex(alloc_local)
+         CALL c_f_pointer(cdata, ezf, [nkx, nky, nkz])
+         cdata = fftw_alloc_complex(alloc_local)
+         CALL c_f_pointer(cdata, bxf, [nkx, nky, nkz])
+         cdata = fftw_alloc_complex(alloc_local)
+         CALL c_f_pointer(cdata, byf, [nkx, nky, nkz])
+         cdata = fftw_alloc_complex(alloc_local)
+         CALL c_f_pointer(cdata, bzf, [nkx, nky, nkz])
+       ENDIF
      ENDIF
 #endif 
   
