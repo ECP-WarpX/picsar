@@ -1823,7 +1823,7 @@ IF(l_spectral) THEN
        ALLOCATE(bx_r(nxx,nyy,nzz))
        ALLOCATE(by_r(nxx,nyy,nzz))
        ALLOCATE(bz_r(nxx,nyy,nzz))
-       IF(g_spectral)THEN
+       IF(.NOT. g_spectral)THEN
          ALLOCATE(exf(nkx,nky,nkz))
          ALLOCATE(eyf(nkx,nky,nkz))
          ALLOCATE(ezf(nkx,nky,nkz))
