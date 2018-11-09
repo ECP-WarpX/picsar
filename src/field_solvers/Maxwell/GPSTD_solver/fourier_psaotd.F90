@@ -1766,7 +1766,7 @@ MODULE fourier_psaotd
     USE mpi
     USE params, ONLY: it
     USE picsar_precision, ONLY: idp, num, cpx
-    USE shared_data, ONLY: nkx, nky, nkz,shared_data, absorbing_bcs
+    USE shared_data, ONLY : nkx, nky, nkz, absorbing_bcs
     USE time_stat, ONLY: timestat_itstart, localtimes
 
     IMPLICIT NONE
