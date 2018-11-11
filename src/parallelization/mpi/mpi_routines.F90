@@ -749,9 +749,9 @@ LOGICAL(isp)                               :: is_in_place
   !-- Computing the rank of the process in its MPI group
   !-- Key is initialized so that processes in the new MPI group communicators
   !-- have the same neighbors than the ones in the global communicator comm
-  key = MODULO(z_coords,group_sizes(3))*group_sizes(1)*group_sizes(2) + &
+  key = INT(MODULO(z_coords,group_sizes(3))*group_sizes(1)*group_sizes(2) + &
         MODULO(y_coords,group_sizes(2))*group_sizes(1) + &
-        MODULO(x_coords,group_sizes(1))
+        MODULO(x_coords,group_sizes(1)),isp)
 
   ! - Init a local root rank for each group identified by color_roots
   ! - Local root ranks are used to communicate information between MPI groups
@@ -761,8 +761,8 @@ LOGICAL(isp)                               :: is_in_place
   IF(key==0) color_roots = 1_isp  ! 1 != mpi_undefined
 
   ! ranks of procs inside roots_comm will be in the same order as groups
-  key_roots = z_group_coords*nb_group_y*nb_group_x + y_group_coords*nb_group_x &
-  + x_group_coords
+  key_roots = INT(z_group_coords*nb_group_y*nb_group_x + y_group_coords*nb_group_x &
+  + x_group_coords,isp)
 
   roots_comm = MPI_COMM_NULL
   root_rank = MPI_PROC_NULL
@@ -803,7 +803,7 @@ LOGICAL(isp)                               :: is_in_place
   ! -- colors(which_group) so mpi_comm_world will be split into nb_group
   ! -- key enables to arrange ranks in the group the same way they are in the
   ! -- ordered grid
-  color = which_group
+  color = INT(which_group,isp)
   ! -- Create communicator associated to each group
   CALL MPI_COMM_SPLIT(comm,color,key,grp_comm(which_group+1),errcode)
   ! -- Duplicate old communicators to the variables mpi_comm_group_id,
@@ -826,7 +826,7 @@ LOGICAL(isp)                               :: is_in_place
   ! - Create and ordered comm world  to compute communication scheduling
   ! -- key is the topological rank of current mpi if mpi_comm_world would have
   ! -- been cartesian
-  key = z_coords*nprocx*nprocy+ y_coords*nprocx + x_coords
+  key = INT(z_coords*nprocx*nprocy+ y_coords*nprocx + x_coords,isp)
   color_roots = MPI_UNDEFINED
   color_roots = 1_isp
   CALL MPI_COMM_SPLIT(comm,color_roots,key,mpi_ordered_comm_world,errcode)
