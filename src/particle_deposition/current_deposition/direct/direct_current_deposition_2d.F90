@@ -297,7 +297,6 @@ SUBROUTINE depose_jxjyjz_scalar2d_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard
     sz0( 1) = 0.5_num*(0.5_num+zint)**2
 
     ! --- add current contributions in the form rho(n+1/2)v(n+1/2)
-    ! --- to the 27 nearest vertices
     ! - JX
     !$acc atomic update
     jx(j0-1, l-1)  = jx(j0-1, l-1)  +   sx0(-1)*sz(-1)*wqx
@@ -478,7 +477,6 @@ SUBROUTINE depose_jxjyjz_scalar2d_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard
     sz0( 2) = onesixth*zintsq*zint
 
     ! --- add current contributions in the form rho(n+1/2)v(n+1/2)
-    ! --- to the 64 nearest vertices
     ! - JX
     !$acc atomic update
     jx(j0-1, l-1)  = jx(j0-1, l-1)  +   sx0(-1)*sz(-1)*wqx
