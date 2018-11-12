@@ -269,10 +269,8 @@ SUBROUTINE depose_jxjyjz_scalar2d_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard
 
     ! --- finds node of cell containing particles for current positions
     j=nint(xmid)
-    k=nint(ymid)
     l=nint(zmid)
     j0=nint(xmid-0.5_num)
-    k0=nint(ymid-0.5_num)
     l0=nint(zmid-0.5_num)
     ! --- computes set of coefficients for node centered quantities
     xint = xmid-j
@@ -407,7 +405,7 @@ SUBROUTINE depose_jxjyjz_scalar2d_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard
 
   dxi = 1.0_num/dx
   dzi = 1.0_num/dz
-  invvol = dxi*dyi*dzi
+  invvol = dxi*dzi
   dts2dx = 0.5_num*dt*dxi
   dts2dz = 0.5_num*dt*dzi
   clightsq = 1.0_num/clight**2

@@ -91,15 +91,15 @@ SUBROUTINE depose_jxjyjz_generic_2d( jx, jx_nguard, jx_nvalid, jy, jy_nguard,   
   SELECT CASE(current_depo_algo)
     ! Scalar classical current deposition subroutines
   CASE(3)
-    IF ((nox.eq.1).and.(noy.eq.1).and.(noz.eq.1)) THEN
+    IF ((nox.eq.1).and.(noz.eq.1)) THEN
       CALL depose_jxjyjz_scalar2d_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
       jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w,  &
       q, xmin, zmin, dt, dx, dz)
-    ELSE IF ((nox.eq.2).and.(noy.eq.2).and.(noz.eq.2)) THEN
+    ELSE IF ((nox.eq.2).and.(noz.eq.2)) THEN
       CALL depose_jxjyjz_scalar2d_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
       jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w,  &
       q, xmin, zmin, dt, dx, dz)
-    ELSE IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
+    ELSE IF ((nox.eq.3).and.(noz.eq.3)) THEN
       CALL depose_jxjyjz_scalar2d_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
       jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w,  &
       q, xmin, zmin, dt, dx, dz)
