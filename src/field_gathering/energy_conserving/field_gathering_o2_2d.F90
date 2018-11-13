@@ -38,12 +38,6 @@
 !> @details
 !> This subroutine is NOT vectorized.
 !
-!> @author
-!> Mathieu Lobet
-!
-!> @date
-!> Creation 2016
-!> Revison 12/04/2016
 !
 !> @param[in] np number of particles
 !> @param[in] xp, zp particle position
@@ -58,24 +52,21 @@
 !
 ! ________________________________________________________________________________________
 SUBROUTINE gete2dxz_energy_conserving_scalar_2_2(np, xp, zp, ex, ey, ez, xmin,    &
-  ymin, zmin, dx, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid,     &
+  zmin, dx, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid,     &
   ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
   USE picsar_precision, ONLY: idp, num, lp
   IMPLICIT NONE
   INTEGER(idp)                         :: np
-  INTEGER(idp), intent(in)             :: exg_nguard(3), exg_nvalid(3),               &
-  eyg_nguard(3), eyg_nvalid(3), ezg_nguard(3), ezg_nvalid(3)
+  INTEGER(idp), intent(in)             :: exg_nguard(2), exg_nvalid(2),               &
+  eyg_nguard(2), eyg_nvalid(2), ezg_nguard(2), ezg_nvalid(2)
   REAL(num), DIMENSION(np)             :: xp, zp, ex, ey, ez
   LOGICAL(lp)                              :: l_lower_order_in_v
   REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1,           &
-  -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1,                                       &
-  -exg_nguard(3):exg_nvalid(3)+exg_nguard(3)-1)
+  -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1)
   REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1,           &
-  -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1,                                       &
-  -eyg_nguard(3):eyg_nvalid(3)+eyg_nguard(3)-1)
+  -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1)
   REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1,           &
-  -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1,                                       &
-  -ezg_nguard(3):ezg_nvalid(3)+ezg_nguard(3)-1)
+  -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1)
   REAL(num)                            :: xmin, zmin, dx, dz
   INTEGER(idp)                         :: ip, j, l
   INTEGER(idp)                         :: ixmin, ixmax, izmin, izmax
@@ -110,7 +101,7 @@ SUBROUTINE gete2dxz_energy_conserving_scalar_2_2(np, xp, zp, ex, ey, ez, xmin,  
     izmax0 = 1
 
     !$acc parallel deviceptr(exg, eyg, ezg, xp, zp, ex, ey, ez)
-    !$acc loop gang vector private(sx(-1:1), sz(-1:1), sx0(-1:1), sy0(-1:1), sz0(-1:1))
+    !$acc loop gang vector private(sx(-1:1), sz(-1:1), sx0(-1:1), sz0(-1:1))
     DO ip=1, np
 
       x = (xp(ip)-xmin)*dxi
@@ -118,7 +109,6 @@ SUBROUTINE gete2dxz_energy_conserving_scalar_2_2(np, xp, zp, ex, ey, ez, xmin,  
 
       j=nint(x)
       j0=floor(x-0.5_num)
-
 
       l=nint(z)
       l0=floor(z-0.5_num)
@@ -145,32 +135,32 @@ SUBROUTINE gete2dxz_energy_conserving_scalar_2_2(np, xp, zp, ex, ey, ez, xmin,  
       sz0( 0) = 1.0_num-zint
       sz0( 1) = zint
 
-      !$acc loop seq independent collapse(3)
+      !$acc loop seq independent collapse(2)
       DO ll = izmin, izmax+1
           ! Prevent wrong vectorization from the compiler
           !DIR$ NOVECTOR
           DO jj = ixmin0, ixmax0
-            ex(ip) = ex(ip) + sx0(jj)*sy(kk)*sz(ll)*exg(j0+jj, k+kk, l+ll)
+            ex(ip) = ex(ip) + sx0(jj)*sz(ll)*exg(j0+jj, l+ll)
           END DO
       END DO
       !$acc end loop
 
-      !$acc loop seq independent collapse(3)
+      !$acc loop seq independent collapse(2)
       DO ll = izmin, izmax+1
           ! Prevent wrong vectorization from the compiler
           !DIR$ NOVECTOR
           DO jj = ixmin, ixmax+1
-            ey(ip) = ey(ip) + sx(jj)*sy0(kk)*sz(ll)*eyg(j+jj, k0+kk, l+ll)
+            ey(ip) = ey(ip) + sx(jj)*sz(ll)*eyg(j+jj, l+ll)
           END DO
       END DO
       !$acc end loop
 
-      !$acc loop seq independent collapse(3)
+      !$acc loop seq independent collapse(2)
       DO ll = izmin0, izmax0
           ! Prevent wrong vectorization from the compiler
           !DIR$ NOVECTOR
           DO jj = ixmin, ixmax+1
-            ez(ip) = ez(ip) + sx(jj)*sy(kk)*sz0(ll)*ezg(j+jj, k+kk, l0+ll)
+            ez(ip) = ez(ip) + sx(jj)*sz0(ll)*ezg(j+jj, l0+ll)
           END DO
       END DO
       !$acc end loop
@@ -188,7 +178,7 @@ SUBROUTINE gete2dxz_energy_conserving_scalar_2_2(np, xp, zp, ex, ey, ez, xmin,  
     izmax0 = 1
 
     !$acc parallel deviceptr(exg, eyg, ezg, xp, zp, ex, ey, ez)
-    !$acc loop gang vector private(sx(-1:1), sz(-1:1), sx0(-1:1), sy0(-1:1), sz0(-1:1))
+    !$acc loop gang vector private(sx(-1:1), sz(-1:1), sx0(-1:1), sz0(-1:1))
     DO ip=1, np
 
       x = (xp(ip)-xmin)*dxi
@@ -227,32 +217,32 @@ SUBROUTINE gete2dxz_energy_conserving_scalar_2_2(np, xp, zp, ex, ey, ez, xmin,  
       sz0( 0) = 0.75_num-zintsq
       sz0( 1) = 0.5_num*(0.5_num+zint)**2
 
-      !$acc loop seq independent collapse(3)
+      !$acc loop seq independent collapse(2)
       do ll = izmin, izmax+1
           ! Prevent wrong vectorization from the compiler
           !DIR$ NOVECTOR
           do jj = ixmin0, ixmax0
-            ex(ip) = ex(ip) + sx0(jj)*sy(kk)*sz(ll)*exg(j0+jj, k+kk, l+ll)
+            ex(ip) = ex(ip) + sx0(jj)*sz(ll)*exg(j0+jj, l+ll)
           end do
       end do
       !$acc end loop
 
-      !$acc loop seq independent collapse(3)
+      !$acc loop seq independent collapse(2)
       do ll = izmin, izmax+1
           ! Prevent wrong vectorization from the compiler
           !DIR$ NOVECTOR
           do jj = ixmin, ixmax+1
-            ey(ip) = ey(ip) + sx(jj)*sy0(kk)*sz(ll)*eyg(j+jj, k0+kk, l+ll)
+            ey(ip) = ey(ip) + sx(jj)*sz(ll)*eyg(j+jj, l+ll)
           end do
       end do
       !$acc end loop
 
-      !$acc loop seq independent collapse(3)
+      !$acc loop seq independent collapse(2)
       do ll = izmin0, izmax0
           ! Prevent wrong vectorization from the compiler
           !DIR$ NOVECTOR
           do jj = ixmin, ixmax+1
-            ez(ip) = ez(ip) + sx(jj)*sy(kk)*sz0(ll)*ezg(j+jj, k+kk, l0+ll)
+            ez(ip) = ez(ip) + sx(jj)*sz0(ll)*ezg(j+jj, l0+ll)
           end do
       end do
       !$acc end loop
@@ -272,14 +262,7 @@ END SUBROUTINE
 !> at order 2
 !
 !> @details
-!> This function is vectorized
-!
-!> @author
-!> Mathieu Lobet
-!
-!> @date
-!> Creation 2016
-!> Revison 12/05/2016
+!> This function is NOT vectorized
 !
 !> @param[in] np number of particles
 !> @param[in] xp, zp particle position arrays
@@ -296,24 +279,21 @@ END SUBROUTINE
 !
 ! ________________________________________________________________________________________
 SUBROUTINE getb2dxz_energy_conserving_scalar_2_2(np, xp, zp, bx, by, bz, xmin,    &
-  ymin, zmin, dx, dz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid,     &
+  zmin, dx, dz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid,     &
   bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
   USE picsar_precision, ONLY: idp, num, lp
   IMPLICIT NONE
   INTEGER(idp)                         :: np
-  INTEGER(idp), intent(in)                :: bxg_nguard(3), bxg_nvalid(3),            &
-  byg_nguard(3), byg_nvalid(3), bzg_nguard(3), bzg_nvalid(3)
+  INTEGER(idp), intent(in)                :: bxg_nguard(2), bxg_nvalid(2),            &
+  byg_nguard(2), byg_nvalid(2), bzg_nguard(2), bzg_nvalid(2)
   REAL(num), DIMENSION(np)             :: xp, zp, bx, by, bz
   LOGICAL(lp)                              :: l_lower_order_in_v
   REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1,           &
-  -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1,                                       &
-  -bxg_nguard(3):bxg_nvalid(3)+bxg_nguard(3)-1)
+  -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1)
   REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1,           &
-  -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1,                                       &
-  -byg_nguard(3):byg_nvalid(3)+byg_nguard(3)-1)
+  -byg_nguard(2):byg_nvalid(2)+byg_nguard(2)-1)
   REAL(num), intent(IN):: bzg(-bzg_nguard(1):bzg_nvalid(1)+bzg_nguard(1)-1,           &
-  -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1,                                       &
-  -bzg_nguard(3):bzg_nvalid(3)+bzg_nguard(3)-1)
+  -bzg_nguard(2):bzg_nvalid(2)+bzg_nguard(2)-1)
   REAL(num)                            :: xmin, zmin, dx, dz
   INTEGER(idp)                         :: ip, j, l, ixmin, ixmax,    &
   izmin, izmax, ixmin0, ixmax0, izmin0, izmax0, jj, ll, j0, l0
@@ -326,13 +306,6 @@ SUBROUTINE getb2dxz_energy_conserving_scalar_2_2(np, xp, zp, bx, by, bz, xmin,  
 
   dxi = 1.0_num/dx
   dzi = 1.0_num/dz
-
-  sx=0.0_num
-  sy=0.0_num
-  sz=0.0_num
-  sx0=0.0_num
-  sy0=0.0_num
-  sz0=0.0_num
 
   ixmin = -1
   ixmax = 0
@@ -347,7 +320,7 @@ SUBROUTINE getb2dxz_energy_conserving_scalar_2_2(np, xp, zp, bx, by, bz, xmin,  
     izmax0 = 1
 
     !$acc parallel deviceptr(bxg, byg, bzg, xp, zp, bx, by, bz)
-    !$acc loop gang vector private(sx(-1:1), sz(-1:1), sx0(-1:1), sy0(-1:1), sz0(-1:1))
+    !$acc loop gang vector private(sx(-1:1), sz(-1:1), sx0(-1:1), sz0(-1:1))
     DO ip=1, np
 
       x = (xp(ip)-xmin)*dxi
@@ -355,7 +328,6 @@ SUBROUTINE getb2dxz_energy_conserving_scalar_2_2(np, xp, zp, bx, by, bz, xmin,  
 
       j=nint(x)
       j0=floor(x-0.5_num)
-
 
       l=nint(z)
       l0=floor(z-0.5_num)
@@ -382,32 +354,32 @@ SUBROUTINE getb2dxz_energy_conserving_scalar_2_2(np, xp, zp, bx, by, bz, xmin,  
       sz0( 0) = 1.0_num-zint
       sz0( 1) = zint
 
-      !$acc loop seq independent collapse(3)
+      !$acc loop seq independent collapse(2)
       do ll = izmin0, izmax0
           ! Prevent wrong vectorization from the compiler
           !DIR$ NOVECTOR
           do jj = ixmin, ixmax+1
-            bx(ip) = bx(ip) + sx(jj)*sy0(kk)*sz0(ll)*bxg(j+jj, k0+kk, l0+ll)
+            bx(ip) = bx(ip) + sx(jj)*sz0(ll)*bxg(j+jj, l0+ll)
           end do
       end do
       !$acc end loop
 
-      !$acc loop seq independent collapse(3)
+      !$acc loop seq independent collapse(2)
       do ll = izmin0, izmax0
           ! Prevent wrong vectorization from the compiler
           !DIR$ NOVECTOR
           do jj = ixmin0, ixmax0
-            by(ip) = by(ip) + sx0(jj)*sy(kk)*sz0(ll)*byg(j0+jj, k+kk, l0+ll)
+            by(ip) = by(ip) + sx0(jj)*sz0(ll)*byg(j0+jj, l0+ll)
           end do
       end do
       !$acc end loop
 
-      !$acc loop seq independent collapse(3)
+      !$acc loop seq independent collapse(2)
       do ll = izmin, izmax+1
           ! Prevent wrong vectorization from the compiler
           !DIR$ NOVECTOR
           do jj = ixmin0, ixmax0
-            bz(ip) = bz(ip) + sx0(jj)*sy0(kk)*sz(ll)*bzg(j0+jj, k0+kk, l+ll)
+            bz(ip) = bz(ip) + sx0(jj)*sz(ll)*bzg(j0+jj, l+ll)
           end do
       end do
       !$acc end loop
@@ -424,7 +396,7 @@ SUBROUTINE getb2dxz_energy_conserving_scalar_2_2(np, xp, zp, bx, by, bz, xmin,  
     izmax0 = 1
 
     !$acc parallel deviceptr(bxg, byg, bzg, xp, zp, bx, by, bz)
-    !$acc loop gang vector private(sx(-1:1), sz(-1:1), sx0(-1:1), sy0(-1:1), sz0(-1:1))
+    !$acc loop gang vector private(sx(-1:1), sz(-1:1), sx0(-1:1), sz0(-1:1))
     DO ip=1, np
 
       x = (xp(ip)-xmin)*dxi
@@ -464,32 +436,32 @@ SUBROUTINE getb2dxz_energy_conserving_scalar_2_2(np, xp, zp, bx, by, bz, xmin,  
       sz0( 1) = 0.5_num*(0.5_num+zint)**2
 
 
-      !$acc loop seq independent collapse(3)
+      !$acc loop seq independent collapse(2)
       do ll = izmin0, izmax0
           ! Prevent wrong vectorization from the compiler
           !DIR$ NOVECTOR
           do jj = ixmin, ixmax+1
-            bx(ip) = bx(ip) + sx(jj)*sy0(kk)*sz0(ll)*bxg(j+jj, k0+kk, l0+ll)
+            bx(ip) = bx(ip) + sx(jj)*sz0(ll)*bxg(j+jj, l0+ll)
           end do
       end do
       !$acc end loop
 
-      !$acc loop seq independent collapse(3)
+      !$acc loop seq independent collapse(2)
       do ll = izmin0, izmax0
           ! Prevent wrong vectorization from the compiler
           !DIR$ NOVECTOR
           do jj = ixmin0, ixmax0
-            by(ip) = by(ip) + sx0(jj)*sy(kk)*sz0(ll)*byg(j0+jj, k+kk, l0+ll)
+            by(ip) = by(ip) + sx0(jj)*sz0(ll)*byg(j0+jj, l0+ll)
           end do
       end do
       !$acc end loop
 
-      !$acc loop seq independent collapse(3)
+      !$acc loop seq independent collapse(2)
       do ll = izmin, izmax+1
           ! Prevent wrong vectorization from the compiler
           !DIR$ NOVECTOR
           do jj = ixmin0, ixmax0
-            bz(ip) = bz(ip) + sx0(jj)*sy0(kk)*sz(ll)*bzg(j0+jj, k0+kk, l+ll)
+            bz(ip) = bz(ip) + sx0(jj)*sz(ll)*bzg(j0+jj, l+ll)
           end do
       end do
       !$acc end loop
