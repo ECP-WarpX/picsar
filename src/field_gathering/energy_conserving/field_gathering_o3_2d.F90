@@ -184,8 +184,10 @@ subroutine pxr_gete2dxz_energy_conserving_scalar_3_3( np, xp, zp, ex, ey, ez, xm
     !$acc end loop
     !$acc end parallel
 
-  else
-    ! Loop over the particles
+ else
+
+    !$acc parallel deviceptr(exg, eyg, ezg, xp, zp, ex, ey, ez)
+    !$acc loop gang vector private(sx(-1:2), sz(-1:2), sx0(-1:2), sz0(-1:2))
     do ip=1, np
 
       x = (xp(ip)-xmin)*dxi
