@@ -16,7 +16,9 @@
 ! Government has been granted for itself and others acting on its behalf a
 ! paid-up, nonexclusive, irrevocable, worldwide license in the Software to
 ! reproduce, distribute copies to the public, prepare derivative works, and
-! perform publicly and didplay publicly, and to permit other to do so.
+! perform publicly and display publicly, and to permit other to do so.
+!
+! FIELD_GATHERING_O1_2D.F90
 !
 ! Field gathering subroutines in 2D at order 1
 !
