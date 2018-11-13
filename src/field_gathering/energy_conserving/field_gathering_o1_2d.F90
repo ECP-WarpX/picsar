@@ -53,7 +53,7 @@
 !> @param[in] l_lower_order_in_v decrease the interpolation order if True
 !
 ! ________________________________________________________________________________________
-SUBROUTINE gete2dxz_energy_conserving_scalar_1_1(np, xp, zp, ex, ey, ez, xmin,    &
+SUBROUTINE pxr_gete2dxz_energy_conserving_scalar_1_1(np, xp, zp, ex, ey, ez, xmin,    &
   zmin, dx, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid,     &
   ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
   USE picsar_precision, ONLY: idp, num, lp
@@ -230,7 +230,7 @@ SUBROUTINE gete2dxz_energy_conserving_scalar_1_1(np, xp, zp, ex, ey, ez, xmin,  
     !$acc end parallel
   ENDIF
   RETURN
-END SUBROUTINE gete2dxz_energy_conserving_scalar_1_1
+END SUBROUTINE pxr_gete2dxz_energy_conserving_scalar_1_1
 
 ! ______________________________________________________________________________
 !> @brief
@@ -252,7 +252,7 @@ END SUBROUTINE gete2dxz_energy_conserving_scalar_1_1
 !> @param[in] l_lower_order_in_v lower order for the interpolation
 !
 ! ________________________________________________________________________________________
-SUBROUTINE getb2dxz_energy_conserving_scalar_1_1(np, xp, zp, bx, by, bz, xmin,    &
+SUBROUTINE pxr_getb2dxz_energy_conserving_scalar_1_1(np, xp, zp, bx, by, bz, xmin,    &
   zmin, dx, dz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid,     &
   bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
   USE picsar_precision, ONLY: idp, num, lp
@@ -427,7 +427,7 @@ SUBROUTINE getb2dxz_energy_conserving_scalar_1_1(np, xp, zp, bx, by, bz, xmin,  
     !$acc end parallel
   ENDIF
   RETURN
-END SUBROUTINE getb2dxz_energy_conserving_scalar_1_1
+END SUBROUTINE pxr_getb2dxz_energy_conserving_scalar_1_1
 
 ! ________________________________________________________________________________________
 !> @brief
