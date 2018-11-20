@@ -115,13 +115,6 @@ SUBROUTINE gete3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, ex, ey, ez, xmi
   izmin = 0
   izmax = 0
 
-  sx=0.0_num
-  sy=0.0_num
-  sz=0.0_num
-  sx0=0.0_num
-  sy0=0.0_num
-  sz0=0.0_num
-
   IF (l_lower_order_in_v) THEN
 
     ixmin0 = 0
@@ -131,6 +124,8 @@ SUBROUTINE gete3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, ex, ey, ez, xmi
     izmin0 = 0
     izmax0 = 0
 
+!$acc parallel deviceptr(exg, eyg, ezg, xp, yp, zp, ex, ey, ez)
+!$acc loop gang vector private(sx(0:1), sy(0:1), sz(0:1), sx0(0:1), sy0(0:1), sz0(0:1))
     DO ip=1, np
 
       x = (xp(ip)-xmin)*dxi
@@ -165,7 +160,11 @@ SUBROUTINE gete3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, ex, ey, ez, xmi
       sx0( 0) = 1.0_num
       sy0( 0) = 1.0_num
       sz0( 0) = 1.0_num
+      sx0( 1) = 0.0_num
+      sy0( 1) = 0.0_num
+      sz0( 1) = 0.0_num
 
+      !$acc loop seq independent collapse(3)
       do ll = izmin, izmax+1
         do kk = iymin, iymax+1
           ! Prevent wrong vectorization from the compiler
@@ -175,7 +174,9 @@ SUBROUTINE gete3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, ex, ey, ez, xmi
           end do
         end do
       end do
+      !$acc end loop
 
+      !$acc loop seq independent collapse(3)
       do ll = izmin, izmax+1
         do kk = iymin0, iymax0
           !DIR$ NOVECTOR
@@ -184,7 +185,9 @@ SUBROUTINE gete3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, ex, ey, ez, xmi
           end do
         end do
       end do
+      !$acc end loop
 
+      !$acc loop seq independent collapse(3)
       do ll = izmin0, izmax0
         do kk = iymin, iymax+1
           !DIR$ NOVECTOR
@@ -193,7 +196,11 @@ SUBROUTINE gete3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, ex, ey, ez, xmi
           end do
         end do
       end do
+      !$acc end loop
+
     END DO
+    !$acc end loop
+    !$acc end parallel
 
     ! __ l_lower_order_in_v false  _____________________________
   ELSE
@@ -205,6 +212,8 @@ SUBROUTINE gete3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, ex, ey, ez, xmi
     izmin0 = 0
     izmax0 = 1
 
+    !$acc parallel deviceptr(exg, eyg, ezg, xp, yp, zp, ex, ey, ez)
+    !$acc loop gang vector private(sx(0:1), sy(0:1), sz(0:1), sx0(0:1), sy0(0:1), sz0(0:1))
     DO ip=1, np
 
       x = (xp(ip)-xmin)*dxi
@@ -239,6 +248,7 @@ SUBROUTINE gete3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, ex, ey, ez, xmi
       sz0( 0) = 1.0_num-zint
       sz0( 1) = zint
 
+      !$acc loop seq independent collapse(3)
       do ll = izmin, izmax+1
         do kk = iymin, iymax+1
           ! Prevent wrong vectorization from the compiler
@@ -248,7 +258,9 @@ SUBROUTINE gete3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, ex, ey, ez, xmi
           end do
         end do
       end do
+      !$acc end loop
 
+      !$acc loop seq independent collapse(3)
       do ll = izmin, izmax+1
         do kk = iymin0, iymax0
           ! Prevent wrong vectorization from the compiler
@@ -258,7 +270,9 @@ SUBROUTINE gete3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, ex, ey, ez, xmi
           end do
         end do
       end do
+      !$acc end loop
 
+      !$acc loop seq independent collapse(3)
       do ll = izmin0, izmax0
         do kk = iymin, iymax+1
           ! Prevent wrong vectorization from the compiler
@@ -268,8 +282,11 @@ SUBROUTINE gete3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, ex, ey, ez, xmi
           end do
         end do
       end do
+      !$acc end loop
 
     END DO
+    !$acc end loop
+    !$acc end parallel
   ENDIF
   RETURN
 END SUBROUTINE gete3d_energy_conserving_scalar_1_1_1
@@ -335,13 +352,6 @@ SUBROUTINE getb3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, bx, by, bz, xmi
   dyi = 1.0_num/dy
   dzi = 1.0_num/dz
 
-  sx=0.0_num
-  sy=0.0_num
-  sz=0.0_num
-  sx0=0.0_num
-  sy0=0.0_num
-  sz0=0.0_num
-
   ixmin = 0
   ixmax = 0
   iymin = 0
@@ -358,6 +368,8 @@ SUBROUTINE getb3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, bx, by, bz, xmi
     izmin0 = 0
     izmax0 = 0
 
+!$acc parallel deviceptr(bxg, byg, bzg, xp, yp, zp, bx, by, bz)
+!$acc loop gang vector private(sx(0:1), sy(0:1), sz(0:1), sx0(0:1), sy0(0:1), sz0(0:1))
     DO ip=1, np
 
       x = (xp(ip)-xmin)*dxi
@@ -391,7 +403,11 @@ SUBROUTINE getb3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, bx, by, bz, xmi
       sx0( 0) = 1.0_num
       sy0( 0) = 1.0_num
       sz0( 0) = 1.0_num
+      sx0( 1) = 0.0_num
+      sy0( 1) = 0.0_num
+      sz0( 1) = 0.0_num
 
+      !$acc loop seq independent collapse(3)
       do ll = izmin0, izmax0
         do kk = iymin0, iymax0
           ! Prevent wrong vectorization from the compiler
@@ -401,7 +417,9 @@ SUBROUTINE getb3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, bx, by, bz, xmi
           end do
         end do
       end do
+      !$acc end loop
 
+      !$acc loop seq independent collapse(3)
       do ll = izmin0, izmax0
         do kk = iymin, iymax+1
           ! Prevent wrong vectorization from the compiler
@@ -411,7 +429,9 @@ SUBROUTINE getb3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, bx, by, bz, xmi
           end do
         end do
       end do
+      !$acc end loop
 
+      !$acc loop seq independent collapse(3)
       do ll = izmin, izmax+1
         do kk = iymin0, iymax0
           ! Prevent wrong vectorization from the compiler
@@ -421,8 +441,11 @@ SUBROUTINE getb3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, bx, by, bz, xmi
           end do
         end do
       end do
+      !$acc end loop
 
     END DO
+    !$acc end loop
+    !$acc end parallel
 
   ELSE
 
@@ -433,6 +456,8 @@ SUBROUTINE getb3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, bx, by, bz, xmi
     izmin0 = 0
     izmax0 = 1
 
+    !$acc parallel deviceptr(bxg, byg, bzg, xp, yp, zp, bx, by, bz)
+    !$acc loop gang vector private(sx(0:1), sy(0:1), sz(0:1), sx0(0:1), sy0(0:1), sz0(0:1))
     DO ip=1, np
 
       x = (xp(ip)-xmin)*dxi
@@ -469,6 +494,7 @@ SUBROUTINE getb3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, bx, by, bz, xmi
       sz0( 0) = 1.0_num-zint
       sz0( 1) = zint
 
+      !$acc loop seq independent collapse(3)
       do ll = izmin0, izmax0
         do kk = iymin0, iymax0
           ! Prevent wrong vectorization from the compiler
@@ -478,7 +504,9 @@ SUBROUTINE getb3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, bx, by, bz, xmi
           end do
         end do
       end do
+      !$acc end loop
 
+      !$acc loop seq independent collapse(3)
       do ll = izmin0, izmax0
         do kk = iymin, iymax+1
           ! Prevent wrong vectorization from the compiler
@@ -488,7 +516,9 @@ SUBROUTINE getb3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, bx, by, bz, xmi
           end do
         end do
       end do
+      !$acc end loop
 
+      !$acc loop seq independent collapse(3)
       do ll = izmin, izmax+1
         do kk = iymin0, iymax0
           ! Prevent wrong vectorization from the compiler
@@ -498,7 +528,10 @@ SUBROUTINE getb3d_energy_conserving_scalar_1_1_1(np, xp, yp, zp, bx, by, bz, xmi
           end do
         end do
       end do
+      !$acc end loop
     END DO
+    !$acc end loop
+    !$acc end parallel
   ENDIF
   RETURN
 END SUBROUTINE getb3d_energy_conserving_scalar_1_1_1

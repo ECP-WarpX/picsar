@@ -132,12 +132,14 @@ SUBROUTINE depose_jxjyjz_scalar_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
   dts2dy = 0.5_num*dt*dyi
   dts2dz = 0.5_num*dt*dzi
   clightsq = 1.0_num/clight**2
-  sx=0.0_num;sy=0.0_num;sz=0.0_num;
-  sx0=0.0_num;sy0=0.0_num;sz0=0.0_num;
+!  sx=0.0_num;sy=0.0_num;sz=0.0_num;
+!  sx0=0.0_num;sy0=0.0_num;sz0=0.0_num;
 
   ! LOOP ON PARTICLES
   ! Prevent loop to vectorize (dependencies)
   !DIR$ NOVECTOR
+!$acc parallel deviceptr(jx, jy, jz, xp, yp, zp, uxp, uyp, uzp, w, gaminv)
+!$acc loop gang vector private(sx(0:1), sy(0:1), sz(0:1), sx0(0:1), sy0(0:1), sz0(0:1) )
   DO ip=1, np
 
     ! --- computes position in  grid units at (n+1)
@@ -193,35 +195,62 @@ SUBROUTINE depose_jxjyjz_scalar_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
 
     ! --- add current contributions in the form rho(n+1/2)v(n+1/2)
     ! - JX
+    !$acc atomic update
     jx(j0, k, l  )    = jx(j0, k, l  )  +   sx0(0)*sy(0)*sz(0)*wqx
+    !$acc atomic update
     jx(j0+1, k, l  )    = jx(j0+1, k, l  )  +   sx0(1)*sy(0)*sz(0)*wqx
+    !$acc atomic update
     jx(j0, k+1, l  )    = jx(j0, k+1, l  )  +   sx0(0)*sy(1)*sz(0)*wqx
+    !$acc atomic update
     jx(j0+1, k+1, l  )    = jx(j0+1, k+1, l  )  +   sx0(1)*sy(1)*sz(0)*wqx
+    !$acc atomic update
     jx(j0, k, l+1)    = jx(j0, k, l+1)  +   sx0(0)*sy(0)*sz(1)*wqx
+    !$acc atomic update
     jx(j0+1, k, l+1)    = jx(j0+1, k, l+1)  +   sx0(1)*sy(0)*sz(1)*wqx
+    !$acc atomic update
     jx(j0, k+1, l+1)    = jx(j0, k+1, l+1)  +   sx0(0)*sy(1)*sz(1)*wqx
+    !$acc atomic update
     jx(j0+1, k+1, l+1)    = jx(j0+1, k+1, l+1)  +   sx0(1)*sy(1)*sz(1)*wqx
 
     ! - JY
+    !$acc atomic update
     jy(j, k0, l  )    = jy(j, k0, l  )  +   sx(0)*sy0(0)*sz(0)*wqy
+    !$acc atomic update
     jy(j+1, k0, l  )    = jy(j+1, k0, l  )  +   sx(1)*sy0(0)*sz(0)*wqy
+    !$acc atomic update
     jy(j, k0+1, l  )    = jy(j, k0+1, l  )  +   sx(0)*sy0(1)*sz(0)*wqy
+    !$acc atomic update
     jy(j+1, k0+1, l  )    = jy(j+1, k0+1, l  )  +   sx(1)*sy0(1)*sz(0)*wqy
+    !$acc atomic update
     jy(j, k0, l+1)    = jy(j, k0, l+1)  +   sx(0)*sy0(0)*sz(1)*wqy
+    !$acc atomic update
     jy(j+1, k0, l+1)    = jy(j+1, k0, l+1)  +   sx(1)*sy0(0)*sz(1)*wqy
+    !$acc atomic update
     jy(j, k0+1, l+1)    = jy(j, k0+1, l+1)  +   sx(0)*sy0(1)*sz(1)*wqy
+    !$acc atomic update
     jy(j+1, k0+1, l+1)    = jy(j+1, k0+1, l+1)  +   sx(1)*sy0(1)*sz(1)*wqy
 
     ! - JZ
+    !$acc atomic update
     jz(j, k, l0  )    = jz(j, k, l0  )  +   sx(0)*sy(0)*sz0(0)*wqz
+    !$acc atomic update
     jz(j+1, k, l0  )    = jz(j+1, k, l0  )  +   sx(1)*sy(0)*sz0(0)*wqz
+    !$acc atomic update
     jz(j, k+1, l0  )    = jz(j, k+1, l0  )  +   sx(0)*sy(1)*sz0(0)*wqz
+    !$acc atomic update
     jz(j+1, k+1, l0  )    = jz(j+1, k+1, l0  )  +   sx(1)*sy(1)*sz0(0)*wqz
+    !$acc atomic update
     jz(j, k, l0+1)    = jz(j, k, l0+1)  +   sx(0)*sy(0)*sz0(1)*wqz
+    !$acc atomic update
     jz(j+1, k, l0+1)    = jz(j+1, k, l0+1)  +   sx(1)*sy(0)*sz0(1)*wqz
+    !$acc atomic update
     jz(j, k+1, l0+1)    = jz(j, k+1, l0+1)  +   sx(0)*sy(1)*sz0(1)*wqz
+    !$acc atomic update
     jz(j+1, k+1, l0+1)    = jz(j+1, k+1, l0+1)  +   sx(1)*sy(1)*sz0(1)*wqz
   END DO
+!$acc end loop
+!$acc end parallel
+
   RETURN
 END SUBROUTINE depose_jxjyjz_scalar_1_1_1
 
@@ -864,6 +893,8 @@ SUBROUTINE depose_jxjyjz_scalar_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
   sx0=0.0_num;sy0=0.0_num;sz0=0.0_num;
 
   ! LOOP ON PARTICLES
+  !$acc parallel deviceptr(jx, jy, jz, xp, yp, zp, uxp, uyp, uzp, w, gaminv)
+  !$acc loop gang vector private(sx(-1:1), sy(-1:1), sz(-1:1), sx0(-1:1), sy0(-1:1), sz0(-1:1))
   DO ip=1, np
     ! --- computes position in  grid units at (n+1)
     x = (xp(ip)-xmin)*dxi
@@ -930,92 +961,175 @@ SUBROUTINE depose_jxjyjz_scalar_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
     ! --- add current contributions in the form rho(n+1/2)v(n+1/2)
     ! --- to the 27 nearest vertices
     ! - JX
+    !$acc atomic update
     jx(j0-1, k-1, l-1)  = jx(j0-1, k-1, l-1)  +   sx0(-1)*sy(-1)*sz(-1)*wqx
+    !$acc atomic update
     jx(j0, k-1, l-1)  = jx(j0, k-1, l-1)  +   sx0(0 )*sy(-1)*sz(-1)*wqx
+    !$acc atomic update
     jx(j0+1, k-1, l-1)  = jx(j0+1, k-1, l-1)  +   sx0(1 )*sy(-1)*sz(-1)*wqx
+    !$acc atomic update
     jx(j0-1, k, l-1)  = jx(j0-1, k, l-1)  +   sx0(-1)*sy(0 )*sz(-1)*wqx
+    !$acc atomic update
     jx(j0, k, l-1)  = jx(j0, k, l-1)  +   sx0(0 )*sy(0 )*sz(-1)*wqx
+    !$acc atomic update
     jx(j0+1, k, l-1)  = jx(j0+1, k, l-1)  +   sx0(1 )*sy(0 )*sz(-1)*wqx
+    !$acc atomic update
     jx(j0-1, k+1, l-1)  = jx(j0-1, k+1, l-1)  +   sx0(-1)*sy(1 )*sz(-1)*wqx
+    !$acc atomic update
     jx(j0, k+1, l-1)  = jx(j0, k+1, l-1)  +   sx0(0 )*sy(1 )*sz(-1)*wqx
+    !$acc atomic update
     jx(j0+1, k+1, l-1)  = jx(j0+1, k+1, l-1)  +   sx0(1 )*sy(1 )*sz(-1)*wqx
+    !$acc atomic update
     jx(j0-1, k-1, l  )  = jx(j0-1, k-1, l  )  +   sx0(-1)*sy(-1)*sz(0 )*wqx
+    !$acc atomic update
     jx(j0, k-1, l  )  = jx(j0, k-1, l  )  +   sx0(0 )*sy(-1)*sz(0 )*wqx
+    !$acc atomic update
     jx(j0+1, k-1, l  )  = jx(j0+1, k-1, l  )  +   sx0(1 )*sy(-1)*sz(0 )*wqx
+    !$acc atomic update
     jx(j0-1, k, l  )  = jx(j0-1, k, l  )  +   sx0(-1)*sy(0 )*sz(0 )*wqx
+    !$acc atomic update
     jx(j0, k, l  )  = jx(j0, k, l  )  +   sx0(0 )*sy(0 )*sz(0 )*wqx
+    !$acc atomic update
     jx(j0+1, k, l  )  = jx(j0+1, k, l  )  +   sx0(1 )*sy(0 )*sz(0 )*wqx
+    !$acc atomic update
     jx(j0-1, k+1, l  )  = jx(j0-1, k+1, l  )  +   sx0(-1)*sy(1 )*sz(0 )*wqx
+    !$acc atomic update
     jx(j0, k+1, l  )  = jx(j0, k+1, l  )  +   sx0(0 )*sy(1 )*sz(0 )*wqx
+    !$acc atomic update
     jx(j0+1, k+1, l  )  = jx(j0+1, k+1, l  )  +   sx0(1 )*sy(1 )*sz(0 )*wqx
+    !$acc atomic update
     jx(j0-1, k-1, l+1)  = jx(j0-1, k-1, l+1)  +   sx0(-1)*sy(-1)*sz(1 )*wqx
+    !$acc atomic update
     jx(j0, k-1, l+1)  = jx(j0, k-1, l+1)  +   sx0(0 )*sy(-1)*sz(1 )*wqx
+    !$acc atomic update
     jx(j0+1, k-1, l+1)  = jx(j0+1, k-1, l+1)  +   sx0(1 )*sy(-1)*sz(1 )*wqx
+    !$acc atomic update
     jx(j0-1, k, l+1)  = jx(j0-1, k, l+1)  +   sx0(-1)*sy(0 )*sz(1 )*wqx
+    !$acc atomic update
     jx(j0, k, l+1)  = jx(j0, k, l+1)  +   sx0(0 )*sy(0 )*sz(1 )*wqx
+    !$acc atomic update
     jx(j0+1, k, l+1)  = jx(j0+1, k, l+1)  +   sx0(1 )*sy(0 )*sz(1 )*wqx
+    !$acc atomic update
     jx(j0-1, k+1, l+1)  = jx(j0-1, k+1, l+1)  +   sx0(-1)*sy(1 )*sz(1 )*wqx
+    !$acc atomic update
     jx(j0, k+1, l+1)  = jx(j0, k+1, l+1)  +   sx0(0 )*sy(1 )*sz(1 )*wqx
+    !$acc atomic update
     jx(j0+1, k+1, l+1)  = jx(j0+1, k+1, l+1)  +   sx0(1 )*sy(1 )*sz(1 )*wqx
 
     !        ! - JY
+    !$acc atomic update
     jy(j-1, k0-1, l-1)  = jy(j-1, k0-1, l-1)  +   sx(-1)*sy0(-1)*sz(-1)*wqy
+    !$acc atomic update
     jy(j, k0-1, l-1)  = jy(j, k0-1, l-1)  +   sx(0 )*sy0(-1)*sz(-1)*wqy
+    !$acc atomic update
     jy(j+1, k0-1, l-1)  = jy(j+1, k0-1, l-1)  +   sx(1 )*sy0(-1)*sz(-1)*wqy
+    !$acc atomic update
     jy(j-1, k0, l-1)  = jy(j-1, k0, l-1)  +   sx(-1)*sy0(0 )*sz(-1)*wqy
+    !$acc atomic update
     jy(j, k0, l-1)  = jy(j, k0, l-1)  +   sx(0 )*sy0(0 )*sz(-1)*wqy
+    !$acc atomic update
     jy(j+1, k0, l-1)  = jy(j+1, k0, l-1)  +   sx(1 )*sy0(0 )*sz(-1)*wqy
+    !$acc atomic update
     jy(j-1, k0+1, l-1)  = jy(j-1, k0+1, l-1)  +   sx(-1)*sy0(1 )*sz(-1)*wqy
+    !$acc atomic update
     jy(j, k0+1, l-1)  = jy(j, k0+1, l-1)  +   sx(0 )*sy0(1 )*sz(-1)*wqy
+    !$acc atomic update
     jy(j+1, k0+1, l-1)  = jy(j+1, k0+1, l-1)  +   sx(1 )*sy0(1 )*sz(-1)*wqy
+    !$acc atomic update
     jy(j-1, k0-1, l  )  = jy(j-1, k0-1, l  )  +   sx(-1)*sy0(-1)*sz(0 )*wqy
+    !$acc atomic update
     jy(j, k0-1, l  )  = jy(j, k0-1, l  )  +   sx(0 )*sy0(-1)*sz(0 )*wqy
+    !$acc atomic update
     jy(j+1, k0-1, l  )  = jy(j+1, k0-1, l  )  +   sx(1 )*sy0(-1)*sz(0 )*wqy
+    !$acc atomic update
     jy(j-1, k0, l  )  = jy(j-1, k0, l  )  +   sx(-1)*sy0(0 )*sz(0 )*wqy
+    !$acc atomic update
     jy(j, k0, l  )  = jy(j, k0, l  )  +   sx(0 )*sy0(0 )*sz(0 )*wqy
+    !$acc atomic update
     jy(j+1, k0, l  )  = jy(j+1, k0, l  )  +   sx(1 )*sy0(0 )*sz(0 )*wqy
+    !$acc atomic update
     jy(j-1, k0+1, l  )  = jy(j-1, k0+1, l  )  +   sx(-1)*sy0(1 )*sz(0 )*wqy
+    !$acc atomic update
     jy(j, k0+1, l  )  = jy(j, k0+1, l  )  +   sx(0 )*sy0(1 )*sz(0 )*wqy
+    !$acc atomic update
     jy(j+1, k0+1, l  )  = jy(j+1, k0+1, l  )  +   sx(1 )*sy0(1 )*sz(0 )*wqy
+    !$acc atomic update
     jy(j-1, k0-1, l+1)  = jy(j-1, k0-1, l+1)  +   sx(-1)*sy0(-1)*sz(1 )*wqy
+    !$acc atomic update
     jy(j, k0-1, l+1)  = jy(j, k0-1, l+1)  +   sx(0 )*sy0(-1)*sz(1 )*wqy
+    !$acc atomic update
     jy(j+1, k0-1, l+1)  = jy(j+1, k0-1, l+1)  +   sx(1 )*sy0(-1)*sz(1 )*wqy
+    !$acc atomic update
     jy(j-1, k0, l+1)  = jy(j-1, k0, l+1)  +   sx(-1)*sy0(0 )*sz(1 )*wqy
+    !$acc atomic update
     jy(j, k0, l+1)  = jy(j, k0, l+1)  +   sx(0 )*sy0(0 )*sz(1 )*wqy
+    !$acc atomic update
     jy(j+1, k0, l+1)  = jy(j+1, k0, l+1)  +   sx(1 )*sy0(0 )*sz(1 )*wqy
+    !$acc atomic update
     jy(j-1, k0+1, l+1)  = jy(j-1, k0+1, l+1)  +   sx(-1)*sy0(1 )*sz(1 )*wqy
+    !$acc atomic update
     jy(j, k0+1, l+1)  = jy(j, k0+1, l+1)  +   sx(0 )*sy0(1 )*sz(1 )*wqy
+    !$acc atomic update
     jy(j+1, k0+1, l+1)  = jy(j+1, k0+1, l+1)  +   sx(1 )*sy0(1 )*sz(1 )*wqy
 
     ! - JZ
+    !$acc atomic update
     jz(j-1, k-1, l0-1)  = jz(j-1, k-1, l0-1)  +   sx(-1)*sy(-1)*sz0(-1)*wqz
+    !$acc atomic update
     jz(j, k-1, l0-1)  = jz(j, k-1, l0-1)  +   sx(0 )*sy(-1)*sz0(-1)*wqz
+    !$acc atomic update
     jz(j+1, k-1, l0-1)  = jz(j+1, k-1, l0-1)  +   sx(1 )*sy(-1)*sz0(-1)*wqz
+    !$acc atomic update
     jz(j-1, k, l0-1)  = jz(j-1, k, l0-1)  +   sx(-1)*sy(0 )*sz0(-1)*wqz
+    !$acc atomic update
     jz(j, k, l0-1)  = jz(j, k, l0-1)  +   sx(0 )*sy(0 )*sz0(-1)*wqz
+    !$acc atomic update
     jz(j+1, k, l0-1)  = jz(j+1, k, l0-1)  +   sx(1 )*sy(0 )*sz0(-1)*wqz
+    !$acc atomic update
     jz(j-1, k+1, l0-1)  = jz(j-1, k+1, l0-1)  +   sx(-1)*sy(1 )*sz0(-1)*wqz
+    !$acc atomic update
     jz(j, k+1, l0-1)  = jz(j, k+1, l0-1)  +   sx(0 )*sy(1 )*sz0(-1)*wqz
+    !$acc atomic update
     jz(j+1, k+1, l0-1)  = jz(j+1, k+1, l0-1)  +   sx(1 )*sy(1 )*sz0(-1)*wqz
+    !$acc atomic update
     jz(j-1, k-1, l0  )  = jz(j-1, k-1, l0  )  +   sx(-1)*sy(-1)*sz0(0 )*wqz
+    !$acc atomic update
     jz(j, k-1, l0  )  = jz(j, k-1, l0  )  +   sx(0 )*sy(-1)*sz0(0 )*wqz
+    !$acc atomic update
     jz(j+1, k-1, l0  )  = jz(j+1, k-1, l0  )  +   sx(1 )*sy(-1)*sz0(0 )*wqz
+    !$acc atomic update
     jz(j-1, k, l0  )  = jz(j-1, k, l0  )  +   sx(-1)*sy(0 )*sz0(0 )*wqz
+    !$acc atomic update
     jz(j, k, l0  )  = jz(j, k, l0  )  +   sx(0 )*sy(0 )*sz0(0 )*wqz
+    !$acc atomic update
     jz(j+1, k, l0  )  = jz(j+1, k, l0  )  +   sx(1 )*sy(0 )*sz0(0 )*wqz
+    !$acc atomic update
     jz(j-1, k+1, l0  )  = jz(j-1, k+1, l0  )  +   sx(-1)*sy(1 )*sz0(0 )*wqz
+    !$acc atomic update
     jz(j, k+1, l0  )  = jz(j, k+1, l0  )  +   sx(0 )*sy(1 )*sz0(0 )*wqz
+    !$acc atomic update
     jz(j+1, k+1, l0  )  = jz(j+1, k+1, l0  )  +   sx(1 )*sy(1 )*sz0(0 )*wqz
+    !$acc atomic update
     jz(j-1, k-1, l0+1)  = jz(j-1, k-1, l0+1)  +   sx(-1)*sy(-1)*sz0(1 )*wqz
+    !$acc atomic update
     jz(j, k-1, l0+1)  = jz(j, k-1, l0+1)  +   sx(0 )*sy(-1)*sz0(1 )*wqz
+    !$acc atomic update
     jz(j+1, k-1, l0+1)  = jz(j+1, k-1, l0+1)  +   sx(1 )*sy(-1)*sz0(1 )*wqz
+    !$acc atomic update
     jz(j-1, k, l0+1)  = jz(j-1, k, l0+1)  +   sx(-1)*sy(0 )*sz0(1 )*wqz
+    !$acc atomic update
     jz(j, k, l0+1)  = jz(j, k, l0+1)  +   sx(0 )*sy(0 )*sz0(1 )*wqz
+    !$acc atomic update
     jz(j+1, k, l0+1)  = jz(j+1, k, l0+1)  +   sx(1 )*sy(0 )*sz0(1 )*wqz
+    !$acc atomic update
     jz(j-1, k+1, l0+1)  = jz(j-1, k+1, l0+1)  +   sx(-1)*sy(1 )*sz0(1 )*wqz
+    !$acc atomic update
     jz(j, k+1, l0+1)  = jz(j, k+1, l0+1)  +   sx(0 )*sy(1 )*sz0(1 )*wqz
+    !$acc atomic update
     jz(j+1, k+1, l0+1)  = jz(j+1, k+1, l0+1)  +   sx(1 )*sy(1 )*sz0(1 )*wqz
   END DO
+  !$acc end loop
+  !$acc end parallel
   RETURN
 END SUBROUTINE depose_jxjyjz_scalar_2_2_2
 
@@ -1869,6 +1983,8 @@ SUBROUTINE depose_jxjyjz_scalar_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
   sx0=0.0_num;sy0=0.0_num;sz0=0.0_num;
 
   ! LOOP ON PARTICLES
+  !$acc parallel deviceptr(jx, jy, jz, xp, yp, zp, uxp, uyp, uzp, w, gaminv)
+  !$acc loop gang vector private(sx(-1:2), sy(-1:2), sz(-1:2), sx0(-1:2), sy0(-1:2), sz0(-1:2))
   DO ip=1, np
     ! --- computes position in  grid units at (n+1)
     x = (xp(ip)-xmin)*dxi
@@ -1954,204 +2070,398 @@ SUBROUTINE depose_jxjyjz_scalar_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
     ! --- add current contributions in the form rho(n+1/2)v(n+1/2)
     ! --- to the 64 nearest vertices
     ! - JX
+    !$acc atomic update
     jx(j0-1, k-1, l-1)  = jx(j0-1, k-1, l-1)  +   sx0(-1)*sy(-1)*sz(-1)*wqx
+    !$acc atomic update
     jx(j0, k-1, l-1)  = jx(j0, k-1, l-1)  +   sx0(0 )*sy(-1)*sz(-1)*wqx
+    !$acc atomic update
     jx(j0+1, k-1, l-1)  = jx(j0+1, k-1, l-1)  +   sx0(1 )*sy(-1)*sz(-1)*wqx
+    !$acc atomic update
     jx(j0+2, k-1, l-1)  = jx(j0+2, k-1, l-1)  +   sx0(2 )*sy(-1)*sz(-1)*wqx
+    !$acc atomic update
     jx(j0-1, k, l-1)  = jx(j0-1, k, l-1)  +   sx0(-1)*sy(0 )*sz(-1)*wqx
+    !$acc atomic update
     jx(j0, k, l-1)  = jx(j0, k, l-1)  +   sx0(0 )*sy(0 )*sz(-1)*wqx
+    !$acc atomic update
     jx(j0+1, k, l-1)  = jx(j0+1, k, l-1)  +   sx0(1 )*sy(0 )*sz(-1)*wqx
+    !$acc atomic update
     jx(j0+2, k, l-1)  = jx(j0+2, k, l-1)  +   sx0(2 )*sy(0 )*sz(-1)*wqx
+    !$acc atomic update
     jx(j0-1, k+1, l-1)  = jx(j0-1, k+1, l-1)  +   sx0(-1)*sy(1 )*sz(-1)*wqx
+    !$acc atomic update
     jx(j0, k+1, l-1)  = jx(j0, k+1, l-1)  +   sx0(0 )*sy(1 )*sz(-1)*wqx
+    !$acc atomic update
     jx(j0+1, k+1, l-1)  = jx(j0+1, k+1, l-1)  +   sx0(1 )*sy(1 )*sz(-1)*wqx
+    !$acc atomic update
     jx(j0+2, k+1, l-1)  = jx(j0+2, k+1, l-1)  +   sx0(2 )*sy(1 )*sz(-1)*wqx
+    !$acc atomic update
     jx(j0-1, k+2, l-1)  = jx(j0-1, k+2, l-1)  +   sx0(-1)*sy(2 )*sz(-1)*wqx
+    !$acc atomic update
     jx(j0, k+2, l-1)  = jx(j0, k+2, l-1)  +   sx0(0 )*sy(2 )*sz(-1)*wqx
+    !$acc atomic update
     jx(j0+1, k+2, l-1)  = jx(j0+1, k+2, l-1)  +   sx0(1 )*sy(2 )*sz(-1)*wqx
+    !$acc atomic update
     jx(j0+2, k+2, l-1)  = jx(j0+2, k+2, l-1)  +   sx0(2 )*sy(2 )*sz(-1)*wqx
+    !$acc atomic update
     jx(j0-1, k-1, l  )  = jx(j0-1, k-1, l  )  +   sx0(-1)*sy(-1)*sz(0 )*wqx
+    !$acc atomic update
     jx(j0, k-1, l  )  = jx(j0, k-1, l  )  +   sx0(0 )*sy(-1)*sz(0 )*wqx
+    !$acc atomic update
     jx(j0+1, k-1, l  )  = jx(j0+1, k-1, l  )  +   sx0(1 )*sy(-1)*sz(0 )*wqx
+    !$acc atomic update
     jx(j0+2, k-1, l  )  = jx(j0+2, k-1, l  )  +   sx0(2 )*sy(-1)*sz(0 )*wqx
+    !$acc atomic update
     jx(j0-1, k, l  )  = jx(j0-1, k, l  )  +   sx0(-1)*sy(0 )*sz(0 )*wqx
+    !$acc atomic update
     jx(j0, k, l  )  = jx(j0, k, l  )  +   sx0(0 )*sy(0 )*sz(0 )*wqx
+    !$acc atomic update
     jx(j0+1, k, l  )  = jx(j0+1, k, l  )  +   sx0(1 )*sy(0 )*sz(0 )*wqx
+    !$acc atomic update
     jx(j0+2, k, l  )  = jx(j0+2, k, l  )  +   sx0(2 )*sy(0 )*sz(0 )*wqx
+    !$acc atomic update
     jx(j0-1, k+1, l  )  = jx(j0-1, k+1, l  )  +   sx0(-1)*sy(1 )*sz(0 )*wqx
+    !$acc atomic update
     jx(j0, k+1, l  )  = jx(j0, k+1, l  )  +   sx0(0 )*sy(1 )*sz(0 )*wqx
+    !$acc atomic update
     jx(j0+1, k+1, l  )  = jx(j0+1, k+1, l  )  +   sx0(1 )*sy(1 )*sz(0 )*wqx
+    !$acc atomic update
     jx(j0+2, k+1, l  )  = jx(j0+2, k+1, l  )  +   sx0(2 )*sy(1 )*sz(0 )*wqx
+    !$acc atomic update
     jx(j0-1, k+2, l  )  = jx(j0-1, k+2, l  )  +   sx0(-1)*sy(2 )*sz(0 )*wqx
+    !$acc atomic update
     jx(j0, k+2, l  )  = jx(j0, k+2, l  )  +   sx0(0 )*sy(2 )*sz(0 )*wqx
+    !$acc atomic update
     jx(j0+1, k+2, l  )  = jx(j0+1, k+2, l  )  +   sx0(1 )*sy(2 )*sz(0 )*wqx
+    !$acc atomic update
     jx(j0+2, k+2, l  )  = jx(j0+2, k+2, l  )  +   sx0(2 )*sy(2 )*sz(0 )*wqx
+    !$acc atomic update
     jx(j0-1, k-1, l+1)  = jx(j0-1, k-1, l+1)  +   sx0(-1)*sy(-1)*sz(1 )*wqx
+    !$acc atomic update
     jx(j0, k-1, l+1)  = jx(j0, k-1, l+1)  +   sx0(0 )*sy(-1)*sz(1 )*wqx
+    !$acc atomic update
     jx(j0+1, k-1, l+1)  = jx(j0+1, k-1, l+1)  +   sx0(1 )*sy(-1)*sz(1 )*wqx
+    !$acc atomic update
     jx(j0+2, k-1, l+1)  = jx(j0+2, k-1, l+1)  +   sx0(2 )*sy(-1)*sz(1 )*wqx
+    !$acc atomic update
     jx(j0-1, k, l+1)  = jx(j0-1, k, l+1)  +   sx0(-1)*sy(0 )*sz(1 )*wqx
+    !$acc atomic update
     jx(j0, k, l+1)  = jx(j0, k, l+1)  +   sx0(0 )*sy(0 )*sz(1 )*wqx
+    !$acc atomic update
     jx(j0+1, k, l+1)  = jx(j0+1, k, l+1)  +   sx0(1 )*sy(0 )*sz(1 )*wqx
+    !$acc atomic update
     jx(j0+2, k, l+1)  = jx(j0+2, k, l+1)  +   sx0(2 )*sy(0 )*sz(1 )*wqx
+    !$acc atomic update
     jx(j0-1, k+1, l+1)  = jx(j0-1, k+1, l+1)  +   sx0(-1)*sy(1 )*sz(1 )*wqx
+    !$acc atomic update
     jx(j0, k+1, l+1)  = jx(j0, k+1, l+1)  +   sx0(0 )*sy(1 )*sz(1 )*wqx
+    !$acc atomic update
     jx(j0+1, k+1, l+1)  = jx(j0+1, k+1, l+1)  +   sx0(1 )*sy(1 )*sz(1 )*wqx
+    !$acc atomic update
     jx(j0+2, k+1, l+1)  = jx(j0+2, k+1, l+1)  +   sx0(2 )*sy(1 )*sz(1 )*wqx
+    !$acc atomic update
     jx(j0-1, k+2, l+1)  = jx(j0-1, k+2, l+1)  +   sx0(-1)*sy(2 )*sz(1 )*wqx
+    !$acc atomic update
     jx(j0, k+2, l+1)  = jx(j0, k+2, l+1)  +   sx0(0 )*sy(2 )*sz(1 )*wqx
+    !$acc atomic update
     jx(j0+1, k+2, l+1)  = jx(j0+1, k+2, l+1)  +   sx0(1 )*sy(2 )*sz(1 )*wqx
+    !$acc atomic update
     jx(j0+2, k+2, l+1)  = jx(j0+2, k+2, l+1)  +   sx0(2 )*sy(2 )*sz(1 )*wqx
+    !$acc atomic update
     jx(j0-1, k-1, l+2)  = jx(j0-1, k-1, l+2)  +   sx0(-1)*sy(-1)*sz(2 )*wqx
+    !$acc atomic update
     jx(j0, k-1, l+2)  = jx(j0, k-1, l+2)  +   sx0(0 )*sy(-1)*sz(2 )*wqx
+    !$acc atomic update
     jx(j0+1, k-1, l+2)  = jx(j0+1, k-1, l+2)  +   sx0(1 )*sy(-1)*sz(2 )*wqx
+    !$acc atomic update
     jx(j0+2, k-1, l+2)  = jx(j0+2, k-1, l+2)  +   sx0(2 )*sy(-1)*sz(2 )*wqx
+    !$acc atomic update
     jx(j0-1, k, l+2)  = jx(j0-1, k, l+2)  +   sx0(-1)*sy(0 )*sz(2 )*wqx
+    !$acc atomic update
     jx(j0, k, l+2)  = jx(j0, k, l+2)  +   sx0(0 )*sy(0 )*sz(2 )*wqx
+    !$acc atomic update
     jx(j0+1, k, l+2)  = jx(j0+1, k, l+2)  +   sx0(1 )*sy(0 )*sz(2 )*wqx
+    !$acc atomic update
     jx(j0+2, k, l+2)  = jx(j0+2, k, l+2)  +   sx0(2 )*sy(0 )*sz(2 )*wqx
+    !$acc atomic update
     jx(j0-1, k+1, l+2)  = jx(j0-1, k+1, l+2)  +   sx0(-1)*sy(1 )*sz(2 )*wqx
+    !$acc atomic update
     jx(j0, k+1, l+2)  = jx(j0, k+1, l+2)  +   sx0(0 )*sy(1 )*sz(2 )*wqx
+    !$acc atomic update
     jx(j0+1, k+1, l+2)  = jx(j0+1, k+1, l+2)  +   sx0(1 )*sy(1 )*sz(2 )*wqx
+    !$acc atomic update
     jx(j0+2, k+1, l+2)  = jx(j0+2, k+1, l+2)  +   sx0(2 )*sy(1 )*sz(2 )*wqx
+    !$acc atomic update
     jx(j0-1, k+2, l+2)  = jx(j0-1, k+2, l+2)  +   sx0(-1)*sy(2 )*sz(2 )*wqx
+    !$acc atomic update
     jx(j0, k+2, l+2)  = jx(j0, k+2, l+2)  +   sx0(0 )*sy(2 )*sz(2 )*wqx
+    !$acc atomic update
     jx(j0+1, k+2, l+2)  = jx(j0+1, k+2, l+2)  +   sx0(1 )*sy(2 )*sz(2 )*wqx
+    !$acc atomic update
     jx(j0+2, k+2, l+2)  = jx(j0+2, k+2, l+2)  +   sx0(2 )*sy(2 )*sz(2 )*wqx
 
     ! - JY
+    !$acc atomic update
     jy(j-1, k0-1, l-1)  = jy(j-1, k0-1, l-1)  +   sx(-1)*sy0(-1)*sz(-1)*wqy
+    !$acc atomic update
     jy(j, k0-1, l-1)  = jy(j, k0-1, l-1)  +   sx(0 )*sy0(-1)*sz(-1)*wqy
+    !$acc atomic update
     jy(j+1, k0-1, l-1)  = jy(j+1, k0-1, l-1)  +   sx(1 )*sy0(-1)*sz(-1)*wqy
+    !$acc atomic update
     jy(j+2, k0-1, l-1)  = jy(j+2, k0-1, l-1)  +   sx(2 )*sy0(-1)*sz(-1)*wqy
+    !$acc atomic update
     jy(j-1, k0, l-1)  = jy(j-1, k0, l-1)  +   sx(-1)*sy0(0 )*sz(-1)*wqy
+    !$acc atomic update
     jy(j, k0, l-1)  = jy(j, k0, l-1)  +   sx(0 )*sy0(0 )*sz(-1)*wqy
+    !$acc atomic update
     jy(j+1, k0, l-1)  = jy(j+1, k0, l-1)  +   sx(1 )*sy0(0 )*sz(-1)*wqy
+    !$acc atomic update
     jy(j+2, k0, l-1)  = jy(j+2, k0, l-1)  +   sx(2 )*sy0(0 )*sz(-1)*wqy
+    !$acc atomic update
     jy(j-1, k0+1, l-1)  = jy(j-1, k0+1, l-1)  +   sx(-1)*sy0(1 )*sz(-1)*wqy
+    !$acc atomic update
     jy(j, k0+1, l-1)  = jy(j, k0+1, l-1)  +   sx(0 )*sy0(1 )*sz(-1)*wqy
+    !$acc atomic update
     jy(j+1, k0+1, l-1)  = jy(j+1, k0+1, l-1)  +   sx(1 )*sy0(1 )*sz(-1)*wqy
+    !$acc atomic update
     jy(j+2, k0+1, l-1)  = jy(j+2, k0+1, l-1)  +   sx(2 )*sy0(1 )*sz(-1)*wqy
+    !$acc atomic update
     jy(j-1, k0+2, l-1)  = jy(j-1, k0+2, l-1)  +   sx(-1)*sy0(2 )*sz(-1)*wqy
+    !$acc atomic update
     jy(j, k0+2, l-1)  = jy(j, k0+2, l-1)  +   sx(0 )*sy0(2 )*sz(-1)*wqy
+    !$acc atomic update
     jy(j+1, k0+2, l-1)  = jy(j+1, k0+2, l-1)  +   sx(1 )*sy0(2 )*sz(-1)*wqy
+    !$acc atomic update
     jy(j+2, k0+2, l-1)  = jy(j+2, k0+2, l-1)  +   sx(2 )*sy0(2 )*sz(-1)*wqy
+    !$acc atomic update
     jy(j-1, k0-1, l  )  = jy(j-1, k0-1, l  )  +   sx(-1)*sy0(-1)*sz(0 )*wqy
+    !$acc atomic update
     jy(j, k0-1, l  )  = jy(j, k0-1, l  )  +   sx(0 )*sy0(-1)*sz(0 )*wqy
+    !$acc atomic update
     jy(j+1, k0-1, l  )  = jy(j+1, k0-1, l  )  +   sx(1 )*sy0(-1)*sz(0 )*wqy
+    !$acc atomic update
     jy(j+2, k0-1, l  )  = jy(j+2, k0-1, l  )  +   sx(2 )*sy0(-1)*sz(0 )*wqy
+    !$acc atomic update
     jy(j-1, k0, l  )  = jy(j-1, k0, l  )  +   sx(-1)*sy0(0 )*sz(0 )*wqy
+    !$acc atomic update
     jy(j, k0, l  )  = jy(j, k0, l  )  +   sx(0 )*sy0(0 )*sz(0 )*wqy
+    !$acc atomic update
     jy(j+1, k0, l  )  = jy(j+1, k0, l  )  +   sx(1 )*sy0(0 )*sz(0 )*wqy
+    !$acc atomic update
     jy(j+2, k0, l  )  = jy(j+2, k0, l  )  +   sx(2 )*sy0(0 )*sz(0 )*wqy
+    !$acc atomic update
     jy(j-1, k0+1, l  )  = jy(j-1, k0+1, l  )  +   sx(-1)*sy0(1 )*sz(0 )*wqy
+    !$acc atomic update
     jy(j, k0+1, l  )  = jy(j, k0+1, l  )  +   sx(0 )*sy0(1 )*sz(0 )*wqy
+    !$acc atomic update
     jy(j+1, k0+1, l  )  = jy(j+1, k0+1, l  )  +   sx(1 )*sy0(1 )*sz(0 )*wqy
+    !$acc atomic update
     jy(j+2, k0+1, l  )  = jy(j+2, k0+1, l  )  +   sx(2 )*sy0(1 )*sz(0 )*wqy
+    !$acc atomic update
     jy(j-1, k0+2, l  )  = jy(j-1, k0+2, l  )  +   sx(-1)*sy0(2 )*sz(0 )*wqy
+    !$acc atomic update
     jy(j, k0+2, l  )  = jy(j, k0+2, l  )  +   sx(0 )*sy0(2 )*sz(0 )*wqy
+    !$acc atomic update
     jy(j+1, k0+2, l  )  = jy(j+1, k0+2, l  )  +   sx(1 )*sy0(2 )*sz(0 )*wqy
+    !$acc atomic update
     jy(j+2, k0+2, l  )  = jy(j+2, k0+2, l  )  +   sx(2 )*sy0(2 )*sz(0 )*wqy
+    !$acc atomic update
     jy(j-1, k0-1, l+1)  = jy(j-1, k0-1, l+1)  +   sx(-1)*sy0(-1)*sz(1 )*wqy
+    !$acc atomic update
     jy(j, k0-1, l+1)  = jy(j, k0-1, l+1)  +   sx(0 )*sy0(-1)*sz(1 )*wqy
+    !$acc atomic update
     jy(j+1, k0-1, l+1)  = jy(j+1, k0-1, l+1)  +   sx(1 )*sy0(-1)*sz(1 )*wqy
+    !$acc atomic update
     jy(j+2, k0-1, l+1)  = jy(j+2, k0-1, l+1)  +   sx(2 )*sy0(-1)*sz(1 )*wqy
+    !$acc atomic update
     jy(j-1, k0, l+1)  = jy(j-1, k0, l+1)  +   sx(-1)*sy0(0 )*sz(1 )*wqy
+    !$acc atomic update
     jy(j, k0, l+1)  = jy(j, k0, l+1)  +   sx(0 )*sy0(0 )*sz(1 )*wqy
+    !$acc atomic update
     jy(j+1, k0, l+1)  = jy(j+1, k0, l+1)  +   sx(1 )*sy0(0 )*sz(1 )*wqy
+    !$acc atomic update
     jy(j+2, k0, l+1)  = jy(j+2, k0, l+1)  +   sx(2 )*sy0(0 )*sz(1 )*wqy
+    !$acc atomic update
     jy(j-1, k0+1, l+1)  = jy(j-1, k0+1, l+1)  +   sx(-1)*sy0(1 )*sz(1 )*wqy
+    !$acc atomic update
     jy(j, k0+1, l+1)  = jy(j, k0+1, l+1)  +   sx(0 )*sy0(1 )*sz(1 )*wqy
+    !$acc atomic update
     jy(j+1, k0+1, l+1)  = jy(j+1, k0+1, l+1)  +   sx(1 )*sy0(1 )*sz(1 )*wqy
+    !$acc atomic update
     jy(j+2, k0+1, l+1)  = jy(j+2, k0+1, l+1)  +   sx(2 )*sy0(1 )*sz(1 )*wqy
+    !$acc atomic update
     jy(j-1, k0+2, l+1)  = jy(j-1, k0+2, l+1)  +   sx(-1)*sy0(2 )*sz(1 )*wqy
+    !$acc atomic update
     jy(j, k0+2, l+1)  = jy(j, k0+2, l+1)  +   sx(0 )*sy0(2 )*sz(1 )*wqy
+    !$acc atomic update
     jy(j+1, k0+2, l+1)  = jy(j+1, k0+2, l+1)  +   sx(1 )*sy0(2 )*sz(1 )*wqy
+    !$acc atomic update
     jy(j+2, k0+2, l+1)  = jy(j+2, k0+2, l+1)  +   sx(2 )*sy0(2 )*sz(1 )*wqy
+    !$acc atomic update
     jy(j-1, k0-1, l+2)  = jy(j-1, k0-1, l+2)  +   sx(-1)*sy0(-1)*sz(2 )*wqy
+    !$acc atomic update
     jy(j, k0-1, l+2)  = jy(j, k0-1, l+2)  +   sx(0 )*sy0(-1)*sz(2 )*wqy
+    !$acc atomic update
     jy(j+1, k0-1, l+2)  = jy(j+1, k0-1, l+2)  +   sx(1 )*sy0(-1)*sz(2 )*wqy
+    !$acc atomic update
     jy(j+2, k0-1, l+2)  = jy(j+2, k0-1, l+2)  +   sx(2 )*sy0(-1)*sz(2 )*wqy
+    !$acc atomic update
     jy(j-1, k0, l+2)  = jy(j-1, k0, l+2)  +   sx(-1)*sy0(0 )*sz(2 )*wqy
+    !$acc atomic update
     jy(j, k0, l+2)  = jy(j, k0, l+2)  +   sx(0 )*sy0(0 )*sz(2 )*wqy
+    !$acc atomic update
     jy(j+1, k0, l+2)  = jy(j+1, k0, l+2)  +   sx(1 )*sy0(0 )*sz(2 )*wqy
+    !$acc atomic update
     jy(j+2, k0, l+2)  = jy(j+2, k0, l+2)  +   sx(2 )*sy0(0 )*sz(2 )*wqy
+    !$acc atomic update
     jy(j-1, k0+1, l+2)  = jy(j-1, k0+1, l+2)  +   sx(-1)*sy0(1 )*sz(2 )*wqy
+    !$acc atomic update
     jy(j, k0+1, l+2)  = jy(j, k0+1, l+2)  +   sx(0 )*sy0(1 )*sz(2 )*wqy
+    !$acc atomic update
     jy(j+1, k0+1, l+2)  = jy(j+1, k0+1, l+2)  +   sx(1 )*sy0(1 )*sz(2 )*wqy
+    !$acc atomic update
     jy(j+2, k0+1, l+2)  = jy(j+2, k0+1, l+2)  +   sx(2 )*sy0(1 )*sz(2 )*wqy
+    !$acc atomic update
     jy(j-1, k0+2, l+2)  = jy(j-1, k0+2, l+2)  +   sx(-1)*sy0(2 )*sz(2 )*wqy
+    !$acc atomic update
     jy(j, k0+2, l+2)  = jy(j, k0+2, l+2)  +   sx(0 )*sy0(2 )*sz(2 )*wqy
+    !$acc atomic update
     jy(j+1, k0+2, l+2)  = jy(j+1, k0+2, l+2)  +   sx(1 )*sy0(2 )*sz(2 )*wqy
+    !$acc atomic update
     jy(j+2, k0+2, l+2)  = jy(j+2, k0+2, l+2)  +   sx(2 )*sy0(2 )*sz(2 )*wqy
 
     ! - JZ
+    !$acc atomic update
     jz(j-1, k-1, l0-1)  = jz(j-1, k-1, l0-1)  +   sx(-1)*sy(-1)*sz0(-1)*wqz
+    !$acc atomic update
     jz(j, k-1, l0-1)  = jz(j, k-1, l0-1)  +   sx(0 )*sy(-1)*sz0(-1)*wqz
+    !$acc atomic update
     jz(j+1, k-1, l0-1)  = jz(j+1, k-1, l0-1)  +   sx(1 )*sy(-1)*sz0(-1)*wqz
+    !$acc atomic update
     jz(j+2, k-1, l0-1)  = jz(j+2, k-1, l0-1)  +   sx(2 )*sy(-1)*sz0(-1)*wqz
+    !$acc atomic update
     jz(j-1, k, l0-1)  = jz(j-1, k, l0-1)  +   sx(-1)*sy(0 )*sz0(-1)*wqz
+    !$acc atomic update
     jz(j, k, l0-1)  = jz(j, k, l0-1)  +   sx(0 )*sy(0 )*sz0(-1)*wqz
+    !$acc atomic update
     jz(j+1, k, l0-1)  = jz(j+1, k, l0-1)  +   sx(1 )*sy(0 )*sz0(-1)*wqz
+    !$acc atomic update
     jz(j+2, k, l0-1)  = jz(j+2, k, l0-1)  +   sx(2 )*sy(0 )*sz0(-1)*wqz
+    !$acc atomic update
     jz(j-1, k+1, l0-1)  = jz(j-1, k+1, l0-1)  +   sx(-1)*sy(1 )*sz0(-1)*wqz
+    !$acc atomic update
     jz(j, k+1, l0-1)  = jz(j, k+1, l0-1)  +   sx(0 )*sy(1 )*sz0(-1)*wqz
+    !$acc atomic update
     jz(j+1, k+1, l0-1)  = jz(j+1, k+1, l0-1)  +   sx(1 )*sy(1 )*sz0(-1)*wqz
+    !$acc atomic update
     jz(j+2, k+1, l0-1)  = jz(j+2, k+1, l0-1)  +   sx(2 )*sy(1 )*sz0(-1)*wqz
+    !$acc atomic update
     jz(j-1, k+2, l0-1)  = jz(j-1, k+2, l0-1)  +   sx(-1)*sy(2 )*sz0(-1)*wqz
+    !$acc atomic update
     jz(j, k+2, l0-1)  = jz(j, k+2, l0-1)  +   sx(0 )*sy(2 )*sz0(-1)*wqz
+    !$acc atomic update
     jz(j+1, k+2, l0-1)  = jz(j+1, k+2, l0-1)  +   sx(1 )*sy(2 )*sz0(-1)*wqz
+    !$acc atomic update
     jz(j+2, k+2, l0-1)  = jz(j+2, k+2, l0-1)  +   sx(2 )*sy(2 )*sz0(-1)*wqz
+    !$acc atomic update
     jz(j-1, k-1, l0  )  = jz(j-1, k-1, l0  )  +   sx(-1)*sy(-1)*sz0(0 )*wqz
+    !$acc atomic update
     jz(j, k-1, l0  )  = jz(j, k-1, l0  )  +   sx(0 )*sy(-1)*sz0(0 )*wqz
+    !$acc atomic update
     jz(j+1, k-1, l0  )  = jz(j+1, k-1, l0  )  +   sx(1 )*sy(-1)*sz0(0 )*wqz
+    !$acc atomic update
     jz(j+2, k-1, l0  )  = jz(j+2, k-1, l0  )  +   sx(2 )*sy(-1)*sz0(0 )*wqz
+    !$acc atomic update
     jz(j-1, k, l0  )  = jz(j-1, k, l0  )  +   sx(-1)*sy(0 )*sz0(0 )*wqz
+    !$acc atomic update
     jz(j, k, l0  )  = jz(j, k, l0  )  +   sx(0 )*sy(0 )*sz0(0 )*wqz
+    !$acc atomic update
     jz(j+1, k, l0  )  = jz(j+1, k, l0  )  +   sx(1 )*sy(0 )*sz0(0 )*wqz
+    !$acc atomic update
     jz(j+2, k, l0  )  = jz(j+2, k, l0  )  +   sx(2 )*sy(0 )*sz0(0 )*wqz
+    !$acc atomic update
     jz(j-1, k+1, l0  )  = jz(j-1, k+1, l0  )  +   sx(-1)*sy(1 )*sz0(0 )*wqz
+    !$acc atomic update
     jz(j, k+1, l0  )  = jz(j, k+1, l0  )  +   sx(0 )*sy(1 )*sz0(0 )*wqz
+    !$acc atomic update
     jz(j+1, k+1, l0  )  = jz(j+1, k+1, l0  )  +   sx(1 )*sy(1 )*sz0(0 )*wqz
+    !$acc atomic update
     jz(j+2, k+1, l0  )  = jz(j+2, k+1, l0  )  +   sx(2 )*sy(1 )*sz0(0 )*wqz
+    !$acc atomic update
     jz(j-1, k+2, l0  )  = jz(j-1, k+2, l0  )  +   sx(-1)*sy(2 )*sz0(0 )*wqz
+    !$acc atomic update
     jz(j, k+2, l0  )  = jz(j, k+2, l0  )  +   sx(0 )*sy(2 )*sz0(0 )*wqz
+    !$acc atomic update
     jz(j+1, k+2, l0  )  = jz(j+1, k+2, l0  )  +   sx(1 )*sy(2 )*sz0(0 )*wqz
+    !$acc atomic update
     jz(j+2, k+2, l0  )  = jz(j+2, k+2, l0  )  +   sx(2 )*sy(2 )*sz0(0 )*wqz
+    !$acc atomic update
     jz(j-1, k-1, l0+1)  = jz(j-1, k-1, l0+1)  +   sx(-1)*sy(-1)*sz0(1 )*wqz
+    !$acc atomic update
     jz(j, k-1, l0+1)  = jz(j, k-1, l0+1)  +   sx(0 )*sy(-1)*sz0(1 )*wqz
+    !$acc atomic update
     jz(j+1, k-1, l0+1)  = jz(j+1, k-1, l0+1)  +   sx(1 )*sy(-1)*sz0(1 )*wqz
+    !$acc atomic update
     jz(j+2, k-1, l0+1)  = jz(j+2, k-1, l0+1)  +   sx(2 )*sy(-1)*sz0(1 )*wqz
+    !$acc atomic update
     jz(j-1, k, l0+1)  = jz(j-1, k, l0+1)  +   sx(-1)*sy(0 )*sz0(1 )*wqz
+    !$acc atomic update
     jz(j, k, l0+1)  = jz(j, k, l0+1)  +   sx(0 )*sy(0 )*sz0(1 )*wqz
+    !$acc atomic update
     jz(j+1, k, l0+1)  = jz(j+1, k, l0+1)  +   sx(1 )*sy(0 )*sz0(1 )*wqz
+    !$acc atomic update
     jz(j+2, k, l0+1)  = jz(j+2, k, l0+1)  +   sx(2 )*sy(0 )*sz0(1 )*wqz
+    !$acc atomic update
     jz(j-1, k+1, l0+1)  = jz(j-1, k+1, l0+1)  +   sx(-1)*sy(1 )*sz0(1 )*wqz
+    !$acc atomic update
     jz(j, k+1, l0+1)  = jz(j, k+1, l0+1)  +   sx(0 )*sy(1 )*sz0(1 )*wqz
+    !$acc atomic update
     jz(j+1, k+1, l0+1)  = jz(j+1, k+1, l0+1)  +   sx(1 )*sy(1 )*sz0(1 )*wqz
+    !$acc atomic update
     jz(j+2, k+1, l0+1)  = jz(j+2, k+1, l0+1)  +   sx(2 )*sy(1 )*sz0(1 )*wqz
+    !$acc atomic update
     jz(j-1, k+2, l0+1)  = jz(j-1, k+2, l0+1)  +   sx(-1)*sy(2 )*sz0(1 )*wqz
+    !$acc atomic update
     jz(j, k+2, l0+1)  = jz(j, k+2, l0+1)  +   sx(0 )*sy(2 )*sz0(1 )*wqz
+    !$acc atomic update
     jz(j+1, k+2, l0+1)  = jz(j+1, k+2, l0+1)  +   sx(1 )*sy(2 )*sz0(1 )*wqz
+    !$acc atomic update
     jz(j+2, k+2, l0+1)  = jz(j+2, k+2, l0+1)  +   sx(2 )*sy(2 )*sz0(1 )*wqz
+    !$acc atomic update
     jz(j-1, k-1, l0+2)  = jz(j-1, k-1, l0+2)  +   sx(-1)*sy(-1)*sz0(2 )*wqz
+    !$acc atomic update
     jz(j, k-1, l0+2)  = jz(j, k-1, l0+2)  +   sx(0 )*sy(-1)*sz0(2 )*wqz
+    !$acc atomic update
     jz(j+1, k-1, l0+2)  = jz(j+1, k-1, l0+2)  +   sx(1 )*sy(-1)*sz0(2 )*wqz
+    !$acc atomic update
     jz(j+2, k-1, l0+2)  = jz(j+2, k-1, l0+2)  +   sx(2 )*sy(-1)*sz0(2 )*wqz
+    !$acc atomic update
     jz(j-1, k, l0+2)  = jz(j-1, k, l0+2)  +   sx(-1)*sy(0 )*sz0(2 )*wqz
+    !$acc atomic update
     jz(j, k, l0+2)  = jz(j, k, l0+2)  +   sx(0 )*sy(0 )*sz0(2 )*wqz
+    !$acc atomic update
     jz(j+1, k, l0+2)  = jz(j+1, k, l0+2)  +   sx(1 )*sy(0 )*sz0(2 )*wqz
+    !$acc atomic update
     jz(j+2, k, l0+2)  = jz(j+2, k, l0+2)  +   sx(2 )*sy(0 )*sz0(2 )*wqz
+    !$acc atomic update
     jz(j-1, k+1, l0+2)  = jz(j-1, k+1, l0+2)  +   sx(-1)*sy(1 )*sz0(2 )*wqz
+    !$acc atomic update
     jz(j, k+1, l0+2)  = jz(j, k+1, l0+2)  +   sx(0 )*sy(1 )*sz0(2 )*wqz
+    !$acc atomic update
     jz(j+1, k+1, l0+2)  = jz(j+1, k+1, l0+2)  +   sx(1 )*sy(1 )*sz0(2 )*wqz
+    !$acc atomic update
     jz(j+2, k+1, l0+2)  = jz(j+2, k+1, l0+2)  +   sx(2 )*sy(1 )*sz0(2 )*wqz
+    !$acc atomic update
     jz(j-1, k+2, l0+2)  = jz(j-1, k+2, l0+2)  +   sx(-1)*sy(2 )*sz0(2 )*wqz
+    !$acc atomic update
     jz(j, k+2, l0+2)  = jz(j, k+2, l0+2)  +   sx(0 )*sy(2 )*sz0(2 )*wqz
+    !$acc atomic update
     jz(j+1, k+2, l0+2)  = jz(j+1, k+2, l0+2)  +   sx(1 )*sy(2 )*sz0(2 )*wqz
+    !$acc atomic update
     jz(j+2, k+2, l0+2)  = jz(j+2, k+2, l0+2)  +   sx(2 )*sy(2 )*sz0(2 )*wqz
 
   END DO
+  !$acc end loop
+  !$acc end parallel
   RETURN
 END SUBROUTINE depose_jxjyjz_scalar_3_3_3
 
