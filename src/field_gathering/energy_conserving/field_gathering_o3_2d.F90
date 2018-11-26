@@ -17,7 +17,7 @@
 ! reproduce, distribute copies to the public, prepare derivative works, and
 ! perform publicly and display publicly, and to permit other to do so.
 !
-! FIELD_GATHERING_O3_3D.F90
+! FIELD_GATHERING_O3_2D.F90
 !
 ! Field gathering subroutines in 2D at order 3.
 !
@@ -78,13 +78,12 @@ subroutine pxr_gete2dxz_energy_conserving_scalar_3_3( np, xp, zp, ex, ey, ez, xm
   -eyg_nguard(2):eyg_nvalid(2)+eyg_nguard(2)-1)
   REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1, 1,        &
   -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1)
-  real(num), DIMENSION(-1:2)                       :: sx
-  real(num), DIMENSION(-1:2)                       :: sz
-  real(num), dimension(:), allocatable             :: sx0, sz0
-  real(num), parameter                             :: onesixth=1./6., twothird=2./3.
+  REAL(num), DIMENSION(-1:2)            :: sx, sx0
+  REAL(num), DIMENSION(-1:2)            :: sz, sz0
+  real(num), parameter                  :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
 
-  dxi = 1./dx
-  dzi = 1./dz
+  dxi = 1.0_num/dx
+  dzi = 1.0_num/dz
 
   ixmin = -1
   ixmax =  1
@@ -104,16 +103,10 @@ subroutine pxr_gete2dxz_energy_conserving_scalar_3_3( np, xp, zp, ex, ey, ez, xm
     izmax0 =  2
   end if
 
-  allocate(sx0(ixmin0:ixmax0), sz0(izmin0:izmax0))
-
-  sx=0
-  sz=0.
-  sx0=0.
-  sz0=0.
-
   if (l_lower_order_in_v) then
 
-    ! Loop over the particles
+    !$acc parallel deviceptr(exg, eyg, ezg, xp, zp, ex, ey, ez)
+    !$acc loop gang vector private(sx(-1:2), sz(-1:2), sx0(-1:2), sz0(-1:2))
     do ip=1, np
 
       x = (xp(ip)-xmin)*dxi
@@ -157,28 +150,44 @@ subroutine pxr_gete2dxz_energy_conserving_scalar_3_3( np, xp, zp, ex, ey, ez, xm
       sz0( 0) = 0.75-zintsq
       sz0( 1) = 0.5*(0.5+zint)**2
 
+      !$acc loop seq independent collapse(2)
       do ll = izmin, izmax+1
+        ! Prevent wrong vectorization from the compiler
+        !DIR$ NOVECTOR
         do jj = ixmin0, ixmax0
           ex(ip) = ex(ip) + sx0(jj)*sz(ll)*exg(j0+jj, 1, l+ll)
         end do
       end do
+      !$acc end loop
 
+      !$acc loop seq independent collapse(2)
       do ll = izmin, izmax+1
+        ! Prevent wrong vectorization from the compiler
+        !DIR$ NOVECTOR
         do jj = ixmin, ixmax+1
           ey(ip) = ey(ip) + sx(jj)*sz(ll)*eyg(j+jj, 1, l+ll)
         end do
       end do
+      !$acc end loop
 
+      !$acc loop seq independent collapse(2)
       do ll = izmin0, izmax0
         do jj = ixmin, ixmax+1
+          ! Prevent wrong vectorization from the compiler
+          !DIR$ NOVECTOR
           ez(ip) = ez(ip) + sx(jj)*sz0(ll)*ezg(j+jj, 1, l0+ll)
         end do
       end do
+      !$acc end loop
 
     enddo
+    !$acc end loop
+    !$acc end parallel
 
-  else
-    ! Loop over the particles
+ else
+
+    !$acc parallel deviceptr(exg, eyg, ezg, xp, zp, ex, ey, ez)
+    !$acc loop gang vector private(sx(-1:2), sz(-1:2), sx0(-1:2), sz0(-1:2))
     do ip=1, np
 
       x = (xp(ip)-xmin)*dxi
@@ -228,26 +237,39 @@ subroutine pxr_gete2dxz_energy_conserving_scalar_3_3( np, xp, zp, ex, ey, ez, xm
       sz0( 1) = twothird-ozintsq*(1.-ozint/2)
       sz0( 2) = onesixth*zintsq*zint
 
+      !$acc loop seq independent collapse(2)
       do ll = izmin, izmax+1
+        ! Prevent wrong vectorization from the compiler
+        !DIR$ NOVECTOR
         do jj = ixmin0, ixmax0
           ex(ip) = ex(ip) + sx0(jj)*sz(ll)*exg(j0+jj, 1, l+ll)
         end do
       end do
+      !$acc end loop
 
+      !$acc loop seq independent collapse(2)
       do ll = izmin, izmax+1
+        ! Prevent wrong vectorization from the compiler
+        !DIR$ NOVECTOR
         do jj = ixmin, ixmax+1
+
           ey(ip) = ey(ip) + sx(jj)*sz(ll)*eyg(j+jj, 1, l+ll)
         end do
       end do
+      !$acc end loop
 
+      !$acc loop seq independent collapse(2)
       do ll = izmin0, izmax0
+        ! Prevent wrong vectorization from the compiler
+        !DIR$ NOVECTOR
         do jj = ixmin, ixmax+1
           ez(ip) = ez(ip) + sx(jj)*sz0(ll)*ezg(j+jj, 1, l0+ll)
         end do
       end do
-
+      !$acc end loop
     enddo
-
+    !$acc end loop
+    !$acc end parallel
   endif
 
 end subroutine
@@ -621,13 +643,12 @@ subroutine pxr_getb2dxz_energy_conserving_scalar_3_3( np, xp, zp, bx, by, bz, xm
   integer(idp)             :: ixmin0, ixmax0, izmin0, izmax0, jj, ll, j0, l0
   real(num)                :: dxi, dzi, x, z, xint, zint
   real(num)                :: xintsq, oxint, zintsq, ozint, oxintsq, ozintsq
-  real(num), DIMENSION(-1:2)           :: sx
-  real(num), DIMENSION(-1:2)           :: sz
-  real(num), dimension(:), allocatable :: sx0, sz0
-  real(num), parameter                 :: onesixth=1./6., twothird=2./3.
+  REAL(num), DIMENSION(-1:2)            :: sx, sx0
+  REAL(num), DIMENSION(-1:2)            :: sz, sz0
+  real(num), parameter                  :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
 
-  dxi = 1./dx
-  dzi = 1./dz
+  dxi = 1.0_num/dx
+  dzi = 1.0_num/dz
 
   ixmin = -1
   ixmax =  1
@@ -646,26 +667,19 @@ subroutine pxr_getb2dxz_energy_conserving_scalar_3_3( np, xp, zp, bx, by, bz, xm
     izmax0 =  2
   end if
 
-  allocate(sx0(ixmin0:ixmax0), sz0(izmin0:izmax0))
-
-  sx=0
-  sz=0.
-  sx0=0.
-  sz0=0.
-
   if (l_lower_order_in_v) then
 
+    !$acc parallel deviceptr(bxg, byg, bzg, xp, zp, bx, by, bz)
+    !$acc loop gang vector private(sx(-1:2), sz(-1:2), sx0(-1:2), sz0(-1:2))
     do ip=1, np
       x = (xp(ip)-xmin)*dxi
       z = (zp(ip)-zmin)*dzi
-
 
       j=floor(x)
       j0=floor(x)
 
       l=floor(z)
       l0=floor(z)
-
 
       xint=x-j
       zint=z-l
@@ -699,28 +713,44 @@ subroutine pxr_getb2dxz_energy_conserving_scalar_3_3( np, xp, zp, bx, by, bz, xm
       sz0( 0) = 0.75-zintsq
       sz0( 1) = 0.5*(0.5+zint)**2
 
+      !$acc loop seq independent collapse(2)
       do ll = izmin0, izmax0
+        ! Prevent wrong vectorization from the compiler
+        !DIR$ NOVECTOR
         do jj = ixmin, ixmax+1
           bx(ip) = bx(ip) + sx(jj)*sz0(ll)*bxg(j+jj, 1, l0+ll)
         end do
       end do
+      !$acc end loop
 
+      !$acc loop seq independent collapse(2)
       do ll = izmin0, izmax0
+        ! Prevent wrong vectorization from the compiler
+        !DIR$ NOVECTOR
         do jj = ixmin0, ixmax0
           by(ip) = by(ip) + sx0(jj)*sz0(ll)*byg(j0+jj, 1, l0+ll)
         end do
       end do
+      !$acc end loop
 
+      !$acc loop seq independent collapse(2)
       do ll = izmin, izmax+1
+        ! Prevent wrong vectorization from the compiler
+        !DIR$ NOVECTOR
         do jj = ixmin0, ixmax0
           bz(ip) = bz(ip) + sx0(jj)*sz(ll)*bzg(j0+jj, 1, l+ll)
         end do
       end do
+      !$acc end loop
 
     enddo
+    !$acc end loop
+    !$acc end parallel
 
   else
 
+    !$acc parallel deviceptr(bxg, byg, bzg, xp, zp, bx, by, bz)
+    !$acc loop gang vector private(sx(-1:2), sz(-1:2), sx0(-1:2), sz0(-1:2))
     do ip=1, np
       x = (xp(ip)-xmin)*dxi
       z = (zp(ip)-zmin)*dzi
@@ -769,25 +799,39 @@ subroutine pxr_getb2dxz_energy_conserving_scalar_3_3( np, xp, zp, bx, by, bz, xm
       sz0( 1) = twothird-ozintsq*(1.-ozint/2)
       sz0( 2) = onesixth*zintsq*zint
 
+      !$acc loop seq independent collapse(2)
       do ll = izmin0, izmax0
+        ! Prevent wrong vectorization from the compiler
+        !DIR$ NOVECTOR
         do jj = ixmin, ixmax+1
           bx(ip) = bx(ip) + sx(jj)*sz0(ll)*bxg(j+jj, 1, l0+ll)
         end do
       end do
+      !$acc end loop
 
+      !$acc loop seq independent collapse(2)
       do ll = izmin0, izmax0
+        ! Prevent wrong vectorization from the compiler
+        !DIR$ NOVECTOR
         do jj = ixmin0, ixmax0
           by(ip) = by(ip) + sx0(jj)*sz0(ll)*byg(j0+jj, 1, l0+ll)
         end do
       end do
+      !$acc end loop
 
+      !$acc loop seq independent collapse(2)
       do ll = izmin, izmax+1
+        ! Prevent wrong vectorization from the compiler
+        !DIR$ NOVECTOR
         do jj = ixmin0, ixmax0
           bz(ip) = bz(ip) + sx0(jj)*sz(ll)*bzg(j0+jj, 1, l+ll)
         end do
       end do
+      !$acc end loop
 
     enddo
+    !$acc end loop
+    !$acc end parallel
 
   end if
 end subroutine
