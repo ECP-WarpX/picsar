@@ -2,6 +2,17 @@ import os, sys
 import shutil
 from datetime import datetime
 
+# From the picsar root directory:
+# python utils/generate_miniapp.py \
+# --pusher boris --depos direct --solver fdtd --optimization off \
+# --charge off --laser off --geom 3d --order 1 --diags off --errchk off
+# Then:
+# pushd PICSARlite
+# Go into src/submain.F90 and remove "USE diagnostics" and "USE simple_io".
+# make
+# pushd examples/example_decks_fortran
+# mpirun -np 8 ../../fortran_bin/picsar homogeneous_plasma_lite.pixr
+
 # The two following classes are inspired by the parser in
 # picsar/utils/forthon_parser.
 
@@ -259,13 +270,134 @@ class Interface( object ):
 class MiniAppParser( object ):
 
     def __init__( self, type_solver, type_pusher, type_depos,
-                  flag_optimization ):
+                  flag_optimization, flag_charge, flag_laser, flag_geom,
+                  flag_order, flag_diags, flag_errchk ):
 
         self.clean_folder()
         self.type_solver = type_solver
         self.type_pusher = type_pusher
         self.type_depos  = type_depos
         self.flag_optimization = flag_optimization
+        self.flag_charge = flag_charge
+        self.flag_laser = flag_laser
+        self.flag_geom = flag_geom
+        self.flag_order = flag_order
+        self.flag_diags = flag_diags
+        self.flag_errchk = flag_errchk
+
+        self.include_geom_2d = False
+        self.include_geom_3d = False
+        if flag_geom == 'all':
+            self.include_geom_2d = True
+            self.include_geom_3d = True
+        elif flag_geom == '2d':
+            self.include_geom_2d = True
+        elif flag_geom == '3d':
+            self.include_geom_3d = True
+        else:
+            print('#########################################################' \
+                  '#########')
+            print('Wrong geometry argument there. The list of available '     \
+                  'geometry is:')
+            print('- all: both 2-dimensional and 3-dimensional')
+            print('- 2d: 2-dimensional')
+            print('- 3d: 3-dimensional')
+            print('#########################################################' \
+                              '#########')
+
+        self.include_order_1 = False
+        self.include_order_2 = False
+        self.include_order_3 = False
+        self.include_order_n = False
+        if flag_order == 'all':
+            self.include_order_1 = True
+            self.include_order_2 = True
+            self.include_order_3 = True
+            self.include_order_n = True
+        elif flag_order == '1':
+            self.include_order_1 = True
+        elif flag_order == '2':
+            self.include_order_2 = True
+        elif flag_order == '3':
+            self.include_order_3 = True
+        elif flag_order == 'n':
+            self.include_order_n = True
+        else:
+            print('#########################################################' \
+                  '#########')
+            print('Wrong order there. The list of available order is:')
+            print('- all: orders 1, 2, 3, n')
+            print('- 1: order 1')
+            print('- 2: order 2')
+            print('- 3: order 3')
+            print('- n: order n')
+            print('#########################################################' \
+                              '#########')
+
+        self.include_solver_fdtd = False
+        self.include_solver_spectral = False
+        if type_solver == 'all':
+            self.include_solver_fdtd = True
+            self.include_solver_spectral = True
+        elif type_solver == 'fdtd':
+            self.include_solver_fdtd = True
+        elif type_solver == 'spectral':
+            self.include_solver_spectral = True
+        else:
+            print('#########################################################' \
+                  '#########')
+            print('Wrong solver argument there. The list of available '       \
+                  'solver is:')
+            print('- all: every routines and modules from picsar')
+            print('- fdtd: every routines and modules related to the Finite ' \
+                  'Domain')
+            print('        Time Domain Maxwell solver in 3D.')
+            print('- spectral: every routines and modules related to the '    \
+                  'Pseudo-')
+            print('        Spectral Analytical Time Domain Maxwell solver in '\
+                  '3D.')
+            print('#########################################################' \
+                              '#########')
+
+        self.include_pusher_boris = False
+        self.include_pusher_vay = False
+        if type_pusher == 'all':
+            self.include_pusher_boris = True
+            self.include_pusher_vay = True
+        elif type_pusher == 'boris':
+            self.include_pusher_boris = True
+        elif type_pusher == 'vay':
+            self.include_pusher_vay = True
+        else:
+            print('#########################################################' \
+                  '#########')
+            print('Wrong pusher argument there. The list of available '       \
+                  'pusher is:')
+            print('- all')
+            print('- boris')
+            print('- vay')
+            print('#########################################################' \
+                              '#########')
+
+        self.include_depos_direct = False
+        self.include_depos_esirkepov = False
+        if type_depos == 'all':
+            self.include_depos_direct = True
+            self.include_depos_esirkepov = True
+        elif type_depos == 'direct':
+            self.include_depos_direct = True
+        elif type_depos == 'esirkepov':
+            self.include_depos_esirkepov = True
+        else:
+            print('#########################################################' \
+                  '#########')
+            print('Wrong particle deposition argument there. The list of '    \
+                  'available pusher is:')
+            print('- all')
+            print('- direct')
+            print('- esirkepov')
+            print('#########################################################' \
+                              '#########')
 
         # Create the folder for the mini app
         os.makedirs('./PICSARlite')
@@ -273,9 +405,7 @@ class MiniAppParser( object ):
         # To be completed
         # Solver
         generic_modules = [
-                        "diagnostics",\
                         "control_file",\
-                        "simple_io",\
                         "PICSAR_precision",\
                         "constants",\
                         "precomputed",\
@@ -290,7 +420,18 @@ class MiniAppParser( object ):
                         "mpi_routines", \
                         "python_pointers" ]
 
-        generic_routines=[
+        external_modules = [
+                         "p3dfft",\
+                         "mpi",\
+                         "omp_lib",\
+                         "cufft",\
+                         "iso_c_binding" ]
+
+
+        diag_modules=["diagnostics", \
+                      "simple_io" ]
+
+        diag_routines=[
                         "calc_diags",\
                         "calc_field_div",\
                         "calc_field_divB",\
@@ -311,6 +452,15 @@ class MiniAppParser( object ):
                         "output_temporal_diagnostics",\
                         "write_3d_field_array_to_file",\
                         "write_single_array_to_file",\
+                        "write_particles_to_file",\
+                        "get_particles_to_dump",\
+                        "concatenate_particle_variable",\
+                        "write_particle_variable",\
+                        "output_time_statistics",\
+                        "final_output_time_statistics",\
+                        ]
+
+        generic_routines=[
                         "mpi_minimal_init",\
                         "setup_communicator",\
                         "mpi_initialise",\
@@ -323,15 +473,11 @@ class MiniAppParser( object ):
                         "get_global_grid_mem",\
                         "set_tile_split",\
                         "set_tile_split_for_species",\
-                        "add_particle_to_species_2d",\
                         "add_particle_to_species",\
-                        "add_particle_at_tile_2d",\
                         "add_particle_at_tile",\
                         "add_group_of_particles_at_tile",\
                         "rm_particles_from_species_with_mask",\
-                        "rm_particles_from_species_2d",\
                         "rm_particles_from_species",\
-                        "rm_particle_at_tile_2d",\
                         "rm_particle_at_tile",\
                         "allocate_tile_arrays",\
                         "init_tile_arrays",\
@@ -347,8 +493,6 @@ class MiniAppParser( object ):
                         "get_are_tiles_reallocated",\
                         "set_are_tiles_reallocated",\
                         "estimate_tiles_memory_consumption",\
-                        "load_laser_species",\
-                        "load_laser",\
                         "product_matrix_2c2",\
                         "get_local_tile_mem",\
                         "get_global_tile_mem",\
@@ -427,9 +571,7 @@ class MiniAppParser( object ):
                         "pxr_particle_sorting",
                         "particle_sorting_sub",
                         "pxr_particle_bin_sorting",
-                        "pxr_particle_bin_sorting_2d",
                         "get_local_number_of_particles_from_species",
-                        "output_time_statistics",
                         "start_collection",
                         "stop_collection",
                         "random_number",
@@ -443,7 +585,6 @@ class MiniAppParser( object ):
                         "dfp_main_start",
                         "dfp_main_stop",
                         "dfp_final_start",
-                        "final_output_time_statistics",
                         "estimate_total_memory_consumption",
                         "init_splitted_fields_random",
                         "step",
@@ -460,18 +601,20 @@ class MiniAppParser( object ):
 #                         "get_proc_interval",
 #                         "binary_search",
 #                         "compute_effective_communication_setup",
-                         "write_particles_to_file",
-                         "get_particles_to_dump",
-                         "concatenate_particle_variable",
-                         "write_particle_variable",
                         ]
+
+        generic_routines_2d = [
+                        "add_particle_to_species_2d",\
+                        "add_particle_at_tile_2d",\
+                        "rm_particles_from_species_2d",\
+                        "rm_particle_at_tile_2d",\
+                        "pxr_particle_bin_sorting_2d",\
+                            ]
 
         generic_modules_solver = ["fields","field_boundary"]
 
-        generic_routines_solver = [
+        solver_routines = [
                         "field_bc",\
-                        "exchange_mpi_3d_grid_array_with_guards",\
-                        "exchange_mpi_3d_grid_array_with_guards_nonblocking",\
                         "summation_bcs",\
                         "summation_bcs_nonblocking",\
                         "summation_bcs_persistent_jx",\
@@ -481,6 +624,11 @@ class MiniAppParser( object ):
                         "bfield_bcs",\
                         "current_bcs",\
                         "charge_bcs"]
+
+        solver_routines_3d = [
+                        "exchange_mpi_3d_grid_array_with_guards",\
+                        "exchange_mpi_3d_grid_array_with_guards_nonblocking",\
+                                     ]
 
         generic_modules_pusher = [
                         "grid_tilemodule",\
@@ -493,25 +641,14 @@ class MiniAppParser( object ):
                         "sorting",\
                         "particle_boundary" ]
 
-        generic_routines_pusher = [
+        pusher_routines = [
                         "set_tile_split",\
                         "particle_bcs",\
-                        "particle_bcs_2d",\
                         "particle_bcs_tiles",\
                         "particle_bcs_tiles_openmp",\
-                        "particle_bcs_tiles_2d",\
-                        "particle_bcs_tiles_2d_openmp",\
                         "particle_bsc_openmp_reordering",\
                         "particle_bcs_mpi_blocking",\
                         "particle_bcs_mpi_non_blocking",\
-                        "particle_bcs_mpi_non_blocking_2d",\
-                        "particle_bcs_tiles_and_mpi_3d",\
-                        "push_laser_particles",\
-                        "laserp_pusher_gaussian",\
-                        "laserp_pusher_hanning",\
-                        "gaussian_profile",\
-                        "hanning_profile",\
-                        "field_gathering_plus_particle_pusher_sub_2d",\
                         "field_gathering_plus_particle_pusher",\
                         "field_gathering_plus_particle_pusher_sub",\
                         "field_gathering_plus_particle_pusher_cacheblock_sub",\
@@ -522,22 +659,35 @@ class MiniAppParser( object ):
                         "field_gathering_plus_particle_pusher_1_1_1",\
                         "field_gathering_plus_particle_pusher_2_2_2",\
                         "field_gathering_plus_particle_pusher_3_3_3",\
-                        "pxr_pushxyz",\
-                        "pxr_push2dxz",\
-                        "pxr_pushxz"]
+                            ]
 
+        pusher_routines_2d = [
+                        "particle_bcs_2d",\
+                        "particle_bcs_tiles_2d",\
+                        "particle_bcs_tiles_2d_openmp",\
+                        "particle_bcs_mpi_non_blocking_2d",\
+                        "field_gathering_plus_particle_pusher_sub_2d",\
+                        "pxr_push2dxz",\
+                                     ]
+
+        pusher_routines_3d = [
+                        "particle_bcs_tiles_and_mpi_3d",\
+                                     ]
 
         boris_modules = []
-        boris_routines_scalar = [
+
+        boris_routines_scalar_2d = [
                         "pxr_pushxz",\
-                        "pxr_push2dxz",\
+                        "pxr_push2dxz"]
+
+        boris_routines_scalar_3d = [
                         "pxr_boris_push_u_3d",\
                         "pxr_pushxyz",\
                         "pxr_epush_v",\
                         "pxr_bpush_v",\
                         "pxr_set_gamma"]
 
-        boris_routines_vector = [
+        boris_routines_vector_3d = [
                         "pxr_boris_push_rr_S09_u_3d",\
                         "pxr_boris_push_rr_B08_u_3d",\
                         "pxr_boris_push_rr_LL_u_3d",\
@@ -547,39 +697,61 @@ class MiniAppParser( object ):
 
         vay_pusher_routines= ["pxr_ebcancelpush3d" ]
 
+        laser_routines = [
+                        "load_laser_species",\
+                        "load_laser",\
+                        "push_laser_particles",\
+                        "laserp_pusher_gaussian",\
+                        "laserp_pusher_hanning",\
+                        "gaussian_profile",\
+                        "hanning_profile",\
+                         ]
+
         generic_modules_depos = [
                         "grid_tilemodule",\
                         "tile_params",\
                         "tiling",\
                         "particle_tilemodule"]
 
-        generic_routines_depos_scalar = [
+        depos_scalar_routines_charge = [
                         "depose_rho_scalar_1_1_1",\
                         "depose_rho_scalar_2_2_2",\
                         "depose_rho_scalar_3_3_3",\
                         "pxr_depose_rho_n",\
+                        "pxrdepose_rho_on_grid",\
+                        ]
+
+        depos_scalar_routines_charge_2d = [
                         "pxr_depose_rho_n_2dxz",\
                         "pxr_depose_rhoold_n_2dxz",\
-                        "pxrdepose_rho_on_grid",\
+                        "pxrdepose_rho_on_grid_sub_openmp_2d",\
+                                                  ]
+
+        depos_scalar_routines_charge_3d = [
                         "pxrdepose_rho_on_grid_sub_openmp_3d_n",\
                         "pxrdepose_rho_on_grid_sub_openmp_3d",\
-                        "pxrdepose_rho_on_grid_sub_openmp_2d",\
                         "pxrdepose_rho_on_grid_sub_openmp_3d_scalar",\
+                                                  ]
+
+        depos_scalar_routines_current = [
                         "depose_jxjyjz",\
                         "depose_jxjyjz_generic",\
-                        "depose_jxjyjz_2d",\
-                        "depose_jxjyjz_generic_2d",\
                         "pxrdepose_currents_on_grid_jxjyjz",\
-                        "depose_jxjyjz_2d depose_jxjyjz_generic_2d",\
-                        "pxrdepose_currents_on_grid_jxjyjz_2d",\
-                        "pxrdepose_currents_on_grid_jxjyjz_2d",\
                         "curr_depo_sub",\
                         "pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq",\
                         "pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq",\
                         "func_order",\
                         ]
 
-        generic_routines_depos_vector = [
+        depos_scalar_routines_current_2d = [
+                        "depose_jxjyjz_2d",\
+                        "depose_jxjyjz_generic_2d",\
+                        "depose_jxjyjz_2d depose_jxjyjz_generic_2d",\
+                        "pxrdepose_currents_on_grid_jxjyjz_2d",\
+                        "pxrdepose_currents_on_grid_jxjyjz_2d",\
+                                                   ]
+
+        depos_vector_charge_routines = [
                         "depose_rho_vecSH_1_1_1",\
                         "depose_rho_vecNOY_1_1_1",\
                         "depose_rho_vecHV_1_1_1",\
@@ -589,48 +761,59 @@ class MiniAppParser( object ):
                         "depose_rho_vecHVv3_3_3_3",\
                         "depose_rho_vecHVv4_3_3_3",\
                         "pxrdepose_rho_on_grid_sub_openmp_3d_vecto",\
+                        ]
+
+
+        depos_vector_current_routines = [
                         "pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp",\
                         "pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp",\
                         "pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2",\
                         "curr_reduc_sub",\
                         ]
 
-        
-        generic_routines_gather_scalar = [
+        gather_routines_scalar_2d = [
+                        "geteb2dxz_energy_conserving",\
+                        "geteb2dxz_energy_conserving_generic",\
                         "pxr_gete2dxz_n_energy_conserving",\
                         "pxr_getb2dxz_n_energy_conserving",\
                         "pxr_gete2dxz_energy_conserving_scalar_3_3",\
                         "pxr_getb2dxz_energy_conserving_scalar_3_3",\
-                        "gete3d_energy_conserving_scalar_1_1_1",\
-                        "getb3d_energy_conserving_scalar_1_1_1",\
-                        "gete3d_energy_conserving_scalar_2_2_2",\
-                        "getb3d_energy_conserving_scalar_2_2_2",\
-                        "gete3d_energy_conserving_scalar_3_3_3",\
-                        "getb3d_energy_conserving_scalar_3_3_3",\
-                        "gete3d_energy_conserving_linear_3_3_3", \
-                        "getb3d_energy_conserving_linear_3_3_3",\
-                        "pxrgete3d_n_energy_conserving",\
-                        "pxrgetb3d_n_energy_conserving",\
-                        "pxr_getb3d_n_energy_conserving",\
-                        "pxr_gete3d_n_energy_conserving",\
-                        "geteb2dxz_energy_conserving",\
-                        "geteb2dxz_energy_conserving_generic",\
+                                            ]
+
+        gather_routines_scalar_3d = [
                         "field_gathering",\
                         "field_gathering_sub",\
                         "geteb3d_energy_conserving",\
                         "geteb3d_energy_conserving_generic"
-                        ]
+                         ]
 
-        generic_routines_gather_vector = [
+        gather_routines_scalar_3d_o1 = [
+                        "gete3d_energy_conserving_scalar_1_1_1",\
+                        "getb3d_energy_conserving_scalar_1_1_1",\
+                                            ]
+
+        gather_routines_scalar_3d_o2 = [
+                        "gete3d_energy_conserving_scalar_2_2_2",\
+                        "getb3d_energy_conserving_scalar_2_2_2",\
+                                            ]
+
+        gather_routines_scalar_3d_o3 = [
+                        "gete3d_energy_conserving_scalar_3_3_3",\
+                        "getb3d_energy_conserving_scalar_3_3_3",\
+                        "gete3d_energy_conserving_linear_3_3_3", \
+                        "getb3d_energy_conserving_linear_3_3_3",\
+                                            ]
+
+        gather_routines_scalar_3d_on = [
+                        "pxrgete3d_n_energy_conserving",\
+                        "pxrgetb3d_n_energy_conserving",\
+                        "pxr_getb3d_n_energy_conserving",\
+                        "pxr_gete3d_n_energy_conserving",\
+                                            ]
+
+        gather_routines_vector_o1 = [
                         "pxr_gete2dxz_energy_conserving_vect_1_1",\
                         "pxr_getb2dxz_energy_conserving_vect_1_1",\
-                        "pxr_gete2dxz_energy_conserving_vect_2_2",\
-                        "pxr_getb2dxz_energy_conserving_vect_2_2",\
-                        "pxr_gete2dxz_energy_conserving_vect_2_2",\
-                        "pxr_getb2dxz_energy_conserving_vect_2_2",\
-                        "pxr_gete2dxz_energy_conserving_vect_3_3",\
-                        "pxr_getb2dxz_energy_conserving_vect_3_3",\
-                        "pxr_geteb2dxz_energy_conserving_vect_3_3",\
                         "gete3d_energy_conserving_vec_1_1_1",\
                         "getb3d_energy_conserving_vec_1_1_1",\
                         "geteb3d_energy_conserving_vecV1_1_1_1",\
@@ -639,12 +822,25 @@ class MiniAppParser( object ):
                         "geteb3d_energy_conserving_vecV4_1_1_1",\
                         "geteb3d_energy_conserving_vec_1_1_1_v2",\
                         "geteb3d_energy_conserving_vec_1_1_1_sub",\
+                        ]
+
+        gather_routines_vector_o2 = [
+                        "pxr_gete2dxz_energy_conserving_vect_2_2",\
+                        "pxr_getb2dxz_energy_conserving_vect_2_2",\
+                        "pxr_gete2dxz_energy_conserving_vect_2_2",\
+                        "pxr_getb2dxz_energy_conserving_vect_2_2",\
                         "gete3d_energy_conserving_vec_2_2_2",\
                         "getb3d_energy_conserving_vec_2_2_2",\
                         "geteb3d_energy_conserving_vecV1_2_2_2",\
                         "geteb3d_energy_conserving_vecV2_2_2_2", \
                         "geteb3d_energy_conserving_vecV3_2_2_2", \
                         "geteb3d_energy_conserving_vecV4_2_2_2",\
+                        ]
+
+        gather_routines_vector_o3 = [
+                        "pxr_gete2dxz_energy_conserving_vect_3_3",\
+                        "pxr_getb2dxz_energy_conserving_vect_3_3",\
+                        "pxr_geteb2dxz_energy_conserving_vect_3_3",\
                         "gete3d_energy_conserving_vec_3_3_3", \
                         "getb3d_energy_conserving_vec_3_3_3",\
                         "gete3d_energy_conserving_vec2_3_3_3",\
@@ -746,21 +942,10 @@ class MiniAppParser( object ):
                         "fft_forward_r2c_hybrid",
                         "fft_backward_c2r_local",
                         "fft_backward_c2r_hybrid",
-                        "push_psaotd_ebfielfs_2d",
-                        "push_psaotd_ebfielfs_3d",
                         "init_plans_blocks",
-                        "fast_fftw_create_plan_r2c_3d_dft",
-                        "fast_fftw_create_plan_c2r_3d_dft",
-                        "fast_fftw_create_plan_r2c_2d_dft",
-                        "fast_fftw_create_plan_c2r_2d_dft",
-                        "fast_fftw3d_c2r_with_plan",
-                        "fast_fftw3d_r2c_with_plan",
                         "allocate_new_matrix_vector",
                         "multiply_mat_vector",
                         "multiply_unit_blocks",
-                        "fftw_mpi_local_size_3d" ,
-                        "fftw_mpi_local_size_3d_transposed" ,
-                        "fftw_mpi_local_size_2d p3dfft_setup" ,
                         "get2d_intersection_group_mpi",
                         "c_f_pointer",
                         "p3dfft_get_dims" ,
@@ -772,149 +957,173 @@ class MiniAppParser( object ):
 #                         "dfftw_plan_dft_3d",
 #                         "dfftw_plan_dft_r2c_1d",
 #                         "dfftw_plan_dft_c2r_1d",
-                        "dfftw_plan_dft_r2c_2d",
-                        "dfftw_plan_dft_c2r_2d",
-                        "dfftw_plan_dft_r2c_3d",
-                        "dfftw_plan_dft_c2r_3d",
                         "dfftw_execute_dft",
                         "dfftw_execute_dft_r2c",
                         "dfftw_execute_dft_c2r",
                         "dfftw_destroy_plan",
                         "fftw_mpi_init",
-                        "fftw_mpi_init fftw_mpi_plan_dft_r2c_3d",
-                        "fftw_mpi_plan_dft_c2r_3d",
-                        "fftw_mpi_plan_dft_r2c_2d" ,
-                        "fftw_mpi_plan_dft_c2r_2d" ,
                         "p3dfft_ftran_r2c" ,
                         "fftw_mpi_execute_dft_r2c",
                         "p3dfft_ftran_c2r" ,
                         "fftw_mpi_execute_dft_c2r",
                         "p3dfft_btran_c2r",
                         ]
+
+        spectral_routines_2d = [
+                        "push_psaotd_ebfielfs_2d",
+                        "fast_fftw_create_plan_r2c_2d_dft",
+                        "fast_fftw_create_plan_c2r_2d_dft",
+                        "fftw_mpi_local_size_2d p3dfft_setup" ,
+                        "dfftw_plan_dft_r2c_2d",
+                        "dfftw_plan_dft_c2r_2d",
+                        "fftw_mpi_plan_dft_r2c_2d" ,
+                        "fftw_mpi_plan_dft_c2r_2d" ,
+                               ]
+
+        spectral_routines_3d = [
+                        "push_psaotd_ebfielfs_3d",
+                        "fast_fftw_create_plan_r2c_3d_dft",
+                        "fast_fftw_create_plan_c2r_3d_dft",
+                        "fast_fftw3d_c2r_with_plan",
+                        "fast_fftw3d_r2c_with_plan",
+                        "fftw_mpi_local_size_3d" ,
+                        "fftw_mpi_local_size_3d_transposed" ,
+                        "dfftw_plan_dft_r2c_3d",
+                        "dfftw_plan_dft_c2r_3d",
+                        "fftw_mpi_init fftw_mpi_plan_dft_r2c_3d",
+                        "fftw_mpi_plan_dft_c2r_3d",
+                               ]
+
         fdtd_modules = []
 
         fdtd_routines = [
                         "push_bfield",
                         "push_efield",
                         "init_stencil_coefficients",
-                        "FD_weights",
+                        "FD_weights"
+                        ]
+
+        fdtd_routines_2d = [
                         "push_bfield_2d",
                         "push_efield_2d",
-                        "pxrpush_em3d_evec_norder",
                         "pxrpush_em2d_evec_norder",
                         "pxrpush_em2d_evec",
+                        "pxrpush_em2d_bvec_norder",
+                        "pxrpush_em2d_bvec"
+                           ]
+
+        fdtd_routines_3d = [
+                        "pxrpush_em3d_evec_norder",
                         "pxrpush_em3d_evec",
                         "pxrpush_em3d_bvec_norder",
-                        "pxrpush_em2d_bvec_norder",
-                        "pxrpush_em2d_bvec",
-                        "pxrpush_em3d_bvec"]
+                        "pxrpush_em3d_bvec"
+                           ]
 
         self.list_available_modules = generic_modules                        \
                                     + generic_modules_solver                 \
                                     + generic_modules_pusher                 \
-                                    + generic_modules_depos
+                                    + generic_modules_depos                  \
+                                    + external_modules
 
         self.list_available_routines = generic_routines                      \
-                                     + generic_routines_solver               \
-                                     + generic_routines_pusher               \
-                                     + generic_routines_depos_scalar
+                                     + solver_routines                       \
+                                     + pusher_routines                       \
+                                     + depos_scalar_routines_current
+
+        if self.include_geom_2d:
+            self.list_available_routines += generic_routines_2d            \
+                                          + pusher_routines_2d             \
+                                          + depos_scalar_routines_current_2d
+
+        if self.include_geom_3d:
+            self.list_available_routines += pusher_routines_3d      \
+                                          + solver_routines_3d
+
+        if self.flag_diags == 'on':
+            self.list_available_modules += diag_modules
+            self.list_available_routines += diag_routines
+
+        if self.flag_charge == 'on':
+            self.list_available_routines += depos_scalar_routines_charge
+            if self.include_geom_2d:
+                self.list_available_routines += depos_scalar_routines_charge_2d
+            if self.include_geom_3d:
+                self.list_available_routines += depos_scalar_routines_charge_3d
+
+        if self.flag_laser == 'on':
+            self.list_available_routines += laser_routines
 
         if self.flag_optimization == 'on':
-            self.list_available_routines += generic_routines_depos_vector
+            self.list_available_routines += depos_vector_current_routines
+            if self.flag_charge == 'on':
+                self.list_available_routines += depos_vector_charge_routines
+
 
         # Add gather subroutines
-        self.list_available_routines += generic_routines_gather_scalar
+        if self.include_geom_2d:
+            self.list_available_routines += gather_routines_scalar_2d
+        if self.include_geom_3d:
+            self.list_available_routines += gather_routines_scalar_3d
+            if self.include_order_1:
+                self.list_available_routines += gather_routines_scalar_3d_o1
+            if self.include_order_2:
+                self.list_available_routines += gather_routines_scalar_3d_o2
+            if self.include_order_3:
+                self.list_available_routines += gather_routines_scalar_3d_o3
+            if self.include_order_n:
+                self.list_available_routines += gather_routines_scalar_3d_on
+
         if self.flag_optimization == 'on':
-            self.list_available_routines += generic_routines_gather_vector
+            if self.include_order_1:
+                self.list_available_routines += gather_routines_vector_o1
+            if self.include_order_2:
+                self.list_available_routines += gather_routines_vector_o2
+            if self.include_order_3:
+                self.list_available_routines += gather_routines_vector_o3
 
-        if type_solver == 'all':
-            self.list_available_modules  += spectral_modules  + fdtd_modules
-            self.list_available_routines += spectral_routines + fdtd_routines
-
-        elif type_solver == 'fdtd':
-            self.list_available_modules  += fdtd_modules
-            self.list_available_routines += fdtd_routines
-
-        elif type_solver == 'spectral':
+        if self.include_solver_spectral:
             self.list_available_modules  += spectral_modules
             self.list_available_routines += spectral_routines
+            if self.include_geom_2d:
+                self.list_available_routines += spectral_routines_2d
+            if self.include_geom_3d:
+                self.list_available_routines += spectral_routines_3d
 
-        else:
-            print('#########################################################' \
-                  '#########')
-            print('Wrong solver argument there. The list of available '       \
-                  'solver is:')
-            print('- all: every routines and modules from picsar')
-            print('- fdtd: every routines and modules related to the Finate ' \
-                  'Domain')
-            print('        Time Domain Maxwell solver in 3D.')
-            print('- spectral: every routines and modules related to the '    \
-                  'Pseudo-')
-            print('        Spectral Analytical Time Domain Maxwell solver in '\
-                  '3D.')
-            print('#########################################################' \
-                              '#########')
+        if self.include_solver_fdtd:
+            self.list_available_modules  += fdtd_modules
+            self.list_available_routines += fdtd_routines
+            if self.include_geom_2d:
+                self.list_available_routines += fdtd_routines_2d
+            if self.include_geom_3d:
+                self.list_available_routines += fdtd_routines_3d
 
         # Pusher
-        if type_pusher == 'all':
-            self.list_available_modules  += vay_pusher_modules  + boris_modules
-            self.list_available_routines += vay_pusher_routines              \
-                                         + boris_routines_scalar
-            if self.flag_optimization == 'on':
-                self.list_available_routines += boris_routines_vector
-
-        elif type_pusher == 'boris':
+        if self.include_pusher_boris:
             self.list_available_modules  += boris_modules
-            self.list_available_routines += boris_routines_scalar
-            if self.flag_optimization == 'on':
-                self.list_available_routines += boris_routines_vector
+            if self.include_geom_2d:
+                self.list_available_routines += boris_routines_scalar_2d
+            if self.include_geom_3d:
+                self.list_available_routines += boris_routines_scalar_3d
+                if self.flag_optimization == 'on':
+                    self.list_available_routines += boris_routines_vector_3d
 
-        elif type_pusher == 'vay':
+        if self.include_pusher_vay:
             self.list_available_modules  += vay_pusher_modules
             self.list_available_routines += vay_pusher_routines
 
-        else:
-            print('#########################################################' \
-                  '#########')
-            print('Wrong pusher argument there. The list of available '       \
-                  'pusher is:')
-            print('- all')
-            print('- boris')
-            print('- vay')
-            print('#########################################################' \
-                              '#########')
 
         # Deposition
-        if type_depos == 'all':
-            self.list_available_modules  += direct_modules  + esirkepov_modules
-            self.list_available_routines += direct_routines_scalar          \
-                                         + esirkepov_routines_scalar
-            if self.flag_optimization == 'on':
-                self.list_available_routines += direct_routines_vector      \
-                                             + esirkepov_routines_vector    \
-
-        elif type_depos == 'direct':
+        if self.include_depos_direct:
             self.list_available_modules  += direct_modules
             self.list_available_routines += direct_routines_scalar
             if self.flag_optimization == 'on':
                 self.list_available_routines += direct_routines_vector
 
-        elif type_depos == 'esirkepov':
+        if self.include_depos_esirkepov:
             self.list_available_modules  += esirkepov_modules
             self.list_available_routines += esirkepov_routines_scalar
             if self.flag_optimization == 'on':
                 self.list_available_routines += esirkepov_routines_vector
-
-        else:
-            print('#########################################################' \
-                  '#########')
-            print('Wrong particle deposition argument there. The list of '    \
-                  'available pusher is:')
-            print('- all')
-            print('- direct')
-            print('- esirkepov')
-            print('#########################################################' \
-                              '#########')
 
         #LIST ALL .F90 or .F files in current directory
         self.listfiles = self.create_listfiles('./src')
@@ -926,9 +1135,11 @@ class MiniAppParser( object ):
 
         # Remove unavailable routines
         self.availablelistfiles = self.create_listfiles('./PICSARlite/src')
+        #self.availablelistfiles = ['submain.F90']
 
         for file in self.availablelistfiles:
                 self.comment_unavailable_routine(file)
+                self.comment_unavailable_use(file)
 
         # Copy some extra needed folders
         print "Add extra files"
@@ -1192,7 +1403,7 @@ class MiniAppParser( object ):
         listlines_new = []
         compt = 0
         for i in range(0, Nlines):
-            # If no more wrong subroutines, finsh the file
+            # If no more wrong subroutines, finish the file
             if (compt == len(iend)-1) & (i >= iend[compt]):
                 listlines_new.append(listlines[i])
 
@@ -1202,6 +1413,12 @@ class MiniAppParser( object ):
                     listlines_new.append(listlines[i])
 
                 # It is a call block
+                elif self.flag_errchk == 'off':
+                    if compt == len(iend)-1:
+                        compt = 0
+                    else:
+                        compt += 1
+
                 else:
                     # Comment the lines
                     if iend[compt+1] == istart[compt+1]:
@@ -1218,7 +1435,7 @@ class MiniAppParser( object ):
               + formatting_line( nb_blanks[compt]+11, \
                     "'The routine %s', "%(list_routine_name[compt])) + '\n'\
               + formatting_line( nb_blanks[compt]+11, \
-                                "'cannot be used in this configuration.'",  \
+                                "' cannot be used in this configuration.'",  \
                                 add_ampersand=False)
 
                     listlines_new.append("\n" + error_message + "\n")
@@ -1310,7 +1527,7 @@ class MiniAppParser( object ):
         listlines_new = []
         compt = 0
         for i in range(0, Nlines):
-            # If no more wrong subroutines, finsh the file
+            # If no more wrong subroutines, finish the file
             if (compt == len(iend)-1) & (i >= iend[compt]):
                 listlines_new.append(listlines[i])
 
@@ -1320,11 +1537,18 @@ class MiniAppParser( object ):
                     listlines_new.append(listlines[i])
 
                 # It is a call block
+                elif self.flag_errchk == 'off':
+                    if compt == len(iend)-1:
+                        compt = 0
+                    else:
+                        compt += 1
+
                 else:
                     # Comment the lines
                     if iend[compt+1] == istart[compt+1]:
                         listlines_new.append('!'+listlines[i][1:])
                     else:
+                    # elif self.flag_errchk == 'on':
                         for iblock in range(iend[compt+1]-istart[compt+1]):
                             line = listlines[i+iblock][1:].split('\n')[0]
                             listlines_new.append('!'+line+'\n')
@@ -1336,7 +1560,7 @@ class MiniAppParser( object ):
               + formatting_line( nb_blanks[compt]+11, \
                     "'The routine %s', "%(list_routine_name[compt])) + '\n'\
               + formatting_line( nb_blanks[compt]+11, \
-                                "'cannot be used in this configuration.'",  \
+                                "' cannot be used in this configuration.'",  \
                                 add_ampersand=False)
 
                     listlines_new.append("\n" + error_message + "\n")
@@ -1349,6 +1573,120 @@ class MiniAppParser( object ):
 
         fnew.writelines(listlines_new)
         fnew.close()
+
+
+    def comment_unavailable_use(self, file):
+        """
+            When all the files are written, check inside the files if some
+            unavailable module are unvailable but used. It may introduce
+            a crash at compilation time.
+
+            To avoid it, this function removes the "USE" for these modules.
+        """
+
+        def formatting_line(nb_blanks, str, add_ampersand=True):
+            "Add the & symbol at the 87th place."
+            L = len(str)+nb_blanks
+            space = ' '
+            strnew = ''
+            # Add nb_blanks at the beginning
+            for n in range(nb_blanks):
+                strnew += space
+
+            strnew += str
+
+            for n in range(86-L):
+                strnew += space
+            if add_ampersand:
+                strnew += '&'
+            return strnew
+
+        # Find the unwanted call
+        f = open('./PICSARlite/src/%s'%file,"r")
+        listlines=f.readlines()
+        Nlines = len(listlines)
+        istart = [-1]
+        iend   = [-1]
+        list_module_name = []
+        nb_blanks = []
+
+        # Lower the case of the routines
+        lower_list_available_modules = []
+        for module in self.list_available_modules:
+            lower_list_available_modules.append(module.lower())
+
+        for i in range(0, Nlines):
+            curr_line=listlines[i].lower()
+            curr_word_list=curr_line.split(" ")
+            # We find a CALL
+            if (("use" in curr_word_list) & (curr_line.find("!")==-1 )):
+                # Get the name of the following routine
+                indexcall = curr_word_list.index("use")
+                module_name = curr_word_list[indexcall+1].split(' ')
+                module_name = module_name[0].split(',')
+                module_name = module_name[0].split('\n')[0]
+
+                # If the module is in the list, everything fine, if not the
+                # line should be commented.
+                if not module_name in lower_list_available_modules:
+                    list_module_name.append(module_name)
+                    istart.append(i)
+                    curr_line_old = curr_line
+
+                    # Store the number of blanks before the call
+                    nb_blanks.append(indexcall)
+
+                    while True:
+                        if (i>=Nlines):
+                            sys.exit("ERROR: missing end call block")
+                        if not "&" in curr_line_old:
+                            break
+                        else:
+                            curr_line_old = curr_line
+                            i += 1
+                            curr_line=listlines[i].lower()
+                    iend.append(i)
+
+        # Comment and stop the code
+        fnew = open('./PICSARlite/src/%s'%file,"w")
+        listlines_new = []
+        compt = 0
+        for i in range(0, Nlines):
+            # If no more wrong subroutines, finish the file
+            if (compt == len(iend)-1) & (i >= iend[compt]):
+                listlines_new.append(listlines[i])
+
+            elif i >= iend[compt]:
+                # It is regular lines
+                if i != istart[compt+1]:
+                    listlines_new.append(listlines[i])
+
+                # It is a call block
+                elif self.flag_errchk == 'off':
+                    if compt == len(iend)-1:
+                        compt = 0
+                    else:
+                        compt += 1
+
+                else:
+                    # elif self.flag_errchk == 'on':
+                    # Comment the lines
+                    if iend[compt+1] == istart[compt+1]:
+                        listlines_new.append('!'+listlines[i])
+
+                    else:
+                        for iblock in range(iend[compt+1]-istart[compt+1]):
+                            line = listlines[i+iblock].split('\n')[0]
+                            listlines_new.append('!'+line+'\n')
+
+                    if compt == len(iend)-1:
+                        compt = 0
+                    else:
+                        compt += 1
+
+        fnew.writelines(listlines_new)
+        fnew.close()
+
 
     def copy_extra_files(self):
         os.system('cp -r ./utils ./PICSARlite/utils')
@@ -1416,7 +1754,7 @@ class MiniAppParser( object ):
             listlines.append('  USE mem_status, ONLY : global_grid_mem, '     \
                             +'global_grid_tiles_mem, global_part_tiles_mem\n\n')
 
-        if (self.type_solver == 'all') | (self.type_solver == 'spectral'):
+        if self.include_solver_spectral:
             listlines.append('#if defined(FFTW)\n  USE mpi_fftw3 \n  '       \
              +'USE fourier \n  USE fastfft \n  USE fftw3_fortran \n'        \
              +'#endif\n\n')
@@ -1434,7 +1772,7 @@ class MiniAppParser( object ):
         listlines.append('  CALL read_from_cl\n\n')
         listlines.append('! --- mpi init communicator\n')
 
-        if (self.type_solver == 'all') | (self.type_solver == 'spectral'):
+        if self.include_solver_spectral:
             listlines.append('#if defined(FFTW)\n')
             listlines.append('  IF (fftw_with_mpi) THEN \n')
             listlines.append('    CALL mpi_minimal_init_fftw\n')
@@ -1463,7 +1801,8 @@ class MiniAppParser( object ):
                        + '(on each subdomain)\n')
         listlines.append('  CALL initall\n\n')
         listlines.append('! --- Diagnostics\n')
-        listlines.append('  CALL init_diags\n\n')
+        if self.flag_diags == 'on':
+            listlines.append('  CALL init_diags\n\n')
 
         listlines.append('  !----------------------------------------------\n')
         listlines.append('  ! THIS IS THE PIC ALGORITHM TIME LOOP\n')
@@ -1533,7 +1872,7 @@ class MiniAppParser( object ):
         listlines.append('  	CLOSE(12)\n')
         listlines.append('  ENDIF \n\n')
 
-        if (self.type_solver == 'all') | (self.type_solver == 'spectral'):
+        if self.include_solver_spectral:
             listlines.append('#if defined(FFTW)\n')
             listlines.append('  IF(l_spectral) THEN\n')
             listlines.append('    IF(fftw_with_mpi) THEN\n')
@@ -1547,15 +1886,13 @@ class MiniAppParser( object ):
             listlines.append('    ENDIF\n')
             listlines.append('  ENDIF\n')
             listlines.append('#endif\n')
-            listlines.append('  CALL mpi_close\n\n')
-            listlines.append('! Intel Design Forward project\n')
-            listlines.append('#if defined(DFP)\n')
-            listlines.append('   CALL DFP_FINAL_STOP\n')
-            listlines.append('#endif\n\n')
-            listlines.append('END PROGRAM main\n')
 
-        else:
-            listlines.append('END PROGRAM main\n')
+        listlines.append('  CALL mpi_close\n\n')
+        listlines.append('! Intel Design Forward project\n')
+        listlines.append('#if defined(DFP)\n')
+        listlines.append('   CALL DFP_FINAL_STOP\n')
+        listlines.append('#endif\n\n')
+        listlines.append('END PROGRAM main\n')
 
         fnew.writelines(listlines)
         fnew.close()
@@ -1691,7 +2028,7 @@ parser = argparse.ArgumentParser(description='Parse inputs to generate_miniapp.'
 parser.add_argument('--solver', dest='type_solver', default='all',
                     choices = ['all','fdtd','spectral'],
                     help = 'Maxwell solvers among: \n'\
-                    +'- fdtd:     3D-Finate Domain Time Domain Maxwell '\
+                    +'- fdtd:     3D-Finite Domain Time Domain Maxwell '\
                     + 'solver\n'\
                     + '- spectral: 3D-Pseudo-Spectral Analytical Time Domain' \
                     + ' Maxwell solver. \n'       \
@@ -1716,13 +2053,61 @@ parser.add_argument('--depos',  dest='type_depos',  default='all',
 parser.add_argument('--optimization',  dest='flag_optimization', default='on',
                     choices = ['on','off'],
                     help='flag optimization \n' \
-                    +'Default on.\n')
+                    +'Default on.\n\n')
+
+parser.add_argument('--charge',  dest='flag_charge', default='on',
+                    choices = ['on','off'],
+                    help='flag charge \n' \
+                    +'Default on.\n\n')
+
+parser.add_argument('--laser',  dest='flag_laser', default='on',
+                    choices = ['on','off'],
+                    help='flag include laser pusher\n' \
+                    +'Default on.\n\n')
+
+parser.add_argument('--geom',  dest='flag_geom', default='all',
+                    choices = ['2d','3d','all'],
+                    help='Geometry among: \n'\
+                    + '- 2d:    2-dimensional\n'\
+                    + '- 3d:    3-dimensional\n' \
+                    + '- all:   both 2-dimensional and 3-dimensional\n'   \
+                    + 'Default all.\n\n')
+
+parser.add_argument('--order',  dest='flag_order', default='all',
+                    choices = ['1','2','3','n','all'],
+                    help='Field gathering order among: \n'\
+                    + '- 1:    order 1 \n'\
+                    + '- 2:    order 2 \n'\
+                    + '- 3:    order 3 \n'\
+                    + '- n:    order n \n'\
+                    + '- all:  all orders 1, 2, 3, n\n'   \
+                    + 'Default all.\n\n')
+
+parser.add_argument('--diags',  dest='flag_diags', default='on',
+                    choices = ['on','off'],
+                    help='flag diagnostics \n' \
+                    +'Default on.\n\n')
+
+parser.add_argument('--errchk',  dest='flag_errchk', default='off',
+                    choices = ['on','off'],
+                    help='flag error, print warning messages at runtime when' \
+                    +'the code is trying to use unavailable routines. \n' \
+                    +'Note that this flag must be set to off when the flag' \
+                    +'--diags is off also. \n'
+                    +'Default off.\n')
 
 args=parser.parse_args()
 
 type_solver = args.type_solver
 type_pusher = args.type_pusher
 type_depos  = args.type_depos
+flag_charge = args.flag_charge
+flag_laser  = args.flag_laser
+flag_geom   = args.flag_geom
+flag_order  = args.flag_order
+flag_diags  = args.flag_diags
+flag_errchk = args.flag_errchk
 flag_optimization = args.flag_optimization
 
-miniapp = MiniAppParser(type_solver, type_pusher, type_depos, flag_optimization)
+miniapp = MiniAppParser(type_solver, type_pusher, type_depos, flag_optimization,
+       flag_charge, flag_laser, flag_geom, flag_order, flag_diags, flag_errchk)
