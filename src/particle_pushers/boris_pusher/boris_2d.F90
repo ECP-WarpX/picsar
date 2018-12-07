@@ -47,10 +47,14 @@ SUBROUTINE pxr_pushxz(np, xp, zp, uxp, uzp, gaminv, dt)
   REAL(num) :: dt
   INTEGER(idp)  :: ip
 
+  !$acc parallel deviceptr(xp, zp, uxp, uzp, gaminv)
+  !$acc loop gang vector 
   DO ip=1, np
     xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt
     zp(ip) = zp(ip) + uzp(ip)*gaminv(ip)*dt
   ENDDO
+  !$acc end loop
+  !$acc end parallel
 
   RETURN
 END SUBROUTINE pxr_pushxz
@@ -88,11 +92,14 @@ SUBROUTINE pxr_push2dxz(np, xp, zp, uxp, uyp, uzp, gaminv, dt)
 #elif defined __INTEL_COMPILER
   !$DIR SIMD
 #endif
+  !$acc parallel deviceptr(xp, zp, uxp, uzp, gaminv)
+  !$acc loop gang vector 
   DO ip=1, np
     xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt
     zp(ip) = zp(ip) + uzp(ip)*gaminv(ip)*dt
-
-  ENDDO
+ ENDDO
+ !$acc end loop
+ !$acc end parallel
 #if defined _OPENMP && _OPENMP>=201307
   !$OMP END SIMD
 #endif

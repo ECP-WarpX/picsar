@@ -263,16 +263,22 @@ SUBROUTINE pxrpush_em2d_evec( &
   !$OMP SHARED(ex, ey, ez, bx, by, bz, jx, jy, jz)
   !$OMP DO COLLAPSE(2)
 #endif
+!$acc parallel deviceptr(ex,By,jx)
+!$acc loop gang vector collapse(2)
   do k   = xlo(2), xhi(2)
     do j = xlo(1), xhi(1)
       ex(j,k) = ex(j,k) - dtsdz * (By(j,k) - By(j,k-1)) &
                         - mudt  * jx(j,k)
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP DO COLLAPSE(2)
 #endif
+!$acc parallel deviceptr(Ey,Bz,Bx,jy)
+!$acc loop gang vector collapse(2)
   do k   = ylo(2), yhi(2)
     do j = ylo(1), yhi(1)
       Ey(j,k) = Ey(j,k) - dtsdx * (Bz(j,k) - Bz(j-1,k)) &
@@ -280,16 +286,22 @@ SUBROUTINE pxrpush_em2d_evec( &
                         - mudt  * jy(j,k)
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP DO COLLAPSE(2)
 #endif
+!$acc parallel deviceptr(Ez,By,jz)
+!$acc loop gang vector collapse(2)
   do k   = zlo(2), zhi(2)
     do j = zlo(1), zhi(1)
       Ez(j,k) = Ez(j,k) + dtsdx * (By(j,k) - By(j-1,k  )) &
                         - mudt  * jz(j,k)
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP END PARALLEL
@@ -364,6 +376,8 @@ USE picsar_precision, ONLY: idp, num, isp
   !$OMP SHARED(ex, ey, ez, bx, by, bz, jx, jy, jz)
   !$OMP DO COLLAPSE(3)
 #endif
+!$acc parallel deviceptr(Ex,Bz,By,jx)
+!$acc loop gang vector collapse(3)
   do l     = xlo(3), xhi(3)
     do k   = xlo(2), xhi(2)
       do j = xlo(1), xhi(1)
@@ -373,10 +387,14 @@ USE picsar_precision, ONLY: idp, num, isp
       end do
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP DO COLLAPSE(3)
 #endif
+!$acc parallel deviceptr(Ey,Bz,Bx,jy)
+!$acc loop gang vector collapse(3)
   do l     = ylo(3), yhi(3)
     do k   = ylo(2), yhi(2)
       do j = ylo(1), yhi(1)
@@ -386,10 +404,14 @@ USE picsar_precision, ONLY: idp, num, isp
       end do
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP DO COLLAPSE(3)
 #endif
+!$acc parallel deviceptr(Ez,By,Bx,jz)
+!$acc loop gang vector collapse(3)
   do l     = zlo(3), zhi(3)
     do k   = zlo(2), zhi(2)
       do j = zlo(1), zhi(1)
@@ -399,6 +421,8 @@ USE picsar_precision, ONLY: idp, num, isp
       end do
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP END PARALLEL
@@ -618,30 +642,42 @@ USE picsar_precision, ONLY: idp, num, isp
   !$OMP SHARED(ex, ey, ez, bx, by, bz)
   !$OMP DO COLLAPSE(2)
 #endif
+!$acc parallel deviceptr(Bx,Ey)
+!$acc loop gang vector collapse(2)
   do k   = xlo(2), xhi(2)
     do j = xlo(1), xhi(1)
         Bx(j,k) = Bx(j,k) + dtsdz * (Ey(j  ,k+1) - Ey(j,k))
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP DO COLLAPSE(2)
 #endif
+!$acc parallel deviceptr(By,Ez,Ex)
+!$acc loop gang vector collapse(2)
   do k   = ylo(2), yhi(2)
     do j = ylo(1), yhi(1)
         By(j,k) = By(j,k) + dtsdx * (Ez(j+1,k  ) - Ez(j,k)) &
                           - dtsdz * (Ex(j  ,k+1) - Ex(j,k))
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP DO COLLAPSE(2)
 #endif
+!$acc parallel deviceptr(Bz,Ey)
+!$acc loop gang vector collapse(2)
   do k   = zlo(2), zhi(2)
     do j = zlo(1), zhi(1)
       Bz(j,k) = Bz(j,k) - dtsdx * (Ey(j+1,k  ) - Ey(j,k))
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP END PARALLEL
@@ -704,6 +740,8 @@ USE picsar_precision, ONLY: idp, num, isp
   !$OMP SHARED(ex, ey, ez, bx, by, bz)
   !$OMP DO COLLAPSE(3)
 #endif
+!$acc parallel deviceptr(Bx,Ez,Ey)
+!$acc loop gang vector collapse(3)
   do l     = xlo(3), xhi(3)
     do k   = xlo(2), xhi(2)
       do j = xlo(1), xhi(1)
@@ -712,10 +750,14 @@ USE picsar_precision, ONLY: idp, num, isp
        end do
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP DO COLLAPSE(3)
 #endif
+!$acc parallel deviceptr(By,Ez,Ex)
+!$acc loop gang vector collapse(3)
   do l     = ylo(3), yhi(3)
     do k   = ylo(2), yhi(2)
       do j = ylo(1), yhi(1)
@@ -724,10 +766,14 @@ USE picsar_precision, ONLY: idp, num, isp
       end do
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP DO COLLAPSE(3)
 #endif
+!$acc parallel deviceptr(Bz,Ey,Ex)
+!$acc loop gang vector collapse(3)
   do l     = zlo(3), zhi(3)
     do k   = zlo(2), zhi(2)
       do j = zlo(1), zhi(1)
@@ -736,6 +782,8 @@ USE picsar_precision, ONLY: idp, num, isp
       end do
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP END PARALLEL
@@ -800,20 +848,28 @@ USE picsar_precision, ONLY: idp, num, isp
   !$OMP SHARED(ex, ey, ez, f)
   !$OMP DO COLLAPSE(2)
 #endif
+!$acc parallel deviceptr(Ex,F)
+!$acc loop gang vector collapse(2)
   do k   = xlo(2), xhi(2)
     do j = xlo(1), xhi(1)
         Ex(j,k) = Ex(j,k) + dtsdx * (F(j+1,k) - F(j  ,k))
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP DO COLLAPSE(2)
 #endif
+!$acc parallel deviceptr(Ez,F)
+!$acc loop gang vector collapse(2)
   do k   = zlo(2), zhi(2)
     do j = zlo(1), zhi(1)
       Ez(j,k) = Ez(j,k) + dtsdz * (F(j,k+1) - F(j,k  ))
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP END PARALLEL
@@ -872,6 +928,8 @@ USE picsar_precision, ONLY: idp, num, isp
   !$OMP SHARED(ex, ey, ez, f)
   !$OMP DO COLLAPSE(3)
 #endif
+!$acc parallel deviceptr(Ex,F)
+!$acc loop gang vector collapse(3)
   do l     = xlo(3), xhi(3)
     do k   = xlo(2), xhi(2)
       do j = xlo(1), xhi(1)
@@ -879,10 +937,14 @@ USE picsar_precision, ONLY: idp, num, isp
        end do
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP DO COLLAPSE(3)
 #endif
+!$acc parallel deviceptr(Ey,F)
+!$acc loop gang vector collapse(3)
   do l     = ylo(3), yhi(3)
     do k   = ylo(2), yhi(2)
       do j = ylo(1), yhi(1)
@@ -890,10 +952,14 @@ USE picsar_precision, ONLY: idp, num, isp
       end do
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP DO COLLAPSE(3)
 #endif
+!$acc parallel deviceptr(Ez,F)
+!$acc loop gang vector collapse(3)
   do l     = zlo(3), zhi(3)
     do k   = zlo(2), zhi(2)
       do j = zlo(1), zhi(1)
@@ -901,6 +967,8 @@ USE picsar_precision, ONLY: idp, num, isp
       end do
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP END PARALLEL

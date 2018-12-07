@@ -48,9 +48,9 @@ FC=mpif90
 # C compiler
 CC=mpicc
 # Fortran compiler arguments
-FARGS= -g -fbounds-check -O3 -fopenmp -JModules 
+FARGS= -g -fbounds-check -O3 -fopenmp -JModules
 
-# External libs 
+# External libs
 FFTW3_LIB=/usr/lib/x86_64-linux-gnu
 FFTW3_INCLUDE=/usr/include
 VTUNEDIR=/opt/intel/vtune_amplifier_xe_2017.2.0.499904
@@ -331,7 +331,7 @@ FARGS+= $(LARCH)
 # ________________________________________________________
 
 ifeq ($(MODE),$(filter $(MODE),prod_spectral debug_spectral))
-	FARGS += -I$(FFTW3_INCLUDE) -D FFTW=1 
+	FARGS += -I$(FFTW3_INCLUDE) -D FFTW=1
 	LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_omp
 endif
 ifeq ($(IS_P3DFFT),true)
@@ -340,7 +340,7 @@ ifeq ($(IS_P3DFFT),true)
 endif
 
 ifeq ($(MODE),library)
-        FARGS += -fPIC -I$(FFTW3_INCLUDE) -D LIBRARY=1  -D  FFTW=1  
+        FARGS += -fPIC -I$(FFTW3_INCLUDE) -D LIBRARY=1  -D  FFTW=1
         LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_omp
 endif
 
@@ -366,7 +366,7 @@ build_lib:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fourier_psaotd.o \
 	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
-	$(SRCDIR)/init_external.o 
+	$(SRCDIR)/init_external.o
 	ar rcs libpxr.a $(SRCDIR)/*.o $(SRCDIR)/*/*.o  $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o
 	$(FC) $(FARGS) -shared -o libpxr.so $(SRCDIR)/*.o  $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o  $(SRCDIR)/*/*/*/*.o
 	mv libpxr.a $(LIBDIR)
@@ -390,6 +390,8 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
@@ -435,6 +437,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
@@ -480,6 +483,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
@@ -528,6 +532,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
@@ -729,6 +734,7 @@ build_current_deposition_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
@@ -738,6 +744,7 @@ build_current_deposition_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
@@ -885,6 +892,7 @@ build_tile_curr_depo_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
@@ -901,6 +909,7 @@ build_tile_curr_depo_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
@@ -917,6 +926,7 @@ build_esirkepov_3d_test:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
@@ -926,6 +936,7 @@ build_esirkepov_3d_test:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
@@ -935,6 +946,7 @@ build_esirkepov_2d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
@@ -944,6 +956,7 @@ build_esirkepov_2d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
@@ -966,6 +979,7 @@ build_maxwell_2d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
@@ -1012,6 +1026,7 @@ build_maxwell_2d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
@@ -1058,6 +1073,7 @@ build_maxwell_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
@@ -1104,6 +1120,7 @@ build_maxwell_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \

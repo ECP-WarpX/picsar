@@ -565,6 +565,9 @@ MODULE particle_speciesmodule!#do not parse
     !> Flag indicating if this particle species deposit current/charge on
     !> the grid (useful for test particles). Default is TRUE
     LOGICAL(lp)   :: ldodepos =.TRUE.
+    !> Flag indicating if current particle species is freezed (no push, no field gathering)
+    !> To completely stop particle routines set ldodepos to False and lfreeze to True  
+    LOGICAL(lp)   :: lfreeze  =.FALSE.
     ! For some stupid reason, cannot use ALLOCATABLE in derived types
     ! in Fortran 90 - Need to use POINTER instead
     !> List of tiles (of objects particle_tile) in the MPI domain for the

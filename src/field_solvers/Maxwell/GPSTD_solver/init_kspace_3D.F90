@@ -922,13 +922,15 @@ MODULE gpstd_solver
     DO i=1_idp, nbloc_ccmat
       DO j=1_idp, nbloc_ccmat
         lin_ind = (i-1)*nbloc_ccmat + (j-1) 
-        IF(is_usefull(incr) == lin_ind) THEN
+        IF (is_usefull(incr) == lin_ind) THEN
           ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(nfftxr, nffty,    &
           nfftz))
           cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = nfftxr
           cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = nffty
           cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = nfftz
-          incr = incr + 1
+          IF (incr<SIZE(is_usefull)) THEN
+             incr = incr + 1
+          ENDIF
         ELSE  
           ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(1,1,1))
           cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = 1_idp
