@@ -497,6 +497,12 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1( jx, jx_nguard, jx_nvalid, jy,     
   sx0=0.0_num;sz0=0.0_num
   sdx=0.0_num;sdz=0.0_num
 
+!$acc parallel deviceptr(jx, jy, jz, xp, zp, uxp, uyp, uzp, w, gaminv)
+!$acc loop gang vector private(sx(-1:2), sz(-1:2), &
+!$acc&                         sx0(-1:2), sz0(-1:2), &
+!$acc&                         dsx(-1:2), dsz(-1:2), &
+!$acc&                         sdx(-1:2,-1:2), sdz(-1:2,-1:2) )
+
   DO ip=1, np
 
     ! --- computes current position in grid units
@@ -582,10 +588,12 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1( jx, jx_nguard, jx_nvalid, jy,     
         IF(i<ixmax) THEN
           sdx(i, k)  = wqx*dsx(i)*( sz0(k) + 0.5*dsz(k) )! Wx coefficient from esirkepov
           if (i>ixmin) sdx(i, k)=sdx(i, k)+sdx(i-1, k)! Integration of Wx along x
-          jx(ic, kc) = jx(ic, kc) + sdx(i, k)! Deposition on the current
+           !$acc atomic update
+           jx(ic, kc) = jx(ic, kc) + sdx(i, k)! Deposition on the current
         END IF
 
         ! -- Jy (2D Esirkepov scheme)
+        !$acc atomic update
         jy(ic, kc) = jy(ic, kc) + wq*vy*invvol* ( (sz0(k)+0.5*dsz(k))*sx0(i) +        &
         (0.5*sz0(k)+onethird*dsz(k))*dsx(i) )
 
@@ -593,12 +601,15 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1( jx, jx_nguard, jx_nvalid, jy,     
         IF(k<izmax) THEN
           sdz(i, k)  = wqz*dsz(k)*(sx0(i)+0.5*dsx(i))! Wz coefficient from esirkepov&
           if (k>izmin) sdz(i, k)=sdz(i, k)+sdz(i, k-1)! Integration of Wz along z
+            !$acc atomic update
           jz(ic, kc) = jz(ic, kc) + sdz(i, k)! Deposition on the current
         END IF
       END DO
     END DO
 
   END DO
+!$acc end loop
+!$acc end parallel
   DEALLOCATE(sdx, sdz, sx, sx0, dsx, sz, sz0, dsz)
   RETURN
 
