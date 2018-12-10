@@ -470,17 +470,20 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1( jx, jx_nguard, jx_nvalid, jy,     
   real(num)                             :: q, dt, dx, dz, xmin, zmin
   LOGICAL(lp)                           :: l_particles_weight, l4symtry, l_2drz
   real(num)                             :: dxi, dzi, xint, zint
-  real(num), dimension(:, :), allocatable :: sdx, sdz
   real(num)                             :: xold, zold, x, z, wq, wqx, wqz
   real(num)                             :: vx, vy, vz
   real(num)                             :: invvol, invdtdx, invdtdz
   real(num)                             :: dtsdx0, dtsdz0
   real(num), parameter                  :: onesixth=1./6., twothird=2./3.
   real(num), parameter                  :: onethird=1./3.
-  real(num), dimension(:), allocatable  :: sx, sx0, dsx, sz, sz0, dsz
   integer(idp)                          :: iixp0, ikxp0, iixp, ikxp, ip, i, k, ic, kc
   integer(isp)                          :: dix, diz
   integer(isp)                          :: ixmin, ixmax, izmin, izmax
+
+  real(num), dimension(4) :: sx(-1:2), sx0(-1:2), dsx(-1:2)
+  real(num), dimension(4) :: sz(-1:2), sz0(-1:2), dsz(-1:2)
+  real(num)               :: sdxi, sdxim1
+  real(num), dimension(4) :: sdzk(-1:2), sdzkm1(-1:2)
 
   ! __ Parameter initialization ______________________________
   dxi = 1.0_num/dx
@@ -491,13 +494,22 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1( jx, jx_nguard, jx_nvalid, jy,     
   invdtdx = 1.0_num/(dt*dz)
   invdtdz = 1.0_num/(dt*dx)
   dtsdz0 = dt*dzi
-  allocate(sdx(-1:2, -1:2), sdz(-1:2, -1:2))
-  ALLOCATE(sx(-1:2), sx0(-1:2), dsx(-1:2))
-  ALLOCATE(sz(-1:2), sz0(-1:2), dsz(-1:2))
-  sx0=0.0_num;sz0=0.0_num
-  sdx=0.0_num;sdz=0.0_num
+  sdxi   = 0.0_num
+  sdxim1 = 0.0_num
+  sdzk   = 0.0_num
+  sdzkm1 = 0.0_num
 
+!$acc parallel deviceptr(jx, jy, jz, xp, zp, uxp, uyp, uzp, w, gaminv)
+!$acc loop gang vector private(sx(-1:2), sz(-1:2), &
+!$acc&                         sx0(-1:2), sz0(-1:2), &
+!$acc&                         dsx(-1:2), dsz(-1:2), &
+!$acc&                         sdxi, sdxim1, &
+!$acc&                         sdzk(-1:2), sdzkm1(-1:2) )
   DO ip=1, np
+     sx  = 0.0_num
+     sz  = 0.0_num
+     sx0 = 0.0_num
+     sz0 = 0.0_num
 
     ! --- computes current position in grid units
     x = (xp(ip)-xmin)*dxi
@@ -580,26 +592,30 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1( jx, jx_nguard, jx_nvalid, jy,     
 
         ! --- Jx
         IF(i<ixmax) THEN
-          sdx(i, k)  = wqx*dsx(i)*( sz0(k) + 0.5*dsz(k) )! Wx coefficient from esirkepov
-          if (i>ixmin) sdx(i, k)=sdx(i, k)+sdx(i-1, k)! Integration of Wx along x
-          jx(ic, kc) = jx(ic, kc) + sdx(i, k)! Deposition on the current
+          sdxi = wqx*dsx(i)*( sz0(k) + 0.5*dsz(k) ) ! Wx coefficient from esirkepov
+          if (i>ixmin) sdxi = sdxi + sdxim1 ! Integration of Wx along x
+           !$acc atomic update
+           jx(ic, kc) = jx(ic, kc) + sdxi ! Deposition on the current
         END IF
 
         ! -- Jy (2D Esirkepov scheme)
+        !$acc atomic update
         jy(ic, kc) = jy(ic, kc) + wq*vy*invvol* ( (sz0(k)+0.5*dsz(k))*sx0(i) +        &
         (0.5*sz0(k)+onethird*dsz(k))*dsx(i) )
 
         ! --- Jz
         IF(k<izmax) THEN
-          sdz(i, k)  = wqz*dsz(k)*(sx0(i)+0.5*dsx(i))! Wz coefficient from esirkepov&
-          if (k>izmin) sdz(i, k)=sdz(i, k)+sdz(i, k-1)! Integration of Wz along z
-          jz(ic, kc) = jz(ic, kc) + sdz(i, k)! Deposition on the current
+          sdzk(i) = wqz*dsz(k)*(sx0(i)+0.5*dsx(i)) ! Wz coefficient from esirkepov&
+          if (k>izmin) sdzk(i) = sdzk(i) + sdzkm1(i) ! Integration of Wz along z
+            !$acc atomic update
+          jz(ic, kc) = jz(ic, kc) + sdzk(i) ! Deposition on the current
         END IF
       END DO
     END DO
 
   END DO
-  DEALLOCATE(sdx, sdz, sx, sx0, dsx, sz, sz0, dsz)
+!$acc end loop
+!$acc end parallel
   RETURN
 
 END SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1
@@ -666,7 +682,6 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_2_2( jx, jx_nguard, jx_nvalid, jy,     
   real(num)                             :: q, dt, dx, dz, xmin, zmin
   LOGICAL(lp)                           :: l_particles_weight, l4symtry, l_2drz
   real(num)                             :: dxi, dzi, xint, zint
-  real(num), dimension(:, :), allocatable :: sdx, sdz
   real(num)                             :: xold, zold, x, z, wq, wqx, wqz
   real(num)                             :: vx, vy, vz
   real(num)                             :: invvol, invdtdx, invdtdz
@@ -674,10 +689,14 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_2_2( jx, jx_nguard, jx_nvalid, jy,     
   real(num)                             :: dtsdx0, dtsdz0
   real(num), parameter                  :: onesixth=1./6., twothird=2./3.
   real(num), parameter                  :: onethird=1./3.
-  real(num), dimension(:), allocatable  :: sx, sx0, dsx, sz, sz0, dsz
   integer(idp)                          :: iixp0, ikxp0, iixp, ikxp, ip, i, k, ic, kc
   integer(isp)                          :: dix, diz
   integer(isp)                          :: ixmin, ixmax, izmin, izmax
+
+  real(num), dimension(5) :: sx(-2:2), sx0(-2:2), dsx(-2:2)
+  real(num), dimension(5) :: sz(-2:2), sz0(-2:2), dsz(-2:2)
+  real(num)               :: sdxi, sdxim1
+  real(num), dimension(5) :: sdzk(-2:2), sdzkm1(-2:2)
 
   ! Parameter initialization
   dxi = 1.0_num/dx
@@ -688,12 +707,16 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_2_2( jx, jx_nguard, jx_nvalid, jy,     
   invdtdx = 1.0_num/(dt*dz)
   invdtdz = 1.0_num/(dt*dx)
   dtsdz0 = dt*dzi
-  allocate(sdx(-2:2, -2:2), sdz(-2:2, -2:2))
-  ALLOCATE(sx(-2:2), sx0(-2:2), dsx(-2:2))
-  ALLOCATE(sz(-2:2), sz0(-2:2), dsz(-2:2))
-  sx0=0.0_num;sz0=0.0_num
-  sdx=0.0_num;sdz=0.0_num
-
+  sdxi   = 0.0_num
+  sdxim1 = 0.0_num
+  sdzk   = 0.0_num
+  sdzkm1 = 0.0_num
+!$acc parallel deviceptr(jx, jy, jz, xp, zp, uxp, uyp, uzp, w, gaminv)
+!$acc loop gang vector private(sx(-2:2), sz(-2:2), &
+!$acc&                         sx0(-2:2), sz0(-2:2), &
+!$acc&                         dsx(-2:2), dsz(-2:2), &
+!$acc&                         sdxi, sdxim1, &
+!$acc&                         sdzk(-2:2), sdzkm1(-2:2) )
   DO ip=1, np
 
     ! --- computes current position in grid units
@@ -787,26 +810,31 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_2_2( jx, jx_nguard, jx_nvalid, jy,     
 
         ! --- Jx
         IF(i<ixmax) THEN
-          sdx(i, k)  = wqx*dsx(i)*( sz0(k) + 0.5*dsz(k) )! Wx coefficient from esirkepov
-          if (i>ixmin) sdx(i, k)=sdx(i, k)+sdx(i-1, k)! Integration of Wx along x
-          jx(ic, kc) = jx(ic, kc) + sdx(i, k)! Deposition on the current
+          sdxi = wqx*dsx(i)*( sz0(k) + 0.5*dsz(k) ) ! Wx coefficient from esirkepov
+          if (i>ixmin) sdxi = sdxi + sdxim1 ! Integration of Wx along x
+          !$acc atomic update
+          jx(ic, kc) = jx(ic, kc) + sdxi ! Deposition on the current
         END IF
 
         ! -- Jy (2D Esirkepov scheme)
+        !$acc atomic update
         jy(ic, kc) = jy(ic, kc) + wq*vy*invvol* ( (sz0(k)+0.5*dsz(k))*sx0(i) +        &
         (0.5*sz0(k)+onethird*dsz(k))*dsx(i) )
 
         ! --- Jz
         IF(k<izmax) THEN
-          sdz(i, k)  = wqz*dsz(k)*(sx0(i)+0.5*dsx(i))! Wz coefficient from esirkepov&
-          if (k>izmin) sdz(i, k)=sdz(i, k)+sdz(i, k-1)! Integration of Wz along z
-          jz(ic, kc) = jz(ic, kc) + sdz(i, k)! Deposition on the current
+          sdzk(i) = wqz*dsz(k)*(sx0(i)+0.5*dsx(i)) ! Wz coefficient from esirkepov&
+          if (k>izmin) sdzk(i) = sdzk(i) + sdzkm1(i) ! Integration of Wz along z
+          !$acc atomic update
+          jz(ic, kc) = jz(ic, kc) + sdzk(i) ! Deposition on the current
         END IF
+        sdxim1 = sdxi
       END DO
+      sdzkm1 = sdzk
     END DO
-
   END DO
-  DEALLOCATE(sdx, sdz, sx, sx0, dsx, sz, sz0, dsz)
+!$acc end loop
+!$acc end parallel
   RETURN
 
 End subroutine pxr_depose_jxjyjz_esirkepov2d_2_2
@@ -874,7 +902,6 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_3_3( jx, jx_nguard, jx_nvalid, jy,     
   real(num)                             :: q, dt, dx, dz, xmin, zmin
   LOGICAL(lp)                           :: l_particles_weight, l4symtry, l_2drz
   real(num)                             :: dxi, dzi, xint, zint
-  real(num), dimension(:, :), allocatable :: sdx, sdz
   real(num)                             :: xold, zold, x, z, wq, wqx, wqz
   real(num)                             :: vx, vy, vz
   real(num)                             :: invvol, invdtdx, invdtdz
@@ -882,10 +909,14 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_3_3( jx, jx_nguard, jx_nvalid, jy,     
   ozintsq
   real(num)                             :: dtsdx0, dtsdz0
   real(num), parameter                  :: onesixth=1./6., twothird=2./3.
-  real(num), dimension(:), allocatable  :: sx, sx0, dsx, sz, sz0, dsz
   integer(idp)                          :: iixp0, ikxp0, iixp, ikxp, ip, i, k, ic, kc
   integer(isp)                          :: dix, diz
   integer(isp)                          :: ixmin, ixmax, izmin, izmax
+
+  real(num), dimension(6) :: sx(-2:3), sx0(-2:3), dsx(-2:3)
+  real(num), dimension(6) :: sz(-2:3), sz0(-2:3), dsz(-2:3)
+  real(num)               :: sdxi, sdxim1
+  real(num), dimension(6) :: sdzk(-2:3), sdzkm1(-2:3)
 
   ! Parameter initialization
   dxi = 1.0_num/dx
@@ -896,13 +927,22 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_3_3( jx, jx_nguard, jx_nvalid, jy,     
   invdtdx = 1.0_num/(dt*dz)
   invdtdz = 1.0_num/(dt*dx)
   dtsdz0 = dt*dzi
-  allocate(sdx(-2:3, -2:3), sdz(-2:3, -2:3))
-  ALLOCATE(sx(-2:3), sx0(-2:3), dsx(-2:3))
-  ALLOCATE(sz(-2:3), sz0(-2:3), dsz(-2:3))
-  sx0=0.0_num;sz0=0.0_num
-  sdx=0.0_num;sdz=0.0_num
 
+  sdxi   = 0.0_num
+  sdxim1 = 0.0_num
+  sdzk   = 0.0_num
+  sdzkm1 = 0.0_num
+!$acc parallel deviceptr(jx, jy, jz, xp, zp, uxp, uyp, uzp, w, gaminv)
+!$acc loop gang vector private(sx(-2:3), sz(-2:3), &
+!$acc&                         sx0(-2:3), sz0(-2:3), &
+!$acc&                         dsx(-2:3), dsz(-2:3), &
+!$acc&                         sdxi, sdxim1, &
+!$acc&                         sdzk(-2:3), sdzkm1(-2:3) )
   DO ip=1, np
+     sx  = 0.0_num
+     sz  = 0.0_num
+     sx0 = 0.0_num
+     sz0 = 0.0_num
 
     ! --- computes current position in grid units
     x = (xp(ip)-xmin)*dxi
@@ -1009,29 +1049,33 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_3_3( jx, jx_nguard, jx_nvalid, jy,     
 
         ! --- Jx
         IF(i<ixmax) THEN
-          sdx(i, k)  = wqx*dsx(i)*( sz0(k) + 0.5*dsz(k) )! Wx coefficient from esirkepov
-          if (i>ixmin) sdx(i, k)=sdx(i, k)+sdx(i-1, k)! Integration of Wx along x
-          jx(ic, kc) = jx(ic, kc) + sdx(i, k)! Deposition on the current
+          sdxi = wqx*dsx(i)*( sz0(k) + 0.5*dsz(k) ) ! Wx coefficient from esirkepov
+          if (i>ixmin) sdxi = sdxi + sdxim1 ! Integration of Wx along x
+          !$acc atomic update
+          jx(ic, kc) = jx(ic, kc) + sdxi ! Deposition on the current
         END IF
 
         ! -- Jy (2D Esirkepov scheme)
+        !$acc atomic update
         jy(ic, kc) = jy(ic, kc) + wq*vy*invvol* ( (sz0(k)+0.5*dsz(k))*sx0(i) +        &
         (0.5*sz0(k)+1./3.*dsz(k))*dsx(i) )
 
         ! --- Jz
         IF(k<izmax) THEN
-          sdz(i, k)  = wqz*dsz(k)*(sx0(i)+0.5*dsx(i))! Wz coefficient from esirkepov
-          if (k>izmin) sdz(i, k)=sdz(i, k)+sdz(i, k-1)! Integration of Wz along z
-          jz(ic, kc) = jz(ic, kc) + sdz(i, k)! Deposition on the current
+          sdzk(i) = wqz*dsz(k)*(sx0(i)+0.5*dsx(i)) ! Wz coefficient from esirkepov
+          if (k>izmin) sdzk(i) = sdzk(i) + sdzkm1(i) ! Integration of Wz along z
+          !$acc atomic update
+          jz(ic, kc) = jz(ic, kc) + sdzk(i) ! Deposition on the current
         END IF
-
+        sdxim1 = sdxi
       END DO
+      sdzkm1 = sdzk
     END DO
 
   END DO
-
-
-  DEALLOCATE(sdx, sdz, sx, sx0, dsx, sz, sz0, dsz)
+!$acc end loop
+!$acc end parallel
+  RETURN
 
 End subroutine pxr_depose_jxjyjz_esirkepov2d_3_3
 
