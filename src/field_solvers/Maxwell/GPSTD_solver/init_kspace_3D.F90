@@ -1055,7 +1055,7 @@ MODULE gpstd_solver
        ELSE
          kvec(1,k)=0._num 
          DO i=2_idp,nfft
-           kvec(i,k)=nu(i)/(ny*d)
+           kvec(i,k)=nu(i-1)/(ny*d)
          END DO
        END IF
      END DO
