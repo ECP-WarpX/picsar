@@ -160,10 +160,6 @@ MODULE fields
   INTEGER(idp):: nyguards
   !> Number of guard cells in z
   INTEGER(idp):: nzguards
-  !> Number of guard cells in r
-  INTEGER(idp):: nrguards
-  !> Number of guard cells in l
-  INTEGER(idp):: nlguards
   !> interpolation order in x for the field gathering
   INTEGER(idp):: nox
   !> interpolation order in y for the field gathering
@@ -1479,10 +1475,6 @@ MODULE shared_data
   INTEGER(idp)                        :: ny
   !> local number of cells in z
   INTEGER(idp)                        :: nz
-  !> local number of cells in r
-  INTEGER(idp)                        :: nr
-  !> local number of cells in l
-  INTEGER(idp)                        :: nl
   !> local number of cells in z for  mpi groups load balancing 
   INTEGER(idp)                        :: nz_lb
   !> local number of grid points in z for  mpi groups load balancing 
@@ -1511,10 +1503,6 @@ MODULE shared_data
   INTEGER(idp)                        :: ny_global
   !> global number of cells in z
   INTEGER(idp)                        :: nz_global
-  !> global number of cells in r
-  INTEGER(idp)                        :: nr_global
-  !> global number of cells in l
-  INTEGER(idp)                        :: nl_global
   !> global number of grid points in x
   INTEGER(idp)                        :: nx_global_grid
   !> global number of grid points in y
@@ -1545,30 +1533,6 @@ MODULE shared_data
   REAL(num)                           :: y_min_local
   !> Local maximal grid limit in y
   REAL(num)                           :: y_max_local
-  !> Space step in r
-  REAL(num)                           :: dr
-  !> Global grid minimal limit in r
-  REAL(num)                           :: rmin
-  !> Global grid maximal limit in r
-  REAL(num)                           :: rmax
-  !> global length in r: rmax - rmin
-  REAL(num)                           :: length_r
-  !> Local minimal grid limit in r
-  REAL(num)                           :: r_min_local
-  !> Local maximal grid limit in r
-  REAL(num)                           :: r_max_local
-  !> Space step in l
-  REAL(num)                           :: dl
-  !> Global grid minimal limit in l
-  REAL(num)                           :: lmin
-  !> Global grid maximal limit in l
-  REAL(num)                           :: lmax
-  !> global length in l: lmax - lmin
-  REAL(num)                           :: length_l
-  !> Local minimal grid limit in l
-  REAL(num)                           :: l_min_local
-  !> Local maximal grid limit in l
-  REAL(num)                           :: l_max_local
   !> Space step in z
   REAL(num)                           :: dz
   !> Global grid minimal limit in z
@@ -1656,10 +1620,6 @@ MODULE shared_data
   REAL(num), POINTER, DIMENSION(:) :: y
   !> Local z axis cell array with guard cells (-nzguards:nz+nzguards)
   REAL(num), POINTER, DIMENSION(:) :: z
-  !> Local r axis cell array with guard cells (-nrguards:nr+nrguards)
-  REAL(num), POINTER, DIMENSION(:) :: r
-  !> Local l axis cell array with guard cells (-nlguards:nl+nlguards)
-  REAL(num), POINTER, DIMENSION(:) :: l
   !> Local grid minimum in x for each processor (1:nprocx)
   REAL(num), DIMENSION(:), POINTER :: x_grid_mins
   !> Local grid maximum in x for each processor (1:nprocx)
