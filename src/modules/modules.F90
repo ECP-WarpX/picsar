@@ -119,7 +119,12 @@ MODULE precomputed
   REAL(num) :: dxs2, dys2, dzs2
   REAL(num) :: clightsq
 END MODULE precomputed
-
+!   /\
+!  /  \  CAREFUL IN THIS MODULE THE ARE FIELDS FOR BOTH AZIMUTHAL CYLINDRICAL
+! / !  \  SPECTRAL AND CARTESIAN SPECTRAL, all variables has been renamed except
+!/______\  the use of nfft_ , for cylindrical nfftx==nfftr, nffty=nfftl,
+!   |      nfftz=nmodes
+! __|__
 ! ________________________________________________________________________________________
 !> @brief
 !> Module containing parameters and data structures for the fields
@@ -194,6 +199,12 @@ MODULE fields
   REAL(num), POINTER, DIMENSION(:, :, :) :: jy
   !> MPI-domain current grid in z
   REAL(num), POINTER, DIMENSION(:, :, :) :: jz
+  !> fields used in the RZ AZIMUTHAL nomenclature
+  !> l for longitudinal, r for radial, t for theta
+  !> the fields are 3D like following: 
+  !> 1) the fast component in fortran is r
+  !> 2) second fast component is l
+  !> 3) slowest component is the mode in theta 
   !> MPI-domain current grid in l
   REAL(num), POINTER, DIMENSION(:, :, :) :: el
   !> MPI-domain electric field grid in r
@@ -257,6 +268,9 @@ MODULE fields
   REAL(num), POINTER, DIMENSION(:, :, :) :: jz_r
   !> FOR AZIMUTHAL FIELDS IN RZ WE USE COMPLEX FOR FIELDS WHERE FOURIER IS
   !> APPLIED
+  !> field_c is the field after fourier in theta because output is complex
+  !> field_f is the field after fourier transfor in the longitudinal direction
+  !> field_h is the field after hankel transfor in the radial direction
   !> MPI-domain electric field grid in l 
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: el_c
   !> MPI-domain electric field grid in r
@@ -309,6 +323,9 @@ MODULE fields
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jyf
   !> MPI-domain current grid in z - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jzf
+  !> In SPECTRAL AZIMUTHAL RZ we have two transforms in the spectral space
+  !> FOURIER is performed along l direction
+  !> Hankel is performed along r  direction 
   !> MPI-domain electric field grid in l - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: el_f
   !> MPI-domain electric field grid in r - Fourier space

@@ -342,6 +342,12 @@ MODULE gpstd_solver
   !> It includes 2D and 3D dimensions.
   !> N.B: this routine is deprecated and will be removed in upcoming versions.
   !
+  !> IMPORTANT : this routine has been adjusted to the spectral azimuthal RZ
+  !> without major changes to avoid complexity and duplication of routines
+  !> Here: nx, nxguards are respectively nr and nrguards 
+  !>       ny, nyguards are respectively nl and nlguards
+  !>       nfftz is nmodes as actually fields are 2D but we chose a 3D structure
+  !>       for better performance  
   !> @author
   !> Haithem Kallala
   !
@@ -425,6 +431,13 @@ MODULE gpstd_solver
   !> the type of FFT performed (local FFT, distributed FFT with and without MPI groups).
   !> N.B: this subroutine will fully replace deprecated select_case_dims_local subroutine
   !> in future release of PICSAR.
+  !
+  !> IMPORTANT : this routine has been adjusted to the spectral azimuthal RZ
+  !> without major changes to avoid complexity and duplication of routines
+  !> Here: nx, nxguards are respectively nr and nrguards 
+  !>       ny, nyguards are respectively nl and nlguards
+  !>       nfftz is nmodes as actually fields are 2D but we chose a 3D structure
+  !>       for better performance  
   !
   !> @author
   !> Haithem Kallala
@@ -585,6 +598,8 @@ MODULE gpstd_solver
 
     CALL select_case_dims_local(nfftx, nffty, nfftz)
     nfftxr = nfftx/2+1
+    !> if l_AM_rz is true then nfftxr=nfftx because it's complex to complex
+    !> transform in this case 
     IF (l_AM_rz) THEN 
       nfftxr = nfftx
     ENDIF 
@@ -601,6 +616,11 @@ MODULE gpstd_solver
     !> takes into account norderx, nordery, norderz
     !> if norder == 0 then compute wave vector for an infinite order stencil
     CALL compute_k_vec(l_staggered)
+    !> the loop for spectral RZ is interpreted as follows:
+    !> nfftz is the number of azimuthal modes in theta == nmodes
+    !> nffty is the number of point in the spectral grid along l direction
+    !> nfftxr is the number of points in the spectral grid along r direction
+    !!!!!!! Those values are computed in the select_case_dims_local routine
     DO k = 1, nfftz
       DO j = 1, nffty
         DO i = 1, nfftxr
@@ -847,15 +867,21 @@ MODULE gpstd_solver
     CALL select_case_dims_global(nfftx, nffty, nfftz)
 
     !> computes wave vector components in each direction
-    CALL compute_k_1d( nfftx,kxc,kxf,kxb,norderx,dx,l_stg)
-    IF (l_AM_rz) THEN
-      CALL  compute_kr_1d(nffty,krc,dy,nmodes) 
-    ELSE 
+    !> for the case of spectral AM RZ kr is always centered 
+    !> nfftx == nfftr and dx= =dr , kr depend on the mode 
+    !> nffty == nfftl this one can be staggered ky == kl and dy==dl
+    IF (.NOT. l_AM_rz) THEN
+      CALL compute_k_1d( nfftx,kxc,kxf,kxb,norderx,dx,l_stg)
       CALL compute_k_1d( nffty,kyc,kyf,kyb,nordery,dy,l_stg)
       CALL compute_k_1d( nfftz,kzc,kzf,kzb,norderz,dz,l_stg)
+    ELSE IF (l_AM_rz) THEN
+      CALL  compute_kr_1d(nfftx,krc,dx,nmodes) 
+      CALL  compute_k_1d( nffty,kyc,kyf,kyb,nordery,dy,l_stg)
     END IF
-
+     
     ! Selects only haf of  kx because r2c and c2r ffts
+    ! the case not l_AM_rz is added to this one because we perform a complex to
+    ! complex transform 
     IF((.NOT. p3dfft_flag) .AND. (.NOT. l_AM_rz) ) THEN
       ALLOCATE(k_temp(nfftx));
       k_temp = kxc;
