@@ -1325,7 +1325,7 @@ MODULE gpstd_solver
     coeff_norm = 1.0_num/(nfftx*nffty*nfftz)
     !> Here i'm not sure if it shoud be divided by nfftx* nffty or just nffty ....
     IF (l_AM_rz) THEN
-      coeff_norm = 1.0_num/(nfftx*nffty)
+      coeff_norm = 1.0_num/nffty
     ENDIF
     DO i=1,nbloc_ccmat
       DO j=1,nbloc_ccmat
