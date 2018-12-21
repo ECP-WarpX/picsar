@@ -1468,15 +1468,19 @@ MODULE gpstd_solver
      INTEGER(idp) , INTENT(IN) :: nfft,nmodes
      COMPLEX(cpx) , DIMENSION(:,:) , ALLOCATABLE , INTENT(INOUT) :: kvec
      COMPLEX(cpx), ALLOCATABLE, DIMENSION(:)     ::  ones
-     REAL ( KIND = 8 ), ALLOCATABLE, DIMENSION(:) :: nu 
+     REAL ( idp ), ALLOCATABLE, DIMENSION(:) :: nu, RJ1,RY0,RY1 
      INTEGER(idp) ::  i,k
      ALLOCATE (nu(nfft))
+     ALLOCATE (RJ1(nfft))
+     ALLOCATE (RY0(nfft))
+     ALLOCATE (RY1(nfft))
      ALLOCATE(ones(nfft))
      ALLOCATE(kvec(nfft,nmodes))
      kvec=(0._num, 0._num)
      !kr = 2*np.pi * self.trans[m].dht0.get_nu()
      DO k=1,nmodes
-       CALL  jyzo  (k,nfft,nu)
+       CALL JYZO(k,nfft,nu,RJ1,RY0,RY1)
+       !CALL  jyzo  (k,nfft,nu)
        IF (k == 1) THEN
          kvec(:,k) = nu/(nx*d) 
        ELSE
