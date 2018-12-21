@@ -109,219 +109,596 @@ MODULE math_tools !#do not parse
   END FUNCTION sinc
 
 
-  SUBROUTINE jyndd ( n, x, bjn, djn, fjn, byn, dyn, fyn )
-  USE picsar_precision
-  !*****************************************************************************80
-  !
-  !! JYNDD: Bessel functions Jn(x) and Yn(x), first and second
-  !derivatives.
-  !
-  !  Licensing:
-  !
-  !    This routine is copyrighted by Shanjie Zhang and Jianming Jin.
-  !    However, 
-  !    they give permission to incorporate this routine into a user
-  !    program 
-  !    provided that the copyright is acknowledged.
-  !
-  !  Modified:
-  !
-  !    02 August 2012
-  !
-  !  Author:
-  !
-  !    Shanjie Zhang, Jianming Jin
-  !
-  !  Reference:
-  !
-  !    Shanjie Zhang, Jianming Jin,
-  !    Computation of Special Functions,
-  !    Wiley, 1996,
-  !    ISBN: 0-471-11963-6,
-  !    LC: QA351.C45.
-  !
-  !  Parameters:
-  !
-  !    Input, integer ( kind = 4 ) N, the order.
-  !
-  !    Input, real ( kind = 8 ) X, the argument.
-  !
-  !    Output, real ( kind = 8 ) BJN, DJN, FJN, BYN, DYN, FYN, the values
-  !    of
-  !    Jn(x), Jn'(x), Jn"(x), Yn(x), Yn'(x), Yn"(x).
-  !
-    IMPLICIT NONE
-  
-    REAL ( num ) bj(102)
-    REAL ( num ) bjn
-    REAL ( num ) byn
-    REAL ( num ) bs
-    REAL ( num ) by(102)
-    REAL ( num ) djn
-    REAL ( num ) dyn
-    REAL ( num ) e0
-    REAL ( num ) ec
-    REAL ( num ) f
-    REAL ( num ) f0
-    REAL ( num ) f1
-    REAL ( num ) fjn
-    REAL ( num ) fyn
-    INTEGER ( idp ) k
-    INTEGER ( idp ) m
-    INTEGER ( idp ) mt
-    INTEGER ( idp ) n
-    INTEGER ( idp ) nt
-    REAL ( idp ) s1
-    REAL ( idp ) su
-    REAL ( idp ) x
-  
-    DO nt = 1, 900
-      mt = int ( 0.5D+00 * log10 ( 6.28D+00 * nt ) &
-        - nt * log10 ( 1.36D+00 * abs ( x ) / nt ) )
-      IF ( 20 < mt ) THEN
-        EXIT
-      END IF 
-    END DO
-  
-    m = nt
-    bs = 0.0D+00
-    f0 = 0.0D+00
-    f1 = 1.0D-35
-    su = 0.0D+00
-    DO k = m, 0, -1
-      f = 2.0D+00 * ( k + 1.0D+00 ) * f1 / x - f0
-      IF ( k <= n + 1 ) THEN
-        bj(k+1) = f
-      END IF
-      IF ( k == 2 * int ( k / 2 ) ) THEN
-        bs = bs + 2.0D+00 * f
-        IF ( k /= 0 ) THEN
-          su = su + ( -1.0D+00 ) ** ( k / 2 ) * f / k
+!  SUBROUTINE jyndd ( n, x, bjn, djn, fjn, byn, dyn, fyn )
+!  USE picsar_precision
+!  !*****************************************************************************80
+!  !
+!  !! JYNDD: Bessel functions Jn(x) and Yn(x), first and second
+!  !derivatives.
+!  !
+!  !  Licensing:
+!  !
+!  !    This routine is copyrighted by Shanjie Zhang and Jianming Jin.
+!  !    However, 
+!  !    they give permission to incorporate this routine into a user
+!  !    program 
+!  !    provided that the copyright is acknowledged.
+!  !
+!  !  Modified:
+!  !
+!  !    02 August 2012
+!  !
+!  !  Author:
+!  !
+!  !    Shanjie Zhang, Jianming Jin
+!  !
+!  !  Reference:
+!  !
+!  !    Shanjie Zhang, Jianming Jin,
+!  !    Computation of Special Functions,
+!  !    Wiley, 1996,
+!  !    ISBN: 0-471-11963-6,
+!  !    LC: QA351.C45.
+!  !
+!  !  Parameters:
+!  !
+!  !    Input, integer ( kind = 4 ) N, the order.
+!  !
+!  !    Input, real ( kind = 8 ) X, the argument.
+!  !
+!  !    Output, real ( kind = 8 ) BJN, DJN, FJN, BYN, DYN, FYN, the values
+!  !    of
+!  !    Jn(x), Jn'(x), Jn"(x), Yn(x), Yn'(x), Yn"(x).
+!  !
+!    IMPLICIT NONE
+!  
+!    REAL ( num ) bj(102)
+!    REAL ( num ) bjn
+!    REAL ( num ) byn
+!    REAL ( num ) bs
+!    REAL ( num ) by(102)
+!    REAL ( num ) djn
+!    REAL ( num ) dyn
+!    REAL ( num ) e0
+!    REAL ( num ) ec
+!    REAL ( num ) f
+!    REAL ( num ) f0
+!    REAL ( num ) f1
+!    REAL ( num ) fjn
+!    REAL ( num ) fyn
+!    INTEGER ( idp ) k
+!    INTEGER ( idp ) m
+!    INTEGER ( idp ) mt
+!    INTEGER ( idp ) n
+!    INTEGER ( idp ) nt
+!    REAL ( idp ) s1
+!    REAL ( idp ) su
+!    REAL ( idp ) x
+!  
+!    DO nt = 1, 900
+!      mt = int ( 0.5D+00 * log10 ( 6.28D+00 * nt ) &
+!        - nt * log10 ( 1.36D+00 * abs ( x ) / nt ) )
+!      IF ( 20 < mt ) THEN
+!        EXIT
+!      END IF 
+!    END DO
+!  
+!    m = nt
+!    bs = 0.0D+00
+!    f0 = 0.0D+00
+!    f1 = 1.0D-35
+!    su = 0.0D+00
+!    DO k = m, 0, -1
+!      f = 2.0D+00 * ( k + 1.0D+00 ) * f1 / x - f0
+!      IF ( k <= n + 1 ) THEN
+!        bj(k+1) = f
+!      END IF
+!      IF ( k == 2 * int ( k / 2 ) ) THEN
+!        bs = bs + 2.0D+00 * f
+!        IF ( k /= 0 ) THEN
+!          su = su + ( -1.0D+00 ) ** ( k / 2 ) * f / k
+!        END IF
+!      END IF
+!      f0 = f1
+!      f1 = f
+!    END DO
+!  
+!    DO k = 0, n + 1
+!      bj(k+1) = bj(k+1) / ( bs - f )
+!    END DO
+!  
+!    bjn = bj(n+1)
+!    ec = 0.5772156649015329D+00
+!    e0 = 0.3183098861837907D+00
+!    s1 = 2.0D+00 * e0 * ( log ( x / 2.0D+00 ) + ec ) * bj(1)
+!    f0 = s1 - 8.0D+00 * e0 * su / ( bs - f )
+!    f1 = ( bj(2) * f0 - 2.0D+00 * e0 / x ) / bj(1)
+!  
+!    by(1) = f0
+!    by(2) = f1
+!    DO k = 2, n + 1 
+!      f = 2.0D+00 * ( k - 1.0D+00 ) * f1 / x - f0
+!      by(k+1) = f
+!      f0 = f1
+!      f1 = f
+!    END DO
+!  
+!    byn = by(n+1)
+!    djn = - bj(n+2) + n * bj(n+1) / x
+!    dyn = - by(n+2) + n * by(n+1) / x
+!    fjn = ( n * n / ( x * x ) - 1.0D+00 ) * bjn - djn / x
+!    fyn = ( n * n / ( x * x ) - 1.0D+00 ) * byn - dyn / x
+!  
+!    RETURN
+!  END SUBROUTINE jyndd
+!  
+!  
+!  
+!  SUBROUTINE jyzo ( n, nt, rj0 )
+!  USE picsar_precision 
+!  !*****************************************************************************80
+!  !
+!  !! JYZO computes the zeros of Bessel functions Jn(x), Yn(x) and derivatives.
+!  !
+!  !  Licensing:
+!  !
+!  !    This routine is copyrighted by Shanjie Zhang and Jianming Jin.  However, 
+!  !    they give permission to incorporate this routine into a user program 
+!  !    provided that the copyright is acknowledged.
+!  !
+!  !  Modified:
+!  !
+!  !    28 July 2012
+!  !
+!  !  Author:
+!  !
+!  !    Shanjie Zhang, Jianming Jin
+!  !
+!  !  Reference:
+!  !
+!  !    Shanjie Zhang, Jianming Jin,
+!  !    Computation of Special Functions,
+!  !    Wiley, 1996,
+!  !    ISBN: 0-471-11963-6,
+!  !    LC: QA351.C45.
+!  !
+!  !  Parameters:
+!  !
+!  !    Input, integer ( kind = 4 ) N, the order of the Bessel functions.
+!  !
+!  !    Input, integer ( kind = 4 ) NT, the number of zeros.
+!  !
+!  !    Output, real ( kind = 8 ) RJ0(NT), RJ1(NT), RY0(NT), RY1(NT), the zeros 
+!  !    of Jn(x), Jn'(x), Yn(x), Yn'(x).
+!  !
+!    IMPLICIT NONE
+!  
+!    INTEGER ( idp ) nt
+!  
+!    REAL ( num ) bjn
+!    REAL ( num ) byn
+!    REAL ( num ) djn
+!    REAL ( num ) dyn
+!    REAL ( num ) fjn
+!    REAL ( num ) fyn
+!    INTEGER ( idp ) l
+!    INTEGER ( idp ) n
+!    REAL ( num ) n_r8
+!    REAL ( num ) rj0(nt)
+!    REAL ( num ) x
+!    REAL ( num ) x0
+!  
+!    n_r8 = REAL ( n, num )
+!  
+!    IF ( n <= 20 ) THEN
+!      x = 2.82141D+00 + 1.15859D+00 * n_r8 
+!    ELSE
+!      x = n + 1.85576D+00 * n_r8 ** 0.33333D+00 &
+!        + 1.03315D+00 / n_r8 ** 0.33333D+00
+!    END IF
+!  
+!    l = 0
+!  
+!    DO
+!  
+!      x0 = x
+!      call jyndd ( n, x, bjn, djn, fjn, byn, dyn, fyn )
+!      x = x - bjn / djn
+!  
+!      IF ( 1.0D-09 < abs ( x - x0 ) ) THEN
+!        CYCLE
+!      END IF
+!  
+!      l = l + 1
+!      rj0(l) = x
+!      x = x + 3.1416D+00 + ( 0.0972D+00 + 0.0679D+00 * n_r8 &
+!        - 0.000354D+00 * n_r8 ** 2 ) / l
+!  
+!      IF ( nt <= l ) THEN
+!        EXIT
+!      END IF
+!  
+!    END DO 
+!  
+!    RETURN
+!  END SUBROUTINE jyzo 
+
+       SUBROUTINE JYNDD(N,X,BJN,DJN,FJN,BYN,DYN,FYN)
+!
+!       ===========================================================
+!       Purpose: Compute Bessel functions Jn(x) and Yn(x), and
+!                their first and second derivatives
+!       Input:   x   ---  Argument of Jn(x) and Yn(x) ( x > 0 )
+!                n   ---  Order of Jn(x) and Yn(x)
+!       Output:  BJN ---  Jn(x)
+!                DJN ---  Jn'(x)
+!                FJN ---  Jn"(x)
+!                BYN ---  Yn(x)
+!                DYN ---  Yn'(x)
+!                FYN ---  Yn"(x)
+!       Routines called:
+!                JYNBH to compute Jn and Yn
+!       ===========================================================
+!       
+        USE PICSAR_precision
+        IMPLICIT NONE
+        !IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+        INTEGER (ISP), INTENT(IN) :: N
+        REAL (NUM) , INTENT(IN) :: X
+        REAL (NUM) , INTENT (OUT) :: BJN,DJN,FJN,BYN,DYN,FYN
+        REAL(NUM), DIMENSION(:) :: BJ(2),BY(2)
+        integer (isp):: NM
+        CALL JYNBH(N+1,N,X,NM,BJ,BY)
+!       Compute derivatives by differentiation formulas
+        BJN=BJ(1)
+        BYN=BY(1)
+        DJN=-BJ(2)+N*BJ(1)/X
+        DYN=-BY(2)+N*BY(1)/X
+        FJN=(N*N/(X*X)-1.0D0)*BJN-DJN/X
+        FYN=(N*N/(X*X)-1.0D0)*BYN-DYN/X
+        RETURN
+        END
+
+        SUBROUTINE JYNBH(N,NMIN,X,NM,BJ,BY)
+!
+!       =====================================================
+!       Purpose: Compute Bessel functions Jn(x), Yn(x)
+!       Input :  x --- Argument of Jn(x) and Yn(x) ( x ≥ 0 )
+!                n --- Highest order of Jn(x) and Yn(x) computed  ( n ≥ 0 )
+!                nmin -- Lowest order computed  ( nmin ≥ 0 )
+!       Output:  BJ(n-NMIN) --- Jn(x)   ; if indexing starts at 0
+!                BY(n-NMIN) --- Yn(x)   ; if indexing starts at 0
+!                NM --- Highest order computed
+!       Routines called:
+!                MSTA1 and MSTA2 to calculate the starting
+!                point for backward recurrence
+!       =====================================================
+!
+        !IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+        USE PICSAR_precision
+        IMPLICIT NONE
+        INTEGER (ISP), INTENT(IN) :: N, NMIN
+        INTEGER (ISP), INTENT(OUT) :: NM
+        REAL (NUM), INTENT(IN) :: X
+        REAL (NUM), DIMENSION(:), intent(out) :: BJ(0:N-NMIN),BY(0:N-NMIN)
+        REAL (NUM), DIMENSION(:) ::A(4),B(4),A1(4),B1(4)
+        REAL (NUM):: PI=3.141592653589793D0
+        REAL (NUM):: R2P=.63661977236758D0
+        REAL (NUM):: BS,SU,SV,F2,F1,F, S0, BJ0, BJ1, BJK, BY0, BY1, BYK, EC, T1, T2, P0,Q0,P1, Q1, CU
+        INTEGER (ISP):: K, M, KY
+        NM=N
+        IF (X.LT.1.0D-100) THEN
+           DO 10 K=NMIN,N
+              BJ(K-NMIN)=0.0D0
+10            BY(K-NMIN)=-1.0D+300
+           IF (NMIN.EQ.0) BJ(0)=1.0D0
+           RETURN
+        ENDIF
+        IF (X.LE.300.0.OR.N.GT.INT(0.9*X)) THEN
+!          Backward recurrence for Jn
+           IF (N.EQ.0) NM=1
+           M=MSTA1(X,200)
+           IF (M.LT.NM) THEN
+              NM=M
+           ELSE
+              M=MSTA2(X,NM,15)
+           ENDIF
+           BS=0.0D0
+           SU=0.0D0
+           SV=0.0D0
+           F2=0.0D0
+           F1=1.0D-100
+           F=0.0D0
+           DO 15 K=M,0,-1
+              F=2.0D0*(K+1.0D0)/X*F1-F2
+              IF (K.LE.NM .AND. K.GE.NMIN) BJ(K-NMIN)=F
+              IF (K.EQ.2*INT(K/2).AND.K.NE.0) THEN
+                 BS=BS+2.0D0*F
+                 SU=SU+(-1)**(K/2)*F/K
+              ELSE IF (K.GT.1) THEN
+                 SV=SV+(-1)**(K/2)*K/(K*K-1.0D0)*F
+              ENDIF
+              F2=F1
+15            F1=F
+           S0=BS+F
+           DO 20 K=NMIN,NM
+20            BJ(K-NMIN)=BJ(K-NMIN)/S0
+!          Estimates for Yn at start of recurrence
+           BJ0 = F1 / S0
+           BJ1 = F2 / S0
+           EC=DLOG(X/2.0D0)+0.5772156649015329D0
+           BY0=R2P*(EC*BJ0-4.0D0*SU/S0)
+           BY1=R2P*((EC-1.0D0)*BJ1-BJ0/X-4.0D0*SV/S0)
+           IF (0.GE.NMIN) BY(0-NMIN)=BY0
+           IF (1.GE.NMIN) BY(1-NMIN)=BY1
+           KY=2
+        ELSE
+!          Hankel expansion
+           DATA A/-.7031250000000000D-01,.1121520996093750D+00,  &
+                  -.5725014209747314D+00,.6074042001273483D+01/
+           DATA B/ .7324218750000000D-01,-.2271080017089844D+00, &
+                  .1727727502584457D+01,-.2438052969955606D+02/
+           DATA A1/.1171875000000000D+00,-.1441955566406250D+00, &
+                  .6765925884246826D+00,-.6883914268109947D+01/
+           DATA B1/-.1025390625000000D+00,.2775764465332031D+00, &
+                  -.1993531733751297D+01,.2724882731126854D+02/
+           T1=X-0.25D0*PI
+           P0=1.0D0
+           Q0=-0.125D0/X
+           DO 25 K=1,4
+              P0=P0+A(K)*X**(-2*K)
+25            Q0=Q0+B(K)*X**(-2*K-1)
+           CU=DSQRT(R2P/X)
+           BJ0=CU*(P0*DCOS(T1)-Q0*DSIN(T1))
+           BY0=CU*(P0*DSIN(T1)+Q0*DCOS(T1))
+           IF (0.GE.NMIN) BJ(0-NMIN)=BJ0
+           IF (0.GE.NMIN) BY(0-NMIN)=BY0
+           T2=X-0.75D0*PI
+           P1=1.0D0
+           Q1=0.375D0/X
+           DO 30 K=1,4
+              P1=P1+A1(K)*X**(-2*K)
+30            Q1=Q1+B1(K)*X**(-2*K-1)
+           BJ1=CU*(P1*DCOS(T2)-Q1*DSIN(T2))
+           BY1=CU*(P1*DSIN(T2)+Q1*DCOS(T2))
+           IF (1.GE.NMIN) BJ(1-NMIN)=BJ1
+           IF (1.GE.NMIN) BY(1-NMIN)=BY1
+           DO 35 K=2,NM
+              BJK=2.0D0*(K-1.0D0)/X*BJ1-BJ0
+              IF (K.GE.NMIN) BJ(K-NMIN)=BJK
+              BJ0=BJ1
+35            BJ1=BJK
+           KY=2
+        ENDIF
+!       Forward recurrence for Yn
+        DO 45 K=KY,NM
+           BYK=2.0D0*(K-1.0D0)*BY1/X-BY0
+           IF (K.GE.NMIN) BY(K-NMIN)=BYK
+           BY0=BY1
+45         BY1=BYK
+        RETURN
+        END
+        INTEGER FUNCTION MSTA1(X,MP)
+!
+!       ===================================================
+!       Purpose: Determine the starting point for backward
+!                recurrence such that the magnitude of
+!                Jn(x) at that point is about 10^(-MP)
+!       Input :  x     --- Argument of Jn(x)
+!                MP    --- Value of magnitude
+!       Output:  MSTA1 --- Starting point
+!       ===================================================
+!
+        !IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+        USE PICSAR_PRECISION
+        IMPLICIT NONE
+        REAL (NUM), INTENT (IN) :: X
+        INTEGER (ISP), INTENT (IN) :: MP
+        INTEGER (ISP) :: N0, IT, NN, N1
+        REAL (NUM) :: A0,F0,F, F1
+        A0=DABS(X)
+        N0=INT(1.1D0*A0)+1
+        F0=ENVJ(N0,A0)-MP
+        N1=N0+5
+        F1=ENVJ(N1,A0)-MP
+        DO 10 IT=1,20
+           NN=N1-(N1-N0)/(1.0D0-F0/F1)
+           F=ENVJ(NN,A0)-MP
+           IF(ABS(NN-N1).LT.1) GO TO 20
+           N0=N1
+           F0=F1
+           N1=NN
+ 10        F1=F
+ 20     MSTA1=NN
+        RETURN
+        END
+       INTEGER FUNCTION MSTA2(X,N,MP)
+!
+!
+!       ===================================================
+!       Purpose: Determine the starting point for backward
+!                recurrence such that all Jn(x) has MP
+!                significant digits
+!       Input :  x  --- Argument of Jn(x)
+!                n  --- Order of Jn(x)
+!                MP --- Significant digit
+!       Output:  MSTA2 --- Starting point
+!       ===================================================
+!
+        !IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+        USE PICSAR_PRECISION
+        IMPLICIT NONE
+        REAL (NUM), INTENT (IN) :: X
+        INTEGER (ISP), INTENT (IN):: MP
+        INTEGER (ISP), INTENT (IN) :: N
+        REAL (NUM) :: A0, HMP, EJN, OBJ,F0, F1, F
+        INTEGER (ISP) ::  N0, IT, NN, N1
+        A0=DABS(X)
+        HMP=0.5D0*MP
+        EJN=ENVJ(N,A0)
+        IF (EJN.LE.HMP) THEN
+           OBJ=MP
+           N0=INT(1.1*A0)+1
+        ELSE
+           OBJ=HMP+EJN
+           N0=N
+        ENDIF
+        F0=ENVJ(N0,A0)-OBJ
+        N1=N0+5
+        F1=ENVJ(N1,A0)-OBJ
+        DO 10 IT=1,20
+           NN=N1-(N1-N0)/(1.0D0-F0/F1)
+           F=ENVJ(NN,A0)-OBJ
+           IF (ABS(NN-N1).LT.1) GO TO 20
+           N0=N1
+           F0=F1
+           N1=NN
+10         F1=F
+20      MSTA2=NN+10
+        RETURN
+        END
+
+        FUNCTION ENVJ(N,X)
+        USE PICSAR_PRECISION
+        REAL (NUM), INTENT (IN):: X
+        INTEGER (ISP) , INTENT (IN) :: N
+        ENVJ=0.5D0*DLOG10(6.28D0*N)-N*DLOG10(1.36D0*X/N)
+        RETURN
+        END
+        SUBROUTINE JYZO(N,NT,RJ0,RJ1,RY0,RY1)
+!
+!       ======================================================
+!       Purpose: Compute the zeros of Bessel functions Jn(x),
+!                Yn(x), and their derivatives
+!       Input :  n  --- Order of Bessel functions  (n >= 0)
+!                NT --- Number of zeros (roots)
+!       Output:  RJ0(L) --- L-th zero of Jn(x),  L=1,2,...,NT
+!                RJ1(L) --- L-th zero of Jn'(x), L=1,2,...,NT
+!                RY0(L) --- L-th zero of Yn(x),  L=1,2,...,NT
+!                RY1(L) --- L-th zero of Yn'(x), L=1,2,...,NT
+!       Routine called: JYNDD for computing Jn(x), Yn(x), and
+!                       their first and second derivatives
+!       ======================================================
+!
+        !IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+        USE PICSAR_PRECISION
+        IMPLICIT NONE
+        INTEGER (ISP), INTENT (IN):: N, NT
+        REAL (NUM), DIMENSION(:), INTENT(OUT):: RJ0(NT),RJ1(NT),RY0(NT),RY1(NT)
+        INTEGER (ISP):: L
+        REAL (NUM):: X, XGUESS, X0, PI, BJN, BYN, DJN, DYN,FJN, FYN
+        PI=3.141592653589793D0
+!       -- Newton method for j_{N,L}
+!       1) initial guess for j_{N,1}
+        IF (N.LE.20) THEN
+           X=2.82141+1.15859*N
+        ELSE
+!          Abr & Stg (9.5.14)
+           X=N+1.85576*N**0.33333+1.03315/N**0.33333
+        ENDIF
+        L=0
+!       2) iterate
+        XGUESS=X
+10      X0=X
+        CALL JYNDD(N,X,BJN,DJN,FJN,BYN,DYN,FYN)
+        X=X-BJN/DJN
+        IF (X-X0.LT.-1) X=X0-1
+        IF (X-X0.GT.1) X=X0+1
+        IF (DABS(X-X0).GT.1.0D-11) GO TO 10
+!       3) initial guess for j_{N,L+1}
+        IF (L.GE.1)THEN
+           IF (X.LE.RJ0(L)+0.5) THEN
+              X=XGUESS+PI
+              XGUESS=X
+              GO TO 10
+           ENDIF
         END IF
-      END IF
-      f0 = f1
-      f1 = f
-    END DO
-  
-    DO k = 0, n + 1
-      bj(k+1) = bj(k+1) / ( bs - f )
-    END DO
-  
-    bjn = bj(n+1)
-    ec = 0.5772156649015329D+00
-    e0 = 0.3183098861837907D+00
-    s1 = 2.0D+00 * e0 * ( log ( x / 2.0D+00 ) + ec ) * bj(1)
-    f0 = s1 - 8.0D+00 * e0 * su / ( bs - f )
-    f1 = ( bj(2) * f0 - 2.0D+00 * e0 / x ) / bj(1)
-  
-    by(1) = f0
-    by(2) = f1
-    DO k = 2, n + 1 
-      f = 2.0D+00 * ( k - 1.0D+00 ) * f1 / x - f0
-      by(k+1) = f
-      f0 = f1
-      f1 = f
-    END DO
-  
-    byn = by(n+1)
-    djn = - bj(n+2) + n * bj(n+1) / x
-    dyn = - by(n+2) + n * by(n+1) / x
-    fjn = ( n * n / ( x * x ) - 1.0D+00 ) * bjn - djn / x
-    fyn = ( n * n / ( x * x ) - 1.0D+00 ) * byn - dyn / x
-  
-    RETURN
-  END SUBROUTINE jyndd
-  
-  
-  
-  SUBROUTINE jyzo ( n, nt, rj0 )
-  USE picsar_precision 
-  !*****************************************************************************80
-  !
-  !! JYZO computes the zeros of Bessel functions Jn(x), Yn(x) and derivatives.
-  !
-  !  Licensing:
-  !
-  !    This routine is copyrighted by Shanjie Zhang and Jianming Jin.  However, 
-  !    they give permission to incorporate this routine into a user program 
-  !    provided that the copyright is acknowledged.
-  !
-  !  Modified:
-  !
-  !    28 July 2012
-  !
-  !  Author:
-  !
-  !    Shanjie Zhang, Jianming Jin
-  !
-  !  Reference:
-  !
-  !    Shanjie Zhang, Jianming Jin,
-  !    Computation of Special Functions,
-  !    Wiley, 1996,
-  !    ISBN: 0-471-11963-6,
-  !    LC: QA351.C45.
-  !
-  !  Parameters:
-  !
-  !    Input, integer ( kind = 4 ) N, the order of the Bessel functions.
-  !
-  !    Input, integer ( kind = 4 ) NT, the number of zeros.
-  !
-  !    Output, real ( kind = 8 ) RJ0(NT), RJ1(NT), RY0(NT), RY1(NT), the zeros 
-  !    of Jn(x), Jn'(x), Yn(x), Yn'(x).
-  !
-    IMPLICIT NONE
-  
-    INTEGER ( idp ) nt
-  
-    REAL ( num ) bjn
-    REAL ( num ) byn
-    REAL ( num ) djn
-    REAL ( num ) dyn
-    REAL ( num ) fjn
-    REAL ( num ) fyn
-    INTEGER ( idp ) l
-    INTEGER ( idp ) n
-    REAL ( num ) n_r8
-    REAL ( num ) rj0(nt)
-    REAL ( num ) x
-    REAL ( num ) x0
-  
-    n_r8 = REAL ( n, num )
-  
-    IF ( n <= 20 ) THEN
-      x = 2.82141D+00 + 1.15859D+00 * n_r8 
-    ELSE
-      x = n + 1.85576D+00 * n_r8 ** 0.33333D+00 &
-        + 1.03315D+00 / n_r8 ** 0.33333D+00
-    END IF
-  
-    l = 0
-  
-    DO
-  
-      x0 = x
-      call jyndd ( n, x, bjn, djn, fjn, byn, dyn, fyn )
-      x = x - bjn / djn
-  
-      IF ( 1.0D-09 < abs ( x - x0 ) ) THEN
-        CYCLE
-      END IF
-  
-      l = l + 1
-      rj0(l) = x
-      x = x + 3.1416D+00 + ( 0.0972D+00 + 0.0679D+00 * n_r8 &
-        - 0.000354D+00 * n_r8 ** 2 ) / l
-  
-      IF ( nt <= l ) THEN
-        EXIT
-      END IF
-  
-    END DO 
-  
-    RETURN
-  END SUBROUTINE jyzo 
+        L=L+1
+        RJ0(L)=X
+!       XXX: should have a better initial guess for large N ~> 100 here
+        X=X+PI+MAX((0.0972d0+0.0679*N-0.000354*N**2)/L, 0d0)
+        IF (L.LT.NT) GO TO 10
+!       -- Newton method for j_{N,L}'
+        IF (N.LE.20) THEN
+           X=0.961587+1.07703*N
+        ELSE
+           X=N+0.80861*N**0.33333+0.07249/N**0.33333
+        ENDIF
+        IF (N.EQ.0) X=3.8317
+        L=0
+        XGUESS=X
+15      X0=X
+        CALL JYNDD(N,X,BJN,DJN,FJN,BYN,DYN,FYN)
+        X=X-DJN/FJN
+        IF (X-X0.LT.-1) X=X0-1
+        IF (X-X0.GT.1) X=X0+1
+        IF (DABS(X-X0).GT.1.0D-11) GO TO 15
+        IF (L.GE.1)THEN
+           IF (X.LE.RJ1(L)+0.5) THEN
+              X=XGUESS+PI
+              XGUESS=X
+              GO TO 15
+           ENDIF
+        END IF
+        L=L+1
+        RJ1(L)=X
+!       XXX: should have a better initial guess for large N ~> 100 here
+        X=X+PI+MAX((0.4955d0+0.0915*N-0.000435*N**2)/L, 0d0)
+        IF (L.LT.NT) GO TO 15
+!       -- Newton method for y_{N,L}
+        IF (N.LE.20) THEN
+           X=1.19477+1.08933*N
+        ELSE
+           X=N+0.93158*N**0.33333+0.26035/N**0.33333
+        ENDIF
+        L=0
+        XGUESS=X
+20      X0=X
+        CALL JYNDD(N,X,BJN,DJN,FJN,BYN,DYN,FYN)
+        X=X-BYN/DYN
+        IF (X-X0.LT.-1) X=X0-1
+        IF (X-X0.GT.1) X=X0+1
+        IF (DABS(X-X0).GT.1.0D-11) GO TO 20
+        IF (L.GE.1)THEN
+           IF (X.LE.RY0(L)+0.5) THEN
+              X=XGUESS+PI
+              XGUESS=X
+              GO TO 20
+           END IF
+        END IF
+        L=L+1
+        RY0(L)=X
+!       XXX: should have a better initial guess for large N ~> 100 here
+        X=X+PI+MAX((0.312d0+0.0852*N-0.000403*N**2)/L,0d0)
+        IF (L.LT.NT) GO TO 20
+!       -- Newton method for y_{N,L}'
+        IF (N.LE.20) THEN
+           X=2.67257+1.16099*N
+        ELSE
+           X=N+1.8211*N**0.33333+0.94001/N**0.33333
+        ENDIF
+        L=0
+        XGUESS=X
+25      X0=X
+        CALL JYNDD(N,X,BJN,DJN,FJN,BYN,DYN,FYN)
+        X=X-DYN/FYN
+        IF (DABS(X-X0).GT.1.0D-11) GO TO 25
+        IF (L.GE.1) THEN
+           IF (X.LE.RY1(L)+0.5) THEN
+              X=XGUESS+PI
+              XGUESS=X
+              GO TO 25
+           END IF
+        END IF
+        L=L+1
+        RY1(L)=X
+!       XXX: should have a better initial guess for large N ~> 100 here
+        X=X+PI+MAX((0.197d0+0.0643*N-0.000286*N**2)/L,0d0)
+        IF (L.LT.NT) GO TO 25
+        RETURN
+        END
+
+
 
 END MODULE math_tools
 
