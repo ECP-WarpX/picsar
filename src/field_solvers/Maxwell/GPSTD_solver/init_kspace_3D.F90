@@ -343,11 +343,11 @@ MODULE math_tools !#do not parse
         USE PICSAR_precision
         IMPLICIT NONE
         !IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-        INTEGER (ISP), INTENT(IN) :: N
+        INTEGER (IDP), INTENT(IN) :: N
         REAL (NUM) , INTENT(IN) :: X
         REAL (NUM) , INTENT (OUT) :: BJN,DJN,FJN,BYN,DYN,FYN
         REAL(NUM), DIMENSION(:) :: BJ(2),BY(2)
-        integer (isp):: NM
+        integer (idp):: NM
         CALL JYNBH(N+1,N,X,NM,BJ,BY)
 !       Compute derivatives by differentiation formulas
         BJN=BJ(1)
@@ -377,15 +377,15 @@ MODULE math_tools !#do not parse
         !IMPLICIT DOUBLE PRECISION (A-H,O-Z)
         USE PICSAR_precision
         IMPLICIT NONE
-        INTEGER (ISP), INTENT(IN) :: N, NMIN
-        INTEGER (ISP), INTENT(OUT) :: NM
+        INTEGER (IDP), INTENT(IN) :: N, NMIN
+        INTEGER (IDP), INTENT(OUT) :: NM
         REAL (NUM), INTENT(IN) :: X
         REAL (NUM), DIMENSION(:), intent(out) :: BJ(0:N-NMIN),BY(0:N-NMIN)
         REAL (NUM), DIMENSION(:) ::A(4),B(4),A1(4),B1(4)
         REAL (NUM):: PI=3.141592653589793D0
         REAL (NUM):: R2P=.63661977236758D0
         REAL (NUM):: BS,SU,SV,F2,F1,F, S0, BJ0, BJ1, BJK, BY0, BY1, BYK, EC, T1, T2, P0,Q0,P1, Q1, CU
-        INTEGER (ISP):: K, M, KY
+        INTEGER (IDP):: K, M, KY
         NM=N
         IF (X.LT.1.0D-100) THEN
            DO 10 K=NMIN,N
@@ -494,7 +494,7 @@ MODULE math_tools !#do not parse
         IMPLICIT NONE
         REAL (NUM), INTENT (IN) :: X
         INTEGER (ISP), INTENT (IN) :: MP
-        INTEGER (ISP) :: N0, IT, NN, N1
+        INTEGER (IDP) :: N0, IT, NN, N1
         REAL (NUM) :: A0,F0,F, F1
         A0=DABS(X)
         N0=INT(1.1D0*A0)+1
@@ -530,9 +530,9 @@ MODULE math_tools !#do not parse
         IMPLICIT NONE
         REAL (NUM), INTENT (IN) :: X
         INTEGER (ISP), INTENT (IN):: MP
-        INTEGER (ISP), INTENT (IN) :: N
+        INTEGER (IDP), INTENT (IN) :: N
         REAL (NUM) :: A0, HMP, EJN, OBJ,F0, F1, F
-        INTEGER (ISP) ::  N0, IT, NN, N1
+        INTEGER (IDP) ::  N0, IT, NN, N1
         A0=DABS(X)
         HMP=0.5D0*MP
         EJN=ENVJ(N,A0)
@@ -558,10 +558,10 @@ MODULE math_tools !#do not parse
         RETURN
         END
 
-        FUNCTION ENVJ(N,X)
+        REAL FUNCTION ENVJ(N,X)
         USE PICSAR_PRECISION
         REAL (NUM), INTENT (IN):: X
-        INTEGER (ISP) , INTENT (IN) :: N
+        INTEGER (IDP) , INTENT (IN) :: N
         ENVJ=0.5D0*DLOG10(6.28D0*N)-N*DLOG10(1.36D0*X/N)
         RETURN
         END
@@ -583,9 +583,9 @@ MODULE math_tools !#do not parse
         !IMPLICIT DOUBLE PRECISION (A-H,O-Z)
         USE PICSAR_PRECISION
         IMPLICIT NONE
-        INTEGER (ISP), INTENT (IN):: N, NT
+        INTEGER (IDP), INTENT (IN):: N, NT
         REAL (NUM), DIMENSION(:), INTENT(OUT):: RJ0(NT),RJ1(NT),RY0(NT),RY1(NT)
-        INTEGER (ISP):: L
+        INTEGER (IDP):: L
         REAL (NUM):: X, XGUESS, X0, PI, BJN, BYN, DJN, DYN,FJN, FYN
         PI=3.141592653589793D0
 !       -- Newton method for j_{N,L}
