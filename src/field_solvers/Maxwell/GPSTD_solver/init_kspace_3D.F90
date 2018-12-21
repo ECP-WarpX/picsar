@@ -407,6 +407,8 @@ MODULE gpstd_solver
       nfftx = nx+2*nxguards+1
       nffty = ny+2*nyguards+1
       nfftz = nz+2*nzguards+1
+      !> if l_AM_rz is not precised than it's the cartesian geometry 
+      !> that is true by default otherwise nfftz is the number of modes 
       IF (l_AM_rz) THEN
         nfftz = nmodes
       ENDIF
@@ -415,6 +417,8 @@ MODULE gpstd_solver
       nfftx = nx+2*nxguards
       nffty = ny+2*nyguards
       nfftz = nz+2*nzguards
+      !> if l_AM_rz is not precised than it's the cartesian geometry 
+      !> that is true by default otherwise nfftz is the number of modes
       IF (l_AM_rz) THEN
         nfftz = nmodes
       ENDIF
@@ -489,6 +493,8 @@ MODULE gpstd_solver
       nfftx = nx+2*nxguards+1
       nffty = ny+2*nyguards+1
       nfftz = nz+2*nzguards+1
+      !> if l_AM_rz is not precised than it's the cartesian geometry 
+      !> that is true by default otherwise nfftz is the number of modes
       IF (l_AM_rz) THEN 
         nfftz = nmodes
        ENDIF
@@ -498,6 +504,8 @@ MODULE gpstd_solver
       nfftx = nx+2*nxguards
       nffty = ny+2*nyguards
       nfftz = nz+2*nzguards
+      !> if l_AM_rz is not precised than it's the cartesian geometry 
+      !> that is true by default otherwise nfftz is the number of modes
       IF (l_AM_rz) THEN
         nfftz = nmodes
        ENDIF
@@ -624,78 +632,94 @@ MODULE gpstd_solver
     DO k = 1, nfftz
       DO j = 1, nffty
         DO i = 1, nfftxr
-          IF(.NOT. p3dfft_flag) THEN
-            IF(.NOT. fftw_mpi_transpose) THEN
-              kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kxf(i)
-              kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kxb(i)
-              kspace(nmatrixes2)%block_vector(3)%block3dc(i, j, k) = kxc(i)
-              IF(c_dim == 3) THEN
-                IF (l_AM_rz) THEN
-                  kspace(nmatrixes2)%block_vector(4)%block3dc(i,j, k) = krc(j,k)
-                  kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k) = krc(j,k)
-                  kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k) = krc(j,k)
-                ELSE
-                  kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k) = kyf(j)
-                  kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k) = kyb(j)
-                  kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k) = kyc(j)
-                ENDIF 
-              ELSE IF(c_dim == 2) THEN
-                !> If c_dim == 2 Then y derivative is null
-                !> c_dim = 2 cannot be used with p3dfft or fftw_mpi_transpose
-                !> flag
-                kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k)= (0.0_num,0.0_num) 
-                kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k)= (0.0_num,0.0_num)
-                kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k)= (0.0_num,0.0_num) 
-              ENDIF
-              !> If we do spectral with azimutal modes in cylindrical then
-              !> ky=kz=kr 
-              IF (l_AM_rz) THEN
-                kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = krc(j,k)
-                kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = krc(j,k)
-                kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = krc(j,k)
-              ENDIF         
-              kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = kzf(k)
-              kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = kzb(k)
-              kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = kzc(k)
-            ELSE IF(fftw_mpi_transpose) THEN
-              !> If fftw_mpi_transpose kyc is the derivative operator along z and 
-              !> kzc is the derivative  operator along y
-              kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kxf(i)
-              kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kxb(i)
-              kspace(nmatrixes2)%block_vector(3)%block3dc(i, j, k) = kxc(i)
-              kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k) = kzf(k)
-              kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k) = kzb(k)
-              kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k) = kzc(k)
-              kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = kyf(j)
-              kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = kyb(j)
-              kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = kyc(j)
-            ENDIF
-          ELSE IF(p3dfft_flag) THEN
-            IF(p3dfft_stride) THEN
-                !> If p3dfft_stride x and z axis are transposed: 
-                !> kzc is the derivative along x and kxc is the derivative
-                !> along z
-                kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kzf(k)
-                kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kzb(k)
-                kspace(nmatrixes2)%block_vector(3)%block3dc(i, j, k) = kzc(k)
-                kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k) = kyf(j)
-                kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k) = kyb(j)
-                kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k) = kyc(j)
-                kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = kxf(i)
-                kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = kxb(i)
-                kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = kxc(i)
-            ELSE IF(.NOT. p3dfft_stride) THEN
+          !> Here we separate the case of spectral RZ from the cartesian one
+          !> we only have two k one in the longitudinal component
+          !> the other one is in the radial direction noted in the article k_|_ 
+          !> k_|_  depends on the mode which is passed by nfftz here
+          IF (l_AM_rz) THEN
+            kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kyf(j)
+            kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kyb(j)
+            kspace(nmatrixes2)%block_vector(3)%block3dc(i, j, k) = kyc(j)
+            kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k) = krc(i,k)
+            kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k) = krc(i,k)
+            kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k) = krc(i,k)
+            kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = krc(i,k)
+            kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = krc(i,k)
+            kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = krc(i,k)
+          ELSE  
+            IF(.NOT. p3dfft_flag) THEN
+              IF(.NOT. fftw_mpi_transpose) THEN
                 kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kxf(i)
                 kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kxb(i)
                 kspace(nmatrixes2)%block_vector(3)%block3dc(i, j, k) = kxc(i)
-                kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k) = kyf(j)
-                kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k) = kyb(j)
-                kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k) = kyc(j)
+                IF(c_dim == 3) THEN
+                  !IF (l_AM_rz) THEN
+                  !  kspace(nmatrixes2)%block_vector(4)%block3dc(i,j, k) = krc(j,k)
+                  !  kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k) = krc(j,k)
+                  !  kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k) = krc(j,k)
+                  !ELSE
+                    kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k) = kyf(j)
+                    kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k) = kyb(j)
+                    kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k) = kyc(j)
+                  !ENDIF 
+                ELSE IF(c_dim == 2) THEN
+                  !> If c_dim == 2 Then y derivative is null
+                  !> c_dim = 2 cannot be used with p3dfft or fftw_mpi_transpose
+                  !> flag
+                  kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k)= (0.0_num,0.0_num) 
+                  kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k)= (0.0_num,0.0_num)
+                  kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k)= (0.0_num,0.0_num) 
+                ENDIF
+                !> If we do spectral with azimutal modes in cylindrical then
+                !> ky=kz=kr 
+                !IF (l_AM_rz) THEN
+                !  kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = krc(j,k)
+                !  kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = krc(j,k)
+                !  kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = krc(j,k)
+                !ENDIF         
                 kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = kzf(k)
                 kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = kzb(k)
                 kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = kzc(k)
+              ELSE IF(fftw_mpi_transpose) THEN
+                !> If fftw_mpi_transpose kyc is the derivative operator along z and 
+                !> kzc is the derivative  operator along y
+                kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kxf(i)
+                kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kxb(i)
+                kspace(nmatrixes2)%block_vector(3)%block3dc(i, j, k) = kxc(i)
+                kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k) = kzf(k)
+                kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k) = kzb(k)
+                kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k) = kzc(k)
+                kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = kyf(j)
+                kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = kyb(j)
+                kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = kyc(j)
+              ENDIF
+            ELSE IF(p3dfft_flag) THEN
+              IF(p3dfft_stride) THEN
+                  !> If p3dfft_stride x and z axis are transposed: 
+                  !> kzc is the derivative along x and kxc is the derivative
+                  !> along z
+                  kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kzf(k)
+                  kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kzb(k)
+                  kspace(nmatrixes2)%block_vector(3)%block3dc(i, j, k) = kzc(k)
+                  kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k) = kyf(j)
+                  kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k) = kyb(j)
+                  kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k) = kyc(j)
+                  kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = kxf(i)
+                  kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = kxb(i)
+                  kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = kxc(i)
+              ELSE IF(.NOT. p3dfft_stride) THEN
+                  kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kxf(i)
+                  kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kxb(i)
+                  kspace(nmatrixes2)%block_vector(3)%block3dc(i, j, k) = kxc(i)
+                  kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k) = kyf(j)
+                  kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k) = kyb(j)
+                  kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k) = kyc(j)
+                  kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = kzf(k)
+                  kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = kzb(k)
+                  kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = kzc(k)
+              ENDIF
             ENDIF
-          ENDIF
+          ENDIF  
         ENDDO
       ENDDO
     ENDDO
@@ -1061,7 +1085,7 @@ MODULE gpstd_solver
   !> Creation 2017
   ! ______________________________________________________________________________________
   SUBROUTINE compute_kr_1d(nfft,kvec,d,nmodes)
-     USE shared_data, ONLY: ny
+     USE shared_data, ONLY: nx
      USE picsar_precision, ONLY: idp, cpx
      REAL(num) , INTENT(IN)  :: d
      INTEGER(idp) , INTENT(IN) :: nfft,nmodes
@@ -1077,11 +1101,11 @@ MODULE gpstd_solver
      DO k=1,nmodes
        CALL  jyzo  (k,nfft,nu)
        IF (k == 1) THEN
-         kvec(:,k) = nu/(ny*d) 
+         kvec(:,k) = nu/(nx*d) 
        ELSE
          kvec(1,k)=0._num 
          DO i=2_idp,nfft
-           kvec(i,k)=nu(i-1)/(ny*d)
+           kvec(i,k)=nu(i-1)/(nx*d)
          END DO
        END IF
      END DO
@@ -1186,6 +1210,9 @@ MODULE gpstd_solver
     CALL allocate_new_matrix_vector(nbloc_ccmat)
     nfftxr = nfftx/2+1
     IF(p3dfft_flag) nfftxr = nfftx
+    IF (l_AM_rz) THEN
+      nfftxr = nfftx
+    ENDIF  
     CALL init_kspace
     nkx = nfftxr
     nky = nffty
@@ -1296,6 +1323,7 @@ MODULE gpstd_solver
     ! Introduce fft normalisation factor in mat bloc mult
     CALL select_case_dims_global(nfftx,nffty,nfftz)
     coeff_norm = 1.0_num/(nfftx*nffty*nfftz)
+    !> Here i'm not sure if it shoud be divided by nfftx* nffty or just nffty ....
     IF (l_AM_rz) THEN
       coeff_norm = 1.0_num/(nfftx*nffty)
     ENDIF
