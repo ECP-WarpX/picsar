@@ -138,8 +138,9 @@ MODULE fields
   LOGICAL(lp) :: l_nodalgrid
   !> Flag: use of PSAOTD spectral solver
   LOGICAL(lp) :: l_spectral
-  !> Flag: use of AM cylindrical spectral solver
-  LOGICAL(lp) :: l_AM_rz
+  !> Flag: use of AM cylindrical spectral solver the value by default is false
+  !> supposing that the geometry by default in picsar is cartesian
+  LOGICAL(lp) :: l_AM_rz= .FALSE.
   !> Flag: use psatd with multiply_mat_vector_routine (not suited for prod)
   LOGICAL(lp) :: g_spectral = .FALSE.
   !> Flag: use of staggered grid
