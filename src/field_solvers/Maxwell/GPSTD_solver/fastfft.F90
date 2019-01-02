@@ -650,7 +650,7 @@ SUBROUTINE  fast_fftw1d_3d_array_with_plan (nr,nz,nmodes,array_in, array_out,pla
   iplan=plan(1)
   CALL  dfftw_execute_dft(plans_cint(iplan), array_in, array_out)
 
-END SUBROUTINE  fast_fftw1d_3d_array_with_plan
+END SUBROUTINE fast_fftw1d_3d_array_with_plan
 
 !**********************************************
 !* SECTION 4: plan destruction (1D,2D,3D)

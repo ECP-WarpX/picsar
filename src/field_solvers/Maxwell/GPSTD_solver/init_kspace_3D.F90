@@ -2456,6 +2456,52 @@ MODULE gpstd_solver
     !$OMP END PARALLEL DO
   END SUBROUTINE copy_field
 
+
+! TO finish 
+  SUBROUTINE copy_field_forward_AM_rz()
+    USE fields, ONLY : el, er, et, bl, br, bt, jl, jr, jt
+    USE fields, ONLY : el_c, er_c, et_c, bl_c, br_c, bt_c, jl_c, jr_c, jt_c,rho_c,   &
+                       rhoold_c
+    USE omp_lib
+    USE picsar_precision, ONLY: idp
+    USE shared_data, ONLY: rho, rhoold
+    IMPLICIT NONE
+    INTEGER(idp) :: il, ir, imode, ill, irr, irrr, illl
+    INTEGER(idp) , dimension(3) :: lbound_r, ubound_r, lbound_p,ubound_p,lbound_s, ubound_s
+
+    lbound_r = LBOUND(el_c)
+    lbound_p = LBOUND(el)
+    ubound_r = UBOUND(el_c)
+    ubound_p = UBOUND(el)
+    lbound_s = LBOUND(jl)
+    ubound_s = UBOUND(jl)
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx, iyy
+    !,izz,ixxx,iyyy,izzz) COLLAPSE(3)
+    DO imode=lbound_r(3),ubound_r(3)
+      DO il=lbound_r(2),ubound_r(2)
+        DO ir=lbound_r(1),ubound_r(1)
+          irr = ir - lbound_r(1) +lbound_p(1)
+          ill = il - lbound_r(2) +lbound_p(2)
+          irrr = ir - lbound_r(1) +lbound_s(1)
+          illl = il - lbound_r(2) +lbound_s(2)
+
+          el_c(ir, il, imode)=el(irr, ill, imode)
+          er_c(ir, il, imode)=er(irr, ill, imode)
+          et_c(ir, il, imode)=et(irr, ill, imode)
+          bl_c(ir, il, imode)=bl(irr, ill, imode)
+          br_c(ir, il, imode)=br(irr, ill, imode)
+          bt_c(ir, il, imode)=bt(irr, ill, imode)
+          jl_c(ir, il, imode)=jl(irrr, illl, imode)
+          jr_c(ir, il, imode)=jr(irrr, illl, imode)
+          jt_c(ir, il, imode)=jt(irrr, illl, imode)
+          rho_c(ir, il, imode)=rho(irrr, illl, imode)
+          rhoold_c(ir, il, imode)=rhoold(irrr, illl, imode)
+        END DO
+      END DO
+    END DO
+    !$OMP END PARALLEL DO
+  END SUBROUTINE copy_field_forward_AM_rz
+
   SUBROUTINE copy_field_forward()
     USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
     USE fields, ONLY : ex_r, ey_r, ez_r, bx_r, by_r, bz_r, jx_r, jy_r, jz_r, rho_r,   &

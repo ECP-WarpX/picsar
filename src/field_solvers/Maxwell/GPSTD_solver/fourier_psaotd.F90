@@ -328,6 +328,54 @@ MODULE fourier_psaotd
     CALL fft_forward_r2c_local(nfftx,nffty,nfftz)
 
   END SUBROUTINE get_Ffields
+
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine computes forward  R2Clocal FFTs - concerns only the local 
+  !> pseudo-spectral solver
+  !
+  !> @author
+  !> H. Vincenti 
+  !> Haithem Kallala
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
+  SUBROUTINE get_Ffields_AM_rz()
+    USE fastfft
+    USE fields, ONLY: nxguards, nyguards
+    USE mpi
+    USE params, ONLY: it
+    USE picsar_precision, ONLY: idp, num
+    USE shared_data, ONLY: nmodes, ny, nx
+    USE time_stat, ONLY: timestat_itstart, localtimes
+
+    IMPLICIT NONE
+    INTEGER(idp) :: nfftx, nffty, nfftz, nxx, nyy, nzz
+    REAL(num)    :: tmptime
+#if defined(LIBRARY)
+    nfftx=nx+2*nxguards+1
+    nffty=ny+2*nyguards+1
+#else
+    nfftx=nx+2*nxguards
+    nffty=ny+2*nyguards
+#endif
+    nfftz=nmodes
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
+    ! Init fourier fields fields
+#if !defined(LIBRARY)
+    ! CALL copy_field_forward_AM_rz()
+#endif
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
+    ENDIF
+
+    ! Perform local forward FFTs C2C of all grid arrays 
+    CALL fft_forward_c2c_local_AM_rz(nfftx,nffty,nfftz)
+
+  END SUBROUTINE get_Ffields_AM_rz
  
   ! ______________________________________________________________________________________
   !> @brief
@@ -793,30 +841,32 @@ MODULE fourier_psaotd
   ! ______________________________________________________________________________________
   SUBROUTINE get_fields_AM_rz()
     USE fastfft
-    USE fields, ONLY:  nxguards
+    USE fields, ONLY:  nxguards, nyguards
     USE mpi
     USE params, ONLY: it
     USE picsar_precision, ONLY: idp, num
-    USE shared_data, ONLY: nmodes, nx
+    USE shared_data, ONLY:  ny, nx, nmodes
     USE time_stat, ONLY: timestat_itstart, localtimes
     IMPLICIT NONE
     REAL(num) :: tmptime
-    INTEGER(idp) :: ix, nxx, nfftx
-    nxx=nx+2*nxguards+1;
+    INTEGER(idp) :: nfftx, nffty, nfftz
 #if defined(LIBRARY)
     nfftx=nx+2*nxguards+1
+    nffty=ny+2*nyguards+1
 #else
     nfftx=nx+2*nxguards
+    nffty=ny+2*nyguards
 #endif
-    ! Get Inverse Fourier transform of all fields components 
-    !CALL fft_backward_c2r_local(nfftx,nffty,nfftz)
+    nfftz=nmodes 
+    ! Get Inverse Fourier transform C2C of all fields components 
+    CALL fft_backward_c2c_local_AM_rz(nfftx,nffty,nfftz)
 
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
 
 #if !defined (LIBRARY)
-     !CALL copy_field_backward
+     !CALL copy_field_backward_AM_rz
 #endif
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
@@ -1035,7 +1085,48 @@ MODULE fourier_psaotd
     ! Performs MPI exchanges for non-overlapping portions of local and FFT ARRAYS 
     CALL generalized_comms_group_g2l()
   END SUBROUTINE get_fields_mpi_lb
-  
+ 
+  SUBROUTINE fft_forward_c2c_local_AM_rz(nfftx,nffty,nfftz)
+    USE fastfft
+    USE fields, ONLY: g_spectral
+    USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
+    USE fields, ONLY : el_c, er_c, et_c, bl_c, br_c, bt_c, jl_c, jr_c, jt_c,rho_c,   &
+                       rhoold_c
+    USE fields, ONLY : el_f, er_f, et_f, bl_f, br_f, bt_f, jl_f, jr_f, jt_f, rho_f,   &
+                       rhoold_f
+    USE shared_data, ONLY : absorbing_bcs
+
+    USE fourier, ONLY: plan_rz_f
+    USE mpi
+    USE params, ONLY: it
+    USE picsar_precision, ONLY: idp, num
+    USE time_stat, ONLY: timestat_itstart, localtimes
+    REAL(num)   :: tmptime
+    INTEGER(idp), INTENT(IN)    ::   nfftx,nffty,nfftz
+
+
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
+
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, el_c, el_f, plan_rz_f)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, er_c, er_f, plan_rz_f)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, et_c, et_f, plan_rz_f)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, bl_c, bl_f, plan_rz_f)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, br_c, br_f, plan_rz_f)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, bt_c, bt_f, plan_rz_f)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, jl_c, jl_f, plan_rz_f)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, jr_c, jr_f, plan_rz_f)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, jt_c, jt_f, plan_rz_f)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, rhoold_c,rhoold_f,plan_rz_f)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, rho_c, rho_f, plan_rz_f)
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
+    ENDIF
+
+  END SUBROUTINE fft_forward_c2c_local_AM_rz
+
+ 
   SUBROUTINE fft_forward_r2c_local(nfftx,nffty,nfftz) 
     USE fastfft
     USE fields, ONLY: g_spectral
@@ -1303,6 +1394,40 @@ MODULE fourier_psaotd
     ENDIF
 
   END SUBROUTINE fft_forward_r2c_hybrid
+
+
+  SUBROUTINE fft_backward_c2c_local_AM_rz(nfftx,nffty,nfftz)
+    USE fastfft
+    USE fields, ONLY : el_c, er_c, et_c, bl_c, br_c, bt_c, jl_c, jr_c, jt_c,rho_c,   &
+                       rhoold_c
+    USE fields, ONLY : el_f, er_f, et_f, bl_f, br_f, bt_f, jl_f, jr_f, jt_f, rho_f,   &
+                       rhoold_f
+    USE fourier, ONLY: plan_rz_f_inv
+    USE mpi
+    USE params, ONLY: it
+    USE picsar_precision, ONLY: idp, num
+    USE time_stat, ONLY: timestat_itstart, localtimes
+    REAL(num)   :: tmptime
+    INTEGER(idp), INTENT(IN)     :: nfftx,nffty,nfftz
+
+
+
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
+    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, el_f, el_c, plan_c2r)
+    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, er_f, er_c, plan_c2r)
+    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, et_f, et_c, plan_c2r)
+    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, bl_f, bl_c, plan_c2r)
+    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, br_f, br_c, plan_c2r)
+    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, bt_f, bt_c, plan_c2r)
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
+    ENDIF
+
+
+
+  END SUBROUTINE fft_backward_c2c_local_AM_rz
 
   SUBROUTINE fft_backward_c2r_local(nfftx,nffty,nfftz)
     USE fastfft
@@ -1894,9 +2019,21 @@ MODULE fourier_psaotd
 
   SUBROUTINE init_plans_blocks_rz()
 
+!    USE fastfft
+!    USE fftw3_fortran, ONLY: fftw_measure, fftw_backward, fftw_forward
+!    USE fields, ONLY: ex_r, nzguards, nxguards, g_spectral, nyguards, exf, exy_r
+!    USE fourier, ONLY: plan_c2r, plan_r2c
+!    USE iso_c_binding
+!    USE omp_lib
+!    USE picsar_precision, ONLY: idp
+!    USE shared_data, ONLY: nz, ny, fftw_with_mpi, nx, nx_global, p3dfft_flag,
+!&
+!     ny_global, c_dim, nz_global, rank, absorbing_bcs
+
+
     USE fastfft
     USE fftw3_fortran, ONLY: fftw_measure, fftw_backward, fftw_forward
-    USE fields, ONLY: el_c, nxguards, g_spectral, nyguards, el_f
+    USE fields, ONLY: el_c, nxguards, nyguards, el_f
     USE fourier, ONLY: plan_rz_f, plan_rz_f_inv
     USE iso_c_binding
     USE omp_lib
@@ -1918,6 +2055,7 @@ MODULE fourier_psaotd
     nfftx=nx+2*nxguards
     nffty=ny+2*nyguards
     nfftz=nmodes
+
 #endif
 
 !> Init matrix blocks for psatd
