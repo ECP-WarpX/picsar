@@ -1831,12 +1831,12 @@ bx_p => bx
 by_p => by
 bz_p => bz
 IF (l_AM_rz) THEN
-  el_p => el
-  er_p => er
-  et_p => et
-  bl_p => bl
-  br_p => br
-  bt_p => bt
+  el_p => el_r
+  er_p => er_r
+  et_p => et_r
+  bl_p => bl_r
+  br_p => br_r
+  bt_p => bt_r
 ENDIF
 #if defined(FFTW)
 ! ---  Allocate grid quantities in Fourier space

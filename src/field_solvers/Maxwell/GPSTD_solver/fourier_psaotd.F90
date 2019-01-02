@@ -1415,12 +1415,12 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
-    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, el_f, el_c, plan_c2r)
-    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, er_f, er_c, plan_c2r)
-    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, et_f, et_c, plan_c2r)
-    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, bl_f, bl_c, plan_c2r)
-    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, br_f, br_c, plan_c2r)
-    CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz, bt_f, bt_c, plan_c2r)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, el_f, el_c,plan_rz_f_inv)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, er_f, er_c,plan_rz_f_inv)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, et_f, et_c,plan_rz_f_inv)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, bl_f, bl_c,plan_rz_f_inv)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, br_f, br_c,plan_rz_f_inv)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, bt_f, bt_c,plan_rz_f_inv)
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
     ENDIF

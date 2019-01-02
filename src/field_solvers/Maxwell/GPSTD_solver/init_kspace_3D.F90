@@ -2475,8 +2475,7 @@ MODULE gpstd_solver
     ubound_p = UBOUND(el)
     lbound_s = LBOUND(jl)
     ubound_s = UBOUND(jl)
-    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx, iyy
-    !,izz,ixxx,iyyy,izzz) COLLAPSE(3)
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ir, il, imode, irr, ill,irrr,illl) COLLAPSE(3)
     DO imode=lbound_r(3),ubound_r(3)
       DO il=lbound_r(2),ubound_r(2)
         DO ir=lbound_r(1),ubound_r(1)

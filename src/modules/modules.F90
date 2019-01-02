@@ -207,23 +207,23 @@ MODULE fields
   !> 2) second fast component is l
   !> 3) slowest component is the mode in theta 
   !> MPI-domain current grid in l
-  REAL(num), POINTER, DIMENSION(:, :, :) :: el
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: el
   !> MPI-domain electric field grid in r
-  REAL(num), POINTER, DIMENSION(:, :, :) :: er
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: er
   !> MPI-domain electric field grid in t
-  REAL(num), POINTER, DIMENSION(:, :, :) :: et
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: et
   !> MPI-domain magnetic field grid in l
-  REAL(num), POINTER, DIMENSION(:, :, :) :: bl
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bl
   !> MPI-domain magnetic field grid in r
-  REAL(num), POINTER, DIMENSION(:, :, :) :: br
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: br
   !> MPI-domain magnetic field grid in t
-  REAL(num), POINTER, DIMENSION(:, :, :) :: bt
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bt
   !> MPI-domain current grid in l
-  REAL(num), POINTER, DIMENSION(:, :, :) :: jl
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jl
   !> MPI-domain current grid in r
-  REAL(num), POINTER, DIMENSION(:, :, :) :: jr
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jr
   !> MPI-domain current grid in t
-  REAL(num), POINTER, DIMENSION(:, :, :) :: jt
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jt
   !> MPI-domain electric field grid in x (auxiliary array for gather to particles)
   REAL(num), POINTER, DIMENSION(:, :, :) :: ex_p
   !> MPI-domain electric field grid in y (auxiliary array for gather to particles)
@@ -294,6 +294,28 @@ MODULE fields
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: rho_c
   !> MPI-domain current grid in z - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: rhoold_c
+
+  !> REAL Fields in AM_rz for field gathering (total field in all the modes)
+  !> MPI-domain electric field grid in x
+  REAL(num), POINTER, DIMENSION(:, :, :) :: el_r
+  !> MPI-domain electric field grid in y
+  REAL(num), POINTER, DIMENSION(:, :, :) :: er_r
+  !> MPI-domain electric field grid in z
+  REAL(num), POINTER, DIMENSION(:, :, :) :: et_r
+  !> MPI-domain magnetic field grid in x
+  REAL(num), POINTER, DIMENSION(:, :, :) :: bl_r
+  !> MPI-domain magnetic field grid in y
+  REAL(num), POINTER, DIMENSION(:, :, :) :: br_r
+  !> MPI-domain magnetic field grid in z
+  REAL(num), POINTER, DIMENSION(:, :, :) :: bt_r
+  !> MPI-domain current grid in x
+  REAL(num), POINTER, DIMENSION(:, :, :) :: jl_r
+  !> MPI-domain current grid in y
+  REAL(num), POINTER, DIMENSION(:, :, :) :: jr_r
+  !> MPI-domain current grid in z
+  REAL(num), POINTER, DIMENSION(:, :, :) :: jt_r
+  
+  !> RHO is commun in cylindrical and cartesian 
   !> MPI-domain current grid in z - Fourier space
   REAL(num), POINTER, DIMENSION(:, :, :) :: rho_r
   !> MPI-domain current grid in z - Fourier space
