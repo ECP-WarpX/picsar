@@ -490,7 +490,11 @@ END SUBROUTINE push_efield_2d
       CALL get_Ffields_mpi! - global-hybrid FFT
     ENDIF
   ELSE
-    CALL get_Ffields! - local FFT
+    IF (l_AM_rz) THEN
+      CALL get_Ffields_AM_rz ! - local FFT in RZ --PS: it's complex to complex
+    ELSE 
+      CALL get_Ffields! - local FFT
+    ENDIF
   ENDIF
   IF(g_spectral) THEN
     IF (it.ge.timestat_itstart) THEN
@@ -519,7 +523,11 @@ END SUBROUTINE push_efield_2d
       CALL get_fields_mpi! global-hybrid IFFT
     ENDIF
   ELSE
-    CALL get_fields! local IFFT
+    IF (l_AM_rz) THEN 
+     CALL get_fields_AM_rz! local IFFT in RZ --PS: it's complex to complex
+    ELSE
+      CALL get_fields! local IFFT
+    ENDIF 
   ENDIF
 #endif
   IF (it.ge.timestat_itstart) THEN
