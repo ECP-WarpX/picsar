@@ -366,7 +366,7 @@ MODULE fourier_psaotd
     ENDIF
     ! Init fourier fields fields
 #if !defined(LIBRARY)
-    ! CALL copy_field_forward_AM_rz()
+     CALL copy_field_forward_AM_rz()
 #endif
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
@@ -866,7 +866,7 @@ MODULE fourier_psaotd
     ENDIF
 
 #if !defined (LIBRARY)
-     !CALL copy_field_backward_AM_rz
+     CALL copy_field_backward_AM_rz
 #endif
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)

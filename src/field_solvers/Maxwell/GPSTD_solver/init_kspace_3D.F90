@@ -2595,6 +2595,39 @@ MODULE gpstd_solver
     ENDIF
   END SUBROUTINE copy_field_forward
 
+  SUBROUTINE copy_field_backward_AM_rz()
+    USE fields, ONLY : el, er, et, bl, br, bt, jl, jr, jt
+    USE fields, ONLY : el_c, er_c, et_c, bl_c, br_c, bt_c, jl_c, jr_c, jt_c
+    USE omp_lib
+    USE picsar_precision, ONLY: idp
+
+    IMPLICIT NONE
+    INTEGER(idp) :: ir, il, imode, irr ,ill 
+    INTEGER(idp) , dimension(3) :: lbound_r, ubound_r, lbound_p ,ubound_p
+
+    lbound_r = LBOUND(el_c)
+    lbound_p = LBOUND(el)
+    ubound_r = UBOUND(el_c)
+    ubound_p = UBOUND(el)
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ir, il, imode, irr , ill) COLLAPSE(3)
+    DO imode=lbound_r(3),ubound_r(3)
+      DO il=lbound_r(2),ubound_r(2)
+        DO ir=lbound_r(1),ubound_r(1)
+          irr = ir - lbound_r(1) +lbound_p(1)
+          ill = il - lbound_r(2) +lbound_p(2)
+          el(irr, ill, imode)=el_c(ir, il, imode)
+          er(irr, ill, imode)=er_c(ir, il, imode)
+          et(irr, ill, imode)=et_c(ir, il, imode)
+          bl(irr, ill, imode)=bl_c(ir, il, imode)
+          br(irr, ill, imode)=br_c(ir, il, imode)
+          bt(irr, ill, imode)=bt_c(ir, il, imode)
+        END DO
+      END DO
+    END DO
+    !$OMP END PARALLEL DO
+  END SUBROUTINE copy_field_backward_AM_rz
+
+
   SUBROUTINE copy_field_backward()
     USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
     USE fields, ONLY : ex_r, ey_r, ez_r, bx_r, by_r, bz_r, jx_r, jy_r, jz_r
