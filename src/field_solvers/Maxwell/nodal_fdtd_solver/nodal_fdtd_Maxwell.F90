@@ -34,7 +34,7 @@
 
 ! ________________________________________________________________________________________
 !> @brief
-!> Push electric field nodal 3D order n
+!> Push electric field nodal 3D at arbitrary order.
 !> This subroutine is general enough to be called by AMReX.
 !> OMP pragmas are ignored when compiled for WarpX.
 !
@@ -47,18 +47,18 @@
 !> Creation 2018
 ! ________________________________________________________________________________________
 subroutine pxrpush_em3d_enodal( &
-     xlo, xhi, ylo, yhi, zlo, zhi, &
-     ex, exlo, exhi,&
-     ey, eylo, eyhi, &
-     ez, ezlo, ezhi, &
-     bx, bxlo, bxhi, &
-     by, bylo, byhi, &
-     bz, bzlo, bzhi, &
-     jx, jxlo, jxhi, &
-     jy, jylo, jyhi, &
-     jz, jzlo, jzhi, &
-     norderx, nordery, norderz, &
-     mudt, dtsdx, dtsdy, dtsdz)
+     xlo, xhi, ylo, yhi, zlo, zhi, &    ! mins/maxs for loops
+     ex, exlo, exhi, &                  ! Ex array + low/high bounds (size 3 arrays)
+     ey, eylo, eyhi, &                  ! Ey array + low/high bounds (size 3 arrays)
+     ez, ezlo, ezhi, &                  ! Ez array + low/high bounds (size 3 arrays)
+     bx, bxlo, bxhi, &                  ! Bx array + low/high bounds (size 3 arrays)
+     by, bylo, byhi, &                  ! By array + low/high bounds (size 3 arrays)
+     bz, bzlo, bzhi, &                  ! Bz array + low/high bounds (size 3 arrays)
+     jx, jxlo, jxhi, &                  ! Jx array + low/high bounds (size 3 arrays)
+     jy, jylo, jyhi, &                  ! Jy array + low/high bounds (size 3 arrays)
+     jz, jzlo, jzhi, &                  ! Jz array + low/high bounds (size 3 arrays)
+     norderx, nordery, norderz, &       ! Stencil order along x, y and z
+     mudt, dtsdx, dtsdy, dtsdz)         ! coefficients as function of mu, dt, dx, dy, dz
 USE picsar_precision, ONLY: idp, num, isp
 ! ______________________________________________________________________________
 
