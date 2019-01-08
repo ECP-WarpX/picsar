@@ -352,9 +352,9 @@ MODULE fields
   !> MPI-domain electric field grid in l - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: el_f
   !> MPI-domain electric field grid in r - Fourier space
-  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: er_f
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: ep_f
   !> MPI-domain electric field grid in theta - Fourier space
-  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: et_f
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: em_f
   !> MPI-domain electric field grid in l - Henkel space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: el_h
   !> MPI-domain electric field grid in p - Henkel space
@@ -364,9 +364,9 @@ MODULE fields
   !> MPI-domain magnetic field grid in l - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bl_f
   !> MPI-domain magnetic field grid in r - Fourier space
-  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: br_f
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bp_f
   !> MPI-domain magnetic field grid in theta - Fourier space
-  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bt_f
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bm_f
   !> MPI-domain magnetic field grid in l - Henkel space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: bl_h
   !> MPI-domain magnetic field grid in p - Henkel space
@@ -376,9 +376,9 @@ MODULE fields
   !> MPI-domain current grid in l - Fourier space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jl_f
   !> MPI-domain current grid in r - Fourier space
-  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jr_f
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jp_f
   !> MPI-domain current grid in theta - Fourier space
-  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jt_f
+  COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jm_f
   !> MPI-domain current grid in p - Henkel space
   COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: jl_h
   !> MPI-domain current grid in p - Henkel space

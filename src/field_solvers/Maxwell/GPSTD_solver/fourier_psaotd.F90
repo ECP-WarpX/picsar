@@ -1092,7 +1092,7 @@ MODULE fourier_psaotd
     USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
     USE fields, ONLY : el_c, er_c, et_c, bl_c, br_c, bt_c, jl_c, jr_c, jt_c,rho_c,   &
                        rhoold_c
-    USE fields, ONLY : el_f, er_f, et_f, bl_f, br_f, bt_f, jl_f, jr_f, jt_f, rho_f,   &
+    USE fields, ONLY : el_f, ep_f, em_f, bl_f, bp_f, bm_f, jl_f, jp_f, jm_f, rho_f,   &
                        rhoold_f
     USE shared_data, ONLY : absorbing_bcs
 
@@ -1103,21 +1103,35 @@ MODULE fourier_psaotd
     USE time_stat, ONLY: timestat_itstart, localtimes
     REAL(num)   :: tmptime
     INTEGER(idp), INTENT(IN)    ::   nfftx,nffty,nfftz
-
+    COMPLEX(cpx), dimension(:,:,:), allocatable :: ert_p, ert_m, brt_p,brt_m,jrt_p, jrt_m
 
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
+    ALLOCATE (ert_p(nfftx,nffty,nfftz))
+    ALLOCATE (ert_m(nfftx,nffty,nfftz))
+    ALLOCATE (brt_p(nfftx,nffty,nfftz))
+    ALLOCATE (brt_m(nfftx,nffty,nfftz))
+    ALLOCATE (jrt_p(nfftx,nffty,nfftz))
+    ALLOCATE (jrt_m(nfftx,nffty,nfftz))
+    
+    ii=DCMPLX(0.0_num, 1.0_num)
+    ert_p = (er_c+ii*et_c)/2._num
+    ert_m = (er_c-ii*et_c)/2._num
+    brt_p = (br_c+ii*bt_c)/2._num
+    brt_m = (br_c-ii*bt_c)/2._num   
+    jrt_p = (jr_c+ii*jt_c)/2._num
+    jrt_m = (jr_c-ii*jt_c)/2._num
 
     CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, el_c, el_f, plan_rz_f)
-    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, er_c, er_f, plan_rz_f)
-    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, et_c, et_f, plan_rz_f)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, ert_m, ep_f, plan_rz_f)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, ert_p, em_f, plan_rz_f)
     CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, bl_c, bl_f, plan_rz_f)
-    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, br_c, br_f, plan_rz_f)
-    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, bt_c, bt_f, plan_rz_f)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, brt_m, bp_f, plan_rz_f)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, brt_p, bm_f, plan_rz_f)
     CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, jl_c, jl_f, plan_rz_f)
-    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, jr_c, jr_f, plan_rz_f)
-    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, jt_c, jt_f, plan_rz_f)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, jrt_m, jp_f, plan_rz_f)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, jrt_p, jm_f, plan_rz_f)
     CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, rhoold_c,rhoold_f,plan_rz_f)
     CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, rho_c, rho_f, plan_rz_f)
     IF (it.ge.timestat_itstart) THEN
@@ -1400,7 +1414,7 @@ MODULE fourier_psaotd
     USE fastfft
     USE fields, ONLY : el_c, er_c, et_c, bl_c, br_c, bt_c, jl_c, jr_c, jt_c,rho_c,   &
                        rhoold_c
-    USE fields, ONLY : el_f, er_f, et_f, bl_f, br_f, bt_f, jl_f, jr_f, jt_f, rho_f,   &
+    USE fields, ONLY : el_f, em_f, ep_f, bl_f, bp_f, bm_f, jl_f, jp_f, jm_f, rho_f,   &
                        rhoold_f
     USE fourier, ONLY: plan_rz_f_inv
     USE mpi
@@ -1409,7 +1423,7 @@ MODULE fourier_psaotd
     USE time_stat, ONLY: timestat_itstart, localtimes
     REAL(num)   :: tmptime
     INTEGER(idp), INTENT(IN)     :: nfftx,nffty,nfftz
-
+    !REAL(num), dimension (:,:,:), allocatable :: epm_h, 
 
 
     IF (it.ge.timestat_itstart) THEN
