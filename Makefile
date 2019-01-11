@@ -51,14 +51,16 @@ CC=mpicc
 FARGS= -g -fbounds-check -O3 -fopenmp -JModules 
 
 # External libs 
-FFTW3_LIB=/home/llr/galop/izemzemi/soft/picsar_and_dep/FFTW_INSTALL_DIR/lib
-FFTW3_INCLUDE= /home/llr/galop/izemzemi/soft/picsar_and_dep/FFTW_INSTALL_DIR/include
+FFTW3_LIB=/Users/imen/PICSAR_SOFTWARE_AND_DEPENDENCIES/FFTW_INSTALL_DIR/lib     #/home/llr/galop/izemzemi/soft/picsar_and_dep/FFTW_INSTALL_DIR/lib
+FFTW3_INCLUDE= /Users/imen/PICSAR_SOFTWARE_AND_DEPENDENCIES/FFTW_INSTALL_DIR/include   #/home/llr/galop/izemzemi/soft/picsar_and_dep/FFTW_INSTALL_DIR/include
+LAPACK_BLAS_LIB=/Users/imen/PICSAR_SOFTWARE_AND_DEPENDENCIES/OpenBLAS_DIR/lib
+LAPACK_BLAS_INCLUDE=/Users/imen/PICSAR_SOFTWARE_AND_DEPENDENCIES/OpenBLAS_DIR/include
 VTUNEDIR=/opt/intel/vtune_amplifier_xe_2017.2.0.499904
 
 P3DFFT_INCLUDE=
 P3DFFT_LIB=
 IS_P3DFFT = false
-
+IS_HANKEL = true
 
 
 # Source directory
@@ -344,7 +346,11 @@ ifeq ($(MODE),library)
         LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_threads
 endif
 
-
+ifeq ($(IS_HANKEL),true)
+        FARGS += -I$(LAPACK_BLAS_INCLUDE) 
+        LDFLAGS += -L$(LAPACK_BLAS_LIB) -lopenblas
+        HANKEL_FILE = $(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/hankel.o
+endif
 
 $(SRCDIR)/%.o $(SRCDIR)/*/%.o $(SRCDIR)/*/*/%.o $(SRCDIR)/*/*/*/%.o $(SRCDIR)/%.mod $(MODDIR)/%.mod:$(SRCDIR)/%.F90
 	$(FC) $(FARGS) -c -o $@ $<
@@ -465,6 +471,7 @@ build:$(SRCDIR)/modules/modules.o \
 	mv $(APPNAME) $(BINDIR)
 else ifeq ($(MODE),$(filter $(MODE),prod_spectral debug_spectral))
 build:$(SRCDIR)/modules/modules.o \
+        $(HANKEL_FILE) \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fastfft.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/GPSTD.o \
 	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
