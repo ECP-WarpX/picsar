@@ -865,7 +865,7 @@ MODULE fourier_psaotd
       tmptime = MPI_WTIME()
     ENDIF
 
-#if !defined (LIBRARY)
+#if defined (LIBRARY)
      CALL copy_field_backward_AM_rz
 #endif
     IF (it.ge.timestat_itstart) THEN
@@ -1089,7 +1089,7 @@ MODULE fourier_psaotd
   SUBROUTINE fft_forward_c2c_local_AM_rz(nfftx,nffty,nfftz)
     USE fastfft
     USE fields, ONLY: g_spectral
-    USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
+    !USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
     USE fields, ONLY : el_c, er_c, et_c, bl_c, br_c, bt_c, jl_c, jr_c, jt_c,rho_c,   &
                        rhoold_c
     USE fields, ONLY : el_f, ep_f, em_f, bl_f, bp_f, bm_f, jl_f, jp_f, jm_f, rho_f,   &
@@ -1104,7 +1104,7 @@ MODULE fourier_psaotd
     REAL(num)   :: tmptime
     INTEGER(idp), INTENT(IN)    ::   nfftx,nffty,nfftz
     COMPLEX(cpx), dimension(:,:,:), allocatable :: ert_p, ert_m, brt_p,brt_m,jrt_p, jrt_m
-
+    COMPLEX (cpx) :: ii  
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
@@ -1137,6 +1137,13 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
     ENDIF
+
+    DEALLOCATE (ert_p)
+    DEALLOCATE (ert_m)
+    DEALLOCATE (brt_p)
+    DEALLOCATE (brt_m)
+    DEALLOCATE (jrt_p)
+    DEALLOCATE (jrt_m)
 
   END SUBROUTINE fft_forward_c2c_local_AM_rz
 
@@ -1412,10 +1419,12 @@ MODULE fourier_psaotd
 
   SUBROUTINE fft_backward_c2c_local_AM_rz(nfftx,nffty,nfftz)
     USE fastfft
+    USE Hankel
     USE fields, ONLY : el_c, er_c, et_c, bl_c, br_c, bt_c, jl_c, jr_c, jt_c,rho_c,   &
                        rhoold_c
-    USE fields, ONLY : el_f, em_f, ep_f, bl_f, bp_f, bm_f, jl_f, jp_f, jm_f, rho_f,   &
-                       rhoold_f
+    USE fields, ONLY : el_h_inv, em_h_inv, ep_h_inv, bl_h_inv, bp_h_inv, bm_h_inv
+    ! jl_h_inv, jp_h_inv, jm_h_inv, rho_h_inv,   &
+    !                   rhoold_h_inv
     USE fourier, ONLY: plan_rz_f_inv
     USE mpi
     USE params, ONLY: it
@@ -1423,23 +1432,45 @@ MODULE fourier_psaotd
     USE time_stat, ONLY: timestat_itstart, localtimes
     REAL(num)   :: tmptime
     INTEGER(idp), INTENT(IN)     :: nfftx,nffty,nfftz
-    !REAL(num), dimension (:,:,:), allocatable :: epm_h, 
+    COMPLEX(cpx), dimension(:,:,:), allocatable :: er_h_inv, et_h_inv, br_h_inv,bt_h_inv
+    COMPLEX (cpx) :: ii
 
+    ii = DCMPLX(0._num,1._num)
+
+    ALLOCATE (er_h_inv(nfftx,nffty,nfftz))    
+    ALLOCATE (et_h_inv(nfftx,nffty,nfftz))
+    ALLOCATE (br_h_inv(nfftx,nffty,nfftz))
+    ALLOCATE (bt_h_inv(nfftx,nffty,nfftz))
 
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
-    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, el_f, el_c,plan_rz_f_inv)
-    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, er_f, er_c,plan_rz_f_inv)
-    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, et_f, et_c,plan_rz_f_inv)
-    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, bl_f, bl_c,plan_rz_f_inv)
-    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, br_f, br_c,plan_rz_f_inv)
-    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, bt_f, bt_c,plan_rz_f_inv)
+
+    CALL get_Hfields_inv(nfftx)    
+
+    er_h_inv = em_h_inv+ep_h_inv
+    et_h_inv = ep_h_inv-em_h_inv
+    br_h_inv = bm_h_inv+bp_h_inv
+    bt_h_inv = bp_h_inv-bm_h_inv
+
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, el_h_inv, el_c,plan_rz_f_inv)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, er_h_inv, er_c,plan_rz_f_inv)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, et_h_inv, et_c,plan_rz_f_inv)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, bl_h_inv, bl_c,plan_rz_f_inv)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, br_h_inv, br_c,plan_rz_f_inv)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, bt_h_inv, bt_c,plan_rz_f_inv)
+
+    et_c = ii*et_c
+    bt_c = ii*bt_c
+
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
     ENDIF
 
-
+    DEALLOCATE (er_h_inv)
+    DEALLOCATE (et_h_inv)
+    DEALLOCATE (br_h_inv)
+    DEALLOCATE (bt_h_inv)
 
   END SUBROUTINE fft_backward_c2c_local_AM_rz
 
