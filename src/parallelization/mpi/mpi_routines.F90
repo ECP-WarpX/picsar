@@ -1824,12 +1824,6 @@ ALLOCATE(dive(-nxguards:nx+nxguards, -nyguards:ny+nyguards,                     
 ALLOCATE(divj(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 ALLOCATE(divb(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 ! --- Initialize auxiliary field arrays for gather to particles
-ex_p => ex
-ey_p => ey
-ez_p => ez
-bx_p => bx
-by_p => by
-bz_p => bz
 IF (l_AM_rz) THEN
   el_p => el_r
   er_p => er_r
@@ -1837,6 +1831,13 @@ IF (l_AM_rz) THEN
   bl_p => bl_r
   br_p => br_r
   bt_p => bt_r
+ELSE 
+  ex_p => ex
+  ey_p => ey
+  ez_p => ez
+  bx_p => bx
+  by_p => by
+  bz_p => bz
 ENDIF
 #if defined(FFTW)
 ! ---  Allocate grid quantities in Fourier space
@@ -2085,30 +2086,41 @@ IF (l_spectral) THEN
         ALLOCATE(el_h(nkx, nky, nkz))
         ALLOCATE(ep_h(nkx, nky, nkz))
         ALLOCATE(em_h(nkx, nky, nkz))
+        ALLOCATE(el_h_inv(nkx, nky, nkz))
+        ALLOCATE(ep_h_inv(nkx, nky, nkz))
+        ALLOCATE(em_h_inv(nkx, nky, nkz))
         ALLOCATE(bl_f(nkx, nky, nkz))
         ALLOCATE(bp_f(nkx, nky, nkz))
         ALLOCATE(bm_f(nkx, nky, nkz))
         ALLOCATE(bl_h(nkx, nky, nkz))
         ALLOCATE(bp_h(nkx, nky, nkz))
         ALLOCATE(bm_h(nkx, nky, nkz))
+        ALLOCATE(bl_h_inv(nkx, nky, nkz))
+        ALLOCATE(bp_h_inv(nkx, nky, nkz))
+        ALLOCATE(bm_h_inv(nkx, nky, nkz))
         ALLOCATE(jl_f(nkx, nky, nkz))
         ALLOCATE(jp_f(nkx, nky, nkz))
         ALLOCATE(jm_f(nkx, nky, nkz))
         ALLOCATE(jl_h(nkx, nky, nkz))
         ALLOCATE(jp_h(nkx, nky, nkz))
         ALLOCATE(jm_h(nkx, nky, nkz))
-        ALLOCATE(rhof(nkx, nky, nkz))
-        ALLOCATE(rhooldf(nkx, nky, nkz))
-      ENDIF
-      ! - Allocate real FFT arrays 
-      imn=-nxguards; imx=nx+nxguards-1
-      jmn=-nyguards;jmx=ny+nyguards-1
-      kmn=0;kmx=nmodes-1
-      IF (.NOT. absorbing_bcs) THEN
-      ! - When using absorbing_bcs, merged fields are not allocated in fourier space
-      ! - neither ex_r,ey_r ... components
-      ! - In this case only splitted fields are allocated  
-      ! - The merge is done using local fields (ex = exy+exz )
+        ALLOCATE(rho_f(nkx, nky, nkz))
+        ALLOCATE(rhoold_f(nkx, nky, nkz))
+        ALLOCATE(rho_h(nkx, nky, nkz))
+        ALLOCATE(rhoold_h(nkx, nky, nkz))
+        ALLOCATE (Ma_1(nkx,nkx))
+        ALLOCATE (invM_1(nkx,nkx))
+        ALLOCATE (Ma(nkx,nkx))
+        ALLOCATE (invM(nkx,nkx))
+        ALLOCATE (Ma1(nkx,nkx))
+        ALLOCATE (invM1(nkx,nkx))
+        imn=-nxguards; imx=nx+nxguards-1
+        jmn=-nyguards;jmx=ny+nyguards-1
+        kmn=0;kmx=nmodes-1
+        ! - When using absorbing_bcs, merged fields are not allocated in fourier space
+        ! - neither ex_r,ey_r ... components
+        ! - In this case only splitted fields are allocated  
+        ! - The merge is done using local fields (ex = exy+exz )
         ALLOCATE(el_c(imn:imx, jmn:jmx, kmn:kmx))
         ALLOCATE(er_c(imn:imx, jmn:jmx, kmn:kmx))
         ALLOCATE(et_c(imn:imx, jmn:jmx, kmn:kmx))
