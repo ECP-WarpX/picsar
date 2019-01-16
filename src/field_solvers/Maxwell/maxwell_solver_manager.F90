@@ -460,6 +460,7 @@ END SUBROUTINE push_efield_2d
   USE fields, ONLY: g_spectral, l_AM_rz
 #if defined(FFTW)
   USE fourier_psaotd
+  USE Hankel
 #endif
 #if defined(FFTW)
   USE matrix_data, ONLY: nmatrixes
@@ -491,7 +492,7 @@ END SUBROUTINE push_efield_2d
     ENDIF
   ELSE
     IF (l_AM_rz) THEN
-      CALL get_Ffields_AM_rz ! - local FFT in RZ --PS: it's complex to complex
+      CALL get_Hfields ! - local FFT in RZ --PS: it's complex to complex
     ELSE 
       CALL get_Ffields! - local FFT
     ENDIF

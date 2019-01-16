@@ -312,6 +312,56 @@ USE sorting
   CALL final_output_time_statistics
 
 END SUBROUTINE step
+
+! ________________________________________________________________________________________
+!> @brief
+!> init a laser inside the simulation box  
+!
+!> @author
+!> Imen Zemzemi
+!
+!> @date
+!> Creation 2019
+
+SUBROUTINE laser_gausssian
+  USE PICSAR_precision
+  USE laser_util , ONLY : a0, waist, tau, z0, zf, lambda0
+  USE constants, ONLY: clight, emass 
+  REAL (num):: k0, E0, zr, w0, 
+  REAL (num) :: PI  = 4 * atan (1.0_8)
+  COMPLEX (cpx) :: ii
+  
+  ii= DCMPLX(0._num, 1_num)
+  k0 = 2*PI/lambda0
+  w0= waist
+  E0 = a0*m_e*c**2*k0/e
+  zr = 0.5*k0*waist**2
+  inv_zr = 1./zr 
+  theta_pol =0. 
+  E0_x = E0 * cos(theta_pol)
+  E0_y = E0 * sin(theta_pol)
+  inv_ctau2 = 1./(c*tau)**2
+  propagation_dir =1.
+  phi2_chirp =0.
+  
+        !if zf is None:
+        !    zf = z0
+
+
+  diffract_factor = 1._num + ii * prop_dir*(z - zf) * inv_zr
+  stretch_factor = 1_num - 2._num*ii * phi2_chirp * clight**2 *inv_ctau2
+  exp_argument = - ii*cep_phase+ ii*k0*( prop_dir*(z - z0)-clight*t ) &
+  - (x**2 + y**2) / (w0**2 * diffract_factor) - 1./stretch_factor*inv_ctau2 * ( prop_dir*(z-z0)-clight*t )**2
+  profile = exp(exp_argument) /(diffract_factor * stretch_factor**0.5)
+
+  Ex = E0_x * profile
+  Ey = E0_y * profile
+
+  Ex_r = DREAL(Ex)
+  Ey_r = DREAL (Ey)
+
+
+END SUBROUTINE laser_gausssian
 ! ________________________________________________________________________________________
 !> @brief
 !> init pml arrays 
@@ -321,6 +371,7 @@ END SUBROUTINE step
 !
 !> @date
 !> Creation 2018
+
 
 SUBROUTINE init_pml_arrays
   USE field_boundary

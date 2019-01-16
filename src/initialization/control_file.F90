@@ -476,6 +476,8 @@ MODULE control_file
           CALL read_sorting_section
         CASE('section::particle_dump')
           CALL read_particle_dumps_section
+        CASE('section::laser_from_file')
+          CALL read_laser_from_file
         END SELECT
       END IF
     END DO
@@ -928,6 +930,45 @@ MODULE control_file
     END DO
     RETURN
   END SUBROUTINE read_main_section
+
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Routine that reads the laser profile from  section in the input file
+  !
+  !> @author
+  !> Imen Zemzemi
+  !
+  !> @date
+  !> Creation 2018
+  ! ______________________________________________________________________________________
+
+  SUBROUTINE read_laser_from_file
+    INTEGER :: ix = 0
+    LOGICAL(lp)  :: end_section = .FALSE.
+    ! READS GRID SECTION OF INPUT FILE
+    DO WHILE((.NOT. end_section) .AND. (ios==0))
+      READ(fh_input, '(A)', iostat=ios) buffer
+      !WRITE(0, *), TRIM(ADJUSTL(buffer))
+      IF (INDEX(buffer, '#') .GT. 0) THEN
+        CYCLE
+      ENDIF
+      IF (INDEX(buffer, 'w0') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') w0
+      ELSE IF (INDEX(buffer, 'ctau') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') ctau
+      ELSE IF (INDEX(buffer, 'k0') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') k0
+      ELSE IF (INDEX(buffer, 'E0') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') E0
+      END IF
+    END DO
+    RETURN
+  END SUBROUTINE read_laser_from_file
+
 
   ! ______________________________________________________________________________________
   !> @brief

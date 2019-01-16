@@ -317,7 +317,7 @@ END SUBROUTINE Hankel_M_and_invM
   !end do
   !write (*,*) "code stopped here"
 
-SUBROUTINE get_Hfields(nfftr)
+SUBROUTINE get_Hfields()
   USE PICSAR_precision
   USE fourier_psaotd
   USE shared_data, ONLY: nmodes
@@ -325,8 +325,11 @@ SUBROUTINE get_Hfields(nfftr)
   !USE fields, ONLY : el_f, er_f, et_f, bl_f, br_f, bt_f, jl_f, jr_f, jt_f, rho_f, rhoold_h
   USE fields, ONLY : el_f, ep_f, em_f, bl_f, bp_f, bm_f, jl_f, jp_f, jm_f, rho_f, rhoold_f
   USE fields, ONLY : Ma, Ma1, Ma_1
-  INTEGER (idp), intent(in) :: nfftr
+  USE shared_data, ONLY:  nx
+  USE fields, ONLY:  nxguards
+  !INTEGER (idp), intent(in) :: nfftr
   !REAL(num), dimension(:,:), allocatable :: Ma
+  INTEGER(idp) :: nfftr
   INTEGER (idp) :: imode
   REAL(num) :: t1, t2
   COMPLEX(cpx),POINTER, DIMENSION(:, :) :: el_h_ptr, ep_h_ptr, em_h_ptr, bl_h_ptr, bp_h_ptr, &
@@ -343,6 +346,11 @@ SUBROUTINE get_Hfields(nfftr)
   !ALLOCATE (f_f_r(size(el_f,1), size(el_f,2)))
   !ALLOCATE (f_h_im(size(el_h,1), size(el_h,2)))
   !ALLOCATE (f_f_im(size(el_f,1), size(el_f,2)))
+#if defined(LIBRARY)
+    nfftr=nx+2*nxguards+1
+#else
+    nfftr=nx+2*nxguards
+#endif
   Call get_Ffields_AM_rz()
   
   DO imode=1, nmodes
@@ -406,7 +414,7 @@ SUBROUTINE get_Hfields(nfftr)
 END SUBROUTINE get_Hfields
 
 
-SUBROUTINE get_Hfields_inv(nfftr)
+SUBROUTINE get_Hfields_inv()
   USE PICSAR_precision
   USE shared_data, ONLY: nmodes
   USE fields, ONLY:  el_h, ep_h, em_h, bl_h, bp_h, bm_h, jl_h, jp_h, jm_h, rhoold_h, rho_h
@@ -414,13 +422,22 @@ SUBROUTINE get_Hfields_inv(nfftr)
   USE fields, ONLY:  el_h_inv, ep_h_inv, em_h_inv, bl_h_inv, bp_h_inv, bm_h_inv 
   !                   jl_h_inv, jp_h_inv, jm_h_inv, rhoold_h_inv, rho_h_inv
   USE fields, ONLY : invM, invM1, invM_1
+  USE shared_data, ONLY:  nx
+  USE fields, ONLY:  nxguards
   COMPLEX(cpx),POINTER, DIMENSION(:, :) :: el_h_ptr, ep_h_ptr, em_h_ptr, bl_h_ptr, bp_h_ptr, bm_h_ptr,&
                                   el_h_inv_ptr, ep_h_inv_ptr, em_h_inv_ptr, bl_h_inv_ptr, bp_h_inv_ptr, bm_h_inv_ptr
-  INTEGER(idp), INTENT(IN):: nfftr
+  !INTEGER(idp), INTENT(IN):: nfftr
   !REAL(num), dimension(:,:), allocatable :: invM 
-  INTEGER (idp) :: imode
+  INTEGER (idp) :: imode, nfftr
   REAL (num) :: t1, t2
   !ALLOCATE (invM(nfftr,nfftr))
+#if defined(LIBRARY)
+    nfftr=nx+2*nxguards+1
+#else
+    nfftr=nx+2*nxguards
+#endif
+
+
   DO imode=1, nmodes
    ! Ma = Ma_tot(:,:,imode)
     Call Hankel_M_and_invM()
