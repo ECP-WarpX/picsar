@@ -73,9 +73,9 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:path_to_install_directory/lib (you may w
 
 III- Generating Makefile_Forthon
 
-In picsar directory, run
+To generate the Makefile_Forthon that builds the picsar python module with FFTW only use: 
 python configure --pxr_spectral_hybrid True --fftw_dir /path/to/fftw/directory # --other_flags(see doc)
-if you have already installed p3dfft then you can use this command line:
+To include the additional support of p3dfft use this command line indstead:
 python configure --pxr_spectral_hybrid True --fftw_dir /path/to/fftw/directory --p3dfft_dir /path/to/p3dfft/directory # --other_flags(see doc)
 
 Once you get this message :
