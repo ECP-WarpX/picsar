@@ -40,7 +40,7 @@ PROGRAM field_gathering_3d_test
   INTEGER(idp)                             :: nx,ny,nz
   INTEGER(idp)                             :: nxguard,nyguard,nzguard
   INTEGER                                  :: ierr,provided
-  LOGICAL(lp)                              :: l_lower_order_in_v
+  LOGICAL(lp)                              :: l_lower_order_in_v, l_nodal
   LOGICAL(lp)                              :: passed
   REAL(num)                                :: xmin,ymin,zmin
   REAL(num)                                :: xmax,ymax,zmax
@@ -108,7 +108,7 @@ PROGRAM field_gathering_3d_test
   epsilon = 1E-6
 
   l_lower_order_in_v = .TRUE.
-
+  l_nodal = .FALSE.
   passed = .TRUE.
 
   xmax = xmin + (nx-1)*dx
@@ -208,7 +208,7 @@ PROGRAM field_gathering_3d_test
       exg,nguard,nvalid, &
       eyg,nguard,nvalid, &
       ezg,nguard,nvalid, &
-      .FALSE._idp,l_lower_order_in_v)
+      .FALSE._idp,l_lower_order_in_v, l_nodal)
   te(i) = MPI_WTIME() - t0
 
   t0 = MPI_WTIME()
@@ -217,7 +217,7 @@ PROGRAM field_gathering_3d_test
       bxg,nguard,nvalid, &
       byg,nguard,nvalid, &
       bzg,nguard,nvalid, &
-      .FALSE._idp,l_lower_order_in_v)
+      .FALSE._idp,l_lower_order_in_v, l_nodal)
   tb(i) = MPI_WTIME()-t0
 
   sumbx(i)=sum(bx) ; sumby(i) = sum(by) ; sumbz(i) = sum(bz) ;
@@ -238,7 +238,7 @@ PROGRAM field_gathering_3d_test
     exg,nguard,nvalid, &
     eyg,nguard,nvalid, &
     ezg,nguard,nvalid, &
-    l_lower_order_in_v)
+    l_lower_order_in_v, l_nodal)
   te(i) = MPI_WTIME() - t0
   t0 = MPI_WTIME()
   CALL getb3d_energy_conserving_scalar_1_1_1(np,xp,yp,zp, &
@@ -246,7 +246,7 @@ PROGRAM field_gathering_3d_test
     bxg,nguard,nvalid, &
     byg,nguard,nvalid, &
     bzg,nguard,nvalid, &
-    l_lower_order_in_v)
+    l_lower_order_in_v, l_nodal)
   tb(i) = MPI_WTIME() -t0
 
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
@@ -273,7 +273,7 @@ PROGRAM field_gathering_3d_test
   t0 = MPI_WTIME()
   CALL geteb3d_energy_conserving_vecV2_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
+                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v, l_nodal)
   te(i) = MPI_WTIME() -t0
 
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
@@ -299,7 +299,7 @@ PROGRAM field_gathering_3d_test
   t0 = MPI_WTIME()
   CALL geteb3d_energy_conserving_vecV3_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
+                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v, l_nodal)
   te(i) = MPI_WTIME() -t0
   tb(i) = 0
 
@@ -334,7 +334,7 @@ PROGRAM field_gathering_3d_test
 	 bxg,nguard,nvalid, &
 	 byg,nguard,nvalid, &
 	 bzg,nguard,nvalid, &
-	 lvect,l_lower_order_in_v)
+	 lvect,l_lower_order_in_v, l_nodal)
   te(i) = MPI_WTIME() -t0
   tb(i) = 0
 
@@ -365,13 +365,13 @@ PROGRAM field_gathering_3d_test
   t0 = MPI_WTIME()
   CALL gete3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg,lvect,l_lower_order_in_v)
+                                      exg,eyg,ezg,lvect,l_lower_order_in_v, l_nodal)
   te(i) = MPI_WTIME() -t0
 
   t0 = MPI_WTIME()
   CALL getb3d_energy_conserving_vec_1_1_1(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      bxg,byg,bzg,lvect,l_lower_order_in_v)
+                                      bxg,byg,bzg,lvect,l_lower_order_in_v, l_nodal)
   tb(i) = MPI_WTIME() -t0
 
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
@@ -397,7 +397,7 @@ PROGRAM field_gathering_3d_test
   t0 = MPI_WTIME()
   CALL geteb3d_energy_conserving_vecV1_1_1_1(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
+                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v, l_nodal)
   te(i) = MPI_WTIME() -t0
 
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
@@ -462,7 +462,7 @@ PROGRAM field_gathering_3d_test
       exg,nguard,nvalid, &
       eyg,nguard,nvalid, &
       ezg,nguard,nvalid, &
-      .FALSE._idp,l_lower_order_in_v)
+      .FALSE._idp,l_lower_order_in_v, l_nodal)
   te(i) = MPI_WTIME() -t0
 
   t0 = MPI_WTIME()
@@ -473,7 +473,7 @@ PROGRAM field_gathering_3d_test
       bxg,nguard,nvalid, &
       byg,nguard,nvalid, &
       bzg,nguard,nvalid, &
-      .FALSE._idp,l_lower_order_in_v)
+      .FALSE._idp,l_lower_order_in_v, l_nodal)
   tb(i) = MPI_WTIME() -t0
 
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez) ;
@@ -494,7 +494,7 @@ PROGRAM field_gathering_3d_test
     exg,nguard,nvalid, &
     eyg,nguard,nvalid, &
     ezg,nguard,nvalid, &
-    l_lower_order_in_v)
+    l_lower_order_in_v, l_nodal)
   te(i) = MPI_WTIME() -t0
   t0 = MPI_WTIME()
   CALL getb3d_energy_conserving_scalar_2_2_2(np,xp,yp,zp, &
@@ -502,7 +502,7 @@ PROGRAM field_gathering_3d_test
     bxg,nguard,nvalid, &
     byg,nguard,nvalid, &
     bzg,nguard,nvalid, &
-    l_lower_order_in_v)
+    l_lower_order_in_v, l_nodal)
   tb(i) = MPI_WTIME() -t0
 
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
@@ -530,7 +530,7 @@ PROGRAM field_gathering_3d_test
   t0 = MPI_WTIME()
   CALL geteb3d_energy_conserving_vecV3_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
+                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v, l_nodal)
   te(i) = MPI_WTIME() -t0
 
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
@@ -566,7 +566,7 @@ PROGRAM field_gathering_3d_test
 	 bxg,nguard,nvalid, &
 	 byg,nguard,nvalid, &
 	 bzg,nguard,nvalid, &
-	 lvect,l_lower_order_in_v)
+	 lvect,l_lower_order_in_v, l_nodal)
   te(i) = MPI_WTIME() -t0
 
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
@@ -598,7 +598,7 @@ PROGRAM field_gathering_3d_test
   t0 = MPI_WTIME()
   CALL geteb3d_energy_conserving_vecV1_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
+                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v, l_nodal)
   te(i) = MPI_WTIME() -t0
 
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
@@ -626,7 +626,7 @@ PROGRAM field_gathering_3d_test
   t0 = MPI_WTIME()
   CALL geteb3d_energy_conserving_vecV2_2_2_2(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
+                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v, l_nodal)
   te(i) = MPI_WTIME() -t0
 
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
@@ -656,12 +656,12 @@ PROGRAM field_gathering_3d_test
   t0 = MPI_WTIME()
   CALL gete3d_energy_conserving_vec_2_2_2(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg,lvect,l_lower_order_in_v)
+                                      exg,eyg,ezg,lvect,l_lower_order_in_v, l_nodal)
   te(i) = MPI_WTIME() -t0
   t0 = MPI_WTIME()
   CALL getb3d_energy_conserving_vec_2_2_2(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      bxg,byg,bzg,lvect,l_lower_order_in_v)
+                                      bxg,byg,bzg,lvect,l_lower_order_in_v, l_nodal)
   tb(i) = MPI_WTIME() -t0
 
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
@@ -731,7 +731,7 @@ PROGRAM field_gathering_3d_test
       exg,nguard,nvalid, &
       eyg,nguard,nvalid, &
       ezg,nguard,nvalid, &
-      .FALSE._idp,l_lower_order_in_v)
+      .FALSE._idp,l_lower_order_in_v, l_nodal)
   te(i) = MPI_WTIME() -t0
 
   t0 = MPI_WTIME()
@@ -740,7 +740,7 @@ PROGRAM field_gathering_3d_test
       bxg,nguard,nvalid, &
       byg,nguard,nvalid, &
       bzg,nguard,nvalid, &
-      .FALSE._idp,l_lower_order_in_v)
+      .FALSE._idp,l_lower_order_in_v, l_nodal)
   tb(i) = MPI_WTIME() -t0
 
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
@@ -758,7 +758,7 @@ PROGRAM field_gathering_3d_test
     exg,nguard,nvalid, &
     eyg,nguard,nvalid, &
     ezg,nguard,nvalid, &
-    l_lower_order_in_v)
+    l_lower_order_in_v, l_nodal)
   te(i) = MPI_WTIME() -t0
 
   t0 = MPI_WTIME()
@@ -767,7 +767,7 @@ PROGRAM field_gathering_3d_test
     bxg,nguard,nvalid, &
     byg,nguard,nvalid, &
     bzg,nguard,nvalid, &
-    l_lower_order_in_v)
+    l_lower_order_in_v, l_nodal)
   tb(i) = MPI_WTIME() -t0
 
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
@@ -794,7 +794,7 @@ PROGRAM field_gathering_3d_test
   t0 = MPI_WTIME()
   CALL geteb3d_energy_conserving_vecV2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
+                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v, l_nodal)
   te(i) = MPI_WTIME() -t0
 
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
@@ -825,13 +825,13 @@ PROGRAM field_gathering_3d_test
   te(i) = MPI_WTIME() -t0
   CALL gete3d_energy_conserving_linear_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg,l_lower_order_in_v)
+                                      exg,eyg,ezg,l_lower_order_in_v, l_nodal)
   te(i) = MPI_WTIME() -t0
 
   t0 = MPI_WTIME()
   CALL getb3d_energy_conserving_linear_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      bxg,byg,bzg,l_lower_order_in_v)
+                                      bxg,byg,bzg,l_lower_order_in_v, l_nodal)
   tb(i) = MPI_WTIME() -t0
 
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
@@ -857,13 +857,13 @@ PROGRAM field_gathering_3d_test
 
   CALL gete3d_energy_conserving_vec_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg,lvect,l_lower_order_in_v)
+                                      exg,eyg,ezg,lvect,l_lower_order_in_v, l_nodal)
   te(i) = MPI_WTIME() -t0
 
   t0 = MPI_WTIME()
   CALL getb3d_energy_conserving_vec_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      bxg,byg,bzg,lvect,l_lower_order_in_v)
+                                      bxg,byg,bzg,lvect,l_lower_order_in_v, l_nodal)
   tb(i) = MPI_WTIME() -t0
 
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
@@ -890,7 +890,7 @@ PROGRAM field_gathering_3d_test
   t0 = MPI_WTIME()
   CALL geteb3d_energy_conserving_vec_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
+                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v, l_nodal)
   te(i) = MPI_WTIME() -t0
 
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
@@ -917,13 +917,13 @@ PROGRAM field_gathering_3d_test
   t0 = MPI_WTIME()
   CALL gete3d_energy_conserving_vec2_3_3_3(np,xp,yp,zp,ex,ey,ez,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg,lvect,l_lower_order_in_v)
+                                      exg,eyg,ezg,lvect,l_lower_order_in_v, l_nodal)
   te(i) = MPI_WTIME() -t0
 
   t0 = MPI_WTIME()
   CALL getb3d_energy_conserving_vec2_3_3_3(np,xp,yp,zp,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      bxg,byg,bzg,lvect,l_lower_order_in_v)
+                                      bxg,byg,bzg,lvect,l_lower_order_in_v, l_nodal)
   tb(i) = MPI_WTIME() -t0
 
   sumex(i)=sum(ex) ; sumey(i) = sum(ey) ; sumez(i) = sum(ez)
@@ -950,7 +950,7 @@ PROGRAM field_gathering_3d_test
   t0 = MPI_WTIME()
   CALL geteb3d_energy_conserving_blockvec2_3_3_3(np,xp,yp,zp,ex,ey,ez,bx,by,bz,xmin,ymin,zmin,   &
                                       dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard, &
-                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v)
+                                      exg,eyg,ezg,bxg,byg,bzg,lvect,l_lower_order_in_v, l_nodal)
   te(i) = MPI_WTIME() -t0
 
 
