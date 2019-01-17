@@ -77,6 +77,7 @@ SUBROUTINE gete3d_energy_conserving_scalar_2_2_2(np, xp, yp, zp, ex, ey, ez, xmi
   eyg_nguard(3), eyg_nvalid(3), ezg_nguard(3), ezg_nvalid(3)
   REAL(num), DIMENSION(np)             :: xp, yp, zp, ex, ey, ez
   LOGICAL(lp)                              :: l_lower_order_in_v, l_nodal
+  REAL(num)                                :: stagger_shift
   REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1,           &
   -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1,                                       &
   -exg_nguard(3):exg_nvalid(3)+exg_nguard(3)-1)
@@ -100,6 +101,12 @@ SUBROUTINE gete3d_energy_conserving_scalar_2_2_2(np, xp, yp, zp, ex, ey, ez, xmi
   REAL(num), DIMENSION(-1:1)           :: sz, sz0
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -137,13 +144,13 @@ SUBROUTINE gete3d_energy_conserving_scalar_2_2_2(np, xp, yp, zp, ex, ey, ez, xmi
       z = (zp(ip)-zmin)*dzi
 
       j=nint(x)
-      j0=floor(x-0.5_num)
+      j0=floor(x-stagger_shift)
 
       k=nint(y)
-      k0=floor(y-0.5_num)
+      k0=floor(y-stagger_shift)
 
       l=nint(z)
-      l0=floor(z-0.5_num)
+      l0=floor(z-stagger_shift)
 
       xint=x-j
       yint=y-k
@@ -164,9 +171,9 @@ SUBROUTINE gete3d_energy_conserving_scalar_2_2_2(np, xp, yp, zp, ex, ey, ez, xmi
       sz( 0) = 0.75_num-zintsq
       sz( 1) = 0.5_num*(0.5_num+zint)**2
 
-      xint=x-0.5_num-j0
-      yint=y-0.5_num-k0
-      zint=z-0.5_num-l0
+      xint=x-stagger_shift-j0
+      yint=y-stagger_shift-k0
+      zint=z-stagger_shift-l0
 
       sx0( 0) = 1.0_num-xint
       sx0( 1) = xint
@@ -236,13 +243,13 @@ SUBROUTINE gete3d_energy_conserving_scalar_2_2_2(np, xp, yp, zp, ex, ey, ez, xmi
       z = (zp(ip)-zmin)*dzi
 
       j=nint(x)
-      j0=floor(x)
+      j0=floor(x+0.5_num-stagger_shift)
 
       k=nint(y)
-      k0=floor(y)
+      k0=floor(y+0.5_num-stagger_shift)
 
       l=nint(z)
-      l0=floor(z)
+      l0=floor(z+0.5_num-stagger_shift)
 
       xint=x-j
       yint=y-k
@@ -263,9 +270,9 @@ SUBROUTINE gete3d_energy_conserving_scalar_2_2_2(np, xp, yp, zp, ex, ey, ez, xmi
       sz( 0) = 0.75_num-zintsq
       sz( 1) = 0.5_num*(0.5_num+zint)**2
 
-      xint=x-0.5_num-j0
-      yint=y-0.5_num-k0
-      zint=z-0.5_num-l0
+      xint=x-stagger_shift-j0
+      yint=y-stagger_shift-k0
+      zint=z-stagger_shift-l0
 
       xintsq = xint*xint
       sx0(-1) = 0.5_num*(0.5_num-xint)**2
@@ -366,6 +373,7 @@ SUBROUTINE getb3d_energy_conserving_scalar_2_2_2(np, xp, yp, zp, bx, by, bz, xmi
   byg_nguard(3), byg_nvalid(3), bzg_nguard(3), bzg_nvalid(3)
   REAL(num), DIMENSION(np)             :: xp, yp, zp, bx, by, bz
   LOGICAL(lp)                              :: l_lower_order_in_v, l_nodal
+  REAL(num)                                :: stagger_shift
   REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1,           &
   -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1,                                       &
   -bxg_nguard(3):bxg_nvalid(3)+bxg_nguard(3)-1)
@@ -386,6 +394,12 @@ SUBROUTINE getb3d_energy_conserving_scalar_2_2_2(np, xp, yp, zp, bx, by, bz, xmi
   REAL(num), DIMENSION(-1:1)           :: sz, sz0
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num,                   &
   twothird=2.0_num/3.0_num
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -423,13 +437,13 @@ SUBROUTINE getb3d_energy_conserving_scalar_2_2_2(np, xp, yp, zp, bx, by, bz, xmi
       z = (zp(ip)-zmin)*dzi
 
       j=nint(x)
-      j0=floor(x-0.5_num)
+      j0=floor(x-stagger_shift)
 
       k=nint(y)
-      k0=floor(y-0.5_num)
+      k0=floor(y-stagger_shift)
 
       l=nint(z)
-      l0=floor(z-0.5_num)
+      l0=floor(z-stagger_shift)
 
       xint=x-j
       yint=y-k
@@ -450,9 +464,9 @@ SUBROUTINE getb3d_energy_conserving_scalar_2_2_2(np, xp, yp, zp, bx, by, bz, xmi
       sz( 0) = 0.75_num-zintsq
       sz( 1) = 0.5_num*(0.5_num+zint)**2
 
-      xint=x-0.5_num-j0
-      yint=y-0.5_num-k0
-      zint=z-0.5_num-l0
+      xint=x-stagger_shift-j0
+      yint=y-stagger_shift-k0
+      zint=z-stagger_shift-l0
 
       sx0( 0) = 1.0_num-xint
       sx0( 1) = xint
@@ -521,13 +535,13 @@ SUBROUTINE getb3d_energy_conserving_scalar_2_2_2(np, xp, yp, zp, bx, by, bz, xmi
       z = (zp(ip)-zmin)*dzi
 
       j=nint(x)
-      j0=floor(x)
+      j0=floor(x+0.5_num-stagger_shift)
 
       k=nint(y)
-      k0=floor(y)
+      k0=floor(y+0.5_num-stagger_shift)
 
       l=nint(z)
-      l0=floor(z)
+      l0=floor(z+0.5_num-stagger_shift)
 
       xint=x-j
       yint=y-k
@@ -548,9 +562,9 @@ SUBROUTINE getb3d_energy_conserving_scalar_2_2_2(np, xp, yp, zp, bx, by, bz, xmi
       sz( 0) = 0.75_num-zintsq
       sz( 1) = 0.5_num*(0.5_num+zint)**2
 
-      xint=x-0.5_num-j0
-      yint=y-0.5_num-k0
-      zint=z-0.5_num-l0
+      xint=x-stagger_shift-j0
+      yint=y-stagger_shift-k0
+      zint=z-stagger_shift-l0
 
       xintsq = xint*xint
       sx0(-1) = 0.5_num*(0.5_num-xint)**2
@@ -649,6 +663,7 @@ SUBROUTINE gete3d_energy_conserving_vec_2_2_2(np, xp, yp, zp, ex, ey, ez, xmin, 
   INTEGER(idp)                         :: lvect
   REAL(num), DIMENSION(np)             :: xp, yp, zp, ex, ey, ez
   LOGICAL(lp)                              :: l_lower_order_in_v, l_nodal
+  REAL(num)                                :: stagger_shift
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard, -nzguard:nz+nzguard) &
   :: exg, eyg, ezg
   REAL(num)                            :: xmin, ymin, zmin, dx, dy, dz
@@ -664,6 +679,12 @@ SUBROUTINE gete3d_energy_conserving_vec_2_2_2(np, xp, yp, zp, ex, ey, ez, xmin, 
   REAL(num), DIMENSION(lvect, -1:1)     :: sz, sz0
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num,                   &
   twothird=2.0_num/3.0_num
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -711,11 +732,11 @@ SUBROUTINE gete3d_energy_conserving_vec_2_2_2(np, xp, yp, zp, ex, ey, ez, xmin, 
 
         ! Compute index of particle
         j=nint(x)
-        j0=floor(x-0.5_num)
+        j0=floor(x-stagger_shift)
         k=nint(y)
-        k0=floor(y-0.5_num)
+        k0=floor(y-stagger_shift)
         l=nint(z)
-        l0=floor(z-0.5_num)
+        l0=floor(z-stagger_shift)
 
         xint=x-j
         yint=y-k
@@ -737,9 +758,9 @@ SUBROUTINE gete3d_energy_conserving_vec_2_2_2(np, xp, yp, zp, ex, ey, ez, xmin, 
         sz(n, 0) = 0.75_num-zintsq
         sz(n, 1) = 0.5_num*(0.5_num+zint)**2
 
-        xint=x-0.5_num-j0
-        yint=y-0.5_num-k0
-        zint=z-0.5_num-l0
+        xint=x-stagger_shift-j0
+        yint=y-stagger_shift-k0
+        zint=z-stagger_shift-l0
 
         sx0(n, 0) = 1.0_num-xint
         sx0(n, 1) = xint
@@ -850,11 +871,11 @@ SUBROUTINE gete3d_energy_conserving_vec_2_2_2(np, xp, yp, zp, ex, ey, ez, xmin, 
 
         ! Compute index of particle
         j=nint(x)
-        j0=floor(x)
+        j0=floor(x+0.5_num-stagger_shift)
         k=nint(y)
-        k0=floor(y)
+        k0=floor(y+0.5_num-stagger_shift)
         l=nint(z)
-        l0=floor(z)
+        l0=floor(z+0.5_num-stagger_shift)
 
         xint=x-j
         yint=y-k
@@ -876,9 +897,9 @@ SUBROUTINE gete3d_energy_conserving_vec_2_2_2(np, xp, yp, zp, ex, ey, ez, xmin, 
         sz(n, 0) = 0.75_num-zintsq
         sz(n, 1) = 0.5_num*(0.5_num+zint)**2
 
-        xint=x-0.5_num-j0
-        yint=y-0.5_num-k0
-        zint=z-0.5_num-l0
+        xint=x-stagger_shift-j0
+        yint=y-stagger_shift-k0
+        zint=z-stagger_shift-l0
 
         xintsq = xint*xint
         sx0(n, -1) = 0.5_num*(0.5_num-xint)**2
@@ -1032,6 +1053,7 @@ SUBROUTINE getb3d_energy_conserving_vec_2_2_2(np, xp, yp, zp, bx, by, bz, xmin, 
   INTEGER(idp)                         :: lvect
   REAL(num), DIMENSION(np)             :: xp, yp, zp, bx, by, bz
   LOGICAL(lp)                              :: l_lower_order_in_v, l_nodal
+  REAL(num)                                :: stagger_shift
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard, -nzguard:nz+nzguard) &
   :: bxg, byg, bzg
   REAL(num)                            :: xmin, ymin, zmin, dx, dy, dz
@@ -1046,6 +1068,12 @@ SUBROUTINE getb3d_energy_conserving_vec_2_2_2(np, xp, yp, zp, bx, by, bz, xmin, 
   REAL(num), DIMENSION(lvect, -1:1)     :: sz, sz0
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num,                   &
   twothird=2.0_num/3.0_num
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -1093,11 +1121,11 @@ SUBROUTINE getb3d_energy_conserving_vec_2_2_2(np, xp, yp, zp, bx, by, bz, xmin, 
 
         ! Compute index of particle
         j=nint(x)
-        j0=floor(x-0.5_num)
+        j0=floor(x-stagger_shift)
         k=nint(y)
-        k0=floor(y-0.5_num)
+        k0=floor(y-stagger_shift)
         l=nint(z)
-        l0=floor(z-0.5_num)
+        l0=floor(z-stagger_shift)
 
         xint=x-j
         yint=y-k
@@ -1119,9 +1147,9 @@ SUBROUTINE getb3d_energy_conserving_vec_2_2_2(np, xp, yp, zp, bx, by, bz, xmin, 
         sz(n, 0) = 0.75_num-zintsq
         sz(n, 1) = 0.5_num*(0.5_num+zint)**2
 
-        xint=x-0.5_num-j0
-        yint=y-0.5_num-k0
-        zint=z-0.5_num-l0
+        xint=x-stagger_shift-j0
+        yint=y-stagger_shift-k0
+        zint=z-stagger_shift-l0
 
         sx0(n, 0) = 1.0_num-xint
         sx0(n, 1) = xint
@@ -1213,11 +1241,11 @@ SUBROUTINE getb3d_energy_conserving_vec_2_2_2(np, xp, yp, zp, bx, by, bz, xmin, 
 
         ! Compute index of particle
         j=nint(x)
-        j0=floor(x)
+        j0=floor(x+0.5_num-stagger_shift)
         k=nint(y)
-        k0=floor(y)
+        k0=floor(y+0.5_num-stagger_shift)
         l=nint(z)
-        l0=floor(z)
+        l0=floor(z+0.5_num-stagger_shift)
 
         xint=x-j
         yint=y-k
@@ -1239,9 +1267,9 @@ SUBROUTINE getb3d_energy_conserving_vec_2_2_2(np, xp, yp, zp, bx, by, bz, xmin, 
         sz(n, 0) = 0.75_num-zintsq
         sz(n, 1) = 0.5_num*(0.5_num+zint)**2
 
-        xint=x-0.5_num-j0
-        yint=y-0.5_num-k0
-        zint=z-0.5_num-l0
+        xint=x-stagger_shift-j0
+        yint=y-stagger_shift-k0
+        zint=z-stagger_shift-l0
 
         xintsq = xint*xint
         sx0(n, -1) = 0.5_num*(0.5_num-xint)**2
@@ -1397,6 +1425,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV1_2_2_2(np, xp, yp, zp, ex, ey, ez, bx,
   REAL(num), DIMENSION(np)               :: xp, yp, zp, ex, ey, ez, bx, by, bz
   INTEGER(idp)                           :: lvect
   LOGICAL(lp)                                :: l_lower_order_in_v, l_nodal
+  REAL(num)                                  :: stagger_shift
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard, -nzguard:nz+nzguard) &
   :: exg, eyg, ezg
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard, -nzguard:nz+nzguard) &
@@ -1413,6 +1442,12 @@ SUBROUTINE geteb3d_energy_conserving_vecV1_2_2_2(np, xp, yp, zp, ex, ey, ez, bx,
   REAL(num), DIMENSION(lvect, -1:1)       :: sz, sz0
   REAL(num), PARAMETER                   :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                   :: twothird=2.0_num/3.0_num
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -1461,11 +1496,11 @@ SUBROUTINE geteb3d_energy_conserving_vecV1_2_2_2(np, xp, yp, zp, ex, ey, ez, bx,
 
         ! Compute index of particle
         j=nint(x)
-        j0=floor(x-0.5_num)
+        j0=floor(x-stagger_shift)
         k=nint(y)
-        k0=floor(y-0.5_num)
+        k0=floor(y-stagger_shift)
         l=nint(z)
-        l0=floor(z-0.5_num)
+        l0=floor(z-stagger_shift)
 
         xint=x-j
         yint=y-k
@@ -1487,9 +1522,9 @@ SUBROUTINE geteb3d_energy_conserving_vecV1_2_2_2(np, xp, yp, zp, ex, ey, ez, bx,
         sz(n, 0) = 0.75_num-zintsq
         sz(n, 1) = 0.5_num*(0.5_num+zint)**2
 
-        xint=x-0.5_num-j0
-        yint=y-0.5_num-k0
-        zint=z-0.5_num-l0
+        xint=x-stagger_shift-j0
+        yint=y-stagger_shift-k0
+        zint=z-stagger_shift-l0
 
         sx0(n, 0) = 1.0_num-xint
         sx0(n, 1) = xint
@@ -1644,11 +1679,11 @@ SUBROUTINE geteb3d_energy_conserving_vecV1_2_2_2(np, xp, yp, zp, ex, ey, ez, bx,
 
         ! Compute index of particle
         j=nint(x)
-        j0=floor(x)
+        j0=floor(x+0.5_num-stagger_shift)
         k=nint(y)
-        k0=floor(y)
+        k0=floor(y+0.5_num-stagger_shift)
         l=nint(z)
-        l0=floor(z)
+        l0=floor(z+0.5_num-stagger_shift)
 
         xint=x-j
         yint=y-k
@@ -1670,9 +1705,9 @@ SUBROUTINE geteb3d_energy_conserving_vecV1_2_2_2(np, xp, yp, zp, ex, ey, ez, bx,
         sz(n, 0) = 0.75_num-zintsq
         sz(n, 1) = 0.5_num*(0.5_num+zint)**2
 
-        xint=x-0.5_num-j0
-        yint=y-0.5_num-k0
-        zint=z-0.5_num-l0
+        xint=x-stagger_shift-j0
+        yint=y-stagger_shift-k0
+        zint=z-stagger_shift-l0
 
         xintsq = xint*xint
         sx0(n, -1) = 0.5_num*(0.5_num-xint)**2
@@ -1916,6 +1951,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV2_2_2_2(np, xp, yp, zp, ex, ey, ez, bx,
   REAL(num), DIMENSION(np)               :: xp, yp, zp, ex, ey, ez, bx, by, bz
   INTEGER(idp)                           :: lvect
   LOGICAL(lp)                                :: l_lower_order_in_v, l_nodal
+  REAL(num)                                  :: stagger_shift
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard, -nzguard:nz+nzguard) &
   :: exg, eyg, ezg
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard, -nzguard:nz+nzguard) &
@@ -1942,6 +1978,12 @@ SUBROUTINE geteb3d_energy_conserving_vecV2_2_2_2(np, xp, yp, zp, ex, ey, ez, bx,
 #endif
   REAL(num), PARAMETER                   :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                   :: twothird=2.0_num/3.0_num
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -1985,11 +2027,11 @@ SUBROUTINE geteb3d_energy_conserving_vecV2_2_2_2(np, xp, yp, zp, ex, ey, ez, bx,
 
       ! Compute index of particle
       j(n)=nint(x)
-      j0(n)=floor(x-0.5_num)
+      j0(n)=floor(x-stagger_shift)
       k(n)=nint(y)
-      k0(n)=floor(y-0.5_num)
+      k0(n)=floor(y-stagger_shift)
       l(n)=nint(z)
-      l0(n)=floor(z-0.5_num)
+      l0(n)=floor(z-stagger_shift)
 
       xint=x-j(n)
       yint=y-k(n)
@@ -2011,9 +2053,9 @@ SUBROUTINE geteb3d_energy_conserving_vecV2_2_2_2(np, xp, yp, zp, ex, ey, ez, bx,
       sz(n, 0) = 0.75_num-zintsq
       sz(n, 1) = 0.5_num*(0.5_num+zint)**2
 
-      xint=x-0.5_num-j0(n)
-      yint=y-0.5_num-k0(n)
-      zint=z-0.5_num-l0(n)
+      xint=x-stagger_shift-j0(n)
+      yint=y-stagger_shift-k0(n)
+      zint=z-stagger_shift-l0(n)
 
       sx0(n, 0) = 1.0_num-xint
       sx0(n, 1) = xint
@@ -2233,6 +2275,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV3_2_2_2(np, xp, yp, zp, ex, ey, ez, bx,
   REAL(num), DIMENSION(np), INTENT(INOUT):: ex, ey, ez, bx, by, bz
   INTEGER(idp)                           :: lvect
   LOGICAL(lp)                                :: l_lower_order_in_v, l_nodal
+  REAL(num)                                  :: stagger_shift
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,                      &
   -nzguard:nz+nzguard), INTENT(IN) :: exg, eyg, ezg
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,                      &
@@ -2249,6 +2292,12 @@ SUBROUTINE geteb3d_energy_conserving_vecV3_2_2_2(np, xp, yp, zp, ex, ey, ez, bx,
   REAL(num), DIMENSION(lvect, -1:1)       :: sz, sz0
   REAL(num), PARAMETER                   :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                   :: twothird=2.0_num/3.0_num
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -2299,11 +2348,11 @@ SUBROUTINE geteb3d_energy_conserving_vecV3_2_2_2(np, xp, yp, zp, ex, ey, ez, bx,
 
         ! Compute index of particle
         j=nint(x)
-        j0=floor(x-0.5_num)
+        j0=floor(x-stagger_shift)
         k=nint(y)
-        k0=floor(y-0.5_num)
+        k0=floor(y-stagger_shift)
         l=nint(z)
-        l0=floor(z-0.5_num)
+        l0=floor(z-stagger_shift)
 
         xint=x-j
         yint=y-k
@@ -2325,9 +2374,9 @@ SUBROUTINE geteb3d_energy_conserving_vecV3_2_2_2(np, xp, yp, zp, ex, ey, ez, bx,
         sz(n, 0) = 0.75_num-zintsq
         sz(n, 1) = 0.5_num*(0.5_num+zint)**2
 
-        xint=x-0.5_num-j0
-        yint=y-0.5_num-k0
-        zint=z-0.5_num-l0
+        xint=x-stagger_shift-j0
+        yint=y-stagger_shift-k0
+        zint=z-stagger_shift-l0
 
         sx0(n, 0) = 1.0_num-xint
         sx0(n, 1) = xint
@@ -2467,11 +2516,11 @@ SUBROUTINE geteb3d_energy_conserving_vecV3_2_2_2(np, xp, yp, zp, ex, ey, ez, bx,
 
         ! Compute index of particle
         j=nint(x)
-        j0=floor(x)
+        j0=floor(x+0.5_num-stagger_shift)
         k=nint(y)
-        k0=floor(y)
+        k0=floor(y+0.5_num-stagger_shift)
         l=nint(z)
-        l0=floor(z)
+        l0=floor(z+0.5_num-stagger_shift)
 
         xint=x-j
         yint=y-k
@@ -2493,9 +2542,9 @@ SUBROUTINE geteb3d_energy_conserving_vecV3_2_2_2(np, xp, yp, zp, ex, ey, ez, bx,
         sz(n, 0) = 0.75_num-zintsq
         sz(n, 1) = 0.5_num*(0.5_num+zint)**2
 
-        xint=x-0.5_num-j0
-        yint=y-0.5_num-k0
-        zint=z-0.5_num-l0
+        xint=x-stagger_shift-j0
+        yint=y-stagger_shift-k0
+        zint=z-stagger_shift-l0
 
         xintsq = xint*xint
         sx0(n, -1) = 0.5_num*(0.5_num-xint)**2
@@ -2709,6 +2758,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV4_2_2_2(np, xp, yp, zp, ex, ey, ez, bx,
   REAL(num), DIMENSION(np), INTENT(INOUT):: ex, ey, ez, bx, by, bz
   INTEGER(idp)                           :: lvect
   LOGICAL(lp)                            :: l_lower_order_in_v, l_nodal
+  REAL(num)                              :: stagger_shift
   REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1,           &
   -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1,                                       &
   -exg_nguard(3):exg_nvalid(3)+exg_nguard(3)-1)
@@ -2739,6 +2789,12 @@ SUBROUTINE geteb3d_energy_conserving_vecV4_2_2_2(np, xp, yp, zp, ex, ey, ez, bx,
   REAL(num), DIMENSION(-1:1)             :: sz, sz0
   REAL(num), PARAMETER                   :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                   :: twothird=2.0_num/3.0_num
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -2787,11 +2843,11 @@ SUBROUTINE geteb3d_energy_conserving_vecV4_2_2_2(np, xp, yp, zp, ex, ey, ez, bx,
 
         ! Compute index of particle
         j=nint(x)
-        j0=floor(x-0.5_num)
+        j0=floor(x-stagger_shift)
         k=nint(y)
-        k0=floor(y-0.5_num)
+        k0=floor(y-stagger_shift)
         l=nint(z)
-        l0=floor(z-0.5_num)
+        l0=floor(z-stagger_shift)
 
         xint=x-j
         yint=y-k
@@ -2813,9 +2869,9 @@ SUBROUTINE geteb3d_energy_conserving_vecV4_2_2_2(np, xp, yp, zp, ex, ey, ez, bx,
         sz( 0) = 0.75_num-zintsq
         sz( 1) = 0.5_num*(0.5_num+zint)**2
 
-        xint=x-0.5_num-j0
-        yint=y-0.5_num-k0
-        zint=z-0.5_num-l0
+        xint=x-stagger_shift-j0
+        yint=y-stagger_shift-k0
+        zint=z-stagger_shift-l0
 
         sx0( 0) = 1.0_num-xint
         sx0( 1) = xint
@@ -2948,11 +3004,11 @@ SUBROUTINE geteb3d_energy_conserving_vecV4_2_2_2(np, xp, yp, zp, ex, ey, ez, bx,
 
         ! Compute index of particle
         j=nint(x)
-        j0=floor(x)
+        j0=floor(x+0.5_num-stagger_shift)
         k=nint(y)
-        k0=floor(y)
+        k0=floor(y+0.5_num-stagger_shift)
         l=nint(z)
-        l0=floor(z)
+        l0=floor(z+0.5_num-stagger_shift)
 
         xint=x-j
         yint=y-k
@@ -2974,9 +3030,9 @@ SUBROUTINE geteb3d_energy_conserving_vecV4_2_2_2(np, xp, yp, zp, ex, ey, ez, bx,
         sz( 0) = 0.75_num-zintsq
         sz( 1) = 0.5_num*(0.5_num+zint)**2
 
-        xint=x-0.5_num-j0
-        yint=y-0.5_num-k0
-        zint=z-0.5_num-l0
+        xint=x-stagger_shift-j0
+        yint=y-stagger_shift-k0
+        zint=z-stagger_shift-l0
 
         xintsq = xint*xint
         sx0(-1) = 0.5_num*(0.5_num-xint)**2

@@ -73,6 +73,7 @@ SUBROUTINE pxrgete3d_n_energy_conserving(np, xp, yp, zp, ex, ey, ez, xmin, ymin,
   -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1,                                       &
   -ezg_nguard(3):ezg_nvalid(3)+ezg_nguard(3)-1)
   LOGICAL(lp)              :: l_lower_order_in_v, l_nodal
+  REAL(num)                :: stagger_shift
   REAL(num) :: xmin, ymin, zmin, dx, dy, dz
   INTEGER(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, ixmin0,      &
   ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
@@ -84,6 +85,12 @@ SUBROUTINE pxrgete3d_n_energy_conserving(np, xp, yp, zp, ex, ey, ez, xmin, ymin,
   REAL(num), dimension(:), allocatable :: sx0, sy0, sz0
   REAL(num), parameter :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
 
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -125,46 +132,46 @@ SUBROUTINE pxrgete3d_n_energy_conserving(np, xp, yp, zp, ex, ey, ez, xmin, ymin,
     IF (l_lower_order_in_v) THEN
       IF (nox==2*(nox/2)) THEN
         j=nint(x)
-        j0=floor(x-0.5_num)
+        j0=floor(x-stagger_shift)
       ELSE
         j=floor(x)
-        j0=floor(x)
+        j0=floor(x+0.5_num-stagger_shift)
       END IF
       IF (noy==2*(noy/2)) THEN
         k=nint(y)
-        k0=floor(y-0.5_num)
+        k0=floor(y-stagger_shift)
       ELSE
         k=floor(y)
-        k0=floor(y)
+        k0=floor(y+0.5_num-stagger_shift)
       END IF
       IF (noz==2*(noz/2)) THEN
         l=nint(z)
-        l0=floor(z-0.5_num)
+        l0=floor(z-stagger_shift)
       ELSE
         l=floor(z)
-        l0=floor(z)
+        l0=floor(z+0.5_num-stagger_shift)
       END IF
     ELSE
       IF (nox==2*(nox/2)) THEN
         j=nint(x)
-        j0=floor(x)
+        j0=floor(x+0.5_num-stagger_shift)
       ELSE
         j=floor(x)
-        j0=floor(x-0.5_num)
+        j0=floor(x-stagger_shift)
       END IF
       IF (noy==2*(noy/2)) THEN
         k=nint(y)
-        k0=floor(y)
+        k0=floor(y+0.5_num-stagger_shift)
       ELSE
         k=floor(y)
-        k0=floor(y-0.5_num)
+        k0=floor(y-stagger_shift)
       END IF
       IF (noz==2*(noz/2)) THEN
         l=nint(z)
-        l0=floor(z)
+        l0=floor(z+0.5_num-stagger_shift)
       ELSE
         l=floor(z)
-        l0=floor(z-0.5_num)
+        l0=floor(z-stagger_shift)
       END IF
     END IF
 
@@ -226,9 +233,9 @@ SUBROUTINE pxrgete3d_n_energy_conserving(np, xp, yp, zp, ex, ey, ez, xmin, ymin,
       sz( 2) = onesixth*zintsq*zint
     END IF
 
-    xint=x-0.5_num-j0
-    yint=y-0.5_num-k0
-    zint=z-0.5_num-l0
+    xint=x-stagger_shift-j0
+    yint=y-stagger_shift-k0
+    zint=z-stagger_shift-l0
 
     IF (l_lower_order_in_v) THEN
 
@@ -372,6 +379,7 @@ SUBROUTINE pxrgetb3d_n_energy_conserving(np, xp, yp, zp, bx, by, bz, xmin, ymin,
   byg_nguard(3), byg_nvalid(3), bzg_nguard(3), bzg_nvalid(3)
   REAL(num), DIMENSION(np) :: xp, yp, zp, bx, by, bz
   LOGICAL(lp)  :: l_lower_order_in_v, l_nodal
+  REAL(num)    :: stagger_shift
   REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1,           &
   -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1,                                       &
   -bxg_nguard(3):bxg_nvalid(3)+bxg_nguard(3)-1)
@@ -391,6 +399,12 @@ SUBROUTINE pxrgetb3d_n_energy_conserving(np, xp, yp, zp, bx, by, bz, xmin, ymin,
   REAL(num), DIMENSION(-int(noz/2):int((noz+1)/2)) :: sz
   REAL(num), DIMENSION(:), ALLOCATABLE :: sx0, sy0, sz0
   REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -439,46 +453,46 @@ SUBROUTINE pxrgetb3d_n_energy_conserving(np, xp, yp, zp, bx, by, bz, xmin, ymin,
     IF (l_lower_order_in_v) THEN
       IF (nox==2*(nox/2)) THEN
         j=nint(x)
-        j0=floor(x-0.5_num)
+        j0=floor(x-stagger_shift)
       ELSE
         j=floor(x)
-        j0=floor(x)
+        j0=floor(x+0.5_num-stagger_shift)
       END IF
       IF (noy==2*(noy/2)) THEN
         k=nint(y)
-        k0=floor(y-0.5_num)
+        k0=floor(y-stagger_shift)
       ELSE
         k=floor(y)
-        k0=floor(y)
+        k0=floor(y+0.5_num-stagger_shift)
       END IF
       IF (noz==2*(noz/2)) THEN
         l=nint(z)
-        l0=floor(z-0.5_num)
+        l0=floor(z-stagger_shift)
       ELSE
         l=floor(z)
-        l0=floor(z)
+        l0=floor(z+0.5_num-stagger_shift)
       END IF
     ELSE
       IF (nox==2*(nox/2)) THEN
         j=nint(x)
-        j0=floor(x)
+        j0=floor(x+0.5_num-stagger_shift)
       ELSE
         j=floor(x)
-        j0=floor(x-0.5_num)
+        j0=floor(x-stagger_shift)
       END IF
       IF (noy==2*(noy/2)) THEN
         k=nint(y)
-        k0=floor(y)
+        k0=floor(y+0.5_num-stagger_shift)
       ELSE
         k=floor(y)
-        k0=floor(y-0.5_num)
+        k0=floor(y-stagger_shift)
       END IF
       IF (noz==2*(noz/2)) THEN
         l=nint(z)
-        l0=floor(z)
+        l0=floor(z+0.5_num-stagger_shift)
       ELSE
         l=floor(z)
-        l0=floor(z-0.5_num)
+        l0=floor(z-stagger_shift)
       END IF
     END IF
 
@@ -540,9 +554,9 @@ SUBROUTINE pxrgetb3d_n_energy_conserving(np, xp, yp, zp, bx, by, bz, xmin, ymin,
       sz( 2) = onesixth*zintsq*zint
     END IF
 
-    xint=x-0.5_num-j0
-    yint=y-0.5_num-k0
-    zint=z-0.5_num-l0
+    xint=x-stagger_shift-j0
+    yint=y-stagger_shift-k0
+    zint=z-stagger_shift-l0
 
     IF (l_lower_order_in_v) THEN
       IF (nox==1) THEN
@@ -690,6 +704,7 @@ subroutine pxr_getb3d_n_energy_conserving(np, xp, yp, zp, bx, by, bz, xmin, ymin
   byg_nguard(3), byg_nvalid(3), bzg_nguard(3), bzg_nvalid(3)
   real(num), dimension(np)         :: xp, yp, zp, bx, by, bz
   LOGICAL(lp)       :: l4symtry, l_lower_order_in_v, l_nodal
+  REAL(num)         :: stagger_shift
   REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1,           &
   -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1,                                       &
   -bxg_nguard(3):bxg_nvalid(3)+bxg_nguard(3)-1)
@@ -709,6 +724,12 @@ subroutine pxr_getb3d_n_energy_conserving(np, xp, yp, zp, bx, by, bz, xmin, ymin
   real(num), DIMENSION(-int(noz/2):int((noz+1)/2)) :: sz
   real(num), dimension(:), allocatable :: sx0, sy0, sz0
   real(num), parameter :: onesixth=1./6., twothird=2./3.
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1./dx
   dyi = 1./dy
@@ -773,46 +794,46 @@ subroutine pxr_getb3d_n_energy_conserving(np, xp, yp, zp, bx, by, bz, xmin, ymin
     if (l_lower_order_in_v) then
       if (nox==2*(nox/2)) then
         j=nint(x)
-        j0=floor(x-0.5)
+        j0=floor(x-stagger_shift)
       else
         j=floor(x)
-        j0=floor(x)
+        j0=floor(x+0.5_num-stagger_shift)
       end if
       if (noy==2*(noy/2)) then
         k=nint(y)
-        k0=floor(y-0.5)
+        k0=floor(y-stagger_shift)
       else
         k=floor(y)
-        k0=floor(y)
+        k0=floor(y+0.5_num-stagger_shift)
       end if
       if (noz==2*(noz/2)) then
         l=nint(z)
-        l0=floor(z-0.5)
+        l0=floor(z-stagger_shift)
       else
         l=floor(z)
-        l0=floor(z)
+        l0=floor(z+0.5_num-stagger_shift)
       end if
     else
       if (nox==2*(nox/2)) then
         j=nint(x)
-        j0=floor(x)
+        j0=floor(x+0.5_num-stagger_shift)
       else
         j=floor(x)
-        j0=floor(x-0.5)
+        j0=floor(x-stagger_shift)
       end if
       if (noy==2*(noy/2)) then
         k=nint(y)
-        k0=floor(y)
+        k0=floor(y+0.5_num-stagger_shift)
       else
         k=floor(y)
-        k0=floor(y-0.5)
+        k0=floor(y-stagger_shift)
       end if
       if (noz==2*(noz/2)) then
         l=nint(z)
-        l0=floor(z)
+        l0=floor(z+0.5_num-stagger_shift)
       else
         l=floor(z)
-        l0=floor(z-0.5)
+        l0=floor(z-stagger_shift)
       end if
     end if
 
@@ -874,9 +895,9 @@ subroutine pxr_getb3d_n_energy_conserving(np, xp, yp, zp, bx, by, bz, xmin, ymin
       sz( 2) = onesixth*zintsq*zint
     end if
 
-    xint=x-0.5-j0
-    yint=y-0.5-k0
-    zint=z-0.5-l0
+    xint=x-stagger_shift-j0
+    yint=y-stagger_shift-k0
+    zint=z-stagger_shift-l0
 
     if (l_lower_order_in_v) then
 
@@ -1028,6 +1049,7 @@ subroutine pxr_gete3d_n_energy_conserving(np, xp, yp, zp, ex, ey, ez, xmin, ymin
   eyg_nvalid(3), ezg_nguard(3), ezg_nvalid(3)
   real(num), dimension(np) :: xp, yp, zp, ex, ey, ez
   LOGICAL(lp)       :: l4symtry, l_lower_order_in_v, l_nodal
+  REAL(num)         :: stagger_shift
   REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1,           &
   -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1,                                       &
   -exg_nguard(3):exg_nvalid(3)+exg_nguard(3)-1)
@@ -1047,6 +1069,12 @@ subroutine pxr_gete3d_n_energy_conserving(np, xp, yp, zp, ex, ey, ez, xmin, ymin
   real(num), DIMENSION(-int(noz/2):int((noz+1)/2)) :: sz
   real(num), dimension(:), allocatable :: sx0, sy0, sz0
   real(num), parameter :: onesixth=1./6., twothird=2./3.
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1./dx
   dyi = 1./dy
@@ -1104,46 +1132,46 @@ subroutine pxr_gete3d_n_energy_conserving(np, xp, yp, zp, ex, ey, ez, xmin, ymin
     if (l_lower_order_in_v) then
       if (nox==2*(nox/2)) then
         j=nint(x)
-        j0=floor(x-0.5)
+        j0=floor(x-stagger_shift)
       else
         j=floor(x)
-        j0=floor(x)
+        j0=floor(x+0.5_num-stagger_shift)
       end if
       if (noy==2*(noy/2)) then
         k=nint(y)
-        k0=floor(y-0.5)
+        k0=floor(y-stagger_shift)
       else
         k=floor(y)
-        k0=floor(y)
+        k0=floor(y+0.5_num-stagger_shift)
       end if
       if (noz==2*(noz/2)) then
         l=nint(z)
-        l0=floor(z-0.5)
+        l0=floor(z-stagger_shift)
       else
         l=floor(z)
-        l0=floor(z)
+        l0=floor(z+0.5_num-stagger_shift)
       end if
     else
       if (nox==2*(nox/2)) then
         j=nint(x)
-        j0=floor(x)
+        j0=floor(x+0.5_num-stagger_shift)
       else
         j=floor(x)
-        j0=floor(x-0.5)
+        j0=floor(x-stagger_shift)
       end if
       if (noy==2*(noy/2)) then
         k=nint(y)
-        k0=floor(y)
+        k0=floor(y+0.5_num-stagger_shift)
       else
         k=floor(y)
-        k0=floor(y-0.5)
+        k0=floor(y-stagger_shift)
       end if
       if (noz==2*(noz/2)) then
         l=nint(z)
-        l0=floor(z)
+        l0=floor(z+0.5_num-stagger_shift)
       else
         l=floor(z)
-        l0=floor(z-0.5)
+        l0=floor(z-stagger_shift)
       end if
     end if
 
@@ -1205,9 +1233,9 @@ subroutine pxr_gete3d_n_energy_conserving(np, xp, yp, zp, ex, ey, ez, xmin, ymin
       sz( 2) = onesixth*zintsq*zint
     end if
 
-    xint=x-0.5-j0
-    yint=y-0.5-k0
-    zint=z-0.5-l0
+    xint=x-stagger_shift-j0
+    yint=y-stagger_shift-k0
+    zint=z-stagger_shift-l0
 
     if (l_lower_order_in_v) then
 

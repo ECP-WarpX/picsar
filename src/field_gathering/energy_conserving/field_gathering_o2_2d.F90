@@ -63,6 +63,7 @@ SUBROUTINE pxr_gete2dxz_energy_conserving_scalar_2_2(np, xp, zp, ex, ey, ez, xmi
   eyg_nguard(2), eyg_nvalid(2), ezg_nguard(2), ezg_nvalid(2)
   REAL(num), DIMENSION(np)             :: xp, zp, ex, ey, ez
   LOGICAL(lp)                              :: l_lower_order_in_v, l_nodal
+  REAL(num)                                :: stagger_shift
   REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1,           &
   -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1)
   REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1,           &
@@ -81,6 +82,12 @@ SUBROUTINE pxr_gete2dxz_energy_conserving_scalar_2_2(np, xp, zp, ex, ey, ez, xmi
   REAL(num), DIMENSION(-1:1)           :: sz, sz0
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dzi = 1.0_num/dz
@@ -110,10 +117,10 @@ SUBROUTINE pxr_gete2dxz_energy_conserving_scalar_2_2(np, xp, zp, ex, ey, ez, xmi
       z = (zp(ip)-zmin)*dzi
 
       j=nint(x)
-      j0=floor(x-0.5_num)
+      j0=floor(x-stagger_shift)
 
       l=nint(z)
-      l0=floor(z-0.5_num)
+      l0=floor(z-stagger_shift)
 
       xint=x-j
       zint=z-l
@@ -128,8 +135,8 @@ SUBROUTINE pxr_gete2dxz_energy_conserving_scalar_2_2(np, xp, zp, ex, ey, ez, xmi
       sz( 0) = 0.75_num-zintsq
       sz( 1) = 0.5_num*(0.5_num+zint)**2
 
-      xint=x-0.5_num-j0
-      zint=z-0.5_num-l0
+      xint=x-stagger_shift-j0
+      zint=z-stagger_shift-l0
 
       sx0( 0) = 1.0_num-xint
       sx0( 1) = xint
@@ -187,11 +194,11 @@ SUBROUTINE pxr_gete2dxz_energy_conserving_scalar_2_2(np, xp, zp, ex, ey, ez, xmi
       z = (zp(ip)-zmin)*dzi
 
       j=nint(x)
-      j0=floor(x)
+      j0=floor(x+0.5_num-stagger_shift)
 
 
       l=nint(z)
-      l0=floor(z)
+      l0=floor(z+0.5_num-stagger_shift)
 
       xint=x-j
       zint=z-l
@@ -206,8 +213,8 @@ SUBROUTINE pxr_gete2dxz_energy_conserving_scalar_2_2(np, xp, zp, ex, ey, ez, xmi
       sz( 0) = 0.75_num-zintsq
       sz( 1) = 0.5_num*(0.5_num+zint)**2
 
-      xint=x-0.5_num-j0
-      zint=z-0.5_num-l0
+      xint=x-stagger_shift-j0
+      zint=z-stagger_shift-l0
 
       xintsq = xint*xint
       sx0(-1) = 0.5_num*(0.5_num-xint)**2
@@ -290,6 +297,7 @@ SUBROUTINE pxr_getb2dxz_energy_conserving_scalar_2_2(np, xp, zp, bx, by, bz, xmi
   byg_nguard(2), byg_nvalid(2), bzg_nguard(2), bzg_nvalid(2)
   REAL(num), DIMENSION(np)             :: xp, zp, bx, by, bz
   LOGICAL(lp)                              :: l_lower_order_in_v, l_nodal
+  REAL(num)                                :: stagger_shift
   REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1,           &
   -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1)
   REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1,           &
@@ -305,6 +313,12 @@ SUBROUTINE pxr_getb2dxz_energy_conserving_scalar_2_2(np, xp, zp, bx, by, bz, xmi
   REAL(num), DIMENSION(-1:1)           :: sz, sz0
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num,                   &
   twothird=2.0_num/3.0_num
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dzi = 1.0_num/dz
@@ -329,10 +343,10 @@ SUBROUTINE pxr_getb2dxz_energy_conserving_scalar_2_2(np, xp, zp, bx, by, bz, xmi
       z = (zp(ip)-zmin)*dzi
 
       j=nint(x)
-      j0=floor(x-0.5_num)
+      j0=floor(x-stagger_shift)
 
       l=nint(z)
-      l0=floor(z-0.5_num)
+      l0=floor(z-stagger_shift)
 
       xint=x-j
       zint=z-l
@@ -347,8 +361,8 @@ SUBROUTINE pxr_getb2dxz_energy_conserving_scalar_2_2(np, xp, zp, bx, by, bz, xmi
       sz( 0) = 0.75_num-zintsq
       sz( 1) = 0.5_num*(0.5_num+zint)**2
 
-      xint=x-0.5_num-j0
-      zint=z-0.5_num-l0
+      xint=x-stagger_shift-j0
+      zint=z-stagger_shift-l0
 
       sx0( 0) = 1.0_num-xint
       sx0( 1) = xint
@@ -405,11 +419,11 @@ SUBROUTINE pxr_getb2dxz_energy_conserving_scalar_2_2(np, xp, zp, bx, by, bz, xmi
       z = (zp(ip)-zmin)*dzi
 
       j=nint(x)
-      j0=floor(x)
+      j0=floor(x+0.5_num-stagger_shift)
 
 
       l=nint(z)
-      l0=floor(z)
+      l0=floor(z+0.5_num-stagger_shift)
 
       xint=x-j
       zint=z-l
@@ -424,8 +438,8 @@ SUBROUTINE pxr_getb2dxz_energy_conserving_scalar_2_2(np, xp, zp, bx, by, bz, xmi
       sz( 0) = 0.75_num-zintsq
       sz( 1) = 0.5_num*(0.5_num+zint)**2
 
-      xint=x-0.5_num-j0
-      zint=z-0.5_num-l0
+      xint=x-stagger_shift-j0
+      zint=z-stagger_shift-l0
 
       xintsq = xint*xint
       sx0(-1) = 0.5_num*(0.5_num-xint)**2
@@ -512,6 +526,7 @@ subroutine pxr_gete2dxz_energy_conserving_vect_2_2( np, xp, zp, ex, ey, ez, xmin
   integer(idp)                  :: lvect
   real(num), dimension(np)      :: xp, zp, ex, ey, ez
   logical(lp)                   :: l_lower_order_in_v, l_nodal
+  real(num)                     :: stagger_shift
   REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1, 1,        &
   -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1)
   REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1, 1,        &
@@ -526,6 +541,12 @@ subroutine pxr_gete2dxz_energy_conserving_vect_2_2( np, xp, zp, ex, ey, ez, xmin
   real(num), DIMENSION(lvect, -1:1)    :: sx, sx0
   real(num), DIMENSION(lvect, -1:1)    :: sz, sz0
   real(num), parameter          :: onesixth=1./6., twothird=2./3.
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1./dx
   dzi = 1./dz
@@ -563,9 +584,9 @@ subroutine pxr_gete2dxz_energy_conserving_vect_2_2( np, xp, zp, ex, ey, ez, xmin
 
         ! Compute index of particle
         j=nint(x)
-        j0=floor(x-0.5_num)
+        j0=floor(x-stagger_shift)
         l=nint(z)
-        l0=floor(z-0.5_num)
+        l0=floor(z-stagger_shift)
         xint=x-j
         zint=z-l
 
@@ -579,8 +600,8 @@ subroutine pxr_gete2dxz_energy_conserving_vect_2_2( np, xp, zp, ex, ey, ez, xmin
         sz(n, 0) = 0.75_num-zintsq
         sz(n, 1) = 0.5_num*(0.5_num+zint)**2
 
-        xint=x-0.5_num-j0
-        zint=z-0.5_num-l0
+        xint=x-stagger_shift-j0
+        zint=z-stagger_shift-l0
 
         sx0(n, 0) = 1.0_num-xint
         sx0(n, 1) = xint
@@ -655,9 +676,9 @@ subroutine pxr_gete2dxz_energy_conserving_vect_2_2( np, xp, zp, ex, ey, ez, xmin
 
         ! Compute index of particle
         j=nint(x)
-        j0=floor(x)
+        j0=floor(x+0.5_num-stagger_shift)
         l=nint(z)
-        l0=floor(z)
+        l0=floor(z+0.5_num-stagger_shift)
         xint=x-j
         zint=z-l
 
@@ -671,8 +692,8 @@ subroutine pxr_gete2dxz_energy_conserving_vect_2_2( np, xp, zp, ex, ey, ez, xmin
         sz(n, 0) = 0.75_num-zintsq
         sz(n, 1) = 0.5_num*(0.5_num+zint)**2
 
-        xint=x-0.5_num-j0
-        zint=z-0.5_num-l0
+        xint=x-stagger_shift-j0
+        zint=z-stagger_shift-l0
 
         xintsq = xint*xint
         sx0(n, -1) = 0.5_num*(0.5_num-xint)**2
@@ -762,6 +783,7 @@ subroutine pxr_getb2dxz_energy_conserving_vect_2_2( np, xp, zp, bx, by, bz, xmin
   integer(idp)                       :: lvect
   real(num), dimension(np)           :: xp, zp, bx, by, bz
   logical(lp)                        :: l_lower_order_in_v, l_nodal
+  real(num)                          :: stagger_shift
   REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1, 1,        &
   -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1)
   REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1, 1,        &
@@ -780,6 +802,12 @@ subroutine pxr_getb2dxz_energy_conserving_vect_2_2( np, xp, zp, bx, by, bz, xmin
 
   ! ___________________________
   ! Compute parameters
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1./dx
   dzi = 1./dz
@@ -821,10 +849,10 @@ subroutine pxr_getb2dxz_energy_conserving_vect_2_2( np, xp, zp, bx, by, bz, xmin
         z = (zp(nn)-zmin)*dzi
 
         j=nint(x)
-        j0=floor(x-0.5)
+        j0=floor(x-stagger_shift)
 
         l=nint(z)
-        l0=floor(z-0.5)
+        l0=floor(z-stagger_shift)
 
         xint=x-j
         zint=z-l
@@ -839,8 +867,8 @@ subroutine pxr_getb2dxz_energy_conserving_vect_2_2( np, xp, zp, bx, by, bz, xmin
         sz(n, 0) = 0.75_num-zintsq
         sz(n, 1) = 0.5_num*(0.5_num+zint)**2
 
-        xint=x-0.5_num-j0
-        zint=z-0.5_num-l0
+        xint=x-stagger_shift-j0
+        zint=z-stagger_shift-l0
 
         sx0(n, 0) = 1.0_num-xint
         sx0(n, 1) = xint
@@ -908,10 +936,10 @@ subroutine pxr_getb2dxz_energy_conserving_vect_2_2( np, xp, zp, bx, by, bz, xmin
         z = (zp(nn)-zmin)*dzi
 
         j=nint(x)
-        j0=floor(x)
+        j0=floor(x+0.5_num-stagger_shift)
 
         l=nint(z)
-        l0=floor(z)
+        l0=floor(z+0.5_num-stagger_shift)
 
         xint=x-j
         zint=z-l
@@ -927,8 +955,8 @@ subroutine pxr_getb2dxz_energy_conserving_vect_2_2( np, xp, zp, bx, by, bz, xmin
         sz(n, 0) = 0.75_num-zintsq
         sz(n, 1) = 0.5_num*(0.5_num+zint)**2
 
-        xint=x-0.5_num-j0
-        zint=z-0.5_num-l0
+        xint=x-stagger_shift-j0
+        zint=z-stagger_shift-l0
 
         xintsq = xint*xint
         sx0(n, -1) = 0.5_num*(0.5_num-xint)**2
