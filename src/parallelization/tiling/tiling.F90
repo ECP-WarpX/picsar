@@ -1398,7 +1398,7 @@ MODULE tiling
 
   ! ______________________________________________________________________________________
   !> @brief
-  !> Get logical array are_tiles_reallocated for a given species
+  !> Get logical(lp) array are_tiles_reallocated for a given species
   !> (USED mainly by python interface)
   !
   !> @author
@@ -1421,7 +1421,7 @@ MODULE tiling
 
   ! ______________________________________________________________________________________
   !> @brief
-  !> Set logical array are_tiles_reallocated for a given species
+  !> Set logical(lp) array are_tiles_reallocated for a given species
   !> (USED mainly by python interface)
   !
   !> @author

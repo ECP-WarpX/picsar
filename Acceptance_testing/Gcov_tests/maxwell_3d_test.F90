@@ -164,7 +164,7 @@ PROGRAM maxwell_3d_test
   IF (rank .EQ. 0) CALL output_check('Slice 2',(/err_min, err_max, err_avg/))
 
   ! REDUCED PASSED RESULTS 
-  CALL MPI_REDUCE(passed,has_passed,1_isp,MPI_LOGICAL,MPI_LAND,0_isp,comm,errcode)
+  CALL MPI_REDUCE(passed,has_passed,1_isp,MPI_LOGICAL(lp),MPI_LAND,0_isp,comm,errcode)
 
   write(0,*)
   IF (rank .EQ. 0) THEN 

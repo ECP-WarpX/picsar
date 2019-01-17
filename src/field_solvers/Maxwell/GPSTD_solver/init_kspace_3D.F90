@@ -1509,9 +1509,9 @@ MODULE gpstd_solver
   !> Creation 2017
   ! ______________________________________________________________________________________
   SUBROUTINE FD_weights_hvincenti(p, w, is_staggered)
-    USE picsar_precision, ONLY: idp, num
+    USE picsar_precision, ONLY: idp, lp, num
     IMPLICIT NONE
-    LOGICAL(idp), INTENT(IN) :: is_staggered
+    LOGICAL(lp) , INTENT(IN) :: is_staggered
     INTEGER(idp), INTENT(IN) :: p
     REAL(num), DIMENSION(p/2), INTENT(OUT) :: w
     INTEGER(idp) :: i, l

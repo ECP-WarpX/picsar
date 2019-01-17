@@ -40,8 +40,8 @@ PROGRAM field_gathering_3d_test
   INTEGER(idp)                             :: nx,ny,nz
   INTEGER(idp)                             :: nxguard,nyguard,nzguard
   INTEGER                                  :: ierr,provided
-  LOGICAL                                  :: l_lower_order_in_v
-  LOGICAL                                  :: passed
+  LOGICAL(lp)                              :: l_lower_order_in_v
+  LOGICAL(lp)                              :: passed
   REAL(num)                                :: xmin,ymin,zmin
   REAL(num)                                :: xmax,ymax,zmax
   REAL(num)                                :: q,m

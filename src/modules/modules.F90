@@ -41,7 +41,7 @@ MODULE PICSAR_precision
   INTEGER, PARAMETER :: isp = 4
   !> integer double precision
   INTEGER, PARAMETER :: idp = 8
-  !> logical precision
+  !> logical(lp) precision
   INTEGER, PARAMETER :: lp = 8
   !> Complex precision
   INTEGER, PARAMETER :: cpx = 8
@@ -1219,7 +1219,7 @@ MODULE shared_data
   ! MPI subdomain data
   !----------------------------------------------------------------------------
   !> FFTW distributed
-  LOGICAL(idp) :: fftw_with_mpi, fftw_mpi_transpose, fftw_threads_ok, fftw_hybrid
+  LOGICAL(lp)  :: fftw_with_mpi, fftw_mpi_transpose, fftw_threads_ok, fftw_hybrid
   !> Number of groups (this is a parameter in the input file)
   INTEGER(idp)    ::  nb_group
   !> Number of groups in each direction
@@ -1232,7 +1232,7 @@ MODULE shared_data
   LOGICAL(lp)   :: absorbing_bcs_x = .FALSE.
   LOGICAL(lp)   :: absorbing_bcs_y = .FALSE.
   LOGICAL(lp)   :: absorbing_bcs_z = .FALSE.
-  LOGICAL(idp) :: fftw_plan_measure=.TRUE.
+  LOGICAL(lp)  :: fftw_plan_measure=.TRUE.
   !> First and last indexes of real data in group (only z is relevant for now)
   INTEGER(idp)  ::   iz_min_r, iz_max_r, iy_min_r, iy_max_r, ix_min_r, ix_max_r
 

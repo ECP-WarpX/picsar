@@ -42,7 +42,7 @@ PROGRAM current_deposition_3d_test
   INTEGER(idp)                             :: ncx,ncy,ncz
   INTEGER(idp)                             :: nxguard,nyguard,nzguard
   INTEGER(idp)                             :: ncells
-  LOGICAL                                  :: passed
+  LOGICAL(lp)                              :: passed
   REAL(num)                                :: xmin,ymin,zmin
   REAL(num)                                :: xmax,ymax,zmax
   REAL(num)                                :: q,m

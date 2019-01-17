@@ -826,7 +826,7 @@ LOGICAL(isp)                               :: is_in_place
     ENDIF
   ENDDO
   ! - Create and ordered comm world  to compute communication scheduling
-  ! -- key is the topological rank of current mpi if mpi_comm_world would have
+  ! -- key is the topological(lp) rank of current mpi if mpi_comm_world would have
   ! -- been cartesian
   key = z_coords*nprocx*nprocy+ y_coords*nprocx + x_coords
   color_roots = MPI_UNDEFINED

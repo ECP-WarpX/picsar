@@ -457,7 +457,7 @@ END SUBROUTINE pxr_getb2dxz_energy_conserving_scalar_1_1
 subroutine pxr_gete2dxz_energy_conserving_vect_1_1( np, xp, zp, ex, ey, ez, xmin,     &
   zmin, dx, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid, ezg,          &
   ezg_nguard, ezg_nvalid, lvect, l_lower_order_in_v)     !#do not wrap
-  USE picsar_precision, ONLY: idp, num
+  USE picsar_precision, ONLY: idp, lp, num
   implicit none
 
   integer(idp), intent(in)                :: np
@@ -466,7 +466,7 @@ subroutine pxr_gete2dxz_energy_conserving_vect_1_1( np, xp, zp, ex, ey, ez, xmin
   integer(idp), intent(in)                :: lvect
   real(num), dimension(np), intent(in)    :: xp, zp
   real(num), dimension(np), intent(inout) :: ex, ey, ez
-  logical(idp)                            :: l_lower_order_in_v
+  logical(lp)                             :: l_lower_order_in_v
   REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1, 1,        &
   -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1)
   REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1, 1,        &
@@ -669,7 +669,7 @@ end subroutine
 subroutine pxr_getb2dxz_energy_conserving_vect_1_1( np, xp, zp, bx, by, bz, xmin,     &
   zmin, dx, dz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid, bzg,          &
   bzg_nguard, bzg_nvalid, lvect, l_lower_order_in_v)     !#do not wrap
-  USE picsar_precision, ONLY: idp, num
+  USE picsar_precision, ONLY: idp, lp, num
   implicit none
   ! __ Parameter declaration ___________________________________________
   integer(idp), intent(in)                :: np
@@ -678,7 +678,7 @@ subroutine pxr_getb2dxz_energy_conserving_vect_1_1( np, xp, zp, bx, by, bz, xmin
   integer(idp), intent(in)                :: lvect
   real(num), dimension(np), intent(in)    :: xp, zp
   real(num), dimension(np), intent(inout) :: bx, by, bz
-  logical(idp), intent(in)                :: l_lower_order_in_v
+  logical(lp) , intent(in)                :: l_lower_order_in_v
   REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1, 1,        &
   -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1)
   REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1, 1,        &
