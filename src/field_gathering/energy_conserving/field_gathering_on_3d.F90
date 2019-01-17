@@ -54,7 +54,7 @@
 ! ________________________________________________________________________________________
 SUBROUTINE pxrgete3d_n_energy_conserving(np, xp, yp, zp, ex, ey, ez, xmin, ymin,      &
   zmin, dx, dy, dz, nox, noy, noz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard,        &
-  eyg_nvalid, ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
+  eyg_nvalid, ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v, l_nodal)     !#do not wrap
   USE omp_lib
   USE picsar_precision, ONLY: idp, lp, num
   IMPLICIT NONE
@@ -72,7 +72,7 @@ SUBROUTINE pxrgete3d_n_energy_conserving(np, xp, yp, zp, ex, ey, ez, xmin, ymin,
   REAL(num), intent(IN):: ezg(-ezg_nguard(1):ezg_nvalid(1)+ezg_nguard(1)-1,           &
   -ezg_nguard(2):ezg_nvalid(2)+ezg_nguard(2)-1,                                       &
   -ezg_nguard(3):ezg_nvalid(3)+ezg_nguard(3)-1)
-  LOGICAL(lp)              :: l_lower_order_in_v
+  LOGICAL(lp)              :: l_lower_order_in_v, l_nodal
   REAL(num) :: xmin, ymin, zmin, dx, dy, dz
   INTEGER(idp) :: ip, j, k, l, ixmin, ixmax, iymin, iymax, izmin, izmax, ixmin0,      &
   ixmax0, iymin0, iymax0, izmin0, izmax0, jj, kk, ll, j0, k0, l0
@@ -363,7 +363,7 @@ END SUBROUTINE pxrgete3d_n_energy_conserving
 ! ________________________________________________________________________________________
 SUBROUTINE pxrgetb3d_n_energy_conserving(np, xp, yp, zp, bx, by, bz, xmin, ymin,      &
   zmin, dx, dy, dz, nox, noy, noz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard,        &
-  byg_nvalid, bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
+  byg_nvalid, bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v, l_nodal)     !#do not wrap
   USE omp_lib
   USE picsar_precision, ONLY: idp, lp, num
   IMPLICIT NONE
@@ -371,7 +371,7 @@ SUBROUTINE pxrgetb3d_n_energy_conserving(np, xp, yp, zp, bx, by, bz, xmin, ymin,
   INTEGER(idp), intent(in)             :: bxg_nguard(3), bxg_nvalid(3),               &
   byg_nguard(3), byg_nvalid(3), bzg_nguard(3), bzg_nvalid(3)
   REAL(num), DIMENSION(np) :: xp, yp, zp, bx, by, bz
-  LOGICAL(lp)  :: l_lower_order_in_v
+  LOGICAL(lp)  :: l_lower_order_in_v, l_nodal
   REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1,           &
   -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1,                                       &
   -bxg_nguard(3):bxg_nvalid(3)+bxg_nguard(3)-1)
@@ -682,14 +682,14 @@ END SUBROUTINE pxrgetb3d_n_energy_conserving
 ! ________________________________________________________________________________________
 subroutine pxr_getb3d_n_energy_conserving(np, xp, yp, zp, bx, by, bz, xmin, ymin,     &
   zmin, dx, dy, dz, nox, noy, noz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard,        &
-  byg_nvalid, bzg, bzg_nguard, bzg_nvalid, l4symtry, l_lower_order_in_v)     !#do not wrap
+  byg_nvalid, bzg, bzg_nguard, bzg_nvalid, l4symtry, l_lower_order_in_v, l_nodal)     !#do not wrap
   USE picsar_precision, ONLY: idp, lp, num
   implicit none
   integer(idp)                     :: np, nox, noy, noz
   INTEGER(idp), intent(in)             :: bxg_nguard(3), bxg_nvalid(3),               &
   byg_nguard(3), byg_nvalid(3), bzg_nguard(3), bzg_nvalid(3)
   real(num), dimension(np)         :: xp, yp, zp, bx, by, bz
-  LOGICAL(lp)       :: l4symtry, l_lower_order_in_v
+  LOGICAL(lp)       :: l4symtry, l_lower_order_in_v, l_nodal
   REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1,           &
   -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1,                                       &
   -bxg_nguard(3):bxg_nvalid(3)+bxg_nguard(3)-1)
@@ -1020,14 +1020,14 @@ end subroutine pxr_getb3d_n_energy_conserving
 ! ________________________________________________________________________________________
 subroutine pxr_gete3d_n_energy_conserving(np, xp, yp, zp, ex, ey, ez, xmin, ymin,     &
   zmin, dx, dy, dz, nox, noy, noz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard,        &
-  eyg_nvalid, ezg, ezg_nguard, ezg_nvalid, l4symtry, l_lower_order_in_v)     !#do not wrap
+  eyg_nvalid, ezg, ezg_nguard, ezg_nvalid, l4symtry, l_lower_order_in_v, l_nodal)     !#do not wrap
   USE picsar_precision, ONLY: idp, lp, num
   implicit none
   integer(idp) :: np, nox, noy, noz
   INTEGER(idp), intent(in) :: exg_nguard(3), exg_nvalid(3), eyg_nguard(3),            &
   eyg_nvalid(3), ezg_nguard(3), ezg_nvalid(3)
   real(num), dimension(np) :: xp, yp, zp, ex, ey, ez
-  LOGICAL(lp)       :: l4symtry, l_lower_order_in_v
+  LOGICAL(lp)       :: l4symtry, l_lower_order_in_v, l_nodal
   REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1,           &
   -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1,                                       &
   -exg_nguard(3):exg_nvalid(3)+exg_nguard(3)-1)

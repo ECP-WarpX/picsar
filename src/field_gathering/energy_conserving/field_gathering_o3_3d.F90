@@ -82,14 +82,14 @@
 ! ________________________________________________________________________________________
 SUBROUTINE gete3d_energy_conserving_scalar_3_3_3(np, xp, yp, zp, ex, ey, ez, xmin,    &
   ymin, zmin, dx, dy, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid,     &
-  ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
+  ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v, l_nodal)     !#do not wrap
   USE picsar_precision, ONLY: idp, isp, lp, num
   IMPLICIT NONE
   INTEGER(idp)                         :: np
   INTEGER(idp), intent(in)             :: exg_nguard(3), exg_nvalid(3),               &
   eyg_nguard(3), eyg_nvalid(3), ezg_nguard(3), ezg_nvalid(3)
   REAL(num), DIMENSION(np)             :: xp, yp, zp, ex, ey, ez
-  logical(lp)                          :: l_lower_order_in_v
+  logical(lp)                          :: l_lower_order_in_v, l_nodal
   REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1,           &
   -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1,                                       &
   -exg_nguard(3):exg_nvalid(3)+exg_nguard(3)-1)
@@ -398,14 +398,14 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE getb3d_energy_conserving_scalar_3_3_3(np, xp, yp, zp, bx, by, bz, xmin,    &
   ymin, zmin, dx, dy, dz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid,     &
-  bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
+  bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v, l_nodal)     !#do not wrap
   USE picsar_precision, ONLY: idp, lp, num
   IMPLICIT NONE
   INTEGER(idp)                         :: np
   INTEGER(idp), intent(in)             :: bxg_nguard(3), bxg_nvalid(3),               &
   byg_nguard(3), byg_nvalid(3), bzg_nguard(3), bzg_nvalid(3)
   REAL(num), DIMENSION(np)             :: xp, yp, zp, bx, by, bz
-  logical(lp)                          :: l_lower_order_in_v
+  logical(lp)                          :: l_lower_order_in_v, l_nodal
   REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1,           &
   -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1,                                       &
   -bxg_nguard(3):bxg_nvalid(3)+bxg_nguard(3)-1)
@@ -699,12 +699,12 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE gete3d_energy_conserving_linear_3_3_3(np, xp, yp, zp, ex, ey, ez, xmin,    &
   ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg, ezg,         &
-  l_lower_order_in_v)
+  l_lower_order_in_v, l_nodal)
   USE picsar_precision, ONLY: idp, isp, lp, num
   IMPLICIT NONE
   INTEGER(idp)                         :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), DIMENSION(np)             :: xp, yp, zp, ex, ey, ez
-  logical(lp)                          :: l_lower_order_in_v
+  logical(lp)                          :: l_lower_order_in_v, l_nodal
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard, -nzguard:nz+nzguard) &
   :: exg, eyg, ezg
   REAL(num)                            :: xmin, ymin, zmin, dx, dy, dz
@@ -1258,12 +1258,12 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE getb3d_energy_conserving_linear_3_3_3(np, xp, yp, zp, bx, by, bz, xmin,    &
   ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, bxg, byg, bzg,         &
-  l_lower_order_in_v)
+  l_lower_order_in_v, l_nodal)
   USE picsar_precision, ONLY: idp, lp, num
   IMPLICIT NONE
   INTEGER(idp)                         :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), DIMENSION(np)             :: xp, yp, zp, bx, by, bz
-  logical(lp)                          :: l_lower_order_in_v
+  logical(lp)                          :: l_lower_order_in_v, l_nodal
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard, -nzguard:nz+nzguard) &
   :: bxg, byg, bzg
   REAL(num)                            :: xmin, ymin, zmin, dx, dy, dz
@@ -1758,14 +1758,14 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE gete3d_energy_conserving_vec_3_3_3(np, xp, yp, zp, ex, ey, ez, xmin, ymin, &
   zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg, ezg, lvect,        &
-  l_lower_order_in_v)
+  l_lower_order_in_v, l_nodal)
   USE picsar_precision, ONLY: idp, isp, lp, num
   IMPLICIT NONE
 
   INTEGER(idp)                           :: np, nx, ny, nz, nxguard, nyguard, nzguard
   INTEGER(idp)                           :: lvect
   REAL(num), DIMENSION(np)               :: xp, yp, zp, ex, ey, ez
-  LOGICAL(lp)                            :: l_lower_order_in_v
+  LOGICAL(lp)                            :: l_lower_order_in_v, l_nodal
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard, -nzguard:nz+nzguard) &
   :: exg, eyg, ezg
   REAL(num)                              :: xmin, ymin, zmin, dx, dy, dz
@@ -2373,13 +2373,13 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE getb3d_energy_conserving_vec_3_3_3(np, xp, yp, zp, bx, by, bz, xmin, ymin, &
   zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, bxg, byg, bzg, lvect,        &
-  l_lower_order_in_v)
+  l_lower_order_in_v, l_nodal)
   USE picsar_precision, ONLY: idp, isp, lp, num
   IMPLICIT NONE
   INTEGER(idp)                         :: np, nx, ny, nz, nxguard, nyguard, nzguard
   INTEGER(idp)                         :: lvect
   REAL(num), DIMENSION(np)             :: xp, yp, zp, bx, by, bz
-  LOGICAL(lp)                          :: l_lower_order_in_v
+  LOGICAL(lp)                          :: l_lower_order_in_v, l_nodal
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard, -nzguard:nz+nzguard) &
   :: bxg, byg, bzg
   REAL(num)                            :: xmin, ymin, zmin, dx, dy, dz
@@ -2951,13 +2951,13 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE gete3d_energy_conserving_vec2_3_3_3(np, xp, yp, zp, ex, ey, ez, xmin,      &
   ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg, ezg, lvect,  &
-  l_lower_order_in_v)
+  l_lower_order_in_v, l_nodal)
   USE picsar_precision, ONLY: idp, isp, lp, num
   IMPLICIT NONE
   INTEGER(idp)                           :: np, nx, ny, nz, nxguard, nyguard, nzguard
   INTEGER(idp)                           :: lvect
   REAL(num), DIMENSION(np)               :: xp, yp, zp, ex, ey, ez
-  LOGICAL(lp)                            :: l_lower_order_in_v
+  LOGICAL(lp)                            :: l_lower_order_in_v, l_nodal
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard, -nzguard:nz+nzguard) &
   :: exg, eyg, ezg
   REAL(num)                              :: xmin, ymin, zmin, dx, dy, dz
@@ -3440,13 +3440,13 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE getb3d_energy_conserving_vec2_3_3_3(np, xp, yp, zp, bx, by, bz, xmin,      &
   ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, bxg, byg, bzg, lvect,  &
-  l_lower_order_in_v)
+  l_lower_order_in_v, l_nodal)
   USE picsar_precision, ONLY: idp, isp, lp, num
   IMPLICIT NONE
   INTEGER(idp)                         :: np, nx, ny, nz, nxguard, nyguard, nzguard
   INTEGER(idp)                         :: lvect
   REAL(num), DIMENSION(np)             :: xp, yp, zp, bx, by, bz
-  LOGICAL(lp)                          :: l_lower_order_in_v
+  LOGICAL(lp)                          :: l_lower_order_in_v, l_nodal
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard, -nzguard:nz+nzguard) &
   :: bxg, byg, bzg
   REAL(num)                            :: xmin, ymin, zmin, dx, dy, dz
@@ -3905,14 +3905,14 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE geteb3d_energy_conserving_vec_3_3_3(np, xp, yp, zp, ex, ey, ez, bx, by,    &
   bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg,    &
-  ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
+  ezg, bxg, byg, bzg, lvect, l_lower_order_in_v, l_nodal)
   USE picsar_precision, ONLY: idp, isp, lp, num
   IMPLICIT NONE
   ! ___ Parameter declaration _________________________________________________
   INTEGER(idp)                           :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), DIMENSION(np)               :: xp, yp, zp, ex, ey, ez, bx, by, bz
   INTEGER(idp)                           :: lvect
-  LOGICAL(lp)                            :: l_lower_order_in_v
+  LOGICAL(lp)                            :: l_lower_order_in_v, l_nodal
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard, -nzguard:nz+nzguard) &
   :: exg, eyg, ezg
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard, -nzguard:nz+nzguard) &
@@ -4841,14 +4841,14 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE geteb3d_energy_conserving_vecV2_3_3_3(np, xp, yp, zp, ex, ey, ez, bx, by,  &
   bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg, eyg,    &
-  ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
+  ezg, bxg, byg, bzg, lvect, l_lower_order_in_v, l_nodal)
   USE picsar_precision, ONLY: idp, isp, lp, num
   IMPLICIT NONE
   ! ___ Parameter declaration _________________________________________________
   INTEGER(idp)                           :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), DIMENSION(np)               :: xp, yp, zp, ex, ey, ez, bx, by, bz
   INTEGER(idp)                           :: lvect
-  LOGICAL(lp)                            :: l_lower_order_in_v
+  LOGICAL(lp)                            :: l_lower_order_in_v, l_nodal
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard, -nzguard:nz+nzguard) &
   :: exg, eyg, ezg
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard, -nzguard:nz+nzguard) &
@@ -5542,7 +5542,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV3_3_3_3(np, xp, yp, zp, ex, ey, ez, bx,
   bz, xmin, ymin, zmin, dx, dy, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard,       &
   eyg_nvalid, ezg, ezg_nguard, ezg_nvalid, bxg, bxg_nguard, bxg_nvalid, byg,            &
   byg_nguard, byg_nvalid, bzg, bzg_nguard, bzg_nvalid, lvect,                           &
-  l_lower_order_in_v)        !#do not wrap
+  l_lower_order_in_v, l_nodal)        !#do not wrap
   USE picsar_precision, ONLY: idp, isp, lp, num
   IMPLICIT NONE
   ! ___ Parameter declaration _________________________________________________
@@ -5552,7 +5552,7 @@ SUBROUTINE geteb3d_energy_conserving_vecV3_3_3_3(np, xp, yp, zp, ex, ey, ez, bx,
   bxg_nvalid(3), byg_nguard(3), byg_nvalid(3), bzg_nguard(3), bzg_nvalid(3)
   REAL(num), DIMENSION(np)               :: xp, yp, zp, ex, ey, ez, bx, by, bz
   INTEGER(idp)                           :: lvect
-  LOGICAL(lp)                            :: l_lower_order_in_v
+  LOGICAL(lp)                            :: l_lower_order_in_v, l_nodal
   REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1,           &
   -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1,                                       &
   -exg_nguard(3):exg_nvalid(3)+exg_nguard(3)-1)
@@ -6243,14 +6243,14 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE geteb3d_energy_conserving_blockvec_3_3_3(np, xp, yp, zp, ex, ey, ez, bx,   &
   by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg,     &
-  eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
+  eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v, l_nodal)
   USE picsar_precision, ONLY: idp, isp, lp, num
   IMPLICIT NONE
   ! ___ Parameter declaration _________________________________________________
   INTEGER(idp)                           :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), DIMENSION(np)               :: xp, yp, zp, ex, ey, ez, bx, by, bz
   INTEGER(idp)                           :: lvect
-  LOGICAL(lp)                            :: l_lower_order_in_v
+  LOGICAL(lp)                            :: l_lower_order_in_v, l_nodal
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard, -nzguard:nz+nzguard) &
   :: exg, eyg, ezg
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard, -nzguard:nz+nzguard) &
@@ -6880,14 +6880,14 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE geteb3d_energy_conserving_blockvec2_3_3_3(np, xp, yp, zp, ex, ey, ez, bx,  &
   by, bz, xmin, ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, exg,     &
-  eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v )
+  eyg, ezg, bxg, byg, bzg, lvect, l_lower_order_in_v, l_nodal)
   USE picsar_precision, ONLY: idp, isp, lp, num
   IMPLICIT NONE
   ! ___ Parameter declaration _________________________________________________
   INTEGER(idp)                           :: np, nx, ny, nz, nxguard, nyguard, nzguard
   REAL(num), DIMENSION(np)               :: xp, yp, zp, ex, ey, ez, bx, by, bz
   INTEGER(idp)                           :: lvect
-  LOGICAL(lp)                            :: l_lower_order_in_v
+  LOGICAL(lp)                            :: l_lower_order_in_v, l_nodal
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard, -nzguard:nz+nzguard) &
   :: exg, eyg, ezg
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard, -nzguard:nz+nzguard) &

@@ -55,14 +55,14 @@
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_gete2dxz_energy_conserving_scalar_2_2(np, xp, zp, ex, ey, ez, xmin,    &
   zmin, dx, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid,     &
-  ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
+  ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v, l_nodal)     !#do not wrap
   USE picsar_precision, ONLY: idp, lp, num
   IMPLICIT NONE
   INTEGER(idp)                         :: np
   INTEGER(idp), intent(in)             :: exg_nguard(2), exg_nvalid(2),               &
   eyg_nguard(2), eyg_nvalid(2), ezg_nguard(2), ezg_nvalid(2)
   REAL(num), DIMENSION(np)             :: xp, zp, ex, ey, ez
-  LOGICAL(lp)                              :: l_lower_order_in_v
+  LOGICAL(lp)                              :: l_lower_order_in_v, l_nodal
   REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1,           &
   -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1)
   REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1,           &
@@ -282,14 +282,14 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_getb2dxz_energy_conserving_scalar_2_2(np, xp, zp, bx, by, bz, xmin,    &
   zmin, dx, dz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid,     &
-  bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
+  bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v, l_nodal)     !#do not wrap
   USE picsar_precision, ONLY: idp, lp, num
   IMPLICIT NONE
   INTEGER(idp)                         :: np
   INTEGER(idp), intent(in)                :: bxg_nguard(2), bxg_nvalid(2),            &
   byg_nguard(2), byg_nvalid(2), bzg_nguard(2), bzg_nvalid(2)
   REAL(num), DIMENSION(np)             :: xp, zp, bx, by, bz
-  LOGICAL(lp)                              :: l_lower_order_in_v
+  LOGICAL(lp)                              :: l_lower_order_in_v, l_nodal
   REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1,           &
   -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1)
   REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1,           &
@@ -503,7 +503,7 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 subroutine pxr_gete2dxz_energy_conserving_vect_2_2( np, xp, zp, ex, ey, ez, xmin,     &
   zmin, dx, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid, ezg,          &
-  ezg_nguard, ezg_nvalid, lvect, l_lower_order_in_v)     !#do not wrap
+  ezg_nguard, ezg_nvalid, lvect, l_lower_order_in_v, l_nodal)     !#do not wrap
   USE picsar_precision, ONLY: idp, lp, num
   implicit none
   integer(idp)                  :: np
@@ -511,7 +511,7 @@ subroutine pxr_gete2dxz_energy_conserving_vect_2_2( np, xp, zp, ex, ey, ez, xmin
   eyg_nvalid(2), ezg_nguard(2), ezg_nvalid(2)
   integer(idp)                  :: lvect
   real(num), dimension(np)      :: xp, zp, ex, ey, ez
-  logical(lp)                   :: l_lower_order_in_v
+  logical(lp)                   :: l_lower_order_in_v, l_nodal
   REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1, 1,        &
   -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1)
   REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1, 1,        &
@@ -752,7 +752,7 @@ end subroutine
 ! ________________________________________________________________________________________
 subroutine pxr_getb2dxz_energy_conserving_vect_2_2( np, xp, zp, bx, by, bz, xmin,     &
   zmin, dx, dz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid, bzg,          &
-  bzg_nguard, bzg_nvalid, lvect, l_lower_order_in_v)     !#do not wrap
+  bzg_nguard, bzg_nvalid, lvect, l_lower_order_in_v, l_nodal)     !#do not wrap
   USE picsar_precision, ONLY: idp, lp, num
   implicit none
   ! __ Parameter declaration ___________________________________________
@@ -761,7 +761,7 @@ subroutine pxr_getb2dxz_energy_conserving_vect_2_2( np, xp, zp, bx, by, bz, xmin
   byg_nguard(2), byg_nvalid(2), bzg_nguard(2), bzg_nvalid(2)
   integer(idp)                       :: lvect
   real(num), dimension(np)           :: xp, zp, bx, by, bz
-  logical(lp)                        :: l_lower_order_in_v
+  logical(lp)                        :: l_lower_order_in_v, l_nodal
   REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1, 1,        &
   -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1)
   REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1, 1,        &

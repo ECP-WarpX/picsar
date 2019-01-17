@@ -66,7 +66,7 @@
 ! ________________________________________________________________________________________
 subroutine pxr_gete2dxz_n_energy_conserving( np, xp, yp, zp, ex, ey, ez, xmin, zmin,  &
   dx, dz, nox, noz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid, ezg,      &
-  ezg_nguard, ezg_nvalid, l4symtry, l_2drz, l_lower_order_in_v)     !#do not wrap
+  ezg_nguard, ezg_nvalid, l4symtry, l_2drz, l_lower_order_in_v, l_nodal)     !#do not wrap
   USE picsar_precision, ONLY: idp, lp, num
   implicit none
 
@@ -74,7 +74,7 @@ subroutine pxr_gete2dxz_n_energy_conserving( np, xp, yp, zp, ex, ey, ez, xmin, z
   integer(idp), intent(IN) :: exg_nguard(2), exg_nvalid(2), eyg_nguard(2),            &
   eyg_nvalid(2), ezg_nguard(2), ezg_nvalid(2)
   real(num), dimension(np) :: xp, yp, zp, ex, ey, ez
-  logical(lp)              :: l4symtry, l_2drz, l_lower_order_in_v
+  logical(lp)              :: l4symtry, l_2drz, l_lower_order_in_v, l_nodal
   REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1, 1,        &
   -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1)
   REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1, 1,        &
@@ -353,14 +353,14 @@ end subroutine pxr_gete2dxz_n_energy_conserving
 ! ________________________________________________________________________________________
 subroutine pxr_getb2dxz_n_energy_conserving( np, xp, yp, zp, bx, by, bz, xmin, zmin,  &
   dx, dz, nox, noz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid, bzg,      &
-  bzg_nguard, bzg_nvalid, l4symtry, l_2drz, l_lower_order_in_v)     !#do not wrap
+  bzg_nguard, bzg_nvalid, l4symtry, l_2drz, l_lower_order_in_v, l_nodal)     !#do not wrap
   USE picsar_precision, ONLY: idp, lp, num
   implicit none
   integer(idp) :: np, nox, noz
   integer(idp), intent(IN)                :: bxg_nguard(2), bxg_nvalid(2),            &
   byg_nguard(2), byg_nvalid(2), bzg_nguard(2), bzg_nvalid(2)
   real(num), dimension(np) :: xp, yp, zp, bx, by, bz
-  logical(lp)  :: l4symtry, l_2drz, l_lower_order_in_v
+  logical(lp)  :: l4symtry, l_2drz, l_lower_order_in_v, l_nodal
   REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1, 1,        &
   -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1)
   REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1, 1,        &
