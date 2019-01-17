@@ -440,11 +440,6 @@ class MiniAppParser( object ):
                         "init_time_stat_output",\
                         "get_loc_kinetic_energy",\
                         "get_kinetic_energy",\
-                        "get_loc_field_energy_2d",\
-                        "get_loc_field_energy",\
-                        "get_field_energy",\
-                        "get_field_energy_2d",\
-                        "get_field_energy",\
                         "get_loc_norm_2",\
                         "system",\
                         "get_norm_divErho",\
@@ -458,6 +453,17 @@ class MiniAppParser( object ):
                         "write_particle_variable",\
                         "output_time_statistics",\
                         "final_output_time_statistics",\
+                        "pxrdepose_rho_on_grid",\
+                        ]
+
+        diag_routines_3D=[
+                        "get_loc_field_energy",\
+                        "get_field_energy",\
+                        ]
+
+        diag_routines_2D=[
+                        "get_loc_field_energy_2d",\
+                        "get_field_energy_2d",\
                         ]
 
         generic_routines=[
@@ -473,12 +479,8 @@ class MiniAppParser( object ):
                         "get_global_grid_mem",\
                         "set_tile_split",\
                         "set_tile_split_for_species",\
-                        "add_particle_to_species",\
-                        "add_particle_at_tile",\
                         "add_group_of_particles_at_tile",\
                         "rm_particles_from_species_with_mask",\
-                        "rm_particles_from_species",\
-                        "rm_particle_at_tile",\
                         "allocate_tile_arrays",\
                         "init_tile_arrays",\
                         "init_tile_arrays_for_species",\
@@ -570,7 +572,6 @@ class MiniAppParser( object ):
                         "get_local_grid_mem",
                         "pxr_particle_sorting",
                         "particle_sorting_sub",
-                        "pxr_particle_bin_sorting",
                         "get_local_number_of_particles_from_species",
                         "start_collection",
                         "stop_collection",
@@ -602,6 +603,14 @@ class MiniAppParser( object ):
 #                         "binary_search",
 #                         "compute_effective_communication_setup",
                         ]
+
+        generic_routines_3d = [
+                        "add_particle_to_species",\
+                        "add_particle_at_tile",\
+                        "rm_particles_from_species",\
+                        "rm_particle_at_tile",\
+                        "pxr_particle_bin_sorting",
+                            ]
 
         generic_routines_2d = [
                         "add_particle_to_species_2d",\
@@ -643,10 +652,13 @@ class MiniAppParser( object ):
 
         pusher_routines = [
                         "set_tile_split",\
+                            ]
+
+        pusher_routines_3d = [
                         "particle_bcs",\
                         "particle_bcs_tiles",\
                         "particle_bcs_tiles_openmp",\
-                        "particle_bsc_openmp_reordering",\
+#                        "particle_bsc_openmp_reordering",\ not used
                         "particle_bcs_mpi_blocking",\
                         "particle_bcs_mpi_non_blocking",\
                         "field_gathering_plus_particle_pusher",\
@@ -659,6 +671,7 @@ class MiniAppParser( object ):
                         "field_gathering_plus_particle_pusher_1_1_1",\
                         "field_gathering_plus_particle_pusher_2_2_2",\
                         "field_gathering_plus_particle_pusher_3_3_3",\
+                        "particle_bcs_tiles_and_mpi_3d",\
                             ]
 
         pusher_routines_2d = [
@@ -668,10 +681,6 @@ class MiniAppParser( object ):
                         "particle_bcs_mpi_non_blocking_2d",\
                         "field_gathering_plus_particle_pusher_sub_2d",\
                         "pxr_push2dxz",\
-                                     ]
-
-        pusher_routines_3d = [
-                        "particle_bcs_tiles_and_mpi_3d",\
                                      ]
 
         boris_modules = []
@@ -713,71 +722,162 @@ class MiniAppParser( object ):
                         "tiling",\
                         "particle_tilemodule"]
 
-        depos_scalar_routines_charge = [
-                        "depose_rho_scalar_1_1_1",\
-                        "depose_rho_scalar_2_2_2",\
-                        "depose_rho_scalar_3_3_3",\
-                        "pxr_depose_rho_n",\
-                        "pxrdepose_rho_on_grid",\
+        depos_routines_charge_3d_openmp = [
+                        "pxrdepose_rho_on_grid_sub_openmp_3d",\
+                        "pxrdepose_rho_on_grid_sub_openmp_3d_scalar",\
+                        "pxrdepose_rho_on_grid_sub_openmp_3d_vecto",\
+                        "pxrdepose_rho_on_grid_sub_openmp_3d_n",\
+                        ]
+
+        depos_routines_charge_2d_openmp = [
+                        "pxrdepose_rho_on_grid_sub_openmp_2d",\
                         ]
 
         depos_scalar_routines_charge_2d = [
                         "pxr_depose_rho_n_2dxz",\
                         "pxr_depose_rhoold_n_2dxz",\
-                        "pxrdepose_rho_on_grid_sub_openmp_2d",\
                                                   ]
 
-        depos_scalar_routines_charge_3d = [
-                        "pxrdepose_rho_on_grid_sub_openmp_3d_n",\
-                        "pxrdepose_rho_on_grid_sub_openmp_3d",\
-                        "pxrdepose_rho_on_grid_sub_openmp_3d_scalar",\
-                                                  ]
+        depos_scalar_routines_charge_3d_o1 = [
+                        "depose_rho_scalar_1_1_1",\
+                        ]
 
-        depos_scalar_routines_current = [
+        depos_scalar_routines_charge_3d_o2 = [
+                        "depose_rho_scalar_2_2_2",\
+                        ]
+
+        depos_scalar_routines_charge_3d_o3 = [
+                        "depose_rho_scalar_3_3_3",\
+                        ]
+
+        depos_scalar_routines_charge_3d_on = [
+                        "pxr_depose_rho_n",\
+                        ]
+
+        depos_generic_routines_current = [
+                        "func_order",\
+                        "curr_depo_sub",\
+                        ]
+
+        depos_generic_routines_current_3d = [
                         "depose_jxjyjz",\
                         "depose_jxjyjz_generic",\
                         "pxrdepose_currents_on_grid_jxjyjz",\
-                        "curr_depo_sub",\
-                        "pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq",\
-                        "pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq",\
-                        "func_order",\
+                        "pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq",
                         ]
 
-        depos_scalar_routines_current_2d = [
+        depos_generic_routines_current_2d = [
                         "depose_jxjyjz_2d",\
                         "depose_jxjyjz_generic_2d",\
                         "depose_jxjyjz_2d depose_jxjyjz_generic_2d",\
                         "pxrdepose_currents_on_grid_jxjyjz_2d",\
-                        "pxrdepose_currents_on_grid_jxjyjz_2d",\
                                                    ]
-
-        depos_vector_charge_routines = [
+        depos_vector_routines_charge_3d_o1 = [
                         "depose_rho_vecSH_1_1_1",\
                         "depose_rho_vecNOY_1_1_1",\
                         "depose_rho_vecHV_1_1_1",\
                         "depose_rho_vecHVv2_1_1_1",\
+                        ]
+
+        depos_vector_routines_charge_3d_o2 = [
                         "depose_rho_vecHVv2_2_2_2",\
+                        ]
+
+        depos_vector_routines_charge_3d_o3 = [
                         "depose_rho_vecHVv2_3_3_3",\
                         "depose_rho_vecHVv3_3_3_3",\
                         "depose_rho_vecHVv4_3_3_3",\
-                        "pxrdepose_rho_on_grid_sub_openmp_3d_vecto",\
                         ]
 
-
-        depos_vector_current_routines = [
+        esirkepov_routines_generic_openmp = [
                         "pxrdepose_currents_on_grid_jxjyjz_esirkepov2d_sub_openmp",\
+                        "pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp",\
+                        ]
+
+        direct_routines_generic_openmp = [
                         "pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp",\
                         "pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2",\
+                        ]
+
+        depos_vector_routines_current = [
+                        "pxrdepose_currents_on_grid_jxjyjz_sub_openmp",\
                         "curr_reduc_sub",\
                         ]
 
+        esirkepov_routines_scalar_3d=[
+                        "pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq",\
+                        "depose_jxjyjz_esirkepov"]
+
+        esirkepov_routines_scalar_2d=[
+                        "depose_jxjyjz_esirkepov_2d"]
+
+        esirkepov_routines_scalar_o1_3d=[
+                        "depose_jxjyjz_esirkepov_1_1_1",\
+                                     ]
+                        
+        esirkepov_routines_scalar_o1_2d=[
+                        "pxr_depose_jxjyjz_esirkepov2d_1_1",\
+                                     ]
+
+        esirkepov_routines_scalar_o2_3d=[
+                        "depose_jxjyjz_esirkepov_2_2_2",\
+                                     ]
+
+        esirkepov_routines_scalar_o2_2d=[
+                        "pxr_depose_jxjyjz_esirkepov2d_2_2",\
+                                     ]
+
+        esirkepov_routines_scalar_o3_3d=[
+                        "depose_jxjyjz_esirkepov_3_3_3",\
+                                     ]
+
+        esirkepov_routines_scalar_o3_2d=[
+                        "pxr_depose_jxjyjz_esirkepov2d_3_3",\
+                                     ]
+
+        esirkepov_routines_scalar_on_3d=[
+                        "pxr_depose_jxjyjz_esirkepov_n",\
+                                     ]
+
+        esirkepov_routines_scalar_on_2d=[
+                        "pxr_depose_jxjyjz_esirkepov2d_n",\
+                                     ]
+
+        esirkepov_routines_vector_o3_2d=["pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3"]
+
+        direct_routines_scalar_o1 = ["depose_jxjyjz_scalar_1_1_1"]
+        direct_routines_scalar_o2 = ["depose_jxjyjz_scalar_2_2_2"]
+        direct_routines_scalar_o3 = ["depose_jxjyjz_scalar_3_3_3"]
+
+        direct_routines_vector_o1 = ["depose_jxjyjz_vecHVv2_1_1_1",\
+                        "depose_jxjyjz_vecHV_vnr_1_1_1",\
+                        "current_reduction_1_1_1",\
+                        ]
+
+        direct_routines_vector_o2 = [
+                        "depose_jxjyjz_vecHVv2_2_2_2",\
+                        "depose_jxjyjz_vecHV_vnr_2_2_2",\
+                        "current_reduction_2_2_2",\
+                        ]
+
+        direct_routines_vector_o3 = [
+                        "depose_jxjyjz_vecHVv3_3_3_3",\
+                        "depose_jxjyjz_vecHV_vnr_3_3_3",\
+                        "current_reduction_3_3_3"
+                         ]
+                       
         gather_routines_scalar_2d = [
                         "geteb2dxz_energy_conserving",\
                         "geteb2dxz_energy_conserving_generic",\
-                        "pxr_gete2dxz_n_energy_conserving",\
-                        "pxr_getb2dxz_n_energy_conserving",\
+                                            ]
+        gather_routines_scalar_2d_o3 = [
                         "pxr_gete2dxz_energy_conserving_scalar_3_3",\
                         "pxr_getb2dxz_energy_conserving_scalar_3_3",\
+                                            ]
+
+        gather_routines_scalar_2d_on = [
+                        "pxr_gete2dxz_n_energy_conserving",\
+                        "pxr_getb2dxz_n_energy_conserving",\
                                             ]
 
         gather_routines_scalar_3d = [
@@ -851,41 +951,6 @@ class MiniAppParser( object ):
                         "geteb3d_energy_conserving_blockvec_3_3_3",\
                         "geteb3d_energy_conserving_blockvec2_3_3_3",\
                         ]
-
-        esirkepov_modules=[]
-
-        esirkepov_routines_scalar=[
-                        "depose_jxjyjz_esirkepov",\
-                        "depose_jxjyjz_esirkepov_1_1_1",\
-                        "depose_jxjyjz_esirkepov_2_2_2",\
-                        "depose_jxjyjz_esirkepov_3_3_3",\
-                        "pxr_depose_jxjyjz_esirkepov_n",\
-                        "pxr_depose_jxjyjz_esirkepov2d_n",\
-                        "pxr_depose_jxjyjz_esirkepov2d_1_1",\
-                        "pxr_depose_jxjyjz_esirkepov2d_2_2",\
-                        "pxr_depose_jxjyjz_esirkepov2d_3_3",\
-                        "depose_jxjyjz_esirkepov_2d"]
-
-        esirkepov_routines_vector=["pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3"]
-
-        direct_modules = []
-
-        direct_routines_scalar = ["depose_jxjyjz_scalar_1_1_1",\
-                        "depose_jxjyjz_scalar_2_2_2",\
-                        "depose_jxjyjz_scalar_3_3_3"]
-
-        direct_routines_vector = ["depose_jxjyjz_vecHVv2_1_1_1",\
-                        "depose_jxjyjz_vecHV_vnr_1_1_1",\
-                        "depose_jxjyjz_vecHVv2_2_2_2",\
-                        "depose_jxjyjz_vecHV_vnr_2_2_2",\
-                        "depose_jxjyjz_vecHVv3_3_3_3",\
-                        "depose_jxjyjz_vecHV_vnr_3_3_3",\
-                        "pxrdepose_currents_on_grid_jxjyjz_sub_openmp",\
-                        "pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp",\
-                        "current_reduction_1_1_1",\
-                        "current_reduction_2_2_2",\
-                        "current_reduction_3_3_3"]
-
 
         spectral_modules= [
                         "math_tools",\
@@ -1028,36 +1093,111 @@ class MiniAppParser( object ):
         self.list_available_routines = generic_routines                      \
                                      + solver_routines                       \
                                      + pusher_routines                       \
-                                     + depos_scalar_routines_current
+                                     + depos_generic_routines_current
 
         if self.include_geom_2d:
             self.list_available_routines += generic_routines_2d            \
                                           + pusher_routines_2d             \
-                                          + depos_scalar_routines_current_2d
+                                          + depos_generic_routines_current_2d
 
         if self.include_geom_3d:
-            self.list_available_routines += pusher_routines_3d      \
-                                          + solver_routines_3d
+            self.list_available_routines += generic_routines_3d     \
+                                          + pusher_routines_3d      \
+                                          + solver_routines_3d      \
+                                          + depos_generic_routines_current_3d
 
         if self.flag_diags == 'on':
             self.list_available_modules += diag_modules
             self.list_available_routines += diag_routines
-
-        if self.flag_charge == 'on':
-            self.list_available_routines += depos_scalar_routines_charge
             if self.include_geom_2d:
-                self.list_available_routines += depos_scalar_routines_charge_2d
+                self.list_available_routines += diag_routines_2D
             if self.include_geom_3d:
-                self.list_available_routines += depos_scalar_routines_charge_3d
+                self.list_available_routines += diag_routines_3D
 
         if self.flag_laser == 'on':
             self.list_available_routines += laser_routines
 
-        if self.flag_optimization == 'on':
-            self.list_available_routines += depos_vector_current_routines
-            if self.flag_charge == 'on':
-                self.list_available_routines += depos_vector_charge_routines
 
+        # add deposition routines
+
+        if self.flag_optimization == 'on':
+            if self.include_depos_esirkepov:
+                self.list_available_routines += esirkepov_routines_generic_openmp
+            elif self.include_depos_direct:
+                self.list_available_routines += direct_routines_generic_openmp
+
+            if self.flag_charge == 'on':
+                if self.include_geom_2d:
+                    self.list_available_routines += depos_routines_charge_2d_openmp
+                elif self.include_geom_3d:
+                    self.list_available_routines += depos_routines_charge_3d_openmp
+                    if self.include_order_1:
+                        self.list_available_routines += depos_vector_routines_charge_3d_o1
+                    if self.include_order_2:
+                        self.list_available_routines += depos_vector_routines_charge_3d_o2
+                    if self.include_order_3:
+                        self.list_available_routines += depos_vector_routines_charge_3d_o3
+                    if self.include_order_n:
+                        self.list_available_routines += depos_vector_routines_charge_3d_on
+
+            self.list_available_routines += depos_vector_routines_current
+            if self.include_geom_2d:
+                if self.include_depos_esirkepov:
+                    if self.include_order_3:
+                        self.list_available_routines += esirkepov_routines_vector_2d_o3
+            elif self.include_geom_3d:
+                if self.include_depos_direct:
+                    if self.include_order_1:
+                        self.list_available_routines += direct_routines_vector_o1
+                    if self.include_order_2:
+                        self.list_available_routines += direct_routines_vector_o2
+                    if self.include_order_3:
+                        self.list_available_routines += direct_routines_vector_o3
+
+        elif self.flag_optimization == 'off':
+            if self.flag_charge == 'on':
+                if self.include_geom_2d:
+                    self.list_available_routines += depos_scalar_routines_charge_2d
+                elif self.include_geom_3d:
+                    if self.include_order_1:
+                        self.list_available_routines += depos_scalar_routines_charge_3d_o1
+                    if self.include_order_2:
+                        self.list_available_routines += depos_scalar_routines_charge_3d_o2
+                    if self.include_order_3:
+                        self.list_available_routines += depos_scalar_routines_charge_3d_o3
+                    if self.include_order_n:
+                        self.list_available_routines += depos_scalar_routines_charge_3d_on
+
+            if self.include_geom_2d:
+                if self.include_depos_esirkepov:
+                    self.list_available_routines += esirkepov_routines_scalar_2d
+                    if self.include_order_1:
+                        self.list_available_routines += esirkepov_routines_scalar_o1_2d
+                    if self.include_order_2:
+                        self.list_available_routines += esirkepov_routines_scalar_o2_2d
+                    if self.include_order_3:
+                        self.list_available_routines += esirkepov_routines_scalar_o3_2d
+                    if self.include_order_n:
+                        self.list_available_routines += esirkepov_routines_scalar_on_2d
+
+            elif self.include_geom_3d:
+                if self.include_depos_esirkepov:
+                    self.list_available_routines += esirkepov_routines_scalar_3d
+                    if self.include_order_1:
+                        self.list_available_routines += esirkepov_routines_scalar_o1_3d
+                    if self.include_order_2:
+                        self.list_available_routines += esirkepov_routines_scalar_o2_3d
+                    if self.include_order_3:
+                        self.list_available_routines += esirkepov_routines_scalar_o3_3d
+                    if self.include_order_n:
+                        self.list_available_routines += esirkepov_routines_scalar_on_3d
+                elif self.include_depos_direct:
+                    if self.include_order_1:
+                        self.list_available_routines += direct_routines_scalar_o1
+                    if self.include_order_2:
+                        self.list_available_routines += direct_routines_scalar_o2
+                    if self.include_order_3:
+                        self.list_available_routines += direct_routines_scalar_o3
 
         # Add gather subroutines
         if self.include_geom_2d:
@@ -1110,20 +1250,6 @@ class MiniAppParser( object ):
         if self.include_pusher_vay:
             self.list_available_modules  += vay_pusher_modules
             self.list_available_routines += vay_pusher_routines
-
-
-        # Deposition
-        if self.include_depos_direct:
-            self.list_available_modules  += direct_modules
-            self.list_available_routines += direct_routines_scalar
-            if self.flag_optimization == 'on':
-                self.list_available_routines += direct_routines_vector
-
-        if self.include_depos_esirkepov:
-            self.list_available_modules  += esirkepov_modules
-            self.list_available_routines += esirkepov_routines_scalar
-            if self.flag_optimization == 'on':
-                self.list_available_routines += esirkepov_routines_vector
 
         #LIST ALL .F90 or .F files in current directory
         self.listfiles = self.create_listfiles('./src')
@@ -2025,7 +2151,7 @@ import argparse
 parser = argparse.ArgumentParser(description='Parse inputs to generate_miniapp.',
                                  formatter_class=argparse.RawTextHelpFormatter)
 
-parser.add_argument('--solver', dest='type_solver', default='all',
+parser.add_argument('--solver', dest='type_solver', default='fdtd',
                     choices = ['all','fdtd','spectral'],
                     help = 'Maxwell solvers among: \n'\
                     +'- fdtd:     3D-Finite Domain Time Domain Maxwell '\
@@ -2035,14 +2161,14 @@ parser.add_argument('--solver', dest='type_solver', default='all',
                     + '- all:      both solvers \n'    \
                     + 'Default all.\n\n')
 
-parser.add_argument('--pusher', dest='type_pusher', default='all',
+parser.add_argument('--pusher', dest='type_pusher', default='boris',
                     choices = ['all','boris','vay'],
                     help='Particle pushers among: \n'\
                     + '- boris: Boris pusher \n- vay:   Vay pusher\n' \
                     + '- all:   both particle pushers \n'    \
                     + 'Default all.\n\n')
 
-parser.add_argument('--depos',  dest='type_depos',  default='all',
+parser.add_argument('--depos',  dest='type_depos',  default='direct',
                     choices = ['all','direct','esirkepov'],
                     help='Particle depositions among: \n'\
                     + '- direct:    Direct deposition \n'\
@@ -2050,22 +2176,22 @@ parser.add_argument('--depos',  dest='type_depos',  default='all',
                     + '- all:       both particle depositions\n'   \
                     + 'Default all.\n\n')
 
-parser.add_argument('--optimization',  dest='flag_optimization', default='on',
+parser.add_argument('--optimization',  dest='flag_optimization', default='off',
                     choices = ['on','off'],
                     help='flag optimization \n' \
                     +'Default on.\n\n')
 
-parser.add_argument('--charge',  dest='flag_charge', default='on',
+parser.add_argument('--charge',  dest='flag_charge', default='off',
                     choices = ['on','off'],
                     help='flag charge \n' \
                     +'Default on.\n\n')
 
-parser.add_argument('--laser',  dest='flag_laser', default='on',
+parser.add_argument('--laser',  dest='flag_laser', default='off',
                     choices = ['on','off'],
                     help='flag include laser pusher\n' \
                     +'Default on.\n\n')
 
-parser.add_argument('--geom',  dest='flag_geom', default='all',
+parser.add_argument('--geom',  dest='flag_geom', default='3d',
                     choices = ['2d','3d','all'],
                     help='Geometry among: \n'\
                     + '- 2d:    2-dimensional\n'\
@@ -2073,7 +2199,7 @@ parser.add_argument('--geom',  dest='flag_geom', default='all',
                     + '- all:   both 2-dimensional and 3-dimensional\n'   \
                     + 'Default all.\n\n')
 
-parser.add_argument('--order',  dest='flag_order', default='all',
+parser.add_argument('--order',  dest='flag_order', default='1',
                     choices = ['1','2','3','n','all'],
                     help='Field gathering order among: \n'\
                     + '- 1:    order 1 \n'\
@@ -2083,7 +2209,7 @@ parser.add_argument('--order',  dest='flag_order', default='all',
                     + '- all:  all orders 1, 2, 3, n\n'   \
                     + 'Default all.\n\n')
 
-parser.add_argument('--diags',  dest='flag_diags', default='on',
+parser.add_argument('--diags',  dest='flag_diags', default='off',
                     choices = ['on','off'],
                     help='flag diagnostics \n' \
                     +'Default on.\n\n')
