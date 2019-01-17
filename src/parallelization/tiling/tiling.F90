@@ -64,7 +64,7 @@ MODULE tiling
   !> Creation: 2015
   ! ______________________________________________________________________________________
   SUBROUTINE set_tile_split()
-    USE particle_properties
+    USE particle_properties, ONLY: l_aofgrid_tiles_allocated, nspecies
     IMPLICIT NONE
 
     ! Set tile split for species arrays
@@ -731,7 +731,8 @@ MODULE tiling
   ! ______________________________________________________________________________________
   SUBROUTINE init_tile_arrays_for_species(nspec2, species_array, aofgtiles, ntx2,     &
     nty2, ntz2)
-    USE particle_properties
+    USE particle_properties, ONLY: l_aofgrid_tiles_array_allocated
+    USE picsar_precision, ONLY: idp, num
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN)        :: nspec2, ntx2, nty2, ntz2
     TYPE(grid_tile), DIMENSION(ntx2, nty2, ntz2), INTENT(IN OUT)        :: aofgtiles
@@ -1258,11 +1259,11 @@ MODULE tiling
   ! ______________________________________________________________________________________
   SUBROUTINE point_to_tile(ispecies, ix, iy, iz)
     USE picsar_precision, ONLY: idp
-    USE python_pointers, ONLY: partby, partz, nzmax, ytmax, nymin, nzgt, nxtg,       &
-      zgtmax, partx, xgtmax, nxmin, ygtmin, partex, partux, partgaminv, ztmax, nyct, &
-      xgtmin, nztg, partuy, partuz, partbz, nxct, nxgt, ytmin, ygtmax, partnmax,     &
-      nygt, ztmin, zgtmin, nzct, pid, party, nytg, xtmin, partey, nzmin, partbx,     &
-      nxmax, xtmax, partn, partez, nymax
+    USE python_pointers, ONLY: nxct, nxgt, nxmax, nxmin, nxtg, nyct, nygt, nymax,    &
+      nymin, nytg, nzct, nzgt, nzmax, nzmin, nztg, partbx, partby, partbz, partex,   &
+      partey, partez, partgaminv, partn, partnmax, partux, partuy, partuz, partx,    &
+      party, partz, pid, xgtmax, xgtmin, xtmax, xtmin, ygtmax, ygtmin, ytmax, ytmin, &
+      zgtmax, zgtmin, ztmax, ztmin
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: ix, iy, iz, ispecies
     TYPE(particle_species), POINTER  :: currsp
@@ -1452,7 +1453,7 @@ MODULE tiling
   !
   ! ______________________________________________________________________________________
   SUBROUTINE estimate_tiles_memory_consumption
-    USE fields, ONLY: nyjguards, nxjguards, nzjguards, nzguards, nxguards, nyguards
+    USE fields, ONLY: nxguards, nxjguards, nyguards, nyjguards, nzguards, nzjguards
     USE grid_tilemodule, ONLY: aofgrid_tiles
     USE params, ONLY: it
     USE particle_properties, ONLY: nspecies
@@ -1460,8 +1461,8 @@ MODULE tiling
     USE particle_tilemodule, ONLY: particle_tile
     USE particles, ONLY: species_parray
     USE picsar_precision, ONLY: idp, num
-    USE shared_data, ONLY: nz, ny, nx, dx, c_dim, dy, rank, dz
-    USE tile_params, ONLY: ntilez, ntilex, ntiley
+    USE shared_data, ONLY: c_dim, dx, dy, dz, nx, ny, nz, rank
+    USE tile_params, ONLY: ntilex, ntiley, ntilez
     IMPLICIT NONE
 
     TYPE(particle_species), POINTER :: curr
@@ -1652,11 +1653,13 @@ MODULE tiling
 
   SUBROUTINE init_laser_species_python(emax,spot,vector,polvector1,polvector2,charge, &
     weight_laser, posx, posy, posz, np, js_laser)
-    USE antenna
-    USE constants
-    USE particle_properties
-    USE particles
-    USE shared_data
+    USE constants, ONLY: emass
+    USE particle_properties, ONLY: l_species_allocated, npid, nspecies,              &
+      nspecies_max, wpid
+    USE particle_speciesmodule, ONLY: particle_species
+    USE particles, ONLY: species_parray
+    USE picsar_precision, ONLY: idp, num
+    USE shared_data, ONLY: c_dim, x, y, z
 
     REAL(num) , INTENT(IN) :: emax, charge
     INTEGER(idp) , INTENT(IN) :: np
@@ -1733,7 +1736,7 @@ MODULE tiling
 
   SUBROUTINE load_laser_species(curr)
     USE antenna, ONLY: particle_antenna
-    USE constants, ONLY: eps0, emass, pi, echarge, clight
+    USE constants, ONLY: clight, echarge, emass, eps0, pi
     USE picsar_precision, ONLY: idp, num
     TYPE(particle_species), POINTER, INTENT(INOUT) :: curr
     INTEGER(idp)       ::  lmax, jmax, j, l, ipart
@@ -1967,7 +1970,7 @@ MODULE tiling
     USE particle_tilemodule, ONLY: particle_tile
     USE particles, ONLY: species_parray
     USE picsar_precision, ONLY: idp, num
-    USE tile_params, ONLY: ntilez, ntilex, ntiley
+    USE tile_params, ONLY: ntilex, ntiley, ntilez
     IMPLICIT NONE 
     INTEGER(idp) :: ispecies, ix,iy,iz
     TYPE(particle_species), POINTER :: curr_sp
@@ -2036,12 +2039,12 @@ MODULE tiling
  !> Creation 2018
  ! _______________________________________________________________________________________
   SUBROUTINE get_global_tile_mem()
-    USE mem_status, ONLY: global_part_tiles_mem, local_grid_tiles_mem,               &
-      global_grid_tiles_mem, local_part_tiles_mem
+    USE mem_status, ONLY: global_grid_tiles_mem, global_part_tiles_mem,              &
+      local_grid_tiles_mem, local_part_tiles_mem
     USE mpi
     USE mpi_type_constants, ONLY: mpidbl, status
     USE picsar_precision, ONLY: isp
-    USE shared_data, ONLY: errcode, comm
+    USE shared_data, ONLY: comm, errcode
     IMPLICIT NONE 
 
     ! - Estimate total particle arrays memory (reduce on proc 0)

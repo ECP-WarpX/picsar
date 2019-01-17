@@ -2080,7 +2080,7 @@ END SUBROUTINE depose_rho_vecHVv4_3_3_3
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_depose_rho_n(rho, np, xp, yp, zp, w, q, xmin, ymin, zmin, dx, dy, dz,  &
   nx, ny, nz, nxguard, nyguard, nzguard, nox, noy, noz, l_particles_weight, l4symtry)
-  USE picsar_precision, ONLY: idp, num, lp
+  USE picsar_precision, ONLY: idp, lp, num
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nox, noy, noz, nxguard, nyguard, nzguard
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,                      &

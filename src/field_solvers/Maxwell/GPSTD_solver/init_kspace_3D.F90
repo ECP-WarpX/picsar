@@ -183,13 +183,13 @@ MODULE gpstd_solver
   !> @params[in,out] nfftz INTEGER(idp) - Number of points in spectral space along Z
   ! ______________________________________________________________________________________
   SUBROUTINE select_case_dims_local(nfftx, nffty, nfftz)
-    USE fields, ONLY: nzguards, nxguards, nyguards
-    USE group_parameters, ONLY: p3d_fsize, nx_group, ny_group, nz_group
+    USE fields, ONLY: nxguards, nyguards, nzguards
+    USE group_parameters, ONLY: nx_group, ny_group, nz_group, p3d_fsize
     USE iso_c_binding
     USE mpi_fftw3, ONLY: local_nz, local_nz_tr
     USE picsar_precision, ONLY: idp
-    USE shared_data, ONLY: nz, ny, fftw_with_mpi, nx, nx_global, p3dfft_flag,        &
-      ny_global, c_dim, nz_global, fftw_mpi_transpose, fftw_hybrid
+    USE shared_data, ONLY: c_dim, fftw_hybrid, fftw_mpi_transpose, fftw_with_mpi,    &
+      nx, nx_global, ny, ny_global, nz, nz_global, p3dfft_flag
     INTEGER(idp), INTENT(INOUT) :: nfftx, nffty, nfftz
 
     IF(fftw_with_mpi) THEN
@@ -261,12 +261,12 @@ MODULE gpstd_solver
   !> @params[in,out] nfftz INTEGER(idp) - Number of points in spectral space along Z
   ! ______________________________________________________________________________________
   SUBROUTINE select_case_dims_global(nfftx, nffty, nfftz)
-    USE fields, ONLY: nzguards, nxguards, nyguards
+    USE fields, ONLY: nxguards, nyguards, nzguards
     USE group_parameters, ONLY: nx_group, ny_group, nz_group
     USE iso_c_binding
     USE picsar_precision, ONLY: idp
-    USE shared_data, ONLY: nz, ny, fftw_with_mpi, nx, p3dfft_stride, nx_global,      &
-      p3dfft_flag, ny_global, c_dim, nz_global, fftw_mpi_transpose, fftw_hybrid
+    USE shared_data, ONLY: c_dim, fftw_hybrid, fftw_mpi_transpose, fftw_with_mpi,    &
+      nx, nx_global, ny, ny_global, nz, nz_global, p3dfft_flag, p3dfft_stride
     INTEGER(idp), INTENT(INOUT) :: nfftx, nffty, nfftz
     !> When using global or hybrid pseudo spectral solver
     IF( fftw_with_mpi) THEN
@@ -340,15 +340,15 @@ MODULE gpstd_solver
   ! ______________________________________________________________________________________
   SUBROUTINE init_kspace
     USE constants, ONLY: clight
+    USE fields, ONLY: l_staggered, norderx, nordery, norderz, nxguards, nyguards,    &
+      nzguards
     USE iso_c_binding
-    USE matrix_coefficients, ONLY: kspace, at_op
-    USE matrix_data, ONLY: ns_max, nmatrixes2
+    USE matrix_coefficients, ONLY: at_op, kspace
+    USE matrix_data, ONLY: nmatrixes2, ns_max
     USE omp_lib
-    USE fields, ONLY : nxguards, nyguards, nzguards, l_staggered
-    USE fields, ONLY : norderx, nordery, norderz
-    USE params, ONLY : dt
-    USE picsar_precision, ONLY: idp, num, lp, cpx
-    USE shared_data, ONLY: p3dfft_stride, p3dfft_flag, c_dim, fftw_mpi_transpose
+    USE params, ONLY: dt
+    USE picsar_precision, ONLY: cpx, idp, lp, num
+    USE shared_data, ONLY: c_dim, fftw_mpi_transpose, p3dfft_flag, p3dfft_stride
 
     REAL(num), ALLOCATABLE, DIMENSION(:, :, :)    :: temp, temp2
     INTEGER(idp)                                  :: i, j, k
@@ -551,7 +551,7 @@ MODULE gpstd_solver
   !> Creation 2017
   ! ______________________________________________________________________________________
   SUBROUTINE delete_k_space
-    USE matrix_coefficients, ONLY: kspace, at_op
+    USE matrix_coefficients, ONLY: at_op, kspace
     USE matrix_data, ONLY: nmatrixes2
     USE picsar_precision, ONLY: idp
     INTEGER(idp)  :: i
@@ -578,13 +578,13 @@ MODULE gpstd_solver
   !> Creation 2017
   ! ______________________________________________________________________________________
   SUBROUTINE compute_k_vec(l_stg)
-    USE fields, ONLY: nordery, norderz, norderx
-    USE group_parameters, ONLY: p3d_fsize, p3d_fstart, p3d_fend
+    USE fields, ONLY: norderx, nordery, norderz
+    USE group_parameters, ONLY: p3d_fend, p3d_fsize, p3d_fstart
     USE iso_c_binding
-    USE mpi_fftw3, ONLY: local_z0_tr, local_z0, local_nz, local_nz_tr
-    USE picsar_precision, ONLY: idp, num, lp, cpx
-    USE shared_data, ONLY: nz, fftw_with_mpi, p3dfft_stride, p3dfft_flag, dx,        &
-      fftw_mpi_transpose, dy, dz
+    USE mpi_fftw3, ONLY: local_nz, local_nz_tr, local_z0, local_z0_tr
+    USE picsar_precision, ONLY: cpx, idp, lp, num
+    USE shared_data, ONLY: dx, dy, dz, fftw_mpi_transpose, fftw_with_mpi, nz,        &
+      p3dfft_flag, p3dfft_stride
     IMPLICIT NONE
     LOGICAL(lp), INTENT(IN)                     :: l_stg
     COMPLEX(cpx), ALLOCATABLE, DIMENSION(:)     ::                                     &
@@ -750,7 +750,7 @@ MODULE gpstd_solver
   ! ______________________________________________________________________________________
   SUBROUTINE compute_k_1d(nfft,kvec,kvecf,kvecb,norder,d,l_stg)
      USE constants, ONLY: pi
-     USE picsar_precision, ONLY: idp, num, lp, cpx
+     USE picsar_precision, ONLY: cpx, idp, lp, num
      REAL(num) , INTENT(IN)  :: d
      INTEGER(idp) , INTENT(IN) :: norder,nfft
      COMPLEX(cpx) , DIMENSION(:) , ALLOCATABLE , INTENT(INOUT) :: kvec,kvecf,kvecb
@@ -825,7 +825,7 @@ MODULE gpstd_solver
 
   SUBROUTINE fftfreq(nxx, kxx, dxx)
     USE constants, ONLY: pi
-    USE picsar_precision, ONLY: idp, num, cpx
+    USE picsar_precision, ONLY: cpx, idp, num
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN)                    :: nxx
     REAL(num), INTENT(IN)                    :: dxx
@@ -871,18 +871,18 @@ MODULE gpstd_solver
   !> Creation 2017
   ! ______________________________________________________________________________________
   SUBROUTINE init_gpstd()
-    USE constants, ONLY: mu0, eps0, clight
-    USE fields, ONLY: ezf, jxf, rhooldf, rhof, bxf, g_spectral, jzf, eyf, jyf, byf,  &
-      bzf, exf
+    USE constants, ONLY: clight, eps0, mu0
+    USE fields, ONLY: bxf, byf, bzf, exf, eyf, ezf, g_spectral, jxf, jyf, jzf, rhof, &
+      rhooldf
     USE iso_c_binding
-    USE matrix_coefficients, ONLY: vnew, kspace, cc_mat, at_op, vold
+    USE matrix_coefficients, ONLY: at_op, cc_mat, kspace, vnew, vold
     USE matrix_data, ONLY: nmatrixes, nmatrixes2
-    USE mpi_fftw3, ONLY: fftw_alloc_complex, alloc_local
+    USE mpi_fftw3, ONLY: alloc_local, fftw_alloc_complex
     USE omp_lib
     USE params, ONLY: dt
-    USE picsar_precision, ONLY: idp, num, lp, cpx
-    USE shared_data, ONLY: nz, ny, nx, fftw_with_mpi, nkx, nky, nkz,  p3dfft_flag,   &
-                           absorbing_bcs,c_dim
+    USE picsar_precision, ONLY: cpx, idp, lp, num
+    USE shared_data, ONLY: absorbing_bcs, c_dim, fftw_with_mpi, nkx, nky, nkz, nx,   &
+      ny, nz, p3dfft_flag
 
     INTEGER(idp)           :: i, j,incr, lin_ind
     COMPLEX(cpx)           :: ii
@@ -1058,10 +1058,11 @@ MODULE gpstd_solver
 
 
   SUBROUTINE compute_cc_mat_splitted_fields()
-    USE shared_data
-    USE matrix_coefficients
-    USE constants
-    USE params, ONLY : dt
+    USE constants, ONLY: clight, eps0, mu0
+    USE matrix_coefficients, ONLY: at_op, cc_mat, kspace
+    USE matrix_data, ONLY: nmatrixes, nmatrixes2
+    USE params, ONLY: dt
+    USE picsar_precision, ONLY: cpx, idp, lp, num
     INTEGER(idp) :: i,j,k
     COMPLEX(cpx) ::  ii
     LOGICAL(lp)  :: switch
@@ -1309,10 +1310,11 @@ MODULE gpstd_solver
 
 
   SUBROUTINE compute_cc_mat_merged_fields()
-    USE shared_data
-    USE matrix_coefficients
-    USE constants
-    USE params, ONLY : dt
+    USE constants, ONLY: clight, eps0, mu0
+    USE matrix_coefficients, ONLY: at_op, cc_mat, kspace
+    USE matrix_data, ONLY: nmatrixes, nmatrixes2
+    USE params, ONLY: dt
+    USE picsar_precision, ONLY: cpx, idp, lp, num
     INTEGER(idp)  :: i,j   
     COMPLEX(cpx) ::  ii
     LOGICAL(lp)            :: switch
@@ -1551,15 +1553,13 @@ MODULE gpstd_solver
   END SUBROUTINE copy_field
 
   SUBROUTINE copy_field_forward()
-    USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
-    USE fields, ONLY : ex_r, ey_r, ez_r, bx_r, by_r, bz_r, jx_r, jy_r, jz_r, rho_r,   &
-                       rhoold_r
-    USE fields, ONLY : exy, exz, eyx,  eyz, ezx, ezy , bxy, bxz, byx, byz, bzx, bzy
-    USE fields, ONLY : exy_r, exz_r, eyx_r,  eyz_r, ezx_r, ezy_r, bxy_r, bxz_r, byx_r,&
-                       byz_r, bzx_r, bzy_r
+    USE fields, ONLY: bx, bx_r, bxy, bxy_r, bxz, bxz_r, by, by_r, byx, byx_r, byz,   &
+      byz_r, bz, bz_r, bzx, bzx_r, bzy, bzy_r, ex, ex_r, exy, exy_r, exz, exz_r, ey, &
+      ey_r, eyx, eyx_r, eyz, eyz_r, ez, ez_r, ezx, ezx_r, ezy, ezy_r, jx, jx_r, jy,  &
+      jy_r, jz, jz_r, rho_r, rhoold_r
     USE omp_lib
     USE picsar_precision, ONLY: idp
-    USE shared_data, ONLY: rho, rhoold, nz, ny, nx, absorbing_bcs
+    USE shared_data, ONLY: absorbing_bcs, nx, ny, nz, rho, rhoold
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz, ixx, iyy, izz, ixxx, iyyy, izzz
     INTEGER(idp) , dimension(3) :: lbound_r, ubound_r, lbound_p ,ubound_p,lbound_s, ubound_s
@@ -1645,14 +1645,13 @@ MODULE gpstd_solver
   END SUBROUTINE copy_field_forward
 
   SUBROUTINE copy_field_backward()
-    USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
-    USE fields, ONLY : ex_r, ey_r, ez_r, bx_r, by_r, bz_r, jx_r, jy_r, jz_r
-    USE fields, ONLY : exy, exz, eyx,  eyz, ezx, ezy , bxy, bxz, byx, byz, bzx, bzy
-    USE fields, ONLY : exy_r, exz_r, eyx_r,  eyz_r, ezx_r, ezy_r, bxy_r, bxz_r, byx_r,&
-                       byz_r, bzx_r, bzy_r
+    USE fields, ONLY: bx, bx_r, bxy, bxy_r, bxz, bxz_r, by, by_r, byx, byx_r, byz,   &
+      byz_r, bz, bz_r, bzx, bzx_r, bzy, bzy_r, ex, ex_r, exy, exy_r, exz, exz_r, ey, &
+      ey_r, eyx, eyx_r, eyz, eyz_r, ez, ez_r, ezx, ezx_r, ezy, ezy_r, jx, jx_r, jy,  &
+      jy_r, jz, jz_r
     USE omp_lib
     USE picsar_precision, ONLY: idp
-    USE shared_data, ONLY:  nz, ny, nx, absorbing_bcs
+    USE shared_data, ONLY: absorbing_bcs, nx, ny, nz
 
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz, ixx ,iyy , izz

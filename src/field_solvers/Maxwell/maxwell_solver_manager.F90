@@ -42,13 +42,13 @@
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE push_bfield
-  USE fields, ONLY: ez, nordery, nys, zcoeffs, l_nodalgrid, xcoeffs, nxs, bz,        &
-    nzguards, nxguards, norderz, nyguards, ex, bx, by, ycoeffs, nzs, norderx, ey
+  USE fields, ONLY: bx, by, bz, ex, ey, ez, l_nodalgrid, norderx, nordery, norderz,  &
+    nxguards, nxs, nyguards, nys, nzguards, nzs, xcoeffs, ycoeffs, zcoeffs
   USE mpi
   USE params, ONLY: dt, it
   USE picsar_precision, ONLY: num
-  USE shared_data, ONLY: nz, ny, nx, dx, dy, dz
-  USE time_stat, ONLY: timestat_itstart, localtimes
+  USE shared_data, ONLY: dx, dy, dz, nx, ny, nz
+  USE time_stat, ONLY: localtimes, timestat_itstart
   IMPLICIT NONE
 
   REAL(num) :: tmptime
@@ -94,13 +94,13 @@ END SUBROUTINE push_bfield
 !> Creation 2017
 ! ________________________________________________________________________________________
 SUBROUTINE compute_em_energy
-  USE constants, ONLY: mu0, eps0
-  USE fields, ONLY: ez, magneto_energy_total, electromagn_energy_mpi,                &
-    magnetic_energy_mpi, electro_energy_mpi, bz, ex, bx, by,                         &
-    electromagn_energy_total, electro_energy_total, ey
+  USE constants, ONLY: eps0, mu0
+  USE fields, ONLY: bx, by, bz, electro_energy_mpi, electro_energy_total,            &
+    electromagn_energy_mpi, electromagn_energy_total, ex, ey, ez,                    &
+    magnetic_energy_mpi, magneto_energy_total
   USE mpi
-  USE picsar_precision, ONLY: num, isp
-  USE shared_data, ONLY: nz, ny, errcode, nx, dx, comm, dy, dz
+  USE picsar_precision, ONLY: isp, num
+  USE shared_data, ONLY: comm, dx, dy, dz, errcode, nx, ny, nz
   IMPLICIT NONE
 
   electro_energy_mpi = 0.0_num
@@ -148,12 +148,15 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 
 SUBROUTINE field_damping_bcs
-  USE fields
-  USE shared_data
-  USE constants
+  USE fields, ONLY: bxy, bxz, byx, byz, bzx, bzy, exy, exz, eyx, eyz, ezx, ezy,      &
+    nxguards, nyguards, nzguards, sigma_x_b, sigma_x_e, sigma_y_b, sigma_y_e,        &
+    sigma_z_b, sigma_z_e
+  USE mpi
   USE omp_lib
-  USE time_stat
-  USE params
+  USE params, ONLY: it
+  USE picsar_precision, ONLY: idp, num
+  USE shared_data, ONLY: c_dim, nx, ny, nz
+  USE time_stat, ONLY: localtimes, timestat_itstart
 
   IMPLICIT NONE
   INTEGER(idp)  :: ix,iy,iz
@@ -220,11 +223,13 @@ END subroutine field_damping_bcs
 ! ________________________________________________________________________________________
 
 SUBROUTINE merge_fields()
-  USE fields
-  USE shared_data
+  USE fields, ONLY: bx, bxy, bxz, by, byx, byz, bz, bzx, bzy, ex, exy, exz, ey, eyx, &
+    eyz, ez, ezx, ezy
+  USE mpi
   USE omp_lib
-  USE time_stat
-  USE params
+  USE params, ONLY: it
+  USE picsar_precision, ONLY: idp, num
+  USE time_stat, ONLY: localtimes, timestat_itstart
 
   IMPLICIT NONE 
   INTEGER(idp)  :: ix,iy,iz,ixx,iyy,izz,&
@@ -276,11 +281,12 @@ END subroutine merge_fields
 ! ________________________________________________________________________________________
 
 SUBROUTINE merge_e_fields()
-  USE fields
-  USE shared_data
+  USE fields, ONLY: ex, exy, exz, ey, eyx, eyz, ez, ezx, ezy
+  USE mpi
   USE omp_lib
-  USE time_stat
-  USE params
+  USE params, ONLY: it
+  USE picsar_precision, ONLY: idp, num
+  USE time_stat, ONLY: localtimes, timestat_itstart
 
   IMPLICIT NONE
   INTEGER(idp)  :: ix,iy,iz,ixx,iyy,izz,&
@@ -329,11 +335,12 @@ END subroutine merge_e_fields
 ! ________________________________________________________________________________________
 
 SUBROUTINE merge_b_fields()
-  USE fields
-  USE shared_data
+  USE fields, ONLY: bx, bxy, bxz, by, byx, byz, bz, bzx, bzy
+  USE mpi
   USE omp_lib
-  USE time_stat
-  USE params
+  USE params, ONLY: it
+  USE picsar_precision, ONLY: idp, num
+  USE time_stat, ONLY: localtimes, timestat_itstart
 
   IMPLICIT NONE
   INTEGER(idp)  :: ix,iy,iz,ixx,iyy,izz,&
@@ -384,15 +391,15 @@ END subroutine merge_b_fields
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE push_efield
-  USE constants, ONLY: mu0, clight
-  USE fields, ONLY: ez, nordery, jz, nys, zcoeffs, l_nodalgrid, xcoeffs, nxs, bz,    &
-    nzguards, nxguards, norderz, nyguards, jy, jx, ex, bx, by, ycoeffs, nzs,         &
-    norderx, ey
+  USE constants, ONLY: clight, mu0
+  USE fields, ONLY: bx, by, bz, ex, ey, ez, jx, jy, jz, l_nodalgrid, norderx,        &
+    nordery, norderz, nxguards, nxs, nyguards, nys, nzguards, nzs, xcoeffs, ycoeffs, &
+    zcoeffs
   USE mpi
   USE params, ONLY: dt, it
   USE picsar_precision, ONLY: num
-  USE shared_data, ONLY: nz, ny, nx, dx, dy, dz
-  USE time_stat, ONLY: timestat_itstart, localtimes
+  USE shared_data, ONLY: dx, dy, dz, nx, ny, nz
+  USE time_stat, ONLY: localtimes, timestat_itstart
   IMPLICIT NONE
 
   REAL(num) :: tmptime
@@ -443,13 +450,13 @@ END SUBROUTINE push_efield
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE push_bfield_2d
-  USE fields, ONLY: ez, nordery, nys, zcoeffs, l_nodalgrid, xcoeffs, nxs, bz,        &
-    nzguards, nxguards, norderz, nyguards, ex, bx, by, ycoeffs, nzs, norderx, ey
+  USE fields, ONLY: bx, by, bz, ex, ey, ez, l_nodalgrid, norderx, nordery, norderz,  &
+    nxguards, nxs, nyguards, nys, nzguards, nzs, xcoeffs, ycoeffs, zcoeffs
   USE mpi
   USE params, ONLY: dt, it
   USE picsar_precision, ONLY: idp, num
-  USE shared_data, ONLY: nz, ny, nx, dx, dy, dz
-  USE time_stat, ONLY: timestat_itstart, localtimes
+  USE shared_data, ONLY: dx, dy, dz, nx, ny, nz
+  USE time_stat, ONLY: localtimes, timestat_itstart
   IMPLICIT NONE
 
   REAL(num) :: tmptime
@@ -499,15 +506,15 @@ END SUBROUTINE push_bfield_2d
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE push_efield_2d
-  USE constants, ONLY: mu0, clight
-  USE fields, ONLY: ez, nordery, jz, zcoeffs, l_nodalgrid, xcoeffs, nxs, bz,         &
-    nzguards, nxguards, norderz, nyguards, jy, jx, ex, bx, by, ycoeffs, nzs,         &
-    norderx, ey
+  USE constants, ONLY: clight, mu0
+  USE fields, ONLY: bx, by, bz, ex, ey, ez, jx, jy, jz, l_nodalgrid, norderx,        &
+    nordery, norderz, nxguards, nxs, nyguards, nzguards, nzs, xcoeffs, ycoeffs,      &
+    zcoeffs
   USE mpi
   USE params, ONLY: dt, it
   USE picsar_precision, ONLY: idp, num
-  USE shared_data, ONLY: nz, ny, nx, dx, dy, dz
-  USE time_stat, ONLY: timestat_itstart, localtimes
+  USE shared_data, ONLY: dx, dy, dz, nx, ny, nz
+  USE time_stat, ONLY: localtimes, timestat_itstart
   IMPLICIT NONE
 
   REAL(num) :: tmptime,mdt
@@ -568,15 +575,13 @@ END SUBROUTINE push_efield_2d
   USE fields, ONLY: g_spectral
 #if defined(FFTW)
   USE fourier_psaotd
-#endif
-#if defined(FFTW)
   USE matrix_data, ONLY: nmatrixes
 #endif
   USE mpi
   USE params, ONLY: it
   USE picsar_precision, ONLY: num
-  USE shared_data, ONLY: fftw_with_mpi, fftw_hybrid, c_dim
-  USE time_stat, ONLY: timestat_itstart, localtimes
+  USE shared_data, ONLY: c_dim, fftw_hybrid, fftw_with_mpi
+  USE time_stat, ONLY: localtimes, timestat_itstart
   IMPLICIT NONE
 
   REAL(num) :: tmptime, tmptime_m

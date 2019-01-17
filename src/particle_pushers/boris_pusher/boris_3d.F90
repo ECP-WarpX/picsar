@@ -163,7 +163,7 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_boris_push_rr_S09_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by, bz, q,  &
   m, dt)
-  USE constants, ONLY: mu0, pi, clight
+  USE constants, ONLY: clight, mu0, pi
   USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   ! Input/Output parameters
@@ -336,7 +336,7 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_boris_push_rr_B08_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by, bz, q,  &
   m, dt)
-  USE constants, ONLY: eps0, pi, clight
+  USE constants, ONLY: clight, eps0, pi
   USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   ! Input/Output parameters
@@ -520,7 +520,7 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_boris_push_rr_LL_u_3d(np, uxp, uyp, uzp, gaminv, exold, eyold, ezold, & 
            bxold, byold, bzold, ex, ey, ez, bx, by, bz, q, m, dt)
-  USE constants, ONLY: eps0, pi, clight
+  USE constants, ONLY: clight, eps0, pi
   USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   ! Input/Output parameters

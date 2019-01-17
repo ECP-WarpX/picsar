@@ -62,16 +62,16 @@ MODULE diagnostics
   ! ______________________________________________________________________________________
   SUBROUTINE calc_diags
     USE field_boundary
-    USE fields, ONLY: ez, nzguards, nxguards, nyguards, ex, ey
+    USE fields, ONLY: ex, ey, ez, nxguards, nyguards, nzguards
     USE mpi
     USE output_data, ONLY: dive_computed
     USE params, ONLY: it
     USE particle_boundary
     USE particle_properties, ONLY: l_plasma
     USE picsar_precision, ONLY: num
-    USE shared_data, ONLY: nz, ny, nx, dx, dy, dive, dz
+    USE shared_data, ONLY: dive, dx, dy, dz, nx, ny, nz
     USE tiling
-    USE time_stat, ONLY: timestat_itstart, localtimes
+    USE time_stat, ONLY: localtimes, timestat_itstart
     IMPLICIT NONE
 
     REAL(num) :: tmptime
@@ -248,13 +248,14 @@ MODULE diagnostics
   !
   ! ______________________________________________________________________________________
   SUBROUTINE init_temp_diags
+    USE mpi
     USE mpi_type_constants, ONLY: status
-    USE output_data, ONLY: temdiag_nb_values, temdiag_nb_part, temdiag_act_list,     &
-      temdiag_format, temdiag_i_list, temdiag_nb, temdiag_name_list,                 &
-      temdiag_nb_field, temdiag_totvalues, temdiag_frequency
+    USE output_data, ONLY: temdiag_act_list, temdiag_format, temdiag_frequency,      &
+      temdiag_i_list, temdiag_name_list, temdiag_nb, temdiag_nb_field,               &
+      temdiag_nb_part, temdiag_nb_values, temdiag_totvalues
     USE params, ONLY: dt
     USE particle_properties, ONLY: nspecies
-    USE shared_data, ONLY: rho, errcode, nproc, comm, rank, dive
+    USE shared_data, ONLY: comm, dive, errcode, nproc, rank, rho
 
     IMPLICIT NONE
 
@@ -431,8 +432,8 @@ MODULE diagnostics
   SUBROUTINE init_time_stat_output
     USE params, ONLY: dt
     USE shared_data, ONLY: rank
-    USE time_stat, ONLY: timestat_activated, buffer_timestat, itimestat,             &
-      timestat_period, nbuffertimestat
+    USE time_stat, ONLY: buffer_timestat, itimestat, nbuffertimestat,                &
+      timestat_activated, timestat_period
     IMPLICIT NONE
 
     INTEGER :: nb_timestat
@@ -475,7 +476,7 @@ MODULE diagnostics
     USE particle_tilemodule, ONLY: particle_tile
     USE particles, ONLY: species_parray
     USE picsar_precision, ONLY: idp
-    USE tile_params, ONLY: ntilez, ntilex, ntiley
+    USE tile_params, ONLY: ntilex, ntiley, ntilez
     USE tiling
     IMPLICIT NONE
 
@@ -523,7 +524,7 @@ MODULE diagnostics
   SUBROUTINE get_tot_number_of_particles_from_species(is, nptot)
     USE mpi_derived_types
     USE picsar_precision, ONLY: idp, isp
-    USE shared_data, ONLY: errcode, comm
+    USE shared_data, ONLY: comm, errcode
     USE tiling
     IMPLICIT NONE
 
@@ -560,7 +561,7 @@ MODULE diagnostics
       USE particle_tilemodule, ONLY: particle_tile
       USE particles, ONLY: species_parray
       USE picsar_precision, ONLY: idp, num
-      USE tile_params, ONLY: ntilez, ntilex, ntiley
+      USE tile_params, ONLY: ntilex, ntiley, ntilez
       USE tiling
       IMPLICIT NONE
 
@@ -634,7 +635,7 @@ MODULE diagnostics
       USE particle_tilemodule, ONLY: particle_tile
       USE particles, ONLY: species_parray
       USE picsar_precision, ONLY: idp, num
-      USE tile_params, ONLY: ntilez, ntilex, ntiley
+      USE tile_params, ONLY: ntilex, ntiley, ntilez
       USE tiling
       IMPLICIT NONE
 
@@ -850,7 +851,7 @@ MODULE diagnostics
     USE particle_tilemodule, ONLY: particle_tile
     USE particles, ONLY: species_parray
     USE picsar_precision, ONLY: idp, num
-    USE tile_params, ONLY: ntilez, ntilex, ntiley
+    USE tile_params, ONLY: ntilex, ntiley, ntilez
     USE tiling
     IMPLICIT NONE
     INTEGER(idp) :: ispecies
@@ -937,15 +938,16 @@ MODULE diagnostics
   !
   ! ______________________________________________________________________________________
   SUBROUTINE get_kinetic_energy(ispecies, total_kinetic_energy)
+    USE mpi
     USE mpi_derived_types
     USE mpi_type_constants, ONLY: mpidbl
     USE particle_properties, ONLY: wpid
     USE particle_speciesmodule, ONLY: particle_species
     USE particle_tilemodule, ONLY: particle_tile
     USE particles, ONLY: species_parray
-    USE picsar_precision, ONLY: idp, num, isp
-    USE shared_data, ONLY: errcode, comm
-    USE tile_params, ONLY: ntilez, ntilex, ntiley
+    USE picsar_precision, ONLY: idp, isp, num
+    USE shared_data, ONLY: comm, errcode
+    USE tile_params, ONLY: ntilex, ntiley, ntilez
     USE tiling
     IMPLICIT NONE
     INTEGER(idp) :: ispecies
@@ -1116,8 +1118,8 @@ MODULE diagnostics
     USE mpi
     USE mpi_derived_types
     USE mpi_type_constants, ONLY: mpidbl
-    USE picsar_precision, ONLY: idp, num, isp
-    USE shared_data, ONLY: errcode, comm
+    USE picsar_precision, ONLY: idp, isp, num
+    USE shared_data, ONLY: comm, errcode
 
     ! __ Parameters _____________________________________
     IMPLICIT NONE
@@ -1171,8 +1173,8 @@ MODULE diagnostics
     USE mpi
     USE mpi_derived_types
     USE mpi_type_constants, ONLY: mpidbl
-    USE picsar_precision, ONLY: idp, num, isp
-    USE shared_data, ONLY: errcode, comm
+    USE picsar_precision, ONLY: idp, isp, num
+    USE shared_data, ONLY: comm, errcode
     IMPLICIT NONE
     INTEGER(idp)                :: nx2, ny2, nz2
     INTEGER(idp)                :: nxguard, nyguard, nzguard
@@ -1306,8 +1308,9 @@ MODULE diagnostics
     USE mpi
     USE mpi_derived_types
     USE mpi_type_constants, ONLY: mpidbl
-    USE picsar_precision, ONLY: idp, num, isp
-    USE shared_data, ONLY: errcode, comm
+    USE omp_lib
+    USE picsar_precision, ONLY: idp, isp, num
+    USE shared_data, ONLY: comm, errcode
     IMPLICIT NONE
 
     INTEGER(idp)                :: j, k, l
@@ -1453,8 +1456,9 @@ MODULE diagnostics
                                      xc, xcp, yc, ycp, zc, zcp, uxc, uxcp, uyc, uycp, &
                                      uzc, uzcp, gc, gcp, exc, excp, eyc, eycp, ezc,   &
                                      ezcp, bxc, bxcp, byc, bycp, bzc, bzcp )
-     USE constants , ONLY : clight
+     USE constants, ONLY: clight
      USE omp_lib
+     USE picsar_precision, ONLY: idp, num
  
      REAL(num) , INTENT(IN) :: gamma_boost,beta_boost,time,dt,t_output
      INTEGER(idp) , INTENT(IN) :: np
@@ -1544,8 +1548,9 @@ MODULE diagnostics
   SUBROUTINE lorentz_transform_parts_without_fields(np, gamma_boost, beta_boost, time, dt,t_output,  &
                                      xc, xcp, yc, ycp, zc, zcp, uxc, uxcp, uyc, uycp, &
                                      uzc, uzcp, gc, gcp)
-     USE constants , ONLY : clight
+     USE constants, ONLY: clight
      USE omp_lib
+     USE picsar_precision, ONLY: idp, num
  
      REAL(num) , INTENT(IN) :: gamma_boost,beta_boost,time,dt,t_output
      INTEGER(idp) , INTENT(IN) :: np

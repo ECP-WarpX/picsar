@@ -45,10 +45,10 @@
 !> with the particle pusher.
 ! ________________________________________________________________________________________
 SUBROUTINE field_gathering
-  USE fields, ONLY: nyjguards, l_lower_order_in_v, ez, nox, noy, noz, nxjguards,     &
-    nzjguards, bz, nzguards, nxguards, nyguards, ex, bx, by, ey
+  USE fields, ONLY: bx, by, bz, ex, ey, ez, l_lower_order_in_v, nox, noy, noz,       &
+    nxguards, nxjguards, nyguards, nyjguards, nzguards, nzjguards
   USE params, ONLY: dt
-  USE shared_data, ONLY: nz, ny, nx, dx, dy, dz
+  USE shared_data, ONLY: dx, dy, dz, nx, ny, nz
   IMPLICIT NONE
 
 #if defined(DEBUG)
@@ -80,10 +80,10 @@ SUBROUTINE field_gathering_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
   USE particle_speciesmodule, ONLY: particle_species
   USE particle_tilemodule, ONLY: particle_tile
   USE particles, ONLY: species_parray
-  USE picsar_precision, ONLY: idp, num, lp
-  USE tile_params, ONLY: ntilez, ntilex, ntiley
+  USE picsar_precision, ONLY: idp, lp, num
+  USE tile_params, ONLY: ntilex, ntiley, ntilez
   USE tiling
-  USE time_stat, ONLY: timestat_itstart, localtimes
+  USE time_stat, ONLY: localtimes, timestat_itstart
   ! Vtune/SDE profiling
   IMPLICIT NONE
 
@@ -295,7 +295,7 @@ END SUBROUTINE field_gathering_sub
 SUBROUTINE geteb3d_energy_conserving(np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin,    &
   ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, nox, noy, noz, exg,    &
   eyg, ezg, bxg, byg, bzg, ll4symtry, l_lower_order_in_v, lvect, field_gathe_algo)
-  USE picsar_precision, ONLY: idp, num, lp
+  USE picsar_precision, ONLY: idp, lp, num
   implicit none
 
   integer(idp)                  :: field_gathe_algo
@@ -355,7 +355,7 @@ SUBROUTINE geteb3d_energy_conserving_generic(np, xp, yp, zp, ex, ey, ez, bx, by,
   byg, byg_nguard, byg_nvalid, bzg, bzg_nguard, bzg_nvalid, ll4symtry,                  &
   l_lower_order_in_v, lvect, field_gathe_algo)            !#do not wrap
   USE params, ONLY: fieldgathe, lvec_fieldgathe
-  USE picsar_precision, ONLY: idp, num, lp
+  USE picsar_precision, ONLY: idp, lp, num
   implicit none
 
   integer(idp)                  :: field_gathe_algo

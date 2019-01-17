@@ -120,7 +120,7 @@ SUBROUTINE geteb2dxz_energy_conserving_generic(np, xp, yp, zp, ex, ey, ez, bx, b
   byg, byg_nguard, byg_nvalid, bzg, bzg_nguard, bzg_nvalid, l4symtry,                   &
   l_lower_order_in_v, lvect, field_gathe_algo)            !#do not wrap
   USE params, ONLY: fieldgathe, lvec_fieldgathe
-  USE picsar_precision, ONLY: idp, num, lp
+  USE picsar_precision, ONLY: idp, lp, num
   implicit none
 
   integer(idp)                  :: field_gathe_algo

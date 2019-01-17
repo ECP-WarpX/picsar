@@ -46,7 +46,7 @@
 SUBROUTINE pxrpush_em3d_evec_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx,  &
   dtsdy, dtsdz, nx, ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard, nxs,  &
   nys, nzs, l_nodalgrid)
-  USE picsar_precision, ONLY: idp, num, lp
+  USE picsar_precision, ONLY: idp, lp, num
 
   INTEGER(idp), INTENT(IN) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
   INTEGER(idp), INTENT(IN) :: norderx, nordery, norderz
@@ -135,7 +135,7 @@ END SUBROUTINE pxrpush_em3d_evec_norder
 SUBROUTINE pxrpush_em2d_evec_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx,  &
   dtsdy, dtsdz, nx, ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard, nxs,  &
   nys, nzs, l_nodalgrid)
-  USE picsar_precision, ONLY: idp, num, lp
+  USE picsar_precision, ONLY: idp, lp, num
   INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, norderx,      &
   nordery, norderz
   REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
@@ -225,7 +225,7 @@ subroutine pxrpush_em2d_evec( &
      jy, jylo, jyhi, &
      jz, jzlo, jzhi, &
      mudt, dtsdx, dtsdy, dtsdz)
-     USE picsar_precision, ONLY: idp, num, isp
+     USE picsar_precision, ONLY: idp, isp, num
 
 
 #ifdef WARPX
@@ -337,7 +337,7 @@ subroutine pxrpush_em3d_evec( &
      jy, jylo, jyhi, &
      jz, jzlo, jzhi, &
      mudt, dtsdx,dtsdy,dtsdz)
-USE picsar_precision, ONLY: idp, num, isp
+USE picsar_precision, ONLY: idp, isp, num
 ! ______________________________________________________________________________
 
 
@@ -443,7 +443,7 @@ end subroutine pxrpush_em3d_evec
 SUBROUTINE pxrpush_em3d_bvec_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx,  &
   ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard, nxs, nys, nzs,          &
   l_nodalgrid)
-  USE picsar_precision, ONLY: idp, num, lp
+  USE picsar_precision, ONLY: idp, lp, num
   INTEGER(idp), INTENT(IN)    :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs,      &
   norderx, nordery, norderz
   REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
@@ -524,7 +524,7 @@ END SUBROUTINE pxrpush_em3d_bvec_norder
 SUBROUTINE pxrpush_em2d_bvec_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx,  &
   ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard, nxs, nys, nzs,          &
   l_nodalgrid)
-  USE picsar_precision, ONLY: idp, num, lp
+  USE picsar_precision, ONLY: idp, lp, num
   INTEGER(idp) , INTENT(IN) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, norderx,      &
   nordery, norderz
   REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
@@ -609,7 +609,7 @@ subroutine pxrpush_em2d_bvec( &
      by, bylo, byhi, &
      bz, bzlo, bzhi, &
      dtsdx,dtsdy,dtsdz)
-USE picsar_precision, ONLY: idp, num, isp
+USE picsar_precision, ONLY: idp, isp, num
 ! ______________________________________________________________________________
 
 
@@ -709,7 +709,7 @@ subroutine pxrpush_em3d_bvec( &
      by, bylo, byhi, &
      bz, bzlo, bzhi, &
      dtsdx,dtsdy,dtsdz)
-USE picsar_precision, ONLY: idp, num, isp
+USE picsar_precision, ONLY: idp, isp, num
 ! ______________________________________________________________________________
 
 
@@ -819,7 +819,7 @@ subroutine pxrpush_em2d_evec_f( &
      ez,ezlo, ezhi, &
      f, flo, fhi, &
      dtsdx, dtsdy, dtsdz)
-USE picsar_precision, ONLY: idp, num, isp
+USE picsar_precision, ONLY: idp, isp, num
 ! ______________________________________________________________________________
 
 
@@ -901,7 +901,7 @@ subroutine pxrpush_em3d_evec_f( &
      ez,ezlo, ezhi, &
      f, flo, fhi, &
      dtsdx,dtsdy,dtsdz)
-USE picsar_precision, ONLY: idp, num, isp
+USE picsar_precision, ONLY: idp, isp, num
 ! ______________________________________________________________________________
 
 

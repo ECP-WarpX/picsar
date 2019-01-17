@@ -23,19 +23,19 @@ MODULE link_external_tools
       field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11, cdim) &
       BIND(C,name='init_params_picsar') 
     USE fastfft
-    USE fields, ONLY: ezf, ez_r, ez, jx_r, jxf, nordery, ey_r, rhooldf, l_staggered, &
-      ex_r, rhof, bx_r, jz, by_r, bxf, l_spectral, zcoeffs, rho_r, xcoeffs, bz,      &
-      nzguards, nxguards, norderz, bz_r, nyguards, jzf, jy, jx, ex, bx, jz_r, jy_r,  &
-      by, ycoeffs, eyf, rhoold_r, jyf, norderx, byf, bzf, exf, ey
+    USE fields, ONLY: bx, bx_r, bxf, by, by_r, byf, bz, bz_r, bzf, ex, ex_r, exf,    &
+      ey, ey_r, eyf, ez, ez_r, ezf, jx, jx_r, jxf, jy, jy_r, jyf, jz, jz_r, jzf,     &
+      l_spectral, l_staggered, norderx, nordery, norderz, nxguards, nyguards,        &
+      nzguards, rho_r, rhof, rhoold_r, rhooldf, xcoeffs, ycoeffs, zcoeffs
 #if defined(FFTW)
     USE fourier_psaotd
 #endif
     USE iso_c_binding
     USE params, ONLY: dt
     USE picsar_precision, ONLY: idp, isp, lp
-    USE shared_data, ONLY: nz, ny, fftw_with_mpi, nx, nkx, p3dfft_stride, nky,       &
-      p3dfft_flag, fftw_threads_ok, dx, c_dim, nkz, fftw_mpi_transpose, dy, rank,    &
-      fftw_hybrid, dz
+    USE shared_data, ONLY: c_dim, dx, dy, dz, fftw_hybrid, fftw_mpi_transpose,       &
+      fftw_threads_ok, fftw_with_mpi, nkx, nky, nkz, nx, ny, nz, p3dfft_flag,        &
+      p3dfft_stride, rank
     IMPLICIT NONE 
     INTEGER(C_INT) , INTENT(IN) :: n1,n2,n3,ng1,ng2,ng3,nor1,nor2,nor3,cdim
     REAL(C_DOUBLE) , INTENT(INOUT), TARGET , DIMENSION(-ng3:n3+ng3,-ng2:n2+ng2,-ng1:n1+ng1) :: &
@@ -288,10 +288,10 @@ SUBROUTINE bvec3d_push_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx,  
 END SUBROUTINE bvec3d_push_norder
 
 SUBROUTINE solve_maxwell_fdtd_pxr() bind(C,name='solve_maxwell_fdtd_pxr')
-  USE fields, ONLY: ez, nordery, jz, zcoeffs, xcoeffs, bz, nzguards, nxguards,       &
-    norderz, nyguards, jy, jx, ex, bx, by, ycoeffs, norderx, ey
+  USE fields, ONLY: bx, by, bz, ex, ey, ez, jx, jy, jz, norderx, nordery, norderz,   &
+    nxguards, nyguards, nzguards, xcoeffs, ycoeffs, zcoeffs
   USE params, ONLY: dt
-  USE shared_data, ONLY: nz, ny, nx
+  USE shared_data, ONLY: nx, ny, nz
 
   CALL evec3d_push_norder(ex,ey,ez,bx,by,bz,jx,jy,jz,dt,xcoeffs,ycoeffs,zcoeffs,&
         nx, ny, nz, norderx, nordery, norderz, nxguards,nyguards,nzguards)

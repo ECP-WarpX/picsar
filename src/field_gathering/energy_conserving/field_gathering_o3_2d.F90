@@ -304,7 +304,7 @@ end subroutine
 subroutine pxr_gete2dxz_energy_conserving_vect_3_3( np, xp, zp, ex, ey, ez, xmin,     &
   zmin, dx, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid, ezg,          &
   ezg_nguard, ezg_nvalid, lvect, l_lower_order_in_v)     !#do not wrap
-  USE picsar_precision, ONLY: idp, num, isp
+  USE picsar_precision, ONLY: idp, isp, num
   ! ______________________________________________________________________________
   implicit none
   integer(idp)                  :: np

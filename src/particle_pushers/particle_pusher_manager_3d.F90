@@ -48,13 +48,13 @@
 !> Revision 10.06.2015
 ! ________________________________________________________________________________________
 SUBROUTINE field_gathering_plus_particle_pusher
-  USE fields, ONLY: bx_p, nyjguards, l_lower_order_in_v, ez_p, nox, by_p, noy, noz,  &
-    bz_p, nxjguards, nzjguards, nzguards, nxguards, nyguards, ey_p, ex_p
+  USE fields, ONLY: bx_p, by_p, bz_p, ex_p, ey_p, ez_p, l_lower_order_in_v, nox,     &
+    noy, noz, nxguards, nxjguards, nyguards, nyjguards, nzguards, nzjguards
   USE mpi
-  USE params, ONLY: fg_p_pp_separated, dt
+  USE params, ONLY: dt, fg_p_pp_separated
   USE particle_properties, ONLY: nspecies, particle_pusher
   USE picsar_precision, ONLY: idp
-  USE shared_data, ONLY: nz, ny, nx, dx, c_dim, dy, dz
+  USE shared_data, ONLY: c_dim, dx, dy, dz, nx, ny, nz
   IMPLICIT NONE
 
 #if defined(DEBUG)
@@ -142,15 +142,15 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg
   USE grid_tilemodule, ONLY: aofgrid_tiles
   USE mpi
   USE output_data, ONLY: pushtime
-  USE particle_properties, ONLY: ezoldpid, nspecies, bzoldpid, bxoldpid,             &
-    particle_pusher, byoldpid, eyoldpid, exoldpid
+  USE particle_properties, ONLY: bxoldpid, byoldpid, bzoldpid, exoldpid, eyoldpid,   &
+    ezoldpid, nspecies, particle_pusher
   USE particle_speciesmodule, ONLY: particle_species
   USE particle_tilemodule, ONLY: particle_tile
   USE particles, ONLY: species_parray
-  USE picsar_precision, ONLY: idp, num, lp
-  USE tile_params, ONLY: ntilez, ntilex, ntiley
+  USE picsar_precision, ONLY: idp, lp, num
+  USE tile_params, ONLY: ntilex, ntiley, ntilez
   USE tiling
-  USE time_stat, ONLY: timestat_itstart, localtimes
+  USE time_stat, ONLY: localtimes, timestat_itstart
   ! Vtune/SDE profiling
   IMPLICIT NONE
 
@@ -434,15 +434,15 @@ SUBROUTINE field_gathering_plus_particle_pusher_cacheblock_sub(exg, eyg, ezg, bx
   USE grid_tilemodule, ONLY: aofgrid_tiles
   USE mpi
   USE output_data, ONLY: pushtime
-  USE params, ONLY: fieldgathe, lvec_fieldgathe, it
+  USE params, ONLY: fieldgathe, it, lvec_fieldgathe
   USE particle_properties, ONLY: nspecies
   USE particle_speciesmodule, ONLY: particle_species
   USE particle_tilemodule, ONLY: particle_tile
   USE particles, ONLY: species_parray
-  USE picsar_precision, ONLY: idp, num, lp
-  USE tile_params, ONLY: ntilez, ntilex, ntiley
+  USE picsar_precision, ONLY: idp, lp, num
+  USE tile_params, ONLY: ntilex, ntiley, ntilez
   USE tiling
-  USE time_stat, ONLY: timestat_itstart, localtimes
+  USE time_stat, ONLY: localtimes, timestat_itstart
   ! Vtune/SDE profiling
   IMPLICIT NONE
 
@@ -680,10 +680,10 @@ SUBROUTINE particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
   USE particle_speciesmodule, ONLY: particle_species
   USE particle_tilemodule, ONLY: particle_tile
   USE particles, ONLY: species_parray
-  USE picsar_precision, ONLY: idp, num, lp
-  USE tile_params, ONLY: ntilez, ntilex, ntiley
+  USE picsar_precision, ONLY: idp, lp, num
+  USE tile_params, ONLY: ntilex, ntiley, ntilez
   USE tiling
-  USE time_stat, ONLY: timestat_itstart, localtimes
+  USE time_stat, ONLY: localtimes, timestat_itstart
   ! Vtune/SDE profiling
   IMPLICIT NONE
   ! ___ Parameter declaration __________________________________________
@@ -896,10 +896,11 @@ END SUBROUTINE particle_pusher_sub
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE pxrpush_particles_part1
-  USE fields, ONLY: bx_p, nyjguards, l_lower_order_in_v, ez_p, nox, by_p, noy, noz,  &
-    bz_p, nxjguards, nzjguards, nzguards, nxguards, nyguards, ey_p, ex_p, l4symtry
-  USE params, ONLY: fieldgathe, dt, lvec_fieldgathe
-  USE shared_data, ONLY: nz, ny, nx, dx, dy, dz
+  USE fields, ONLY: bx_p, by_p, bz_p, ex_p, ey_p, ez_p, l4symtry,                    &
+    l_lower_order_in_v, nox, noy, noz, nxguards, nxjguards, nyguards, nyjguards,     &
+    nzguards, nzjguards
+  USE params, ONLY: dt, fieldgathe, lvec_fieldgathe
+  USE shared_data, ONLY: dx, dy, dz, nx, ny, nz
   IMPLICIT NONE
 
 #if defined(DEBUG)
@@ -947,8 +948,8 @@ SUBROUTINE pxrpush_particles_part1_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, n
   USE particle_speciesmodule, ONLY: particle_species
   USE particle_tilemodule, ONLY: particle_tile
   USE particles, ONLY: species_parray
-  USE picsar_precision, ONLY: idp, num, lp
-  USE tile_params, ONLY: ntilez, ntilex, ntiley
+  USE picsar_precision, ONLY: idp, lp, num
+  USE tile_params, ONLY: ntilex, ntiley, ntilez
   USE tiling
   IMPLICIT NONE
 
@@ -1155,7 +1156,7 @@ END SUBROUTINE pxrpush_particles_part1_sub
 !> Revision 06.10.2016
 ! ________________________________________________________________________________________
 SUBROUTINE pxrpush_particles_part2
-  USE fields, ONLY: nyjguards, ez, nxjguards, nzjguards, bz, ex, bx, by, ey
+  USE fields, ONLY: bx, by, bz, ex, ey, ez, nxjguards, nyjguards, nzjguards
   USE mpi
   USE output_data, ONLY: pushtime
   USE params, ONLY: dt
@@ -1164,8 +1165,8 @@ SUBROUTINE pxrpush_particles_part2
   USE particle_tilemodule, ONLY: particle_tile
   USE particles, ONLY: species_parray
   USE picsar_precision, ONLY: idp, num
-  USE shared_data, ONLY: y, z, dx, c_dim, x, dy, dz
-  USE tile_params, ONLY: ntilez, ntilex, ntiley
+  USE shared_data, ONLY: c_dim, dx, dy, dz, x, y, z
+  USE tile_params, ONLY: ntilex, ntiley, ntilez
   USE tiling
   IMPLICIT NONE
   INTEGER(idp) :: ispecies, ix, iy, iz, count
@@ -1291,7 +1292,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_1_1_1(np, xp, yp, zp, uxp, uyp, 
   USE omp_lib
   USE params, ONLY: dt
   USE particle_properties, ONLY: particle_pusher
-  USE picsar_precision, ONLY: idp, num, isp, lp
+  USE picsar_precision, ONLY: idp, isp, lp, num
 
   IMPLICIT NONE
 
@@ -1526,7 +1527,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_2_2_2(np, xp, yp, zp, uxp, uyp, 
   USE omp_lib
   USE params, ONLY: dt
   USE particle_properties, ONLY: particle_pusher
-  USE picsar_precision, ONLY: idp, num, isp, lp
+  USE picsar_precision, ONLY: idp, isp, lp, num
   IMPLICIT NONE
   ! Input/Output parameters
   INTEGER(idp), INTENT(IN)                :: np, nx, ny, nz, nxguard, nyguard,        &
@@ -1824,7 +1825,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_3_3_3(np, xp, yp, zp, uxp, uyp, 
   USE omp_lib
   USE params, ONLY: dt
   USE particle_properties, ONLY: particle_pusher
-  USE picsar_precision, ONLY: idp, num, isp, lp
+  USE picsar_precision, ONLY: idp, isp, lp, num
   IMPLICIT NONE
   ! Input/Output parameters
   INTEGER(idp), INTENT(IN)                :: np, nx, ny, nz, nxguard, nyguard,        &

@@ -86,7 +86,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_n( jx, jx_nguard, jx_nvalid, jy, jy_ngu
   xmin, zmin, dt, dx, dz, nox, noz, l_particles_weight, l4symtry, l_2drz,               &
   type_rz_depose)      !#do not wrap
   USE constants, ONLY: clight
-  USE picsar_precision, ONLY: idp, num, lp
+  USE picsar_precision, ONLY: idp, lp, num
   implicit none
   integer(idp) :: np, nox, noz, type_rz_depose
   INTEGER(idp), intent(in)              :: jx_nguard(2), jx_nvalid(2), jy_nguard(2),  &
@@ -453,7 +453,7 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1( jx, jx_nguard, jx_nvalid, jy,     
   jy_nguard, jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w, &
   q, xmin, zmin, dt, dx, dz, lvect, l_particles_weight, l4symtry, l_2drz,               &
   type_rz_depose)      !#do not wrap
-  USE picsar_precision, ONLY: idp, num, isp, lp
+  USE picsar_precision, ONLY: idp, isp, lp, num
   implicit none
   ! __ Parameter declaration ________________________________________________________
   integer(idp)                          :: np, type_rz_depose
@@ -665,7 +665,7 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_2_2( jx, jx_nguard, jx_nvalid, jy,     
   jy_nguard, jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w, &
   q, xmin, zmin, dt, dx, dz, lvect, l_particles_weight, l4symtry, l_2drz,               &
   type_rz_depose)      !#do not wrap
-  USE picsar_precision, ONLY: idp, num, isp, lp
+  USE picsar_precision, ONLY: idp, isp, lp, num
   implicit none
   ! __ Parameter declaration ________________________________________________________
   integer(idp)                          :: np, type_rz_depose
@@ -885,7 +885,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_3_3( jx, jx_nguard, jx_nvalid, jy,     
   jy_nguard, jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w, &
   q, xmin, zmin, dt, dx, dz, lvect, l_particles_weight, l4symtry, l_2drz,               &
   type_rz_depose)      !#do not wrap
-  USE picsar_precision, ONLY: idp, num, isp, lp
+  USE picsar_precision, ONLY: idp, isp, lp, num
   implicit none
   ! __ Parameter declaration _______________________________________________
   integer(idp)                          :: np, type_rz_depose
@@ -1116,7 +1116,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_svec_3_3(jx, jy, jz, np, xp, zp, uxp, u
   uzp, gaminv, w, q, xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, lvect, &
   l_particles_weight, l4symtry, l_2drz, type_rz_depose)
   USE constants, ONLY: lvec
-  USE picsar_precision, ONLY: idp, num, isp, lp
+  USE picsar_precision, ONLY: idp, isp, lp, num
   implicit none
   ! __ Parameter declaration _______________________________________________
   integer(idp)                          :: np, nx, nz, nox, noz, nxguard, nzguard,    &
@@ -1532,7 +1532,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx, jy, jz, np, xp, zp, uxp, 
   uzp, gaminv, w, q, xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, lvect, &
   l_particles_weight, l4symtry, l_2drz, type_rz_depose)   !#do not parse
   USE constants, ONLY: lvec
-  USE picsar_precision, ONLY: idp, num, isp, lp
+  USE picsar_precision, ONLY: idp, isp, lp, num
   implicit none
   ! __ Parameter declaration ____________________________________________________
   ! In/out parameters

@@ -262,7 +262,7 @@ SUBROUTINE depose_jxjyjz_esirkepov_vecHV_1_1_1(jx, jy, jz, np, xp, yp, zp, uxp, 
   uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard,    &
   nzguard, l_particles_weight, l4symtry)
   USE constants, ONLY: lvec
-  USE picsar_precision, ONLY: idp, num, isp, lp
+  USE picsar_precision, ONLY: idp, isp, lp, num
   !USE precomputed
   IMPLICIT NONE
   INTEGER(idp)             :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -1052,8 +1052,8 @@ SUBROUTINE depose_jxjyjz_esirkepov_vecHVv2_1_1_1(jx, jy, jz, np, xp, yp, zp, uxp
   uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard,        &
   nyguard, nzguard, nox, noy, noz, l_particles_weight, l4symtry)
   USE constants, ONLY: lvec
-  USE picsar_precision, ONLY: idp, num, isp, lp
-  USE precomputed, ONLY: dzi, dyi, dtsdy0, dtsdz0, dxi, dtsdx0
+  USE picsar_precision, ONLY: idp, isp, lp, num
+  USE precomputed, ONLY: dtsdx0, dtsdy0, dtsdz0, dxi, dyi, dzi
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard, nox, noy, noz
   REAL(num), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,                      &
@@ -1939,8 +1939,8 @@ END SUBROUTINE depose_jxjyjz_esirkepov_2_2_2
 SUBROUTINE depose_jxjyjz_esirkepov_vecHV_2_2_2(jx, jy, jz, np, xp, yp, zp, uxp, uyp,  &
   uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard,    &
   nzguard, nox, noy, noz, l_particles_weight, l4symtry)
-  USE constants, ONLY: lvec, clight
-  USE picsar_precision, ONLY: idp, num, isp, lp
+  USE constants, ONLY: clight, lvec
+  USE picsar_precision, ONLY: idp, isp, lp, num
   IMPLICIT NONE
   INTEGER(idp)                             :: np, nx, ny, nz, nox, noy, noz, nxguard, &
   nyguard, nzguard
@@ -3482,7 +3482,7 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov_n( jx, jx_nguard, jx_nvalid, jy, jy_nguar
   xmin, ymin, zmin, dt, dx, dy, dz, nox, noy, noz, l_particles_weight,                  &
   l4symtry)!#do not wrap
 USE constants, ONLY: clight
-USE picsar_precision, ONLY: idp, num, lp
+USE picsar_precision, ONLY: idp, lp, num
 
   IMPLICIT NONE
 

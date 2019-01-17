@@ -220,13 +220,13 @@ END SUBROUTINE
 !> 2015-2016
 ! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
-  USE fields, ONLY: nyjguards, nox, noy, noz, jz, nxjguards, nzjguards, jy, jx
+  USE fields, ONLY: jx, jy, jz, nox, noy, noz, nxjguards, nyjguards, nzjguards
   USE mpi
-  USE params, ONLY: currdepo, lvec_curr_depo, dt, it
+  USE params, ONLY: currdepo, dt, it, lvec_curr_depo
   USE particle_properties, ONLY: nspecies
   USE picsar_precision, ONLY: idp, num
-  USE shared_data, ONLY: nz, ny, nx, xmin, zmin, ymin, dx, dy, dz
-  USE time_stat, ONLY: timestat_itstart, localtimes
+  USE shared_data, ONLY: dx, dy, dz, nx, ny, nz, xmin, ymin, zmin
+  USE time_stat, ONLY: localtimes, timestat_itstart
   IMPLICIT NONE
   REAL(num) :: tdeb, tend
 
@@ -508,13 +508,13 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp(func_order, jxg,    &
   jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy,    &
   dzz, dtt, current_depo_algo)
-  USE grid_tilemodule, ONLY: grid_tile, aofgrid_tiles
+  USE grid_tilemodule, ONLY: aofgrid_tiles, grid_tile
   USE particle_properties, ONLY: nspecies, wpid
   USE particle_speciesmodule, ONLY: particle_species
   USE particle_tilemodule, ONLY: particle_tile
   USE particles, ONLY: species_parray
-  USE picsar_precision, ONLY: idp, num, lp
-  USE tile_params, ONLY: ntilez, ntilex, ntiley
+  USE picsar_precision, ONLY: idp, lp, num
+  USE tile_params, ONLY: ntilex, ntiley, ntilez
   USE tiling
   IMPLICIT NONE
   ! Interfaces for func_order
@@ -814,13 +814,13 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( curr_depo_sub,  &
   curr_reduc_sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx,     &
   noyy, nozz, dxx, dyy, dzz, dtt, lvect)
-  USE grid_tilemodule, ONLY: grid_tile, aofgrid_tiles
+  USE grid_tilemodule, ONLY: aofgrid_tiles, grid_tile
   USE particle_properties, ONLY: nspecies, wpid
   USE particle_speciesmodule, ONLY: particle_species
   USE particle_tilemodule, ONLY: particle_tile
   USE particles, ONLY: species_parray
-  USE picsar_precision, ONLY: idp, num, lp
-  USE tile_params, ONLY: ntilez, ntilex, ntiley
+  USE picsar_precision, ONLY: idp, lp, num
+  USE tile_params, ONLY: ntilex, ntiley, ntilez
   USE tiling
   IMPLICIT NONE
   ! _______________________________________________________________________
@@ -1175,13 +1175,13 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3( curr_depo_sub,  &
   curr_reduc_sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx,     &
   noyy, nozz, dxx, dyy, dzz, dtt, lvect)
-  USE grid_tilemodule, ONLY: grid_tile, aofgrid_tiles
+  USE grid_tilemodule, ONLY: aofgrid_tiles, grid_tile
   USE particle_properties, ONLY: nspecies, wpid
   USE particle_speciesmodule, ONLY: particle_species
   USE particle_tilemodule, ONLY: particle_tile
   USE particles, ONLY: species_parray
-  USE picsar_precision, ONLY: idp, num, lp
-  USE tile_params, ONLY: ntilez, ntilex, ntiley
+  USE picsar_precision, ONLY: idp, lp, num
+  USE tile_params, ONLY: ntilex, ntiley, ntilez
   USE tiling
   ! ______________________________________________________________________________
   IMPLICIT NONE
@@ -1527,13 +1527,13 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp(func_order, jxg,    &
   jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy,    &
   dzz, dtt, current_depo_algo)
-  USE grid_tilemodule, ONLY: grid_tile, aofgrid_tiles
+  USE grid_tilemodule, ONLY: aofgrid_tiles, grid_tile
   USE particle_properties, ONLY: nspecies, wpid
   USE particle_speciesmodule, ONLY: particle_species
   USE particle_tilemodule, ONLY: particle_tile
   USE particles, ONLY: species_parray
-  USE picsar_precision, ONLY: idp, num, lp
-  USE tile_params, ONLY: ntilez, ntilex, ntiley
+  USE picsar_precision, ONLY: idp, lp, num
+  USE tile_params, ONLY: ntilex, ntiley, ntilez
   USE tiling
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN) :: nxx, nyy, nzz, nxjguard, nyjguard, nzjguard
@@ -1823,13 +1823,13 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_openmp
 ! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg, jyg, jzg, nxx, nyy, nzz, &
   nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)
-  USE grid_tilemodule, ONLY: grid_tile, aofgrid_tiles
+  USE grid_tilemodule, ONLY: aofgrid_tiles, grid_tile
   USE particle_properties, ONLY: nspecies, wpid
   USE particle_speciesmodule, ONLY: particle_species
   USE particle_tilemodule, ONLY: particle_tile
   USE particles, ONLY: species_parray
-  USE picsar_precision, ONLY: idp, num, lp
-  USE tile_params, ONLY: ntilez, ntilex, ntiley
+  USE picsar_precision, ONLY: idp, lp, num
+  USE tile_params, ONLY: ntilex, ntiley, ntilez
   USE tiling
   IMPLICIT NONE
 
@@ -2109,13 +2109,13 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq(func_order, jxg, jyg,  &
   jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz,    &
   dtt, currrent_depo_algo )
-  USE grid_tilemodule, ONLY: grid_tile, aofgrid_tiles
+  USE grid_tilemodule, ONLY: aofgrid_tiles, grid_tile
   USE particle_properties, ONLY: nspecies, wpid
   USE particle_speciesmodule, ONLY: particle_species
   USE particle_tilemodule, ONLY: particle_tile
   USE particles, ONLY: species_parray
-  USE picsar_precision, ONLY: idp, num, lp
-  USE tile_params, ONLY: ntilez, ntilex, ntiley
+  USE picsar_precision, ONLY: idp, lp, num
+  USE tile_params, ONLY: ntilex, ntiley, ntilez
   USE tiling
 
   IMPLICIT NONE
@@ -2225,13 +2225,13 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_seq
 ! ________________________________________________________________________________________
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_esirkepov_sub_seq(jxg, jyg, jzg, nxx,    &
   nyy, nzz, nxjguard, nyjguard, nzjguard, noxx, noyy, nozz, dxx, dyy, dzz, dtt)
-USE grid_tilemodule, ONLY: grid_tile, aofgrid_tiles
+USE grid_tilemodule, ONLY: aofgrid_tiles, grid_tile
 USE particle_properties, ONLY: nspecies, wpid
 USE particle_speciesmodule, ONLY: particle_species
 USE particle_tilemodule, ONLY: particle_tile
 USE particles, ONLY: species_parray
-USE picsar_precision, ONLY: idp, num, lp
-USE tile_params, ONLY: ntilez, ntilex, ntiley
+USE picsar_precision, ONLY: idp, lp, num
+USE tile_params, ONLY: ntilex, ntiley, ntilez
 USE tiling
 
 

@@ -691,29 +691,30 @@ END SUBROUTINE get_2Dintersection
   ! ______________________________________________________________________________________
 
   SUBROUTINE get2D_intersection_group_mpi
-    USE fields, ONLY: nzguards, nxguards, nyguards
+    USE fields, ONLY: nxguards, nyguards, nzguards
 #if defined(FFTW)
-    USE group_parameters, ONLY: size_exchanges_l2g_send_z, g_first_cell_to_send_y,   &
-      group_z_max_boundary, l_first_cell_to_send_y, l_first_cell_to_send_z,          &
-      g_first_cell_to_recv_y, cell_y_min_g, ny_group,                                &
-      size_exchanges_g2l_recv_z, l_first_cell_to_recv_z, g_first_cell_to_send_z,     &
-      group_y_max_boundary, cell_z_min_g, size_exchanges_l2g_recv_z,                 &
-      size_exchanges_l2g_recv_y, group_y_min_boundary, g_first_cell_to_recv_z,       &
-      l_first_cell_to_recv_y, cell_y_max_g, size_exchanges_g2l_send_z,               &
-      size_exchanges_g2l_recv_y,  size_exchanges_g2l_send_y,                         &
-      group_z_min_boundary, size_exchanges_l2g_send_y,                               &
-      cell_z_max_g, z_group_coords, y_group_coords, nz_group_global_array,           &
-      ny_group_global_array
+    USE group_parameters, ONLY: cell_y_max_g, cell_y_min_g, cell_z_max_g,            &
+      cell_z_min_g, g_first_cell_to_recv_y, g_first_cell_to_recv_z,                  &
+      g_first_cell_to_send_y, g_first_cell_to_send_z, group_y_max_boundary,          &
+      group_y_min_boundary, group_z_max_boundary, group_z_min_boundary,              &
+      l_first_cell_to_recv_y, l_first_cell_to_recv_z, l_first_cell_to_send_y,        &
+      l_first_cell_to_send_z, ny_group, ny_group_global_array,                       &
+      nz_group_global_array, size_exchanges_g2l_recv_y, size_exchanges_g2l_recv_z,   &
+      size_exchanges_g2l_send_y, size_exchanges_g2l_send_z,                          &
+      size_exchanges_l2g_recv_y, size_exchanges_l2g_recv_z,                          &
+      size_exchanges_l2g_send_y, size_exchanges_l2g_send_z, y_group_coords,          &
+      z_group_coords
     USE iso_c_binding
 #endif
     USE mpi
     USE mpi_derived_types
     USE params, ONLY: mpicom_curr
     USE picsar_precision, ONLY: idp, isp, lp
-    USE shared_data, ONLY: nz, ny, cell_y_min, cell_z_max, y_min_boundary, z_coords, &
-      z_min_boundary, p3dfft_flag, ny_global, nprocz, cell_z_min, y, z_max_boundary, &
-      y_coords, z, nprocy, nz_global, cell_y_max, y_max_boundary, nb_group_y,        &
-      nb_group_z, nyg_group, nzg_group
+    USE shared_data, ONLY: absorbing_bcs_y, absorbing_bcs_z, c_dim, cell_y_max,      &
+      cell_y_min, cell_z_max, cell_z_min, nb_group_x, nb_group_y, nb_group_z,        &
+      nprocy, nprocz, ny, ny_global, nyg_group, nz, nz_global, nzg_group,            &
+      p3dfft_flag, rank, x, y, y_coords, y_max_boundary, y_min_boundary, z,          &
+      z_coords, z_max_boundary, z_min_boundary
     IMPLICIT NONE
     INTEGER(idp)                   :: i,j
     INTEGER(idp)                   :: iz1min,iz1max,iz2min,iz2max, iy1min,              &
@@ -955,23 +956,25 @@ END SUBROUTINE get_2Dintersection
   ! ______________________________________________________________________________________
   SUBROUTINE compute_effective_communication_setup() 
 #if defined(FFTW) 
-   USE group_parameters, ONLY: size_exchanges_l2g_send_z, g_first_cell_to_send_y,    &
-     l_first_cell_to_send_y, l_first_cell_to_send_z, g_first_cell_to_recv_y,         &
-     requests_l2g, size_exchanges_g2l_send, array_of_ranks_to_recv_from,             &
-     requests_g2l, recv_type_g, recv_type_l, size_exchanges_g2l_recv_z,              &
-     mpi_ordered_comm_world, l_first_cell_to_recv_z, work_array_g2l, work_array_l2g, &
-     send_type_l, array_of_ranks_to_recv_from_g2l, g_first_cell_to_send_z,           &
-     nb_comms_g2l, array_of_ranks_to_send_to_l2g, nb_comms_l2g,                      &
-     size_exchanges_l2g_recv_z, array_of_ranks_to_recv_from_l2g,                     &
-     array_of_ranks_to_send_to, size_exchanges_l2g_recv_y, g_first_cell_to_recv_z,   &
-     l_first_cell_to_recv_y, size_exchanges_l2g_recv, send_type_g,                   &
-     size_exchanges_g2l_recv, size_exchanges_g2l_send_z, size_exchanges_l2g_send,    &
-     size_exchanges_g2l_recv_y, size_exchanges_g2l_send_y,                           &
-     size_exchanges_l2g_send_y, array_of_ranks_to_send_to_g2l
+   USE group_parameters, ONLY: array_of_ranks_to_recv_from,                          &
+     array_of_ranks_to_recv_from_g2l, array_of_ranks_to_recv_from_l2g,               &
+     array_of_ranks_to_send_to, array_of_ranks_to_send_to_g2l,                       &
+     array_of_ranks_to_send_to_l2g, g_first_cell_to_recv_y, g_first_cell_to_recv_z,  &
+     g_first_cell_to_send_y, g_first_cell_to_send_z, l_first_cell_to_recv_y,         &
+     l_first_cell_to_recv_z, l_first_cell_to_send_y, l_first_cell_to_send_z,         &
+     mpi_ordered_comm_world, nb_comms_g2l, nb_comms_l2g, recv_type_g, recv_type_l,   &
+     requests_g2l, requests_l2g, send_type_g, send_type_l, size_exchanges_g2l_recv,  &
+     size_exchanges_g2l_recv_y, size_exchanges_g2l_recv_z, size_exchanges_g2l_send,  &
+     size_exchanges_g2l_send_y, size_exchanges_g2l_send_z, size_exchanges_l2g_recv,  &
+     size_exchanges_l2g_recv_y, size_exchanges_l2g_recv_z, size_exchanges_l2g_send,  &
+     size_exchanges_l2g_send_y, size_exchanges_l2g_send_z, work_array_g2l,           &
+     work_array_l2g
 #endif
 #if defined(FFTW) 
    USE params, ONLY: mpicom_curr
    USE picsar_precision, ONLY: idp, isp
+#endif
+#if defined(FFTW) 
    INTEGER(idp)     :: ll,ii,i,j,k,n,jj,jjj,kk,kkk,shift_y,shift_z
    INTEGER(idp)  , ALLOCATABLE, DIMENSION(:) :: temp1,temp2,temp3,temp4,&
         temp5,temp6,temp7,temp8
@@ -1382,22 +1385,22 @@ END SUBROUTINE get_2Dintersection
 
   SUBROUTINE create_derived_types_groups
   USE constants, ONLY: c_ndims
-  USE fields, ONLY: nzguards, nxguards, nyguards
+  USE fields, ONLY: nxguards, nyguards, nzguards
 #if defined(FFTW)
-  USE group_parameters, ONLY: size_exchanges_l2g_send_z, nx_group, recv_type_g,      &
-    recv_type_l, size_exchanges_g2l_recv_z, send_type_l, size_exchanges_l2g_recv_z,  &
-    size_exchanges_l2g_recv_y, send_type_g, size_exchanges_g2l_send_z,               &
-    size_exchanges_g2l_recv_y, size_exchanges_g2l_send_y, size_exchanges_l2g_send_y
+  USE group_parameters, ONLY: nx_group, recv_type_g, recv_type_l, send_type_g,       &
+    send_type_l, size_exchanges_g2l_recv_y, size_exchanges_g2l_recv_z,               &
+    size_exchanges_g2l_send_y, size_exchanges_g2l_send_z, size_exchanges_l2g_recv_y, &
+    size_exchanges_l2g_recv_z, size_exchanges_l2g_send_y, size_exchanges_l2g_send_z
   USE iso_c_binding
 #endif
   USE mpi
   USE mpi_derived_types
 #if defined(FFTW)
-  USE mpi_fftw3, ONLY: local_ny, local_nx, local_nz
+  USE mpi_fftw3, ONLY: local_nx, local_ny, local_nz
 #endif
   USE mpi_type_constants, ONLY: mpidbl
   USE picsar_precision, ONLY: idp, isp
-  USE shared_data, ONLY: nz, ny, nx, nprocz, y, z, nprocy
+  USE shared_data, ONLY: nprocy, nprocz, nx, ny, nz, y, z
   INTEGER(idp)         ::  i,j
   INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
   INTEGER(isp)                     :: basetype

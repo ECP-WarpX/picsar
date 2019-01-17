@@ -56,7 +56,7 @@
 SUBROUTINE pxr_gete2dxz_energy_conserving_scalar_2_2(np, xp, zp, ex, ey, ez, xmin,    &
   zmin, dx, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid,     &
   ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
-  USE picsar_precision, ONLY: idp, num, lp
+  USE picsar_precision, ONLY: idp, lp, num
   IMPLICIT NONE
   INTEGER(idp)                         :: np
   INTEGER(idp), intent(in)             :: exg_nguard(2), exg_nvalid(2),               &
@@ -283,7 +283,7 @@ END SUBROUTINE
 SUBROUTINE pxr_getb2dxz_energy_conserving_scalar_2_2(np, xp, zp, bx, by, bz, xmin,    &
   zmin, dx, dz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid,     &
   bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
-  USE picsar_precision, ONLY: idp, num, lp
+  USE picsar_precision, ONLY: idp, lp, num
   IMPLICIT NONE
   INTEGER(idp)                         :: np
   INTEGER(idp), intent(in)                :: bxg_nguard(2), bxg_nvalid(2),            &

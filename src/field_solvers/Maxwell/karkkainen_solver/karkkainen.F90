@@ -266,7 +266,7 @@ subroutine pxrpush_em2d_bvec_ckc( &
      by, bylo, byhi, &
      bz, bzlo, bzhi, &
      dtsdx,dtsdy,dtsdz)
-USE picsar_precision, ONLY: idp, num, isp
+USE picsar_precision, ONLY: idp, isp, num
 ! ______________________________________________________________________________
 
 
@@ -381,7 +381,7 @@ subroutine pxrpush_em2d_evec_f_ckc( &
      ez,ezlo, ezhi, &
      f, flo, fhi, &
      dtsdx, dtsdy, dtsdz)
-USE picsar_precision, ONLY: idp, num, isp
+USE picsar_precision, ONLY: idp, isp, num
 ! ______________________________________________________________________________
 
 
@@ -476,7 +476,7 @@ subroutine pxrpush_em3d_evec_f_ckc( &
      ez,ezlo, ezhi, &
      f, flo, fhi, &
      dtsdx,dtsdy,dtsdz)
-USE picsar_precision, ONLY: idp, num, isp
+USE picsar_precision, ONLY: idp, isp, num
 ! ______________________________________________________________________________
 
 
