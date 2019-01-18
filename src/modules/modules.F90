@@ -41,7 +41,7 @@ MODULE PICSAR_precision
   INTEGER, PARAMETER :: isp = 4
   !> integer double precision
   INTEGER, PARAMETER :: idp = 8
-  !> logical(lp) precision
+  !> logical precision
   INTEGER, PARAMETER :: lp = 8
   !> Complex precision
   INTEGER, PARAMETER :: cpx = 8
