@@ -96,6 +96,273 @@
 !> jz array (1d array containing 3 integers)
 !> @warning arrays jx, jy, jz should be set to 0 before entering this subroutine.
 ! ________________________________________________________________________________________
+SUBROUTINE depose_jxjyjz_scalar_1_1_1_gpu( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
+  jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
+  xmin, ymin, zmin, dt, dx, dy, dz, bin_size, nbins, bin_start, bin_stop)     !#do not wrap
+  USE constants, ONLY: clight
+  USE picsar_precision, ONLY: idp, num
+  IMPLICIT NONE
+  INTEGER(idp)             :: np
+  INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), jy_nguard(3), jy_nvalid(3), &
+  jz_nguard(3), jz_nvalid(3)
+  REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1,           &
+  -jx_nguard(2):jx_nvalid(2)+jx_nguard(2)-1,                                          &
+  -jx_nguard(3):jx_nvalid(3)+jx_nguard(3)-1 )
+  REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1,           &
+  -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1,                                          &
+  -jy_nguard(3):jy_nvalid(3)+jy_nguard(3)-1 )
+  REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1,           &
+  -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1,                                          &
+  -jz_nguard(3):jz_nvalid(3)+jz_nguard(3)-1 )
+  REAL(num), DIMENSION(np) :: xp, yp, zp, uxp, uyp, uzp, w, gaminv
+  REAL(num)                :: q, dt, dx, dy, dz, xmin, ymin, zmin
+  REAL(num)                :: dxi, dyi, dzi, xint, yint, zint
+  REAL(num)                :: x, y, z, xmid, ymid, zmid, vx, vy, vz, invvol, dts2dx,  &
+  dts2dy, dts2dz
+  REAL(num)                :: wq, wqx, wqy, wqz, clightsq
+  REAL(num), DIMENSION(2)  :: sx(0:1), sy(0:1), sz(0:1), sx0(0:1), sy0(0:1), sz0(0:1)
+  REAL(num), PARAMETER     :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
+  INTEGER(idp)             :: j, k, l, j0, k0, l0, ip
+  integer, intent(in) :: bin_size, nbins
+  integer, dimension(nbins), intent(in) :: bin_start(0:nbins-1), bin_stop(0:nbins-1)
+  integer :: nbinsx, nbinsy, nbinsz
+  integer :: ibinf, ixbinf, iybinf, izbinf
+  integer :: ibinp, ixbinp, iybinp, izbinp
+  integer(idp) :: nvalidx, nvalidy, nvalidz
+  integer :: bin_start_list(0:nbins-1), bin_stop_list(0:nbins-1)
+  integer :: bin_start_count, nelem_bin_start_list
+  real(num) :: jx_tile(0:7,0:7,0:7)
+  real(num) :: jy_tile(0:7,0:7,0:7)
+  real(num) :: jz_tile(0:7,0:7,0:7)
+  real(num) :: xmin_tile, ymin_tile, zmin_tile
+  integer, dimension(nbins) :: my_bin_start(0:nbins-1), my_bin_stop(0:nbins-1)  
+  integer, dimension(27) :: my_bin_start_list(0:26), my_bin_stop_list(0:26)
+  integer :: ii, jj, kk
+  
+  dxi = 1.0_num/dx
+  dyi = 1.0_num/dy
+  dzi = 1.0_num/dz
+  invvol = dxi*dyi*dzi
+  dts2dx = 0.5_num*dt*dxi
+  dts2dy = 0.5_num*dt*dyi
+  dts2dz = 0.5_num*dt*dzi
+  clightsq = 1.0_num/clight**2
+
+  nvalidx = 8*((jx_nvalid(1)+1)/8)
+  nvalidy = 8*((jy_nvalid(1)+1)/8)
+  nvalidz = 8*((jz_nvalid(1)+1)/8)
+  nbinsx = nvalidx / bin_size
+  nbinsy = nvalidy / bin_size
+  nbinsz = nvalidz / bin_size
+
+  !$acc parallel deviceptr(jx, jy, jz, xp, yp, zp, uxp, uyp, uzp, w, gaminv, bin_start, bin_stop)
+  !$acc loop gang private(bin_start_list(0:26), bin_stop_list(0:26), &
+  !$acc&                  jx_tile(0:7,0:7,0:7), &
+  !$acc&                  jy_tile(0:7,0:7,0:7), &
+  !$acc&                  jz_tile(0:7,0:7,0:7) )
+  DO ibinf = 0, nbins-1
+    ! --------------------------------------------------
+    ! [LOOP1: three nested loop to compute some indices]
+    ! --------------------------------------------------
+    bin_start_list = 0
+    bin_stop_list = 0
+    jx_tile = 0.0_num
+    jy_tile = 0.0_num
+    jz_tile = 0.0_num
+
+    bin_start_count = 0
+    ixbinf = mod(ibinf,nbinsx)
+    iybinf = mod(ibinf/nbinsx,nbinsy)
+    izbinf = (ibinf/nbinsx)/nbinsy
+
+    xmin_tile = xmin + dx*8*ixbinf
+    ymin_tile = ymin + dy*8*iybinf
+    zmin_tile = zmin + dz*8*izbinf
+
+    !$acc loop collapse(3)
+    do izbinp = izbinf-1, izbinf+1
+      do iybinp = iybinf-1, iybinf+1
+        do ixbinp = ixbinf-1, ixbinf+1
+          ibinp = ixbinp + nbinsx*iybinp + nbinsx*nbinsy*izbinp
+          if ( ixbinp>=0 .and. ixbinp<nbinsx .and. iybinp>=0 .and. iybinp<nbinsy .and. izbinp>=0 .and. izbinp<nbinsz ) then
+            bin_start_list(ibinp) = bin_start(ibinp)
+            bin_stop_list (ibinp) = bin_stop (ibinp)
+          endif
+        enddo
+      enddo
+    enddo
+    !$acc end loop
+    nelem_bin_start_list = nbins
+
+    ! !$acc cache(jx_tile(0:7,0:7,0:7),jy_tile(0:7,0:7,0:7),jz_tile(0:7,0:7,0:7))
+    !$acc loop collapse(2) private(sx(0:1), sy(0:1), sz(0:1), sx0(0:1), sy0(0:1), sz0(0:1), wq, wqx, wqy, wqz, &
+    !$acc& xmid,ymid,zmid,j,k,l,j0,k0,l0,xint,yint,zint,x,y,z,vx,vy,vz)
+    do bin_start_count = 0, nelem_bin_start_list-1
+      do ip = bin_start_list(bin_start_count)+1, bin_stop_list(bin_start_count)
+         x = (xp(ip)-xmin_tile)*dxi 
+         y = (yp(ip)-ymin_tile)*dyi
+         z = (zp(ip)-zmin_tile)*dzi
+         vx = uxp(ip)*gaminv(ip)
+         vy = uyp(ip)*gaminv(ip)
+         vz = uzp(ip)*gaminv(ip)
+         wq=q*w(ip)
+         wqx=wq*invvol*vx
+         wqy=wq*invvol*vy
+         wqz=wq*invvol*vz
+         xmid=x-dts2dx*vx
+         ymid=y-dts2dy*vy
+         zmid=z-dts2dz*vz
+         j=floor(xmid)
+         k=floor(ymid)
+         l=floor(zmid)
+         j0=min(floor(xmid-0.5_num), 8*(nvalidx/8)-1 )
+         k0=min(floor(ymid-0.5_num), 8*(nvalidy/8)-1 )
+         l0=min(floor(zmid-0.5_num), 8*(nvalidz/8)-1 )
+         xint = xmid-j
+         yint = ymid-k
+         zint = zmid-l
+         sx( 0) = 1.0_num-xint
+         sx( 1) = xint
+         sy( 0) = 1.0_num-yint
+         sy( 1) = yint
+         sz( 0) = 1.0_num-zint
+         sz( 1) = zint
+         xint = xmid-j0-0.5_num
+         yint = ymid-k0-0.5_num
+         zint = zmid-l0-0.5_num
+         sx0( 0) = 1.0_num-xint
+         sx0( 1) = xint
+         sy0( 0) = 1.0_num-yint
+         sy0( 1) = yint
+         sz0( 0) = 1.0_num-zint
+         sz0( 1) = zint
+
+         if (j0>=0 .and. j0<=7 .and. k>=0 .and. k<=7 .and. l>=0 .and. l<=7) then
+         !$acc atomic update
+         jx_tile(j0, k, l  )    = jx_tile(j0, k, l  )  +   sx0(0)*sy(0)*sz(0)*wqx
+         end if
+         if (j0>=-1 .and. j0<=6 .and. k>=0 .and. k<=7 .and. l>=0 .and. l<=7) then
+         !$acc atomic update
+         jx_tile(j0+1, k, l  )    = jx_tile(j0+1, k, l  )  +   sx0(1)*sy(0)*sz(0)*wqx
+         endif
+         if (j0>=0 .and. j0<=7 .and. k>=-1 .and. k<=6 .and. l>=0 .and. l<=7) then
+         !$acc atomic update
+         jx_tile(j0, k+1, l  )    = jx_tile(j0, k+1, l  )  +   sx0(0)*sy(1)*sz(0)*wqx
+         endif
+         if (j0>=-1 .and. j0<=6 .and. k>=-1 .and. k<=6 .and. l>=0 .and. l<=7) then
+         !$acc atomic update
+         jx_tile(j0+1, k+1, l  )    = jx_tile(j0+1, k+1, l  )  +   sx0(1)*sy(1)*sz(0)*wqx
+         endif
+         if (j0>=0 .and. j0<=7 .and. k>=0 .and. k<=7 .and. l>=-1 .and. l<=6) then
+         !$acc atomic update
+         jx_tile(j0, k, l+1)    = jx_tile(j0, k, l+1)  +   sx0(0)*sy(0)*sz(1)*wqx
+         endif
+         if (j0>=-1 .and. j0<=6 .and. k>=0 .and. k<=7 .and. l>=-1 .and. l<=6) then
+         !$acc atomic update
+         jx_tile(j0+1, k, l+1)    = jx_tile(j0+1, k, l+1)  +   sx0(1)*sy(0)*sz(1)*wqx
+         endif
+         if (j0>=0 .and. j0<=7 .and. k>=-1 .and. k<=6 .and. l>=-1 .and. l<=6) then
+         !$acc atomic update
+         jx_tile(j0, k+1, l+1)    = jx_tile(j0, k+1, l+1)  +   sx0(0)*sy(1)*sz(1)*wqx
+         endif
+         if (j0>=-1 .and. j0<=6 .and. k>=-1 .and. k<=6 .and. l>=-1 .and. l<=6) then
+         !$acc atomic update
+         jx_tile(j0+1, k+1, l+1)    = jx_tile(j0+1, k+1, l+1)  +   sx0(1)*sy(1)*sz(1)*wqx
+         endif
+
+         if (j>=0 .and. j<=7 .and. k0>=0 .and. k0<=7 .and. l>=0 .and. l<=7) then
+         !$acc atomic update
+         jy_tile(j, k0, l  )    = jy_tile(j, k0, l  )  +   sx(0)*sy0(0)*sz(0)*wqy
+         end if
+         if (j>=-1 .and. j<=6 .and. k0>=0 .and. k0<=7 .and. l>=0 .and. l<=7) then
+         !$acc atomic update
+         jy_tile(j+1, k0, l  )    = jy_tile(j+1, k0, l  )  +   sx(1)*sy0(0)*sz(0)*wqy
+         end if
+         if (j>=0 .and. j<=7 .and. k0>=-1 .and. k0<=6 .and. l>=0 .and. l<=7) then
+         !$acc atomic update
+         jy_tile(j, k0+1, l  )    = jy_tile(j, k0+1, l  )  +   sx(0)*sy0(1)*sz(0)*wqy
+         end if
+         if (j>=-1 .and. j<=6 .and. k0>=-1 .and. k0<=6 .and. l>=0 .and. l<=7) then
+         !$acc atomic update
+         jy_tile(j+1, k0+1, l  )    = jy_tile(j+1, k0+1, l  )  +   sx(1)*sy0(1)*sz(0)*wqy
+         end if
+         if (j>=0 .and. j<=7 .and. k0>=0 .and. k0<=7 .and. l>=-1 .and. l<=6) then
+         !$acc atomic update
+         jy_tile(j, k0, l+1)    = jy_tile(j, k0, l+1)  +   sx(0)*sy0(0)*sz(1)*wqy
+         end if
+         if (j>=-1 .and. j<=6 .and. k0>=0 .and. k0<=7 .and. l>=-1 .and. l<=6) then
+         !$acc atomic update
+         jy_tile(j+1, k0, l+1)    = jy_tile(j+1, k0, l+1)  +   sx(1)*sy0(0)*sz(1)*wqy
+         end if
+         if (j>=0 .and. j<=7 .and. k0>=-1 .and. k0<=6 .and. l>=-1 .and. l<=6) then
+         !$acc atomic update
+         jy_tile(j, k0+1, l+1)    = jy_tile(j, k0+1, l+1)  +   sx(0)*sy0(1)*sz(1)*wqy
+         end if
+         if (j>=-1 .and. j<=6 .and. k0>=-1 .and. k0<=6 .and. l>=-1 .and. l<=6) then
+         !$acc atomic update
+         jy_tile(j+1, k0+1, l+1)    = jy_tile(j+1, k0+1, l+1)  +   sx(1)*sy0(1)*sz(1)*wqy
+         end if
+
+         if (j>=0 .and. j<=7 .and. k>=0 .and. k<=7 .and. l0>=0 .and. l0<=7) then
+         !$acc atomic update
+         jz_tile(j, k, l0  )    = jz_tile(j, k, l0  )  +   sx(0)*sy(0)*sz0(0)*wqz
+         end if
+         if (j>=-1 .and. j<=6 .and. k>=0 .and. k<=7 .and. l0>=0 .and. l0<=7) then
+         !$acc atomic update
+         jz_tile(j+1, k, l0  )    = jz_tile(j+1, k, l0  )  +   sx(1)*sy(0)*sz0(0)*wqz
+         end if
+         if (j>=0 .and. j<=7 .and. k>=-1 .and. k<=6 .and. l0>=0 .and. l0<=7) then
+         !$acc atomic update
+         jz_tile(j, k+1, l0  )    = jz_tile(j, k+1, l0  )  +   sx(0)*sy(1)*sz0(0)*wqz
+         end if
+         if (j>=-1 .and. j<=6 .and. k>=-1 .and. k<=6 .and. l0>=0 .and. l0<=7) then
+         !$acc atomic update
+         jz_tile(j+1, k+1, l0  )    = jz_tile(j+1, k+1, l0  )  +   sx(1)*sy(1)*sz0(0)*wqz
+         end if
+         if (j>=0 .and. j<=7 .and. k>=0 .and. k<=7 .and. l0>=-1 .and. l0<=6) then
+         !$acc atomic update
+         jz_tile(j, k, l0+1)    = jz_tile(j, k, l0+1)  +   sx(0)*sy(0)*sz0(1)*wqz
+         end if
+         if (j>=-1 .and. j<=6 .and. k>=0 .and. k<=7 .and. l0>=-1 .and. l0<=6) then
+         !$acc atomic update
+         jz_tile(j+1, k, l0+1)    = jz_tile(j+1, k, l0+1)  +   sx(1)*sy(0)*sz0(1)*wqz
+         end if
+         if (j>=0 .and. j<=7 .and. k>=-1 .and. k<=6 .and. l0>=-1 .and. l0<=6) then
+         !$acc atomic update
+         jz_tile(j, k+1, l0+1)    = jz_tile(j, k+1, l0+1)  +   sx(0)*sy(1)*sz0(1)*wqz
+         end if
+         if (j>=-1 .and. j<=6 .and. k>=-1 .and. k<=6 .and. l0>=-1 .and. l0<=6) then
+         !$acc atomic update
+         jz_tile(j+1, k+1, l0+1)    = jz_tile(j+1, k+1, l0+1)  +   sx(1)*sy(1)*sz0(1)* wqz
+         end if
+      enddo
+    enddo
+    !$acc end loop
+
+    !$acc loop collapse(3)
+    do kk=0,7
+      do jj=0,7
+        do ii=0,7
+          !$acc atomic update
+          jx(bin_size*ixbinf+ii, bin_size*iybinf+jj, bin_size*izbinf+kk) = &
+          jx(bin_size*ixbinf+ii, bin_size*iybinf+jj, bin_size*izbinf+kk) + jx_tile(ii,jj,kk)
+          !$acc atomic update
+          jy(bin_size*ixbinf+ii, bin_size*iybinf+jj, bin_size*izbinf+kk) = &
+          jy(bin_size*ixbinf+ii, bin_size*iybinf+jj, bin_size*izbinf+kk) + jy_tile(ii,jj,kk)
+          !$acc atomic update
+          jz(bin_size*ixbinf+ii, bin_size*iybinf+jj, bin_size*izbinf+kk) = &
+          jz(bin_size*ixbinf+ii, bin_size*iybinf+jj, bin_size*izbinf+kk) + jz_tile(ii,jj,kk)
+        enddo
+      enddo
+    enddo
+    !$acc end loop
+  ENDDO
+  !$acc end loop
+  !$acc end parallel
+
+  RETURN
+END SUBROUTINE depose_jxjyjz_scalar_1_1_1_gpu
+
 SUBROUTINE depose_jxjyjz_scalar_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
   jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
   xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
@@ -123,6 +390,7 @@ SUBROUTINE depose_jxjyjz_scalar_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
   REAL(num), DIMENSION(2)  :: sx(0:1), sy(0:1), sz(0:1), sx0(0:1), sy0(0:1), sz0(0:1)
   REAL(num), PARAMETER     :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
   INTEGER(idp)             :: j, k, l, j0, k0, l0, ip
+  integer(idp)             :: nvalidx, nvalidy, nvalidz
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -132,6 +400,13 @@ SUBROUTINE depose_jxjyjz_scalar_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
   dts2dy = 0.5_num*dt*dyi
   dts2dz = 0.5_num*dt*dzi
   clightsq = 1.0_num/clight**2
+
+  nvalidx = 8*(jx_nvalid(1)/8)
+  nvalidy = 8*(jy_nvalid(1)/8)
+  nvalidz = 8*(jz_nvalid(1)/8)
+
+  write(*,*) "ich bin ici"
+  
 !  sx=0.0_num;sy=0.0_num;sz=0.0_num;
 !  sx0=0.0_num;sy0=0.0_num;sz0=0.0_num;
 
@@ -167,9 +442,14 @@ SUBROUTINE depose_jxjyjz_scalar_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
     j=floor(xmid)
     k=floor(ymid)
     l=floor(zmid)
-    j0=floor(xmid-0.5_num)
-    k0=floor(ymid-0.5_num)
-    l0=floor(zmid-0.5_num)
+    !j0=floor(xmid-0.5_num)
+    !k0=floor(ymid-0.5_num)
+    !l0=floor(zmid-0.5_num)
+    ! Three correct lines above were replaced by these three ugly lines below
+    ! to make sure all tables are small enough
+    j0=min(floor(xmid-0.5_num), 8*(nvalidx/8)-1 )
+    k0=min(floor(ymid-0.5_num), 8*(nvalidy/8)-1 )
+    l0=min(floor(zmid-0.5_num), 8*(nvalidz/8)-1 )
 
     ! --- computes set of coefficients for node centered quantities
     xint = xmid-j
@@ -192,6 +472,23 @@ SUBROUTINE depose_jxjyjz_scalar_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
     sy0( 1) = yint
     sz0( 0) = 1.0_num-zint
     sz0( 1) = zint
+
+!    !$acc atomic update
+!    jx(j0, k, l  )    = jx(j0, k, l  )  + 1.0_num
+!    !$acc atomic update
+!    jx(j0+1, k, l  )    = jx(j0+1, k, l  )  + 1.0_num
+!    !$acc atomic update
+!    jx(j0, k+1, l  )    = jx(j0, k+1, l  )  +  1.0_num
+!    !$acc atomic update
+!    jx(j0+1, k+1, l  )    = jx(j0+1, k+1, l  )  + 1.0_num
+!    !$acc atomic update
+!    jx(j0, k, l+1)    = jx(j0, k, l+1)  + 1.0_num
+!    !$acc atomic update
+!    jx(j0+1, k, l+1)    = jx(j0+1, k, l+1)  +  1.0_num
+!    !$acc atomic update
+!    jx(j0, k+1, l+1)    = jx(j0, k+1, l+1)  +  1.0_num
+!    !$acc atomic update
+!    jx(j0+1, k+1, l+1)    = jx(j0+1, k+1, l+1)  + 1.0_num
 
     ! --- add current contributions in the form rho(n+1/2)v(n+1/2)
     ! - JX
@@ -253,6 +550,7 @@ SUBROUTINE depose_jxjyjz_scalar_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
 
   RETURN
 END SUBROUTINE depose_jxjyjz_scalar_1_1_1
+
 
 ! ________________________________________________________________________________________
 !> @brief
