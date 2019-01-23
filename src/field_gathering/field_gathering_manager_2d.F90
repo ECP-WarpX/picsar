@@ -61,14 +61,14 @@
 SUBROUTINE geteb2dxz_energy_conserving(np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin,  &
   ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, nox, noy, noz, exg,    &
   eyg, ezg, bxg, byg, bzg, l4symtry, l_lower_order_in_v, lvect, field_gathe_algo)
-  USE picsar_precision, ONLY: idp, num
+  USE picsar_precision, ONLY: idp, lp, num
   implicit none
 
   integer(idp)                  :: np, nx, ny, nz, nox, noy, noz, nxguard, nyguard,   &
   nzguard
   integer(idp)                  :: field_gathe_algo
   integer(idp)                  :: lvect
-  logical(idp), intent(in)      :: l4symtry, l_lower_order_in_v
+  logical(lp) , intent(in)      :: l4symtry, l_lower_order_in_v
   real(num), dimension(np)      :: xp, yp, zp, ex, ey, ez, bx, by, bz
   real(num), dimension(-nxguard:nx+nxguard, -nyguard:ny+nyguard, -nzguard:nz+nzguard) &
   :: exg, eyg, ezg

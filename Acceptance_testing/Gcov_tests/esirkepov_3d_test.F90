@@ -41,7 +41,7 @@ PROGRAM esirkepov_3d_test
   INTEGER(idp)                             :: nxguard,nyguard,nzguard
   INTEGER(idp), DIMENSION(3)			   :: jx_nguard, jy_nguard, jz_nguard
   INTEGER(idp), DIMENSION(3)			   :: jx_nvalid, jy_nvalid, jz_nvalid
-  LOGICAL(idp)                             :: passed, ll_particles_weight, ll4symtry 
+  LOGICAL(lp)                              :: passed, ll_particles_weight, ll4symtry 
   REAL(num)                                :: xmin,ymin,zmin
   REAL(num)                                :: xmax,ymax,zmax
   REAL(num)                                :: q,m

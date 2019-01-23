@@ -48,7 +48,7 @@ PROGRAM tile_rho_depo_3d_test
   REAL(num), DIMENSION(6)                  :: rng=0_num
   REAL(num)                                :: epsilon
   REAL(num)                                :: t0
-  LOGICAL                                  :: passed
+  LOGICAL(lp)                              :: passed
   REAL(num), dimension(10)                 :: t
   CHARACTER(len=64), dimension(10)         :: name
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: tilesumrho
@@ -419,7 +419,7 @@ SUBROUTINE compute_err(n,sumrho, &
   INTEGER(isp)                             :: n
   INTEGER(isp)                             :: i
   REAL(num)                                :: epsilon
-  LOGICAL, INTENT(INOUT)                   :: passed
+  LOGICAL(lp), INTENT(INOUT)                   :: passed
   REAL(num), dimension(10)                 :: sumrho
   REAL(num), dimension(10), INTENT(INOUT)  :: errrho
 
