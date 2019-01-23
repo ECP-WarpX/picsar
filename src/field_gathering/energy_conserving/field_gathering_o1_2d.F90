@@ -55,14 +55,15 @@
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_gete2dxz_energy_conserving_scalar_1_1(np, xp, zp, ex, ey, ez, xmin,    &
   zmin, dx, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid,     &
-  ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v)     !#do not wrap
+  ezg, ezg_nguard, ezg_nvalid, l_lower_order_in_v, l_nodal)     !#do not wrap
   USE picsar_precision, ONLY: idp, lp, num
   IMPLICIT NONE
   INTEGER(idp)                         :: np
   INTEGER(idp), intent(in)             :: exg_nguard(2), exg_nvalid(2),               &
   eyg_nguard(2), eyg_nvalid(2), ezg_nguard(2), ezg_nvalid(2)
   REAL(num), DIMENSION(np)             :: xp, zp, ex, ey, ez
-  LOGICAL(lp)                              :: l_lower_order_in_v
+  LOGICAL(lp)                              :: l_lower_order_in_v, l_nodal
+  REAL(num)                                :: stagger_shift
   REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1,           &
   -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1)
   REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1,           &
@@ -81,6 +82,12 @@ SUBROUTINE pxr_gete2dxz_energy_conserving_scalar_1_1(np, xp, zp, ex, ey, ez, xmi
   REAL(num), DIMENSION(0:1)            :: sz, sz0
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num
   REAL(num), PARAMETER                 :: twothird=2.0_num/3.0_num
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dzi = 1.0_num/dz
@@ -107,9 +114,9 @@ SUBROUTINE pxr_gete2dxz_energy_conserving_scalar_1_1(np, xp, zp, ex, ey, ez, xmi
       ! Compute index of particle
 
       j=floor(x)
-      j0=floor(x)
+      j0=floor(x+0.5_num-stagger_shift)
       l=floor(z)
-      l0=floor(z)
+      l0=floor(z+0.5_num-stagger_shift)
 
       xint=x-j
       zint=z-l
@@ -120,8 +127,8 @@ SUBROUTINE pxr_gete2dxz_energy_conserving_scalar_1_1(np, xp, zp, ex, ey, ez, xmi
       sz( 0) = 1.0_num-zint
       sz( 1) = zint
 
-      xint=x-0.5_num-j0
-      zint=z-0.5_num-l0
+      xint=x-stagger_shift-j0
+      zint=z-stagger_shift-l0
 
       sx0( 0) = 1.0_num
       sz0( 0) = 1.0_num
@@ -177,9 +184,9 @@ SUBROUTINE pxr_gete2dxz_energy_conserving_scalar_1_1(np, xp, zp, ex, ey, ez, xmi
 
       ! Compute index of particle
       j=floor(x)
-      j0=floor(x-0.5_num)
+      j0=floor(x-stagger_shift)
       l=floor(z)
-      l0=floor(z-0.5_num)
+      l0=floor(z-stagger_shift)
       xint=x-j
       zint=z-l
 
@@ -188,8 +195,8 @@ SUBROUTINE pxr_gete2dxz_energy_conserving_scalar_1_1(np, xp, zp, ex, ey, ez, xmi
       sx( 1) = xint
       sz( 0) = 1.0_num-zint
       sz( 1) = zint
-      xint=x-0.5_num-j0
-      zint=z-0.5_num-l0
+      xint=x-stagger_shift-j0
+      zint=z-stagger_shift-l0
       sx0( 0) = 1.0_num-xint
       sx0( 1) = xint
       sz0( 0) = 1.0_num-zint
@@ -254,14 +261,15 @@ END SUBROUTINE pxr_gete2dxz_energy_conserving_scalar_1_1
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_getb2dxz_energy_conserving_scalar_1_1(np, xp, zp, bx, by, bz, xmin,    &
   zmin, dx, dz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid,     &
-  bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v)     !#do not wrap
+  bzg, bzg_nguard, bzg_nvalid, l_lower_order_in_v, l_nodal)     !#do not wrap
   USE picsar_precision, ONLY: idp, lp, num
   IMPLICIT NONE
   INTEGER(idp)                         :: np
   INTEGER(idp), intent(in)                :: bxg_nguard(2), bxg_nvalid(2),            &
   byg_nguard(2), byg_nvalid(2), bzg_nguard(2), bzg_nvalid(2)
   REAL(num), DIMENSION(np)             :: xp, zp, bx, by, bz
-  LOGICAL(lp)                              :: l_lower_order_in_v
+  LOGICAL(lp)                              :: l_lower_order_in_v, l_nodal
+  REAL(num)                                :: stagger_shift
   REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1,           &
   -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1)
   REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1,           &
@@ -277,6 +285,12 @@ SUBROUTINE pxr_getb2dxz_energy_conserving_scalar_1_1(np, xp, zp, bx, by, bz, xmi
   REAL(num), DIMENSION(0:1)            :: sz, sz0
   REAL(num), PARAMETER                 :: onesixth=1.0_num/6.0_num,                   &
   twothird=2.0_num/3.0_num
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dzi = 1.0_num/dz
@@ -302,9 +316,9 @@ SUBROUTINE pxr_getb2dxz_energy_conserving_scalar_1_1(np, xp, zp, bx, by, bz, xmi
 
       ! Compute index of particle
       j=floor(x)
-      j0=floor(x)
+      j0=floor(x+0.5_num-stagger_shift)
       l=floor(z)
-      l0=floor(z)
+      l0=floor(z+0.5_num-stagger_shift)
 
       xint=x-j
       zint=z-l
@@ -315,8 +329,8 @@ SUBROUTINE pxr_getb2dxz_energy_conserving_scalar_1_1(np, xp, zp, bx, by, bz, xmi
       sz( 0) = 1.0_num-zint
       sz( 1) = zint
 
-      xint=x-0.5_num-j0
-      zint=z-0.5_num-l0
+      xint=x-stagger_shift-j0
+      zint=z-stagger_shift-l0
 
       sx0( 0) = 1.0_num
       sz0( 0) = 1.0_num
@@ -373,9 +387,9 @@ SUBROUTINE pxr_getb2dxz_energy_conserving_scalar_1_1(np, xp, zp, bx, by, bz, xmi
 
       ! Compute index of particle
       j=floor(x)
-      j0=floor(x-0.5_num)
+      j0=floor(x-stagger_shift)
       l=floor(z)
-      l0=floor(z-0.5_num)
+      l0=floor(z-stagger_shift)
 
       ! Compute shape factors
       xint=x-j
@@ -385,8 +399,8 @@ SUBROUTINE pxr_getb2dxz_energy_conserving_scalar_1_1(np, xp, zp, bx, by, bz, xmi
       sz( 0) = 1.0_num-zint
       sz( 1) = zint
 
-      xint=x-0.5_num-j0
-      zint=z-0.5_num-l0
+      xint=x-stagger_shift-j0
+      zint=z-stagger_shift-l0
 
       sx0( 0) = 1.0_num-xint
       sx0( 1) = xint
@@ -456,7 +470,7 @@ END SUBROUTINE pxr_getb2dxz_energy_conserving_scalar_1_1
 ! ________________________________________________________________________________________
 subroutine pxr_gete2dxz_energy_conserving_vect_1_1( np, xp, zp, ex, ey, ez, xmin,     &
   zmin, dx, dz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid, ezg,          &
-  ezg_nguard, ezg_nvalid, lvect, l_lower_order_in_v)     !#do not wrap
+  ezg_nguard, ezg_nvalid, lvect, l_lower_order_in_v, l_nodal)     !#do not wrap
   USE picsar_precision, ONLY: idp, lp, num
   implicit none
 
@@ -466,7 +480,8 @@ subroutine pxr_gete2dxz_energy_conserving_vect_1_1( np, xp, zp, ex, ey, ez, xmin
   integer(idp), intent(in)                :: lvect
   real(num), dimension(np), intent(in)    :: xp, zp
   real(num), dimension(np), intent(inout) :: ex, ey, ez
-  logical(lp)                             :: l_lower_order_in_v
+  logical(lp)                             :: l_lower_order_in_v, l_nodal
+  real(num)                               :: stagger_shift
   REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1, 1,        &
   -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1)
   REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1, 1,        &
@@ -480,6 +495,12 @@ subroutine pxr_gete2dxz_energy_conserving_vect_1_1( np, xp, zp, ex, ey, ez, xmin
   real(num), DIMENSION(lvect, 0:1)    :: sx, sx0
   real(num), DIMENSION(lvect, 0:1)    :: sz, sz0
   real(num), parameter               :: onesixth=1./6., twothird=2./3.
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1./dx
   dzi = 1./dz
@@ -522,9 +543,9 @@ subroutine pxr_gete2dxz_energy_conserving_vect_1_1( np, xp, zp, ex, ey, ez, xmin
 
         ! Compute index of particle
         j=floor(x)
-        j0=floor(x)
+        j0=floor(x+0.5_num-stagger_shift)
         l=floor(z)
-        l0=floor(z)
+        l0=floor(z+0.5_num-stagger_shift)
         xint=x-j
         zint=z-l
 
@@ -534,8 +555,8 @@ subroutine pxr_gete2dxz_energy_conserving_vect_1_1( np, xp, zp, ex, ey, ez, xmin
         sz(n, 0) = 1.0_num-zint
         sz(n, 1) = zint
 
-        xint=x-0.5_num-j0
-        zint=z-0.5_num-l0
+        xint=x-stagger_shift-j0
+        zint=z-stagger_shift-l0
 
         sx0(n, 0) = 1.0_num
 
@@ -592,9 +613,9 @@ subroutine pxr_gete2dxz_energy_conserving_vect_1_1( np, xp, zp, ex, ey, ez, xmin
 
         ! Compute index of particle
         j=floor(x)
-        j0=floor(x-0.5_num)
+        j0=floor(x-stagger_shift)
         l=floor(z)
-        l0=floor(z-0.5_num)
+        l0=floor(z-stagger_shift)
         xint=x-j
         zint=z-l
 
@@ -604,8 +625,8 @@ subroutine pxr_gete2dxz_energy_conserving_vect_1_1( np, xp, zp, ex, ey, ez, xmin
         sz(n, 0) = 1.0_num-zint
         sz(n, 1) = zint
 
-        xint=x-0.5_num-j0
-        zint=z-0.5_num-l0
+        xint=x-stagger_shift-j0
+        zint=z-stagger_shift-l0
 
         sx0(n, 0) = 1.0_num-xint
         sx0(n, 1) = xint
@@ -668,7 +689,7 @@ end subroutine
 ! ________________________________________________________________________________________
 subroutine pxr_getb2dxz_energy_conserving_vect_1_1( np, xp, zp, bx, by, bz, xmin,     &
   zmin, dx, dz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid, bzg,          &
-  bzg_nguard, bzg_nvalid, lvect, l_lower_order_in_v)     !#do not wrap
+  bzg_nguard, bzg_nvalid, lvect, l_lower_order_in_v, l_nodal)     !#do not wrap
   USE picsar_precision, ONLY: idp, lp, num
   implicit none
   ! __ Parameter declaration ___________________________________________
@@ -678,7 +699,8 @@ subroutine pxr_getb2dxz_energy_conserving_vect_1_1( np, xp, zp, bx, by, bz, xmin
   integer(idp), intent(in)                :: lvect
   real(num), dimension(np), intent(in)    :: xp, zp
   real(num), dimension(np), intent(inout) :: bx, by, bz
-  logical(lp) , intent(in)                :: l_lower_order_in_v
+  logical(lp) , intent(in)                :: l_lower_order_in_v, l_nodal
+  real(num)          :: stagger_shift
   REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1, 1,        &
   -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1)
   REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1, 1,        &
@@ -696,6 +718,12 @@ subroutine pxr_getb2dxz_energy_conserving_vect_1_1( np, xp, zp, bx, by, bz, xmin
 
   ! ___________________________
   ! Compute parameters
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1./dx
   dzi = 1./dz
@@ -738,10 +766,10 @@ subroutine pxr_getb2dxz_energy_conserving_vect_1_1( np, xp, zp, bx, by, bz, xmin
 
         ! Compute index of particle
         j=floor(x)
-        j0=floor(x)
+        j0=floor(x+0.5_num-stagger_shift)
 
         l=floor(z)
-        l0=floor(z)
+        l0=floor(z+0.5_num-stagger_shift)
 
         xint=x-j
         zint=z-l
@@ -752,8 +780,8 @@ subroutine pxr_getb2dxz_energy_conserving_vect_1_1( np, xp, zp, bx, by, bz, xmin
         sz(n, 0) = 1.0_num-zint
         sz(n, 1) = zint
 
-        xint=x-0.5_num-j0
-        zint=z-0.5_num-l0
+        xint=x-stagger_shift-j0
+        zint=z-stagger_shift-l0
 
         sx0(n, 0) = 1.0_num
         sz0(n, 0) = 1.0_num
@@ -806,10 +834,10 @@ subroutine pxr_getb2dxz_energy_conserving_vect_1_1( np, xp, zp, bx, by, bz, xmin
 
         ! Compute index of particle
         j=floor(x)
-        j0=floor(x-0.5_num)
+        j0=floor(x-stagger_shift)
 
         l=floor(z)
-        l0=floor(z-0.5_num)
+        l0=floor(z-stagger_shift)
 
         xint=x-j
         zint=z-l
@@ -820,8 +848,8 @@ subroutine pxr_getb2dxz_energy_conserving_vect_1_1( np, xp, zp, bx, by, bz, xmin
         sz(n, 0) = 1.0_num-zint
         sz(n, 1) = zint
 
-        xint=x-0.5_num-j0
-        zint=z-0.5_num-l0
+        xint=x-stagger_shift-j0
+        zint=z-stagger_shift-l0
 
         sx0(n, 0) = 1.0_num-xint
         sx0(n, 1) = xint
