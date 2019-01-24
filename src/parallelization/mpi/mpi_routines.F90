@@ -1760,6 +1760,7 @@ USE mpi_fftw3, ONLY: fftw_alloc_complex, local_ny_tr, fftw_alloc_real, local_ny,
   local_nx_tr, alloc_local, local_nx, local_nz, local_nz_tr
 #endif
 #if defined(FFTW)
+USE laser_util, ONLY : Er_laser, Et_laser
 USE fourier
 USE group_parameters
 USE picsar_precision, ONLY: idp
@@ -1785,6 +1786,7 @@ IF (l_AM_rz) THEN
   ALLOCATE(bl(-nxguards:nx+nxguards, -nyguards:ny+nyguards, 0:nmodes-1))
   ALLOCATE(br(-nxguards:nx+nxguards, -nyguards:ny+nyguards, 0:nmodes-1))
   ALLOCATE(bt(-nxguards:nx+nxguards, -nyguards:ny+nyguards, 0:nmodes-1))
+  
 ENDIF
 ! > When using absorbing_bcs , allocate splitted fields 
 IF(absorbing_bcs) THEN
@@ -2132,6 +2134,8 @@ IF (l_spectral) THEN
         ALLOCATE(jt_c(imn:imx, jmn:jmx, kmn:kmx))
         ALLOCATE(rho_c(imn:imx, jmn:jmx, kmn:kmx))
         ALLOCATE(rhoold_c(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(Er_laser(imn:imx, jmn:jmx))
+        ALLOCATE(Et_laser(imn:imx, jmn:jmx))
       ENDIF
     ENDIF
   ENDIF

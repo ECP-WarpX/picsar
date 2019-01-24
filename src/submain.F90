@@ -105,7 +105,9 @@ USE sorting
     rho = 0.0_num
     DO i=1, nst
       IF (rank .EQ. 0) startit=MPI_WTIME()
-
+      IF ((l_AM_rz).AND.(i== 1)) THEN
+        CALL laser_gaussian  
+      ENDIF
       !!! --- Init iteration variables
       pushtime=0._num
       divE_computed = .False.
@@ -323,45 +325,61 @@ END SUBROUTINE step
 !> @date
 !> Creation 2019
 
-SUBROUTINE laser_gausssian
+SUBROUTINE laser_gaussian
   USE PICSAR_precision
-  USE laser_util , ONLY : a0, waist, tau, z0, zf, lambda0
-  USE constants, ONLY: clight, emass 
-  REAL (num):: k0, E0, zr, w0, 
+  USE laser_util , ONLY : E0, waist, ctau, z0, zf, lambda0, theta_pol, cep_phase, Er_laser, Et_laser
+  USE constants, ONLY: clight, emass
+  USE fields, ONLY : er_c, et_c 
+  USE shared_data , ONLY : nx, ny
+  REAL (num)::   zr, w0, phi2_chirp, propagation_dir, k0 ,t0
   REAL (num) :: PI  = 4 * atan (1.0_8)
-  COMPLEX (cpx) :: ii
-  
+  COMPLEX (cpx) :: ii, exp_argument, profile
+  INTEGER (idp) ::i, k
+  REAL (num) , DIMENSION (:), ALLOCATABLE :: r,z  
+ 
+  ALLOCATE(r(nx))
+  ALLOCATE (z(ny))
+  Do k=1, nx
+    r(k)= (k-1)*dr+0.5_num
+  End do
+   Do k=1, ny
+    z(k)= (k-1)*dy
+  End do
+  t=0.
   ii= DCMPLX(0._num, 1_num)
   k0 = 2*PI/lambda0
   w0= waist
-  E0 = a0*m_e*c**2*k0/e
+  !E0 = a0*m_e*c**2*k0/e
   zr = 0.5*k0*waist**2
   inv_zr = 1./zr 
   theta_pol =0. 
-  E0_x = E0 * cos(theta_pol)
-  E0_y = E0 * sin(theta_pol)
-  inv_ctau2 = 1./(c*tau)**2
+  !E0_x = E0 * cos(theta_pol)
+  !E0_y = E0 * sin(theta_pol)
+  inv_ctau2 = 1./(ctau)**2
   propagation_dir =1.
   phi2_chirp =0.
   
         !if zf is None:
         !    zf = z0
-
-
-  diffract_factor = 1._num + ii * prop_dir*(z - zf) * inv_zr
   stretch_factor = 1_num - 2._num*ii * phi2_chirp * clight**2 *inv_ctau2
-  exp_argument = - ii*cep_phase+ ii*k0*( prop_dir*(z - z0)-clight*t ) &
-  - (x**2 + y**2) / (w0**2 * diffract_factor) - 1./stretch_factor*inv_ctau2 * ( prop_dir*(z-z0)-clight*t )**2
-  profile = exp(exp_argument) /(diffract_factor * stretch_factor**0.5)
+  DO k=1, ny
+    diffract_factor = 1._num + ii * prop_dir*(z(k) - zf) * inv_zr
+   DO i=1, nx
+      exp_argument = - ii*cep_phase+ ii*k0*( prop_dir*(z(k) - z0)-clight*t ) &
+      - (r(i)**2) / (w0**2 * diffract_factor) - 1./stretch_factor*inv_ctau2 * ( prop_dir*(z(k)-z0)-clight*t )**2
+     profile = exp(exp_argument) /(diffract_factor * stretch_factor**0.5)
+     Er_laser(i,k) = E0* profile*exp(ii*theta_pol)
+     Et_laser(i,k) = -ii* E0 * profile* exp(ii* theta_pol)
+     er_c(i,k,1) = er_c(i,k,1)+ Er_laser(i,k)
+     et_c(i,k,1) = et_c(i,k,1)+ Et_laser(i,k)
+   END DO
+  END DO
+  !Ex_r = DREAL(Ex)
+  !Ey_r = DREAL (Ey)
 
-  Ex = E0_x * profile
-  Ey = E0_y * profile
-
-  Ex_r = DREAL(Ex)
-  Ey_r = DREAL (Ey)
-
-
-END SUBROUTINE laser_gausssian
+  DEALLOCATE (r)
+  DEALLOCATE (z)
+END SUBROUTINE laser_gaussian
 ! ________________________________________________________________________________________
 !> @brief
 !> init pml arrays 

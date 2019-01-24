@@ -52,6 +52,7 @@ MODULE control_file
   USE params
   USE output_data
   USE time_stat
+  USE laser_util
 #if defined(FFTW)
   USE group_parameters
 #endif
@@ -98,6 +99,7 @@ MODULE control_file
     l_spectral = .FALSE.! (no spectral solver by default)
     g_spectral = .FALSE.! (no spectral sovler by default)
     l_staggered = .TRUE.! (staggered scheme by default )
+    l_AM_rz = .FALSE. ! (cartesian geometry by default )
 #if defined(FFTW)
     nb_group_x = 1
     nb_group_y = 1
@@ -184,6 +186,10 @@ MODULE control_file
     tmax = 0._num
     nsteps = 0
 
+    !------------------------------------------------------------------------------
+    ! laser parameters for direct method
+    zf =z0
+    
     !-------------------------------------------------------------------------------
     ! plasma parameters (cold plasma)
     l_particles_weight = .FALSE.! .TRUE. if particles have different weights
@@ -333,6 +339,9 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'l_spectral') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) l_spectral
+      ELSE IF (INDEX(buffer, 'l_AM_rz') .GT. 0) THEN
+        CALL GETARG(i+1, buffer)
+        READ(buffer, *) l_AM_rz
       ELSE IF (INDEX(buffer, 'absorbing_bcs_x') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
         READ(buffer, *) absorbing_bcs_x
@@ -476,8 +485,10 @@ MODULE control_file
           CALL read_sorting_section
         CASE('section::particle_dump')
           CALL read_particle_dumps_section
-        CASE('section::laser_from_file')
-          CALL read_laser_from_file
+        !CASE('section::laser_from_file')
+        !  CALL read_laser_from_file
+        CASE ('section:: laser_direct')
+          CALL read_laser_direct
         END SELECT
       END IF
     END DO
@@ -942,32 +953,34 @@ MODULE control_file
   !> Creation 2018
   ! ______________________________________________________________________________________
 
-  SUBROUTINE read_laser_from_file
-    INTEGER :: ix = 0
-    LOGICAL(lp)  :: end_section = .FALSE.
+!  SUBROUTINE read_laser_from_file
+!    INTEGER :: ix = 0
+!    LOGICAL(lp)  :: end_section = .FALSE.
     ! READS GRID SECTION OF INPUT FILE
-    DO WHILE((.NOT. end_section) .AND. (ios==0))
-      READ(fh_input, '(A)', iostat=ios) buffer
-      !WRITE(0, *), TRIM(ADJUSTL(buffer))
-      IF (INDEX(buffer, '#') .GT. 0) THEN
-        CYCLE
-      ENDIF
-      IF (INDEX(buffer, 'w0') .GT. 0) THEN
-        ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), '(i10)') w0
-      ELSE IF (INDEX(buffer, 'ctau') .GT. 0) THEN
-        ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), '(i10)') ctau
-      ELSE IF (INDEX(buffer, 'k0') .GT. 0) THEN
-        ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), '(i10)') k0
-      ELSE IF (INDEX(buffer, 'E0') .GT. 0) THEN
-        ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), '(i10)') E0
-      END IF
-    END DO
-    RETURN
-  END SUBROUTINE read_laser_from_file
+!    DO WHILE((.NOT. end_section) .AND. (ios==0))
+
+!      READ(fh_input, '(A)', iostat=ios) buffer
+ !     !WRITE(0, *), TRIM(ADJUSTL(buffer))
+ !     IF (INDEX(buffer, '#') .GT. 0) THEN
+ !       CYCLE
+ !     ENDIF
+ !     IF (INDEX(buffer, 'w0') .GT. 0) THEN
+!        ix = INDEX(buffer, "=")
+!        READ(buffer(ix+1:string_length), '(i10)') w0
+!      ELSE IF (INDEX(buffer, 'ctau') .GT. 0) THEN
+!        ix = INDEX(buffer, "=")
+!        READ(buffer(ix+1:string_length), '(i10)') ctau
+
+!      ELSE IF (INDEX(buffer, 'lambda0') .GT. 0) THEN
+!        ix = INDEX(buffer, "=")
+!        READ(buffer(ix+1:string_length), '(i10)') lambda0
+!      ELSE IF (INDEX(buffer, 'E0') .GT. 0) THEN
+!        ix = INDEX(buffer, "=")
+!        READ(buffer(ix+1:string_length), '(i10)') E0
+!      END IF
+!    END DO
+!    RETURN
+!  END SUBROUTINE read_laser_from_file
 
 
   ! ______________________________________________________________________________________
@@ -1330,6 +1343,53 @@ MODULE control_file
     RETURN
   END SUBROUTINE read_temporal_output_section
 
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Initialization Laser (and antenna) section.
+  !> @author
+  !> Imen Zemzemi
+  !> @date
+  !> Creation 2019
+  ! ______________________________________________________________________________________
+
+ SUBROUTINE read_laser_direct
+    INTEGER :: ix = 0
+    LOGICAL(lp)  :: end_section = .FALSE.
+    ! READS GRID SECTION OF INPUT FILE
+    DO WHILE((.NOT. end_section) .AND. (ios==0))
+      READ(fh_input, '(A)', iostat=ios) buffer
+      !WRITE(0, *), TRIM(ADJUSTL(buffer))
+      IF (INDEX(buffer, '#') .GT. 0) THEN
+        CYCLE
+      ENDIF
+      IF (INDEX(buffer, 'E0') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') E0
+      ELSE IF (INDEX(buffer, 'waist') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') waist
+      ELSE IF (INDEX(buffer, 'ctau') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') ctau
+      ELSE IF (INDEX(buffer, 'z0') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') z0
+      ELSE IF (INDEX(buffer, 'zf') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') zf
+      ELSE IF (INDEX(buffer, 'lambda0') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') lambda0
+      ELSE IF (INDEX(buffer, 'theta_pol') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') theta_pol
+      ELSEIF (INDEX(buffer, 'cep_phase') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), *) cep_phase
+      ENDIF
+   END DO
+   RETURN
+ END SUBROUTINE read_laser_direct
   ! ______________________________________________________________________________________
   !> @brief
   !> Initialization Laser (and antenna) section.

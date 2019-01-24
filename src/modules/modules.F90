@@ -438,6 +438,28 @@ MODULE fields
   REAL(num)                        :: electromagn_energy_total
 END MODULE fields
 
+
+! ________________________________________________________________________________________
+!> @brief
+!> Module containing the laser parameters for direct method 
+! ________________________________________________________________________________________
+
+MODULE laser_util
+  USE PICSAR_precision
+  REAL (num) :: E0
+  REAL (num) :: waist
+  REAL (num) :: ctau
+  REAL (num) :: z0
+  REAL (num) :: zf
+  REAL (num) :: lambda0
+  REAL (num) :: theta_pol
+  REAL (num) :: cep_phase
+  COMPLEX (cpx), POINTER, DIMENSION(:, :) :: Er_laser
+  COMPLEX (cpx), POINTER, DIMENSION(:, :) :: Et_laser
+
+
+
+END MODULE laser_util
 ! ________________________________________________________________________________________
 !> @brief
 !> Module containing the current/charge tile data structure.
