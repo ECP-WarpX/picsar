@@ -92,7 +92,7 @@ USE picsar_precision, ONLY: idp, num, isp
   integer, intent(IN) :: norderx, nordery, norderz
 
   integer :: j,k,l
-
+  
 #ifndef WARPX
   !$OMP PARALLEL DEFAULT(NONE) PRIVATE(l, k, j, i), &
   !$OMP SHARED(norderx, nordery, norderz), &
@@ -100,16 +100,25 @@ USE picsar_precision, ONLY: idp, num, isp
   !$OMP SHARED(ex, ey, ez, bx, by, bz, jx, jy, jz)
   !$OMP DO COLLAPSE(3)
 #endif
+
+! --- Push Ex
+
 !$acc parallel deviceptr(Ex,Bz,By,jx)
 !$acc loop gang vector collapse(3)
   do l     = xlo(3), xhi(3)
+    ! Adjust max loop on stencil to ensure that one stays within array bounds 
+    ! even when stencil order would cause loop to extend beyond them.
+    izmax = MIN(MIN(norderz/2, exhi(3)-l), l+xlo(3)-exlo(3))
     do k   = xlo(2), xhi(2)
+      ! Adjust max loop on stencil to ensure that one stays within array bounds 
+      ! even when stencil order would cause loop to extend beyond them.
+      iymax = MIN(MIN(nordery/2, exhi(2)-k), k+xlo(2)-exlo(2))
       do j = xlo(1), xhi(1)
         Ex(j,k,l) = Ex(j,k,l) - mudt * Jx(j,k,l)
-        do i = 1, MIN(MIN(nordery/2, exhi(2)-k), k+xlo(2)-exlo(2))
+        do i = 1, iymin
           Ex(j,k,l) = Ex(j,k,l) + dtsdy(i) * (Bz(j,k+i,l) - Bz(j,k-i,l))
         end do
-        do i = 1, MIN(MIN(norderz/2, exhi(3)-l), l+xlo(3)-exlo(3))
+        do i = 1, izmax
           Ex(j,k,l) = Ex(j,k,l) - dtsdz(i) * (By(j,k,l+i) - By(j,k,l-i))
         end do
       end do
@@ -121,16 +130,25 @@ USE picsar_precision, ONLY: idp, num, isp
   !$OMP END DO
   !$OMP DO COLLAPSE(3)
 #endif
+
+! --- Push Ey
+
 !$acc parallel deviceptr(Ey,Bz,Bx,jy)
 !$acc loop gang vector collapse(3)
   do l     = ylo(3), yhi(3)
+    ! Adjust max loop on stencil to ensure that one stays within array bounds 
+    ! even when stencil order would cause loop to extend beyond them.
+    izmax = MIN(MIN(norderz/2, eyhi(3)-l), l+ylo(3)-eylo(3))
     do k   = ylo(2), yhi(2)
       do j = ylo(1), yhi(1)
+        ! Adjust max loop on stencil to ensure that one stays within array bounds 
+        ! even when stencil order would cause loop to extend beyond them.
+        ixmax = MIN(MIN(norderx/2, eyhi(1)-j), j+ylo(1)-eylo(1))
         Ey(j,k,l) = Ey(j,k,l) - mudt * Jy(j,k,l)
-        do i = 1, MIN(MIN(norderx/2, eyhi(1)-j), j+ylo(1)-eylo(1))
+        do i = 1, ixmax
           Ey(j,k,l) = Ey(j,k,l) - dtsdx(i) * (Bz(j+i,k,l) - Bz(j-i,k,l))
         end do
-        do i = 1, MIN(MIN(norderz/2, eyhi(3)-l), l+ylo(3)-eylo(3))
+        do i = 1, izmax
           Ey(j,k,l) = Ey(j,k,l) + dtsdz(i) * (Bx(j,k,l+i) - Bx(j,k,l-i))
         end do
       end do
@@ -142,16 +160,25 @@ USE picsar_precision, ONLY: idp, num, isp
   !$OMP END DO
   !$OMP DO COLLAPSE(3)
 #endif
+
+! --- Push Ez
+
 !$acc parallel deviceptr(Ez,By,Bx,jz)
 !$acc loop gang vector collapse(3)
   do l     = zlo(3), zhi(3)
     do k   = zlo(2), zhi(2)
+      ! Adjust max loop on stencil to ensure that one stays within array bounds 
+      ! even when stencil order would cause loop to extend beyond them.
+      iymax = MIN(MIN(nordery/2, exhi(2)-k), k+xlo(2)-exlo(2))
       do j = zlo(1), zhi(1)
+        ! Adjust max loop on stencil to ensure that one stays within array bounds 
+        ! even when stencil order would cause loop to extend beyond them.
+        ixmax = MIN(MIN(norderx/2, exhi(1)-j), j+xlo(1)-exlo(1))
         Ez(j,k,l) = Ez(j,k,l) - mudt * Jz(j,k,l)
-        do i = 1, MIN(MIN(norderx/2, exhi(1)-j), j+xlo(1)-exlo(1))
+        do i = 1, ixmax
           Ez(j,k,l) = Ez(j,k,l) + dtsdx(i) * (By(j+i,k,l) - By(j-i,k,l))
         end do
-        do i = 1, MIN(MIN(nordery/2, exhi(2)-k), k+xlo(2)-exlo(2))
+        do i = 1, iymax
           Ez(j,k,l) = Ez(j,k,l) - dtsdy(i) * (Bx(j,k+i,l) - Bx(j,k-i,l))
         end do
       end do
@@ -215,7 +242,7 @@ USE picsar_precision, ONLY: idp, num, isp
 
   real(num), intent(IN) :: dtsdx(norderx/2),dtsdy(nordery/2),dtsdz(norderz/2)
 
-  integer :: j,k,l
+  integer :: j,k,l,ixmax,iymax,izmax
 
 #ifndef WARPX
   !$OMP PARALLEL DEFAULT(NONE) PRIVATE(l, k, j, i), &
@@ -227,12 +254,18 @@ USE picsar_precision, ONLY: idp, num, isp
 !$acc parallel deviceptr(Bx,Ez,Ey)
 !$acc loop gang vector collapse(3)
   do l     = xlo(3), xhi(3)
+    ! Adjust max loop on stencil to ensure that one stays within array bounds 
+    ! even when stencil order would cause loop to extend beyond them.
+    izmax = MIN(MIN(norderz/2, exhi(3)-l), l+xlo(3)-exlo(3))
     do k   = xlo(2), xhi(2)
+      ! Adjust max loop on stencil to ensure that one stays within array bounds 
+      ! even when stencil order would cause loop to extend beyond them.
+      iymax = MIN(MIN(nordery/2, exhi(2)-k), k+xlo(2)-exlo(2))
       do j = xlo(1), xhi(1)
-        do i = 1, MIN(MIN(nordery/2, exhi(2)-k), k+xlo(2)-exlo(2))
+        do i = 1, iymax
           Bx(j,k,l) = Bx(j,k,l) - dtsdy(i) * (Ez(j,k+i,l) - Ez(j,k-i,l))
         end do
-        do i = 1, MIN(MIN(norderz/2, exhi(3)-l), l+xlo(3)-exlo(3))
+        do i = 1, izmax
           Bx(j,k,l) = Bx(j,k,l) + dtsdz(i) * (Ey(j,k,l+i) - Ey(j,k,l-i))
         end do
       end do
@@ -247,12 +280,18 @@ USE picsar_precision, ONLY: idp, num, isp
 !$acc parallel deviceptr(By,Ez,Ex)
 !$acc loop gang vector collapse(3)
   do l     = ylo(3), yhi(3)
+    ! Adjust max loop on stencil to ensure that one stays within array bounds 
+    ! even when stencil order would cause loop to extend beyond them.
+    izmax = MIN(MIN(norderz/2, exhi(3)-l), l+xlo(3)-exlo(3))
     do k   = ylo(2), yhi(2)
       do j = ylo(1), yhi(1)
-        do i = 1, MIN(MIN(norderx/2, exhi(1)-j), j+xlo(1)-exlo(1))
+        ! Adjust max loop on stencil to ensure that one stays within array bounds 
+        ! even when stencil order would cause loop to extend beyond them.
+        ixmax = MIN(MIN(norderx/2, exhi(1)-j), j+xlo(1)-exlo(1))
+        do i = 1, ixmax
           By(j,k,l) = By(j,k,l) + dtsdx(i) * (Ez(j+i,k,l) - Ez(j-i,k,l))
         end do
-        do i = 1, MIN(MIN(norderz/2, exhi(3)-l), l+xlo(3)-exlo(3))
+        do i = 1, izmax
           By(j,k,l) = By(j,k,l) - dtsdz(i) * (Ex(j,k,l+i) - Ex(j,k,l-i))
         end do
       end do
@@ -268,11 +307,17 @@ USE picsar_precision, ONLY: idp, num, isp
 !$acc loop gang vector collapse(3)
   do l     = zlo(3), zhi(3)
     do k   = zlo(2), zhi(2)
+      ! Adjust max loop on stencil to ensure that one stays within array bounds 
+      ! even when stencil order would cause loop to extend beyond them.
+      iymax = MIN(MIN(nordery/2, exhi(2)-k), k+xlo(2)-exlo(2))
       do j = zlo(1), zhi(1)
-        do i = 1, MIN(MIN(norderx/2, exhi(1)-j), j+xlo(1)-exlo(1))
+        ! Adjust max loop on stencil to ensure that one stays within array bounds 
+        ! even when stencil order would cause loop to extend beyond them.
+        ixmax = MIN(MIN(norderx/2, exhi(1)-j), j+xlo(1)-exlo(1))
+        do i = 1, ixmax
           Bz(j,k,l) = Bz(j,k,l) - dtsdx(i) * (Ey(j+i,k,l) - Ey(j-i,k,l))
         end do
-        do i = 1, MIN(MIN(nordery/2, exhi(2)-k), k+xlo(2)-exlo(2))
+        do i = 1, iymax 
           Bz(j,k,l) = Bz(j,k,l) + dtsdy(i) * (Ex(j,k+i,l) - Ex(j,k-i,l))
         end do
       end do
