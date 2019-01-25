@@ -100,6 +100,7 @@ MODULE control_file
     g_spectral = .FALSE.! (no spectral sovler by default)
     l_staggered = .TRUE.! (staggered scheme by default )
     l_AM_rz = .FALSE. ! (cartesian geometry by default )
+    nmodes = 2
 #if defined(FFTW)
     nb_group_x = 1
     nb_group_y = 1
@@ -456,6 +457,7 @@ MODULE control_file
     INTEGER :: ix = 0
     ! --- OPENS INPUT FILE
     OPEN(fh_input, file='input_file.pixr')
+    WRITE (0,*) "reading variables"
     DO WHILE(ios==0)
       READ(fh_input, '(A)', iostat=ios) buffer
       ix=INDEX(buffer, 'section::')
@@ -828,6 +830,7 @@ MODULE control_file
     INTEGER :: ix = 0
     LOGICAL(lp)  :: end_section = .FALSE.
     ! READS GRID SECTION OF INPUT FILE
+    write (0,*) "read MAIN MAIN MAIN MAIN MAIN"
     DO WHILE((.NOT. end_section) .AND. (ios==0))
       READ(fh_input, '(A)', iostat=ios) buffer
       !WRITE(0, *), TRIM(ADJUSTL(buffer))
@@ -841,6 +844,7 @@ MODULE control_file
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') nx_global_grid
         nx_global=nx_global_grid-1
+        WRITE (*,*) "NX_GLOB= ", nx_global_grid
       ELSE IF (INDEX(buffer, 'ny') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') ny_global_grid
@@ -848,6 +852,9 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'nz') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') nz_global_grid
+      ELSE IF (INDEX(buffer, 'nmodes') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') nmodes
         nz_global=nz_global_grid-1
       ELSE IF (INDEX(buffer, 'ntilex') .GT. 0) THEN
         ix = INDEX(buffer, "=")

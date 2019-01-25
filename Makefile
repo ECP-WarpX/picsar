@@ -471,7 +471,6 @@ build:$(SRCDIR)/modules/modules.o \
 	mv $(APPNAME) $(BINDIR)
 else ifeq ($(MODE),$(filter $(MODE),prod_spectral debug_spectral))
 build:$(SRCDIR)/modules/modules.o \
-        $(HANKEL_FILE) \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fastfft.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/GPSTD.o \
 	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
@@ -506,6 +505,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/init_kspace_3D.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fourier_psaotd.o \
+        $(HANKEL_FILE) \
 	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \

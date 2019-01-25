@@ -84,6 +84,9 @@ PROGRAM main
   CALL default_init
 
 ! --- reads input_file
+  IF (rank .EQ. 0) THEN
+    WRITE (0,*) "BURRRRK"
+  END IF
   CALL read_input_file
 
 #if (defined(VTUNE) || defined(SDE) || defined(DFP) || defined(ALLINEA))

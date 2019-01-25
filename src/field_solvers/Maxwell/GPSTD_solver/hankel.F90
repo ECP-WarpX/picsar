@@ -488,4 +488,108 @@ SUBROUTINE get_Hfields_inv()
 
 END SUBROUTINE get_Hfields_inv
 
+
+  SUBROUTINE fft_backward_c2c_local_AM_rz(nfftx,nffty,nfftz)
+    USE PICSAR_precision
+    USE fastfft
+    USE fields, ONLY : el_c, er_c, et_c, bl_c, br_c, bt_c, jl_c, jr_c, jt_c,rho_c,   &
+                       rhoold_c
+    USE fields, ONLY : el_h_inv, em_h_inv, ep_h_inv, bl_h_inv, bp_h_inv, bm_h_inv
+    ! jl_h_inv, jp_h_inv, jm_h_inv, rho_h_inv,   &
+    !                   rhoold_h_inv
+
+    USE fourier, ONLY: plan_rz_f_inv
+    USE mpi
+    USE params, ONLY: it
+    USE picsar_precision, ONLY: idp, num
+    USE time_stat, ONLY: timestat_itstart, localtimes
+    REAL(num)   :: tmptime
+    INTEGER(idp), INTENT(IN)     :: nfftx,nffty,nfftz
+    COMPLEX(cpx), dimension(:,:,:), allocatable :: er_h_inv, et_h_inv, br_h_inv,bt_h_inv
+    COMPLEX (cpx) :: ii
+
+    ii = DCMPLX(0._num,1._num)
+
+    ALLOCATE (er_h_inv(nfftx,nffty,nfftz))
+    ALLOCATE (et_h_inv(nfftx,nffty,nfftz))
+    ALLOCATE (br_h_inv(nfftx,nffty,nfftz))
+    ALLOCATE (bt_h_inv(nfftx,nffty,nfftz))
+
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
+
+    CALL get_Hfields_inv()
+
+    er_h_inv = em_h_inv+ep_h_inv
+    et_h_inv = ep_h_inv-em_h_inv
+    br_h_inv = bm_h_inv+bp_h_inv
+    bt_h_inv = bp_h_inv-bm_h_inv
+
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, el_h_inv, el_c,plan_rz_f_inv)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, er_h_inv, er_c,plan_rz_f_inv)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, et_h_inv, et_c,plan_rz_f_inv)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, bl_h_inv, bl_c,plan_rz_f_inv)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, br_h_inv, br_c,plan_rz_f_inv)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, bt_h_inv, bt_c,plan_rz_f_inv)
+
+    et_c = ii*et_c
+    bt_c = ii*bt_c
+
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
+    ENDIF
+
+    DEALLOCATE (er_h_inv)
+    DEALLOCATE (et_h_inv)
+    DEALLOCATE (br_h_inv)
+    DEALLOCATE (bt_h_inv)
+
+  END SUBROUTINE fft_backward_c2c_local_AM_rz
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine computes backward C2R local FFTs only in one direction the longitudinal one
+  !>  - concerns only the local 
+  !> pseudo-spectral solver
+  !
+  !> @author
+  !> Imen Zemzemi
+  !
+  !> @date
+  !> Creation 2018
+  ! ______________________________________________________________________________________
+
+  SUBROUTINE get_fields_AM_rz()
+    USE fastfft
+    USE fields, ONLY:  nxguards, nyguards
+    USE mpi
+    USE params, ONLY: it
+    USE picsar_precision, ONLY: idp, num
+    USE shared_data, ONLY:  ny, nx, nmodes
+    USE time_stat, ONLY: timestat_itstart, localtimes
+    IMPLICIT NONE
+    REAL(num) :: tmptime
+    INTEGER(idp) :: nfftx, nffty, nfftz
+#if defined(LIBRARY)
+    nfftx=nx+2*nxguards+1
+    nffty=ny+2*nyguards+1
+#else
+    nfftx=nx+2*nxguards
+    nffty=ny+2*nyguards
+#endif
+    nfftz=nmodes
+    ! Get Inverse Fourier transform C2C of all fields components 
+    CALL fft_backward_c2c_local_AM_rz(nfftx,nffty,nfftz)
+
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
+
+#if defined (LIBRARY)
+     CALL copy_field_backward_AM_rz
+#endif
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
+    ENDIF
+  END SUBROUTINE get_fields_AM_rz
 END MODULE Hankel
