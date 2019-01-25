@@ -2004,7 +2004,7 @@ MODULE fourier_psaotd
 
 !> Init matrix blocks for psatd
     CALL init_gpstd()
-    IF(rank==0) WRITE(0, *) 'INIT GPSTD MATRIX DONE'
+    IF(rank==0) WRITE(0, *) 'INIT GPSTD MATRIX DONE RZ'
 
     CALL fast_fftw_create_plan_1d_3darray_dft(nopenmp, nfftx,nffty,nfftz,el_c,el_f,  &
           plan_rz_f, INT(FFTW_MEASURE, idp), INT(FFTW_FORWARD, idp))
@@ -2012,7 +2012,7 @@ MODULE fourier_psaotd
     CALL fast_fftw_create_plan_1d_3darray_dft(nopenmp, nfftx, nffty, nfftz,el_f,el_c,  &
           plan_rz_f_inv, INT(FFTW_MEASURE,idp), INT(FFTW_BACKWARD,idp))
 
-    IF(rank==0) WRITE(0, *) 'INIT GPSTD PLANS DONE'
+    IF(rank==0) WRITE(0, *) 'INIT GPSTD PLANS DONE RZ'
 
   END SUBROUTINE init_plans_blocks_rz
 

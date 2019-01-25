@@ -1164,6 +1164,18 @@ MODULE output_data!#do not parse
   INTEGER(KIND=4) :: c_output_by = 0
   !> Activation of the Bz magnetic field output
   INTEGER(KIND=4) :: c_output_bz = 0
+  !> Activation of the Er electric field output
+  INTEGER(KIND=4) :: c_output_er = 0
+  !> Activation of the El electric field output
+  INTEGER(KIND=4) :: c_output_el = 0
+  !> Activation of the Et electric field output
+  INTEGER(KIND=4) :: c_output_et = 0
+  !> Activation of the Br magnetic field output
+  INTEGER(KIND=4) :: c_output_br = 0
+  !> Activation of the Bl magnetic field output
+  INTEGER(KIND=4) :: c_output_bl = 0
+  !> Activation of the Bt magnetic field output
+  INTEGER(KIND=4) :: c_output_bt = 0
   !> Activation of the Jx current field output
   INTEGER(KIND=4) :: c_output_jx = 0
   !> Activation of the Jy current field output
@@ -1192,6 +1204,18 @@ MODULE output_data!#do not parse
   CHARACTER(LEN=string_length) :: fileby   ='by'
   !> File name for the Bz magnetic field output
   CHARACTER(LEN=string_length) :: filebz   ='bz'
+  !> File name for the Er electric field output
+  CHARACTER(LEN=string_length) :: fileer   ='er'
+  !> File name for the El electric field output
+  CHARACTER(LEN=string_length) :: fileel   ='el'
+  !> File name for the Et electric field output
+  CHARACTER(LEN=string_length) :: fileet   ='et'
+  !> File name for the Br magnetic field output
+  CHARACTER(LEN=string_length) :: filebr   ='br'
+  !> File name for the Bl magnetic field output
+  CHARACTER(LEN=string_length) :: filebl   ='bl'
+  !> File name for the Bt magnetic field output
+  CHARACTER(LEN=string_length) :: filebt   ='bt'
   !> File name for the Jx current output
   CHARACTER(LEN=string_length) :: filejx   ='jx'
   !> File name for the Jy current output

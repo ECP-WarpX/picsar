@@ -68,7 +68,8 @@ MODULE simple_io
       c_output_rho, filejx, c_output_divj, filedive, fileby, output_step_max,        &
       c_output_jx, c_output_bx, fileey, output_frequency, c_output_jz, c_output_bz,  &
       c_output_by, filebx, c_output_ez, fileex, c_output_ey, filejz, fileez,         &
-      filedivb
+      filedivb, c_output_er, c_output_el, c_output_et, c_output_br, c_output_bl,     &
+      c_output_bt, filebr, filebl, filebt, fileer, fileel, fileet 
     USE params, ONLY: it
     USE picsar_precision, ONLY: num
     USE shared_data, ONLY: rho, nz, ny, divj, nx, xmin, zmin, nx_global, ny_global,  &
@@ -94,6 +95,50 @@ MODULE simple_io
       (MOD(it-output_step_min, output_frequency) .EQ. 0)) THEN
       !!! --- Write output to disk
       !! -- Write grid quantities
+      IF (c_output_er .EQ. 1) THEN
+        ! - Write current density er
+        IF (rank.eq.0) WRITE(0, *) "Write electric field er"
+        CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileer))//       &
+        TRIM(ADJUSTL(strtemp))//'.pxr', abs(er), xmin, xmax, ymin, ymax, zmin, zmax,       &
+        nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global, nz_global)
+      ENDIF
+      IF (c_output_el .EQ. 1) THEN
+        ! - Write current density er
+        IF (rank.eq.0) WRITE(0, *) "Write electric field el"
+        CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileel))//       &
+        TRIM(ADJUSTL(strtemp))//'.pxr', abs(el), xmin, xmax, ymin, ymax, zmin, zmax,       &
+        nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global, nz_global)
+      ENDIF
+      IF (c_output_et .EQ. 1) THEN
+        ! - Write current density er
+        IF (rank.eq.0) WRITE(0, *) "Write electric field et"
+        CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileet))//       &
+        TRIM(ADJUSTL(strtemp))//'.pxr', abs(et), xmin, xmax, ymin, ymax, zmin, zmax,       &
+        nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global, nz_global)
+      ENDIF
+      IF (c_output_br .EQ. 1) THEN
+        ! - Write current density er
+        IF (rank.eq.0) WRITE(0, *) "Write electric field br"
+        CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebr))//       &
+        TRIM(ADJUSTL(strtemp))//'.pxr', abs(br), xmin, xmax, ymin, ymax, zmin, zmax,       &
+        nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global, nz_global)
+      ENDIF
+      IF (c_output_bt .EQ. 1) THEN
+        ! - Write current density er
+        IF (rank.eq.0) WRITE(0, *) "Write electric field bt"
+        CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebt))//       &
+        TRIM(ADJUSTL(strtemp))//'.pxr', abs(bt), xmin, xmax, ymin, ymax, zmin, zmax,       &
+        nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global, nz_global)
+      ENDIF
+      IF (c_output_bl .EQ. 1) THEN
+        ! - Write current density er
+        IF (rank.eq.0) WRITE(0, *) "Write electric field bl"
+        CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebl))//       &
+        TRIM(ADJUSTL(strtemp))//'.pxr', abs(bl), xmin, xmax, ymin, ymax, zmin, zmax,       &
+        nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global, nz_global)
+      ENDIF
+
+
       IF (c_output_ex .EQ. 1) THEN
         ! - Write current density ex
 
@@ -498,7 +543,7 @@ SUBROUTINE write_3d_field_array_to_file(filename, array, xmin2, xmax2, ymin2, ym
   REAL(num), INTENT(IN)                     :: xmin2, xmax2, ymin2, ymax2, zmin2,     &
   zmax2
   REAL(num), DIMENSION(-nxg:nx_local+nxg, -nyg:ny_local+nyg, -nzg:nz_local+nzg),      &
-  INTENT(IN OUT) :: array
+  INTENT(IN) :: array
   INTEGER(KIND=MPI_OFFSET_KIND)             :: offset
   INTEGER(isp)                              :: err
 
@@ -552,7 +597,7 @@ SUBROUTINE write_single_array_to_file(filename, array, nxg, nyg, nzg, nx_local, 
   INTEGER(idp), INTENT(IN)                  :: nxg, nyg, nzg
   INTEGER(idp), INTENT(IN)                  :: nx_local, ny_local, nz_local
   REAL(num), DIMENSION(-nxg:nx_local+nxg, -nyg:ny_local+nyg, -nzg:nz_local+nzg),      &
-  INTENT(IN OUT) :: array
+  INTENT(IN) :: array
   INTEGER(KIND=MPI_OFFSET_KIND), INTENT(IN) :: offset
   INTEGER(isp), INTENT(INOUT)               :: err
   INTEGER(isp)                              :: subt, suba, fh

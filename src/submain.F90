@@ -850,7 +850,11 @@ SUBROUTINE initall
 #if defined(FFTW)
   ! -Init Fourier
   IF (l_spectral) THEN
-    CALL init_plans_blocks
+    IF (l_AM_rz) THEN 
+      CALL init_plans_blocks_rz
+    ELSE
+      CALL init_plans_blocks
+    END IF
   ENDIF
 #endif
   ! - Estimate tile size

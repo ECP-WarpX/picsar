@@ -1259,6 +1259,24 @@ MODULE control_file
       ELSE IF (INDEX(buffer, 'bz') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') c_output_bz
+      ELSEIF (INDEX(buffer, 'er') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') c_output_er
+      ELSE IF (INDEX(buffer, 'el') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') c_output_el
+      ELSE IF (INDEX(buffer, 'et') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') c_output_et
+      ELSEIF (INDEX(buffer, 'br') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') c_output_br
+      ELSE IF (INDEX(buffer, 'bl') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') c_output_bl
+      ELSE IF (INDEX(buffer, 'bt') .GT. 0) THEN
+        ix = INDEX(buffer, "=")
+        READ(buffer(ix+1:string_length), '(i10)') c_output_bt
       ELSEIF (INDEX(buffer, 'jx') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') c_output_jx
