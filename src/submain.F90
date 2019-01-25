@@ -629,7 +629,11 @@ SUBROUTINE initall
   !!! --- Set time step/ it
   IF (c_dim.eq.3) THEN
     IF (l_spectral) THEN
-      dt=MIN(dx, dy, dz)/clight
+      IF (l_AM_rz) THEN
+        dt=MIN(dx, dy)/clight
+      ELSE
+        dt=MIN(dx, dy, dz)/clight
+      ENDIF
     ELSE
       dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
     ENDIF
