@@ -136,7 +136,8 @@ SUBROUTINE hankel_matrix_init(nfftr,imode,p,rmax,invM)
   !> the considered mode imode and the order of hankel transform p
   !> Very important!! : p should be in {m-1, m, m+1}
   USE shared_data, ONLY : dx
-  INTEGER (idp), intent(in) :: nfftr, imode, p 
+  INTEGER (idp), intent(in) :: imode, p 
+  INTEGER (idp), intent(in) :: nfftr
   REAL (num), intent(in) :: rmax
   REAL (num), dimension(:,:),intent(inout):: invM
   REAL (num) :: PI  = 4 * atan (1.0_8)
@@ -316,19 +317,19 @@ subroutine rmat_svd_lapack ( m, n, a, u, s, v )
   use picsar_precision
   implicit none
 
-  integer ( idp ), intent(in):: m
-  integer ( idp ), intent (in) :: n
+  integer ( isp ), intent(in):: m
+  integer ( isp ), intent (in) :: n
 
   real ( num ), dimension (:,:), intent(in) ::  a(m,n)
   real ( num ), dimension (:,:):: a_copy(m,n)
-  integer ( idp ) ::i
-  integer ( idp ) ::info
-  integer ( idp ) ::lda
-  integer ( idp ) ::ldu
-  integer ( idp ) ::ldv
+  integer ( isp ) ::i
+  integer ( isp ) ::info
+  integer ( isp ) ::lda
+  integer ( isp ) ::ldu
+  integer ( isp ) ::ldv
   character ::jobu
   character ::jobv
-  integer ( idp ) ::lwork
+  integer ( isp ) ::lwork
   real ( num ), dimension (:) :: sdiag(min(m,n))
   real ( num ), dimension (:,:), intent(out) ::  s(m,n)
   real ( num ), dimension (:,:), intent(out) ::  u(m,m)
@@ -437,8 +438,8 @@ subroutine pseudo_inverse ( m, n, u, s, v, a_pseudo )
   use picsar_precision
   implicit none
 
-  integer ( idp ), intent(in):: m
-  integer ( idp ) , intent (in) ::n
+  integer ( isp ), intent(in):: m
+  integer ( isp ) , intent (in) ::n
 
   real ( num ), dimension (:,:), intent (out) :: a_pseudo(n,m)
   integer ( idp ) :: i
@@ -469,12 +470,18 @@ SUBROUTINE Hankel_M_and_invM(imode)
   !REAL(num), dimension(:,:,:), allocatable, intent (inout) :: invM_tot, Ma_tot
   !REAL(num), dimension(:,:), allocatable :: invM , Ma
   INTEGER (idp), INTENT (IN) :: imode
-  INTEGER (idp) :: p,nfftr 
+  INTEGER (idp) :: p
+  INTEGER (idp)  :: nfftr 
   real ( num ), allocatable, dimension ( :, : ) :: a
   real ( num ), allocatable, dimension ( :, : ) :: a_pseudo
   real ( num ), allocatable, dimension ( :, : ) :: s
   real ( num ), allocatable, dimension ( :, : ) :: u
-  real ( num ), allocatable, dimension ( :, : ) :: v 
+  real ( num ), allocatable, dimension ( :, : ) :: v
+  real ( num ), allocatable, dimension ( :, : ) :: a1
+  real ( num ), allocatable, dimension ( :, : ) :: a_pseudo1
+  real ( num ), allocatable, dimension ( :, : ) :: s1
+  real ( num ), allocatable, dimension ( :, : ) :: u1
+  real ( num ), allocatable, dimension ( :, : ) :: v1
 #if defined(LIBRARY)
    nfftr = nx+2*nxguards+1
 #else
@@ -491,6 +498,13 @@ SUBROUTINE Hankel_M_and_invM(imode)
   allocate ( s(1:nfftr-1,1:nfftr) )
  ! allocate ( s2(1:m,1:n) )
   allocate ( v(1:nfftr,1:nfftr) )
+  allocate ( a1(1:nfftr-1,1:nfftr) )
+  allocate ( a_pseudo1(1:nfftr,1:nfftr-1) )
+  allocate ( u1(1:nfftr-1,1:nfftr) )
+ ! allocate ( u2(1:m,1:m) )
+  allocate ( s1(1:nfftr-1,1:nfftr) )
+ ! allocate ( s2(1:m,1:n) )
+  allocate ( v1(1:nfftr,1:nfftr) )
   !ALLOCATE (invM_tot(nfftr,nfftr,nmodes))
   !ALLOCATE (Ma_tot(nfftr,nfftr,nmodes))
   !ALLOCATE (Ma(nfftr,nfftr))
@@ -505,8 +519,8 @@ SUBROUTINE Hankel_M_and_invM(imode)
         CALL hankel_matrix_init(nfftr,imode,p,xmax,invM)
         IF (imode .NE. 0) THEN
           a(1:nfftr-1,1:nfftr)= invM(2:nfftr,1:nfftr)
-          call rmat_svd_lapack ( (nfftr-1), nfftr, a, u, s, v )
-          call pseudo_inverse ( (nfftr-1), nfftr, u, s, v, a_pseudo )
+          call rmat_svd_lapack ( INT((nfftr-1),isp), INT(nfftr,isp), a, u, s, v )
+          call pseudo_inverse ( INT((nfftr-1),isp), INT(nfftr,isp), u, s, v, a_pseudo )
           Ma(1:nfftr,2:nfftr)= a_pseudo(1:nfftr,1:nfftr-1)
           Ma(:,1)=0.
           write (*,*) "pseudo"
@@ -516,10 +530,10 @@ SUBROUTINE Hankel_M_and_invM(imode)
       CASE(1)
         IF (imode .NE. 0) THEN
           CALL hankel_matrix_init(nfftr,imode,p,xmax,invM1)
-          a(1:nfftr-1,1:nfftr)= invM1(2:nfftr,1:nfftr)
-          call rmat_svd_lapack ( (nfftr-1), nfftr, a, u, s, v )
-          call pseudo_inverse ( (nfftr-1), nfftr, u, s, v, a_pseudo )
-          Ma1(1:nfftr,2:nfftr)= a_pseudo(1:nfftr,1:nfftr-1)
+          a1(1:nfftr-1,1:nfftr)= invM1(2:nfftr,1:nfftr)
+          call rmat_svd_lapack ( INT((nfftr-1),isp), INT(nfftr,isp), a1, u1, s1, v1 )
+          call pseudo_inverse ( INT((nfftr-1),isp), INT(nfftr,isp), u1, s1, v1, a_pseudo1 )
+          Ma1(1:nfftr,2:nfftr)= a_pseudo1(1:nfftr,1:nfftr-1)
           Ma1(:,1)=0.
           write (*,*) "pseudo"
         ELSE
@@ -528,7 +542,7 @@ SUBROUTINE Hankel_M_and_invM(imode)
     END SELECT
   END DO
 
-  DEALLOCATE (a, a_pseudo, u, s, v)
+  DEALLOCATE (a, a_pseudo, u, s, v, a1, a_pseudo1, u1, s1, v1)
 
 !    DO p=imode-1, imode+1
 !      CALL hankel_matrix_init(nfftr,imode,p,xmax,invM_1)
