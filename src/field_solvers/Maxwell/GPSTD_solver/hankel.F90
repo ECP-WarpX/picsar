@@ -35,8 +35,8 @@ FUNCTION inv(A) RESULT(Ainv)
   real(num), dimension(size(A,1),size(A,2)) :: Ainv
 
   real(num), dimension(size(A,1)) :: work  ! work array for LAPACK
-  integer, dimension(size(A,1)) :: ipiv   ! pivot indices
-  integer  :: n, info
+  integer(isp), dimension(size(A,1)) :: ipiv   ! pivot indices
+  integer(isp)  :: n, info
 
   ! External procedures defined in LAPACK
   external DGETRF
@@ -45,7 +45,7 @@ FUNCTION inv(A) RESULT(Ainv)
   ! Store A in Ainv to prevent it from being overwritten by LAPACK
   Ainv = A
   n = size(A,1)
-
+  write (*,*) "n =", n
   write(*,*) "DGETRF"
   ! DGETRF computes an LU factorization of a general M-by-N matrix A
   ! using partial pivoting with row interchanges.
@@ -213,7 +213,7 @@ SUBROUTINE hankel_matrix_init(nfftr,imode,p,rmax,invM)
     else
       Call jyndd ( p_denom, alphas(i), bjn(i),djn(i),fjn(i),byn(i),dyn(i),fyn(i) )
     endif
-    write (*,*), "alpha",alphas(i), "bjn", bjn(i)
+    !write (*,*), "alpha",alphas(i), "bjn", bjn(i)
   end do
   Do i=1, nfftr
     denom(i)= PI*rmax**2*bjn(i)**2
@@ -221,7 +221,8 @@ SUBROUTINE hankel_matrix_init(nfftr,imode,p,rmax,invM)
   end do
   ! work has stopped here
   Do k=1, nfftr
-    r(k)= (k-1)*dr+0.5_num
+    !r(k)= (k-1)*dr+0.5_num
+    r(k)= dr*((k-1)+0.5_num)
     !write (*,*), "r", r(k)
   End do
   Do i =1,nfftr
@@ -232,11 +233,11 @@ SUBROUTINE hankel_matrix_init(nfftr,imode,p,rmax,invM)
   end do
   Do i=1, nfftr
     Do j=1, nfftr
-      if (y(i,j) .eq. 0.) then
-        numer(i,j)=0.
-      else
-        Call jyndd ( p, y(i,j), numer(i,j), jn_d(i,j), jn_f(i,j),yn(i,j),yn_d(i,j),yn_f(i,j) )
-      end if
+      !if (y(i,j) .eq. 0.) then
+      !  numer(i,j)=0.
+      !else
+      Call jyndd ( p, y(i,j), numer(i,j), jn_d(i,j), jn_f(i,j),yn(i,j),yn_d(i,j),yn_f(i,j) )
+      !end if
       !write (*,*), "y",y(i,j), "numer", numer(i,j)
     end do
   end do
@@ -262,47 +263,308 @@ SUBROUTINE hankel_matrix_init(nfftr,imode,p,rmax,invM)
 !      WRITE(*,*) invM(i,j)
 !    end do
 !  end do
-  DEALLOCATE (x,r, nu, alphas, bjn, djn, fjn, byn, dyn, fyn, denom, denom1,)
+  DEALLOCATE (x,r, nu, alphas, bjn, djn, fjn, byn, dyn, fyn, denom, denom1)
   DEALLOCATE (y,numer,jn_d,jn_f,yn,yn_d,yn_f)
   DEALLOCATE (rj1,ry0, ry1)
 END SUBROUTINE hankel_matrix_init                          
 ! end of subroutine init matrix
 ! this should be a new subroutine
 
+subroutine rmat_svd_lapack ( m, n, a, u, s, v )
+
+!*****************************************************************************80
+!
+!! R8MAT_SVD_LAPACK gets the SVD of a matrix using a call to LAPACK.
+!
+!  Discussion:
+!
+!    The singular value decomposition of a real MxN matrix A has the form:
+!
+!      A = U * S * V'
+!
+!    where
+!
+!      U is MxM orthogonal,
+!      S is MxN, and entirely zero except for the diagonal;
+!      V is NxN orthogonal.
+!
+!    Moreover, the nonzero entries of S are positive, and appear
+!    in order, from largest magnitude to smallest.
+!
+!    This routine calls the LAPACK routine DGESVD to compute the
+!    factorization.
+!
+!  Licensing:
+!
+!    This code is distributed under the GNU LGPL license.
+!
+!  Modified:
+!
+!    08 February 2007
+!
+!  Author:
+!
+!    John Burkardt
+!
+!  Parameters:
+!
+!    Input, integer ( kind = 4 ) M, N, the number of rows and columns
+!    in the matrix A.
+!
+!    Input, real ( kind = 8 ) A(M,N), the matrix whose singular value
+!    decomposition we are investigating.
+  use picsar_precision
+  implicit none
+
+  integer ( idp ), intent(in):: m
+  integer ( idp ), intent (in) :: n
+
+  real ( num ), dimension (:,:), intent(in) ::  a(m,n)
+  real ( num ), dimension (:,:):: a_copy(m,n)
+  integer ( idp ) ::i
+  integer ( idp ) ::info
+  integer ( idp ) ::lda
+  integer ( idp ) ::ldu
+  integer ( idp ) ::ldv
+  character ::jobu
+  character ::jobv
+  integer ( idp ) ::lwork
+  real ( num ), dimension (:) :: sdiag(min(m,n))
+  real ( num ), dimension (:,:), intent(out) ::  s(m,n)
+  real ( num ), dimension (:,:), intent(out) ::  u(m,m)
+  real ( num ), dimension (:,:), intent(out) ::  v(n,n)
+  real ( num ), allocatable, dimension ( : ) :: work
+
+  lwork = max ( 3 * min ( m, n ) + max ( m, n ), 5 * min ( m, n ) )
+
+  allocate ( work(1:lwork) )
+!
+!  Compute the eigenvalues and eigenvectors.
+!
+  jobu = 'A'
+  jobv = 'A'
+  lda = m
+  ldu = m
+  ldv = n
+!
+!  The input matrix is destroyed by the routine.  Since we need to keep
+!  it around, we only pass a copy to the routine.
+!
+  a_copy(1:m,1:n) = a(1:m,1:n)
+
+  call dgesvd ( jobu, jobv, m, n, a_copy, lda, sdiag, u, ldu, v, ldv, work, &
+    lwork, info )
+
+  if ( info /= 0 ) then
+    write ( *, '(a)' ) ' '
+    write ( *, '(a)' ) 'R8MAT_SVD_LAPACK - Failure!'
+    write ( *, '(a)' ) '  The SVD could not be calculated.'
+    write ( *, '(a)' ) '  LAPACK routine DGESVD returned a nonzero'
+    write ( *, '(a,i8)' ) '  value of the error flag, INFO = ', info
+    return
+  end if
+!
+!  Make the MxN matrix S from the diagonal values in SDIAG.
+!
+  s(1:m,1:n) = 0.0D+00
+  do i = 1, min ( m, n )
+    s(i,i) = sdiag(i)
+  end do
+!
+!  Transpose V.
+!
+  v = transpose ( v )
+
+  deallocate ( work )
+
+  return
+end subroutine rmat_svd_lapack
+
  
-SUBROUTINE Hankel_M_and_invM()
+subroutine pseudo_inverse ( m, n, u, s, v, a_pseudo )
+
+!*****************************************************************************80
+!
+!! PSEUDO_INVERSE computes the pseudoinverse.
+!
+!  Discussion:
+!
+!    Given the singular value decomposition of a real MxN matrix A:
+!
+!      A = U * S * V'
+!
+!    where
+!
+!      U is MxM orthogonal,
+!      S is MxN, and entirely zero except for the diagonal;
+!      V is NxN orthogonal.
+!
+!    the pseudo inverse is the NxM matrix A+ with the form
+!
+!      A+ = V * S+ * U'
+
+!    where
+!
+!      S+ is the NxM matrix whose nonzero diagonal elements are
+!      the inverses of the corresponding diagonal elements of S.
+!
+!  Licensing:
+!
+!    This code is distributed under the GNU LGPL license.
+!
+!  Modified:
+!
+!    13 September 2006
+!
+!  Author:
+!
+!    John Burkardt
+!
+!  Parameters:
+!
+!    Input, integer ( kind = 4 ) M, N, the number of rows and columns
+!    in the matrix A.
+!
+!    Input, real ( kind = 8 ) A(M,N), the matrix whose singular value
+!    decomposition we are investigating.
+!
+!    Input, real ( kind = 8 ) U(M,M), S(M,N), V(N,N), the factors
+!    that form the singular value decomposition of A.
+!
+!    Output, real ( kind = 8 ) A_PSEUDO(N,M), the pseudo_inverse of A.
+!
+
+  use picsar_precision
+  implicit none
+
+  integer ( idp ), intent(in):: m
+  integer ( idp ) , intent (in) ::n
+
+  real ( num ), dimension (:,:), intent (out) :: a_pseudo(n,m)
+  integer ( idp ) :: i
+  real ( num ), dimension (:,:), intent (in):: s(m,n)
+  real ( num ) , dimension (:,:)::sp(n,m)
+  real ( num ), dimension (:,:), intent (in):: u(m,m)
+  real ( num ), dimension (:,:), intent (in):: v(n,n)
+
+  sp(1:n,1:m) = 0.0D+00
+  do i = 1, min ( m, n )
+    if ( s(i,i) /= 0.0D+00 ) then
+      sp(i,i) = 1.0D+00 / s(i,i)
+    end if
+  end do
+  a_pseudo(1:n,1:m) = matmul ( v(1:n,1:n), &
+    matmul ( sp(1:n,1:m), transpose ( u(1:m,1:m) ) ) )
+
+  return
+end subroutine pseudo_inverse
+
+
+
+SUBROUTINE Hankel_M_and_invM(imode)
   USE PICSAR_precision
   USE fields , ONLY : Ma, Ma_1, Ma1, invM, invM_1, invM1
   USE shared_data, ONLY: dx, nx, nmodes, xmax
   USE fields, ONLY : nxguards
   !REAL(num), dimension(:,:,:), allocatable, intent (inout) :: invM_tot, Ma_tot
   !REAL(num), dimension(:,:), allocatable :: invM , Ma
-  INTEGER (idp) :: imode,p,nfftr  
+  INTEGER (idp), INTENT (IN) :: imode
+  INTEGER (idp) :: p,nfftr 
+  real ( num ), allocatable, dimension ( :, : ) :: a
+  real ( num ), allocatable, dimension ( :, : ) :: a_pseudo
+  real ( num ), allocatable, dimension ( :, : ) :: s
+  real ( num ), allocatable, dimension ( :, : ) :: u
+  real ( num ), allocatable, dimension ( :, : ) :: v 
 #if defined(LIBRARY)
    nfftr = nx+2*nxguards+1
 #else
    !> When using picsar
    nfftr = nx+2*nxguards
+   write (*,*) "using picsar"
 #endif
   
+
+  allocate ( a(1:nfftr-1,1:nfftr) )
+  allocate ( a_pseudo(1:nfftr,1:nfftr-1) )
+  allocate ( u(1:nfftr-1,1:nfftr) )
+ ! allocate ( u2(1:m,1:m) )
+  allocate ( s(1:nfftr-1,1:nfftr) )
+ ! allocate ( s2(1:m,1:n) )
+  allocate ( v(1:nfftr,1:nfftr) )
   !ALLOCATE (invM_tot(nfftr,nfftr,nmodes))
   !ALLOCATE (Ma_tot(nfftr,nfftr,nmodes))
   !ALLOCATE (Ma(nfftr,nfftr))
   !ALLOCATE (invM(nfftr,nfftr))
-  DO imode=1, nmodes 
-    DO p=imode-1, imode+1
-      CALL hankel_matrix_init(nfftr,imode,p,xmax,invM_1)
-      CALL hankel_matrix_init(nfftr,imode,p,xmax,invM)
-      CALL hankel_matrix_init(nfftr,imode,p,xmax,invM1)
-    END DO
-    Ma=inv(invM)
-    Ma_1 =inv(invM_1)
-    Ma1 = inv(invM1)
+  !DO imode=0, nmodes-1 
+  DO p=imode-1, imode+1
+    SELECT CASE(p-imode)
+      CASE(-1)
+        CALL hankel_matrix_init(nfftr,imode,p,xmax,invM_1)
+        Ma_1 =inv(invM_1)
+      CASE(0)
+        CALL hankel_matrix_init(nfftr,imode,p,xmax,invM)
+        IF (imode .NE. 0) THEN
+          a(1:nfftr-1,1:nfftr)= invM(2:nfftr,1:nfftr)
+          call rmat_svd_lapack ( (nfftr-1), nfftr, a, u, s, v )
+          call pseudo_inverse ( (nfftr-1), nfftr, u, s, v, a_pseudo )
+          Ma(1:nfftr,2:nfftr)= a_pseudo(1:nfftr,1:nfftr-1)
+          Ma(:,1)=0.
+          write (*,*) "pseudo"
+        ELSE
+          Ma=inv(invM)
+        END IF 
+      CASE(1)
+        IF (imode .NE. 0) THEN
+          CALL hankel_matrix_init(nfftr,imode,p,xmax,invM1)
+          a(1:nfftr-1,1:nfftr)= invM1(2:nfftr,1:nfftr)
+          call rmat_svd_lapack ( (nfftr-1), nfftr, a, u, s, v )
+          call pseudo_inverse ( (nfftr-1), nfftr, u, s, v, a_pseudo )
+          Ma1(1:nfftr,2:nfftr)= a_pseudo(1:nfftr,1:nfftr-1)
+          Ma1(:,1)=0.
+          write (*,*) "pseudo"
+        ELSE
+          Ma=inv(invM)
+        END IF
+    END SELECT
+  END DO
+
+  DEALLOCATE (a, a_pseudo, u, s, v)
+
+!    DO p=imode-1, imode+1
+!      CALL hankel_matrix_init(nfftr,imode,p,xmax,invM_1)
+!      CALL hankel_matrix_init(nfftr,imode,p,xmax,invM)
+!      CALL hankel_matrix_init(nfftr,imode,p,xmax,invM1)
+!    END DO
+!    write(*,*) "doing inv"
+
+!  if ((imode .ne. 0) .and. (p .ne. (imode-1))) then
+!    a(1:nfftr-1,1:nfftr)= invM(2:nfftr,1:nfftr)
+!    call rmat_svd_lapack ( (nfftr-1), nfftr, a, u, s, v )
+!    call pseudo_inverse ( (nfftr-1), nfftr, u, s, v, a_pseudo )
+!    Ma(1:nfftr,2:nfftr)= a_pseudo(1:nfftr,1:nfftr-1)
+!    Ma(:,1)=0.
+!    write (*,*) "pseudo"
+!  else
+!    Ma=inv1(invM)
+!  end if
+!  write(*,*) "Ma"
+!  Do i= 1, nfftr
+!    Do j=1,nfftr
+!      WRITE(*,*) "Ma",  Ma(i,j) , "i=", i, "j=", j
+!    end do
+!  end do
+!  write (*,*) "code stopped here"
+
+
+!    Ma=inv(invM)
+!    write (*,*) "inv done"
+!    Ma_1 =inv(invM_1)
+!    Ma1 = inv(invM1)
     !invM_tot(:,:,imode)=invM
     !Ma_tot(:,:,imode)= Ma    
     !invM(:,:)=0._num
     !Ma(:,:)=0._num
-  END DO
+ ! END DO
 
 END SUBROUTINE Hankel_M_and_invM
 
@@ -353,9 +615,9 @@ SUBROUTINE get_Hfields()
 #endif
   Call get_Ffields_AM_rz()
   
-  DO imode=1, nmodes
+  DO imode=0, nmodes
     !Ma = Ma_tot(:,:,imode)
-    Call Hankel_M_and_invM()
+    Call Hankel_M_and_invM(imode)
     call cpu_time ( t1 )
     el_h_ptr=>el_h(:,:,imode)
     ep_h_ptr=>ep_h(:,:,imode)
@@ -438,9 +700,9 @@ SUBROUTINE get_Hfields_inv()
 #endif
 
 
-  DO imode=1, nmodes
+  DO imode=0, nmodes-1
    ! Ma = Ma_tot(:,:,imode)
-    Call Hankel_M_and_invM()
+    Call Hankel_M_and_invM(imode)
     call cpu_time ( t1 )
     el_h_ptr=>el_h(:,:,imode)
     ep_h_ptr=>ep_h(:,:,imode)
