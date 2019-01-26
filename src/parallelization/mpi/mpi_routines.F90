@@ -2080,6 +2080,7 @@ IF (l_spectral) THEN
       nkx=(2*nxguards+nx)! Careful in the case of RZ spectral it's Complex To Complex Transform
       nky=(2*nyguards+ny)
       nkz= nmodes
+      write (*,*) "nx= ", nx , "nxguards= ", nxguards, "ny= ", ny, "nmodes= ", nmodes
       IF (.NOT. g_spectral) THEN
       ! - Allocate complex FFT arrays
         ALLOCATE(el_f(nkx, nky, nkz))

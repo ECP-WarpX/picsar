@@ -1226,6 +1226,16 @@ MODULE control_file
     INTEGER :: ix = 0
     LOGICAL(lp)  :: end_section = .FALSE.
     ! READS GRID SECTION OF INPUT FILE
+    write(0,*) "-------"
+    write(0,*) "-------"
+    write(0,*) "-------"
+    write(0,*) "-------"
+    write(0,*) "-------"
+    write(0,*) "-------"
+    write(0,*) "-------"
+    write(0,*) "-------"
+    write(0,*) "-------"
+    write(0,*) "reading output.", ios
     DO WHILE((.NOT. end_section) .AND. (ios==0))
       READ(fh_input, '(A)', iostat=ios) buffer
       !WRITE(0, *), TRIM(ADJUSTL(buffer))
@@ -1234,7 +1244,9 @@ MODULE control_file
       ENDIF
       IF (INDEX(buffer, 'output_frequency') .GT. 0) THEN
         ix = INDEX(buffer, "=")
+        WRITE (0,*) "FREQUENCY"
         READ(buffer(ix+1:string_length), '(i10)') output_frequency
+        WRITE (0,*) "FREQUENCY = ", output_frequency
       ELSE IF (INDEX(buffer, 'output_step_min') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), '(i10)') output_step_min

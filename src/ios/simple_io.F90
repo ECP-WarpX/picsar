@@ -89,13 +89,17 @@ MODULE simple_io
     ENDIF
 
     WRITE(strtemp, '(I5)') it
+    write (0,*) "er out put3", output_frequency
     IF (output_frequency .GE. 1) THEN
       tmptime2 = MPI_WTIME()
+      write (0,*) "er out put2"
       IF ((it .GE. output_step_min) .AND. (it .LE. output_step_max) .AND.             &
       (MOD(it-output_step_min, output_frequency) .EQ. 0)) THEN
       !!! --- Write output to disk
       !! -- Write grid quantities
+      write (0,*) "er out put1"
       IF (c_output_er .EQ. 1) THEN
+        write (0,*) "er out put"
         ! - Write current density er
         IF (rank.eq.0) WRITE(0, *) "Write electric field er"
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileer))//       &
