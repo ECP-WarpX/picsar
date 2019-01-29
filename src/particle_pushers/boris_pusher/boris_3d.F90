@@ -1093,10 +1093,14 @@ SUBROUTINE pxr_set_gamma(np, uxp, uyp, uzp, gaminv)
   !DIR$ SIMD
 #endif
 
+!$acc parallel deviceptr(uxp, uyp, uzp, gaminv)
+!$acc loop gang vector
   DO ip=1, np
     usq = (uxp(ip)**2 + uyp(ip)**2+ uzp(ip)**2)*clghtisq
     gaminv(ip) = 1.0_num/sqrt(1.0_num + usq)
   END DO
+!$acc end loop
+!$acc end parallel
 
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC

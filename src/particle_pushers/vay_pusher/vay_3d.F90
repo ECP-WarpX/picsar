@@ -97,6 +97,8 @@ SUBROUTINE pxr_ebcancelpush3d(np, uxp, uyp, uzp, gi, ex, ey, ez, bx, by, bz, q, 
     !DIR$ SIMD
 #endif
 #endif
+!$acc parallel deviceptr(uxp, uyp, uzp, gi, ex, ey, ez, bx, by, bz)
+!$acc loop gang vector
     DO ip=1, np
       ! --- get tau
       taux = bconst*bx(ip)
@@ -126,8 +128,9 @@ SUBROUTINE pxr_ebcancelpush3d(np, uxp, uyp, uzp, gi, ex, ey, ez, bx, by, bz, q, 
       uxp(ip) = s*(uxpr+tx*tu+uypr*tz-uzpr*ty)
       uyp(ip) = s*(uypr+ty*tu+uzpr*tx-uxpr*tz)
       uzp(ip) = s*(uzpr+tz*tu+uxpr*ty-uypr*tx)
-
     END DO
+!$acc end loop
+!$acc end parallel
 
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -160,6 +163,8 @@ SUBROUTINE pxr_ebcancelpush3d(np, uxp, uyp, uzp, gi, ex, ey, ez, bx, by, bz, q, 
     !DIR$ SIMD
 #endif
 #endif
+!$acc parallel deviceptr(uxp, uyp, uzp, gi, ex, ey, ez, bx, by, bz)
+!$acc loop gang vector
     DO ip=1, np
       ! --- get new U
       vx = uxp(ip)*gi(ip)
@@ -171,6 +176,8 @@ SUBROUTINE pxr_ebcancelpush3d(np, uxp, uyp, uzp, gi, ex, ey, ez, bx, by, bz, q, 
       gi(ip) =                                                                        &
       1./sqrt(1.+(uxp(ip)*uxp(ip)+uyp(ip)*uyp(ip)+uzp(ip)*uzp(ip))*invclightsq)
     ENDDO
+!$acc end loop
+!$acc end parallel
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
     !$OMP END SIMD
