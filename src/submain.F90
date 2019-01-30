@@ -136,7 +136,11 @@ USE sorting
         !IF (rank .EQ. 0) PRINT *, "#4"
         !!! --- Deposit current of particle species on the grid
         !WRITE(0, *), 'Depose currents'
-        CALL pxrdepose_currents_on_grid_jxjyjz
+        IF (.not. l_AM_rz) then
+            CALL pxrdepose_currents_on_grid_jxjyjz
+        ELSE
+            CALL pxrdepose_currents_on_grid_jrjtjl
+        END IF
         !IF (rank .EQ. 0) PRINT *, "#5"
         !!! --- Boundary conditions for currents
         !WRITE(0, *), 'Current_bcs'
