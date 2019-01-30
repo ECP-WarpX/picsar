@@ -59,10 +59,11 @@ MODULE mpi_derived_types!#do not parse
   ! ______________________________________________________________________________________
   FUNCTION create_current_grid_derived_type()
     INTEGER(isp) :: create_current_grid_derived_type
-
+    write (*,*) "create_current_grid_derived_type"
     create_current_grid_derived_type = create_grid_derived_type(mpidbl, nx, ny, nz,   &
     nx_global_grid_min, ny_global_grid_min, nz_global_grid_min)
-
+    write (*,*) "nx =", nx, "ny=", ny, "nz=", nz, "nx_global_grid_min =", nx_global_grid_min
+    write (*,*) "ny_global_grid_min", ny_global_grid_min , "nz_global_grid_min", nz_global_grid_min
   END FUNCTION create_current_grid_derived_type
 
   ! ______________________________________________________________________________________
@@ -80,10 +81,11 @@ MODULE mpi_derived_types!#do not parse
     INTEGER(isp) :: create_current_grid_subarray
     INTEGER(idp), INTENT(IN) :: ngx, ngy, ngz
     INTEGER(idp) :: nxloc, nyloc, nzloc
+    write (*,*) "create_current_grid_subarray"
     nxloc=nx+1
     nyloc=ny+1
     nzloc=nz+1
-
+    write (*,*) "ngx =", ngx, "ngy =" , ngy, "ngz =", ngz, " nxloc= ",  nxloc, " nyloc= ",  nyloc,  "nzloc= ",  nzloc
     create_current_grid_subarray = create_grid_subarray(mpidbl, ngx, ngy, ngz, nxloc, &
     nyloc, nzloc)
   END FUNCTION create_current_grid_subarray

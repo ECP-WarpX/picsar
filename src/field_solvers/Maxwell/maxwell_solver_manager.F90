@@ -493,6 +493,7 @@ END SUBROUTINE push_efield_2d
   ELSE
     IF (l_AM_rz) THEN
       CALL get_Hfields ! - local FFT in RZ --PS: it's complex to complex
+      write (*,*) "getHfield"
     ELSE 
       CALL get_Ffields! - local FFT
     ENDIF
@@ -502,6 +503,7 @@ END SUBROUTINE push_efield_2d
       tmptime_m = MPI_WTIME()
     ENDIF
     CALL multiply_mat_vector(nmatrixes)
+    write (*,*) "multiply mat vector"
     IF (it.ge.timestat_itstart) THEN
       localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime_m)
     ENDIF
@@ -511,6 +513,7 @@ END SUBROUTINE push_efield_2d
         CALL push_psaotd_ebfielfs_3d! - PUSH PSATD
       ELSE IF (l_AM_rz) THEN 
         CALL push_psaotd_ebfielfs_AM_rz !- push psatd in azimuthal cylindrical
+        write (*,*) "push_psaotd AM"
       END IF 
     ELSE IF(c_dim == 2) THEN
       CALL push_psaotd_ebfielfs_2d
@@ -526,6 +529,7 @@ END SUBROUTINE push_efield_2d
   ELSE
     IF (l_AM_rz) THEN 
      CALL get_fields_AM_rz! local IFFT in RZ --PS: it's complex to complex
+     write (*,*) "getfield_AM "
     ELSE
       CALL get_fields! local IFFT
     ENDIF 

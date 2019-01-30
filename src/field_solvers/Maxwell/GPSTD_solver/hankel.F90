@@ -109,8 +109,8 @@ COMPLEX(cpx) :: ii
 
 ii=DCMPLX(0._num,1_num)
 #ifdef _OPENMP
- write(*,*)"Will use: ", omp_get_num_procs(), " of ", &
-            omp_get_max_threads(), " available"
+ !write(*,*)"Will use: ", omp_get_num_procs(), " of ", &
+ !           omp_get_max_threads(), " available"
 #endif
 M= nfftr
 N=M
@@ -629,7 +629,7 @@ SUBROUTINE get_Hfields()
 #endif
   Call get_Ffields_AM_rz()
   
-  DO imode=0, nmodes
+  DO imode=0, nmodes-1
     !Ma = Ma_tot(:,:,imode)
     Call Hankel_M_and_invM(imode)
     call cpu_time ( t1 )

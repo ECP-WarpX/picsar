@@ -73,7 +73,7 @@ MODULE simple_io
     USE params, ONLY: it
     USE picsar_precision, ONLY: num
     USE shared_data, ONLY: rho, nz, ny, divj, nx, xmin, zmin, nx_global, ny_global,  &
-      ymin, divb, ymax, dx, nz_global, zmax, dy, rank, xmax, dive, dz
+      ymin, divb, ymax, dx, nz_global, zmax, dy, rank, xmax, dive, dz, nmodes
     USE time_stat, ONLY: timestat_itstart, localtimes
     IMPLICIT NONE
 
@@ -104,42 +104,42 @@ MODULE simple_io
         IF (rank.eq.0) WRITE(0, *) "Write electric field er"
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileer))//       &
         TRIM(ADJUSTL(strtemp))//'.pxr', abs(er), xmin, xmax, ymin, ymax, zmin, zmax,       &
-        nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global, nz_global)
+        nxguards, nyguards, nzguards, nx, ny, nmodes, nx_global, ny_global, nmodes)
       ENDIF
       IF (c_output_el .EQ. 1) THEN
         ! - Write current density er
         IF (rank.eq.0) WRITE(0, *) "Write electric field el"
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileel))//       &
         TRIM(ADJUSTL(strtemp))//'.pxr', abs(el), xmin, xmax, ymin, ymax, zmin, zmax,       &
-        nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global, nz_global)
+        nxguards, nyguards, nzguards, nx, ny, nmodes, nx_global, ny_global, nmodes)
       ENDIF
       IF (c_output_et .EQ. 1) THEN
         ! - Write current density er
         IF (rank.eq.0) WRITE(0, *) "Write electric field et"
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileet))//       &
         TRIM(ADJUSTL(strtemp))//'.pxr', abs(et), xmin, xmax, ymin, ymax, zmin, zmax,       &
-        nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global, nz_global)
+        nxguards, nyguards, nzguards, nx, ny, nmodes, nx_global, ny_global, nmodes)
       ENDIF
       IF (c_output_br .EQ. 1) THEN
         ! - Write current density er
         IF (rank.eq.0) WRITE(0, *) "Write electric field br"
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebr))//       &
         TRIM(ADJUSTL(strtemp))//'.pxr', abs(br), xmin, xmax, ymin, ymax, zmin, zmax,       &
-        nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global, nz_global)
+        nxguards, nyguards, nzguards, nx, ny, nmodes+1, nx_global, ny_global, nmodes+1)
       ENDIF
       IF (c_output_bt .EQ. 1) THEN
         ! - Write current density er
         IF (rank.eq.0) WRITE(0, *) "Write electric field bt"
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebt))//       &
         TRIM(ADJUSTL(strtemp))//'.pxr', abs(bt), xmin, xmax, ymin, ymax, zmin, zmax,       &
-        nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global, nz_global)
+        nxguards, nyguards, nzguards, nx, ny, nmodes+1, nx_global, ny_global, nmodes+1)
       ENDIF
       IF (c_output_bl .EQ. 1) THEN
         ! - Write current density er
         IF (rank.eq.0) WRITE(0, *) "Write electric field bl"
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebl))//       &
         TRIM(ADJUSTL(strtemp))//'.pxr', abs(bl), xmin, xmax, ymin, ymax, zmin, zmax,       &
-        nxguards, nyguards, nzguards, nx, ny, nz, nx_global, ny_global, nz_global)
+        nxguards, nyguards, nzguards, nx, ny, nmodes+1, nx_global, ny_global, nmodes+1)
       ENDIF
 
 
@@ -536,6 +536,7 @@ END SUBROUTINE output_temporal_diagnostics
 !> @param[in] nz_global2 global size in z
 !
 ! ________________________________________________________________________________________
+
 SUBROUTINE write_3d_field_array_to_file(filename, array, xmin2, xmax2, ymin2, ymax2,  &
   zmin2, zmax2, nxg, nyg, nzg, nx_local, ny_local, nz_local, nx_global2, ny_global2,    &
   nz_global2)
@@ -556,7 +557,11 @@ SUBROUTINE write_3d_field_array_to_file(filename, array, xmin2, xmax2, ymin2, ym
     open(unit=42, file=filename, FORM="unformatted", ACCESS='stream')
     write(42) xmin, xmax, INT(nx_global, isp)
     write(42) ymin, ymax, INT(ny_global, isp)
-    write(42) zmin, zmax, INT(nz_global, isp)
+    IF (.NOT. l_AM_rz) THEN
+      write(42) zmin, zmax, INT(nz_global, isp)
+    ELSE
+      write(42) zmin, zmax,  INT(nmodes, isp)
+    END IF
     close(42)
   ENDIF
 
