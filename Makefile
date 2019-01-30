@@ -257,10 +257,10 @@ ifeq ($(COMP),gnu)
 	else ifeq ($(MODE),debug)
 	  FC=mpif90
 	  FARGS= -O3 -fopenmp -g -JModules -Wunused-variable -fcheck=bound -ftree-vectorize
-	else ifeq($(MODE),prod_spectral)
+	else ifeq ($(MODE),prod_spectral)
 	  FC=mpif90
 	  FARGS= -O3 -fopenmp -JModules -ftree-vectorize
-	else ifeq($(MODE),debug_spectral)
+	else ifeq ($(MODE),debug_spectral)
 	  FC=mpif90
 	  FARGS= -O3 -fopenmp -JModules -Wunused-variable -ftree-vectorize
 	else ifeq ($(MODE),dev)
