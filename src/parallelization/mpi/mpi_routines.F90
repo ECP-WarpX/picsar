@@ -2120,6 +2120,7 @@ IF (l_spectral) THEN
         imn=-nxguards; imx=nx+nxguards-1
         jmn=-nyguards;jmx=ny+nyguards-1
         kmn=0;kmx=nmodes-1
+        write (0,*) "imn= ", imn , "imx= ", imx, "jmn= ", jmn, "jmx = ", jmx , "kmn =", kmn, "kmx= ", kmx
         ! - When using absorbing_bcs, merged fields are not allocated in fourier space
         ! - neither ex_r,ey_r ... components
         ! - In this case only splitted fields are allocated  

@@ -65,7 +65,7 @@ USE params, ONLY: dt, nsteps, it
 USE particle_boundary
 USE particle_properties, ONLY: ntot, particle_pusher, l_plasma
 USE picsar_precision, ONLY: idp, num
-USE shared_data, ONLY: rho, nz, ny, rhoold, nx, c_dim, rank
+USE shared_data, ONLY: rho,nmodes, nz, ny, rhoold, nx, c_dim, rank
 USE simple_io
 USE sorting
 
@@ -149,8 +149,8 @@ USE sorting
         CALL push_psatd_ebfield
         !IF (rank .EQ. 0) PRINT *, "#0"
         !!! --- Boundary conditions for E AND B
-        CALL efield_bcs
-        CALL bfield_bcs
+        !CALL efield_bcs
+        !CALL bfield_bcs
         IF(absorbing_bcs) THEN
           CALL field_damping_bcs()
           CALL merge_fields()
@@ -333,17 +333,20 @@ SUBROUTINE laser_gaussian
   USE shared_data , ONLY : nx, ny
   REAL (num)::   zr, w0, phi2_chirp, propagation_dir, k0 ,t0
   REAL (num) :: PI  = 4 * atan (1.0_8)
-  COMPLEX (cpx) :: ii, exp_argument, profile
+  COMPLEX (cpx) :: ii
+  COMPLEX (cpx), dimension (:,:), allocatable :: exp_argument, profile
   INTEGER (idp) ::i, k
   REAL (num) , DIMENSION (:), ALLOCATABLE :: r,z  
  
-  ALLOCATE(r(nx))
-  ALLOCATE (z(ny))
-  Do k=1, nx
-    r(k)= (k-1)*dr+0.5_num
+  ALLOCATE(r(0:nx-1))
+  ALLOCATE (z(0:ny-1))
+  ALLOCATE (exp_argument(0:nx-1,0:ny-1))
+  ALLOCATE (profile (0:nx-1,0:ny-1))
+  Do k=0, nx-1
+    r(k)= dr*(k+0.5_num)
   End do
-   Do k=1, ny
-    z(k)= (k-1)*dy
+   Do k=0, ny-1
+    z(k)= k*dy
   End do
   t=0.
   ii= DCMPLX(0._num, 1_num)
@@ -362,16 +365,26 @@ SUBROUTINE laser_gaussian
         !if zf is None:
         !    zf = z0
   stretch_factor = 1_num - 2._num*ii * phi2_chirp * clight**2 *inv_ctau2
-  DO k=1, ny
+  !write (0,*) "nx laser = ", nx
+  !write (0,*) "ny laser = ", ny
+  DO k=0, ny-1
     diffract_factor = 1._num + ii * prop_dir*(z(k) - zf) * inv_zr
-   DO i=1, nx
-      exp_argument = - ii*cep_phase+ ii*k0*( prop_dir*(z(k) - z0)-clight*t ) &
+     !write (0,*) "entered k loop ", k
+   DO i=0, nx-1
+     !write (0,*) "entered i loop ", i
+      exp_argument(i,k) = - ii*cep_phase+ ii*k0*( prop_dir*(z(k) - z0)-clight*t ) &
       - (r(i)**2) / (w0**2 * diffract_factor) - 1./stretch_factor*inv_ctau2 * ( prop_dir*(z(k)-z0)-clight*t )**2
-     profile = exp(exp_argument) /(diffract_factor * stretch_factor**0.5)
-     Er_laser(i,k) = E0* profile*exp(ii*theta_pol)
-     Et_laser(i,k) = -ii* E0 * profile* exp(ii* theta_pol)
+     !write (*,*) "code stopped here"
+     profile (i,k)= exp(exp_argument(i,k)) /(diffract_factor * stretch_factor**0.5)
+     !write (*,*) "code stopped here 1 ", exp(ii*theta_pol)
+     Er_laser(i,k) = E0* profile(i,k)*exp(ii*theta_pol)
+     !write (*,*) "code stopped here 2 "
+     Et_laser(i,k) = -ii* E0 * profile(i,k)* exp(ii* theta_pol)
+     !write (*,*) "code stopped here 3 "
      er_c(i,k,1) = er_c(i,k,1)+ Er_laser(i,k)
+     !write (*,*) "code stopped here 4 "
      et_c(i,k,1) = et_c(i,k,1)+ Et_laser(i,k)
+     !write (*,*) "code stopped here 5 "
    END DO
   END DO
   !Ex_r = DREAL(Ex)
@@ -379,6 +392,7 @@ SUBROUTINE laser_gaussian
 
   DEALLOCATE (r)
   DEALLOCATE (z)
+  DEALLOCATE (exp_argument, profile)
 END SUBROUTINE laser_gaussian
 ! ________________________________________________________________________________________
 !> @brief
@@ -582,7 +596,7 @@ SUBROUTINE initall
     nx, nz_grid, p3dfft_stride, y_max_local, p3dfft_flag, sorting_shiftx, ymin,      &
     fftw_threads_ok, sorting_dy, y, ymax, z, dx, c_dim, sorting_activated, ny_grid,  &
     sorting_shiftz, x, fftw_mpi_transpose, dy, rank, sorting_shifty, fftw_hybrid,    &
-    sorting_dz, dz
+    sorting_dz, dz, nmodes
   USE tile_params, ONLY: ntilez, ntilex, ntiley
   USE tiling
   USE time_stat, ONLY: timestat_itstart, timestat_activated, nbuffertimestat,        &
@@ -729,10 +743,17 @@ SUBROUTINE initall
 
     WRITE(0, '(" MPI domain decomposition")')
     WRITE(0, *) 'Topology:', topology
-    WRITE(0, '(" Local number of cells:", I5, X, I5, X, I5)') nx, ny, nz
-    WRITE(0, '(" Local number of grid point:", I5, X, I5, X, I5)') nx_grid, ny_grid,  &
-    nz_grid
-    WRITE(0, '(" Guard cells:", I5, X, I5, X, I5)') nxguards, nyguards, nzguards
+    IF (l_AM_rz) THEN 
+      WRITE(0, '(" Local number of cells:", I5, X, I5, X, I5)') nx, ny, nmodes
+      WRITE(0, '(" Local number of grid point:", I5, X, I5, X, I5)') nx_grid, ny_grid,  &
+      nmodes
+      WRITE(0, '(" Guard cells:", I5, X, I5, X, I5)') nxguards, nyguards
+    ELSE 
+      WRITE(0, '(" Local number of cells:", I5, X, I5, X, I5)') nx, ny, nz
+      WRITE(0, '(" Local number of grid point:", I5, X, I5, X, I5)') nx_grid, ny_grid,  &
+      nz_grid
+      WRITE(0, '(" Guard cells:", I5, X, I5, X, I5)') nxguards, nyguards, nzguards
+    END IF 
     WRITE(0, *) ''
     IF(absorbing_bcs_x) THEN
        WRITE(0, '(" Absorbing field bcs X axis, nx_pml =:", I5)')  nx_pml

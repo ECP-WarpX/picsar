@@ -164,3 +164,121 @@ class Field:
       ax.set_xlim([self.xmin,self.xmax])
       ax.set_ylim([self.ymin,self.ymax])      
       ax.set_title('slice at z=%f'%(self.z[index])) 
+
+
+
+class Field_RZ:
+  """
+  Class Field
+  
+  This class enable to manage field outputs from the mini App
+  
+  """
+  def __init__(self,filename):
+
+    with open(filename,'rb') as file:
+      fileContent = file.read()
+
+    l = 0
+    self.xmin = struct.unpack("d", fileContent[l:l+8])[0]; l+=8
+    self.xmax = struct.unpack("d", fileContent[l:l+8])[0]; l+=8
+    self.nx = struct.unpack("i", fileContent[l:l+4])[0]; l+=4
+
+    self.ymin = struct.unpack("d", fileContent[l:l+8])[0]; l+=8
+    self.ymax = struct.unpack("d", fileContent[l:l+8])[0]; l+=8
+    self.ny = struct.unpack("i", fileContent[l:l+4])[0]; l+=4
+
+    self.zmin = struct.unpack("d", fileContent[l:l+8])[0]; l+=8
+    self.zmax = struct.unpack("d", fileContent[l:l+8])[0]; l+=8
+    self.nmodes = struct.unpack("i", fileContent[l:l+4])[0]; l+=4
+
+    print ('Openning of ',filename)
+    print ('xmin: %f, xmax: %f, nx: %d'%(self.xmin,self.xmax,self.nx))
+    print ('ymin: %f, ymax: %f, ny: %d'%(self.ymin,self.ymax,self.ny))
+    print (' nmodes: %d'%(self.nmodes))
+
+    self.x = np.linspace(self.xmin,self.xmax,self.nx, endpoint=False)
+    self.y = np.linspace(self.ymin,self.ymax,self.ny, endpoint=False)
+    self.theta = np.arange(self.nmodes)
+
+    self.dx = self.x[1] - self.x[0]
+    if(self.ny > 1):
+        self.dy = self.y[1] - self.y[0]
+    else:
+        #2d case
+        self.dy = 1
+    self.dz = self.theta[1] - self.theta[0]
+    self.f = np.zeros([self.nmodes,self.ny,self.nx])
+    #self.f = np.zeros([self.ny,self.nx])
+    ncells = self.nx*self.ny*self.nmodes
+    print ('Total number of cells:',ncells)
+    print ('Size of file:',len(fileContent))
+
+    for imode in range(self.nmodes):
+      for iy in range(self.ny):
+	print(imode,iy)
+        for ix in range(self.nx):
+          #print (ix)
+          self.f[imode,iy,ix] = struct.unpack("d", fileContent[l:l+8])[0]; l+=8
+
+ # def plot_3d(self,ax,imslices=[]):
+
+  #  levels = np.linspace(-1, 1, 40)
+
+
+  #  if len(imslices)>0:
+  #    for i in range(len(imslices)):
+  #      imode = imslices[i]
+  #      X, Y = np.meshgrid(self.x, self.y)
+  #      ax.contourf(X,Y,self.theta[imode] + self.f[imode,:,:], zdir='theta')
+
+  #  ax.set_xlim3d(self.xmin, self.xmax)
+  #  ax.set_ylim3d(self.ymin, self.ymax)
+  #  #ax.set_zlim3d(self.zmin, self.zmax)
+
+  def plot(self,fig,ax,slice='mode',imode=1):
+
+
+    #if slice_pos==None:
+    #  index = slice_index
+    #else:
+    #  if slice=='x':
+    #    index = int((slice_pos-self.xmin)/self.dx)
+    #  if slice=='y':
+    #    index = int((slice_pos-self.ymin)/self.dy)
+    #  if slice=='z':
+    #    index = int((slice_pos-self.zmin)/self.dz)
+
+    #  print ('index:',index)
+
+    #if slice=='x':
+ 
+    #  im = ax.pcolormesh(self.y,self.z,self.f[:,:,index])
+    #  ax.set_xlabel('y')
+    #  ax.set_ylabel('z')
+    #  ax.set_title('slice at x=%f'%(self.x[index]))
+    #  ax.set_xlim([self.ymin,self.ymax])
+    #  ax.set_ylim([self.zmin,self.zmax])
+    #  cb = plt.colorbar(im,ax=ax)
+
+    #if slice=='y':
+
+    # im = ax.pcolormesh(self.x,self.z,self.f[:,index,:])
+    #  cb = plt.colorbar(im,ax=ax)
+    #  ax.set_xlabel('x')
+    #  ax.set_ylabel('z')
+    #  ax.set_xlim([self.xmin,self.xmax])
+    #  ax.set_ylim([self.zmin,self.zmax])
+    #  ax.set_title('slice at y=%f'%(self.y[index]))
+
+    if slice=='mode':
+
+      im = ax.pcolormesh(self.x,self.y,self.f[imode,:,:])
+      cb = plt.colorbar(im,ax=ax)
+      ax.set_xlabel('r')
+      ax.set_ylabel('l')
+      ax.set_xlim([self.xmin,self.xmax])
+      ax.set_ylim([self.ymin,self.ymax])
+      ax.set_title('field at mode =%d'%(imode))
+
+
