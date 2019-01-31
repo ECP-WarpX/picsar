@@ -724,9 +724,15 @@ class MiniAppParser( object ):
 
         depos_routines_charge_3d_openmp = [
                         "pxrdepose_rho_on_grid_sub_openmp_3d",\
-                        "pxrdepose_rho_on_grid_sub_openmp_3d_scalar",\
-                        "pxrdepose_rho_on_grid_sub_openmp_3d_vecto",\
                         "pxrdepose_rho_on_grid_sub_openmp_3d_n",\
+                        ]
+
+        depos_routines_charge_3d_openmp_scalar = [
+                        "pxrdepose_rho_on_grid_sub_openmp_3d_scalar",\
+                        ]
+
+        depos_routines_charge_3d_openmp_vector = [
+                        "pxrdepose_rho_on_grid_sub_openmp_3d_vecto",\
                         ]
 
         depos_routines_charge_2d_openmp = [
@@ -1120,17 +1126,21 @@ class MiniAppParser( object ):
 
         # add deposition routines
 
-        if self.flag_optimization == 'on':
-            if self.include_depos_esirkepov:
-                self.list_available_routines += esirkepov_routines_generic_openmp
-            elif self.include_depos_direct:
-                self.list_available_routines += direct_routines_generic_openmp
+        if self.flag_charge == 'on':
+            if self.include_geom_2d:
+                self.list_available_routines += depos_routines_charge_2d_openmp
+            if self.include_geom_3d:
+                self.list_available_routines += depos_routines_charge_3d_openmp
 
+        if self.include_depos_esirkepov:
+            self.list_available_routines += esirkepov_routines_generic_openmp
+        elif self.include_depos_direct:
+            self.list_available_routines += direct_routines_generic_openmp
+
+        if self.flag_optimization == 'on':
             if self.flag_charge == 'on':
-                if self.include_geom_2d:
-                    self.list_available_routines += depos_routines_charge_2d_openmp
-                elif self.include_geom_3d:
-                    self.list_available_routines += depos_routines_charge_3d_openmp
+                if self.include_geom_3d:
+                    self.list_available_routines += depos_routines_charge_3d_openmp_vector
                     if self.include_order_1:
                         self.list_available_routines += depos_vector_routines_charge_3d_o1
                     if self.include_order_2:
@@ -1159,6 +1169,7 @@ class MiniAppParser( object ):
                 if self.include_geom_2d:
                     self.list_available_routines += depos_scalar_routines_charge_2d
                 elif self.include_geom_3d:
+                    self.list_available_routines += depos_routines_charge_3d_openmp_vector
                     if self.include_order_1:
                         self.list_available_routines += depos_scalar_routines_charge_3d_o1
                     if self.include_order_2:
