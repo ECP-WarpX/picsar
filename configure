@@ -6,6 +6,7 @@ It reads the file Makefile_Forthon.in and creates a new file
 Makefile_Forthon, where the MPI libraries and flags have been
 set to the proper values for the current system.
 
+
 Usage
 -----
 In a terminal, type `./configure` and then `make -f Makefile_Forthon`
@@ -119,7 +120,9 @@ fargs = ' " '+fargs+' " '
 if(args.pxr_spectral_hybrid=='True'):
     libdir_list.append(fftw_lib)
     libdir_list.append(p3dfft_lib)
-    libs += ' -lfftw3  -lfftw3_mpi -lfftw3_omp -lp3dfft '
+    libs += ' -lfftw3  -lfftw3_mpi -lfftw3_omp '
+    if(p3dfft_lib != " "):
+      libs+= '  -lp3dfft '
 
 # Read the file Makefile_Forthon.in
 with open('Makefile_Forthon.in') as f:
