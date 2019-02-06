@@ -195,11 +195,14 @@ class Field_RZ:
     print ('Openning of ',filename)
     print ('xmin: %f, xmax: %f, nx: %d'%(self.xmin,self.xmax,self.nx))
     print ('ymin: %f, ymax: %f, ny: %d'%(self.ymin,self.ymax,self.ny))
-    print (' nmodes: %d'%(self.nmodes))
+    print ('zmin: %f, zmax: %f, nmodes: %d'%(self.zmin,self.zmax,self.nmodes))
+
+
+
 
     self.x = np.linspace(self.xmin,self.xmax,self.nx, endpoint=False)
     self.y = np.linspace(self.ymin,self.ymax,self.ny, endpoint=False)
-    self.theta = np.arange(self.nmodes)
+    self.theta = np.linspace(self.zmin,self.zmax,self.nmodes, endpoint=False)
 
     self.dx = self.x[1] - self.x[0]
     if(self.ny > 1):
@@ -207,7 +210,8 @@ class Field_RZ:
     else:
         #2d case
         self.dy = 1
-    self.dz = self.theta[1] - self.theta[0]
+    self.dz = 0.
+    #self.theta[1] - self.theta[0]
     self.f = np.zeros([self.nmodes,self.ny,self.nx])
     #self.f = np.zeros([self.ny,self.nx])
     ncells = self.nx*self.ny*self.nmodes
@@ -216,7 +220,7 @@ class Field_RZ:
 
     for imode in range(self.nmodes):
       for iy in range(self.ny):
-	print(imode,iy)
+#	print(imode,iy)
         for ix in range(self.nx):
           #print (ix)
           self.f[imode,iy,ix] = struct.unpack("d", fileContent[l:l+8])[0]; l+=8
@@ -236,7 +240,7 @@ class Field_RZ:
   #  ax.set_ylim3d(self.ymin, self.ymax)
   #  #ax.set_zlim3d(self.zmin, self.zmax)
 
-  def plot(self,fig,ax,slice='mode',imode=1):
+  def plot(self,fig,ax,slice='mode',imode=0):
 
 
     #if slice_pos==None:

@@ -489,7 +489,7 @@ MODULE control_file
           CALL read_particle_dumps_section
         !CASE('section::laser_from_file')
         !  CALL read_laser_from_file
-        CASE ('section:: laser_direct')
+        CASE ('section::laser_direct')
           CALL read_laser_direct
         END SELECT
       END IF
@@ -1401,25 +1401,25 @@ MODULE control_file
       ENDIF
       IF (INDEX(buffer, 'E0') .GT. 0) THEN
         ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), '(i10)') E0
+        READ(buffer(ix+1:string_length), *) E0
       ELSE IF (INDEX(buffer, 'waist') .GT. 0) THEN
         ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), '(i10)') waist
+        READ(buffer(ix+1:string_length), *) waist
       ELSE IF (INDEX(buffer, 'ctau') .GT. 0) THEN
         ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), '(i10)') ctau
+        READ(buffer(ix+1:string_length), *) ctau
       ELSE IF (INDEX(buffer, 'z0') .GT. 0) THEN
         ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), '(i10)') z0
+        READ(buffer(ix+1:string_length), *) z0
       ELSE IF (INDEX(buffer, 'zf') .GT. 0) THEN
         ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), '(i10)') zf
+        READ(buffer(ix+1:string_length), *) zf
       ELSE IF (INDEX(buffer, 'lambda0') .GT. 0) THEN
         ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), '(i10)') lambda0
+        READ(buffer(ix+1:string_length), *) lambda0
       ELSE IF (INDEX(buffer, 'theta_pol') .GT. 0) THEN
         ix = INDEX(buffer, "=")
-        READ(buffer(ix+1:string_length), '(i10)') theta_pol
+        READ(buffer(ix+1:string_length), *) theta_pol
       ELSEIF (INDEX(buffer, 'cep_phase') .GT. 0) THEN
         ix = INDEX(buffer, "=")
         READ(buffer(ix+1:string_length), *) cep_phase

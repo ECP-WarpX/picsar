@@ -51,8 +51,9 @@
 SUBROUTINE step(nst)
 USE diagnostics
 USE field_boundary
-USE fields, ONLY: l_spectral, l_AM_rz,  nzguards, nxguards, nyguards
+USE fields !, ONLY: l_spectral, l_AM_rz,  nzguards, nxguards, nyguards
 #if defined(FFTW)
+USE Hankel
 USE gpstd_solver
 #endif
 #if defined(FFTW)
@@ -71,7 +72,7 @@ USE sorting
 
 
   IMPLICIT NONE
-  INTEGER(idp) :: nst, i
+  INTEGER(idp) :: nst, i,k, imode,m 
 
   !!! --- This is the main PIC LOOP
   IF (rank .EQ. 0) THEN
@@ -105,9 +106,13 @@ USE sorting
     rho = 0.0_num
     DO i=1, nst
       IF (rank .EQ. 0) startit=MPI_WTIME()
-      IF ((l_AM_rz).AND.(i== 1)) THEN
-        CALL laser_gaussian  
+      IF ((l_AM_rz).AND.(i .eq. 1)) THEN
+        CALL laser_gaussian 
+        write (*,*) "Laser GAUSSIAN" 
       ENDIF
+      do k=0,nx-1     
+        write (0,*) "Max of ERRRRRRRRRRR" , abs(er_c(k,:,:))
+      end do
       !!! --- Init iteration variables
       pushtime=0._num
       divE_computed = .False.
@@ -144,9 +149,55 @@ USE sorting
       ENDIF
 #if defined(FFTW)
       IF (l_spectral) THEN
-
+        IF ((l_AM_rz).AND.(i .eq. 1)) THEN
+          DO imode=1, nmodes 
+            Call Hankel_M_and_invM(imode-1)
+          END DO
+        
+        write (0,*), "Ma =================="
+        DO k=1,nx
+          DO m=1, nx
+            write (0,*) , "k= ", k, "m= ", m, "Ma", Ma(k,m)
+          END DO
+        END DO
+        write (0,*), "Ma_1 =================="
+        DO k=1,nx
+          DO m=1,nx
+            write (0,*) , "k= ", k, "m= ", m, "Ma_1", Ma_1(k,m)
+          END DO
+        END DO
+        write (0,*), "Ma1 =================="
+        DO k=1,nx
+          DO m=1,nx
+            write (0,*) , "k= ", k, "m= ", m, "Ma1", Ma1(k,m)
+          END DO
+        END DO
+        write (0,*), "invM =================="
+        DO k=1,nx
+          DO m=1,nx
+            write (0,*) , "k= ", k, "m= ", m, "invM", invM(k,m)
+          END DO
+        END DO
+        write (0,*), "invM_1 =================="
+        DO k=1,nx
+          DO m=1, nx
+            write (0,*) , "k= ", k, "m= ", m, "invM_1", invM_1(k,m)
+          END DO
+        END DO
+        write (0,*), "invM1 =================="
+        DO k=1,nx
+          DO m=1,nx
+            write (0,*) , "k= ", k, "m= ", m, "invM1", invM1(k,m)
+          END DO
+        END DO
+        END IF
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
+        write (*,*) " START push_psatd_ebfield"
         CALL push_psatd_ebfield
+        write (*,*) "END push_psatd_ebfield"
+        !do k=0,nx-1
+        !  write (*,*) "Max of ER" , abs(er_c(k,:,:))
+        !end do
         !IF (rank .EQ. 0) PRINT *, "#0"
         !!! --- Boundary conditions for E AND B
         !CALL efield_bcs
@@ -181,7 +232,7 @@ USE sorting
 #endif
       !IF (rank .EQ. 0) PRINT *, "#12"
       !!! --- Computes derived quantities
-      CALL calc_diags
+!      CALL calc_diags
       !IF (rank .EQ. 0) PRINT *, "#13"
       !!! --- Output simulation results
       CALL output_routines
@@ -311,7 +362,7 @@ USE sorting
 #endif
 
   !!! --- Output time statistics
-  CALL final_output_time_statistics
+!  CALL final_output_time_statistics
 
 END SUBROUTINE step
 
@@ -330,7 +381,7 @@ SUBROUTINE laser_gaussian
   USE laser_util , ONLY : E0, waist, ctau, z0, zf, lambda0, theta_pol, cep_phase, Er_laser, Et_laser
   USE constants, ONLY: clight, emass
   USE fields, ONLY : er_c, et_c 
-  USE shared_data , ONLY : nx, ny
+  USE shared_data , ONLY : nx, ny, dx, dy
   REAL (num)::   zr, w0, phi2_chirp, propagation_dir, k0 ,t0
   REAL (num) :: PI  = 4 * atan (1.0_8)
   COMPLEX (cpx) :: ii
@@ -343,22 +394,29 @@ SUBROUTINE laser_gaussian
   ALLOCATE (exp_argument(0:nx-1,0:ny-1))
   ALLOCATE (profile (0:nx-1,0:ny-1))
   Do k=0, nx-1
-    r(k)= dr*(k+0.5_num)
+    r(k)= dx*(k+0.5_num)
+    !write (*,*), "rk =", r(k)
   End do
    Do k=0, ny-1
     z(k)= k*dy
+    !write (*,*), "zk =", z(k)
   End do
   t=0.
   ii= DCMPLX(0._num, 1_num)
   k0 = 2*PI/lambda0
+  !write (*,*), "k0 =", k0
   w0= waist
+  !write (*,*), "w0 =", waist
   !E0 = a0*m_e*c**2*k0/e
   zr = 0.5*k0*waist**2
+  !write (*,*), "zr =", zr
   inv_zr = 1./zr 
+  !write (*,*), "inv_zr = ", inv_zr
   theta_pol =0. 
   !E0_x = E0 * cos(theta_pol)
   !E0_y = E0 * sin(theta_pol)
   inv_ctau2 = 1./(ctau)**2
+  !write (*,*), "inv_ctau_2 =", inv_ctau2 
   propagation_dir =1.
   phi2_chirp =0.
   
@@ -367,32 +425,42 @@ SUBROUTINE laser_gaussian
   stretch_factor = 1_num - 2._num*ii * phi2_chirp * clight**2 *inv_ctau2
   !write (0,*) "nx laser = ", nx
   !write (0,*) "ny laser = ", ny
+  !write (0,*) "stretch_factor", stretch_factor
+ 
   DO k=0, ny-1
     diffract_factor = 1._num + ii * prop_dir*(z(k) - zf) * inv_zr
      !write (0,*) "entered k loop ", k
+     !write (0,*) "diffract_factor", diffract_factor
    DO i=0, nx-1
      !write (0,*) "entered i loop ", i
       exp_argument(i,k) = - ii*cep_phase+ ii*k0*( prop_dir*(z(k) - z0)-clight*t ) &
       - (r(i)**2) / (w0**2 * diffract_factor) - 1./stretch_factor*inv_ctau2 * ( prop_dir*(z(k)-z0)-clight*t )**2
-     !write (*,*) "code stopped here"
+     !write (*,*) "exp_argument(i,k)" , exp_argument(i,k)
      profile (i,k)= exp(exp_argument(i,k)) /(diffract_factor * stretch_factor**0.5)
-     !write (*,*) "code stopped here 1 ", exp(ii*theta_pol)
+     !write (*,*) "profile (i,k) ", profile (i,k)
      Er_laser(i,k) = E0* profile(i,k)*exp(ii*theta_pol)
-     !write (*,*) "code stopped here 2 "
+     !write (*,*) "Er_laser(i,k) ", Er_laser(i,k)
      Et_laser(i,k) = -ii* E0 * profile(i,k)* exp(ii* theta_pol)
-     !write (*,*) "code stopped here 3 "
-     er_c(i,k,1) = er_c(i,k,1)+ Er_laser(i,k)
-     !write (*,*) "code stopped here 4 "
-     et_c(i,k,1) = et_c(i,k,1)+ Et_laser(i,k)
-     !write (*,*) "code stopped here 5 "
+     !write (*,*) "Et_laser(i,k) ", Et_laser(i,k) 
+     !er_c(i,k,1) = er_c(i,k,1)+ Er_laser(i,k)
+     er_c(i,k,0) = DCMPLX(i,0_NUM)
+     !write (*,*) "er_c(i,k,1) ", er_c(i,k,1)
+     !et_c(i,k,1) = et_c(i,k,1)+ Et_laser(i,k)
+     !et_c(i,k,1) = DCMPLX(i,0_NUM)
+     !write (*,*) "et_c(i,k,1) " , et_c(i,k,1)
    END DO
   END DO
+  do k=0,nx-1
+    write (0,*), "max value of erC" , ABS(er_c(k,:,:))
+  end do
   !Ex_r = DREAL(Ex)
   !Ey_r = DREAL (Ey)
 
   DEALLOCATE (r)
   DEALLOCATE (z)
   DEALLOCATE (exp_argument, profile)
+
+  !write (*,*) " AFTER DEALLOCATE" , et_c(:,:,1)
 END SUBROUTINE laser_gaussian
 ! ________________________________________________________________________________________
 !> @brief
@@ -574,8 +642,8 @@ END SUBROUTINE init_pml_arrays
 !> Creation 2015
 SUBROUTINE initall
   USE constants, ONLY: eps0, emass, pi, echarge, clight
-  USE fields, ONLY: ez, nox, noy, noz, jz, l_spectral, xcoeffs, bz, nzguards,        &
-    nxguards, nyguards, jy, jx, ex, bx, by, ey
+  USE fields !, ONLY: ez, nox, noy, noz, jz, l_spectral, xcoeffs, bz, nzguards,        &
+!    nxguards, nyguards, jy, jx, ex, bx, by, ey
 #if defined(FFTW)
   USE fourier_psaotd
   USE gpstd_solver
@@ -780,6 +848,8 @@ SUBROUTINE initall
       IF (fftw_hybrid)   WRITE(0, '(" FFTW distributed version")')
       IF (p3dfft_flag)   WRITE(0, '(" USING PDFFT")')
       IF(p3dfft_stride .AND. p3dfft_flag) WRITE(0, '(" USING STRIDED  PDFFT")')
+      write (0,*), "p3dfft_stride   ", p3dfft_stride
+      write (0,*), "p3dfft_flag", p3dfft_flag
       IF(p3dfft_stride .EQV. .FALSE. .AND. p3dfft_flag) WRITE(0, '(" USING UNSTRIDED PDFFT")')
       IF(fftw_hybrid) WRITE(0, '(" nb_groups :", I5, X, I5, X, I5)') nb_group_x,nb_group_y,nb_group_z
       IF(fftw_hybrid) WRITE(0, '(" nb guards groups :", I5, X, I5, X, I5)') nxg_group,nyg_group,nzg_group
@@ -891,6 +961,19 @@ SUBROUTINE initall
   ex=0.0_num;ey=0.0_num;ez=0.0_num
   bx=0.0_num;by=0.0_num;bz=0.0_num
   jx=0.0_num;jy=0.0_num;jz=0.0_num
+  
+  IF (l_AM_rz) THEN
+   er_c=0.0_num;el_c=0.0_num;et_c=0.0_num
+   br_c=0.0_num;bl_c=0.0_num;bt_c=0.0_num
+   jr_c=0.0_num;jl_c=0.0_num;jt_c=0.0_num
+   em_f=0.0_num;el_f=0.0_num;ep_f=0.0_num
+   bm_f=0.0_num;bl_f=0.0_num;bp_f=0.0_num
+   jm_f=0.0_num;jl_f=0.0_num;jp_f=0.0_num
+   em_h_inv=0.0_num;ep_h_inv=0.0_num;el_h_inv=0.0_num
+   bm_h_inv=0.0_num;bp_h_inv=0.0_num;bl_h_inv=0.0_num
+   em_h=0.0_num;el_h=0.0_num;ep_h=0.0_num
+   bm_h=0.0_num;bl_h=0.0_num;bp_h=0.0_num
+  END IF
   IF(absorbing_bcs) THEN
     CALL init_splitted_fields_random()
   ENDIF

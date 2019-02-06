@@ -394,7 +394,7 @@ MODULE math_tools !#do not parse
            IF (NMIN.EQ.0) BJ(0)=1.0D0
            RETURN
         ENDIF
-        IF (X.LE.300.0.OR.N.GT.INT(0.9*X)) THEN
+        IF (X.LE.300.0.OR.N.GT.INT(0.9*X, IDP)) THEN
 !          Backward recurrence for Jn
            IF (N.EQ.0) NM=1
            M=MSTA1(X,200)
@@ -411,7 +411,9 @@ MODULE math_tools !#do not parse
            F=0.0D0
            DO 15 K=M,0,-1
               F=2.0D0*(K+1.0D0)/X*F1-F2
-              IF (K.LE.NM .AND. K.GE.NMIN) BJ(K-NMIN)=F
+              IF (K.LE.NM .AND. K.GE.NMIN) THEN
+                BJ(K-NMIN)=F
+              END IF
               IF (K.EQ.2*INT(K/2).AND.K.NE.0) THEN
                  BS=BS+2.0D0*F
                  SU=SU+(-1)**(K/2)*F/K
@@ -1702,10 +1704,11 @@ MODULE gpstd_solver
 
     ! Introduce fft normalisation factor in mat bloc mult
     CALL select_case_dims_global(nfftx,nffty,nfftz)
-    coeff_norm = 1.0_num/(nfftx*nffty*nfftz)
     !> Here i'm not sure if it shoud be divided by nfftx* nffty or just nffty ....
     IF (l_AM_rz) THEN
       coeff_norm = 1.0_num/nffty
+    ELSE 
+      coeff_norm = 1.0_num/(nfftx*nffty*nfftz)
     ENDIF
     DO i=1,nbloc_ccmat
       DO j=1,nbloc_ccmat

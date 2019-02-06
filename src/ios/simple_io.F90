@@ -89,7 +89,7 @@ MODULE simple_io
     ENDIF
 
     WRITE(strtemp, '(I5)') it
-    write (0,*) "er out put3", output_frequency
+    !write (0,*) "er out put3", output_frequency
     IF (output_frequency .GE. 1) THEN
       tmptime2 = MPI_WTIME()
       write (0,*) "er out put2"
@@ -101,44 +101,44 @@ MODULE simple_io
       IF (c_output_er .EQ. 1) THEN
         write (0,*) "er out put"
         ! - Write current density er
-        IF (rank.eq.0) WRITE(0, *) "Write electric field er"
+        !IF (rank.eq.0) WRITE(0, *) "Write electric field er"
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileer))//       &
-        TRIM(ADJUSTL(strtemp))//'.pxr', abs(er), xmin, xmax, ymin, ymax, zmin, zmax,       &
+        TRIM(ADJUSTL(strtemp))//'.pxr', abs(er_c), xmin, xmax, ymin, ymax, zmin, zmax,       &
         nxguards, nyguards, nzguards, nx, ny, nmodes, nx_global, ny_global, nmodes)
       ENDIF
       IF (c_output_el .EQ. 1) THEN
         ! - Write current density er
-        IF (rank.eq.0) WRITE(0, *) "Write electric field el"
+        !IF (rank.eq.0) WRITE(0, *) "Write electric field el"
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileel))//       &
-        TRIM(ADJUSTL(strtemp))//'.pxr', abs(el), xmin, xmax, ymin, ymax, zmin, zmax,       &
+        TRIM(ADJUSTL(strtemp))//'.pxr', abs(el_c), xmin, xmax, ymin, ymax, zmin, zmax,       &
         nxguards, nyguards, nzguards, nx, ny, nmodes, nx_global, ny_global, nmodes)
       ENDIF
       IF (c_output_et .EQ. 1) THEN
         ! - Write current density er
-        IF (rank.eq.0) WRITE(0, *) "Write electric field et"
+        !IF (rank.eq.0) WRITE(0, *) "Write electric field et"
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileet))//       &
-        TRIM(ADJUSTL(strtemp))//'.pxr', abs(et), xmin, xmax, ymin, ymax, zmin, zmax,       &
+        TRIM(ADJUSTL(strtemp))//'.pxr', abs(et_c), xmin, xmax, ymin, ymax, zmin, zmax,       &
         nxguards, nyguards, nzguards, nx, ny, nmodes, nx_global, ny_global, nmodes)
       ENDIF
       IF (c_output_br .EQ. 1) THEN
         ! - Write current density er
-        IF (rank.eq.0) WRITE(0, *) "Write electric field br"
+        !IF (rank.eq.0) WRITE(0, *) "Write electric field br"
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebr))//       &
-        TRIM(ADJUSTL(strtemp))//'.pxr', abs(br), xmin, xmax, ymin, ymax, zmin, zmax,       &
+        TRIM(ADJUSTL(strtemp))//'.pxr', abs(br_c), xmin, xmax, ymin, ymax, zmin, zmax,       &
         nxguards, nyguards, nzguards, nx, ny, nmodes+1, nx_global, ny_global, nmodes+1)
       ENDIF
       IF (c_output_bt .EQ. 1) THEN
         ! - Write current density er
-        IF (rank.eq.0) WRITE(0, *) "Write electric field bt"
+        !IF (rank.eq.0) WRITE(0, *) "Write electric field bt"
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebt))//       &
-        TRIM(ADJUSTL(strtemp))//'.pxr', abs(bt), xmin, xmax, ymin, ymax, zmin, zmax,       &
+        TRIM(ADJUSTL(strtemp))//'.pxr', abs(bt_c), xmin, xmax, ymin, ymax, zmin, zmax,       &
         nxguards, nyguards, nzguards, nx, ny, nmodes+1, nx_global, ny_global, nmodes+1)
       ENDIF
       IF (c_output_bl .EQ. 1) THEN
         ! - Write current density er
-        IF (rank.eq.0) WRITE(0, *) "Write electric field bl"
+        !IF (rank.eq.0) WRITE(0, *) "Write electric field bl"
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebl))//       &
-        TRIM(ADJUSTL(strtemp))//'.pxr', abs(bl), xmin, xmax, ymin, ymax, zmin, zmax,       &
+        TRIM(ADJUSTL(strtemp))//'.pxr', abs(bl_c), xmin, xmax, ymin, ymax, zmin, zmax,       &
         nxguards, nyguards, nzguards, nx, ny, nmodes+1, nx_global, ny_global, nmodes+1)
       ENDIF
 

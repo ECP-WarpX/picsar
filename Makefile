@@ -25,7 +25,7 @@ COMP=gnu
 # - sde: sde profiling
 # - map: Allinea Map profiling
 # - library: create static and dynamic library
-MODE=prod_spectral
+MODE=debug_spectral
 
 # System (SYS)
 # - cori2
@@ -264,7 +264,7 @@ ifeq ($(COMP),gnu)
 	  FARGS= -O3 -fopenmp -JModules -ftree-vectorize
 	else ifeq($(MODE),debug_spectral)
 	  FC=mpif90
-	  FARGS= -O3 -fopenmp -JModules -Wunused-variable -ftree-vectorize
+	  FARGS= -g -fopenmp -JModules -Wunused-variable -fcheck=bound -ftree-vectorize
 	else ifeq ($(MODE),dev)
 	  FC=mpif90
 	  FARGS= -O3 -D DEV=1 -fopenmp -JModules -ftree-vectorize
@@ -321,7 +321,7 @@ else ifeq ($(COMP),intel)
   endif
 
 endif
-
+FARGS= -g -fopenmp -JModules -Wunused-variable -fcheck=bound -ftree-vectorize
 FARGS+= $(LARCH)
 
 # ________________________________________________________
@@ -333,7 +333,7 @@ FARGS+= $(LARCH)
 # ________________________________________________________
 
 ifeq ($(MODE),$(filter $(MODE),prod_spectral debug_spectral))
-	FARGS += -I$(FFTW3_INCLUDE) -D FFTW=1 
+	FARGS +=   -I$(FFTW3_INCLUDE) -D FFTW=1 
 	LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_threads
 endif
 ifeq ($(IS_P3DFFT),true)

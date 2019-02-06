@@ -1700,8 +1700,8 @@ IF (.NOT. l_axis_allocated) THEN
   ALLOCATE(x_global(-nxguards:nx_global+nxguards))
   ALLOCATE(y_global(-nyguards:ny_global+nyguards))
   IF (l_AM_rz) THEN
-    ALLOCATE (z(0:nmodes-1))
-    ALLOCATE(z_global(0:nmodes-1))
+    ALLOCATE (z(0:nmodes))
+    ALLOCATE(z_global(0:nmodes))
   ELSE
     ALLOCATE(z(-nzguards:nz+nzguards))
     ALLOCATE(z_global(-nzguards:nz_global+nzguards))
@@ -1772,12 +1772,13 @@ INTEGER(idp) :: imn, imx, jmn, jmx, kmn, kmx
 INTEGER(idp) :: nxx, nyy, nzz
 #endif
 ! --- Allocate regular grid quantities (in real space)
-ALLOCATE(ex(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-ALLOCATE(ey(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-ALLOCATE(ez(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-ALLOCATE(bx(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-ALLOCATE(by(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
-ALLOCATE(bz(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+!IF (.NOT. l_AM_rz) THEN
+  ALLOCATE(ex(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+  ALLOCATE(ey(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+  ALLOCATE(ez(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+  ALLOCATE(bx(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+  ALLOCATE(by(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
+  ALLOCATE(bz(-nxguards:nx+nxguards, -nyguards:ny+nyguards, -nzguards:nz+nzguards))
 IF (l_AM_rz) THEN 
   ! --- Allocate regular grid quantities in cylindrical geometry (in Azimutal modes)
   ALLOCATE(el(-nxguards:nx+nxguards, -nyguards:ny+nyguards, 0:nmodes-1))
@@ -1803,13 +1804,14 @@ IF(absorbing_bcs) THEN
   ALLOCATE(bzx(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
   ALLOCATE(bzy(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
 ENDIF
-ALLOCATE(jx(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
--nzjguards:nz+nzjguards))
-ALLOCATE(jy(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
--nzjguards:nz+nzjguards))
-ALLOCATE(jz(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
--nzjguards:nz+nzjguards))
-IF (l_AM_rz) THEN 
+!IF (.NOT. l_AM_rz) THEN
+  ALLOCATE(jx(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
+  -nzjguards:nz+nzjguards))
+  ALLOCATE(jy(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
+  -nzjguards:nz+nzjguards))
+  ALLOCATE(jz(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
+  -nzjguards:nz+nzjguards))
+ IF (l_AM_rz) THEN 
   ALLOCATE(jl(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
   0:nmodes-1))
   ALLOCATE(jr(-nxjguards:nx+nxjguards, -nyjguards:ny+nyjguards,                     &
@@ -2075,12 +2077,12 @@ IF (l_spectral) THEN
         ALLOCATE(rho_r(imn:imx, jmn:jmx, kmn:kmx))
         ALLOCATE(rhoold_r(imn:imx, jmn:jmx, kmn:kmx))
       ENDIF
-     ELSE IF (l_AM_rz) THEN
+    ELSE IF (l_AM_rz) THEN
       !> To be added for rz geometry !!! 
       nkx=(2*nxguards+nx)! Careful in the case of RZ spectral it's Complex To Complex Transform
       nky=(2*nyguards+ny)
       nkz= nmodes
-      write (*,*) "nx= ", nx , "nxguards= ", nxguards, "ny= ", ny, "nmodes= ", nmodes
+      !write (*,*) "nx= ", nx , "nxguards= ", nxguards, "ny= ", ny, "nmodes= ", nmodes
       IF (.NOT. g_spectral) THEN
       ! - Allocate complex FFT arrays
         ALLOCATE(el_f(nkx, nky, nkz))
@@ -2120,7 +2122,7 @@ IF (l_spectral) THEN
         imn=-nxguards; imx=nx+nxguards-1
         jmn=-nyguards;jmx=ny+nyguards-1
         kmn=0;kmx=nmodes-1
-        write (0,*) "imn= ", imn , "imx= ", imx, "jmn= ", jmn, "jmx = ", jmx , "kmn =", kmn, "kmx= ", kmx
+        !write (0,*) "imn= ", imn , "imx= ", imx, "jmn= ", jmn, "jmx = ", jmx , "kmn =", kmn, "kmx= ", kmx
         ! - When using absorbing_bcs, merged fields are not allocated in fourier space
         ! - neither ex_r,ey_r ... components
         ! - In this case only splitted fields are allocated  

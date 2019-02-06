@@ -59,11 +59,11 @@ MODULE mpi_derived_types!#do not parse
   ! ______________________________________________________________________________________
   FUNCTION create_current_grid_derived_type()
     INTEGER(isp) :: create_current_grid_derived_type
-    write (*,*) "create_current_grid_derived_type"
+    !write (*,*) "create_current_grid_derived_type"
     create_current_grid_derived_type = create_grid_derived_type(mpidbl, nx, ny, nz,   &
     nx_global_grid_min, ny_global_grid_min, nz_global_grid_min)
-    write (*,*) "nx =", nx, "ny=", ny, "nz=", nz, "nx_global_grid_min =", nx_global_grid_min
-    write (*,*) "ny_global_grid_min", ny_global_grid_min , "nz_global_grid_min", nz_global_grid_min
+    !write (*,*) "nx =", nx, "ny=", ny, "nz=", nz, "nx_global_grid_min =", nx_global_grid_min
+    !write (*,*) "ny_global_grid_min", ny_global_grid_min , "nz_global_grid_min", nz_global_grid_min
   END FUNCTION create_current_grid_derived_type
 
   ! ______________________________________________________________________________________

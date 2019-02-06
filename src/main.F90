@@ -181,9 +181,14 @@ PROGRAM main
     IF(fftw_with_mpi) THEN
       CALL DFFTW_DESTROY_PLAN(plan_r2c_mpi)
       CALL DFFTW_DESTROY_PLAN(plan_c2r_mpi)
-    ELSE
-      CALL fast_fftw_destroy_plan_dft(plan_r2c)
-      CALL fast_fftw_destroy_plan_dft(plan_c2r)
+    ELSE 
+      IF (.NOT. l_AM_rz) THEN
+        CALL fast_fftw_destroy_plan_dft(plan_r2c)
+        CALL fast_fftw_destroy_plan_dft(plan_c2r)
+      ELSE
+        CALL fast_fftw_destroy_plan_dft(plan_rz_f_inv)
+        CALL fast_fftw_destroy_plan_dft(plan_rz_f)
+      END IF 
     ENDIF
   ENDIF
 #endif

@@ -457,7 +457,7 @@ END SUBROUTINE push_efield_2d
 !> Creation March 29 2017
 
   SUBROUTINE push_psatd_ebfield
-  USE fields, ONLY: g_spectral, l_AM_rz
+  USE fields !, ONLY: g_spectral, l_AM_rz
 #if defined(FFTW)
   USE fourier_psaotd
   USE Hankel
@@ -482,6 +482,7 @@ END SUBROUTINE push_efield_2d
     tmptime = MPI_WTIME()
   ENDIF
 
+  write (*,*) "getHfield BEFORE" , MAXval( abs(er_c))
 #if defined(FFTW)
   ! - Fourier Transform R2C
   IF (fftw_with_mpi) THEN
@@ -493,7 +494,10 @@ END SUBROUTINE push_efield_2d
   ELSE
     IF (l_AM_rz) THEN
       CALL get_Hfields ! - local FFT in RZ --PS: it's complex to complex
-      write (*,*) "getHfield"
+      !Call get_Ffields_AM_rz()
+      !write (*,*) "only get_Ffields_AM_rz" , ( abs(er_c))
+      !er_c=er_c/399.
+      !write (*,*) "only get_Ffields_AM_rz after division" , MAXval( abs(er_c)) 
     ELSE 
       CALL get_Ffields! - local FFT
     ENDIF
@@ -512,8 +516,8 @@ END SUBROUTINE push_efield_2d
       IF (.NOT. l_AM_rz) THEN
         CALL push_psaotd_ebfielfs_3d! - PUSH PSATD
       ELSE IF (l_AM_rz) THEN 
-        CALL push_psaotd_ebfielfs_AM_rz !- push psatd in azimuthal cylindrical
-        write (*,*) "push_psaotd AM"
+        !CALL push_psaotd_ebfielfs_AM_rz !- push psatd in azimuthal cylindrical
+        write (*,*) " without push_psaotd AM", MAXval( abs(er_c))
       END IF 
     ELSE IF(c_dim == 2) THEN
       CALL push_psaotd_ebfielfs_2d
@@ -529,7 +533,7 @@ END SUBROUTINE push_efield_2d
   ELSE
     IF (l_AM_rz) THEN 
      CALL get_fields_AM_rz! local IFFT in RZ --PS: it's complex to complex
-     write (*,*) "getfield_AM "
+     write (*,*) "getfield_AM ", MAXval( abs(er_c))
     ELSE
       CALL get_fields! local IFFT
     ENDIF 

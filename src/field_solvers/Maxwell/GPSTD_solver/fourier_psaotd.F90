@@ -343,7 +343,7 @@ MODULE fourier_psaotd
   ! ______________________________________________________________________________________
   SUBROUTINE get_Ffields_AM_rz()
     USE fastfft
-    USE fields, ONLY: nxguards, nyguards
+    USE fields !, ONLY: nxguards, nyguards
     USE mpi
     USE params, ONLY: it
     USE picsar_precision, ONLY: idp, num
@@ -365,9 +365,11 @@ MODULE fourier_psaotd
       tmptime = MPI_WTIME()
     ENDIF
     ! Init fourier fields fields
+    write (*,*) "BEFORE COPYING" , MAXVAL(abs(er_c))
 #if !defined(LIBRARY)
-     CALL copy_field_forward_AM_rz()
+     !CALL copy_field_forward_AM_rz()
 #endif
+    write (*,*) "AFTER COPYING" , MAXVAL(abs(er_c))
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
@@ -1070,6 +1072,13 @@ MODULE fourier_psaotd
     ALLOCATE (jrt_p(nfftx,nffty,nfftz))
     ALLOCATE (jrt_m(nfftx,nffty,nfftz))
     
+
+    ert_p=0.0_num
+    ert_m=0.0_num
+    brt_p=0.0_num
+    brt_m=0.0_num
+    jrt_p=0.0_num
+    jrt_m=0.0_num 
     ii=DCMPLX(0.0_num, 1.0_num)
     ert_p = (er_c+ii*et_c)/2._num
     ert_m = (er_c-ii*et_c)/2._num
@@ -1077,7 +1086,10 @@ MODULE fourier_psaotd
     brt_m = (br_c-ii*bt_c)/2._num   
     jrt_p = (jr_c+ii*jt_c)/2._num
     jrt_m = (jr_c-ii*jt_c)/2._num
-
+    !write (*,*) "fft_forward_c2c_local_AM_rz ert_p" , MAXVAL(abs(ert_p))
+    !write (*,*) "fft_forward_c2c_local_AM_rz ert_m" , MAXVAL(abs(ert_m))
+    !write (*,*) "fft_forward_c2c_local_AM_rz  brt_p" , MAXVAL(abs(brt_p))
+    !write (*,*) "fft_forward_c2c_local_AM_rz brt_m" , MAXVAL(abs(brt_m))
     CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, el_c, el_f, plan_rz_f)
     CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, ert_m, ep_f, plan_rz_f)
     CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, ert_p, em_f, plan_rz_f)
@@ -1089,17 +1101,34 @@ MODULE fourier_psaotd
     CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, jrt_p, jm_f, plan_rz_f)
     CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, rhoold_c,rhoold_f,plan_rz_f)
     CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, rho_c, rho_f, plan_rz_f)
+    !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, el_c, el_f, plan_rz_f)
+    !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, er_c, ep_f, plan_rz_f)
+    !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, et_c, em_f, plan_rz_f)
+    !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, bl_c, bl_f, plan_rz_f)
+    !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, br_c, bp_f, plan_rz_f)
+    !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, bt_c, bm_f, plan_rz_f)
+    !write (*,*) "et_f =" , MAXVAL(abs(em_f))
+    write (*,*) "er_f =" , abs(ep_f)
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
     ENDIF
-
+    write (0,*) "nffty ==========", nffty
+    el_f=el_f/REAL(nffty,num)
+    ep_f= ep_f/REAL(nffty,num)
+    em_f=em_f /REAL(nffty,num)
+    bl_f= bl_f/REAL(nffty,num)
+    bp_f= bp_f/REAL(nffty,num)
+    bm_f=bm_f/REAL(nffty,num)
     DEALLOCATE (ert_p)
     DEALLOCATE (ert_m)
     DEALLOCATE (brt_p)
     DEALLOCATE (brt_m)
     DEALLOCATE (jrt_p)
     DEALLOCATE (jrt_m)
-
+    write (*,*) "em_f =" , MAXVAL(abs(em_f))
+    write (*,*) "ep_f =" , MAXVAL(abs(ep_f))
+    !write (*,*) "fft_forward_c2c_local_AM_rz er_c" , MAXVAL(abs(er_c))
+    !write (*,*) "fft_forward_c2c_local_AM_rz et_c" , MAXVAL(abs(ii*et_c))
   END SUBROUTINE fft_forward_c2c_local_AM_rz
 
  
@@ -1781,7 +1810,7 @@ MODULE fourier_psaotd
     USE mpi
     USE params, ONLY: it
     USE picsar_precision, ONLY: idp, num, cpx
-    USE shared_data, ONLY: nkl, nkr, nmodes
+    USE shared_data, ONLY: nkx, nky, nmodes
     USE time_stat, ONLY: timestat_itstart, localtimes
 
     IMPLICIT NONE
@@ -1793,8 +1822,8 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
     ENDIF
-    nxx=nkr
-    nyy=nkl
+    nxx=nkx
+    nyy=nky
     nzz=nmodes
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, el_h_old, ep_h_old, em_h_old,     &
     !$OMP bl_h_old, bp_h_old, bm_h_old,jl_h_old,jp_h_old,jm_h_old,rho_h_old,rhoold_h_old) COLLAPSE(3)
