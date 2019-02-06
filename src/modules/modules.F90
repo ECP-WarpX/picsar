@@ -475,6 +475,12 @@ MODULE grid_tilemodule!#do not parse
     REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: arr2 ! For Y current component 
     !> Tile Current grid in z
     REAL(num), DIMENSION(:, :, :), ALLOCATABLE :: arr3 ! For Z current component
+    COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: carr1 ! For X current component 
+                                                       ! or charge 
+    !> Tile Current grid in y
+    COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: carr2 ! For Y current component 
+    !> Tile Current grid in z
+    COMPLEX(cpx), DIMENSION(:, :, :), ALLOCATABLE :: carr3 ! For Z current component
     ! We declare arrays aligned for vectorization efficiency.
     ! These directives are only understood by the Intel compiler.
 #if !defined PICSAR_NO_ASSUMED_ALIGNMENT && defined __INTEL_COMPILER

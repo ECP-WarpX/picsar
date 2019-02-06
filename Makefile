@@ -396,7 +396,9 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_circ.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_circ.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
 	$(SRCDIR)/field_gathering/field_gathering_manager_2d.o \
@@ -441,7 +443,9 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_circ.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_circ.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
 	$(SRCDIR)/field_gathering/field_gathering_manager_2d.o \
@@ -486,7 +490,9 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_circ.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_circ.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
 	$(SRCDIR)/field_gathering/field_gathering_manager_2d.o \
@@ -535,7 +541,9 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_circ.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_circ.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
 	$(SRCDIR)/field_gathering/field_gathering_manager_2d.o \

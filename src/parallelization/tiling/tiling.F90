@@ -823,12 +823,19 @@ MODULE tiling
           ng1=curr_tile%nxg_tile
           ng2=curr_tile%nyg_tile
           ng3=curr_tile%nzg_tile
-          ALLOCATE(aofgtiles(ix, iy, iz)%arr1(-ng1:n1+ng1, -ng2:n2+ng2,               &
-          -ng3:n3+ng3))
-          ALLOCATE(aofgtiles(ix, iy, iz)%arr2(-ng1:n1+ng1, -ng2:n2+ng2,               &
-          -ng3:n3+ng3))
-          ALLOCATE(aofgtiles(ix, iy, iz)%arr3(-ng1:n1+ng1, -ng2:n2+ng2,               &
-          -ng3:n3+ng3))
+          IF (.not. l_AM_rz) then
+
+              ALLOCATE(aofgtiles(ix, iy, iz)%arr1(-ng1:n1+ng1, -ng2:n2+ng2, -ng3:n3+ng3))
+              ALLOCATE(aofgtiles(ix, iy, iz)%arr2(-ng1:n1+ng1, -ng2:n2+ng2, -ng3:n3+ng3))
+              ALLOCATE(aofgtiles(ix, iy, iz)%arr3(-ng1:n1+ng1, -ng2:n2+ng2, -ng3:n3+ng3))
+
+          ELSE
+
+              ALLOCATE(aofgtiles(ix, iy, iz)%carr1(-ng1:n1+ng1, -ng2:n2+ng2, nmodes))
+              ALLOCATE(aofgtiles(ix, iy, iz)%carr2(-ng1:n1+ng1, -ng2:n2+ng2, nmodes))
+              ALLOCATE(aofgtiles(ix, iy, iz)%carr3(-ng1:n1+ng1, -ng2:n2+ng2, nmodes))
+
+          END IF
         END DO
       END DO
     END DO! END LOOP ON TILES
