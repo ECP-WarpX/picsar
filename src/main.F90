@@ -32,11 +32,11 @@
 !
 ! INCLUDES:
 ! - Arbitrary order field solver (Maxwell.F90)
-! - High order current deposition/field gathering routines (current_deposition.F90, 
+! - High order current deposition/field gathering routines (current_deposition.F90,
 ! - field_gathering.F90)
 ! - MPI-domain decomposition (mpi_subtype_control.F90, mpi_routines.F90, boundary.F90)
 ! - Tiling of particles for better memory locality (tiling.F90)
-! - OpenMP Hybrid Parallelization (current_deposition.F90, field_gathering.F90, 
+! - OpenMP Hybrid Parallelization (current_deposition.F90, field_gathering.F90,
 ! - particle_push.F90, Maxwell.F90)
 ! - MPI-IO outputs
 ! ________________________________________________________________________________________
@@ -80,6 +80,14 @@ PROGRAM main
   CALL DFP_INIT_START
 #endif
 
+! C++ interface test
+  REAL(8) :: a, b, res
+  a = 1.0
+  b = 2.0
+  call dummy_func_c(a, b, res)
+  print *,res
+! END TEST
+
 ! --- default init
   CALL default_init
 
@@ -95,13 +103,13 @@ PROGRAM main
 
 ! --- mpi init communicator
 #if defined(FFTW)
-  IF (fftw_with_mpi) THEN 
+  IF (fftw_with_mpi) THEN
     CALL mpi_minimal_init_fftw
   ELSE
 #endif
     CALL mpi_minimal_init
 #if defined(FFTW)
-  ENDIF 
+  ENDIF
 #endif
   IF (rank .EQ. 0) THEN
     write(0,*) "_________________________________________________________________"
@@ -139,15 +147,15 @@ PROGRAM main
   ! Time statistics for the different processes of the PIC step
   CALL time_statistics
 
-  IF (rank .EQ. 0) THEN 
+  IF (rank .EQ. 0) THEN
 	  INQUIRE(file="output_statistics.out", exist=exist)
-  	IF (exist) THEN 
+  	IF (exist) THEN
   		OPEN (unit=12,file="output_statistics.out", &
   		action="write",position="append", status="old")
   	ELSE
   		OPEN (unit=12,file="output_statistics.out",  &
   		  action="write",status="new")
-  	ENDIF 
+  	ENDIF
   	WRITE(str1,*) nx_global; WRITE(str2,*) ny_global
   	WRITE(str3,*) nz_global; WRITE(str4,*) nproc
   	! total simulation time
@@ -160,7 +168,7 @@ PROGRAM main
   								avetimes(8),avetimes(10),                             &
   								avetimes(12), avetimes(13), avetimes(9),              &
   								avetimes(18), avetimes(19), avetimes(20)
-  								
+
   	! Total memory used in the case (in GB)
   	WRITE(str7,'(4(E12.5))') global_grid_mem/1e9, global_grid_tiles_mem/1e9,          &
   	global_part_tiles_mem/1e9
@@ -171,7 +179,7 @@ PROGRAM main
   				  trim(adjustl(str5))//" "//trim(adjustl(str6))//                     &
   				  " "//trim(adjustl(str7))
   	CLOSE(12)
-  ENDIF 
+  ENDIF
 
 #if defined(FFTW)
   IF(l_spectral) THEN

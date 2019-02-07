@@ -47,8 +47,15 @@ ARCH=
 FC=mpif90
 # C compiler
 CC=mpicc
+# C++ compiler
+CPP=mpic++
+
 # Fortran compiler arguments
 FARGS= -g -fbounds-check -O3 -fopenmp -JModules
+# C compiler Arguments
+CARGS= -g -O3 -fopenmp
+# C++ compiler Arguments
+CPPARGS= -g -O3 -fopenmp
 
 # External libs
 FFTW3_LIB=/usr/lib/x86_64-linux-gnu
@@ -344,12 +351,13 @@ ifeq ($(MODE),library)
         LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_omp
 endif
 
-
-
 $(SRCDIR)/%.o $(SRCDIR)/*/%.o $(SRCDIR)/*/*/%.o $(SRCDIR)/*/*/*/%.o $(SRCDIR)/%.mod $(MODDIR)/%.mod:$(SRCDIR)/%.F90
 	$(FC) $(FARGS) -c -o $@ $<
 $(SRCDIR)/profiling/%.o:$(SRCDIR)/profiling/%.c
 	$(CC) $(CARGS) -c -o $@ $<
+$(SRCDIR)/multi_physics/breit_wheeler/%.o:$(SRCDIR)/multi_physics/breit_wheeler/%.cpp
+	$(CPP) $(CPPARGS) -c -o $@ $<
+
 all: echo createdir build
 test: test1 test2 test3
 lib: echo createdir build_lib
@@ -557,6 +565,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/submain.o \
 	$(SRCDIR)/initialization/control_file.o \
+	$(SRCDIR)/multi_physics/breit_wheeler/breit_wheeler.o \
 	$(SRCDIR)/main.o
 	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o
 	mkdir -p $(BINDIR)
