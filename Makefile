@@ -566,6 +566,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/submain.o \
 	$(SRCDIR)/initialization/control_file.o \
 	$(SRCDIR)/multi_physics/breit_wheeler/breit_wheeler.o \
+	$(SRCDIR)/multi_physics/breit_wheeler/breit_wheeler_wrapper.o \
 	$(SRCDIR)/main.o
 	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o
 	mkdir -p $(BINDIR)
