@@ -209,7 +209,7 @@ SUBROUTINE field_damping_bcs
     localtimes(26) = localtimes(26) + (MPI_WTIME() - tmptime)
   ENDIF
 
-END subroutine field_damping_bcs
+END SUBROUTINE field_damping_bcs
 
 
 ! ________________________________________________________________________________________
@@ -268,7 +268,7 @@ SUBROUTINE merge_fields()
     localtimes(26) = localtimes(26) + (MPI_WTIME() - tmptime)
   ENDIF
 
-END subroutine merge_fields
+END SUBROUTINE merge_fields
 
 ! ________________________________________________________________________________________
 !> @brief
@@ -322,7 +322,7 @@ SUBROUTINE merge_e_fields()
     localtimes(26) = localtimes(26) + (MPI_WTIME() - tmptime)
   ENDIF
 
-END subroutine merge_e_fields
+END SUBROUTINE merge_e_fields
 
 ! ________________________________________________________________________________________
 !> @brief
@@ -376,7 +376,7 @@ SUBROUTINE merge_b_fields()
     localtimes(26) = localtimes(26) + (MPI_WTIME() - tmptime)
   ENDIF
 
-END subroutine merge_b_fields
+END SUBROUTINE merge_b_fields
 
 
    

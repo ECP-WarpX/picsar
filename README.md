@@ -40,6 +40,29 @@ make lib both static and dynamic picsar lib are generated in lib/ file.
 * We created a Forthon parser that read Fortran source files of PICSAR and parse them to create a `picsar.v` file used by the Forthon compiler to generate a Python module for PICSAR. The Forthon parser is available in the folder `utils`.
 * Forthon gives access to all the high performance routines of PICSAR from python.
 
+#### E. PICSARlite
+
+* PICSARlite is a subset of PICSAR that can be used for testing. It is built using a Python script (`utils/generate_miniapp.py`) that accepts a number of options:
+	* `--solver`: Maxwell solver method(s) to include [choices: 'all' (default), 'fdtd', 'spectral'].
+	* `--pusher`: Particle pusher method(s) to include [choices: 'all' (default), 'Boris', 'Vay'].
+	* `--depos`: Type(s) of charge/current deposition to include [choices: 'all' (default), 'direct','Esirkepov'].
+	* `--optimization`: Flag to include the optimized versions [choices: 'on' (default), 'off'].
+
+* For example, to create a version with the Maxwell FDTD solver, the Boris pusher, direct charge/current deposition and no optimization, type:
+```
+python utils/generate_miniapp.py --pusher boris --depos direct --solver fdtd --optimization off
+```
+* an example input script that runs with this particle configuration is given in 
+	```
+	picsar/PICSARlite/examples/example_decks_fortran/homogeneous_plasma_lite.pixr
+	``` 
+
+	that can be run with 
+
+	```
+	mpirun -np 8 ../../fortran_bin/picsar homogeneous_plasma_lite.pixr
+	```
+
 ## **2. Installation**
 
 Detailed installation instructions are available for various platforms for the FORTRAN and Python libraries in the `PICSAR/Installation_doc` folder.

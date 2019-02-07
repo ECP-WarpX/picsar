@@ -63,7 +63,7 @@ SUBROUTINE depose_jxjyjz(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q
   call depose_jxjyjz_generic( jx, nguard, nvalid, jy, nguard, nvalid, jz, nguard,     &
   nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy,  &
   dz, nox, noy, noz, current_depo_algo)
-END SUBROUTINE
+END SUBROUTINE depose_jxjyjz
 
 ! ________________________________________________________________________________________
 !> @brief
@@ -90,7 +90,7 @@ SUBROUTINE depose_jxjyjz_esirkepov(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, ga
   CALL pxr_depose_jxjyjz_esirkepov_n( jx, nguard, nvalid, jy, nguard, nvalid, jz,     &
   nguard, nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt,  &
   dx, dy, dz, nox, noy, noz, .TRUE._idp, .FALSE._idp)
-END SUBROUTINE
+END SUBROUTINE depose_jxjyjz_esirkepov
 
 ! ________________________________________________________________________________________
 !> @brief
@@ -203,7 +203,7 @@ SUBROUTINE depose_jxjyjz_generic( jx, jx_nguard, jx_nvalid, jy, jy_nguard, jy_nv
 
   END SELECT
 
-END SUBROUTINE
+END SUBROUTINE depose_jxjyjz_generic
 
 ! ________________________________________________________________________________________
 !> @brief
@@ -840,7 +840,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( curr_depo_
       zmin
       INTEGER(idp)                                  :: ncx, ncy, ncz
       INTEGER(idp)                                  :: lvect
-    END SUBROUTINE curr_depo_sub
+    END SUBROUTINE 
 
     SUBROUTINE curr_reduc_sub(jx, jy, jz, jxcells, jycells, jzcells, ncells, nx, ny,  &
       nz, nxguard, nyguard, nzguard, ncx, ncy, ncz) !#do not parse
@@ -857,7 +857,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( curr_depo_
       REAL(num), INTENT(IN OUT) ::                                                    &
       jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
       REAL(num), INTENT(IN), DIMENSION(8, ncells):: jxcells, jycells, jzcells
-    END SUBROUTINE curr_reduc_sub
+    END SUBROUTINE 
 
   END INTERFACE
 
@@ -1203,7 +1203,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3( curr_depo_
       zmin
       INTEGER(idp)                                  :: ncx, ncy, ncz
       INTEGER(idp)                                  :: lvect
-    END SUBROUTINE curr_depo_sub
+    END SUBROUTINE 
 
     SUBROUTINE curr_reduc_sub(jx, jy, jz, jxcells, jycells, jzcells, ncells, nx, ny,  &
       nz, nxguard, nyguard, nzguard, ncx, ncy, ncz) !#do not parse
@@ -1220,7 +1220,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3( curr_depo_
       REAL(num), INTENT(IN OUT) ::                                                    &
       jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
       REAL(num), INTENT(IN), DIMENSION(8, ncells):: jxcells, jycells, jzcells
-    END SUBROUTINE curr_reduc_sub
+    END SUBROUTINE 
 
   END INTERFACE
 

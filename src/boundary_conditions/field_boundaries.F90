@@ -1412,7 +1412,7 @@ USE picsar_precision, ONLY: idp, isp, num
     DEALLOCATE(temp1, temp2)
 
     CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
-  END SUBROUTINE
+  END SUBROUTINE summation_bcs_persistent_jx
 
   ! ______________________________________________________________________________________
   !> @brief
@@ -1577,7 +1577,7 @@ USE picsar_precision, ONLY: idp, isp, num
     DEALLOCATE(temp1, temp2)
 
     CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
-  END SUBROUTINE
+  END SUBROUTINE summation_bcs_persistent_jy
 
   ! ______________________________________________________________________________________
   !> @brief
@@ -1741,7 +1741,7 @@ USE picsar_precision, ONLY: idp, isp, num
     DEALLOCATE(temp1, temp2)
 
     CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
-  END SUBROUTINE
+  END SUBROUTINE summation_bcs_persistent_jz
 
   ! ______________________________________________________________________________________
   !> @brief
@@ -1782,7 +1782,7 @@ USE picsar_precision, ONLY: idp, isp, num
       CALL field_bc(ezx, nxguards, nyguards, nzguards, nx, ny, nz)
       CALL field_bc(ezy, nxguards, nyguards, nzguards, nx, ny, nz)
       !> When using absorbing bcs, the electric field is merged here
-      !> This is done here in order not to call merge_fields from warp 
+      !> This is done here in order not to call merge_e_fields from warp 
       CALL merge_e_fields()
 
     ENDIF

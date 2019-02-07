@@ -59,7 +59,7 @@ SUBROUTINE depose_jxjyjz_2d(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w
   nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, zmin, dt, dx, dz, nox,   &
   noz, lvect, 0_idp)
 
-END SUBROUTINE
+END SUBROUTINE depose_jxjyjz_2d
 
 ! ______________________________________________________________________________
 !> @brief
@@ -129,7 +129,7 @@ SUBROUTINE depose_jxjyjz_generic_2d( jx, jx_nguard, jx_nvalid, jy, jy_nguard,   
     ENDIF
   END SELECT
 
-END SUBROUTINE
+END SUBROUTINE depose_jxjyjz_generic_2d
 
 ! ________________________________________________________________________________________
 !> @brief
@@ -155,7 +155,7 @@ SUBROUTINE depose_jxjyjz_esirkepov_2d(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp,
   nguard, nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, zmin, dt, dx,    &
   dz, nox, noz, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)
 
-END SUBROUTINE
+END SUBROUTINE depose_jxjyjz_esirkepov_2d
 
 ! ________________________________________________________________________________________
 !> @brief

@@ -243,7 +243,9 @@ def test_rr_synchrotron_LL():
 	top.pboundxy = part_bc_xy
 
 	top.wpid = top.nextpid() # Activate variable weights in the method addpart
-
+        if(l_pxr):
+          top.nextpid()
+          top.nextpid()
 	# --- create plasma species
 	electron = Species(type=Electron,weight=1.,name='electron')
 

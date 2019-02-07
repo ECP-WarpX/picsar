@@ -114,9 +114,9 @@ SUBROUTINE fast_fftw_create_plan_3d_dft(nopenmp,nx,ny,nz,array_in,array_out, &
 
     ! Plan creation
     nplan=nplan+1
-    CALL  DFFTW_INIT_THREADS(iret)
-    CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
-    CALL  DFFTW_PLAN_DFT_3D(plans_cint(nplan), nx_cint,ny_cint,nz_cint, &
+    CALL DFFTW_INIT_THREADS(iret)
+    CALL DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
+    CALL DFFTW_PLAN_DFT_3D(plans_cint(nplan), nx_cint,ny_cint,nz_cint, &
                             array_in,array_out,  &
                             dir_cint,plan_type_cint)
     ! return index of plan
@@ -152,9 +152,9 @@ SUBROUTINE fast_fftw_create_plan_r2c_3d_dft(nopenmp,nx,ny,nz,array_in, &
 
     ! Plan creation
     nplan=nplan+1
-    CALL  DFFTW_INIT_THREADS(iret)
-    CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
-    CALL  DFFTW_PLAN_DFT_R2C_3D(plans_cint(nplan), nx_cint,ny_cint,nz_cint, &
+    CALL DFFTW_INIT_THREADS(iret)
+    CALL DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
+    CALL DFFTW_PLAN_DFT_R2C_3D(plans_cint(nplan), nx_cint,ny_cint,nz_cint, &
                             array_in,array_out,  &
                             plan_type_cint,dir_cint)
     ! return index of plan
@@ -188,9 +188,9 @@ SUBROUTINE fast_fftw_create_plan_c2r_3d_dft(nopenmp,nx,ny,nz,array_in, &
 
     ! Plan creation
     nplan=nplan+1
-    CALL  DFFTW_INIT_THREADS(iret)
-    CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
-    CALL  DFFTW_PLAN_DFT_C2R_3D(plans_cint(nplan), nx_cint,ny_cint,nz_cint, &
+    CALL DFFTW_INIT_THREADS(iret)
+    CALL DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
+    CALL DFFTW_PLAN_DFT_C2R_3D(plans_cint(nplan), nx_cint,ny_cint,nz_cint, &
                             array_in,array_out,  &
                             plan_type_cint,dir_cint)
     ! return index of plan
@@ -224,9 +224,9 @@ SUBROUTINE fast_fftw_create_plan_2d_dft(nopenmp,nx,nz,array_in, &
 
     ! Plan creation
     nplan=nplan+1
-    CALL  DFFTW_INIT_THREADS(iret)
-    CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
-    CALL  DFFTW_PLAN_DFT_2D(plans_cint(nplan), nx_cint,nz_cint, array_in, &
+    CALL DFFTW_INIT_THREADS(iret)
+    CALL DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
+    CALL DFFTW_PLAN_DFT_2D(plans_cint(nplan), nx_cint,nz_cint, array_in, &
                             array_out,                                    &
                             dir_cint,plan_type_cint)
 
@@ -261,9 +261,9 @@ SUBROUTINE fast_fftw_create_plan_r2c_2d_dft(nopenmp,nx,nz,array_in,&
 
     ! Plan creation
     nplan=nplan+1
-    CALL  DFFTW_INIT_THREADS(iret)
-    CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
-    CALL  DFFTW_PLAN_DFT_R2C_2D(plans_cint(nplan), nx_cint,nz_cint, array_in, &
+    CALL DFFTW_INIT_THREADS(iret)
+    CALL DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
+    CALL DFFTW_PLAN_DFT_R2C_2D(plans_cint(nplan), nx_cint,nz_cint, array_in, &
                             array_out,                                        &
                             plan_type_cint,dir_cint)
     ! return index of plan
@@ -297,9 +297,9 @@ SUBROUTINE fast_fftw_create_plan_c2r_2d_dft(nopenmp,nx,nz,array_in, &
 
     ! Plan creation
     nplan=nplan+1
-    CALL  DFFTW_INIT_THREADS(iret)
-    CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
-    CALL  DFFTW_PLAN_DFT_C2R_2D(plans_cint(nplan),nx_cint,nz_cint, array_in, &
+    CALL DFFTW_INIT_THREADS(iret)
+    CALL DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
+    CALL DFFTW_PLAN_DFT_C2R_2D(plans_cint(nplan),nx_cint,nz_cint, array_in, &
                             array_out,                                       &
                             plan_type_cint,dir_cint)
 
@@ -332,9 +332,9 @@ SUBROUTINE fast_fftw_create_plan_1d_dft(nopenmp,nx,array_in,array_out, &
 
     ! Plan creation
     nplan=nplan+1
-    CALL  DFFTW_INIT_THREADS(iret)
-    CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
-    CALL  DFFTW_PLAN_DFT_1D(plans_cint(nplan), nx_cint,array_in,array_out,  &
+    CALL DFFTW_INIT_THREADS(iret)
+    CALL DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
+    CALL DFFTW_PLAN_DFT_1D(plans_cint(nplan), nx_cint,array_in,array_out,  &
                             dir_cint,plan_type_cint)
 
     ! return index of plan
@@ -367,9 +367,9 @@ SUBROUTINE fast_fftw_create_plan_r2c_1d_dft(nopenmp,nx,array_in,array_out, &
 
     ! Plan creation
     nplan=nplan+1
-    CALL  DFFTW_INIT_THREADS(iret)
-    CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
-    CALL  DFFTW_PLAN_DFT_R2C_1D(plans_cint(nplan), nx_cint, array_in,array_out,&
+    CALL DFFTW_INIT_THREADS(iret)
+    CALL DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
+    CALL DFFTW_PLAN_DFT_R2C_1D(plans_cint(nplan), nx_cint, array_in,array_out,&
                             plan_type_cint,dir_cint)
 
     ! return index of plan
@@ -403,9 +403,9 @@ SUBROUTINE fast_fftw_create_plan_c2r_1d_dft(nopenmp,nx,array_in,array_out, &
 
     ! Plan creation
     nplan=nplan+1
-    CALL  DFFTW_INIT_THREADS(iret)
-    CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
-    CALL  DFFTW_PLAN_DFT_C2R_1D(plans_cint(nplan), nx_cint,   &
+    CALL DFFTW_INIT_THREADS(iret)
+    CALL DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
+    CALL DFFTW_PLAN_DFT_C2R_1D(plans_cint(nplan), nx_cint,   &
                             array_in, array_out,              &
                             plan_type_cint,dir_cint)
     ! return index of plan
@@ -433,7 +433,7 @@ SUBROUTINE fast_fftw3d_with_plan(nx,ny,nz,array_in, array_out, plan)
     INTEGER(idp) :: iplan
 
     iplan=plan(1)
-    CALL  DFFTW_EXECUTE_DFT(plans_cint(iplan), array_in, array_out)
+    CALL DFFTW_EXECUTE_DFT(plans_cint(iplan), array_in, array_out)
 
 END SUBROUTINE fast_fftw3d_with_plan
 
@@ -451,7 +451,7 @@ SUBROUTINE fast_fftw3d_r2c_with_plan(nx,ny,nz,array_in, array_out, plan)
     INTEGER(idp) :: iplan
 
     iplan=plan(1)
-    CALL  DFFTW_EXECUTE_DFT_R2C(plans_cint(iplan), array_in, array_out)
+    CALL DFFTW_EXECUTE_DFT_R2C(plans_cint(iplan), array_in, array_out)
 
 END SUBROUTINE fast_fftw3d_r2c_with_plan
 
@@ -469,7 +469,7 @@ SUBROUTINE fast_fftw3d_c2r_with_plan(nx,ny,nz,array_in, array_out, plan)
     INTEGER(idp) :: iplan
 
     iplan=plan(1)
-    CALL  DFFTW_EXECUTE_DFT_C2R(plans_cint(plan), array_in, array_out)
+    CALL DFFTW_EXECUTE_DFT_C2R(plans_cint(plan), array_in, array_out)
 END SUBROUTINE fast_fftw3d_c2r_with_plan
 
 
@@ -489,7 +489,7 @@ SUBROUTINE fast_fftw2d_with_plan(nx,nz,array_in, array_out, plan)
     INTEGER(idp) :: iplan
 
     iplan=plan(1)
-    CALL  DFFTW_EXECUTE_DFT(plans_cint(iplan), array_in, array_out)
+    CALL DFFTW_EXECUTE_DFT(plans_cint(iplan), array_in, array_out)
 
 END SUBROUTINE fast_fftw2d_with_plan
 
@@ -508,7 +508,7 @@ SUBROUTINE fast_fftw2d_r2c_with_plan(nx,nz,array_in, array_out, plan)
     INTEGER(idp) :: iplan
 
     iplan=plan(1)
-    CALL  DFFTW_EXECUTE_DFT_R2C(plans_cint(iplan), array_in, array_out)
+    CALL DFFTW_EXECUTE_DFT_R2C(plans_cint(iplan), array_in, array_out)
 
 END SUBROUTINE fast_fftw2d_r2c_with_plan
 
@@ -526,7 +526,7 @@ SUBROUTINE fast_fftw2d_c2r_with_plan(nx,nz,array_in, array_out, plan)
     INTEGER(idp) :: iplan
 
     iplan=plan(1)
-    CALL  DFFTW_EXECUTE_DFT_C2R(plans_cint(iplan), array_in, array_out)
+    CALL DFFTW_EXECUTE_DFT_C2R(plans_cint(iplan), array_in, array_out)
 
 END SUBROUTINE fast_fftw2d_c2r_with_plan
 
@@ -546,7 +546,7 @@ SUBROUTINE fast_fftw1d_with_plan(nx,array_in, array_out, plan)
     INTEGER(idp) :: iplan
 
     iplan=plan(1)
-    CALL  DFFTW_EXECUTE_DFT(plans_cint(iplan), array_in, array_out)
+    CALL DFFTW_EXECUTE_DFT(plans_cint(iplan), array_in, array_out)
 
 END SUBROUTINE fast_fftw1d_with_plan
 
@@ -564,7 +564,7 @@ SUBROUTINE fast_fftw1d_r2c_with_plan(nx,array_in, array_out, plan)
     INTEGER(idp) :: iplan
 
     iplan=plan(1)
-    CALL  DFFTW_EXECUTE_DFT_R2C(plans_cint(iplan), array_in, array_out)
+    CALL DFFTW_EXECUTE_DFT_R2C(plans_cint(iplan), array_in, array_out)
 
 END SUBROUTINE fast_fftw1d_r2c_with_plan
 
@@ -582,7 +582,7 @@ SUBROUTINE fast_fftw1d_c2r_with_plan(nx,array_in, array_out, plan)
     INTEGER(idp) :: iplan
 
     iplan=plan(1)
-    CALL  DFFTW_EXECUTE_DFT_C2R(plans_cint(iplan), array_in, array_out)
+    CALL DFFTW_EXECUTE_DFT_C2R(plans_cint(iplan), array_in, array_out)
 END SUBROUTINE fast_fftw1d_c2r_with_plan
 
 !**********************************************
@@ -599,7 +599,7 @@ SUBROUTINE fast_fftw_destroy_plan_dft(plan)
     INTEGER(idp) :: iplan
 
     iplan=plan(1)
-    CALL  DFFTW_DESTROY_PLAN(plans_cint(iplan))
+    CALL DFFTW_DESTROY_PLAN(plans_cint(iplan))
 
 END SUBROUTINE fast_fftw_destroy_plan_dft
 
