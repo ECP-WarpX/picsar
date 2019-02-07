@@ -77,7 +77,9 @@ To generate the Makefile_Forthon that builds the picsar python module with FFTW 
 python configure --pxr_spectral_hybrid True --fftw_dir /path/to/fftw_directory # --other_flags(see doc)
 where fftw_directory is the install directory of fftw. 
 To include the additional support of p3dfft use this command line indstead:
-python configure --pxr_spectral_hybrid True --fftw_dir /path/to/fftw_directory --p3dfft_dir /path/to/p3dfft_directory # --other_flags(see doc)
+python configure --pxr_spectral_hybrid True --fftw_dir /path/to/fftw_base_directory --p3dfft_dir /path/to/p3dfft_base_directory # --other_flags(see doc)
+
+
 
 Once you get this message :
 ''' Configure succeeded.
