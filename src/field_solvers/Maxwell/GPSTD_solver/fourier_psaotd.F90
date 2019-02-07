@@ -1080,16 +1080,16 @@ MODULE fourier_psaotd
     jrt_p=0.0_num
     jrt_m=0.0_num 
     ii=DCMPLX(0.0_num, 1.0_num)
-    ert_p = (er_c+ii*et_c)/2._num
-    ert_m = (er_c-ii*et_c)/2._num
-    brt_p = (br_c+ii*bt_c)/2._num
-    brt_m = (br_c-ii*bt_c)/2._num   
-    jrt_p = (jr_c+ii*jt_c)/2._num
-    jrt_m = (jr_c-ii*jt_c)/2._num
-    !write (*,*) "fft_forward_c2c_local_AM_rz ert_p" , MAXVAL(abs(ert_p))
-    !write (*,*) "fft_forward_c2c_local_AM_rz ert_m" , MAXVAL(abs(ert_m))
-    !write (*,*) "fft_forward_c2c_local_AM_rz  brt_p" , MAXVAL(abs(brt_p))
-    !write (*,*) "fft_forward_c2c_local_AM_rz brt_m" , MAXVAL(abs(brt_m))
+    ert_p = (er_c+ii*et_c)/2.0_num
+    ert_m = (er_c-ii*et_c)/2.0_num
+    brt_p = (br_c+ii*bt_c)/2.0_num
+    brt_m = (br_c-ii*bt_c)/2.0_num   
+    jrt_p = (jr_c+ii*jt_c)/2.0_num
+    jrt_m = (jr_c-ii*jt_c)/2.0_num
+    write (*,*) "fft_forward_c2c_local_AM_rz ert_p" , MAXVAL(abs(ert_p))
+    write (*,*) "fft_forward_c2c_local_AM_rz ert_m" , MAXVAL(abs(ert_m))
+    write (*,*) "fft_forward_c2c_local_AM_rz  brt_p" , MAXVAL(abs(brt_p))
+    write (*,*) "fft_forward_c2c_local_AM_rz brt_m" , MAXVAL(abs(brt_m))
     CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, el_c, el_f, plan_rz_f)
     CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, ert_m, ep_f, plan_rz_f)
     CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, ert_p, em_f, plan_rz_f)

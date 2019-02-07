@@ -72,7 +72,7 @@ USE sorting
 
 
   IMPLICIT NONE
-  INTEGER(idp) :: nst, i,k, imode,m 
+  INTEGER(idp) :: nst, i,k, imode,m,j
 
   !!! --- This is the main PIC LOOP
   IF (rank .EQ. 0) THEN
@@ -110,8 +110,10 @@ USE sorting
         CALL laser_gaussian 
         write (*,*) "Laser GAUSSIAN" 
       ENDIF
-      do k=0,nx-1     
-        write (0,*) "Max of ERRRRRRRRRRR" , abs(er_c(k,:,:))
+      do k=0,nx-1   
+        do j=0,ny-1 
+          write (0,*) "Max of ERRRRRRRRRRR" , er_c(k,j,:)
+        end do
       end do
       !!! --- Init iteration variables
       pushtime=0._num
@@ -384,7 +386,7 @@ SUBROUTINE laser_gaussian
   USE PICSAR_precision
   USE laser_util , ONLY : E0, waist, ctau, z0, zf, lambda0, theta_pol, cep_phase, Er_laser, Et_laser
   USE constants, ONLY: clight, emass
-  USE fields, ONLY : er_c, et_c 
+  USE fields, ONLY : er_c, et_c,el_c 
   USE shared_data , ONLY : nx, ny, dx, dy
   REAL (num)::   zr, w0, phi2_chirp, propagation_dir, k0 ,t0
   REAL (num) :: PI  = 4 * atan (1.0_8)
@@ -447,7 +449,9 @@ SUBROUTINE laser_gaussian
      Et_laser(i,k) = -ii* E0 * profile(i,k)* exp(ii* theta_pol)
      !write (*,*) "Et_laser(i,k) ", Et_laser(i,k) 
      !er_c(i,k,1) = er_c(i,k,1)+ Er_laser(i,k)
-     er_c(i,k,0) = DCMPLX(i,0_NUM)
+     er_c(i,k,0) = CMPLX(i,0.0_NUM)
+     et_c(i,k,0)= CMPLX(0.,0.0_NUM)
+     el_c(i,k,0)= CMPLX(0.,0.0_NUM)
      !write (*,*) "er_c(i,k,1) ", er_c(i,k,1)
      !et_c(i,k,1) = et_c(i,k,1)+ Et_laser(i,k)
      !et_c(i,k,1) = DCMPLX(i,0_NUM)
@@ -455,7 +459,9 @@ SUBROUTINE laser_gaussian
    END DO
   END DO
   do k=0,nx-1
-    write (0,*), "max value of erC" , ABS(er_c(k,:,:))
+    Do i=0,ny-1
+      write (0,*), "max value of erC" ,er_c(k,i,:)
+    end do
   end do
   !Ex_r = DREAL(Ex)
   !Ey_r = DREAL (Ey)
