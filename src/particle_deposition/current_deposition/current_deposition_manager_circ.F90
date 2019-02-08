@@ -33,10 +33,10 @@
 
 SUBROUTINE depose_jrjtjl(jr, jt, jl, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
   xmin, zmin, dt, dx, dz, nx, nz, nmodes, nxguard, nzguard, nox, noz, current_depo_algo)
-  USE picsar_precision, ONLY: idp, num
+  USE picsar_precision, ONLY: idp, num, cpx
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, nz, nmodes, nox, noz, nxguard, nzguard, current_depo_algo
-  REAL(num), DIMENSION(-nxguard:nx+nxguard, -nzguard:nz+nzguard, 0:nmodes-1), intent(in out) :: jr, jt, jl
+  COMPLEX(cpx), DIMENSION(-nxguard:nx+nxguard, -nzguard:nz+nzguard, 0:nmodes-1), intent(in out) :: jr, jt, jl
   REAL(num), DIMENSION(np) :: xp, yp, zp, uxp, uyp, uzp, w, gaminv
   REAL(num) :: q, dt, dx, dz, xmin, zmin
   ! Build array of guard cells and valid cells, to pass them to the generic routine
@@ -68,19 +68,19 @@ SUBROUTINE depose_jrjtjl_generic( jr, jr_nguard, jr_nvalid, &
                                   np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, &
                                   xmin, zmin, dt, dr, dz, &
                                   nox, noz, current_depo_algo)     !#do not wrap
-  USE picsar_precision, ONLY: idp, num
+  USE picsar_precision, ONLY: idp, num, cpx
   IMPLICIT NONE
   INTEGER(idp) :: np, nox, noz, current_depo_algo
   INTEGER(idp), intent(in) :: jr_nguard(2), jr_nvalid(2), &
                               jt_nguard(2), jt_nvalid(2), &
                               jl_nguard(2), jl_nvalid(2), nmodes
-  REAL(num), intent(IN OUT):: jr(-jr_nguard(1):jr_nvalid(1)+jr_nguard(1)-1, &
+  COMPLEX(cpx), intent(IN OUT):: jr(-jr_nguard(1):jr_nvalid(1)+jr_nguard(1)-1, &
                                  -jr_nguard(2):jr_nvalid(2)+jr_nguard(2)-1, &
                                  0:nmodes-1 )
-  REAL(num), intent(IN OUT):: jt(-jt_nguard(1):jt_nvalid(1)+jt_nguard(1)-1, &
+  COMPLEX(cpx), intent(IN OUT):: jt(-jt_nguard(1):jt_nvalid(1)+jt_nguard(1)-1, &
                                  -jt_nguard(2):jt_nvalid(2)+jt_nguard(2)-1, &
                                  0:nmodes-1 )
-  REAL(num), intent(IN OUT):: jl(-jl_nguard(1):jl_nvalid(1)+jl_nguard(1)-1, &
+  COMPLEX(cpx), intent(IN OUT):: jl(-jl_nguard(1):jl_nvalid(1)+jl_nguard(1)-1, &
                                  -jl_nguard(2):jl_nvalid(2)+jl_nguard(2)-1, &
                                  0:nmodes-1 )
   REAL(num), DIMENSION(np) :: xp, yp, zp, uxp, uyp, uzp, w, gaminv
@@ -93,7 +93,7 @@ SUBROUTINE depose_jrjtjl_generic( jr, jr_nguard, jr_nvalid, &
    CASE DEFAULT
 
     IF ((nox.eq.1).and.(noz.eq.1)) THEN
-      CALL depose_jxjyjz_esirkepov_1_1_1( jr, jr_nguard, jr_nvalid, &
+      CALL depose_jxjyjz_scalar_1_1_1( jr, jr_nguard, jr_nvalid, &
                                           jt, jt_nguard, jt_nvalid, &
                                           jl, jl_nguard, jl_nvalid, nmodes, &
                                           np, xp, yp, zp, uxp, uyp, uzp, gaminv, w,  &
