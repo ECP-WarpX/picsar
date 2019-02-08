@@ -2,6 +2,7 @@
 #define __BREIT_WHEELER__
 
 #include "../common_types.h"
+#include "../special_functions.hpp"
 
 namespace multi_physics{
     double dummy_function(double a, double b);
