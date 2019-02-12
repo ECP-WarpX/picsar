@@ -22,17 +22,17 @@ int main(int argc, char** argv){
 
     vector<shared_ptr<species>> specs;
     //Init a photon
-    auto ptr_phot1 = shared_ptr<photons>(new photons("phot1"));
+    auto ptr_phot1 = make_shared<photons>("phot1");
     ptr_phot1->add_particle({0,0,0},{1.0,0.0,0.0});
     specs.emplace_back(ptr_phot1);
 
     //Init an electron
-    auto ptr_ele1 = shared_ptr<electrons>(new electrons("ele1"));
+    auto ptr_ele1 = make_shared<electrons>("ele1");
     ptr_ele1->add_particle({0,0,0},{1.0,0.0,0.0});
     specs.emplace_back(ptr_ele1);
 
     //Init a positron
-    auto ptr_pos1 = shared_ptr<positrons>(new positrons("pos1"));
+    auto ptr_pos1 = make_shared<positrons>("pos1");
     ptr_pos1->add_particle({0,0,0},{1.0,0.0,0.0});
     specs.emplace_back(ptr_pos1);
 
