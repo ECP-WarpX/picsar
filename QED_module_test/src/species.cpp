@@ -30,6 +30,7 @@ void species::add_particle(position part_pos, momentum part_mom){
     for(int i = 0; i < 6; i++){
         fields[i].push_back(0);
     }
+    optical_depth.push_back(0.0);
 
 }
 

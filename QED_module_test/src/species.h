@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <tuple>
 
 #include "commons.h"
 
@@ -32,6 +33,7 @@ namespace testbed{
         positions_list pos;
         momenta_list mom;
         em_field_list fields;
+        std::vector<double> optical_depth;
 
         std::string header = "species";
     };
