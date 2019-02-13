@@ -141,7 +141,7 @@ if(l4symtry):
     fh.write(indent_3+"vy = (y-yold)/dtsdy0\n");
 fh.write(indent_3+"! --- computes particles weights\n");
 if (l_particles_weight):
-    fh.write(indent_3+"wq=q*w(ip)\n");
+    fh.write(indent_3+"wq=q*w(nn)\n");
 else:
     fh.write(indent_3+"wq=q*w(1)\n");
 fh.write(indent_3+"wqx = wq*invdtdx\n");

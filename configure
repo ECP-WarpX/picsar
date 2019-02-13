@@ -29,17 +29,31 @@ parser.add_argument( '--architecture', choices=['cpu', 'knl'], default='cpu',
     help='which architecture to cross-compile for (only used when compiling on Cori)')
 parser.add_argument( '--pxr_spectral_hybrid', choices=['True', 'False'], default='False',
     help='which picsar mode to use)') 
+parser.add_argument( '--fftw_dir', default="/usr/local",
+    help='fftw library path)')
+parser.add_argument( '--p3dfft_dir', default="nop3dfft",
+    help='p3dfft library path)')
+
+
+
 args = parser.parse_args()
    
 
 pxr_spectral_hybrid_add = ''
 parser_file = 'forthon_parser.py'
 if(args.pxr_spectral_hybrid=='True'):
-    fftw_lib = ' /home/kallala/develop/install_fftw/lib '
-    p3dfft_lib = ' /home/kallala/develop/install_p3dfft/lib   '
-    fftw_link = ' -I /home/kallala/develop/install_fftw/include '
-    p3dfft_link = '-I /home/kallala/develop/install_p3dfft/include  '
-    pxr_spectral_hybrid_add = ' -D FFTW=1 -D P3DFFT=1'
+    fftw_lib = args.fftw_dir+'/lib'
+    fftw_link = ' -I ' + args.fftw_dir+'/include'
+    pxr_spectral_hybrid_add = ' -D FFTW=1 '
+    if(args.p3dfft_dir != "nop3dfft" ):
+
+      p3dfft_lib =  args.p3dfft_dir+'/lib'
+      p3dfft_link = '-I '+args.p3dfft_dir+'/include'
+      pxr_spectral_hybrid_add += ' -D P3DFFT=1 '
+    else:
+      p3dfft_lib =" "
+      p3dfft_link = " " 
+
     pxr_spectral_hybrid_add += fftw_link
     pxr_spectral_hybrid_add += ' ' + p3dfft_link
     parser_file = 'forthon_parser_pxr_spectral_hybrid.py'
@@ -55,7 +69,7 @@ if host.startswith('edison') or host.startswith('cori'):
         if args.architecture == 'knl':
             fargs = '-O3 -fopenmp -march=knl -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0'
         else:
-            fargs = '-O3 -fopenmp -D FFTW=1 -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0'
+            fargs = '-O3 -fopenmp  -ffree-line-length-none -ftree-vectorize -ftree-vectorizer-verbose=0'
     elif args.compiler == 'intel':
         fcomp = 'intel'
         libs = ''

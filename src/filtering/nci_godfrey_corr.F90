@@ -348,7 +348,7 @@ END SUBROUTINE init_godfrey_filter_coeffs
 !> @date
 !> Creation 2018
 ! ________________________________________________________________________________________
-SUBROUTINE apply_godfrey_filter_z_2d (lo, hi, fou, olo, ohi, fin, ilo, ihi, sten, nsten) bind(c)
+SUBROUTINE apply_godfrey_filter_z_2d (lo, hi, fou, olo, ohi, fin, ilo, ihi, sten, nsten) bind(c,name='apply_godfrey_filter_z_2d')
   INTEGER, INTENT(in) :: lo(2), hi(2), olo(2), ohi(2), ilo(2), ihi(2), nsten
   REAL(NUM), INTENT(INOUT) :: fou(olo(1):ohi(1),olo(2):ohi(2))
   REAL(NUM), INTENT(IN   ) :: fin(ilo(1):ihi(1),ilo(2):ihi(2))
@@ -388,7 +388,7 @@ END SUBROUTINE apply_godfrey_filter_z_2d
 !> @date
 !> Creation 2018
 ! ________________________________________________________________________________________
-SUBROUTINE apply_godfrey_filter_z_3d (lo, hi, fou, olo, ohi, fin, ilo, ihi, sten, nsten) bind(c)
+SUBROUTINE apply_godfrey_filter_z_3d (lo, hi, fou, olo, ohi, fin, ilo, ihi, sten, nsten) bind(c,name='apply_godfrey_filter_z_3d')
   INTEGER, INTENT(in) :: lo(3), hi(3), olo(3), ohi(3), ilo(3), ihi(3), nsten
   REAL(NUM), INTENT(INOUT) :: fou(olo(1):ohi(1),olo(2):ohi(2),olo(3):ohi(3))
   REAL(NUM), INTENT(IN   ) :: fin(ilo(1):ihi(1),ilo(2):ihi(2),ilo(3):ihi(3))

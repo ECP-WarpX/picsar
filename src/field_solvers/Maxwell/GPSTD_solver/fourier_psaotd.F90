@@ -58,18 +58,16 @@ MODULE fourier_psaotd
   ! ______________________________________________________________________________________
   SUBROUTINE init_plans_fourier_mpi(nopenmp)
     USE fields, ONLY: ex_r, exf, exy_r
-    USE group_parameters, ONLY: nx_group, ny_group, mpi_comm_group_id,              &
-      nz_group
+    USE group_parameters, ONLY: mpi_comm_group_id, nx_group, ny_group, nz_group
     USE iso_c_binding
     USE mpi
-    USE mpi_fftw3, ONLY: plan_r2c_mpi, fftw_mpi_transposed_out, fftw_estimate,       &
-      fftw_mpi_plan_dft_c2r_3d, fftw_mpi_plan_dft_c2r_2d, plan_c2r_mpi,              &
-      fftw_mpi_plan_dft_r2c_3d, fftw_mpi_transposed_in, fftw_measure,                &
-      fftw_mpi_plan_dft_r2c_2d
+    USE mpi_fftw3, ONLY: fftw_estimate, fftw_measure, fftw_mpi_plan_dft_c2r_2d,      &
+      fftw_mpi_plan_dft_c2r_3d, fftw_mpi_plan_dft_r2c_2d, fftw_mpi_plan_dft_r2c_3d,  &
+      fftw_mpi_transposed_in, fftw_mpi_transposed_out, plan_c2r_mpi, plan_r2c_mpi
     USE picsar_precision, ONLY: idp, isp
-    USE shared_data, ONLY: fftw_plan_measure, nx_global, ny_global, fftw_threads_ok, &
-      comm, c_dim, nz_global, fftw_mpi_transpose, fftw_hybrid, nb_group,             &
-      p3dfft_flag ,absorbing_bcs
+    USE shared_data, ONLY: absorbing_bcs, c_dim, comm, fftw_hybrid,                  &
+      fftw_mpi_transpose, fftw_plan_measure, fftw_threads_ok, nb_group, nx_global,   &
+      ny_global, nz_global, p3dfft_flag
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: nopenmp
     INTEGER(C_INT) :: nopenmp_cint, iret
@@ -169,18 +167,18 @@ MODULE fourier_psaotd
   ! ______________________________________________________________________________________
   SUBROUTINE get_Ffields()
     USE fastfft
-    USE fields, ONLY: nzguards, nxguards, nyguards
-    USE fields, ONLY: exy_r, exz_r, eyx_r, eyz_r, ezx_r, ezy_r
-    USE fields, ONLY: bxy_r, bxz_r, byx_r, byz_r, bzx_r, bzy_r
+    USE fields, ONLY: bxy_r, bxz_r, byx_r, byz_r, bzx_r, bzy_r, exy_r, exz_r, eyx_r, &
+      eyz_r, ezx_r, ezy_r, nxguards, nyguards, nzguards, shift_x_pml, shift_y_pml,   &
+      shift_z_pml
     USE mpi
     USE params, ONLY: it
     USE picsar_precision, ONLY: idp, num
-    USE shared_data, ONLY: nz, ny, nx, absorbing_bcs, absorbing_bcs_x,                &
-                           absorbing_bcs_y, absorbing_bcs_z, c_dim
-    USE shared_data, ONLY : x_max_boundary, y_max_boundary, z_max_boundary
-    USE shared_data, ONLY : x_min_boundary, y_min_boundary, z_min_boundary
+    USE shared_data, ONLY: absorbing_bcs, absorbing_bcs_x, absorbing_bcs_y,          &
+      absorbing_bcs_z, c_dim, nx, ny, nz, x, x_max_boundary, x_min_boundary, y,      &
+      y_max_boundary, y_min_boundary, z, z_max_boundary, z_min_boundary
+    USE time_stat, ONLY: localtimes, timestat_itstart
 
-    USE time_stat, ONLY: timestat_itstart, localtimes
+     
 
     IMPLICIT NONE
     INTEGER(idp) :: nfftx, nffty, nfftz, nxx, nyy, nzz
@@ -206,7 +204,7 @@ MODULE fourier_psaotd
    ! reflective bcs after pml
     IF(absorbing_bcs_x) THEN
       IF(x_min_boundary) THEN
-        DO ix = -nxguards,-1
+        DO ix = -nxguards,-nxguards+shift_x_pml-1
           exy_r(ix,:,:) = 0.0_num
           exz_r(ix,:,:) = 0.0_num
           eyx_r(ix,:,:) = 0.0_num
@@ -222,7 +220,7 @@ MODULE fourier_psaotd
         ENDDO
       ENDIF
       IF(x_max_boundary) THEN
-        DO ix=nx,nx+nxguards-1 
+        DO ix=nx+nxguards-shift_x_pml,nx+nxguards-1 
           exy_r(ix,:,:) = 0.0_num
           exz_r(ix,:,:) = 0.0_num
           eyx_r(ix,:,:) = 0.0_num
@@ -245,7 +243,7 @@ MODULE fourier_psaotd
     IF(c_dim == 3) THEN 
       IF(absorbing_bcs_y) THEN
         IF(y_min_boundary) THEN
-          DO iy = -nyguards,-1
+          DO iy = -nyguards,-nyguards+shift_y_pml-1
             exy_r(:,iy,:) = 0.0_num
             exz_r(:,iy,:) = 0.0_num
             eyx_r(:,iy,:) = 0.0_num
@@ -261,7 +259,7 @@ MODULE fourier_psaotd
           ENDDO
         ENDIF
         IF(y_max_boundary) THEN
-          DO iy=ny,ny+nyguards-1  
+          DO iy=ny+nyguards-shift_y_pml,ny+nyguards-1  
             exy_r(:,iy,:) = 0.0_num
             exz_r(:,iy,:) = 0.0_num
             eyx_r(:,iy,:) = 0.0_num
@@ -284,7 +282,7 @@ MODULE fourier_psaotd
     ENDIF
     IF(absorbing_bcs_z) THEN
       IF(z_min_boundary) THEN
-        DO iz = -nzguards,-1
+        DO iz = -nzguards,-nzguards+shift_z_pml-1
           exy_r(:,:,iz) = 0.0_num
           exz_r(:,:,iz) = 0.0_num
           eyx_r(:,:,iz) = 0.0_num
@@ -300,7 +298,7 @@ MODULE fourier_psaotd
         ENDDO
       ENDIF
       IF(z_max_boundary) THEN
-        DO iz=nz ,nz+nzguards-1  
+        DO iz=nz + nzguards-shift_z_pml,nz+nzguards-1  
           exy_r(:,:,iz) = 0.0_num
           exz_r(:,:,iz) = 0.0_num
           eyx_r(:,:,iz) = 0.0_num
@@ -392,33 +390,28 @@ MODULE fourier_psaotd
   ! ______________________________________________________________________________________
   SUBROUTINE get_Ffields_mpi_lb()
     USE field_boundary
-    
-    USE fields, ONLY : nxguards
-    USE fields, ONLY: g_spectral
-    USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
-    USE fields, ONLY : ex_r, ey_r, ez_r, bx_r, by_r, bz_r, jx_r, jy_r, jz_r, rho_r,   &
-                       rhoold_r
-    USE fields, ONLY : exy, exz, eyx,  eyz, ezx, ezy , bxy, bxz, byx, byz, bzx, bzy
-    USE fields, ONLY : exy_r, exz_r, eyx_r,  eyz_r, ezx_r, ezy_r, bxy_r, bxz_r, byx_r,&
-                       byz_r, bzx_r, bzy_r
-    USE fields, ONLY : exf, eyf, ezf, bxf, byf, bzf, jxf, jyf, jzf, rhof,   &
-                       rhooldf
-
-    USE group_parameters, ONLY: l_first_cell_to_send_y, l_first_cell_to_send_z,      &
-      g_first_cell_to_recv_y, size_exchanges_l2g_recv_z, size_exchanges_l2g_recv_y,  &
-      g_first_cell_to_recv_z
-    USE group_parameters, ONLY : is_group_x_boundary_min, is_group_x_boundary_max
-    USE group_parameters, ONLY : is_group_y_boundary_min, is_group_y_boundary_max
-    USE group_parameters, ONLY : is_group_z_boundary_min, is_group_z_boundary_max
-    USE group_parameters, ONLY : cell_x_min_g, cell_y_min_g, cell_z_min_g
-    USE group_parameters, ONLY : cell_x_max_g, cell_y_max_g, cell_z_max_g
+    USE fields, ONLY: bx, bx_r, bxf, bxy, bxy_r, bxz, bxz_r, by, by_r, byf, byx,     &
+      byx_r, byz, byz_r, bz, bz_r, bzf, bzx, bzx_r, bzy, bzy_r, ex, ex_r, exf, exy,  &
+      exy_r, exz, exz_r, ey, ey_r, eyf, eyx, eyx_r, eyz, eyz_r, ez, ez_r, ezf, ezx,  &
+      ezx_r, ezy, ezy_r, g_spectral, jx, jx_r, jxf, jy, jy_r, jyf, jz, jz_r, jzf,    &
+      nxguards, nyguards, nzguards, rho_r, rhof, rhoold_r, rhooldf
+    USE group_parameters, ONLY: cell_x_max_g, cell_x_min_g, cell_y_max_g,            &
+      cell_y_min_g, cell_z_max_g, cell_z_min_g, g_first_cell_to_recv_y,              &
+      g_first_cell_to_recv_z, is_group_x_boundary_max, is_group_x_boundary_min,      &
+      is_group_y_boundary_max, is_group_y_boundary_min, is_group_z_boundary_max,     &
+      is_group_z_boundary_min, l_first_cell_to_send_y, l_first_cell_to_send_z,       &
+      size_exchanges_l2g_recv_y, size_exchanges_l2g_recv_z
     USE iso_c_binding
     USE mpi
     USE params, ONLY: it
     USE picsar_precision, ONLY: idp, num
-    USE shared_data, ONLY: rho, rhoold, ix_min_r, ix_max_r, y, z, absorbing_bcs,     &
-                           absorbing_bcs_x, absorbing_bcs_y, absorbing_bcs_z
-    USE time_stat, ONLY: timestat_itstart, localtimes
+    USE shared_data, ONLY: absorbing_bcs, absorbing_bcs_x, absorbing_bcs_y,          &
+      absorbing_bcs_z, c_dim, ix_max_r, ix_min_r, nx_global, ny_global, nz_global,   &
+      rho, rhoold, x, x_coords, x_max_boundary, y, y_coords, y_max_boundary, z,      &
+      z_coords, z_max_boundary
+    USE time_stat, ONLY: localtimes, timestat_itstart
+    
+
 
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz,ixx,iyy,izz
@@ -738,15 +731,15 @@ MODULE fourier_psaotd
  ! _______________________________________________________________________________________
   SUBROUTINE get_Ffields_mpi
     USE field_boundary
-    USE fields, ONLY: ez_r, ez, jx_r, ey_r, ex_r, bx_r, jz, by_r, rho_r, bz, bz_r,   &
-      jy, jx, ex, bx, jz_r, jy_r, by, rhoold_r, ey
+    USE fields, ONLY: bx, bx_r, by, by_r, bz, bz_r, ex, ex_r, ey, ey_r, ez, ez_r,    &
+      jx, jx_r, jy, jy_r, jz, jz_r, rho_r, rhoold_r
     USE iso_c_binding
     USE mpi
     USE params, ONLY: it
     USE picsar_precision, ONLY: idp, num
-    USE shared_data, ONLY: rho, rhoold, iy_max_r, iz_max_r, iz_min_r, ix_min_r,      &
-      ix_max_r, iy_min_r
-    USE time_stat, ONLY: timestat_itstart, localtimes
+    USE shared_data, ONLY: ix_max_r, ix_min_r, iy_max_r, iy_min_r, iz_max_r,         &
+      iz_min_r, rho, rhoold
+    USE time_stat, ONLY: localtimes, timestat_itstart
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz
     REAL(num)    :: tmptime
@@ -795,12 +788,12 @@ MODULE fourier_psaotd
   ! ______________________________________________________________________________________
   SUBROUTINE get_fields()
     USE fastfft
-    USE fields, ONLY: nzguards, nxguards, nyguards
+    USE fields, ONLY: nxguards, nyguards, nzguards
     USE mpi
     USE params, ONLY: it
     USE picsar_precision, ONLY: idp, num
-    USE shared_data, ONLY: nz, ny, nx
-    USE time_stat, ONLY: timestat_itstart, localtimes
+    USE shared_data, ONLY: nx, ny, nz
+    USE time_stat, ONLY: localtimes, timestat_itstart
     IMPLICIT NONE
     REAL(num) :: tmptime
     INTEGER(idp) :: ix, iy, iz, nxx, nyy, nzz, nfftx, nffty, nfftz
@@ -843,14 +836,14 @@ MODULE fourier_psaotd
  !> Creation 2017
  ! _______________________________________________________________________________________
   SUBROUTINE get_fields_mpi
-    USE fields, ONLY: ez_r, ez, ey_r, ex_r, bx_r, by_r, bz, bz_r, ex, bx, by, ey
+    USE fields, ONLY: bx, bx_r, by, by_r, bz, bz_r, ex, ex_r, ey, ey_r, ez, ez_r
     USE iso_c_binding
     USE mpi
     USE params, ONLY: it
     USE picsar_precision, ONLY: idp, num
-    USE shared_data, ONLY: iy_max_r, iz_max_r, iz_min_r, ix_min_r, ix_max_r,         &
-      iy_min_r
-    USE time_stat, ONLY: timestat_itstart, localtimes
+    USE shared_data, ONLY: ix_max_r, ix_min_r, iy_max_r, iy_min_r, iz_max_r,         &
+      iz_min_r
+    USE time_stat, ONLY: localtimes, timestat_itstart
     IMPLICIT NONE
     REAL(num) :: tmptime
     INTEGER(idp) :: ix, iy, iz
@@ -895,17 +888,19 @@ MODULE fourier_psaotd
   ! ______________________________________________________________________________________
   SUBROUTINE get_fields_mpi_lb
     USE field_boundary
-    USE fields, ONLY: ez_r, ez, ey_r, ex_r, bx_r, by_r, bz, nxguards, bz_r, ex, bx,  &
-      by, ey
-    USE group_parameters, ONLY: g_first_cell_to_send_y, size_exchanges_g2l_recv_z,   &
-      l_first_cell_to_recv_z, g_first_cell_to_send_z, l_first_cell_to_recv_y,        &
-      size_exchanges_g2l_recv_y
+    USE fields, ONLY: bx, bx_r, bxy, bxy_r, bxz, bxz_r, by, by_r, byx, byx_r, byz,   &
+      byz_r, bz, bz_r, bzx, bzx_r, bzy, bzy_r, ex, ex_r, exy, exy_r, exz, exz_r, ey, &
+      ey_r, eyx, eyx_r, eyz, eyz_r, ez, ez_r, ezx, ezx_r, ezy, ezy_r, nxguards,      &
+      nyguards, nzguards
+    USE group_parameters, ONLY: g_first_cell_to_send_y, g_first_cell_to_send_z,      &
+      l_first_cell_to_recv_y, l_first_cell_to_recv_z, size_exchanges_g2l_recv_y,     &
+      size_exchanges_g2l_recv_z
     USE iso_c_binding
     USE mpi
     USE params, ONLY: it
     USE picsar_precision, ONLY: idp, num
-    USE shared_data, ONLY: ix_min_r, ix_max_r, y, z
-    USE time_stat, ONLY: timestat_itstart, localtimes
+    USE shared_data, ONLY: absorbing_bcs, ix_max_r, ix_min_r, y, z
+    USE time_stat, ONLY: localtimes, timestat_itstart
     IMPLICIT NONE
     REAL(num) ::  tmptime
     INTEGER(idp) :: ix, iy, iz
@@ -1134,22 +1129,18 @@ MODULE fourier_psaotd
  
   SUBROUTINE fft_forward_r2c_local(nfftx,nffty,nfftz) 
     USE fastfft
-    USE fields, ONLY: g_spectral
-    USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
-    USE fields, ONLY : ex_r, ey_r, ez_r, bx_r, by_r, bz_r, jx_r, jy_r, jz_r, rho_r,   &
-                       rhoold_r
-    USE fields, ONLY : exy, exz, eyx,  eyz, ezx, ezy , bxy, bxz, byx, byz, bzx, bzy
-    USE fields, ONLY : exy_r, exz_r, eyx_r,  eyz_r, ezx_r, ezy_r, bxy_r, bxz_r, byx_r,&
-                       byz_r, bzx_r, bzy_r
-    USE fields, ONLY : exf, eyf, ezf, bxf, byf, bzf, jxf, jyf, jzf, rhof,   &
-                       rhooldf
-    USE shared_data, ONLY : absorbing_bcs
-
+    USE fields, ONLY: bx, bx_r, bxf, bxy, bxy_r, bxz, bxz_r, by, by_r, byf, byx,     &
+      byx_r, byz, byz_r, bz, bz_r, bzf, bzx, bzx_r, bzy, bzy_r, ex, ex_r, exf, exy,  &
+      exy_r, exz, exz_r, ey, ey_r, eyf, eyx, eyx_r, eyz, eyz_r, ez, ez_r, ezf, ezx,  &
+      ezx_r, ezy, ezy_r, g_spectral, jx, jx_r, jxf, jy, jy_r, jyf, jz, jz_r, jzf,    &
+      rho_r, rhof, rhoold_r, rhooldf
     USE fourier, ONLY: plan_r2c
     USE mpi
     USE params, ONLY: it
     USE picsar_precision, ONLY: idp, num
-    USE time_stat, ONLY: timestat_itstart, localtimes
+    USE shared_data, ONLY: absorbing_bcs
+    USE time_stat, ONLY: localtimes, timestat_itstart
+
     REAL(num)   :: tmptime
     INTEGER(idp), INTENT(IN)    ::   nfftx,nffty,nfftz
     
@@ -1239,26 +1230,22 @@ MODULE fourier_psaotd
 
   SUBROUTINE fft_forward_r2c_hybrid()
     USE fastfft
-    USE fields, ONLY: g_spectral
-    USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
-    USE fields, ONLY : ex_r, ey_r, ez_r, bx_r, by_r, bz_r, jx_r, jy_r, jz_r, rho_r,   &
-                       rhoold_r
-    USE fields, ONLY : exy, exz, eyx,  eyz, ezx, ezy , bxy, bxz, byx, byz, bzx, bzy
-    USE fields, ONLY : exy_r, exz_r, eyx_r,  eyz_r, ezx_r, ezy_r, bxy_r, bxz_r, byx_r,&
-                       byz_r, bzx_r, bzy_r
-    USE fields, ONLY : exf, eyf, ezf, bxf, byf, bzf, jxf, jyf, jzf, rhof,   &
-                       rhooldf
-
+    USE fields, ONLY: bx, bx_r, bxf, bxy, bxy_r, bxz, bxz_r, by, by_r, byf, byx,     &
+      byx_r, byz, byz_r, bz, bz_r, bzf, bzx, bzx_r, bzy, bzy_r, ex, ex_r, exf, exy,  &
+      exy_r, exz, exz_r, ey, ey_r, eyf, eyx, eyx_r, eyz, eyz_r, ez, ez_r, ezf, ezx,  &
+      ezx_r, ezy, ezy_r, g_spectral, jx, jx_r, jxf, jy, jy_r, jyf, jz, jz_r, jzf,    &
+      rho_r, rhof, rhoold_r, rhooldf
     USE iso_c_binding
     USE mpi
-    USE mpi_fftw3, ONLY: plan_r2c_mpi, fftw_mpi_execute_dft_r2c
+    USE mpi_fftw3, ONLY: fftw_mpi_execute_dft_r2c, plan_r2c_mpi
 #if defined(P3DFFT) 
     USE p3dfft
 #endif
     USE params, ONLY: it
     USE picsar_precision, ONLY: num
-    USE shared_data, ONLY: p3dfft_flag, absorbing_bcs
-    USE time_stat, ONLY: timestat_itstart, localtimes
+    USE shared_data, ONLY: absorbing_bcs, p3dfft_flag
+    USE time_stat, ONLY: localtimes, timestat_itstart
+
     REAL(num)   :: tmptime
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
@@ -1404,21 +1391,17 @@ MODULE fourier_psaotd
 
   SUBROUTINE fft_backward_c2r_local(nfftx,nffty,nfftz)
     USE fastfft
-    USE fields, ONLY: g_spectral
-    USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
-    USE fields, ONLY : ex_r, ey_r, ez_r, bx_r, by_r, bz_r, jx_r, jy_r, jz_r, rho_r,   &
-                       rhoold_r
-    USE fields, ONLY : exy, exz, eyx,  eyz, ezx, ezy , bxy, bxz, byx, byz, bzx, bzy
-    USE fields, ONLY : exy_r, exz_r, eyx_r,  eyz_r, ezx_r, ezy_r, bxy_r, bxz_r, byx_r,&
-                       byz_r, bzx_r, bzy_r
-    USE fields, ONLY : exf, eyf, ezf, bxf, byf, bzf, jxf, jyf, jzf, rhof,   &
-                       rhooldf
+    USE fields, ONLY: bx, bx_r, bxf, bxy, bxy_r, bxz, bxz_r, by, by_r, byf, byx,     &
+      byx_r, byz, byz_r, bz, bz_r, bzf, bzx, bzx_r, bzy, bzy_r, ex, ex_r, exf, exy,  &
+      exy_r, exz, exz_r, ey, ey_r, eyf, eyx, eyx_r, eyz, eyz_r, ez, ez_r, ezf, ezx,  &
+      ezx_r, ezy, ezy_r, g_spectral, jx, jx_r, jxf, jy, jy_r, jyf, jz, jz_r, jzf,    &
+      rho_r, rhof, rhoold_r, rhooldf
     USE fourier, ONLY: plan_c2r
     USE mpi
     USE params, ONLY: it
     USE picsar_precision, ONLY: idp, num
-    USE time_stat, ONLY: timestat_itstart, localtimes
     USE shared_data, ONLY: absorbing_bcs
+    USE time_stat, ONLY: localtimes, timestat_itstart
     REAL(num)   :: tmptime
     INTEGER(idp), INTENT(IN)     :: nfftx,nffty,nfftz
 
@@ -1486,27 +1469,23 @@ MODULE fourier_psaotd
 
   SUBROUTINE fft_backward_c2r_hybrid()
     USE fastfft
-    USE fields, ONLY:  g_spectral
-    USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
-    USE fields, ONLY : ex_r, ey_r, ez_r, bx_r, by_r, bz_r, jx_r, jy_r, jz_r, rho_r,   &
-                       rhoold_r
-    USE fields, ONLY : exy, exz, eyx,  eyz, ezx, ezy , bxy, bxz, byx, byz, bzx, bzy
-    USE fields, ONLY : exy_r, exz_r, eyx_r,  eyz_r, ezx_r, ezy_r, bxy_r, bxz_r, byx_r,&
-                       byz_r, bzx_r, bzy_r
-    USE fields, ONLY : exf, eyf, ezf, bxf, byf, bzf, jxf, jyf, jzf, rhof,   &
-                       rhooldf
-
-
+    USE fields, ONLY: bx, bx_r, bxf, bxy, bxy_r, bxz, bxz_r, by, by_r, byf, byx,     &
+      byx_r, byz, byz_r, bz, bz_r, bzf, bzx, bzx_r, bzy, bzy_r, ex, ex_r, exf, exy,  &
+      exy_r, exz, exz_r, ey, ey_r, eyf, eyx, eyx_r, eyz, eyz_r, ez, ez_r, ezf, ezx,  &
+      ezx_r, ezy, ezy_r, g_spectral, jx, jx_r, jxf, jy, jy_r, jyf, jz, jz_r, jzf,    &
+      rho_r, rhof, rhoold_r, rhooldf
     USE iso_c_binding
     USE mpi
-    USE mpi_fftw3, ONLY: plan_c2r_mpi, fftw_mpi_execute_dft_c2r
+    USE mpi_fftw3, ONLY: fftw_mpi_execute_dft_c2r, plan_c2r_mpi
 #if defined(P3DFFT)
     USE p3dfft
 #endif
     USE params, ONLY: it
     USE picsar_precision, ONLY: num
-    USE shared_data, ONLY: p3dfft_flag, absorbing_bcs, p3dfft_flag
-    USE time_stat, ONLY: timestat_itstart, localtimes
+    USE shared_data, ONLY: absorbing_bcs, p3dfft_flag
+    USE time_stat, ONLY: localtimes, timestat_itstart
+
+
     REAL(num)   :: tmptime
 
     IF (it.ge.timestat_itstart) THEN
@@ -1612,13 +1591,13 @@ MODULE fourier_psaotd
   END SUBROUTINE fft_backward_c2r_hybrid
 
   SUBROUTINE push_psaotd_ebfielfs_2d()
-    USE fields, ONLY: ezf, jxf, rhooldf, rhof, bxf, jzf, eyf, jyf, byf, bzf, exf
+    USE fields, ONLY: bxf, byf, bzf, exf, eyf, ezf, jxf, jyf, jzf, rhof, rhooldf
     USE iso_c_binding
     USE mpi
     USE params, ONLY: it
-    USE picsar_precision, ONLY: idp, num, cpx
+    USE picsar_precision, ONLY: cpx, idp, num
     USE shared_data, ONLY: nkx, nkz
-    USE time_stat, ONLY: timestat_itstart, localtimes
+    USE time_stat, ONLY: localtimes, timestat_itstart
 
     IMPLICIT NONE
     INTEGER(idp) ::  ix, iy, iz, nxx, nzz
@@ -1698,13 +1677,13 @@ MODULE fourier_psaotd
   END SUBROUTINE push_psaotd_ebfielfs_2d
 
   SUBROUTINE push_psaotd_ebfielfs_3d()
-    USE fields, ONLY: ezf, jxf, rhooldf, rhof, bxf, jzf, eyf, jyf, byf, bzf, exf
+    USE fields, ONLY: bxf, byf, bzf, exf, eyf, ezf, jxf, jyf, jzf, rhof, rhooldf
     USE iso_c_binding
     USE mpi
     USE params, ONLY: it
-    USE picsar_precision, ONLY: idp, num, cpx
+    USE picsar_precision, ONLY: cpx, idp, num
     USE shared_data, ONLY: nkx, nky, nkz
-    USE time_stat, ONLY: timestat_itstart, localtimes
+    USE time_stat, ONLY: localtimes, timestat_itstart
 
     IMPLICIT NONE
     INTEGER(idp) ::  ix, iy, iz, nxx, nyy, nzz
@@ -1978,14 +1957,14 @@ MODULE fourier_psaotd
 
   SUBROUTINE init_plans_blocks()
     USE fastfft
-    USE fftw3_fortran, ONLY: fftw_measure, fftw_backward, fftw_forward
-    USE fields, ONLY: ex_r, nzguards, nxguards, g_spectral, nyguards, exf, exy_r
+    USE fftw3_fortran, ONLY: fftw_backward, fftw_forward, fftw_measure
+    USE fields, ONLY: ex_r, exf, exy_r, g_spectral, nxguards, nyguards, nzguards
     USE fourier, ONLY: plan_c2r, plan_r2c
     USE iso_c_binding
     USE omp_lib
     USE picsar_precision, ONLY: idp
-    USE shared_data, ONLY: nz, ny, fftw_with_mpi, nx, nx_global, p3dfft_flag,        &
-      ny_global, c_dim, nz_global, rank, absorbing_bcs
+    USE shared_data, ONLY: absorbing_bcs, c_dim, fftw_with_mpi, nx, nx_global, ny,   &
+      ny_global, nz, nz_global, p3dfft_flag, rank
 
     INTEGER(idp) :: nfftx, nffty, nfftz, nopenmp
 #ifdef _OPENMP

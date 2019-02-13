@@ -51,22 +51,20 @@
 SUBROUTINE step(nst)
 USE diagnostics
 USE field_boundary
-USE fields !, ONLY: l_spectral, l_AM_rz,  nzguards, nxguards, nyguards
+USE fields, ONLY: l_spectral, l_AM_rz, nxguards, nyguards, nzguards
 #if defined(FFTW)
 USE Hankel
 USE gpstd_solver
-#endif
-#if defined(FFTW)
 USE iso_c_binding
 #endif
 USE mpi
 USE mpi_routines
-USE output_data, ONLY: dive_computed, timeit, pushtime, startit
-USE params, ONLY: dt, nsteps, it
+USE output_data, ONLY: dive_computed, pushtime, startit, timeit
+USE params, ONLY: dt, it, nsteps
 USE particle_boundary
-USE particle_properties, ONLY: ntot, particle_pusher, l_plasma
+USE particle_properties, ONLY: l_plasma, ntot, particle_pusher
 USE picsar_precision, ONLY: idp, num
-USE shared_data, ONLY: rho,nmodes, nz, ny, rhoold, nx, c_dim, rank
+USE shared_data, ONLY: absorbing_bcs, c_dim, nx, ny, nz, nmodes, rank, rho, rhoold
 USE simple_io
 USE sorting
 
@@ -497,19 +495,26 @@ END SUBROUTINE laser_gaussian
 
 
 SUBROUTINE init_pml_arrays
+  USE constants, ONLY: clight
   USE field_boundary
-  USE fields
-  USE shared_data
-  USE constants  
-  USE params, ONLY : dt 
+  USE fields, ONLY: nx_pml, nxguards, ny_pml, nyguards, nz_pml, nzguards,            &
+    shift_x_pml, shift_y_pml, shift_z_pml, sigma_x_b, sigma_x_e, sigma_y_b,          &
+    sigma_y_e, sigma_z_b, sigma_z_e
   USE mpi
   USE mpi_derived_types
+  USE params, ONLY: dt
+  USE picsar_precision, ONLY: idp, lp, num
+  USE shared_data, ONLY: absorbing_bcs_x, absorbing_bcs_y, absorbing_bcs_z, c_dim,   &
+    cell_x_max, cell_x_min, cell_y_max, cell_y_min, cell_z_max, cell_z_min, dx, dy,  &
+    dz, fftw_hybrid, nx, nx_global, ny, ny_global, nz, nz_global, x, x_coords, y,    &
+    y_coords, z, z_coords
 
   LOGICAL(lp)  :: is_intersection_x, is_intersection_y, is_intersection_z
   INTEGER(idp) :: ix,iy,iz,pow
   REAL(num)    :: coeff,b_offset, e_offset
   INTEGER(idp) :: type_id  
   REAL(num)    , ALLOCATABLE, DIMENSION(:) :: temp
+  INTEGER(idp) :: cx, cy, cz 
 
   coeff = 4._num/25._num
   b_offset = .50_num
@@ -543,21 +548,30 @@ SUBROUTINE init_pml_arrays
   sigma_z_e = 0.0_num
   ALLOCATE(sigma_z_b(-nzguards:nz_global+nzguards-1));
   sigma_z_b = 0.0_num
-
+  
   !> Inits sigma_x_e and sigma_x_b in the lower bound of the domain along x
   !> axis
   !> first, each proc will compute sigma in the whole domain
+    
+  cx = nxguards - shift_x_pml
+  cy = nyguards - shift_y_pml
+  cz = nzguards - shift_z_pml
+  IF(fftw_hybrid) THEN
+    cx = 0_idp
+    cy = 0_idp
+    cz = 0_idp
+  ENDIF
   DO ix = 0,nx_pml-1
-    sigma_x_e(ix) = coeff*clight/dx*(nx_pml-ix-e_offset)**pow
-    sigma_x_b(ix) = coeff*clight/dx*(nx_pml-ix-b_offset)**pow
+    sigma_x_e(ix-cx) = coeff*clight/dx*(nx_pml-ix-e_offset)**pow
+    sigma_x_b(ix-cx) = coeff*clight/dx*(nx_pml-ix-b_offset)**pow
   ENDDO
 
   ! > Inits sigma_x_e and sigma_x_b in the upper bound of the domain along x
   !> axis
   !> first, each proc will compute sigma in the whole domain
   DO ix = nx_global-nx_pml, nx_global-1
-    sigma_x_e(ix) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+e_offset)**pow
-    sigma_x_b(ix-1) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+b_offset-1)**pow
+    sigma_x_e(ix+cx) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+e_offset)**pow
+    sigma_x_b(ix-1+cx) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+b_offset-1)**pow
   ENDDO
 
   !> Each proc extracts the relevent part of sigma 
@@ -575,16 +589,16 @@ SUBROUTINE init_pml_arrays
     !> axis
     !> first, each proc will compute sigma in the whole domain
     DO iy = 0 , ny_pml-1
-      sigma_y_e(iy) =  coeff*clight/dy*(ny_pml-iy-e_offset)**pow
-      sigma_y_b(iy) =  coeff*clight/dy*(ny_pml-iy-b_offset)**pow
+      sigma_y_e(iy-cy) =  coeff*clight/dy*(ny_pml-iy-e_offset)**pow
+      sigma_y_b(iy-cy) =  coeff*clight/dy*(ny_pml-iy-b_offset)**pow
     ENDDO
   
     ! > Inits sigma_y_e and sigma_y_b in the upper bound of the domain along y
     !> axis
     !> first, each proc will compute sigma in the whole domain
     DO iy = ny_global-ny_pml,ny_global-1
-      sigma_y_e(iy) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+e_offset)**pow
-      sigma_y_b(iy-1) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+b_offset-1)**pow
+      sigma_y_e(iy+cy) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+e_offset)**pow
+      sigma_y_b(iy-1+cy) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+b_offset-1)**pow
     ENDDO
     
     !> Each proc extracts the relevent part of sigma 
@@ -602,8 +616,8 @@ SUBROUTINE init_pml_arrays
   !> first, each proc will compute sigma in the whole domain
   !> Need more straightforward way to do this
   DO iz =0 , nz_pml-1
-    sigma_z_e(iz) =  coeff*clight/dz*(nz_pml-iz-e_offset)**pow
-    sigma_z_b(iz) =  coeff*clight/dz*(nz_pml-iz-b_offset)**pow
+    sigma_z_e(iz-cz) =  coeff*clight/dz*(nz_pml-iz-e_offset)**pow
+    sigma_z_b(iz-cz) =  coeff*clight/dz*(nz_pml-iz-b_offset)**pow
   ENDDO
 
   ! > Inits sigma_z_e and sigma_z_b in the upper bound of the domain along z
@@ -611,8 +625,8 @@ SUBROUTINE init_pml_arrays
   !> first, each proc will compute sigma in the whole domain
   !> Need more straightforward way to do this
   DO iz =  nz_global-nz_pml,nz_global-1 
-     sigma_z_e(iz) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+e_offset)**pow
-     sigma_z_b(iz-1) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+b_offset-1)**pow
+     sigma_z_e(iz+cz) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+e_offset)**pow
+     sigma_z_b(iz-1+cz) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+b_offset-1)**pow
   ENDDO
 
   !> Each proc extracts the relevent part of sigma 
@@ -664,34 +678,36 @@ END SUBROUTINE init_pml_arrays
 !> @date
 !> Creation 2015
 SUBROUTINE initall
-  USE constants, ONLY: eps0, emass, pi, echarge, clight
-  USE fields !, ONLY: ez, nox, noy, noz, jz, l_spectral, xcoeffs, bz, nzguards,        &
-!    nxguards, nyguards, jy, jx, ex, bx, by, ey
+  USE constants, ONLY: clight, echarge, emass, eps0, pi
+  USE fields, ONLY: bx, by, bz, ex, ey, ez, g_spectral, jx, jy, jz, l_spectral, nox, &
+    noy, noz, nx_pml, nxguards, ny_pml, nyguards, nz_pml, nzguards, xcoeffs
 #if defined(FFTW)
   USE fourier_psaotd
   USE gpstd_solver
-  USE shared_data, ONLY: nb_group_x, nb_group_y, nb_group_z
 #endif
   USE mpi
-  USE output_data, ONLY: particle_dump, npdumps, particle_dumps
-  USE params, ONLY: g0, w0_l, currdepo, lvec_charge_depo, w0_t, mpicom_curr, dtcoef, &
-    tmax, rhodepo, fieldgathe, fg_p_pp_separated, partcom, lvec_curr_depo, dt, nc,   &
-    mpi_buf_size, wlab, w0, topology, nsteps, lambdalab, lvec_fieldgathe, it, nlab
+  USE output_data, ONLY: npdumps, particle_dump, particle_dumps
+  USE params, ONLY: currdepo, dt, dtcoef, fg_p_pp_separated, fieldgathe, g0, it,     &
+    lambdalab, lvec_charge_depo, lvec_curr_depo, lvec_fieldgathe, mpi_buf_size,      &
+    mpicom_curr, nc, nlab, nsteps, partcom, rhodepo, tmax, topology, w0, w0_l, w0_t, &
+    wlab
   USE particle_properties, ONLY: nspecies, particle_pusher, pdistr
   USE particle_speciesmodule, ONLY: particle_species
   USE particles, ONLY: species_parray
   USE picsar_precision, ONLY: idp, num
-  USE precomputed, ONLY: dts2dz, dys2, dts2dx, dzs2, dts2dy, dzi, invvol, dyi,       &
-    dtsdy0, dtsdz0, dxi, clightsq, dtsdx0, dxs2
-  USE shared_data, ONLY: nz, ny, fftw_with_mpi, y_min_local, nx_grid, sorting_dx,    &
-    nx, nz_grid, p3dfft_stride, y_max_local, p3dfft_flag, sorting_shiftx, ymin,      &
-    fftw_threads_ok, sorting_dy, y, ymax, z, dx, c_dim, sorting_activated, ny_grid,  &
-    sorting_shiftz, x, fftw_mpi_transpose, dy, rank, sorting_shifty, fftw_hybrid,    &
-    sorting_dz, dz, nmodes
-  USE tile_params, ONLY: ntilez, ntilex, ntiley
+  USE precomputed, ONLY: clightsq, dts2dx, dts2dy, dts2dz, dtsdx0, dtsdy0, dtsdz0,   &
+    dxi, dxs2, dyi, dys2, dzi, dzs2, invvol
+  USE shared_data, ONLY: absorbing_bcs, absorbing_bcs_x, absorbing_bcs_y,            &
+    absorbing_bcs_z, c_dim, cell_y_max, cell_y_min, dx, dy, dz, fftw_hybrid,         &
+    fftw_mpi_transpose, fftw_threads_ok, fftw_with_mpi, nb_group_x, nb_group_y,      &
+    nb_group_z, nx, nx_grid, nxg_group, ny, ny_grid, nyg_group, nz, nz_grid,         &
+    nzg_group, p3dfft_flag, p3dfft_stride, rank, sorting_activated, sorting_dx,      &
+    sorting_dy, sorting_dz, sorting_shiftx, sorting_shifty, sorting_shiftz, x, y,    &
+    y_max_local, y_min_local, ymax, ymin, z, nmodes
+  USE tile_params, ONLY: ntilex, ntiley, ntilez
   USE tiling
-  USE time_stat, ONLY: timestat_itstart, timestat_activated, nbuffertimestat,        &
-    init_localtimes, localtimes
+  USE time_stat, ONLY: init_localtimes, localtimes, nbuffertimestat,                 &
+    timestat_activated, timestat_itstart
   ! ________________________________________________________________________________________
 
   !use IFPORT ! uncomment if using the intel compiler (for rand)
@@ -1004,7 +1020,9 @@ END SUBROUTINE initall
 
 
 SUBROUTINE init_splitted_fields_random()
-  USE fields
+  USE fields, ONLY: bx, bxy, bxz, by, byx, byz, bz, bzx, bzy, ex, exy, exz, ey, eyx, &
+    eyz, ez, ezx, ezy
+  USE picsar_precision, ONLY: num
   exy = 0.5_num * ex
   exz = 0.5_num * ex
   eyx = 0.5_num * ey
@@ -1032,8 +1050,8 @@ END SUBROUTINE init_splitted_fields_random
 !> Creation 2018
 ! ________________________________________________________________________________________
 SUBROUTINE estimate_total_memory_consumption
-  USE mem_status, ONLY: local_grid_mem, global_part_tiles_mem,                       &
-    global_grid_tiles_mem, global_grid_mem
+  USE mem_status, ONLY: global_grid_mem, global_grid_tiles_mem,                      &
+    global_part_tiles_mem, local_grid_mem
   USE mpi_routines
   USE picsar_precision, ONLY: num
   USE tiling
@@ -1072,7 +1090,7 @@ END SUBROUTINE estimate_total_memory_consumption
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE init_stencil_coefficients()
-USE fields, ONLY: nordery, zcoeffs, l_nodalgrid, xcoeffs, norderz, ycoeffs, norderx
+USE fields, ONLY: l_nodalgrid, norderx, nordery, norderz, xcoeffs, ycoeffs, zcoeffs
 USE params, ONLY: l_coeffs_allocated
 USE tiling
 
@@ -1109,7 +1127,7 @@ END SUBROUTINE init_stencil_coefficients
 !> @date
 !> Creation 2015
 SUBROUTINE FD_weights(coeffs, norder, l_nodal)
-  USE picsar_precision, ONLY: idp, num, lp
+  USE picsar_precision, ONLY: idp, lp, num
   ! ________________________________________________________________________________________
 
   IMPLICIT NONE
@@ -1182,7 +1200,7 @@ END SUBROUTINE FD_weights
 !> Creation 2016
 SUBROUTINE current_debug
   USE fields, ONLY: jy
-  USE shared_data, ONLY: nz, ny, nx
+  USE shared_data, ONLY: nx, ny, nz
   ! ________________________________________________________________________________________
   IMPLICIT NONE
 

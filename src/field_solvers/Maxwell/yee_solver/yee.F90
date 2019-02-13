@@ -46,7 +46,7 @@
 SUBROUTINE pxrpush_em3d_evec_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx,  &
   dtsdy, dtsdz, nx, ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard, nxs,  &
   nys, nzs, l_nodalgrid)
-  USE picsar_precision, ONLY: idp, num, lp
+  USE picsar_precision, ONLY: idp, lp, num
 
   INTEGER(idp), INTENT(IN) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
   INTEGER(idp), INTENT(IN) :: norderx, nordery, norderz
@@ -135,7 +135,7 @@ END SUBROUTINE pxrpush_em3d_evec_norder
 SUBROUTINE pxrpush_em2d_evec_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx,  &
   dtsdy, dtsdz, nx, ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard, nxs,  &
   nys, nzs, l_nodalgrid)
-  USE picsar_precision, ONLY: idp, num, lp
+  USE picsar_precision, ONLY: idp, lp, num
   INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, norderx,      &
   nordery, norderz
   REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
@@ -225,8 +225,8 @@ subroutine pxrpush_em2d_evec( &
      jy, jylo, jyhi, &
      jz, jzlo, jzhi, &
      mudt, dtsdx, dtsdy, dtsdz)
-     USE picsar_precision, ONLY: idp, num, isp
-     
+     USE picsar_precision, ONLY: idp, isp, num
+
 
 #ifdef WARPX
   integer(isp), intent(in) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
@@ -263,16 +263,22 @@ subroutine pxrpush_em2d_evec( &
   !$OMP SHARED(ex, ey, ez, bx, by, bz, jx, jy, jz)
   !$OMP DO COLLAPSE(2)
 #endif
+!$acc parallel deviceptr(ex,By,jx)
+!$acc loop gang vector collapse(2)
   do k   = xlo(2), xhi(2)
     do j = xlo(1), xhi(1)
       ex(j,k) = ex(j,k) - dtsdz * (By(j,k) - By(j,k-1)) &
                         - mudt  * jx(j,k)
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP DO COLLAPSE(2)
 #endif
+!$acc parallel deviceptr(Ey,Bz,Bx,jy)
+!$acc loop gang vector collapse(2)
   do k   = ylo(2), yhi(2)
     do j = ylo(1), yhi(1)
       Ey(j,k) = Ey(j,k) - dtsdx * (Bz(j,k) - Bz(j-1,k)) &
@@ -280,16 +286,22 @@ subroutine pxrpush_em2d_evec( &
                         - mudt  * jy(j,k)
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP DO COLLAPSE(2)
 #endif
+!$acc parallel deviceptr(Ez,By,jz)
+!$acc loop gang vector collapse(2)
   do k   = zlo(2), zhi(2)
     do j = zlo(1), zhi(1)
       Ez(j,k) = Ez(j,k) + dtsdx * (By(j,k) - By(j-1,k  )) &
                         - mudt  * jz(j,k)
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP END PARALLEL
@@ -325,7 +337,7 @@ subroutine pxrpush_em3d_evec( &
      jy, jylo, jyhi, &
      jz, jzlo, jzhi, &
      mudt, dtsdx,dtsdy,dtsdz)
-USE picsar_precision, ONLY: idp, num, isp
+USE picsar_precision, ONLY: idp, isp, num
 ! ______________________________________________________________________________
 
 
@@ -364,6 +376,8 @@ USE picsar_precision, ONLY: idp, num, isp
   !$OMP SHARED(ex, ey, ez, bx, by, bz, jx, jy, jz)
   !$OMP DO COLLAPSE(3)
 #endif
+!$acc parallel deviceptr(Ex,Bz,By,jx)
+!$acc loop gang vector collapse(3)
   do l     = xlo(3), xhi(3)
     do k   = xlo(2), xhi(2)
       do j = xlo(1), xhi(1)
@@ -373,10 +387,14 @@ USE picsar_precision, ONLY: idp, num, isp
       end do
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP DO COLLAPSE(3)
 #endif
+!$acc parallel deviceptr(Ey,Bz,Bx,jy)
+!$acc loop gang vector collapse(3)
   do l     = ylo(3), yhi(3)
     do k   = ylo(2), yhi(2)
       do j = ylo(1), yhi(1)
@@ -386,10 +404,14 @@ USE picsar_precision, ONLY: idp, num, isp
       end do
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP DO COLLAPSE(3)
 #endif
+!$acc parallel deviceptr(Ez,By,Bx,jz)
+!$acc loop gang vector collapse(3)
   do l     = zlo(3), zhi(3)
     do k   = zlo(2), zhi(2)
       do j = zlo(1), zhi(1)
@@ -399,6 +421,8 @@ USE picsar_precision, ONLY: idp, num, isp
       end do
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP END PARALLEL
@@ -419,7 +443,7 @@ end subroutine pxrpush_em3d_evec
 SUBROUTINE pxrpush_em3d_bvec_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx,  &
   ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard, nxs, nys, nzs,          &
   l_nodalgrid)
-  USE picsar_precision, ONLY: idp, num, lp
+  USE picsar_precision, ONLY: idp, lp, num
   INTEGER(idp), INTENT(IN)    :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs,      &
   norderx, nordery, norderz
   REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
@@ -500,7 +524,7 @@ END SUBROUTINE pxrpush_em3d_bvec_norder
 SUBROUTINE pxrpush_em2d_bvec_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx,  &
   ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard, nxs, nys, nzs,          &
   l_nodalgrid)
-  USE picsar_precision, ONLY: idp, num, lp
+  USE picsar_precision, ONLY: idp, lp, num
   INTEGER(idp) , INTENT(IN) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, norderx,      &
   nordery, norderz
   REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
@@ -585,7 +609,7 @@ subroutine pxrpush_em2d_bvec( &
      by, bylo, byhi, &
      bz, bzlo, bzhi, &
      dtsdx,dtsdy,dtsdz)
-USE picsar_precision, ONLY: idp, num, isp
+USE picsar_precision, ONLY: idp, isp, num
 ! ______________________________________________________________________________
 
 
@@ -618,30 +642,42 @@ USE picsar_precision, ONLY: idp, num, isp
   !$OMP SHARED(ex, ey, ez, bx, by, bz)
   !$OMP DO COLLAPSE(2)
 #endif
+!$acc parallel deviceptr(Bx,Ey)
+!$acc loop gang vector collapse(2)
   do k   = xlo(2), xhi(2)
     do j = xlo(1), xhi(1)
         Bx(j,k) = Bx(j,k) + dtsdz * (Ey(j  ,k+1) - Ey(j,k))
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP DO COLLAPSE(2)
 #endif
+!$acc parallel deviceptr(By,Ez,Ex)
+!$acc loop gang vector collapse(2)
   do k   = ylo(2), yhi(2)
     do j = ylo(1), yhi(1)
         By(j,k) = By(j,k) + dtsdx * (Ez(j+1,k  ) - Ez(j,k)) &
                           - dtsdz * (Ex(j  ,k+1) - Ex(j,k))
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP DO COLLAPSE(2)
 #endif
+!$acc parallel deviceptr(Bz,Ey)
+!$acc loop gang vector collapse(2)
   do k   = zlo(2), zhi(2)
     do j = zlo(1), zhi(1)
       Bz(j,k) = Bz(j,k) - dtsdx * (Ey(j+1,k  ) - Ey(j,k))
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP END PARALLEL
@@ -673,7 +709,7 @@ subroutine pxrpush_em3d_bvec( &
      by, bylo, byhi, &
      bz, bzlo, bzhi, &
      dtsdx,dtsdy,dtsdz)
-USE picsar_precision, ONLY: idp, num, isp
+USE picsar_precision, ONLY: idp, isp, num
 ! ______________________________________________________________________________
 
 
@@ -704,6 +740,8 @@ USE picsar_precision, ONLY: idp, num, isp
   !$OMP SHARED(ex, ey, ez, bx, by, bz)
   !$OMP DO COLLAPSE(3)
 #endif
+!$acc parallel deviceptr(Bx,Ez,Ey)
+!$acc loop gang vector collapse(3)
   do l     = xlo(3), xhi(3)
     do k   = xlo(2), xhi(2)
       do j = xlo(1), xhi(1)
@@ -712,10 +750,14 @@ USE picsar_precision, ONLY: idp, num, isp
        end do
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP DO COLLAPSE(3)
 #endif
+!$acc parallel deviceptr(By,Ez,Ex)
+!$acc loop gang vector collapse(3)
   do l     = ylo(3), yhi(3)
     do k   = ylo(2), yhi(2)
       do j = ylo(1), yhi(1)
@@ -724,10 +766,14 @@ USE picsar_precision, ONLY: idp, num, isp
       end do
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP DO COLLAPSE(3)
 #endif
+!$acc parallel deviceptr(Bz,Ey,Ex)
+!$acc loop gang vector collapse(3)
   do l     = zlo(3), zhi(3)
     do k   = zlo(2), zhi(2)
       do j = zlo(1), zhi(1)
@@ -736,9 +782,196 @@ USE picsar_precision, ONLY: idp, num, isp
       end do
     end do
   end do
+!$acc end loop
+!$acc end parallel
 #ifndef WARPX
   !$OMP END DO
   !$OMP END PARALLEL
 #endif
 
 end subroutine pxrpush_em3d_bvec
+
+
+
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine pushes the electric field with charge-conserving term,
+!> using the 2D Yee FDTD scheme (order 2).
+!> This subroutine is general enough to be called by AMReX.
+!> OMP pragmas are ignored when compiled for WarpX.
+!> regions.
+!
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
+!> Weiqun Zhang
+!> Jean-Luc Vay
+!> Maxence Thevenet
+!> Remi Lehe
+!
+!> @date
+!> Creation 2018
+! ________________________________________________________________________________________
+subroutine pxrpush_em2d_evec_f( &
+     xlo, xhi, ylo, yhi, zlo, zhi, &
+     ex,exlo,exhi,&
+     ey,eylo, eyhi, &
+     ez,ezlo, ezhi, &
+     f, flo, fhi, &
+     dtsdx, dtsdy, dtsdz)
+USE picsar_precision, ONLY: idp, isp, num
+! ______________________________________________________________________________
+
+
+#ifdef WARPX
+  integer(isp) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
+       exlo(2),exhi(2),eylo(2),eyhi(2),ezlo(2),ezhi(2), flo(2), fhi(2)
+#else
+  integer(idp) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
+       exlo(2),exhi(2),eylo(2),eyhi(2),ezlo(2),ezhi(2), flo(2), fhi(2)
+#endif
+  real(num), intent(INOUT):: ex(exlo(1):exhi(1),exlo(2):exhi(2))
+  real(num), intent(INOUT):: ey(eylo(1):eyhi(1),eylo(2):eyhi(2))
+  real(num), intent(INOUT):: ez(ezlo(1):ezhi(1),ezlo(2):ezhi(2))
+
+  real(num), intent(IN):: f(flo(1):fhi(1),flo(2):fhi(2))
+
+  real(num), intent(IN) :: dtsdx, dtsdy, dtsdz
+
+  integer :: j,k
+
+  ! dtsdy should not be used.
+
+#ifndef WARPX
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j), &
+  !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdx, dtsdz), &
+  !$OMP SHARED(ex, ey, ez, f)
+  !$OMP DO COLLAPSE(2)
+#endif
+!$acc parallel deviceptr(Ex,F)
+!$acc loop gang vector collapse(2)
+  do k   = xlo(2), xhi(2)
+    do j = xlo(1), xhi(1)
+        Ex(j,k) = Ex(j,k) + dtsdx * (F(j+1,k) - F(j  ,k))
+    end do
+  end do
+!$acc end loop
+!$acc end parallel
+#ifndef WARPX
+  !$OMP END DO
+  !$OMP DO COLLAPSE(2)
+#endif
+!$acc parallel deviceptr(Ez,F)
+!$acc loop gang vector collapse(2)
+  do k   = zlo(2), zhi(2)
+    do j = zlo(1), zhi(1)
+      Ez(j,k) = Ez(j,k) + dtsdz * (F(j,k+1) - F(j,k  ))
+    end do
+  end do
+!$acc end loop
+!$acc end parallel
+#ifndef WARPX
+  !$OMP END DO
+  !$OMP END PARALLEL
+#endif
+end subroutine pxrpush_em2d_evec_f
+
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine pushes the electric field with charge-conserving term,
+!> using the 3D Yee FDTD scheme (order 2).
+!> This subroutine is general enough to be called by AMReX.
+!> OMP pragmas are ignored when compiled for WarpX.
+!
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
+!> Weiqun Zhang
+!> Jean-Luc Vay
+!> Maxence Thevenet
+!> Remi Lehe
+!
+!> @date
+!> Creation 2015
+! ________________________________________________________________________________________
+subroutine pxrpush_em3d_evec_f( &
+     xlo, xhi, ylo, yhi, zlo, zhi, &
+     ex,exlo,exhi,&
+     ey,eylo, eyhi, &
+     ez,ezlo, ezhi, &
+     f, flo, fhi, &
+     dtsdx,dtsdy,dtsdz)
+USE picsar_precision, ONLY: idp, isp, num
+! ______________________________________________________________________________
+
+
+#ifdef WARPX
+  integer(isp) :: xlo(3), xhi(3), ylo(3), yhi(3), zlo(3), zhi(3), &
+       exlo(3),exhi(3),eylo(3),eyhi(3),ezlo(3),ezhi(3),flo(3),fhi(3)
+#else
+  integer(idp) :: xlo(3), xhi(3), ylo(3), yhi(3), zlo(3), zhi(3), &
+       exlo(3),exhi(3),eylo(3),eyhi(3),ezlo(3),ezhi(3),flo(3),fhi(3)
+#endif
+  real(num), intent(INOUT):: ex(exlo(1):exhi(1),exlo(2):exhi(2),exlo(3):exhi(3))
+  real(num), intent(INOUT):: ey(eylo(1):eyhi(1),eylo(2):eyhi(2),eylo(3):eyhi(3))
+  real(num), intent(INOUT):: ez(ezlo(1):ezhi(1),ezlo(2):ezhi(2),ezlo(3):ezhi(3))
+
+  real(num), intent(IN):: f(flo(1):fhi(1),flo(2):fhi(2),flo(3):fhi(3))
+
+  real(num), intent(IN) :: dtsdx,dtsdy,dtsdz
+
+  integer :: j,k,l
+
+#ifndef WARPX
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(l, k, j), &
+  !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdx, dtsdy, dtsdz), &
+  !$OMP SHARED(ex, ey, ez, f)
+  !$OMP DO COLLAPSE(3)
+#endif
+!$acc parallel deviceptr(Ex,F)
+!$acc loop gang vector collapse(3)
+  do l     = xlo(3), xhi(3)
+    do k   = xlo(2), xhi(2)
+      do j = xlo(1), xhi(1)
+         Ex(j,k,l) = Ex(j,k,l) + dtsdx * (F(j+1,k  ,l  ) - F(j,k,l))
+       end do
+    end do
+  end do
+!$acc end loop
+!$acc end parallel
+#ifndef WARPX
+  !$OMP END DO
+  !$OMP DO COLLAPSE(3)
+#endif
+!$acc parallel deviceptr(Ey,F)
+!$acc loop gang vector collapse(3)
+  do l     = ylo(3), yhi(3)
+    do k   = ylo(2), yhi(2)
+      do j = ylo(1), yhi(1)
+        Ey(j,k,l) = Ey(j,k,l) + dtsdy * (F(j  ,k+1,l  ) - F(j,k,l))
+      end do
+    end do
+  end do
+!$acc end loop
+!$acc end parallel
+#ifndef WARPX
+  !$OMP END DO
+  !$OMP DO COLLAPSE(3)
+#endif
+!$acc parallel deviceptr(Ez,F)
+!$acc loop gang vector collapse(3)
+  do l     = zlo(3), zhi(3)
+    do k   = zlo(2), zhi(2)
+      do j = zlo(1), zhi(1)
+        Ez(j,k,l) = Ez(j,k,l) + dtsdz * (F(j  ,k  ,l+1) - F(j,k,l))
+      end do
+    end do
+  end do
+!$acc end loop
+!$acc end parallel
+#ifndef WARPX
+  !$OMP END DO
+  !$OMP END PARALLEL
+#endif
+
+end subroutine pxrpush_em3d_evec_f

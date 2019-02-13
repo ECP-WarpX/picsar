@@ -49,7 +49,7 @@ PROGRAM tile_mpi_part_com_test
 	REAL(num), DIMENSION(6)                  :: rng=0_num
   REAL(num)                                :: epsilon
   REAL(num)                                :: t0
-  LOGICAL                                  :: passed
+  LOGICAL(lp)                              :: passed
   REAL(num), dimension(10)                 :: ttile,tmpi
   CHARACTER(len=64), dimension(10)         :: name
   REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: tilesumex,tilesumey,tilesumez
@@ -531,7 +531,7 @@ SUBROUTINE compute_err(n,&
   INTEGER(isp)                             :: n
   INTEGER(isp)                             :: i
   REAL(num)                                :: epsilon
-  LOGICAL, INTENT(INOUT)                   :: passed
+  LOGICAL(lp), INTENT(INOUT)                   :: passed
   REAL(num), dimension(10)                 :: sumex,sumey,sumez
   REAL(num), dimension(10)                 :: sumbx,sumby,sumbz
   REAL(num), dimension(10)                 :: sumx,sumy,sumz

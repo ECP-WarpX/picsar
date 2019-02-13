@@ -64,6 +64,7 @@ MODULE tiling
   !> Creation: 2015
   ! ______________________________________________________________________________________
   SUBROUTINE set_tile_split()
+    USE particle_properties, ONLY: l_aofgrid_tiles_allocated, nspecies
     IMPLICIT NONE
 
     ! Set tile split for species arrays
@@ -72,8 +73,10 @@ MODULE tiling
     y_max_local, z_max_local)
 
     ! ALLOCATE grid tile arrays
-    ALLOCATE(aofgrid_tiles(ntilex, ntiley, ntilez))
-
+    IF (.NOT. l_aofgrid_tiles_allocated) THEN
+      ALLOCATE(aofgrid_tiles(ntilex, ntiley, ntilez))
+      l_aofgrid_tiles_allocated = .TRUE.
+    ENDIF
   END SUBROUTINE set_tile_split
 
 
@@ -136,8 +139,8 @@ MODULE tiling
     DO ispecies =1, nspecies
       curr_sp => species_array(ispecies)
       IF (.NOT. curr_sp%l_arrayoftiles_allocated) THEN
-        ALLOCATE(curr_sp%array_of_tiles(ntx, nty, ntz))
-        ALLOCATE(curr_sp%are_tiles_reallocated(ntx, nty, ntz))
+        ALLOCATE(species_array(ispecies)%array_of_tiles(ntx, nty, ntz)) 
+        ALLOCATE(species_array(ispecies)%are_tiles_reallocated(ntx, nty, ntz))
         curr_sp%are_tiles_reallocated= 0
         curr_sp%l_arrayoftiles_allocated = .TRUE.
       END IF
@@ -281,13 +284,13 @@ MODULE tiling
     ! Get first tiles dimensions (may be different from last tile)
     nx0_grid_tile = currsp%array_of_tiles(1, 1, 1)%nx_grid_tile
     nz0_grid_tile = currsp%array_of_tiles(1, 1, 1)%nz_grid_tile
-
+    
     ! Get particle index in array of tile
     ixtile = MIN(FLOOR((partx-x_min_local+dx/2_num)/(nx0_grid_tile*dx), idp)+1,       &
     ntilex)
     iztile = MIN(FLOOR((partz-z_min_local+dz/2_num)/(nz0_grid_tile*dz), idp)+1,       &
     ntilez)
-
+    
     ! Point to current tile arr_of_tiles(ixtile, iytile, iztile)
     !curr=>currsp%array_of_tiles(ixtile, iytile, iztile)
 
@@ -371,11 +374,13 @@ MODULE tiling
     ! Sanity check for max number of particles in tile
     count = curr%np_tile(1)+1
     nmax  = curr%npmax_tile
+
     IF (count .GT. nmax) THEN
       ! Resize particle tile arrays if tile is full
       currsp%are_tiles_reallocated(ixt, 1, izt)=1
       CALL resize_particle_arrays(curr, nmax, NINT(resize_factor*nmax+1, idp))
     ENDIF
+
     ! Finally, add particle to tile
     curr%np_tile(1)=count
     curr%part_x(count)  = partx
@@ -726,6 +731,8 @@ MODULE tiling
   ! ______________________________________________________________________________________
   SUBROUTINE init_tile_arrays_for_species(nspec2, species_array, aofgtiles, ntx2,     &
     nty2, ntz2)
+    USE particle_properties, ONLY: l_aofgrid_tiles_array_allocated
+    USE picsar_precision, ONLY: idp, num
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN)        :: nspec2, ntx2, nty2, ntz2
     TYPE(grid_tile), DIMENSION(ntx2, nty2, ntz2), INTENT(IN OUT)        :: aofgtiles
@@ -738,7 +745,8 @@ MODULE tiling
     TYPE(particle_species), POINTER :: curr
 
     IF (nspec2 .EQ. 0) RETURN
-
+    IF (l_aofgrid_tiles_array_allocated) RETURN
+    
     ! Allocate particle tile arrays
     DO ispecies=1, nspec2! LOOP ON SPECIES
       curr=>species_array(ispecies)
@@ -770,7 +778,9 @@ MODULE tiling
               curr_tile%nzg_tile=nzjguards
             END IF
             ! - Allocate arrays of current tile
-            CALL allocate_tile_arrays(curr_tile)
+            IF (.NOT. curr_tile%l_arrays_allocated) THEN
+              CALL allocate_tile_arrays(curr_tile)
+            ENDIF
           END DO
         END DO
       END DO
@@ -839,6 +849,8 @@ MODULE tiling
         END DO
       END DO
     END DO! END LOOP ON TILES
+    l_aofgrid_tiles_array_allocated = .TRUE.
+    
   END SUBROUTINE init_tile_arrays_for_species
 
   ! ______________________________________________________________________________________
@@ -896,12 +908,12 @@ MODULE tiling
                   phi=2*pi*rng(3)
 
                   partvx= curr%vdrift_x +                                             &
-                  curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
+                  curr%vth_x*SQRT(-2.*LOG(v))*COS(th)*COS(phi)
                   partvy= curr%vdrift_y +                                             &
-                  curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
-                  partvz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
+                  curr%vth_y*SQRT(-2.*LOG(v))*COS(th)*SIN(phi)
+                  partvz= curr%vdrift_z + curr%vth_z*SQRT(-2.*LOG(v))*SIN(th)
 
-                  gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 +                    &
+                  gaminv = SQRT(1.0_num - (partvx**2 + partvy**2 +                    &
                   partvz**2)*clightsq)
                   partux = partvx /gaminv
                   partuy = partvy /gaminv
@@ -934,11 +946,11 @@ MODULE tiling
                 th=2*pi*rng(2)
                 phi=2*pi*rng(3)
 
-                partvx= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
-                partvy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
-                partvz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
+                partvx= curr%vdrift_x + curr%vth_x*SQRT(-2.*LOG(v))*COS(th)*COS(phi)
+                partvy= curr%vdrift_y + curr%vth_y*SQRT(-2.*LOG(v))*COS(th)*SIN(phi)
+                partvz= curr%vdrift_z + curr%vth_z*SQRT(-2.*LOG(v))*SIN(th)
 
-                gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 + partvz**2)*clightsq)
+                gaminv = SQRT(1.0_num - (partvx**2 + partvy**2 + partvz**2)*clightsq)
                 partux = partvx /gaminv
                 partuy = partvy /gaminv
                 partuz = partvz /gaminv
@@ -979,11 +991,11 @@ MODULE tiling
                 th=2*pi*rng(5)
                 phi=2*pi*rng(6)
 
-                partvx= curr%vdrift_x + curr%vth_x*sqrt(-2.*LOG(v))*COS(th)*COS(phi)
-                partvy= curr%vdrift_y + curr%vth_y*sqrt(-2.*LOG(v))*COS(th)*SIN(phi)
-                partvz= curr%vdrift_z + curr%vth_z*sqrt(-2.*LOG(v))*SIN(th)
+                partvx= curr%vdrift_x + curr%vth_x*SQRT(-2.*LOG(v))*COS(th)*COS(phi)
+                partvy= curr%vdrift_y + curr%vth_y*SQRT(-2.*LOG(v))*COS(th)*SIN(phi)
+                partvz= curr%vdrift_z + curr%vth_z*SQRT(-2.*LOG(v))*SIN(th)
 
-                gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 + partvz**2)*clightsq)
+                gaminv = SQRT(1.0_num - (partvx**2 + partvy**2 + partvz**2)*clightsq)
                 partux = partvx /gaminv
                 partuy = partvy /gaminv
                 partuz = partvz /gaminv
@@ -1029,7 +1041,7 @@ MODULE tiling
                 partvy= curr%vdrift_y + curr%vth_x*COS(th)*SIN(phi)
                 partvz= curr%vdrift_z + curr%vth_x*SIN(th)
 
-                gaminv = sqrt(1.0_num - (partvx**2 + partvy**2 + partvz**2)*clightsq)
+                gaminv = SQRT(1.0_num - (partvx**2 + partvy**2 + partvz**2)*clightsq)
                 partux = partvx /gaminv
                 partuy = partvy /gaminv
                 partuz = partvz /gaminv
@@ -1254,11 +1266,11 @@ MODULE tiling
   ! ______________________________________________________________________________________
   SUBROUTINE point_to_tile(ispecies, ix, iy, iz)
     USE picsar_precision, ONLY: idp
-    USE python_pointers, ONLY: partby, partz, nzmax, ytmax, nymin, nzgt, nxtg,       &
-      zgtmax, partx, xgtmax, nxmin, ygtmin, partex, partux, partgaminv, ztmax, nyct, &
-      xgtmin, nztg, partuy, partuz, partbz, nxct, nxgt, ytmin, ygtmax, partnmax,     &
-      nygt, ztmin, zgtmin, nzct, pid, party, nytg, xtmin, partey, nzmin, partbx,     &
-      nxmax, xtmax, partn, partez, nymax
+    USE python_pointers, ONLY: nxct, nxgt, nxmax, nxmin, nxtg, nyct, nygt, nymax,    &
+      nymin, nytg, nzct, nzgt, nzmax, nzmin, nztg, partbx, partby, partbz, partex,   &
+      partey, partez, partgaminv, partn, partnmax, partux, partuy, partuz, partx,    &
+      party, partz, pid, xgtmax, xgtmin, xtmax, xtmin, ygtmax, ygtmin, ytmax, ytmin, &
+      zgtmax, zgtmin, ztmax, ztmin
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: ix, iy, iz, ispecies
     TYPE(particle_species), POINTER  :: currsp
@@ -1448,7 +1460,7 @@ MODULE tiling
   !
   ! ______________________________________________________________________________________
   SUBROUTINE estimate_tiles_memory_consumption
-    USE fields, ONLY: nyjguards, nxjguards, nzjguards, nzguards, nxguards, nyguards
+    USE fields, ONLY: nxguards, nxjguards, nyguards, nyjguards, nzguards, nzjguards
     USE grid_tilemodule, ONLY: aofgrid_tiles
     USE params, ONLY: it
     USE particle_properties, ONLY: nspecies
@@ -1456,8 +1468,8 @@ MODULE tiling
     USE particle_tilemodule, ONLY: particle_tile
     USE particles, ONLY: species_parray
     USE picsar_precision, ONLY: idp, num
-    USE shared_data, ONLY: nz, ny, nx, dx, c_dim, dy, rank, dz
-    USE tile_params, ONLY: ntilez, ntilex, ntiley
+    USE shared_data, ONLY: c_dim, dx, dy, dz, nx, ny, nz, rank
+    USE tile_params, ONLY: ntilex, ntiley, ntilez
     IMPLICIT NONE
 
     TYPE(particle_species), POINTER :: curr
@@ -1631,10 +1643,107 @@ MODULE tiling
     unity
 
   END SUBROUTINE estimate_tiles_memory_consumption
+   
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> Create an antenna species need for the coupling between picsar and warp through 
+  !> Python.
+  !
+  !> @author
+  !> Haithem Kallala
+  !> Guillaume Blaclard
+  !
+  !> @date
+  !> Creation: 2018
+  !
+  ! ______________________________________________________________________________________
+
+  SUBROUTINE init_laser_species_python(emax,spot,vector,polvector1,polvector2,charge, &
+    weight_laser, posx, posy, posz, np, js_laser)
+    USE constants, ONLY: emass
+    USE particle_properties, ONLY: l_species_allocated, npid, nspecies,              &
+      nspecies_max, wpid
+    USE particle_speciesmodule, ONLY: particle_species
+    USE particles, ONLY: species_parray
+    USE picsar_precision, ONLY: idp, num
+    USE shared_data, ONLY: c_dim, x, y, z
+
+    REAL(num) , INTENT(IN) :: emax, charge
+    INTEGER(idp) , INTENT(IN) :: np
+    REAL(num) , INTENT(IN) , DIMENSION(3) :: spot, vector, polvector1, polvector2
+    REAL(num), INTENT(IN) , DIMENSION(1:np) :: posx, posy, posz, weight_laser
+    TYPE(particle_species), POINTER :: curr
+    INTEGER(idp) :: i
+    REAL(num) ,  DIMENSION(npid) :: partpid
+    INTEGER(idp), DIMENSION(1), INTENT(INOUT) :: js_laser
+ 
+    IF (.NOT. l_species_allocated) THEN
+      nspecies=0
+      ALLOCATE(species_parray(1:nspecies_max))
+      l_species_allocated=.TRUE.
+    ENDIF
+    
+    nspecies = nspecies+1
+    curr => species_parray(nspecies)
+
+    js_laser(1) = nspecies
+    ! minimal init for species attributes
+    curr%charge = charge
+    curr%mass = emass
+    curr%name='laser_antenna'
+    curr%nppcell = 1
+    curr%vdrift_x =0._num
+    curr%vdrift_y =0._num
+    curr%vdrift_z =0._num
+    curr%vth_x =0._num
+    curr%vth_y =0._num
+    curr%vth_z =0._num
+    curr%sorting_period = 0
+    curr%sorting_start = 0
+    curr%species_npart=0
+    curr%ldodepos = .TRUE.
+    ! --- Init default value for antenna params
+    curr%is_antenna=.TRUE.
+    curr%antenna_params%polangle = 0._num
+    curr%antenna_params%vector = vector
+    curr%antenna_params%spot_x = spot(1)
+    curr%antenna_params%spot_y = spot(2)
+    curr%antenna_params%spot_z = spot(3)
+    curr%antenna_params%polvector1 = polvector1
+    curr%antenna_params%polvector2 = polvector2
+    
+    CALL set_tile_split()
+    CALL init_tile_arrays()
+
+    DO i = 1, np
+      partpid(wpid) = weight_laser(i)
+      ! -- X_a position of laser particle in antenna frame
+      !-- (projection on polvector1)
+      partpid(wpid+1_idp) = (posx(i)-spot(1))*polvector1(1) +        & 
+                            (posy(i)-spot(2))*polvector1(2) +        &
+                            (posz(i)-spot(3))*polvector1(3)
+      ! -- Y_a position of laser particle in antenna frame
+      !-- (projection on polvector2)
+      partpid(wpid+2_idp) = (posx(i)-spot(1))*polvector2(1) +        &
+                            (posy(i)-spot(2))*polvector2(2) +        &
+                            (posz(i)-spot(3))*polvector2(3)
+
+      ! -- Add particle to current laser species
+      IF(c_dim == 3) THEN
+        CALL add_particle_to_species(curr, posx(i), posy(i), posz(i), 0._num,      &
+        0._num, 0._num, 1._num, partpid)
+      ELSE IF(c_dim ==2) THEN
+
+        CALL add_particle_to_species_2d(curr,posx(i),posz(i),0._num,0._num,      &
+        0.0_num, 1.0_num, partpid)
+
+      ENDIF
+    ENDDO
+  END SUBROUTINE init_laser_species_python
 
   SUBROUTINE load_laser_species(curr)
     USE antenna, ONLY: particle_antenna
-    USE constants, ONLY: eps0, emass, pi, echarge, clight
+    USE constants, ONLY: clight, echarge, emass, eps0, pi
     USE picsar_precision, ONLY: idp, num
     TYPE(particle_species), POINTER, INTENT(INOUT) :: curr
     INTEGER(idp)       ::  lmax, jmax, j, l, ipart
@@ -1645,23 +1754,17 @@ MODULE tiling
     INTEGER(idp) :: i1, i2, inonz
     TYPE(particle_antenna), POINTER ::  laser
     REAL(num), DIMENSION(2, 2)      :: M1, M2, M3
-
+    REAL(num)  :: sx(3) , sy(3)
     laser=>curr%antenna_params
 
     IF(c_dim == 2) THEN
-      laser%vector_y = 0.0_num
+      laser%vector(2) = 0.0_num
       laser%spot_y = 0.0_num
     ENDIF
 
-    ! --- Initing laser wave vector (vector normal to laser injection plane)
-    laser%vector(1) = laser%vector_x
-    laser%vector(2) = laser%vector_y
-    laser%vector(3) = laser%vector_z
+    ! --- Normalize (vector normal to laser injection plane)
     laser%vector    = laser%vector/SQRT(SUM(laser%vector**2))! Norm - 1
-    ! --- Initing laser polarization vector
-    laser%polvector1(1) = laser%pvec_x
-    laser%polvector1(2) = laser%pvec_y
-    laser%polvector1(3) = laser%pvec_z
+    ! --- Normalize laser polarization vector
     laser%polvector1=laser%polvector1/SQRT(SUM(laser%polvector1**2))! Norm - 1
 
     IF(SUM(laser%polvector1*laser%vector) .NE. 0._num ) WRITE(0, *) 'ERROR : laser    &
@@ -1699,22 +1802,8 @@ MODULE tiling
     laser%inv_w02 = 1._num/laser%laser_w0**2
 
     ! --- Gaussian q parameter at focus
-    laser%q_0 = (0., 1.) * laser%laser_w0**2*pi/laser%lambda_laser
+    laser%q_z = (0._num, 1._num) * laser%laser_w0**2*pi/laser%lambda_laser
 
-    ! --- Gaussian q parameter in antenna_plane
-    IF(laser%is_lens .EQV. .FALSE.) THEN
-      laser%q_z = (laser%q_0+laser%laser_z0)
-    ELSE
-      M1(1, 1) = 1.0_num ; M1(1, 2) = laser%laser_z0-laser%laser_zf
-      M1(2, 1) = 0.0_num ; M1(2, 2) = 1.0_num
-      M2(1, 1) = 1.0_num ; M2(1, 2) = 0.0_num
-      M2(2, 1) = -1./laser%focal_length ; M2(2, 2) = 1.0_num
-      CALL product_matrix_2c2(M1, M2, M3)
-      M2(1, 1) = 1.0_num ; M2(1, 2) = laser%laser_zf
-      M2(2, 1) = 0.0_num ; M2(2, 2) = 1.0_num
-      CALL product_matrix_2c2(M3, M2, M1)
-      laser%q_z = (M1(1, 1)*laser%q_0  + M1(1, 2))/(M1(2, 1)*laser%q_0+M1(2, 2))
-    ENDIF
     ALLOCATE(partpid(npid))
 
     ! --- Sanity check on vector normal to antenna plane
@@ -1749,12 +1838,34 @@ MODULE tiling
     maxs = (/x_max_local, y_max_local, z_max_local/)
     dst  = (/dx, dy, dz/)
     pos = (/0._num, 0._num, 0._num/)
+
+    !-> Compute particle weight coeff depending on polarization direction
+    sx = 1._num 
+    sy = 1._num
+
+    IF(c_dim == 3) THEN
+      IF(laser%polvector1(1) .NE. 0._num) sx(1) = ABS(dx/laser%polvector1(1))
+      IF(laser%polvector1(2) .NE. 0._num) sx(2) = ABS(dy/laser%polvector1(2))
+      IF(laser%polvector1(3) .NE. 0._num) sx(3) = ABS(dz/laser%polvector1(3))
+      IF(laser%polvector2(1) .NE. 0._num) sy(1) = ABS(dx/laser%polvector2(1))
+      IF(laser%polvector2(2) .NE. 0._num) sy(2) = ABS(dy/laser%polvector2(2))
+      IF(laser%polvector2(3) .NE. 0._num) sy(3) = ABS(dz/laser%polvector2(3))
+    ELSE IF (c_dim == 2) THEN
+      IF(laser%polvector2(2) == 0.0_num) THEN 
+        IF(laser%polvector2(1) .NE. 0._num) sx(1) = ABS(dx/laser%polvector2(1))
+        IF(laser%polvector2(3) .NE. 0._num) sx(3) = ABS(dz/laser%polvector2(3))
+      ELSE IF(laser%polvector1(2) == 0.0_num) THEN
+        IF(laser%polvector1(1) .NE. 0._num) sx(1) = ABS(dx/laser%polvector1(1))
+        IF(laser%polvector1(3) .NE. 0._num) sx(3) = ABS(dz/laser%polvector1(3))
+      ENDIF
+    ENDIF
     spot=(/laser%spot_x, laser%spot_y, laser%spot_z/)
     IF(c_dim == 3) THEN
-      weight_laser=2.0_num*eps0*laser%Emax/(0.01_num)*dx*dy
-    ELSE IF(c_dim == 2) THEN 
-       weight_laser=2.0_num*eps0*laser%Emax/(0.01_num)*dx
-    ENDIF  
+      weight_laser = eps0*laser%Emax/(0.01_num)*MINVAL(sx)*MINVAL(sy)
+    ELSE IF(c_dim == 2) THEN
+       weight_laser = eps0*laser%Emax/(0.01_num)*MINVAL(sx)
+    ENDIF
+
     DO l=1, lmax
       pos(i2) = (mins(i2)+(l-1)*dst(i2))+(dst(i2))/2.0_num
       DO j=1, jmax
@@ -1787,28 +1898,31 @@ MODULE tiling
           ENDIF
       ENDDO
     ENDDO
-    IF(RANK .EQ. 0) THEN
-      IF(c_dim == 3) THEN
-        WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dy**2+dz**2)
-      ELSE IF(c_dim == 2) THEN
-        WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dz**2)
+    ! --- Verbosity only for species of charge = 1._num 
+    IF(curr%charge == 1._num) THEN
+      IF(RANK .EQ. 0) THEN
+        IF(c_dim == 3) THEN
+          WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/SQRT(dx**2+dy**2+dz**2)
+        ELSE IF(c_dim == 2) THEN
+          WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/SQRT(dx**2+dz**2)
+        ENDIF
+        WRITE(0,*) 'Laser Waist',laser%laser_w0,"m"
+        WRITE(0,*) 'Laser duration',laser%laser_tau,' (in s)'
+        WRITE(0,*) 'Laser duration',laser%laser_tau/dt,' (in dt)'
+        WRITE(0,*) 'Laser peak ',laser%t_peak/dt,"dt"
+        WRITE(0,*) 'Laser longitudinal length',laser%laser_ctau,'m'
+        WRITE(0,*) 'Laser temporal frequency w_laser',laser%k0_laser*clight,'s^-1'
+        WRITE(0,*) 'Laser temporal period',2.0_num*pi/(laser%k0_laser*clight),'s'
+        WRITE(0,*) 'Laser temporal period',2.0_num*pi/(laser%k0_laser*clight)/dt,'dt'
+        WRITE(0,*) 'Laser tau / laser period ',laser%laser_tau/(2.0_num*pi/(laser%k0_laser*clight))
+        IF(c_dim ==3) THEN
+          WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/SQRT(dx**2+dy**2+dz**2)
+        ELSE IF(c_dim ==2) THEN
+          WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/SQRT(dx**2+dz**2)
+        ENDIF
+        WRITE(0,*) 'LASER EMAX',laser%Emax, laser%Emax_laser_1,laser%Emax_laser_2
       ENDIF
-      WRITE(0,*) 'Laser Waist',laser%laser_w0,"m"
-      WRITE(0,*) 'Laser duration',laser%laser_tau,' (in s)'
-      WRITE(0,*) 'Laser duration',laser%laser_tau/dt,' (in dt)'
-      WRITE(0,*) 'Laser peak ',laser%t_peak/dt,"dt"
-      WRITE(0,*) 'Laser longitudinal length',laser%laser_ctau,'m'
-      WRITE(0,*) 'Laser temporal frequency w_laser',laser%k0_laser*clight,'s^-1'
-      WRITE(0,*) 'Laser temporal period',2.0_num*pi/(laser%k0_laser*clight),'s'
-      WRITE(0,*) 'Laser temporal period',2.0_num*pi/(laser%k0_laser*clight)/dt,'dt'
-      WRITE(0,*) 'Laser tau / laser period ',laser%laser_tau/(2.0_num*pi/(laser%k0_laser*clight))
-      IF(c_dim ==3) THEN
-        WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dy**2+dz**2)
-      ELSE IF(c_dim ==2) THEN
-        WRITE(0,*) 'number of cells per laser wavelength',laser%lambda_laser/sqrt(dx**2+dz**2)
-      ENDIF
-      WRITE(0,*) 'LASER EMAX',laser%Emax, laser%Emax_laser_1,laser%Emax_laser_2
-   ENDIF
+    ENDIF
   END SUBROUTINE load_laser_species
 
   SUBROUTINE load_laser
@@ -1820,6 +1934,13 @@ MODULE tiling
     END DO
   END SUBROUTINE load_laser
 
+  SUBROUTINE pxr_freeze_particle_species(ispecies)
+    INTEGER(idp), INTENT(IN) :: ispecies 
+    TYPE(particle_species), POINTER :: curr
+    curr=>species_parray(ispecies)
+    curr%lfreeze=.TRUE.
+    curr%ldodepos=.FALSE. 
+  END SUBROUTINE pxr_freeze_particle_species
 
   SUBROUTINE product_matrix_2c2(M1, M2, M3)
     REAL(num), INTENT(IN), DIMENSION(2, 2)     :: M1, M2
@@ -1856,7 +1977,7 @@ MODULE tiling
     USE particle_tilemodule, ONLY: particle_tile
     USE particles, ONLY: species_parray
     USE picsar_precision, ONLY: idp, num
-    USE tile_params, ONLY: ntilez, ntilex, ntiley
+    USE tile_params, ONLY: ntilex, ntiley, ntilez
     IMPLICIT NONE 
     INTEGER(idp) :: ispecies, ix,iy,iz
     TYPE(particle_species), POINTER :: curr_sp
@@ -1925,12 +2046,12 @@ MODULE tiling
  !> Creation 2018
  ! _______________________________________________________________________________________
   SUBROUTINE get_global_tile_mem()
-    USE mem_status, ONLY: global_part_tiles_mem, local_grid_tiles_mem,               &
-      global_grid_tiles_mem, local_part_tiles_mem
+    USE mem_status, ONLY: global_grid_tiles_mem, global_part_tiles_mem,              &
+      local_grid_tiles_mem, local_part_tiles_mem
     USE mpi
     USE mpi_type_constants, ONLY: mpidbl, status
     USE picsar_precision, ONLY: isp
-    USE shared_data, ONLY: errcode, comm
+    USE shared_data, ONLY: comm, errcode
     IMPLICIT NONE 
 
     ! - Estimate total particle arrays memory (reduce on proc 0)

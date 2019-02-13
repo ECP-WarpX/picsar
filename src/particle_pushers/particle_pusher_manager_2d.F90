@@ -60,13 +60,13 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, 
   USE grid_tilemodule, ONLY: aofgrid_tiles
   USE mpi
   USE output_data, ONLY: pushtime
-  USE particle_properties, ONLY: ezoldpid, nspecies, bzoldpid, bxoldpid,             &
-    particle_pusher, byoldpid, eyoldpid, exoldpid
+  USE particle_properties, ONLY: bxoldpid, byoldpid, bzoldpid, exoldpid, eyoldpid,   &
+    ezoldpid, nspecies, particle_pusher
   USE particle_speciesmodule, ONLY: particle_species
   USE particle_tilemodule, ONLY: particle_tile
   USE particles, ONLY: species_parray
-  USE picsar_precision, ONLY: idp, num, lp
-  USE tile_params, ONLY: ntilez, ntilex, ntiley
+  USE picsar_precision, ONLY: idp, lp, num
+  USE tile_params, ONLY: ntilex, ntiley, ntilez
   USE tiling
   USE time_stat, ONLY: localtimes
   ! Vtune/SDE profiling
@@ -135,6 +135,8 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, 
       isgathered=.FALSE.
       DO ispecies=1, nspecies! LOOP ON SPECIES
         curr=>species_parray(ispecies)
+        IF (curr%is_antenna) CYCLE
+        IF (curr%lfreeze) CYCLE
         curr_tile=>curr%array_of_tiles(ix, 1, iz)
         count=curr_tile%np_tile(1)
         IF (count .GT. 0) isgathered=.TRUE.
@@ -180,6 +182,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub_2d(exg, eyg, ezg, bxg, byg, 
           ! - Init current tile variables
           curr=>species_parray(ispecies)
           IF (curr%is_antenna) CYCLE
+          IF (curr%lfreeze) CYCLE
           curr_tile=>curr%array_of_tiles(ix, 1, iz)
           count=curr_tile%np_tile(1)
           IF (count .EQ. 0) CYCLE
