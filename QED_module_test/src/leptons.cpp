@@ -1,12 +1,14 @@
 #include "leptons.h"
 
 using namespace testbed;
+using namespace picsar;
+
 
 leptons::leptons(std::string name):species(name){}
 
 leptons::~leptons(){}
 
-void leptons::push_positions(time dt){
+void leptons::push_positions(ttime dt){
     int num_particles = pos[0].size();
 
     for (int i = 0; i < num_particles; i++){
@@ -19,8 +21,15 @@ void leptons::push_positions(time dt){
     }
 }
 
+void leptons::push_momenta(ttime dt){
+    if (!is_boris_replaced)
+        do_boris_pusher(dt);
+    else
+        do_alternative_push_momenta(dt);
+}
+
 //Boris pusher
-void leptons::push_momenta(time dt){
+void leptons::do_boris_pusher(double dt){
     double beta = 0.5 * charge * dt / mass;
 
     int num_particles = pos[0].size();
@@ -57,6 +66,13 @@ void leptons::push_momenta(time dt){
          mom[1][i] = 2.0*pny - mom[1][i];
          mom[2][i] = 2.0*pnz - mom[2][i];
     }
+}
 
-    return;
+void leptons::replace_pusher_momenta(mom_pusher_function pusher){
+    is_boris_replaced = true;
+    this->pusher = pusher;
+}
+
+void leptons::do_alternative_push_momenta(ttime dt){
+        pusher(mom, fields, mass, charge, dt);
 }

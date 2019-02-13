@@ -18,11 +18,11 @@ namespace testbed{
         double get_charge() const;
         int get_num_particles() const;
 
-        void add_particle(position part_pos, momentum part_mom);
+        void add_particle(picsar::position part_pos, picsar::momentum part_mom);
 
-        virtual void push_positions(time dt) = 0;
-        virtual void push_momenta(time dt) = 0;
-        void calc_fields(em_field_function em_function, time tt);
+        virtual void push_positions(picsar::ttime dt) = 0;
+        virtual void push_momenta(picsar::ttime dt) = 0;
+        void calc_fields(picsar::em_field_function em_function, picsar::ttime tt);
 
         void print_on_disk(std::string prefix, int step_num) const;
     protected:
@@ -30,9 +30,9 @@ namespace testbed{
         double mass;
         double charge;
 
-        positions_list pos;
-        momenta_list mom;
-        em_field_list fields;
+        picsar::positions_list pos;
+        picsar::momenta_list mom;
+        picsar::em_field_list fields;
         std::vector<double> optical_depth;
 
         std::string header = "species";

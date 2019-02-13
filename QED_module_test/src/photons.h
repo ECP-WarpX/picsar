@@ -12,8 +12,8 @@ namespace testbed{
   public:
     photons(std::string name);
     ~photons();
-    void push_positions(time dt);
-    void push_momenta(time dt);
+    void push_positions(picsar::ttime dt);
+    void push_momenta(picsar::ttime dt);
 
     //friend photons operator+(const photons &p1, const photons &cp2);
 

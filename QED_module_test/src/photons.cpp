@@ -1,6 +1,8 @@
 #include "photons.h"
 
 using namespace testbed;
+using namespace picsar;
+
 
 photons::photons(std::string name):species(name){
     header = std::string("photons");
@@ -10,7 +12,7 @@ photons::photons(std::string name):species(name){
 
 photons::~photons(){}
 
-void photons::push_positions(time dt){
+void photons::push_positions(ttime dt){
     int num_particles = pos[0].size();
 
     for (int i = 0; i < num_particles; i++){
@@ -22,6 +24,6 @@ void photons::push_positions(time dt){
         pos[2][i] += coeff*mom[2][i];
     }
 }
-void photons::push_momenta(time dt){
+void photons::push_momenta(ttime dt){
     return;
 }

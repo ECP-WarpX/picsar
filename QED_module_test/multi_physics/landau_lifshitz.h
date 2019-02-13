@@ -1,10 +1,12 @@
 #ifndef __PMP_LANDAU_LIFSHITZ__
 #define __PMP_LANDAU_LIFSHITZ__
 
+#include <cmath>
+
 #include "commons.h"
 
 namespace picsar{
-  inline void boris_plus_landau_lifshitz_push(momentum& mom, const em_field& field, double dt);
+    void boris_plus_landau_lifshitz_push(momenta_list& mom, const em_field_list& fields, double mass, double charge, double dt, double lambda);
 }
 
 #endif

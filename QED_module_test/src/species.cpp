@@ -1,6 +1,8 @@
 #include "species.h"
 
 using namespace testbed;
+using namespace picsar;
+
 
 species::species(std::string name):name(name){}
 
@@ -34,7 +36,7 @@ void species::add_particle(position part_pos, momentum part_mom){
 
 }
 
-void species::calc_fields(em_field_function em_function, time tt){
+void species::calc_fields(em_field_function em_function, ttime tt){
     int num_particles = pos[0].size();
 
     for (int i = 0; i < num_particles; i++){
