@@ -240,8 +240,10 @@ class Field_RZ:
   #  ax.set_ylim3d(self.ymin, self.ymax)
   #  #ax.set_zlim3d(self.zmin, self.zmax)
 
-  def plot(self,fig,ax,slice='mode',imode=0):
-
+  def plot(self,fig,ax,slice='mode',slice_index=0, slice_pos=None):
+    
+    if slice_pos==None:
+      index=slice_index
 
     #if slice_pos==None:
     #  index = slice_index
@@ -277,12 +279,12 @@ class Field_RZ:
 
     if slice=='mode':
 
-      im = ax.pcolormesh(self.x,self.y,self.f[imode,:,:])
+      im = ax.pcolormesh(self.x,self.y,self.f[index,:,:])
       cb = plt.colorbar(im,ax=ax)
       ax.set_xlabel('r')
       ax.set_ylabel('l')
-      ax.set_xlim([self.xmin,self.xmax])
-      ax.set_ylim([self.ymin,self.ymax])
-      ax.set_title('field at mode =%d'%(imode))
+#      ax.set_xlim([self.xmin,self.xmax])
+#      ax.set_ylim([self.ymin,self.ymax])
+      ax.set_title('field at mode =%d'%(index))
 
 

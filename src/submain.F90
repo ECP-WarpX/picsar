@@ -102,8 +102,6 @@ USE sorting
   ! ___________________________________________
   ! Loop in 3D
   IF (c_dim.eq.3) THEN
-    rhoold=0.0_num
-    rho = 0.0_num
     DO i=1, nst
       IF (rank .EQ. 0) startit=MPI_WTIME()
       IF ((l_AM_rz).AND.(i .eq. 1)) THEN
@@ -155,48 +153,48 @@ USE sorting
       ENDIF
 #if defined(FFTW)
       IF (l_spectral) THEN
-        IF ((l_AM_rz).AND.(i .eq. 1)) THEN
-          DO imode=1, nmodes 
-            Call Hankel_M_and_invM(imode-1)
-          END DO
+        !IF ((l_AM_rz).AND.(i .eq. 1)) THEN
+        !  DO imode=1, nmodes 
+        !    Call Hankel_M_and_invM(imode-1)
+        !  END DO
         
-        write (0,*), "Ma =================="
-        DO k=1,nx
-          DO m=1, nx
-            write (0,*) , "k= ", k, "m= ", m, "Ma", Ma(k,m)
-          END DO
-        END DO
-        write (0,*), "Ma_1 =================="
-        DO k=1,nx
-          DO m=1,nx
-            write (0,*) , "k= ", k, "m= ", m, "Ma_1", Ma_1(k,m)
-          END DO
-        END DO
-        write (0,*), "Ma1 =================="
-        DO k=1,nx
-          DO m=1,nx
-            write (0,*) , "k= ", k, "m= ", m, "Ma1", Ma1(k,m)
-          END DO
-        END DO
-        write (0,*), "invM =================="
-        DO k=1,nx
-          DO m=1,nx
-            write (0,*) , "k= ", k, "m= ", m, "invM", invM(k,m)
-          END DO
-        END DO
-        write (0,*), "invM_1 =================="
-        DO k=1,nx
-          DO m=1, nx
-            write (0,*) , "k= ", k, "m= ", m, "invM_1", invM_1(k,m)
-          END DO
-        END DO
-        write (0,*), "invM1 =================="
-        DO k=1,nx
-          DO m=1,nx
-            write (0,*) , "k= ", k, "m= ", m, "invM1", invM1(k,m)
-          END DO
-        END DO
-        END IF
+        !write (0,*), "Ma =================="
+        !DO k=1,nx
+        !  DO m=1, nx
+        !    write (0,*) , "k= ", k, "m= ", m, "Ma", Ma(k,m)
+        !  END DO
+        !END DO
+        !write (0,*), "Ma_1 =================="
+        !DO k=1,nx
+        !  DO m=1,nx
+        !    write (0,*) , "k= ", k, "m= ", m, "Ma_1", Ma_1(k,m)
+        !  END DO
+        !END DO
+        !write (0,*), "Ma1 =================="
+        !DO k=1,nx
+        !  DO m=1,nx
+        !    write (0,*) , "k= ", k, "m= ", m, "Ma1", Ma1(k,m)
+        !  END DO
+        !END DO
+        !write (0,*), "invM =================="
+        !DO k=1,nx
+        !  DO m=1,nx
+        !    write (0,*) , "k= ", k, "m= ", m, "invM", invM(k,m)
+        !  END DO
+        !END DO
+        !write (0,*), "invM_1 =================="
+        !DO k=1,nx
+        !  DO m=1, nx
+        !    write (0,*) , "k= ", k, "m= ", m, "invM_1", invM_1(k,m)
+        !  END DO
+        !END DO
+        !write (0,*), "invM1 =================="
+        !DO k=1,nx
+        !  DO m=1,nx
+        !    write (0,*) , "k= ", k, "m= ", m, "invM1", invM1(k,m)
+        !  END DO
+        !END DO
+        !END IF
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
         write (*,*) " START push_psatd_ebfield"
         CALL push_psatd_ebfield
@@ -386,7 +384,7 @@ SUBROUTINE laser_gaussian
   USE PICSAR_precision
   USE laser_util , ONLY : E0, waist, ctau, z0, zf, lambda0, theta_pol, cep_phase, Er_laser, Et_laser
   USE constants, ONLY: clight, emass
-  USE fields, ONLY : er_c, et_c,el_c 
+  USE fields , ONLY: er_c, et_c, el_c
   USE shared_data , ONLY : nx, ny, dx, dy
   REAL (num)::   zr, w0, phi2_chirp, propagation_dir, k0 ,t0
   REAL (num) :: PI  = 4 * atan (1.0_8)
@@ -433,6 +431,18 @@ SUBROUTINE laser_gaussian
   !write (0,*) "ny laser = ", ny
   !write (0,*) "stretch_factor", stretch_factor
  
+
+  el_c=0.0_num
+  er_c=0.0_num
+  et_c=0.0_num
+  bl_c=0.0_num
+  br_c=0.0_num
+  bt_c=0.0_num
+  jl_c=0.0_num
+  jr_c=0.0_num
+  jt_c=0.0_num 
+  rho_c=0.0_num
+  rhoold_c=0.0_num
   DO k=0, ny-1
     diffract_factor = 1._num + ii * prop_dir*(z(k) - zf) * inv_zr
      !write (0,*) "entered k loop ", k
@@ -452,6 +462,9 @@ SUBROUTINE laser_gaussian
      er_c(i,k,0) = CMPLX(i,0.0_NUM)
      et_c(i,k,0)= CMPLX(0.,0.0_NUM)
      el_c(i,k,0)= CMPLX(0.,0.0_NUM)
+     !er_c(i,k,1) = CMPLX(0.,0.0_NUM)
+     !et_c(i,k,1)= CMPLX(0.,0.0_NUM)
+     !el_c(i,k,1)= CMPLX(0.,0.0_NUM)     
      !write (*,*) "er_c(i,k,1) ", er_c(i,k,1)
      !et_c(i,k,1) = et_c(i,k,1)+ Et_laser(i,k)
      !et_c(i,k,1) = DCMPLX(i,0_NUM)

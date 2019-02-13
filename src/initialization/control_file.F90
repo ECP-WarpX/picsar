@@ -98,7 +98,7 @@ MODULE control_file
     l_nodalgrid = .FALSE.
     l_spectral = .FALSE.! (no spectral solver by default)
     g_spectral = .FALSE.! (no spectral sovler by default)
-    l_staggered = .TRUE.! (staggered scheme by default )
+    l_staggered = .FALSE.! (staggered scheme by default )
     l_AM_rz = .FALSE. ! (cartesian geometry by default )
     nmodes = 2
 #if defined(FFTW)

@@ -86,9 +86,9 @@ implicit none
 EXTERNAL DGEMM
 INTEGER (idp), INTENT(inout) :: nfftr
 INTEGER  (idp):: I, J
-COMPLEX(cpx) ,  INTENT(inout) :: a(:,:)
-REAL(num) ,  INTENT(inout) :: b(:,:)
-COMPLEX(cpx) , INTENT(inout) :: c(:,:)
+COMPLEX(cpx) ,  INTENT(in) :: a(:,:)
+REAL(num) ,  INTENT(in) :: b(:,:)
+COMPLEX(cpx) , INTENT(out) :: c(:,:)
 REAL (num) , dimension(size(a,1),size(a,2)) :: a_r, a_im , c_r, c_im
 INTEGER (isp) :: M    ! Number of rows of matrix op(a)
 INTEGER  (isp):: N    ! Number of columns of matrix op(b)
@@ -492,7 +492,7 @@ SUBROUTINE Hankel_M_and_invM(imode)
   !REAL(num), dimension(:,:,:), allocatable, intent (inout) :: invM_tot, Ma_tot
   !REAL(num), dimension(:,:), allocatable :: invM , Ma
   INTEGER (idp), INTENT (IN) :: imode
-  INTEGER (idp) :: p
+  INTEGER (idp) :: p, k,m
   INTEGER (idp)  :: nfftr 
   real ( num ), allocatable, dimension ( :, : ) :: a
   real ( num ), allocatable, dimension ( :, : ) :: a_pseudo
@@ -603,6 +603,44 @@ SUBROUTINE Hankel_M_and_invM(imode)
     !Ma(:,:)=0._num
  ! END DO
 
+
+        write (0,*), "Ma =================="
+        DO k=1,nx
+          DO m=1, nx
+            write (0,*) , "k= ", k, "m= ", m, "Ma", Ma(k,m)
+          END DO
+        END DO
+        write (0,*), "Ma_1 =================="
+        DO k=1,nx
+          DO m=1,nx
+            write (0,*) , "k= ", k, "m= ", m, "Ma_1", Ma_1(k,m)
+          END DO
+        END DO
+        write (0,*), "Ma1 =================="
+        DO k=1,nx
+          DO m=1,nx
+            write (0,*) , "k= ", k, "m= ", m, "Ma1", Ma1(k,m)
+          END DO
+        END DO
+        write (0,*), "invM =================="
+        DO k=1,nx
+          DO m=1,nx
+            write (0,*) , "k= ", k, "m= ", m, "invM", invM(k,m)
+          END DO
+        END DO
+        write (0,*), "invM_1 =================="
+        DO k=1,nx
+          DO m=1, nx
+            write (0,*) , "k= ", k, "m= ", m, "invM_1", invM_1(k,m)
+          END DO
+        END DO
+        write (0,*), "invM1 =================="
+        DO k=1,nx
+          DO m=1,nx
+            write (0,*) , "k= ", k, "m= ", m, "invM1", invM1(k,m)
+          END DO
+        END DO
+
 END SUBROUTINE Hankel_M_and_invM
 
   !Ma=inv1(invM)
@@ -652,7 +690,7 @@ SUBROUTINE get_Hfields()
 #endif
 
   Call get_Ffields_AM_rz()
- ! write (*,*) "get_Ffields_AM_rz  er_c lbound and upbound", UBOUND(er_c), LBOUND(er_c)
+  write (*,*) "==========START GET H FIELD HERE AFTER GET F FIELD =============================="
   DO i=1, nfftr
    DO j=1, ny
      write (0,*), er_c(i,j,:)
@@ -674,7 +712,7 @@ SUBROUTINE get_Hfields()
   end do
   DO imode=1, nmodes
     !Ma = Ma_tot(:,:,imode)
-    !Call Hankel_M_and_invM(imode-1)
+    Call Hankel_M_and_invM(imode-1)
     !write (0,*), "Ma ======" , Ma
     !write (0,*), "Ma_1 ======" , Ma_1
     !write (0,*), "Ma1 ======" , Ma1
@@ -720,42 +758,72 @@ SUBROUTINE get_Hfields()
     Call  dgemm_example(bl_f(:,:,imode), Ma, bl_h(:,:,imode), nfftr)
     Call  dgemm_example(bp_f(:,:,imode), Ma_1, bm_h(:,:,imode), nfftr)
     Call  dgemm_example(bm_f(:,:,imode), Ma1, bp_h(:,:,imode), nfftr)
-    !Call  dgemm_example(jl_f(:,:,imode), Ma, jl_h(:,:,imode), nfftr)
-    !Call  dgemm_example(jm_f_ptr, Ma1, jp_h_ptr, nfftr)
-    !Call  dgemm_example(jp_f_ptr, Ma_1, jm_h_ptr, nfftr)
-    !Call  dgemm_example(rho_f_ptr, Ma, rho_h_ptr, nfftr)
-    !Call  dgemm_example(rhoold_f_ptr, Ma, rhoold_h_ptr, nfftr)
+    Call  dgemm_example(jl_f(:,:,imode), Ma, jl_h(:,:,imode), nfftr)
+    Call  dgemm_example(jm_f(:,:,imode), Ma1, jp_h(:,:,imode), nfftr)
+    Call  dgemm_example(jp_f(:,:,imode), Ma_1, jm_h(:,:,imode), nfftr)
+    Call  dgemm_example(rho_f(:,:,imode), Ma, rho_h(:,:,imode), nfftr)
+    Call  dgemm_example(rhoold_f(:,:,imode), Ma, rhoold_h(:,:,imode), nfftr)
   write ( *, * ) 'Elapsed CPU time = ', t2 - t1
   !write (0,*) "el_h(10,10)", el_h(10,10,:),el_h_ptr(10,10)
+  !write (0,*) "em_f"
+  !DO i=1, nfftr
+  ! DO j=1, ny
+  !   write (0,*), em_f(i,j,imode)
+  ! end do
+  !end do
+
+  !write (0,*) "ep_f"
+  !DO i=1, nfftr
+  ! DO j=1, ny
+  !   write (0,*), ep_f(i,j,imode)
+  ! end do
+  !end do
+ 
+  !write (0,*) "ep_h", MAXVAL(abs(ep_h))
+
+  !DO i=1, nfftr
+  ! DO j=1, ny
+  !   write (0,*), ep_h(i,j,imode)
+  ! end do
+  !end do
+
+  !write (0,*) "em_h", MAXVAL(abs(em_h))
+  !DO i=1, nfftr
+  ! DO j=1, ny
+  !   write (0,*), em_h(i,j,imode)
+  ! end do
+  !end do 
+  END DO
+
+
   write (0,*) "em_f"
   DO i=1, nfftr
    DO j=1, ny
-     write (0,*), em_f(i,j,imode)
+     write (0,*), em_f(i,j,:)
    end do
   end do
 
   write (0,*) "ep_f"
   DO i=1, nfftr
    DO j=1, ny
-     write (0,*), ep_f(i,j,imode)
+     write (0,*), ep_f(i,j,:)
    end do
   end do
- 
+
   write (0,*) "ep_h", MAXVAL(abs(ep_h))
 
   DO i=1, nfftr
    DO j=1, ny
-     write (0,*), ep_h(i,j,imode)
+     write (0,*), ep_h(i,j,:)
    end do
   end do
 
   write (0,*) "em_h", MAXVAL(abs(em_h))
   DO i=1, nfftr
    DO j=1, ny
-     write (0,*), em_h(i,j,imode)
+     write (0,*), em_h(i,j,:)
    end do
-  end do 
-  END DO
+  end do
   !write (*,*) "dgemm successful"
 
   !DO i=1,nfftr
@@ -772,7 +840,7 @@ SUBROUTINE get_Hfields()
   !    write(*,*) d(i,j)
   !  end do
   !end do
-
+  write (*,*) "====================== END OF  GET H FIELD  =============================="
 END SUBROUTINE get_Hfields
 
 
@@ -799,10 +867,10 @@ SUBROUTINE get_Hfields_inv()
     nfftr=nx+2*nxguards
 #endif
 
-
+  write (*,*) "====================== START OF  GET H FIELD INV   =============================="
   DO imode=1, nmodes
    ! Ma = Ma_tot(:,:,imode)
-    !Call Hankel_M_and_invM(imode-1)
+    Call Hankel_M_and_invM(imode-1)
     call cpu_time ( t1 )
     !el_h_ptr=>el_h(:,:,imode)
     !ep_h_ptr=>ep_h(:,:,imode)
@@ -839,30 +907,30 @@ SUBROUTINE get_Hfields_inv()
   write ( *, * ) 'Elapsed CPU time = ', t2 - t1
 
   !write (0,*) "el_h(10,10)", el_h_inv(10,10,:), "-------", el_h_inv_ptr(10,10)
-  write (0,*) "ep_h"
-  DO i=1, nfftr
-   DO j=1, ny
-     write (0,*), ep_h(i,j,imode)
-   end do
-  end do
-  write (0,*) "ep_h_inv"
-  DO i=1, nfftr
-   DO j=1, ny
-     write (0,*), ep_h_inv(i,j,imode)
-   end do
-  end do
-  write (0,*) "em_h"
-  DO i=1, nfftr
-   DO j=1, ny
-     write (0,*), em_h(i,j,imode)
-   end do
-  end do
-  write (0,*) "em_h_inv"
-  DO i=1, nfftr
-   DO j=1, ny
-     write (0,*), em_h_inv(i,j,imode)
-   end do
-  end do
+  !write (0,*) "ep_h"
+  !DO i=1, nfftr
+  ! DO j=1, ny
+  !   write (0,*), ep_h(i,j,imode)
+  ! end do
+  !end do
+  !write (0,*) "ep_h_inv"
+  !DO i=1, nfftr
+  ! DO j=1, ny
+  !   write (0,*), ep_h_inv(i,j,imode)
+  ! end do
+  !end do
+  !write (0,*) "em_h"
+  !DO i=1, nfftr
+  ! DO j=1, ny
+  !   write (0,*), em_h(i,j,imode)
+  ! end do
+  !end do
+  !write (0,*) "em_h_inv"
+  !DO i=1, nfftr
+  ! DO j=1, ny
+  !   write (0,*), em_h_inv(i,j,imode)
+  ! end do
+  !end do
 
   END DO
 
@@ -883,6 +951,32 @@ SUBROUTINE get_Hfields_inv()
   !  end do
   !end do
 
+  write (0,*) "ep_h"
+  DO i=1, nfftr
+   DO j=1, ny
+     write (0,*), ep_h(i,j,:)
+   end do
+  end do
+  write (0,*) "ep_h_inv"
+  DO i=1, nfftr
+   DO j=1, ny
+     write (0,*), ep_h_inv(i,j,:)
+   end do
+  end do
+  write (0,*) "em_h"
+  DO i=1, nfftr
+   DO j=1, ny
+     write (0,*), em_h(i,j,:)
+   end do
+  end do
+  write (0,*) "em_h_inv"
+  DO i=1, nfftr
+   DO j=1, ny
+     write (0,*), em_h_inv(i,j,:)
+   end do
+  end do
+
+write (*,*) "====================== END OF  GET H FIELD INV =============================="
 END SUBROUTINE get_Hfields_inv
 
 

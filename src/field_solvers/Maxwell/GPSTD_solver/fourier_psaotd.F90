@@ -1112,13 +1112,13 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
     ENDIF
-    write (0,*) "nffty ==========", nffty
-    el_f=el_f/REAL(nffty,num)
-    ep_f= ep_f/REAL(nffty,num)
-    em_f=em_f /REAL(nffty,num)
-    bl_f= bl_f/REAL(nffty,num)
-    bp_f= bp_f/REAL(nffty,num)
-    bm_f=bm_f/REAL(nffty,num)
+    write (0,*) "nffty ==========", REAL(nffty,num)
+    !el_f=el_f/REAL(nffty,num)
+    !ep_f= ep_f/REAL(nffty,num)
+    !em_f=em_f /REAL(nffty,num)
+    !bl_f= bl_f/REAL(nffty,num)
+    !bp_f= bp_f/REAL(nffty,num)
+    !bm_f=bm_f/REAL(nffty,num)
     DEALLOCATE (ert_p)
     DEALLOCATE (ert_m)
     DEALLOCATE (brt_p)
@@ -1825,6 +1825,14 @@ MODULE fourier_psaotd
     nxx=nkx
     nyy=nky
     nzz=nmodes
+    write (0,*) "nxx= ", nxx, "nyy = ", nyy, "nzz =", nzz
+    write (0,*) "upper and lower bound of ep_h", LBOUND(ep_h), UBOUND(ep_h)
+    !write (0,*), "max of ep_h_old", MAXVAL(ABS (ep_h))
+    !write (0,*), "max of bl_h_old ", MAXVAL(ABS (bl_h))
+    !write (0,*), "max of bm_h_old ", MAXVAL(ABS (bm_h ))
+    !write (0,*), "max of jp_h_old ", MAXVAL(ABS (jp_h ))
+    !write (0,*), "max of rho_h_old", MAXVAL(ABS (rho_h))
+    !write (0,*), "max of rhoold_h_old", MAXVAL(ABS (rhoold_h))
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, el_h_old, ep_h_old, em_h_old,     &
     !$OMP bl_h_old, bp_h_old, bm_h_old,jl_h_old,jp_h_old,jm_h_old,rho_h_old,rhoold_h_old) COLLAPSE(3)
     DO iz=1, nzz
@@ -1837,12 +1845,16 @@ MODULE fourier_psaotd
           bl_h_old=bl_h(ix, iy, iz)
           bp_h_old=bp_h(ix, iy, iz)
           bm_h_old=bm_h(ix, iy, iz)
-          jl_h_old=jl_h(ix, iy, iz)
-          jp_h_old=jp_h(ix, iy, iz)
-          jm_h_old=jm_h(ix, iy, iz)
-          rho_h_old=rho_h(ix, iy, iz)
-          rhoold_h_old=rhoold_h(ix, iy, iz)
-
+          !jl_h_old=jl_h(ix, iy, iz)
+          !jp_h_old=jp_h(ix, iy, iz)
+          !jm_h_old=jm_h(ix, iy, iz)
+          !rho_h_old=rho_h(ix, iy, iz)
+          !rhoold_h_old=rhoold_h(ix, iy, iz)
+          jl_h_old=0.0
+          jp_h_old=0.0
+          jm_h_old=0.0
+          rho_h_old=0.0
+          rhoold_h_old=0.0
 
           bl_h(ix, iy, iz) =                                                           &
           cc_mat(nmatrixes)%block_matrix2d(4, 4)%block3dc(ix, iy,                     &
@@ -1856,20 +1868,20 @@ MODULE fourier_psaotd
           bp_h(ix, iy, iz) =                                                           &
           cc_mat(nmatrixes)%block_matrix2d(5, 5)%block3dc(ix, iy,                     &
           iz)*bp_h_old + cc_mat(nmatrixes)%block_matrix2d(5, 1)%block3dc(ix, iy,        &
-          iz)*el_h_old + cc_mat(nmatrixes)%block_matrix2d(5, 3)%block3dc(ix, iy,        &
-          iz)*em_h_old + cc_mat(nmatrixes)%block_matrix2d(5, 7)%block3dc(ix, iy,        &
-          iz)*jl_h_old + cc_mat(nmatrixes)%block_matrix2d(5, 9)%block3dc(ix,            &
-          iy, iz)*jm_h_old
+          iz)*el_h_old + cc_mat(nmatrixes)%block_matrix2d(5, 2)%block3dc(ix, iy,        &
+          iz)*ep_h_old + cc_mat(nmatrixes)%block_matrix2d(5, 7)%block3dc(ix, iy,        &
+          iz)*jl_h_old + cc_mat(nmatrixes)%block_matrix2d(5, 8)%block3dc(ix,            &
+          iy, iz)*jp_h_old
 
 
           ! - Bz
           bm_h(ix, iy, iz) =                                                           &
           cc_mat(nmatrixes)%block_matrix2d(6, 6)%block3dc(ix, iy,                     &
           iz)*bm_h_old + cc_mat(nmatrixes)%block_matrix2d(6, 1)%block3dc(ix, iy,        &
-          iz)*el_h_old+ cc_mat(nmatrixes)%block_matrix2d(6, 2)%block3dc(ix, iy,         &
-          iz)*ep_h_old+ cc_mat(nmatrixes)%block_matrix2d(6, 7)%block3dc(ix, iy,         &
-          iz)*jl_h_old+ cc_mat(nmatrixes)%block_matrix2d(6, 8)%block3dc(ix,             &
-          iy, iz)*jp_h_old
+          iz)*el_h_old+ cc_mat(nmatrixes)%block_matrix2d(6, 3)%block3dc(ix, iy,         &
+          iz)*em_h_old+ cc_mat(nmatrixes)%block_matrix2d(6, 7)%block3dc(ix, iy,         &
+          iz)*jl_h_old+ cc_mat(nmatrixes)%block_matrix2d(6, 9)%block3dc(ix,             &
+          iy, iz)*jm_h_old
 
           ! Push E a full time step
           ! - Ex
@@ -1886,7 +1898,7 @@ MODULE fourier_psaotd
           ep_h(ix, iy, iz) =                                                           &
           cc_mat(nmatrixes)%block_matrix2d(2, 2)%block3dc(ix, iy,                     &
           iz)*ep_h_old + cc_mat(nmatrixes)%block_matrix2d(2, 4)%block3dc(ix, iy,        &
-          iz)*bl_h_old  + cc_mat(nmatrixes)%block_matrix2d(2, 6)%block3dc(ix, iy,       &
+          iz)*bl_h_old  + cc_mat(nmatrixes)%block_matrix2d(2, 5)%block3dc(ix, iy,       &
           iz)*bm_h_old  + cc_mat(nmatrixes)%block_matrix2d(2, 8)%block3dc(ix, iy,       &
           iz)*jp_h_old + cc_mat(nmatrixes)%block_matrix2d(2, 11)%block3dc(ix,           &
           iy, iz)*rho_h_old + cc_mat(nmatrixes)%block_matrix2d(2,                       &
@@ -1897,14 +1909,66 @@ MODULE fourier_psaotd
           em_h(ix, iy, iz) =                                                           &
           cc_mat(nmatrixes)%block_matrix2d(3, 3)%block3dc(ix, iy,                     &
           iz)*em_h_old + cc_mat(nmatrixes)%block_matrix2d(3, 4)%block3dc(ix, iy,        &
-          iz)*bl_h_old + cc_mat(nmatrixes)%block_matrix2d(3, 5)%block3dc(ix, iy,        &
-          iz)*bp_h_old + cc_mat(nmatrixes)%block_matrix2d(3, 9)%block3dc(ix, iy,        &
+          iz)*bl_h_old + cc_mat(nmatrixes)%block_matrix2d(3, 6)%block3dc(ix, iy,        &
+          iz)*bm_h_old + cc_mat(nmatrixes)%block_matrix2d(3, 9)%block3dc(ix, iy,        &
           iz)*jm_h_old + cc_mat(nmatrixes)%block_matrix2d(3, 11)%block3dc(ix,           &
           iy, iz)*rho_h_old + cc_mat(nmatrixes)%block_matrix2d(3,                       &
           10)%block3dc(ix, iy, iz)*rhoold_h_old
+
+          IF (cc_mat(nmatrixes)%block_matrix2d(5, 5)%block3dc(ix,iy,iz)/= cc_mat(nmatrixes) &
+             %block_matrix2d(5, 5)%block3dc(ix,iy,iz))THEN
+            write (0,*) "(5,5)   ", "ix=", ix, "iy=", iy, "iz=", iz
+          END IF 
+          IF (cc_mat(nmatrixes)%block_matrix2d(5, 1)%block3dc(ix,iy,iz)/= cc_mat(nmatrixes)&
+              %block_matrix2d(5, 1)%block3dc(ix,iy,iz))THEN
+            write (0,*) "(5,1)   ","ix=", ix, "iy=", iy, "iz=", iz
+          END IF 
+          IF (cc_mat(nmatrixes)%block_matrix2d(5, 2)%block3dc(ix,iy,iz)/= cc_mat(nmatrixes)&
+              %block_matrix2d(5, 2)%block3dc(ix,iy,iz))THEN
+            write (0,*) "(5,2)   ","ix=", ix, "iy=", iy, "iz=", iz
+          END IF 
+          IF (cc_mat(nmatrixes)%block_matrix2d(5, 7)%block3dc(ix,iy,iz)/= cc_mat(nmatrixes)&
+              %block_matrix2d(5, 7)%block3dc(ix,iy,iz))THEN
+            write (0,*) "(5,7)   ","ix=", ix, "iy=", iy, "iz=", iz
+          END IF 
+          IF (cc_mat(nmatrixes)%block_matrix2d(5, 8)%block3dc(ix,iy,iz)/= cc_mat(nmatrixes)&
+             %block_matrix2d(5, 8)%block3dc(ix,iy,iz))THEN
+            write (0,*) "(5,8)   ","ix=", ix, "iy=", iy, "iz=", iz
+          END IF
+          IF (cc_mat(nmatrixes)%block_matrix2d(6, 6)%block3dc(ix,iy,iz)/= cc_mat(nmatrixes)&
+            %block_matrix2d(6, 6)%block3dc(ix,iy,iz))THEN
+            write (0,*) "(6,6)   ",  "ix=", ix, "iy=", iy, "iz=", iz
+          END IF
+          IF (ep_h_old /= ep_h_old) THEN 
+            write (0,*) "ep_h_old   ", "ix=", ix, "iy=", iy, "iz=", iz 
+          END IF 
+          IF (el_h_old /= el_h_old) THEN 
+            write (0,*) "el_h_old   ", "ix=", ix, "iy=", iy, "iz=", iz
+          END IF
+          IF (bp_h_old /= bp_h_old) THEN 
+            write (0,*) "bp_h_old   ", "ix=", ix, "iy=", iy, "iz=", iz
+          END IF
+          IF (jp_h_old /= jp_h_old) THEN 
+            write (0,*) "jp_h_old   ", "ix=", ix, "iy=", iy, "iz=", iz
+          END IF
+          IF (jl_h_old /= jl_h_old) THEN 
+            write (0,*) "jl_h_old   ", "ix=", ix, "iy=", iy, "iz=", iz
+          END IF
+           IF (bl_h_old /= bl_h_old) THEN
+            write (0,*) "bl_h_old   ", "ix=", ix, "iy=", iy, "iz=", iz
+          END IF
         END DO
       END DO
     END DO
+    
+    
+    !write (0,*), "ccmat1", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(3, 3)%block3dc))
+    !write (0,*), "ccmat2 ", MAXVAL(ABS (bl_h_old ))
+    !write (0,*), "ccmat3 ", MAXVAL(ABS (bm_h_old ))
+    !write (0,*), "max of jp_h_old ", MAXVAL(ABS (jp_h_old ))
+    !write (0,*), "max of rho_h_old", MAXVAL(ABS (rho_h_old))
+    !write (0,*), "max of rhoold_h_old", MAXVAL(ABS (rhoold_h_old))
+
     !$OMP END PARALLEL DO
     IF (it.ge.timestat_itstart) THEN
       localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime)

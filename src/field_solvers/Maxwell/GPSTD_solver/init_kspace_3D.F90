@@ -984,11 +984,12 @@ MODULE gpstd_solver
     ALLOCATE(at_op(nmatrixes2)%block_vector(4_idp))
 
     CALL select_case_dims_local(nfftx, nffty, nfftz)
-    nfftxr = nfftx/2+1
     !> if l_AM_rz is true then nfftxr=nfftx because it's complex to complex
     !> transform in this case 
     IF (l_AM_rz) THEN 
       nfftxr = nfftx
+    ELSE 
+      nfftxr = nfftx/2+1
     ENDIF 
     IF(p3dfft_flag) nfftxr = nfftx
     DO i = 1_idp, 10_idp
@@ -1019,12 +1020,14 @@ MODULE gpstd_solver
             kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kyf(j)
             kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kyb(j)
             kspace(nmatrixes2)%block_vector(3)%block3dc(i, j, k) = kyc(j)
+            write (0,*) "kyf= ", kyf(j), "kyb=", kyb(j), "kyc=", kyc(j)
             kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k) = krc(i,k)
             kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k) = krc(i,k)
             kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k) = krc(i,k)
             kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = krc(i,k)
             kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = krc(i,k)
             kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = krc(i,k)
+            write (0,*)  "krc=", krc(i,k)
           ELSE  
             IF(.NOT. p3dfft_flag) THEN
               IF(.NOT. fftw_mpi_transpose) THEN
@@ -1110,8 +1113,8 @@ MODULE gpstd_solver
         ABS(kspace(nmatrixes2)%block_vector(3)%block3dc)**2)
     IF (l_AM_rz) THEN 
       kspace(nmatrixes2)%block_vector(10)%block3dc=                                  &
-      SQRT(ABS(kspace(nmatrixes2)%block_vector(3)%block3dc)**2 +                     &
-        ABS(kspace(nmatrixes2)%block_vector(6)%block3dc)**2) 
+      SQRT(ABS(kspace(nmatrixes2)%block_vector(1)%block3dc)**2 +                     &
+        ABS(kspace(nmatrixes2)%block_vector(4)%block3dc)**2) 
     END IF
     switch = .FALSE.
 
@@ -1137,12 +1140,23 @@ MODULE gpstd_solver
     !> if current mpi task contains the null frequency then this processor it
     !> tagged by switch = .TRUE. in order perform Taylor expansion
     !> for at_op...(i)(1,1,1) only in this mpi task
-    IF(ABS(kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)) .EQ. 0.0_num) THEN
-      kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1) = DCMPLX(1.0_num,         &
-      0.0_num)
-      switch = .TRUE.
-    ENDIF
-    
+    IF (l_AM_rz) THEN
+      DO i=1, nfftz
+        IF(ABS(kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, i)) .EQ. 0.0_num) THEN
+          kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, i) = DCMPLX(1.0_num,         &
+          0.0_num)
+          switch = .TRUE.
+        ENDIF
+      END DO
+    ELSE 
+      IF(ABS(kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)) .EQ. 0.0_num) THEN
+        kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1) = DCMPLX(1.0_num,         &
+        0.0_num)
+        switch = .TRUE.
+      ENDIF
+     END IF 
+
+
     at_op(nmatrixes2)%block_vector(3)%block3dc = (DCMPLX(1.0_num, 0.0_num) -          &
     at_op(nmatrixes2)%block_vector(2)%block3dc)                                       &
     /kspace(nmatrixes2)%block_vector(10)%block3dc**2
@@ -1159,11 +1173,22 @@ MODULE gpstd_solver
     !> sinc function
 
     IF(switch) THEN
-      at_op(nmatrixes2)%block_vector(3)%block3dc(1, 1, 1) = (clight*dt)**2/2.0_num
-      at_op(nmatrixes2)%block_vector(4)%block3dc(1, 1,                                &
-      1)=DCMPLX(-(clight*dt)**3/6.0_num, 0.0_num)
-      kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)=DCMPLX(0._num, 0._num)
+      IF (l_AM_rz) THEN
+        DO i=1, nfftz
+          at_op(nmatrixes2)%block_vector(3)%block3dc(1, 1, i) = (clight*dt)**2/2.0_num
+          at_op(nmatrixes2)%block_vector(4)%block3dc(1, 1,                                &
+          i)=DCMPLX(-(clight*dt)**3/6.0_num, 0.0_num)
+          kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, i)=DCMPLX(0._num, 0._num)
+        END DO
+       ELSE
+        at_op(nmatrixes2)%block_vector(3)%block3dc(1, 1, i) = (clight*dt)**2/2.0_num
+        at_op(nmatrixes2)%block_vector(4)%block3dc(1, 1,                                &
+        i)=DCMPLX(-(clight*dt)**3/6.0_num, 0.0_num)
+        kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, i)=DCMPLX(0._num, 0._num)
+       END IF 
     ENDIF
+
+
     DEALLOCATE(temp, temp2)
   END SUBROUTINE init_kspace
 
@@ -1280,6 +1305,7 @@ MODULE gpstd_solver
     ELSE IF (l_AM_rz) THEN
       CALL  compute_kr_1d(nfftx,krc,dx,nmodes) 
       CALL  compute_k_1d( nffty,kyc,kyf,kyb,nordery,dy,l_stg)
+      write (0,*) "dy = ", dy, "nordery= ", nordery
     END IF
      
     ! Selects only haf of  kx because r2c and c2r ffts
@@ -1483,11 +1509,13 @@ MODULE gpstd_solver
      DO k=1,nmodes
        CALL JYZO(k,nfft,nu,RJ1,RY0,RY1)
        !CALL  jyzo  (k,nfft,nu)
-       IF (k == 1) THEN
-         kvec(:,k) = nu/(nx*d) 
+       IF (k .eq. 1) THEN
+         DO i=1,nfft
+           kvec(i,k) = nu(i)/(nx*d) 
+         END DO
        ELSE
          kvec(1,k)=0._num 
-         DO i=2_idp,nfft
+         DO i=2,nfft
            kvec(i,k)=nu(i-1)/(nx*d)
          END DO
        END IF
@@ -1601,7 +1629,11 @@ MODULE gpstd_solver
     !> and nfftxr should be nfftr, nffty is nfftl and nfftz is nmodes
     nkx = nfftxr
     nky = nffty
-    nkz = nfftz
+    IF (l_AM_rz) THEN
+      nkz=nmodes
+    ELSE
+      nkz = nfftz
+    END IF
     !> Allocates cc_mat  block matrix
     !> cc_mat blocks are initally as an nbloc_ccmat x nbloc_ccmat block matrix 
     !> At the end of the routine, useless blcoks are deleted  
@@ -2200,7 +2232,7 @@ MODULE gpstd_solver
     USE matrix_coefficients
     USE constants
     USE params, ONLY : dt
-    INTEGER(idp)  :: i,j   
+    INTEGER(idp)  :: i,j, imode   
     COMPLEX(cpx) ::  ii
     LOGICAL(lp)            :: switch
     ii=DCMPLX(0.0_num, 1.0_num)
@@ -2241,7 +2273,6 @@ MODULE gpstd_solver
     *at_op(nmatrixes2)%block_vector(1)%block3dc
     
     !> End contribution B field to E field
-    !> I STOPPED HERE !!! 
     !> Contribution of E field to B field
     cc_mat(nmatrixes)%block_matrix2d(4, 2)%block3dc = -                               &
     ii*kspace(nmatrixes2)%block_vector(4)%block3dc/clight                             &
@@ -2323,11 +2354,14 @@ MODULE gpstd_solver
     !> for certain blocks
 
     switch = .FALSE.
-    !> Spots mpis that contain null frequency to perform Taylor expansion later
-    IF(ABS(kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)) .EQ. 0.0_num) THEN
-      kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1) = (1.0_num, 0.0_num)
-      switch = .TRUE.
-    ENDIF
+    DO imode=1, nmodes
+      !> Spots mpis that contain null frequency to perform Taylor expansion later
+      IF(ABS(kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, imode)) .EQ. 0.0_num) THEN
+        kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, imode) = (1.0_num, 0.0_num)
+        switch = .TRUE.
+      ENDIF
+    END DO
+
     
     cc_mat(nmatrixes)%block_matrix2d(1, 10_idp)%block3dc = DCMPLX(0.,1.)            &
     *kspace(nmatrixes2)%block_vector(1)%block3dc                                    &
@@ -2351,16 +2385,31 @@ MODULE gpstd_solver
      !> IMPORTANT TO REMEMBER TAYLOR EXPANSION SHOULD BE VERIFIED FOR AM_rz
     !> expansion for cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc(1, 1,
     !1)
+
+    IF (switch) THEN
+      DO imode=1, nmodes
+        cc_mat(nmatrixes)%block_matrix2d(1, 10_idp)%block3dc(1, 1, imode) =             &
+           -1.0_num/3.0_num*DCMPLX(0.0_num, 1.0_num)*(clight*dt)**2
+
+        cc_mat(nmatrixes)%block_matrix2d(2, 10_idp)%block3dc(1, 1, imode) =             &
+           1.0_num/3.0_num*(clight*dt)**2
+
+        cc_mat(nmatrixes)%block_matrix2d(3, 10_idp)%block3dc(1, 1, imode) =             &
+           -1.0_num/3.0_num*(clight*dt)**2  
+      END DO
+    END IF
+    
     DO i = 1, 3
-      IF(switch) THEN
-        cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc(1, 1, 1) =             &
-         -1.0_num/3.0_num*(0.0_num, 1.0_num)*(clight*dt)**2
-      ENDIF
+!      IF(switch) THEN
+!        cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc(1, 1, 1) =             &
+!         -1.0_num/3.0_num*DCMPLX(0.0_num, 1.0_num)*(clight*dt)**2
+!      ENDIF
       cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc = 1.0_num/eps0           &
       *cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc
     ENDDO
     !> End contribution of rhoold field to E field
-  
+ 
+ 
     !> Contribution of rho field to E field
     
     cc_mat(nmatrixes)%block_matrix2d(1, 11_idp)%block3dc = - DCMPLX(0.,1.)          &
@@ -2378,16 +2427,29 @@ MODULE gpstd_solver
     *(DCMPLX(1.,0.)- 1./(clight*dt)* at_op(nmatrixes2)%block_vector(1)%block3dc)    &
     /(2.*kspace(nmatrixes2)%block_vector(10)%block3dc**2)
 
+
     !> If current mpi task contains null frequency then performs Taylor
     !expansion for cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc(1, 1,
     !1)
+    
+    IF (switch) THEN
+      DO imode=1, nmodes
+        cc_mat(nmatrixes)%block_matrix2d(1, 11_idp)%block3dc(1, 1, imode) =               &
+           1.0_num/6.0_num*(0.0_num, 1.0_num)*(clight*dt)**2
 
+        cc_mat(nmatrixes)%block_matrix2d(1, 11_idp)%block3dc(1, 1, imode) =               &
+          -DCMPLX(0.,1.)* 1.0_num/6.0_num*(0.0_num, 1.0_num)*(clight*dt)**2
+
+        cc_mat(nmatrixes)%block_matrix2d(1, 11_idp)%block3dc(1, 1, imode) =               &
+           DCMPLX(0.,1.)*1.0_num/6.0_num*(0.0_num, 1.0_num)*(clight*dt)**2
+      END DO
+    END IF       
     !> IMPORTANT TO REMEMBER TAYLOR EXPANSION SHOULD BE VERIFIED FOR AM_rz
     Do i = 1, 3
-      IF(switch) THEN
-        cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc(1, 1, 1) =               &
-        -1.0_num/6.0_num*(0.0_num, 1.0_num)*(clight*dt)**2
-      ENDIF
+    !  IF(switch) THEN
+    !    cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc(1, 1, 1) =               &
+    !    -1.0_num/6.0_num*(0.0_num, 1.0_num)*(clight*dt)**2
+    !  ENDIF
       cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc = 1.0_num/eps0 *           &
       cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc
     ENDDO
