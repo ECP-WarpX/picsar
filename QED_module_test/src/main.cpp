@@ -8,6 +8,8 @@
 #include "electrons.h"
 #include "positrons.h"
 
+#include "landau_lifshitz.h"
+
 using namespace std;
 using namespace testbed;
 
