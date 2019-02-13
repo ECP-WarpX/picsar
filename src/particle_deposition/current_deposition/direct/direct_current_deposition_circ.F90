@@ -103,10 +103,10 @@ SUBROUTINE depose_jrjtjl_scalar_1_1_1( jr, jr_nguard, jr_nvalid, &
   REAL(num)                :: q, dt, dr, dz, rmin, zmin, c, s
   REAL(num)                :: dri, dzi, rint, zint
   REAL(num)                :: x, y, r, z, vx, vy, vr, vt, vz, invvol
-  REAL(num)                :: wq, wqr, wqt, wql, clightsq
+  REAL(num)                :: wq, clightsq
   REAL(num), DIMENSION(2)  :: sr(0:1), sz(0:1)
   INTEGER(idp)             :: j, l, m, ip
-  COMPLEX(cpx)             :: exptheta_m
+  COMPLEX(cpx)             :: wqr, wqt, wql, exptheta_m
 
   dri = 1.0_num/dr
   dzi = 1.0_num/dz
@@ -119,14 +119,11 @@ SUBROUTINE depose_jrjtjl_scalar_1_1_1( jr, jr_nguard, jr_nvalid, &
   !DIR$ NOVECTOR
   DO ip=1, np
 
-    ! Computes velocity
+    ! Computes velocity (Cartesian)
     vx = uxp(ip)*gaminv(ip)
     vy = uyp(ip)*gaminv(ip)
     vz = uzp(ip)*gaminv(ip)
     
-    vr = c*vx + s*vz
-    vt = c*vy - s*vx
-
     ! --- computes position in  grid units at (n+1/2)
     x = xp(ip)-0.5*vx*dt
     y = yp(ip)-0.5*vy*dt
@@ -142,6 +139,10 @@ SUBROUTINE depose_jrjtjl_scalar_1_1_1( jr, jr_nguard, jr_nvalid, &
     r = (r-rmin)*dri-0.5 ! grid starts at 0.5*dx in x
 
     z = (zp(ip)-0.5*vz*dt-zmin)*dzi
+
+    ! Computes velocity (radial and azimuthal)
+    vr = c*vx + s*vz
+    vt = c*vy - s*vx
 
     ! --- computes particles weights
     wq=q*w(ip)
@@ -166,20 +167,20 @@ SUBROUTINE depose_jrjtjl_scalar_1_1_1( jr, jr_nguard, jr_nvalid, &
         ! - jr
         jr(j,   l,   m) = jr(j,   l,   m  )  +   sr(0)*sz(0)*wqr
         jr(j+1, l,   m) = jr(j+1, l,   m  )  +   sr(1)*sz(0)*wqr
-        jr(j,   l+1, m) = jr(j,   l+1, m  )  +   sr(0)*sz(0)*wqr
-        jr(j+1, l+1, m) = jr(j+1, l+1, m  )  +   sr(1)*sz(0)*wqr
+        jr(j,   l+1, m) = jr(j,   l+1, m  )  +   sr(0)*sz(1)*wqr
+        jr(j+1, l+1, m) = jr(j+1, l+1, m  )  +   sr(1)*sz(1)*wqr
 
         ! - jt
         jt(j,   l,   m) = jt(j,   l,   m  )  +   sr(0)*sz(0)*wqt
         jt(j+1, l,   m) = jt(j+1, l,   m  )  +   sr(1)*sz(0)*wqt
-        jt(j,   l+1, m) = jt(j,   l+1, m  )  +   sr(0)*sz(0)*wqt
-        jt(j+1, l+1, m) = jt(j+1, l+1, m  )  +   sr(1)*sz(0)*wqt
+        jt(j,   l+1, m) = jt(j,   l+1, m  )  +   sr(0)*sz(1)*wqt
+        jt(j+1, l+1, m) = jt(j+1, l+1, m  )  +   sr(1)*sz(1)*wqt
         
         ! - jl
         jl(j,   l,   m) = jl(j,   l,   m  )  +   sr(0)*sz(0)*wql
         jl(j+1, l,   m) = jl(j+1, l,   m  )  +   sr(1)*sz(0)*wql
-        jl(j,   l+1, m) = jl(j,   l+1, m  )  +   sr(0)*sz(0)*wql
-        jl(j+1, l+1, m) = jl(j+1, l+1, m  )  +   sr(1)*sz(0)*wql
+        jl(j,   l+1, m) = jl(j,   l+1, m  )  +   sr(0)*sz(1)*wql
+        jl(j+1, l+1, m) = jl(j+1, l+1, m  )  +   sr(1)*sz(1)*wql
 
         wqr = wqr*exptheta_m
         wqt = wqt*exptheta_m

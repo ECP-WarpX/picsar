@@ -93,7 +93,7 @@ SUBROUTINE depose_jrjtjl_generic( jr, jr_nguard, jr_nvalid, &
    CASE DEFAULT
 
     IF ((nox.eq.1).and.(noz.eq.1)) THEN
-      CALL depose_jxjyjz_scalar_1_1_1( jr, jr_nguard, jr_nvalid, &
+      CALL depose_jrjtjl_scalar_1_1_1( jr, jr_nguard, jr_nvalid, &
                                           jt, jt_nguard, jt_nvalid, &
                                           jl, jl_nguard, jl_nvalid, nmodes, &
                                           np, xp, yp, zp, uxp, uyp, uzp, gaminv, w,  &
