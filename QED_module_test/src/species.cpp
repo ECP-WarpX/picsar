@@ -36,6 +36,21 @@ void species::add_particle(position part_pos, momentum part_mom){
 
 }
 
+void picsar::remove_particle(int particle_index){
+    for (auto& p : pos)
+        p.erase(p.begin() + particle_index);
+
+    for (auto& m : mom)
+        m.erase(m.begin() + particle_index);
+
+    for (auto& f: fields)
+        f.erase(f.begin() + particle_index);
+
+    for (auto& d: optical_depth)
+        d.erase(d.begin() + particle_index);
+}
+
+
 void species::calc_fields(em_field_function em_function, ttime tt){
     int num_particles = pos[0].size();
 

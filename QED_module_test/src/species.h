@@ -19,6 +19,7 @@ namespace testbed{
         int get_num_particles() const;
 
         void add_particle(picsar::position part_pos, picsar::momentum part_mom);
+        void remove_particle(int particle_index);
 
         virtual void push_positions(picsar::ttime dt) = 0;
         virtual void push_momenta(picsar::ttime dt) = 0;
