@@ -12,7 +12,7 @@ void leptons::push_positions(ttime dt){
     int num_particles = pos[0].size();
 
     for (int i = 0; i < num_particles; i++){
-        double inv_ptotal = 1.0/sqrt(mass*mass + mom[0][i]*mom[0][i] + mom[1][i]*mom[1][i] + mom[2][i]*mom[2][i]);
+        double inv_ptotal = 1.0/sqrt(1.0 + (mom[0][i]*mom[0][i] + mom[1][i]*mom[1][i] + mom[2][i]*mom[2][i])/(mass*mass));
         double coeff = dt*inv_ptotal;
 
         pos[0][i] += coeff*mom[0][i];
@@ -39,7 +39,7 @@ void leptons::do_boris_pusher(double dt){
         double pty = mom[1][i] + beta *  fields[1][i];
         double ptz = mom[2][i] + beta *  fields[2][i];
 
-        double inv_gamman_times_beta = beta/sqrt(mass*mass + mom[0][i]*mom[0][i] + mom[1][i]*mom[1][i] + mom[2][i]*mom[2][i]);
+        double inv_gamman_times_beta = beta/sqrt(1.0 + (mom[0][i]*mom[0][i] + mom[1][i]*mom[1][i] + mom[2][i]*mom[2][i])/(mass*mass));
 
         double bx = inv_gamman_times_beta * fields[3][i];
         double by = inv_gamman_times_beta * fields[4][i];
