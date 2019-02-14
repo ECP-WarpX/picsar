@@ -25,6 +25,11 @@ namespace testbed{
         void calc_fields(picsar::em_field_function em_function, picsar::ttime tt);
 
         void print_on_disk(std::string prefix, int step_num) const;
+
+        std::tuple<picsar::positions_list, picsar::momenta_list,
+        picsar::em_field_list,  std::vector<double>> get_copy_of_all_data();
+        picsar::positions_list get_copy_of_positions();
+        picsar::momenta_list get_copy_of_momenta();
     protected:
         std::string name;
         double mass;

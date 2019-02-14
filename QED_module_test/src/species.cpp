@@ -66,3 +66,16 @@ void species::print_on_disk(std::string prefix, int step_num) const{
 
     out_file.close();
 }
+
+std::tuple<picsar::positions_list, picsar::momenta_list,
+picsar::em_field_list,  std::vector<double>> species::get_copy_of_all_data(){
+    return {pos, mom, fields, optical_depth};
+}
+
+picsar::positions_list species::get_copy_of_positions(){
+    return pos;
+}
+
+picsar::momenta_list species::get_copy_of_momenta(){
+    return mom;
+}

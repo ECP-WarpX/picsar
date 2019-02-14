@@ -2,6 +2,7 @@
 #include <vector>
 #include <memory>
 #include <functional>
+#include <tuple>
 
 #include "commons.h"
 #include "species.h"
@@ -15,7 +16,7 @@ using namespace std;
 using namespace testbed;
 using namespace picsar;
 
-const double dt = 0.001;
+const double dt = 0.01;
 const int num_steps = 10000;
 
 bool is_out(int t_step){return (t_step % 1000 == 0);}
@@ -29,7 +30,7 @@ int main(int argc, char** argv){
     vector<shared_ptr<species>> specs;
     //Init a photon
     auto ptr_phot1 = make_shared<photons>("phot1");
-    ptr_phot1->add_particle({0,0,0},{1.0,0.0,0.0});
+    ptr_phot1->add_particle({0,0,0},{0.0,0.0,0.0});
     specs.emplace_back(ptr_phot1);
 
     //Create LL pusher
@@ -41,24 +42,31 @@ int main(int argc, char** argv){
 
     //Init an electron
     auto ptr_ele1 = make_shared<electrons>("ele1");
-    ptr_ele1->add_particle({0,0,0},{1.0,0.0,0.0});
+    ptr_ele1->add_particle({0,0,0},{0.0,0.0,0.0});
     //Replace pusher
     ptr_ele1->replace_pusher_momenta(pusher);
     specs.emplace_back(ptr_ele1);
 
     //Init a positron
     auto ptr_pos1 = make_shared<positrons>("pos1");
-    ptr_pos1->add_particle({0,0,0},{1.0,0.0,0.0});
+    ptr_pos1->add_particle({0,0,0},{0.0,0.0,0.0});
     ptr_pos1->replace_pusher_momenta(pusher);
     specs.emplace_back(ptr_pos1);
 
     // Main loop
     for (int i = 0; i < num_steps; i++){
+
+    //Console output of a particle position for debug purposes
+        auto tpos = ptr_ele1->get_copy_of_positions();
+        cout << tpos[0][0] << " " << tpos[1][0] << " " << tpos[2][0] << " ";
+        auto tmom = ptr_ele1->get_copy_of_momenta();
+        cout << tmom[0][0] << " " << tmom[1][0] << " " << tmom[2][0] << endl;
+
         for (auto& sp : specs)
             sp->push_momenta(dt);
 
         for (auto& sp : specs)
-            sp->calc_fields([](position pos, double ttime){return em_field{0,0,0,0,0,1};}, i*dt);
+            sp->calc_fields([](position pos, double ttime){return em_field{1,0,0,0,0,1};}, i*dt);
 
         for (auto& sp : specs)
             sp->push_positions(dt);
