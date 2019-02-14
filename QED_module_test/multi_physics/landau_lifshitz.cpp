@@ -21,8 +21,7 @@ void picsar::boris_plus_landau_lifshitz_push(momenta_list& mom, const em_field_l
         double pty = mom[1][i] + beta *  fields[1][i];
         double ptz = mom[2][i] + beta *  fields[2][i];
 
-        double gamman = sqrt(1.0 + (mom[0][i]*mom[0][i] + mom[1][i]*mom[1][i] + mom[2][i]*mom[2][i])/(mass*mass));
-        double inv_gamman_times_beta = beta/gamman;
+        double inv_gamman_times_beta = beta/sqrt(1.0 + (mom[0][i]*mom[0][i] + mom[1][i]*mom[1][i] + mom[2][i]*mom[2][i])/(mass*mass));
 
         double bx = inv_gamman_times_beta * fields[3][i];
         double by = inv_gamman_times_beta * fields[4][i];
@@ -55,7 +54,8 @@ void picsar::boris_plus_landau_lifshitz_push(momenta_list& mom, const em_field_l
         double pzn = (mom[2][i] + old_pz)*0.5;
 
         //Inverse gamma at time n
-        double inv_gn = sqrt(1.0 + (pxn*pxn + pyn*pyn + pzn*pzn)/(mass*mass));
+        double gn =  sqrt(1.0 + (pxn*pxn + pyn*pyn + pzn*pzn)/(mass*mass));
+        double inv_gn = 1.0/gn;
 
         //Velocities at time n
         double vxn = pxn*inv_gn;
@@ -72,7 +72,7 @@ void picsar::boris_plus_landau_lifshitz_push(momenta_list& mom, const em_field_l
         double vdote = vxn*fields[0][i] +  vyn*fields[1][i] +  vzn*fields[2][i];
         double vdote2 = vdote*vdote;
 
-        double mul = -rr_coeff*(gamman*gamman)*rr_coeff*(fl2 - vdote2)*dt;
+        double mul = -rr_coeff*(gn*gn)*(fl2 - vdote2)*dt;
         double prrx = mul*vxn;
         double prry = mul*vyn;
         double prrz = mul*vzn;

@@ -3,6 +3,7 @@
 #include <memory>
 #include <functional>
 #include <tuple>
+#include <cmath>
 
 #include "commons.h"
 #include "species.h"
@@ -21,11 +22,13 @@ const int num_steps = 10000;
 
 bool is_out(int t_step){return (t_step % 1000 == 0);}
 
+
+
 int main(int argc, char** argv){
     //cout << "********************QED module testbed***************************" << endl;
 
     //Fix lambda
-    double lambda = 800 * _nm;
+    double lambda = 1 * _um;
 
     vector<shared_ptr<species>> specs;
     //Init a photon
@@ -33,7 +36,7 @@ int main(int argc, char** argv){
     ptr_phot1->add_particle({0,0,0},{0.0,0.0,0.0});
     specs.emplace_back(ptr_phot1);
 
-    //Create LL pusher
+    //Create LL pusher using multi_physics library
     auto pusher =
     [lambda](momenta_list& mom, const em_field_list& fields,  double mass, double charge, double dt)->void{
         boris_plus_landau_lifshitz_push(mom, fields, mass, charge, dt, lambda);
@@ -42,7 +45,7 @@ int main(int argc, char** argv){
 
     //Init an electron
     auto ptr_ele1 = make_shared<electrons>("ele1");
-    ptr_ele1->add_particle({0,0,0},{0.0,0.0,0.0});
+    ptr_ele1->add_particle({0,0,0},{0,100,0.0});
     //Replace pusher
     ptr_ele1->replace_pusher_momenta(pusher);
     specs.emplace_back(ptr_ele1);
@@ -50,7 +53,7 @@ int main(int argc, char** argv){
     //Init a positron
     auto ptr_pos1 = make_shared<positrons>("pos1");
     ptr_pos1->add_particle({0,0,0},{0.0,0.0,0.0});
-    ptr_pos1->replace_pusher_momenta(pusher);
+    //ptr_pos1->replace_pusher_momenta(pusher);
     specs.emplace_back(ptr_pos1);
 
     // Main loop
@@ -66,7 +69,7 @@ int main(int argc, char** argv){
             sp->push_momenta(dt);
 
         for (auto& sp : specs)
-            sp->calc_fields([](position pos, double ttime){return em_field{1,0,0,0,0,1};}, i*dt);
+            sp->calc_fields([](position pos, double ttime){return em_field{0,0,0,100.0,0.0,0.0};}, i*dt);
 
         for (auto& sp : specs)
             sp->push_positions(dt);
@@ -81,3 +84,6 @@ int main(int argc, char** argv){
 
     return 0;
 }
+
+//Nice field!
+//sp->calc_fields([](position pos, double ttime){return em_field{0,cos(pos[0]),sin(pos[0]),0,sin(pos[0]),-cos(pos[0])};}, i*dt);
