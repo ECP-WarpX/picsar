@@ -29,9 +29,4 @@ namespace picsar{
 
 }
 
-
-
-
-
-
 #endif

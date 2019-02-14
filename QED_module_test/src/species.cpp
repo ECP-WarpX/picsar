@@ -36,7 +36,7 @@ void species::add_particle(position part_pos, momentum part_mom){
 
 }
 
-void picsar::remove_particle(int particle_index){
+void species::remove_particle(int particle_index){
     for (auto& p : pos)
         p.erase(p.begin() + particle_index);
 
@@ -46,8 +46,7 @@ void picsar::remove_particle(int particle_index){
     for (auto& f: fields)
         f.erase(f.begin() + particle_index);
 
-    for (auto& d: optical_depth)
-        d.erase(d.begin() + particle_index);
+        optical_depth.erase(optical_depth.begin() + particle_index);
 }
 
 
