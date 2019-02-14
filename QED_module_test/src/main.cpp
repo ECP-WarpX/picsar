@@ -21,7 +21,7 @@ const int num_steps = 10000;
 bool is_out(int t_step){return (t_step % 1000 == 0);}
 
 int main(int argc, char** argv){
-    cout << "********************QED module testbed***************************" << endl;
+    //cout << "********************QED module testbed***************************" << endl;
 
     //Fix lambda
     double lambda = 800 * _nm;
@@ -69,7 +69,7 @@ int main(int argc, char** argv){
         }
     }
 
-    cout << "*****************************************************************" << endl;
+    //cout << "*****************************************************************" << endl;
 
     return 0;
 }
