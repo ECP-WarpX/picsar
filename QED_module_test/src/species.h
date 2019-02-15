@@ -31,6 +31,12 @@ namespace testbed{
         picsar::em_field_list,  std::vector<double>> get_copy_of_all_data();
         picsar::positions_list get_copy_of_positions();
         picsar::momenta_list get_copy_of_momenta();
+
+        std::tuple<picsar::positions_list&, picsar::momenta_list&,
+        picsar::em_field_list&,  std::vector<double>&> get_ref_of_all_data();
+        picsar::positions_list& get_ref_of_positions();
+        picsar::momenta_list& get_ref_of_momenta();
+
     protected:
         std::string name;
         double mass;

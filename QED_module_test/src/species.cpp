@@ -93,3 +93,16 @@ picsar::positions_list species::get_copy_of_positions(){
 picsar::momenta_list species::get_copy_of_momenta(){
     return mom;
 }
+
+std::tuple<picsar::positions_list&, picsar::momenta_list&,
+picsar::em_field_list&,  std::vector<double>&> species::get_ref_of_all_data(){
+    return {pos, mom, fields, optical_depth};
+}
+
+
+picsar::positions_list& species::get_ref_of_positions(){
+    return pos;
+}
+picsar::momenta_list& species::get_ref_of_momenta(){
+    return mom;
+}
