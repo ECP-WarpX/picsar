@@ -11,8 +11,7 @@ double picsar::k_1_3(double){
 double picsar::k_2_3(double){
     return std::cyl_bessel_k(2.0/3.0, x);
 }
-#endif
-
+#else
 double picsar::k_1_3(double){
     // TO IMPLEMENT
     return 0.0;
@@ -22,3 +21,4 @@ double picsar::k_2_3(double){
     // TO IMPLEMENT
     return 0.0;
 }
+#endif

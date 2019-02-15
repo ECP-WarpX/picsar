@@ -6,7 +6,7 @@
 #include "commons.h"
 
 namespace picsar{
-    void boris_plus_landau_lifshitz_push(momenta_list& mom, const em_field_list& fields, double mass, double charge, double dt, double lambda);
+    void boris_plus_landau_lifshitz_push(momenta_list& mom, const em_field_list& fields, const double mass, const double charge, const double dt, const double lambda);
 }
 
 #endif

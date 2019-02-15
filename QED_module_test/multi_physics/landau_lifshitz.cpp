@@ -2,7 +2,7 @@
 
 using namespace picsar;
 
-void picsar::boris_plus_landau_lifshitz_push(momenta_list& mom, const em_field_list& fields, double mass, double charge, double dt, double lambda){
+void picsar::boris_plus_landau_lifshitz_push(momenta_list& mom, const em_field_list& fields, const double mass, const double charge, const double dt, const double lambda){
     double beta = 0.5 * charge * dt / mass;
     double inv_dt = 1.0/dt;
 
