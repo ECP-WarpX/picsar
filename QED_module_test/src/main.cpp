@@ -15,7 +15,7 @@
 
 using namespace std;
 using namespace testbed;
-using namespace picsar;
+using namespace picsar::multi_physics;
 
 const double dt = 0.01;
 const int num_steps = 10000;
@@ -39,8 +39,11 @@ int main(int argc, char** argv){
     //Create LL pusher using multi_physics library
     auto pusher =
     [lambda](momenta_list& mom, const em_field_list& fields,  double mass, double charge, double dt)->void{
-        boris_plus_landau_lifshitz_push(mom, fields, mass, charge, dt, lambda);
-        return;
+        boris_plus_landau_lifshitz_push(
+        mom[0], mom[1], mom[2],
+        fields[0], fields[1], fields[2],
+        fields[3], fields[4], fields[5],
+        mass, charge, dt, lambda);        
     };
 
     //Init an electron

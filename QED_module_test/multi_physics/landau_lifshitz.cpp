@@ -1,8 +1,17 @@
 #include "landau_lifshitz.h"
 
-using namespace picsar;
+using namespace std;
+using namespace picsar::multi_physics;
 
-void picsar::boris_plus_landau_lifshitz_push(momenta_list& mom, const em_field_list& fields, const double mass, const double charge, const double dt, const double lambda){
+void  picsar::multi_physics::boris_plus_landau_lifshitz_push(
+vector<double>& px, vector<double>& py, vector<double>& pz,
+const vector<double>& ex, const vector<double>& ey, const vector<double>& ez,
+const vector<double>& bx, const vector<double>& by, const vector<double>& bz,
+double mass, double charge, double dt, double lambda){
+
+    if(mass == 0 || charge == 0 || lambda == 0 || dt == 0)
+        return;
+
     double beta = 0.5 * charge * dt / mass;
     double inv_dt = 1.0/dt;
 
@@ -11,47 +20,47 @@ void picsar::boris_plus_landau_lifshitz_push(momenta_list& mom, const em_field_l
 
     double old_px, old_py, old_pz;
 
-    int num_particles = mom[0].size();
+    int num_particles = px.size();
     for (int i = 0; i < num_particles; i++){
-        old_px = mom[0][i];
-        old_py = mom[1][i];
-        old_pz = mom[2][i];
+        old_px = px[i];
+        old_py = py[i];
+        old_pz = pz[i];
 
-        double ptx = mom[0][i] + beta *  fields[0][i];
-        double pty = mom[1][i] + beta *  fields[1][i];
-        double ptz = mom[2][i] + beta *  fields[2][i];
+        double ptx = px[i] + beta *  ex[i];
+        double pty = py[i] + beta *  ey[i];
+        double ptz = pz[i] + beta *  ez[i];
 
-        double inv_gamman_times_beta = beta/sqrt(1.0 + (mom[0][i]*mom[0][i] + mom[1][i]*mom[1][i] + mom[2][i]*mom[2][i])/(mass*mass));
+        double inv_gamman_times_beta = beta/sqrt(1.0 + (px[i]*px[i] + py[i]*py[i] + pz[i]*pz[i])/(mass*mass));
 
-        double bx = inv_gamman_times_beta * fields[3][i];
-        double by = inv_gamman_times_beta * fields[4][i];
-        double bz = inv_gamman_times_beta * fields[5][i];
+        double bbx = inv_gamman_times_beta * bx[i];
+        double bby = inv_gamman_times_beta * by[i];
+        double bbz = inv_gamman_times_beta * bz[i];
 
-        double b2 = bx*bx + by*by + bz*bz;
-        double coeff = 1.0 / (1.0 + b2);
+        double bb2 = bbx*bbx + bby*bby + bbz*bbz;
+        double coeff = 1.0 / (1.0 + bb2);
 
-        double ptvbx = pty*bz - ptz*by;
-        double ptvby = ptz*bx - ptx*bz;
-        double ptvbz = ptx*by - pty*bx;
+        double ptvbx = pty*bbz - ptz*bby;
+        double ptvby = ptz*bbx - ptx*bbz;
+        double ptvbz = ptx*bby - pty*bbx;
 
-        double ptdb = ptx * bx + pty * by + ptz * bz;
+        double ptdb = ptx * bbx + pty * bby + ptz * bbz;
 
-        double bptdbx = ptdb*bx;
-        double bptdby = ptdb*by;
-        double bptdbz = ptdb*bz;
+        double bptdbx = ptdb*bbx;
+        double bptdby = ptdb*bby;
+        double bptdbz = ptdb*bbz;
 
         double pex = coeff*(ptx + ptvbx + bptdbx);
         double pey = coeff*(pty + ptvby + bptdby);
         double pez = coeff*(ptz + ptvbz + bptdbz);
 
-        mom[0][i] = 2.0*pex - mom[0][i];
-        mom[1][i] = 2.0*pey - mom[1][i];
-        mom[2][i] = 2.0*pez - mom[2][i];
+        px[i] = 2.0*pex - px[i];
+        py[i] = 2.0*pey - py[i];
+        pz[i] = 2.0*pez - pz[i];
 
         //Momenta at time n
-        double pxn = (mom[0][i] + old_px)*0.5;
-        double pyn = (mom[1][i] + old_py)*0.5;
-        double pzn = (mom[2][i] + old_pz)*0.5;
+        double pxn = (px[i] + old_px)*0.5;
+        double pyn = (py[i] + old_py)*0.5;
+        double pzn = (pz[i] + old_pz)*0.5;
 
         //Inverse gamma at time n
         double gn =  sqrt(1.0 + (pxn*pxn + pyn*pyn + pzn*pzn)/(mass*mass));
@@ -63,13 +72,13 @@ void picsar::boris_plus_landau_lifshitz_push(momenta_list& mom, const em_field_l
         double vzn = pzn*inv_gn;
 
         //Lorentz force
-        double flx = (mom[0][i] - old_px)*inv_dt;
-        double fly = (mom[1][i] - old_py)*inv_dt;
-        double flz = (mom[2][i] - old_pz)*inv_dt;
+        double flx = (px[i] - old_px)*inv_dt;
+        double fly = (py[i] - old_py)*inv_dt;
+        double flz = (pz[i] - old_pz)*inv_dt;
 
         //RR force (M.Tamburini scheme)
         double fl2 = flx*flx + fly*fly + flz*flz;
-        double vdote = vxn*fields[0][i] +  vyn*fields[1][i] +  vzn*fields[2][i];
+        double vdote = vxn*ex[i] +  vyn*ey[i] +  vzn*ez[i];
         double vdote2 = vdote*vdote;
 
         double mul = -rr_coeff*(gn*gn)*(fl2 - vdote2)*dt;
@@ -77,9 +86,9 @@ void picsar::boris_plus_landau_lifshitz_push(momenta_list& mom, const em_field_l
         double prry = mul*vyn;
         double prrz = mul*vzn;
 
-        mom[0][i] += prrx;
-        mom[1][i] += prry;
-        mom[2][i] += prrz;
+        px[i] += prrx;
+        py[i] += prry;
+        pz[i] += prrz;
 
     }
 }

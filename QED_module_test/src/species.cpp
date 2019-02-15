@@ -1,8 +1,6 @@
 #include "species.h"
 
 using namespace testbed;
-using namespace picsar;
-
 
 species::species(std::string name):name(name){}
 
@@ -81,28 +79,28 @@ void species::print_on_disk(std::string prefix, int step_num) const{
     out_file.close();
 }
 
-std::tuple<picsar::positions_list, picsar::momenta_list,
-picsar::em_field_list,  std::vector<double>> species::get_copy_of_all_data(){
+std::tuple<positions_list, momenta_list,
+em_field_list,  std::vector<double>> species::get_copy_of_all_data(){
     return {pos, mom, fields, optical_depth};
 }
 
-picsar::positions_list species::get_copy_of_positions(){
+positions_list species::get_copy_of_positions(){
     return pos;
 }
 
-picsar::momenta_list species::get_copy_of_momenta(){
+momenta_list species::get_copy_of_momenta(){
     return mom;
 }
 
-std::tuple<picsar::positions_list&, picsar::momenta_list&,
-picsar::em_field_list&,  std::vector<double>&> species::get_ref_of_all_data(){
+std::tuple<positions_list&, momenta_list&,
+em_field_list&,  std::vector<double>&> species::get_ref_of_all_data(){
     return {pos, mom, fields, optical_depth};
 }
 
 
-picsar::positions_list& species::get_ref_of_positions(){
+positions_list& species::get_ref_of_positions(){
     return pos;
 }
-picsar::momenta_list& species::get_ref_of_momenta(){
+momenta_list& species::get_ref_of_momenta(){
     return mom;
 }

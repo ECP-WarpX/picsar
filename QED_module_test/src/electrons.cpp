@@ -1,8 +1,6 @@
 #include "electrons.h"
 
 using namespace testbed;
-using namespace picsar;
-
 
 electrons::electrons(std::string name):leptons(name){
     header = std::string("electrons");

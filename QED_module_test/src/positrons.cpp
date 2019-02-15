@@ -1,8 +1,6 @@
 #include "positrons.h"
 
 using namespace testbed;
-using namespace picsar;
-
 
 positrons::positrons(std::string name):leptons(name){
     header = std::string("positrons");

@@ -1,8 +1,6 @@
 #include "leptons.h"
 
 using namespace testbed;
-using namespace picsar;
-
 
 leptons::leptons(std::string name):species(name){}
 

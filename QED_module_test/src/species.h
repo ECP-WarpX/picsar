@@ -18,33 +18,33 @@ namespace testbed{
         double get_charge() const;
         int get_num_particles() const;
 
-        void add_particle(picsar::position part_pos, picsar::momentum part_mom);
+        void add_particle(position part_pos, momentum part_mom);
         void remove_particle(int particle_index);
 
-        virtual void push_positions(picsar::ttime dt) = 0;
-        virtual void push_momenta(picsar::ttime dt) = 0;
-        void calc_fields(picsar::em_field_function em_function, picsar::ttime tt);
+        virtual void push_positions(ttime dt) = 0;
+        virtual void push_momenta(ttime dt) = 0;
+        void calc_fields(em_field_function em_function, ttime tt);
 
         void print_on_disk(std::string prefix, int step_num) const;
 
-        std::tuple<picsar::positions_list, picsar::momenta_list,
-        picsar::em_field_list,  std::vector<double>> get_copy_of_all_data();
-        picsar::positions_list get_copy_of_positions();
-        picsar::momenta_list get_copy_of_momenta();
+        std::tuple<positions_list, momenta_list,
+        em_field_list,  std::vector<double>> get_copy_of_all_data();
+        positions_list get_copy_of_positions();
+        momenta_list get_copy_of_momenta();
 
-        std::tuple<picsar::positions_list&, picsar::momenta_list&,
-        picsar::em_field_list&,  std::vector<double>&> get_ref_of_all_data();
-        picsar::positions_list& get_ref_of_positions();
-        picsar::momenta_list& get_ref_of_momenta();
+        std::tuple<positions_list&, momenta_list&,
+        em_field_list&,  std::vector<double>&> get_ref_of_all_data();
+        positions_list& get_ref_of_positions();
+        momenta_list& get_ref_of_momenta();
 
     protected:
         std::string name;
         double mass;
         double charge;
 
-        picsar::positions_list pos;
-        picsar::momenta_list mom;
-        picsar::em_field_list fields;
+        positions_list pos;
+        momenta_list mom;
+        em_field_list fields;
         std::vector<double> optical_depth;
 
         std::string header = "species";

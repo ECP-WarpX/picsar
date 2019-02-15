@@ -1,8 +1,6 @@
 #include "photons.h"
 
 using namespace testbed;
-using namespace picsar;
-
 
 photons::photons(std::string name):species(name){
     header = std::string("photons");
