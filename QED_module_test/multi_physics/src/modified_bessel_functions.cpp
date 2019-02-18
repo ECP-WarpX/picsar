@@ -15,13 +15,11 @@ double k_2_3(double){
 //If not, link to boost libray
 #elif defined(BESSEL_BUILD_WITH_BOOST)
 double k_1_3(double x){
-     boost::math::cyl_bessel_k(1.0/3.0, x);
-    return 0.0;
+    return  boost::math::cyl_bessel_k(1.0/3.0, x);
 }
 
-double k_2_3(double x){
-     boost::math::cyl_bessel_k(2.0/3.0, x);
-    return 0.0;
+double k_2_3(double x){    
+    return boost::math::cyl_bessel_k(2.0/3.0, x);
 }
 
 //If everything fails, use directly Boost source files (TO DO)
