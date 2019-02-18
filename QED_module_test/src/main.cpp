@@ -4,6 +4,7 @@
 #include <functional>
 #include <tuple>
 #include <cmath>
+#include <cstdint>
 
 #include "commons.h"
 #include "species.h"
@@ -12,6 +13,7 @@
 #include "positrons.h"
 
 #include "landau_lifshitz.h"
+#include "nonlin_breit_wheeler_engine.h"
 
 using namespace std;
 using namespace testbed;
@@ -22,10 +24,12 @@ const int num_steps = 10000;
 
 bool is_out(int t_step){return (t_step % 1000 == 0);}
 
-
+const int64_t seed = 3397169560718639567;
 
 int main(int argc, char** argv){
     //cout << "********************QED module testbed***************************" << endl;
+
+    nonlin_breit_wheeler_engine breit_wheeler_engine();
 
     //Fix lambda
     double lambda = 1 * _um;
@@ -43,7 +47,7 @@ int main(int argc, char** argv){
         mom[0], mom[1], mom[2],
         fields[0], fields[1], fields[2],
         fields[3], fields[4], fields[5],
-        mass, charge, dt, lambda);        
+        mass, charge, dt, lambda);
     };
 
     //Init an electron
