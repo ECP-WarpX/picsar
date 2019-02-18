@@ -1,0 +1,10 @@
+********************************************************************************
+In order to compile from the QED_module_test folder just do:
+
+$ mkdir build
+
+$ cd build
+
+$ cmake ../.
+
+$ make
