@@ -16,6 +16,7 @@ add_library (multi_physics
             src/modified_bessel_functions.h src/modified_bessel_functions.cpp
             src/chi_calc_functions.h src/chi_calc_functions.cpp
             src/nonlin_breit_wheeler_engine.h src/nonlin_breit_wheeler_engine.cpp
+            src/quadrature.h src/quadrature.cpp
             )
 
 target_include_directories(multi_physics PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
