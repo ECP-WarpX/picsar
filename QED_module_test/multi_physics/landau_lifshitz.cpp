@@ -3,7 +3,6 @@
 using namespace std;
 using namespace picsar::multi_physics;
 
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!WARNING CHECK MASS NORMALIZATION CONVENTION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 void  picsar::multi_physics::boris_plus_landau_lifshitz_push(
 vector<double>& px, vector<double>& py, vector<double>& pz,
 const vector<double>& ex, const vector<double>& ey, const vector<double>& ez,
@@ -31,7 +30,7 @@ double mass, double charge, double dt, double lambda){
         double pty = py[i] + beta *  ey[i];
         double ptz = pz[i] + beta *  ez[i];
 
-        double inv_gamman_times_beta = beta/sqrt(1.0 + (px[i]*px[i] + py[i]*py[i] + pz[i]*pz[i])/(mass*mass));
+        double inv_gamman_times_beta = beta/sqrt(1.0 + px[i]*px[i] + py[i]*py[i] + pz[i]*pz[i]);
 
         double bbx = inv_gamman_times_beta * bx[i];
         double bby = inv_gamman_times_beta * by[i];
@@ -64,7 +63,7 @@ double mass, double charge, double dt, double lambda){
         double pzn = (pz[i] + old_pz)*0.5;
 
         //Inverse gamma at time n
-        double gn =  sqrt(1.0 + (pxn*pxn + pyn*pyn + pzn*pzn)/(mass*mass));
+        double gn =  sqrt(1.0 + pxn*pxn + pyn*pyn + pzn*pzn);
         double inv_gn = 1.0/gn;
 
         //Velocities at time n

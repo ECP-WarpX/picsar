@@ -32,12 +32,12 @@ namespace picsar{
         );
 
         inline double chi_lepton_inv_schwinger(const std::array<double, 3>& mom, const std::array<double, 6>& emfl, double mass, double normalized_inv_schwinger_field){
-            double gamma = sqrt(1.0 + (mom[0]*mom[0] + mom[1]*mom[1] + mom[2]*mom[2])/(mass*mass));
+            double gamma = sqrt(1.0 + mom[0]*mom[0] + mom[1]*mom[1] + mom[2]*mom[2]);
             double inv_gamma = 1.0/gamma;
 
-            double vx = inv_gamma * mom[0]/mass;
-            double vy = inv_gamma * mom[1]/mass;
-            double vz = inv_gamma * mom[2]/mass;
+            double vx = inv_gamma * mom[0];
+            double vy = inv_gamma * mom[1];
+            double vz = inv_gamma * mom[2];
 
             double vdotex =  vx * emfl[0];
             double vdotey =  vy * emfl[1];
@@ -51,7 +51,7 @@ namespace picsar{
 
             double eplusvcrossb2 = eplusvcrossbx*eplusvcrossbx + eplusvcrossby*eplusvcrossby + eplusvcrossbz*eplusvcrossbz;
 
-            return gamma * sqrt(fabs(vdote2 - eplusvcrossb2))*normalized_inv_schwinger_field;
+            return gamma * mass * sqrt(fabs(vdote2 - eplusvcrossb2))*normalized_inv_schwinger_field;
 
         }
 
