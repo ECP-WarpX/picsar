@@ -21,17 +21,18 @@ using namespace testbed;
 const double dt = 0.01;
 const int num_steps = 10000;
 
-bool is_out(int t_step){return (t_step % 1000 == 0);}
+inline bool is_out(int t_step){return (t_step % 1000 == 0);}
 
 const int64_t seed = 3397169560718639567;
 
 int main(int argc, char** argv){
     //cout << "********************QED module testbed***************************" << endl;
 
-    picsar::multi_physics::nonlin_breit_wheeler_engine breit_wheeler_engine{seed};
-
     //Fix lambda
     double lambda = 1 * picsar::multi_physics::_um;
+
+    //Init nonlin_breit_wheeler_engine
+    picsar::multi_physics::nonlin_breit_wheeler_engine breit_wheeler_engine{seed, lambda};
 
     vector<shared_ptr<species>> specs;
     //Init a photon

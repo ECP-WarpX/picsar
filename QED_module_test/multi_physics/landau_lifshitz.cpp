@@ -3,6 +3,7 @@
 using namespace std;
 using namespace picsar::multi_physics;
 
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!WARNING CHECK MASS NORMALIZATION CONVENTION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 void  picsar::multi_physics::boris_plus_landau_lifshitz_push(
 vector<double>& px, vector<double>& py, vector<double>& pz,
 const vector<double>& ex, const vector<double>& ey, const vector<double>& ez,
