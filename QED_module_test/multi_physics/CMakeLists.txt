@@ -11,12 +11,12 @@ if(Boost_FOUND)
 endif()
 
 add_library (multi_physics
-            commons.h
-            landau_lifshitz.cpp landau_lifshitz.h
-            modified_bessel_functions.h modified_bessel_functions.cpp
-            chi_calc_functions.h chi_calc_functions.cpp
-            nonlin_breit_wheeler_engine.h nonlin_breit_wheeler_engine.cpp
+            src/commons.h
+            src/landau_lifshitz.cpp src/landau_lifshitz.h
+            src/modified_bessel_functions.h src/modified_bessel_functions.cpp
+            src/chi_calc_functions.h src/chi_calc_functions.cpp
+            src/nonlin_breit_wheeler_engine.h src/nonlin_breit_wheeler_engine.cpp
             )
 
-target_include_directories(multi_physics PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(multi_physics PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_compile_features(multi_physics PUBLIC cxx_std_11)
