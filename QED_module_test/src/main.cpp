@@ -17,7 +17,6 @@
 
 using namespace std;
 using namespace testbed;
-using namespace picsar::multi_physics;
 
 const double dt = 0.01;
 const int num_steps = 10000;
@@ -29,10 +28,10 @@ const int64_t seed = 3397169560718639567;
 int main(int argc, char** argv){
     //cout << "********************QED module testbed***************************" << endl;
 
-    nonlin_breit_wheeler_engine breit_wheeler_engine();
+    picsar::multi_physics::nonlin_breit_wheeler_engine breit_wheeler_engine{seed};
 
     //Fix lambda
-    double lambda = 1 * _um;
+    double lambda = 1 * picsar::multi_physics::_um;
 
     vector<shared_ptr<species>> specs;
     //Init a photon
@@ -43,7 +42,7 @@ int main(int argc, char** argv){
     //Create LL pusher using multi_physics library
     auto pusher =
     [lambda](momenta_list& mom, const em_field_list& fields,  double mass, double charge, double dt)->void{
-        boris_plus_landau_lifshitz_push(
+        picsar::multi_physics::boris_plus_landau_lifshitz_push(
         mom[0], mom[1], mom[2],
         fields[0], fields[1], fields[2],
         fields[3], fields[4], fields[5],

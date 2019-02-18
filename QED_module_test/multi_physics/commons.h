@@ -13,13 +13,13 @@ namespace picsar{
         const double electron_mass = 9.10938356e-31;
         const double elementary_charge = 1.6021766208e-19;
         const double speed_of_light = 299792458;
-        const double reduced_plank = 1.054571800e−34;
+        const double reduced_plank = 1.054571800e-34;
         const double vacuum_permittivity =  8.854187817e-12;
 
         const double classical_electron_radius = elementary_charge*elementary_charge /
                     (4.0*M_PI*vacuum_permittivity*electron_mass*speed_of_light*speed_of_light);
 
-        const double _Gm = 1.0e9;              
+        const double _Gm = 1.0e9;
         const double _Mm = 1.0e6;
         const double _km = 1.0e3;
         const double _m = 1.0;
@@ -30,7 +30,7 @@ namespace picsar{
         const double _pm = 1.0e-12;
         const double _fm = 1.0e-15;
 
-        enum particle_type(electrons, positrons, photons, ions);
+        enum particle_type {electrons, positrons, photons, ions};
 
         //some checks on the size of the fundamental types
         static_assert(sizeof(int) == 4, "int type is not 32 bit!");
