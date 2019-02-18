@@ -7,6 +7,8 @@
 
 namespace picsar{
     namespace multi_physics{
+        enum particle_type(electrons, positrons, photons, ions);
+
         const double _km = 1.0e3;
         const double _m = 1.0;
         const double _cm = 1.0e-2;
