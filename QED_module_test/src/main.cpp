@@ -56,12 +56,27 @@ int main(int argc, char** argv){
     std::ofstream dump_file{"dump.dat"}; //dump file to store data for later analysis
 
     cout << "********************QED module testbed***************************" << endl;
+    cout << endl;
 
     //Fix lambda
     double lambda = 1 * picsar::multi_physics::_um;
 
     //Init nonlin_breit_wheeler_engine
     picsar::multi_physics::nonlin_breit_wheeler_engine breit_wheeler_engine{seed, lambda};
+
+
+    cout << "********************Test functions in NL BW module*******************" << endl;
+
+    cout << "3 random numbers in [0, 1):    ";
+    cout << breit_wheeler_engine.get_unf_0_1() << " " <<  breit_wheeler_engine.get_unf_0_1() << " " << breit_wheeler_engine.get_unf_0_1() << endl;
+    cout << "3 random numbers in [epsi 1):  ";
+    cout << breit_wheeler_engine.get_unf_eps_1() << " " <<  breit_wheeler_engine.get_unf_eps_1() << " " << breit_wheeler_engine.get_unf_eps_1() << endl;
+    cout << "3 random optical depths:       ";
+    cout << breit_wheeler_engine.get_optical_depth() << " " <<  breit_wheeler_engine.get_optical_depth() << " " << breit_wheeler_engine.get_optical_depth() << endl;
+
+    cout << "*********************************************************************" << endl;
+    cout << endl;
+
 
     vector<shared_ptr<species>> specs;
     //Init a photon
