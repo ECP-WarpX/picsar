@@ -5,6 +5,7 @@
 #include <tuple>
 #include <cmath>
 #include <cstdint>
+#include <fstream>
 
 #include "commons.h"
 #include "species.h"
@@ -26,7 +27,10 @@ inline bool is_out(int t_step){return (t_step % 1000 == 0);}
 const int64_t seed = 3397169560718639567;
 
 int main(int argc, char** argv){
-    //cout << "********************QED module testbed***************************" << endl;
+
+    std::ofstream dump_file{"dump.dat"}; //dump file to store data for later analysis
+
+    cout << "********************QED module testbed***************************" << endl;
 
     //Fix lambda
     double lambda = 1 * picsar::multi_physics::_um;
@@ -66,11 +70,11 @@ int main(int argc, char** argv){
     // Main loop
     for (int i = 0; i < num_steps; i++){
 
-    //Console output of a particle position for debug purposes
+    //Dump_file output of a particle position for debug purposes
         auto tpos = ptr_ele1->get_copy_of_positions();
-        cout << tpos[0][0] << " " << tpos[1][0] << " " << tpos[2][0] << " ";
+        dump_file << tpos[0][0] << " " << tpos[1][0] << " " << tpos[2][0] << " ";
         auto tmom = ptr_ele1->get_copy_of_momenta();
-        cout << tmom[0][0] << " " << tmom[1][0] << " " << tmom[2][0] << endl;
+        dump_file << tmom[0][0] << " " << tmom[1][0] << " " << tmom[2][0] << endl;
 
         for (auto& sp : specs)
             sp->push_momenta(dt);
@@ -87,7 +91,9 @@ int main(int argc, char** argv){
         }
     }
 
-    //cout << "*****************************************************************" << endl;
+    cout << "*****************************************************************" << endl;
+
+    dump_file.close();
 
     return 0;
 }
