@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.1)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+#########THIS IS ONLY FOR DEBUG PURPOSES#########################################
 add_compile_options(-Wall -Wextra -Wpedantic)
+#################################################################################
 
 project (testbed)
 add_executable(testbed src/main.cpp src/species.h src/species.cpp src/photons.h
