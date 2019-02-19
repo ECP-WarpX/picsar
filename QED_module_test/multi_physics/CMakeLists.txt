@@ -13,7 +13,7 @@ endif()
 add_library (multi_physics
             src/commons.h
             src/landau_lifshitz.cpp src/landau_lifshitz.h
-            src/modified_bessel_functions.h src/modified_bessel_functions.cpp
+            src/special_functions.h src/special_functions.cpp
             src/chi_calc_functions.h src/chi_calc_functions.cpp
             src/nonlin_breit_wheeler_engine.h src/nonlin_breit_wheeler_engine.cpp
             src/quadrature.h src/quadrature.cpp

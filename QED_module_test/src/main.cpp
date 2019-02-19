@@ -15,7 +15,7 @@
 
 #include "landau_lifshitz.h"
 #include "nonlin_breit_wheeler_engine.h"
-#include "modified_bessel_functions.h"
+#include "special_functions.h"
 
 using namespace std;
 using namespace testbed;

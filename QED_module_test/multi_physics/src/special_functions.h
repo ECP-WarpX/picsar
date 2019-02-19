@@ -1,5 +1,5 @@
-#ifndef __PMP_MODBESSEL__
-#define __PMP_MODBESSEL__
+#ifndef __PMP_SPEC_FUNCTIONS__
+#define __PMP_SPEC_FUNCTIONS__
 
 #include <cmath>
 
