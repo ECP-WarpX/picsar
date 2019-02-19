@@ -15,6 +15,7 @@
 
 #include "landau_lifshitz.h"
 #include "nonlin_breit_wheeler_engine.h"
+#include "modified_bessel_functions.h"
 
 using namespace std;
 using namespace testbed;
@@ -27,6 +28,16 @@ inline bool is_out(int t_step){return (t_step % 1000 == 0);}
 const int64_t seed = 3397169560718639567;
 
 int main(int argc, char** argv){
+
+    cout << "********************Test special functions***************************" << endl;
+    cout << "k_1_3 (0.5) = " << picsar::multi_physics::k_1_3 (0.5) << " (exp. 0.989031)" << endl;
+    cout << "k_1_3 (1.0) = " << picsar::multi_physics::k_1_3 (1.0) << " (exp. 0.438431)" << endl;
+    cout << "k_1_3 (2.0) = " << picsar::multi_physics::k_1_3 (2.0) << " (exp. 0.116545)" << endl;
+    cout << "k_2_3 (0.5) = " << picsar::multi_physics::k_2_3 (0.5) << "  (exp. 1.20593 )" << endl;
+    cout << "k_2_3 (1.0) = " << picsar::multi_physics::k_2_3 (1.0) << " (exp. 0.494475)" << endl;
+    cout << "k_2_3 (2.0) = " << picsar::multi_physics::k_2_3 (2.0) << " (exp. 0.124839)" << endl;
+    cout << "******************************************************************" << endl;
+    cout << endl;
 
     std::ofstream dump_file{"dump.dat"}; //dump file to store data for later analysis
 
