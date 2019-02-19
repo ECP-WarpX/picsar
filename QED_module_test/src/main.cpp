@@ -16,6 +16,7 @@
 #include "landau_lifshitz.h"
 #include "nonlin_breit_wheeler_engine.h"
 #include "special_functions.h"
+#include "quadrature.h"
 
 using namespace std;
 using namespace testbed;
@@ -36,7 +37,20 @@ int main(int argc, char** argv){
     cout << "k_2_3 (0.5) = " << picsar::multi_physics::k_2_3 (0.5) << "  (exp. 1.20593 )" << endl;
     cout << "k_2_3 (1.0) = " << picsar::multi_physics::k_2_3 (1.0) << " (exp. 0.494475)" << endl;
     cout << "k_2_3 (2.0) = " << picsar::multi_physics::k_2_3 (2.0) << " (exp. 0.124839)" << endl;
-    cout << "******************************************************************" << endl;
+    cout << "*********************************************************************" << endl;
+    cout << endl;
+
+    cout << "********************Test numerical integration***********************" << endl;
+    cout << "quad(sin(x)**2, 0, 2pi) = " <<
+        picsar::multi_physics::quad_a_b([](double x){return sin(x)*sin(x);}, 0, 2*M_PI) << " (exp. 3.14159)" << endl;
+
+    cout << "quad(exp(-x**2), 0, inf.) = " <<
+        picsar::multi_physics::quad_a_inf([](double x){return exp(-x*x);},0) << " (exp. 0.886227)" << endl;
+
+    cout << "quad(1/(1+x**2), 0, inf.) = " <<
+        picsar::multi_physics::quad_a_inf([](double x){return 1.0/(1+x*x);},0) << " (exp. 1.57079)" << endl;
+
+    cout << "*********************************************************************" << endl;
     cout << endl;
 
     std::ofstream dump_file{"dump.dat"}; //dump file to store data for later analysis
