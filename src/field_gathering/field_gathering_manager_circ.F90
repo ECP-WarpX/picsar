@@ -57,7 +57,7 @@
 !
 ! ________________________________________________________________________________________
 SUBROUTINE geteb2drz_energy_conserving(np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin,  &
-  zmin, dx, dz, nx, nz, nxguard, nzguard, nox, noz, erg, etg, elg, brg, btg, blg)
+  zmin, dx, dz, nx, nz, nmodes, nxguard, nzguard, nox, noz, erg, etg, elg, brg, btg, blg)
   USE picsar_precision, ONLY: idp, lp, num
   implicit none
 
