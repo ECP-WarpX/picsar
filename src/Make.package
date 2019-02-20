@@ -87,6 +87,8 @@ INCLUDE_LOCATIONS += $(PICSAR_HOME)/src
 ifeq ($(USE_PSATD),TRUE)
   F90EXE_sources += mpi_derived_types.F90
 
+  F90EXE_sources += hankel.F90
+
   F90EXE_sources += maxwell_solver_manager.F90
   VPATH_LOCATIONS   += $(PICSAR_HOME)/src/field_solvers/Maxwell/
   INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/field_solvers/Maxwell/
@@ -96,6 +98,12 @@ ifeq ($(USE_PSATD),TRUE)
   INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/field_solvers/Maxwell/GPSTD_solver
 
   F90EXE_sources += yee.F90
+
+  F90EXE_sources += current_deposition_manager_circ.F90
+  F90EXE_sources += direct_current_deposition_circ.F90
+
+  F90EXE_sources += field_gathering_manager_circ.F90
+  F90EXE_sources += field_gathering_on_circ.F90
 
   F90EXE_sources += load_balancing.F90
   VPATH_LOCATIONS   += $(PICSAR_HOME)/src/housekeeping
