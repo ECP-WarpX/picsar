@@ -79,7 +79,7 @@ MODULE simple_io
 
     CHARACTER(LEN=string_length) :: strtemp
     REAL(num) :: tmptime, tmptime2
-
+    INTEGER (idp) :: imode
 #if defined(DEBUG)
     WRITE(0, *) "Output_routines: start"
 #endif
@@ -97,51 +97,87 @@ MODULE simple_io
       (MOD(it-output_step_min, output_frequency) .EQ. 0)) THEN
       !!! --- Write output to disk
       !! -- Write grid quantities
-      write (0,*) "er out put1"
-      IF (c_output_er .EQ. 1) THEN
-        write (0,*) "er out put"
+      !write (0,*) "er out put1"
+      !IF (c_output_er .EQ. 1) THEN
+      !  write (0,*) "er out put"
         ! - Write current density er
         !IF (rank.eq.0) WRITE(0, *) "Write electric field er"
-        CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileer))//       &
-        TRIM(ADJUSTL(strtemp))//'.pxr', abs(er_c), xmin, xmax, ymin, ymax, zmin, zmax,       &
-        nxguards, nyguards, nzguards, nx, ny, nmodes, nx_global, ny_global, nmodes)
+      !  CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileer))//       &
+      !  TRIM(ADJUSTL(strtemp))//'.pxr', abs(er_c), xmin, xmax, ymin, ymax, zmin, zmax,       &
+      !  nxguards, nyguards, nzguards, nx, ny, nmodes, nx_global, ny_global, nmodes)
+      !ENDIF
+      !IF (c_output_el .EQ. 1) THEN
+        ! - Write current density er
+        !IF (rank.eq.0) WRITE(0, *) "Write electric field el"
+      !  CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileel))//       &
+      !  TRIM(ADJUSTL(strtemp))//'.pxr', abs(el_c), xmin, xmax, ymin, ymax, zmin, zmax,       &
+      !  nxguards, nyguards, nzguards, nx, ny, nmodes, nx_global, ny_global, nmodes)
+      !ENDIF
+      !IF (c_output_et .EQ. 1) THEN
+        ! - Write current density er
+        !IF (rank.eq.0) WRITE(0, *) "Write electric field et"
+      !  CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileet))//       &
+      !  TRIM(ADJUSTL(strtemp))//'.pxr', abs(et_c), xmin, xmax, ymin, ymax, zmin, zmax,       &
+      !  nxguards, nyguards, nzguards, nx, ny, nmodes, nx_global, ny_global, nmodes)
+      !ENDIF
+      !IF (c_output_br .EQ. 1) THEN
+        ! - Write current density er
+        !IF (rank.eq.0) WRITE(0, *) "Write electric field br"
+      !  CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebr))//       &
+      !  TRIM(ADJUSTL(strtemp))//'.pxr', abs(br_c), xmin, xmax, ymin, ymax, zmin, zmax,       &
+      !  nxguards, nyguards, nzguards, nx, ny, nmodes, nx_global, ny_global, nmodes)
+      !ENDIF
+      !IF (c_output_bt .EQ. 1) THEN
+        ! - Write current density er
+        !IF (rank.eq.0) WRITE(0, *) "Write electric field bt"
+      !  CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebt))//       &
+      !  TRIM(ADJUSTL(strtemp))//'.pxr', abs(bt_c), xmin, xmax, ymin, ymax, zmin, zmax,       &
+      !  nxguards, nyguards, nzguards, nx, ny, nmodes, nx_global, ny_global, nmodes)
+      !ENDIF
+      !IF (c_output_bl .EQ. 1) THEN
+        ! - Write current density er
+        !IF (rank.eq.0) WRITE(0, *) "Write electric field bl"
+      !  CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebl))//       &
+      !  TRIM(ADJUSTL(strtemp))//'.pxr', abs(bl_c), xmin, xmax, ymin, ymax, zmin, zmax,       &
+      !  nxguards, nyguards, nzguards, nx, ny, nmodes, nx_global, ny_global, nmodes)
+      !ENDIF
+
+      IF (c_output_er .EQ. 1) THEN
+        ! - Write current density er
+        IF (rank.eq.0) WRITE(0, *) "Write electric field bt"
+        CALL write_RZ_field('./RESULTS/'//TRIM(ADJUSTL(fileer))//                   &
+        TRIM(ADJUSTL(strtemp))//'.txt', REAL(er_c, KIND=8), nx,ny,nmodes,nxguards,nyguards)
       ENDIF
       IF (c_output_el .EQ. 1) THEN
         ! - Write current density er
-        !IF (rank.eq.0) WRITE(0, *) "Write electric field el"
-        CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileel))//       &
-        TRIM(ADJUSTL(strtemp))//'.pxr', abs(el_c), xmin, xmax, ymin, ymax, zmin, zmax,       &
-        nxguards, nyguards, nzguards, nx, ny, nmodes, nx_global, ny_global, nmodes)
+        IF (rank.eq.0) WRITE(0, *) "Write electric field bt"
+        CALL write_RZ_field('./RESULTS/'//TRIM(ADJUSTL(fileel))//                   &
+        TRIM(ADJUSTL(strtemp))//'.txt', abs(el_c), nx,ny,nmodes,nxguards,nyguards)
       ENDIF
       IF (c_output_et .EQ. 1) THEN
+        IF (rank.eq.0) WRITE(0, *) "Write electric field bt"
         ! - Write current density er
-        !IF (rank.eq.0) WRITE(0, *) "Write electric field et"
-        CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileet))//       &
-        TRIM(ADJUSTL(strtemp))//'.pxr', abs(et_c), xmin, xmax, ymin, ymax, zmin, zmax,       &
-        nxguards, nyguards, nzguards, nx, ny, nmodes, nx_global, ny_global, nmodes)
+        CALL write_RZ_field('./RESULTS/'//TRIM(ADJUSTL(fileet))//                   &
+        TRIM(ADJUSTL(strtemp))//'.txt', abs(et_c), nx,ny,nmodes,nxguards,nyguards)
       ENDIF
       IF (c_output_br .EQ. 1) THEN
         ! - Write current density er
-        !IF (rank.eq.0) WRITE(0, *) "Write electric field br"
-        CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebr))//       &
-        TRIM(ADJUSTL(strtemp))//'.pxr', abs(br_c), xmin, xmax, ymin, ymax, zmin, zmax,       &
-        nxguards, nyguards, nzguards, nx, ny, nmodes, nx_global, ny_global, nmodes)
-      ENDIF
-      IF (c_output_bt .EQ. 1) THEN
-        ! - Write current density er
-        !IF (rank.eq.0) WRITE(0, *) "Write electric field bt"
-        CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebt))//       &
-        TRIM(ADJUSTL(strtemp))//'.pxr', abs(bt_c), xmin, xmax, ymin, ymax, zmin, zmax,       &
-        nxguards, nyguards, nzguards, nx, ny, nmodes, nx_global, ny_global, nmodes)
+        IF (rank.eq.0) WRITE(0, *) "Write electric field bt"
+        CALL write_RZ_field('./RESULTS/'//TRIM(ADJUSTL(filebr))//                   &
+        TRIM(ADJUSTL(strtemp))//'.txt', abs(br_c), nx,ny,nmodes,nxguards,nyguards)
       ENDIF
       IF (c_output_bl .EQ. 1) THEN
         ! - Write current density er
-        !IF (rank.eq.0) WRITE(0, *) "Write electric field bl"
-        CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(filebl))//       &
-        TRIM(ADJUSTL(strtemp))//'.pxr', abs(bl_c), xmin, xmax, ymin, ymax, zmin, zmax,       &
-        nxguards, nyguards, nzguards, nx, ny, nmodes, nx_global, ny_global, nmodes)
+        IF (rank.eq.0) WRITE(0, *) "Write electric field bt"
+        CALL write_RZ_field('./RESULTS/'//TRIM(ADJUSTL(filebl))//                   &
+        TRIM(ADJUSTL(strtemp))//'.txt', abs(bl_c), nx,ny,nmodes,nxguards,nyguards)
       ENDIF
-
+      IF (c_output_bt .EQ. 1) THEN
+        ! - Write current density er
+        IF (rank.eq.0) WRITE(0, *) "Write electric field bt"
+        CALL write_RZ_field('./RESULTS/'//TRIM(ADJUSTL(filebt))//                   &
+        TRIM(ADJUSTL(strtemp))//'.txt', abs(bt_c), nx,ny,nmodes,nxguards,nyguards)
+      ENDIF
 
       IF (c_output_ex .EQ. 1) THEN
         ! - Write current density ex
@@ -637,6 +673,30 @@ SUBROUTINE write_single_array_to_file(filename, array, nxg, nyg, nzg, nx_local, 
   CALL MPI_TYPE_FREE(subt, errcode)
 
 END SUBROUTINE write_single_array_to_file
+
+
+
+SUBROUTINE write_RZ_field(filename, array, nx_loc,ny_loc,nmode,nxg,nyg)
+  CHARACTER(LEN=*), INTENT(IN) :: filename
+  INTEGER(idp), INTENT(IN) :: nx_loc,ny_loc,nmode, nxg,nyg
+  REAL(num), DIMENSION (:,:,:), INTENT (IN) :: array
+  INTEGER(isp) :: i, j, numrows, numcols, imode
+
+  numrows=nx_loc+2*nxg
+  numcols=ny_loc+2*nyg
+
+  OPEN(UNIT=12, FILE=filename, ACTION="write", STATUS="replace")
+  write (0,*) "file opened and   start writing"
+  DO imode=1,nmode
+    DO i=1,numrows
+      WRITE(12,*) (array(i,j,imode), j=1,numcols)
+    END DO
+  END DO
+  CLOSE(12)
+
+
+END SUBROUTINE write_RZ_field
+
 
 
 ! ________________________________________________________________________________________

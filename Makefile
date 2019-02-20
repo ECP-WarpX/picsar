@@ -321,7 +321,7 @@ else ifeq ($(COMP),intel)
   endif
 
 endif
-FARGS= -g  -JModules -Wunused-variable -fcheck=bound -ftree-vectorize
+FARGS= -g  -fopenmp -JModules -Wunused-variable -fcheck=bound -ftree-vectorize
 FARGS+= $(LARCH)
 
 # ________________________________________________________

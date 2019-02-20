@@ -69,8 +69,8 @@ USE picsar_precision, ONLY: idp, num
 USE shared_data, ONLY: rho,nmodes, nz, ny, rhoold, nx, c_dim, rank
 USE simple_io
 USE sorting
-
-
+USE constants, ONLY: clight
+USE shared_data , ONLY : dx, dy
   IMPLICIT NONE
   INTEGER(idp) :: nst, i,k, imode,m,j
 
@@ -105,12 +105,17 @@ USE sorting
     DO i=1, nst
       IF (rank .EQ. 0) startit=MPI_WTIME()
       IF ((l_AM_rz).AND.(i .eq. 1)) THEN
+        CALL init_rz_fields
         CALL laser_gaussian 
         write (*,*) "Laser GAUSSIAN" 
       ENDIF
       do k=0,nx-1   
         do j=0,ny-1 
-          write (0,*) "Max of ERRRRRRRRRRR" , er_c(k,j,:)
+          do m=0,1
+            if (er_c(k,j,m) /= er_c(k,j,m)) then
+              write (0,*) "Max of ERRRRRRRRRRR" , er_c(k,j,m), "k=", k, "j= ", j, "m= ",m
+            end if
+          end do
         end do
       end do
       !!! --- Init iteration variables
@@ -153,6 +158,7 @@ USE sorting
       ENDIF
 #if defined(FFTW)
       IF (l_spectral) THEN
+        
         !IF ((l_AM_rz).AND.(i .eq. 1)) THEN
         !  DO imode=1, nmodes 
         !    Call Hankel_M_and_invM(imode-1)
@@ -195,21 +201,23 @@ USE sorting
         !  END DO
         !END DO
         !END IF
-        !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
-        write (*,*) " START push_psatd_ebfield"
-        CALL push_psatd_ebfield
-        write (*,*) "END push_psatd_ebfield"
-        !do k=0,nx-1
-        !  write (*,*) "Max of ER" , abs(er_c(k,:,:))
-        !end do
-        !IF (rank .EQ. 0) PRINT *, "#0"
-        !!! --- Boundary conditions for E AND B
-        !CALL efield_bcs
-        !CALL bfield_bcs
-        IF(absorbing_bcs) THEN
-          CALL field_damping_bcs()
-          CALL merge_fields()
-        ENDIF
+        IF (i .ge. 2) THEN 
+          !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
+          write (*,*) " START push_psatd_ebfield"
+          CALL push_psatd_ebfield
+          write (*,*) "END push_psatd_ebfield"
+          !do k=0,nx-1
+          !  write (*,*) "Max of ER" , abs(er_c(k,:,:))
+          !end do
+          !IF (rank .EQ. 0) PRINT *, "#0"
+          !!! --- Boundary conditions for E AND B
+          !CALL efield_bcs
+          !CALL bfield_bcs
+          IF(absorbing_bcs) THEN
+            CALL field_damping_bcs()
+            CALL merge_fields()
+          ENDIF
+        END IF
       ELSE
 #endif
         !IF (rank .EQ. 0) PRINT *, "#6"
@@ -248,8 +256,8 @@ USE sorting
       CALL time_statistics_per_iteration
 
       IF (rank .EQ. 0)  THEN
-        WRITE(0, *) 'it = ', it, ' || time = ', it*dt, " || push/part (ns)= ",        &
-        pushtime*1e9_num/ntot, " || tot/part (ns)= ", (timeit-startit)*1e9_num/ntot
+        WRITE(0, *) 'it = ', it,  '|| dt =', dt, ' || time = ', it*dt,  '||dz/c=', dy/clight, '||dr/c=', dx/clight , &
+           " || push/part (ns)= ",  pushtime*1e9_num/ntot, " || tot/part (ns)= ", (timeit-startit)*1e9_num/ntot
       END IF
     END DO
 
@@ -338,8 +346,8 @@ USE sorting
       CALL time_statistics_per_iteration
 
       IF (rank .EQ. 0)  THEN
-        WRITE(0, *) 'it = ', it, ' || time = ', it*dt, " || push/part (ns)= ",        &
-        pushtime*1e9_num/ntot, " || tot/part (ns)= ", (timeit-startit)*1e9_num/ntot
+        WRITE(0, *) 'it = ', it, '||dt =', dt,' || time = ', &
+          it*dt, " || push/part (ns)= ",  pushtime*1e9_num/ntot, " || tot/part (ns)= ", (timeit-startit)*1e9_num/ntot
       END IF
     END DO
 
@@ -383,11 +391,12 @@ END SUBROUTINE step
 SUBROUTINE laser_gaussian
   USE PICSAR_precision
   USE laser_util , ONLY : E0, waist, ctau, z0, zf, lambda0, theta_pol, cep_phase, Er_laser, Et_laser
-  USE constants, ONLY: clight, emass
-  USE fields , ONLY: er_c, et_c, el_c
-  USE shared_data , ONLY : nx, ny, dx, dy
-  REAL (num)::   zr, w0, phi2_chirp, propagation_dir, k0 ,t0
-  REAL (num) :: PI  = 4 * atan (1.0_8)
+  USE constants, ONLY: clight, emass, pi
+  USE fields !, ONLY: er_c, et_c, el_c
+  USE shared_data , ONLY : nx, ny, dx, dy, ymin
+  IMPLICIT NONE
+  REAL (num)::   zr, w0, phi2_chirp, propagation_dir, k0 ,t0, inv_ctau2,t, diffract_factor, &
+                 stretch_factor, inv_zr, prop_dir 
   COMPLEX (cpx) :: ii
   COMPLEX (cpx), dimension (:,:), allocatable :: exp_argument, profile
   INTEGER (idp) ::i, k
@@ -397,17 +406,23 @@ SUBROUTINE laser_gaussian
   ALLOCATE (z(0:ny-1))
   ALLOCATE (exp_argument(0:nx-1,0:ny-1))
   ALLOCATE (profile (0:nx-1,0:ny-1))
+  Er_laser= DCMPLX(0.0_num, 0.0_num)
+  Et_laser= DCMPLX(0.0_num,0.0_num)
+  r= 0.0_num
+  z=0.0_num
+  exp_argument=DCMPLX(0.0_num, 0.0_num)
+  profile=DCMPLX(0.0_num, 0.0_num)
   Do k=0, nx-1
     r(k)= dx*(k+0.5_num)
     !write (*,*), "rk =", r(k)
   End do
-   Do k=0, ny-1
-    z(k)= k*dy
+  Do k=0, ny-1
+    z(k)=ymin+ k*dy
     !write (*,*), "zk =", z(k)
   End do
   t=0.
   ii= DCMPLX(0._num, 1_num)
-  k0 = 2*PI/lambda0
+  k0 = 2*pi/lambda0
   !write (*,*), "k0 =", k0
   w0= waist
   !write (*,*), "w0 =", waist
@@ -420,8 +435,8 @@ SUBROUTINE laser_gaussian
   !E0_x = E0 * cos(theta_pol)
   !E0_y = E0 * sin(theta_pol)
   inv_ctau2 = 1./(ctau)**2
-  !write (*,*), "inv_ctau_2 =", inv_ctau2 
-  propagation_dir =1.
+  write (*,*), "inv_ctau_2 =", inv_ctau2 
+  prop_dir =1.
   phi2_chirp =0.
   
         !if zf is None:
@@ -449,7 +464,9 @@ SUBROUTINE laser_gaussian
      !write (0,*) "diffract_factor", diffract_factor
    DO i=0, nx-1
      !write (0,*) "entered i loop ", i
-      exp_argument(i,k) = - ii*cep_phase+ ii*k0*( prop_dir*(z(k) - z0)-clight*t ) &
+     !exp_argument(i,k) =  prop_dir*z(k)   
+     ! exp_argument(i,k) = - ii*cep_phase+ ii*k0*( prop_dir*(z(k) - z0)-clight*t )  &
+     exp_argument(i,k) = &
       - (r(i)**2) / (w0**2 * diffract_factor) - 1./stretch_factor*inv_ctau2 * ( prop_dir*(z(k)-z0)-clight*t )**2
      !write (*,*) "exp_argument(i,k)" , exp_argument(i,k)
      profile (i,k)= exp(exp_argument(i,k)) /(diffract_factor * stretch_factor**0.5)
@@ -458,24 +475,24 @@ SUBROUTINE laser_gaussian
      !write (*,*) "Er_laser(i,k) ", Er_laser(i,k)
      Et_laser(i,k) = -ii* E0 * profile(i,k)* exp(ii* theta_pol)
      !write (*,*) "Et_laser(i,k) ", Et_laser(i,k) 
-     !er_c(i,k,1) = er_c(i,k,1)+ Er_laser(i,k)
-     er_c(i,k,0) = CMPLX(i,0.0_NUM)
-     et_c(i,k,0)= CMPLX(0.,0.0_NUM)
-     el_c(i,k,0)= CMPLX(0.,0.0_NUM)
+     er_c(i,k,1) =er_c(i,k,1)+  Er_laser(i,k)
+     !er_c(i,k,0) = CMPLX(i,0.0_NUM)
+     !et_c(i,k,0)= CMPLX(0.,0.0_NUM)
+     !el_c(i,k,0)= CMPLX(0.,0.0_NUM)
      !er_c(i,k,1) = CMPLX(0.,0.0_NUM)
      !et_c(i,k,1)= CMPLX(0.,0.0_NUM)
      !el_c(i,k,1)= CMPLX(0.,0.0_NUM)     
      !write (*,*) "er_c(i,k,1) ", er_c(i,k,1)
-     !et_c(i,k,1) = et_c(i,k,1)+ Et_laser(i,k)
+     et_c(i,k,1) =er_c(i,k,1)+  Et_laser(i,k)
      !et_c(i,k,1) = DCMPLX(i,0_NUM)
      !write (*,*) "et_c(i,k,1) " , et_c(i,k,1)
    END DO
   END DO
-  do k=0,nx-1
-    Do i=0,ny-1
-      write (0,*), "max value of erC" ,er_c(k,i,:)
-    end do
-  end do
+  !do k=0,nx-1
+  !  Do i=0,ny-1
+  !    write (0,*), "max value of erC" ,er_c(k,i,:)
+  !  end do
+  !end do
   !Ex_r = DREAL(Ex)
   !Ey_r = DREAL (Ey)
 
@@ -485,6 +502,47 @@ SUBROUTINE laser_gaussian
 
   !write (*,*) " AFTER DEALLOCATE" , et_c(:,:,1)
 END SUBROUTINE laser_gaussian
+
+
+SUBROUTINE init_rz_fields
+  USE PICSAR_precision
+  USE fields
+
+  er_c= DCMPLX(0.0_num, 0.0_num)
+  el_c= DCMPLX(0.0_num, 0.0_num)
+  et_c= DCMPLX(0.0_num, 0.0_num)
+  br_c= DCMPLX(0.0_num, 0.0_num)
+  bl_c= DCMPLX(0.0_num, 0.0_num)
+  br_c= DCMPLX(0.0_num, 0.0_num)
+  bt_c= DCMPLX(0.0_num, 0.0_num)
+  jl_c= DCMPLX(0.0_num, 0.0_num)
+  jr_c= DCMPLX(0.0_num, 0.0_num)
+  jt_c= DCMPLX(0.0_num, 0.0_num)
+  rho_c= DCMPLX(0.0_num, 0.0_num)
+  rhoold_c= DCMPLX(0.0_num, 0.0_num)
+  el_h= DCMPLX(0.0_num, 0.0_num)
+  em_h= DCMPLX(0.0_num, 0.0_num)
+  ep_h= DCMPLX(0.0_num, 0.0_num) 
+  bl_h= DCMPLX(0.0_num, 0.0_num)
+  bm_h= DCMPLX(0.0_num, 0.0_num)
+  bp_h= DCMPLX(0.0_num, 0.0_num)
+  jl_h= DCMPLX(0.0_num, 0.0_num)
+  jm_h= DCMPLX(0.0_num, 0.0_num)
+  jp_h= DCMPLX(0.0_num, 0.0_num)
+  rho_h= DCMPLX(0.0_num, 0.0_num)
+  rhoold_h= DCMPLX(0.0_num, 0.0_num)
+  el_h_inv= DCMPLX(0.0_num, 0.0_num)
+  em_h_inv= DCMPLX(0.0_num, 0.0_num)
+  ep_h_inv= DCMPLX(0.0_num, 0.0_num)
+  bl_h_inv= DCMPLX(0.0_num, 0.0_num)
+  bm_h_inv= DCMPLX(0.0_num, 0.0_num)
+  bp_h_inv= DCMPLX(0.0_num, 0.0_num)
+
+
+
+
+
+END SUBROUTINE init_rz_fields
 ! ________________________________________________________________________________________
 !> @brief
 !> init pml arrays 

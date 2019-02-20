@@ -532,6 +532,16 @@ SUBROUTINE Hankel_M_and_invM(imode)
   !ALLOCATE (Ma(nfftr,nfftr))
   !ALLOCATE (invM(nfftr,nfftr))
   !DO imode=0, nmodes-1 
+  !a=0.0_num
+  !a_pseudo=0.0_num
+  !u= 0.0_num
+  !s=0.0_num
+  !v=0.0_num
+  !a1=0.0_num
+  !a_pseudo1=0.0_num
+  !u1= 0.0_num
+  !s1=0.0_num
+  !v1= 0.0_num
   DO p=imode-1, imode+1
     SELECT CASE(p-imode)
       CASE(-1)
@@ -552,7 +562,7 @@ SUBROUTINE Hankel_M_and_invM(imode)
       CASE(1)
         CALL hankel_matrix_init(nfftr,imode,p,xmax,invM1)
         IF (imode .NE. 0) THEN
-          write (0,*), "invM1=======",invM1 
+          !write (0,*), "invM1=======",invM1 
           a1(1:nfftr-1,1:nfftr)= invM1(2:nfftr,1:nfftr)
           call rmat_svd_lapack ( INT((nfftr-1),isp), INT(nfftr,isp), a1, u1, s1, v1 )
           call pseudo_inverse ( INT((nfftr-1),isp), INT(nfftr,isp), u1, s1, v1, a_pseudo1 )
@@ -604,42 +614,42 @@ SUBROUTINE Hankel_M_and_invM(imode)
  ! END DO
 
 
-        write (0,*), "Ma =================="
-        DO k=1,nx
-          DO m=1, nx
-            write (0,*) , "k= ", k, "m= ", m, "Ma", Ma(k,m)
-          END DO
-        END DO
-        write (0,*), "Ma_1 =================="
-        DO k=1,nx
-          DO m=1,nx
-            write (0,*) , "k= ", k, "m= ", m, "Ma_1", Ma_1(k,m)
-          END DO
-        END DO
-        write (0,*), "Ma1 =================="
-        DO k=1,nx
-          DO m=1,nx
-            write (0,*) , "k= ", k, "m= ", m, "Ma1", Ma1(k,m)
-          END DO
-        END DO
-        write (0,*), "invM =================="
-        DO k=1,nx
-          DO m=1,nx
-            write (0,*) , "k= ", k, "m= ", m, "invM", invM(k,m)
-          END DO
-        END DO
-        write (0,*), "invM_1 =================="
-        DO k=1,nx
-          DO m=1, nx
-            write (0,*) , "k= ", k, "m= ", m, "invM_1", invM_1(k,m)
-          END DO
-        END DO
-        write (0,*), "invM1 =================="
-        DO k=1,nx
-          DO m=1,nx
-            write (0,*) , "k= ", k, "m= ", m, "invM1", invM1(k,m)
-          END DO
-        END DO
+       ! write (0,*), "Ma =================="
+       ! DO k=1,nx
+       !   DO m=1, nx
+       !     write (0,*) , "k= ", k, "m= ", m, "Ma", Ma(k,m)
+       !   END DO
+       ! END DO
+       ! write (0,*), "Ma_1 =================="
+       ! DO k=1,nx
+       !   DO m=1,nx
+       !     write (0,*) , "k= ", k, "m= ", m, "Ma_1", Ma_1(k,m)
+       !   END DO
+       ! END DO
+       ! write (0,*), "Ma1 =================="
+       ! DO k=1,nx
+       !   DO m=1,nx
+       !     write (0,*) , "k= ", k, "m= ", m, "Ma1", Ma1(k,m)
+       !   END DO
+       ! END DO
+       ! write (0,*), "invM =================="
+       ! DO k=1,nx
+       !   DO m=1,nx
+       !     write (0,*) , "k= ", k, "m= ", m, "invM", invM(k,m)
+       !   END DO
+       ! END DO
+       ! write (0,*), "invM_1 =================="
+       ! DO k=1,nx
+       !   DO m=1, nx
+       !     write (0,*) , "k= ", k, "m= ", m, "invM_1", invM_1(k,m)
+       !   END DO
+       ! END DO
+       ! write (0,*), "invM1 =================="
+       ! DO k=1,nx
+       !   DO m=1,nx
+       !     write (0,*) , "k= ", k, "m= ", m, "invM1", invM1(k,m)
+       !   END DO
+       ! END DO
 
 END SUBROUTINE Hankel_M_and_invM
 
@@ -688,12 +698,22 @@ SUBROUTINE get_Hfields()
 #else
     nfftr=nx+2*nxguards
 #endif
-
+  el_h = DCMPLX(0.0_NUM, 0.0_NUM)
+  em_h = DCMPLX(0.0_NUM, 0.0_NUM)
+  ep_h = DCMPLX(0.0_NUM, 0.0_NUM)
+  bl_h = DCMPLX(0.0_NUM, 0.0_NUM)
+  bm_h = DCMPLX(0.0_NUM, 0.0_NUM)
+  bp_h = DCMPLX(0.0_NUM, 0.0_NUM)
+  jl_h = DCMPLX(0.0_NUM, 0.0_NUM)
+  jm_h = DCMPLX(0.0_NUM, 0.0_NUM)
+  jp_h = DCMPLX(0.0_NUM, 0.0_NUM)
+  rho_h = DCMPLX(0.0_NUM, 0.0_NUM)
+  rhoold_h = DCMPLX(0.0_NUM, 0.0_NUM)
   Call get_Ffields_AM_rz()
   write (*,*) "==========START GET H FIELD HERE AFTER GET F FIELD =============================="
   DO i=1, nfftr
    DO j=1, ny
-     write (0,*), er_c(i,j,:)
+     write (0,*)"er_c", er_c(i,j,:)
    end do
   end do
     
@@ -796,34 +816,37 @@ SUBROUTINE get_Hfields()
   END DO
 
 
-  write (0,*) "em_f"
-  DO i=1, nfftr
-   DO j=1, ny
-     write (0,*), em_f(i,j,:)
-   end do
-  end do
+  !write (0,*) "em_f"
+  !DO i=1, nfftr
+  ! DO j=1, ny
+  !   write (0,*), em_f(i,j,:)
+  ! end do
+  !end do
 
-  write (0,*) "ep_f"
-  DO i=1, nfftr
-   DO j=1, ny
-     write (0,*), ep_f(i,j,:)
-   end do
-  end do
+  !write (0,*) "ep_f"
+  !DO i=1, nfftr
+  ! DO j=1, ny
+  !   write (0,*), ep_f(i,j,:)
+  ! end do
+  !end do
 
   write (0,*) "ep_h", MAXVAL(abs(ep_h))
-
-  DO i=1, nfftr
-   DO j=1, ny
-     write (0,*), ep_h(i,j,:)
-   end do
-  end do
+  write (0,*) "el_h", MAXVAL(abs(el_h))
+  write (0,*) "bp_h", MAXVAL(abs(bp_h))
+  write (0,*) "bm_h", MAXVAL(abs(bm_h))
+  write (0,*) "bl_h", MAXVAL(abs(bl_h))
+  !DO i=1, nfftr
+  ! DO j=1, ny
+  !   write (0,*), ep_h(i,j,:)
+  ! end do
+  !end do
 
   write (0,*) "em_h", MAXVAL(abs(em_h))
-  DO i=1, nfftr
-   DO j=1, ny
-     write (0,*), em_h(i,j,:)
-   end do
-  end do
+  !DO i=1, nfftr
+  ! DO j=1, ny
+  !   write (0,*), em_h(i,j,:)
+  ! end do
+  !end do
   !write (*,*) "dgemm successful"
 
   !DO i=1,nfftr
@@ -867,11 +890,17 @@ SUBROUTINE get_Hfields_inv()
     nfftr=nx+2*nxguards
 #endif
 
+  el_h_inv = DCMPLX(0.0_NUM, 0.0_NUM)
+  ep_h_inv = DCMPLX(0.0_NUM, 0.0_NUM)
+  em_h_inv = DCMPLX(0.0_NUM, 0.0_NUM)
+  bl_h_inv = DCMPLX(0.0_NUM, 0.0_NUM)
+  bm_h_inv = DCMPLX(0.0_NUM, 0.0_NUM)
+  bp_h_inv = DCMPLX(0.0_NUM, 0.0_NUM)
   write (*,*) "====================== START OF  GET H FIELD INV   =============================="
   DO imode=1, nmodes
    ! Ma = Ma_tot(:,:,imode)
     Call Hankel_M_and_invM(imode-1)
-    call cpu_time ( t1 )
+    !call cpu_time ( t1 )
     !el_h_ptr=>el_h(:,:,imode)
     !ep_h_ptr=>ep_h(:,:,imode)
     !em_h_ptr=>em_h(:,:,imode)
@@ -951,30 +980,31 @@ SUBROUTINE get_Hfields_inv()
   !  end do
   !end do
 
-  write (0,*) "ep_h"
-  DO i=1, nfftr
-   DO j=1, ny
-     write (0,*), ep_h(i,j,:)
-   end do
-  end do
-  write (0,*) "ep_h_inv"
-  DO i=1, nfftr
-   DO j=1, ny
-     write (0,*), ep_h_inv(i,j,:)
-   end do
-  end do
-  write (0,*) "em_h"
-  DO i=1, nfftr
-   DO j=1, ny
-     write (0,*), em_h(i,j,:)
-   end do
-  end do
-  write (0,*) "em_h_inv"
-  DO i=1, nfftr
-   DO j=1, ny
-     write (0,*), em_h_inv(i,j,:)
-   end do
-  end do
+  !write (0,*) "ep_h"
+  !DO i=1, nfftr
+  ! DO j=1, ny
+  !   write (0,*), ep_h(i,j,:)
+  ! end do
+  !end do
+  !write (0,*) "ep_h_inv"
+  !DO i=1, nfftr
+  ! DO j=1, ny
+  !   write (0,*), ep_h_inv(i,j,:)
+  ! end do
+  !end do
+  !write (0,*) "em_h"
+  !DO i=1, nfftr
+  ! DO j=1, ny
+  !   write (0,*), em_h(i,j,:)
+  ! end do
+  !end do
+  !write (0,*) "em_h_inv"
+  !DO i=1, nfftr
+  ! DO j=1, ny
+  !   write (0,*), em_h_inv(i,j,:)
+  ! end do
+  !end do
+
 
 write (*,*) "====================== END OF  GET H FIELD INV =============================="
 END SUBROUTINE get_Hfields_inv
@@ -1013,10 +1043,10 @@ END SUBROUTINE get_Hfields_inv
     !write (*,*) "BEFORE get_Hfields_inv  em_h_inv", MAXVAL(abs(em_h_inv)) , "ep_h_inv", MAXVAL(abs(ep_h_inv)) 
     CALL get_Hfields_inv()
     !write (*,*) "AFTER get_Hfields_inv em_h_inv",  MAXVAL(abs(em_h_inv)) , "ep_h_inv", MAXVAL(abs(ep_h_inv))
-    er_h_inv = 0.0_num
-    et_h_inv = 0.0_num
-    br_h_inv = 0.0_num
-    bt_h_inv = 0.0_num
+    er_h_inv = DCMPLX(0.0_NUM, 0.0_NUM)
+    et_h_inv = DCMPLX(0.0_NUM, 0.0_NUM)
+    br_h_inv = DCMPLX(0.0_NUM, 0.0_NUM)
+    bt_h_inv = DCMPLX(0.0_NUM, 0.0_NUM)
 
     er_h_inv = em_h_inv+ep_h_inv
     et_h_inv = ep_h_inv-em_h_inv
@@ -1036,7 +1066,12 @@ END SUBROUTINE get_Hfields_inv
      write (0,*), er_h_inv(i,j,:)
    end do
   end do
-
+  el_c = DCMPLX(0.0_NUM, 0.0_NUM)
+  er_c = DCMPLX(0.0_NUM, 0.0_NUM)
+  et_c = DCMPLX(0.0_NUM, 0.0_NUM)
+  bl_c = DCMPLX(0.0_NUM, 0.0_NUM)
+  br_c = DCMPLX(0.0_NUM, 0.0_NUM)
+  bt_c = DCMPLX(0.0_NUM, 0.0_NUM)
     CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, el_h_inv, el_c,plan_rz_f_inv)
     CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, er_h_inv, er_c,plan_rz_f_inv)
     CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, et_h_inv, et_c,plan_rz_f_inv)
@@ -1051,10 +1086,20 @@ END SUBROUTINE get_Hfields_inv
     !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, bp_f, br_c,plan_rz_f_inv)
     !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, bm_f, bt_c,plan_rz_f_inv)
 
-    write (*,*) "AFTER get_fields_inv  er_c"
+    write (*,*) "AFTER get_fields_inv  er_c", MAXVAL(ABS(er_c))
+    write (*,*) "AFTER get_fields_inv  el_c", MAXVAL(ABS(el_c))
+    write (*,*) "AFTER get_fields_inv  et_c", MAXVAL(ABS(et_c))
+    write (*,*) "AFTER get_fields_inv  br_c", MAXVAL(ABS(br_c))
+    write (*,*) "AFTER get_fields_inv  bl_c", MAXVAL(ABS(bl_c))
+    write (*,*) "AFTER get_fields_inv  bt_c", MAXVAL(ABS(bt_c))
     DO i=0,nfftx-1
       DO j=0,nffty-1
-        write (0,*) "i=", i, "j=", j, er_c(i,j,:)
+        write (0,*) "i=", i, "j=", j, "er_c", er_c(i,j,:)
+        write (0,*) "i=", i, "j=", j, "el_c", el_c(i,j,:)
+        write (0,*) "i=", i, "j=", j, "et_c", et_c(i,j,:)
+        write (0,*) "i=", i, "j=", j, "br_c", br_c(i,j,:)
+        write (0,*) "i=", i, "j=", j, "bl_c", bl_c(i,j,:)
+        write (0,*) "i=", i, "j=", j, "bt_c", bt_c(i,j,:)
       END DO
     END DO 
 

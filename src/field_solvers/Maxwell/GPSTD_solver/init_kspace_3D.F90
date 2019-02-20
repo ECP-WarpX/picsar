@@ -785,22 +785,24 @@ MODULE gpstd_solver
 #if defined(LIBRARY)
       nfftx = nx+2*nxguards+1
       nffty = ny+2*nyguards+1
-      nfftz = nz+2*nzguards+1
-      !> if l_AM_rz is not precised than it's the cartesian geometry 
-      !> that is true by default otherwise nfftz is the number of modes 
       IF (l_AM_rz) THEN
         nfftz = nmodes
-      ENDIF
+      ELSE
+        nfftz = nz+2*nzguards+1
+      END IF
+      !> if l_AM_rz is not precised than it's the cartesian geometry 
+      !> that is true by default otherwise nfftz is the number of modes 
 #else
       !> When using picsar
       nfftx = nx+2*nxguards
       nffty = ny+2*nyguards
-      nfftz = nz+2*nzguards
-      !> if l_AM_rz is not precised than it's the cartesian geometry 
-      !> that is true by default otherwise nfftz is the number of modes
       IF (l_AM_rz) THEN
         nfftz = nmodes
-      ENDIF
+      ELSE
+        nfftz = nz+2*nzguards
+      END IF 
+      !> if l_AM_rz is not precised than it's the cartesian geometry 
+      !> that is true by default otherwise nfftz is the number of modes
 #endif
       IF(c_dim ==2) THEN
         nffty = 1
@@ -871,23 +873,25 @@ MODULE gpstd_solver
       !> When using Smilei with picsar
       nfftx = nx+2*nxguards+1
       nffty = ny+2*nyguards+1
-      nfftz = nz+2*nzguards+1
+      IF (l_AM_rz) THEN
+        nfftz = nmodes
+      ELSE
+        nfftz = nz+2*nzguards+1
+      END IF 
       !> if l_AM_rz is not precised than it's the cartesian geometry 
       !> that is true by default otherwise nfftz is the number of modes
-      IF (l_AM_rz) THEN 
-        nfftz = nmodes
-       ENDIF
 
 #else
       !> When using only picsar
       nfftx = nx+2*nxguards
       nffty = ny+2*nyguards
-      nfftz = nz+2*nzguards
-      !> if l_AM_rz is not precised than it's the cartesian geometry 
-      !> that is true by default otherwise nfftz is the number of modes
       IF (l_AM_rz) THEN
         nfftz = nmodes
-       ENDIF
+      ELSE
+        nfftz = nz+2*nzguards
+      !> if l_AM_rz is not precised than it's the cartesian geometry 
+      !> that is true by default otherwise nfftz is the number of modes
+      ENDIF
 #endif
     ENDIF
     IF(c_dim ==2) THEN
@@ -938,7 +942,7 @@ MODULE gpstd_solver
     COMPLEX(cpx)                                  :: ii
     INTEGER(idp)                                  :: nfftx, nffty, nfftz, nfftxr
     LOGICAL(lp)                                   :: switch
-
+    LOGICAL (lp), DIMENSION(:), ALLOCATABLE :: switch_rz
     !> kspace is the (inf)finite order wave vector block matrix in 
     !> different directions
     !> It has 10 blocks: 
@@ -1020,14 +1024,14 @@ MODULE gpstd_solver
             kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kyf(j)
             kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kyb(j)
             kspace(nmatrixes2)%block_vector(3)%block3dc(i, j, k) = kyc(j)
-            write (0,*) "kyf= ", kyf(j), "kyb=", kyb(j), "kyc=", kyc(j)
             kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k) = krc(i,k)
             kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k) = krc(i,k)
             kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k) = krc(i,k)
             kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = krc(i,k)
             kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = krc(i,k)
             kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = krc(i,k)
-            write (0,*)  "krc=", krc(i,k)
+            !write (0,*) "i=", i, "j=", j, "k=", k,  "krc=", krc(i,k), "kyc=", kyc(j)
+            
           ELSE  
             IF(.NOT. p3dfft_flag) THEN
               IF(.NOT. fftw_mpi_transpose) THEN
@@ -1107,17 +1111,20 @@ MODULE gpstd_solver
     ENDDO
 
     !> Computes the norm of wave vector in fourier space 
-    kspace(nmatrixes2)%block_vector(10)%block3dc=                                    &
-    SQRT(ABS(kspace(nmatrixes2)%block_vector(9)%block3dc)**2 +                       &
-        ABS(kspace(nmatrixes2)%block_vector(6)%block3dc)**2 +                        &
-        ABS(kspace(nmatrixes2)%block_vector(3)%block3dc)**2)
+
     IF (l_AM_rz) THEN 
       kspace(nmatrixes2)%block_vector(10)%block3dc=                                  &
       SQRT(ABS(kspace(nmatrixes2)%block_vector(1)%block3dc)**2 +                     &
         ABS(kspace(nmatrixes2)%block_vector(4)%block3dc)**2) 
+    ELSE 
+      kspace(nmatrixes2)%block_vector(10)%block3dc=                                    &
+      SQRT(ABS(kspace(nmatrixes2)%block_vector(9)%block3dc)**2 +                       &
+          ABS(kspace(nmatrixes2)%block_vector(6)%block3dc)**2 +                        &
+          ABS(kspace(nmatrixes2)%block_vector(3)%block3dc)**2)
+
     END IF
     switch = .FALSE.
-
+    write (0,*), "max of absolute value of k", MAXVAL(ABS(kspace(nmatrixes2)%block_vector(10)%block3dc))
     ALLOCATE(temp(nfftxr, nffty, nfftz))
     ALLOCATE(temp2(nfftxr, nffty, nfftz))
 
@@ -1126,6 +1133,7 @@ MODULE gpstd_solver
 
     at_op(nmatrixes2)%block_vector(1)%block3dc = DCMPLX(temp2, 0._num)
 
+    write (0,*) "block_vector(1) ", MAXVAL(ABS(at_op(nmatrixes2)%block_vector(1)%block3dc))
     at_op(nmatrixes2)%block_vector(1)%block3dc =                                      &
     clight*dt*at_op(nmatrixes2)%block_vector(1)%block3dc
     temp2=COS(temp)
@@ -1133,10 +1141,12 @@ MODULE gpstd_solver
     at_op(nmatrixes2)%block_vector(2)%block3dc = DCMPLX(temp2, 0._num)
     temp=0.5_num*temp
 
-    at_op(nmatrixes2)%block_vector(3)%block3dc = 2._num*(clight*dt/2.0_num)**2        &
-    *sinc_block(nfftxr, nffty, nfftz, temp)*sinc_block(nfftxr, nffty, nfftz,    &
-    temp)
-
+    write (0,*) "block_vector(2) ", MAXVAL(ABS(at_op(nmatrixes2)%block_vector(2)%block3dc))
+    !at_op(nmatrixes2)%block_vector(3)%block3dc = 2._num*(clight*dt/2.0_num)**2        &
+    !*sinc_block(nfftxr, nffty, nfftz, temp)*sinc_block(nfftxr, nffty, nfftz,    &
+    !temp)
+    ALLOCATE (switch_rz(nfftz))
+    switch_rz= .FALSE.	
     !> if current mpi task contains the null frequency then this processor it
     !> tagged by switch = .TRUE. in order perform Taylor expansion
     !> for at_op...(i)(1,1,1) only in this mpi task
@@ -1145,7 +1155,7 @@ MODULE gpstd_solver
         IF(ABS(kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, i)) .EQ. 0.0_num) THEN
           kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, i) = DCMPLX(1.0_num,         &
           0.0_num)
-          switch = .TRUE.
+          switch_rz(i) = .TRUE.
         ENDIF
       END DO
     ELSE 
@@ -1172,24 +1182,27 @@ MODULE gpstd_solver
     !> at_op(nmatrixes2)%block_vector(1)%block3dc(1, 1, 1) is performed inside
     !> sinc function
 
-    IF(switch) THEN
-      IF (l_AM_rz) THEN
-        DO i=1, nfftz
+    IF (l_AM_rz) THEN
+      DO i=1, nfftz
+        IF (switch_rz(i)) THEN
           at_op(nmatrixes2)%block_vector(3)%block3dc(1, 1, i) = (clight*dt)**2/2.0_num
           at_op(nmatrixes2)%block_vector(4)%block3dc(1, 1,                                &
           i)=DCMPLX(-(clight*dt)**3/6.0_num, 0.0_num)
           kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, i)=DCMPLX(0._num, 0._num)
-        END DO
-       ELSE
-        at_op(nmatrixes2)%block_vector(3)%block3dc(1, 1, i) = (clight*dt)**2/2.0_num
+        END IF
+      END DO
+    ELSE
+      IF (switch) THEN
+        at_op(nmatrixes2)%block_vector(3)%block3dc(1, 1, 1) = (clight*dt)**2/2.0_num
         at_op(nmatrixes2)%block_vector(4)%block3dc(1, 1,                                &
-        i)=DCMPLX(-(clight*dt)**3/6.0_num, 0.0_num)
-        kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, i)=DCMPLX(0._num, 0._num)
-       END IF 
-    ENDIF
+        1)=DCMPLX(-(clight*dt)**3/6.0_num, 0.0_num)
+        kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)=DCMPLX(0._num, 0._num)
+      END IF 
+    END IF 
 
-
-    DEALLOCATE(temp, temp2)
+    write (0,*) "block_vector(3) ", MAXVAL(ABS(at_op(nmatrixes2)%block_vector(3)%block3dc))
+    write (0,*) "block_vector(4) ", MAXVAL(abs(at_op(nmatrixes2)%block_vector(4)%block3dc))
+    DEALLOCATE(temp, temp2, switch_rz)
   END SUBROUTINE init_kspace
 
   ! ______________________________________________________________________________________
@@ -1307,6 +1320,8 @@ MODULE gpstd_solver
       CALL  compute_k_1d( nffty,kyc,kyf,kyb,nordery,dy,l_stg)
       write (0,*) "dy = ", dy, "nordery= ", nordery
     END IF
+    
+    write (0,*), "===========================kr=============================="
      
     ! Selects only haf of  kx because r2c and c2r ffts
     ! the case not l_AM_rz is added to this one because we perform a complex to
@@ -1496,9 +1511,10 @@ MODULE gpstd_solver
      INTEGER(idp) , INTENT(IN) :: nfft,nmodes
      COMPLEX(cpx) , DIMENSION(:,:) , ALLOCATABLE , INTENT(INOUT) :: kvec
      COMPLEX(cpx), ALLOCATABLE, DIMENSION(:)     ::  ones
-     REAL ( idp ), ALLOCATABLE, DIMENSION(:) :: nu, RJ1,RY0,RY1 
+     REAL ( idp ), ALLOCATABLE, DIMENSION(:) :: nu, RJ1,RY0,RY1, nu1
      INTEGER(idp) ::  i,k
      ALLOCATE (nu(nfft))
+     ALLOCATE (nu1(nfft-1))
      ALLOCATE (RJ1(nfft))
      ALLOCATE (RY0(nfft))
      ALLOCATE (RY1(nfft))
@@ -1506,20 +1522,22 @@ MODULE gpstd_solver
      ALLOCATE(kvec(nfft,nmodes))
      kvec=(0._num, 0._num)
      !kr = 2*np.pi * self.trans[m].dht0.get_nu()
-     DO k=1,nmodes
-       CALL JYZO(k,nfft,nu,RJ1,RY0,RY1)
-       !CALL  jyzo  (k,nfft,nu)
-       IF (k .eq. 1) THEN
+     DO k=0,nmodes-1
+       IF (k .eq. 0) THEN
+          CALL JYZO(k,nfft,nu,RJ1,RY0,RY1)
          DO i=1,nfft
-           kvec(i,k) = nu(i)/(nx*d) 
+           kvec(i,k+1) = nu(i)/(nfft*d) 
          END DO
        ELSE
-         kvec(1,k)=0._num 
+         CALL JYZO(k,nfft-1,nu1,RJ1,RY0,RY1)
+         kvec(1,k+1)=0._num 
          DO i=2,nfft
-           kvec(i,k)=nu(i-1)/(nx*d)
+           kvec(i,k+1)=nu1(i-1)/(nfft*d)
          END DO
        END IF
      END DO
+
+  DEALLOCATE (nu, nu1, RJ1, RY0, RY1, ones)
 
   END SUBROUTINE compute_kr_1d
 
@@ -1721,6 +1739,7 @@ MODULE gpstd_solver
       !> When not using absorbing bcs, standard EM equations are solved in
       ! fourier space
       IF (l_AM_rz) THEN
+        write (0,*) " computing merged fields in RZ"
         CALL compute_cc_mat_merged_fields_AM_rz()
       ELSE
         CALL compute_cc_mat_merged_fields()
@@ -2234,7 +2253,7 @@ MODULE gpstd_solver
     USE params, ONLY : dt
     INTEGER(idp)  :: i,j, imode   
     COMPLEX(cpx) ::  ii
-    LOGICAL(lp)            :: switch
+    LOGICAL(lp), DIMENSION(:), ALLOCATABLE      :: switch
     ii=DCMPLX(0.0_num, 1.0_num)
 
     !> cc_mat_(nmatrixes)block_matrix2d(i,j) components are sorted using the
@@ -2309,18 +2328,18 @@ MODULE gpstd_solver
 
     !> Contribution of J field to E field
     DO i = 1, 3
-      cc_mat(nmatrixes)%block_matrix2d(i, i+6)%block3dc =                             &
+      cc_mat(nmatrixes)%block_matrix2d(i, i+6)%block3dc =                              &
       (-1._num)*clight*mu0*at_op(nmatrixes2)%block_vector(1)%block3dc
     ENDDO
     ! End contribution of J field to E field
 
     !> Contribution of J field to B field
-    cc_mat(nmatrixes)%block_matrix2d(4, 8)%block3dc = mu0*                             &
+    cc_mat(nmatrixes)%block_matrix2d(4, 8)%block3dc =  mu0*                             &
     ii*kspace(nmatrixes2)%block_vector(4)%block3dc*                                    &
     at_op(nmatrixes2)%block_vector(3)%block3dc
 
 
-    cc_mat(nmatrixes)%block_matrix2d(4, 9)%block3dc = mu0*                             &
+    cc_mat(nmatrixes)%block_matrix2d(4, 9)%block3dc =  mu0*                             &
     kspace(nmatrixes2)%block_vector(4)%block3dc*                                       &
     at_op(nmatrixes2)%block_vector(3)%block3dc
 
@@ -2331,7 +2350,7 @@ MODULE gpstd_solver
     at_op(nmatrixes2)%block_vector(3)%block3dc
 
 
-    cc_mat(nmatrixes)%block_matrix2d(5, 8)%block3dc =  mu0*                            &
+    cc_mat(nmatrixes)%block_matrix2d(5, 8)%block3dc = mu0*                            &
     kspace(nmatrixes2)%block_vector(1)%block3dc*                                       &
     at_op(nmatrixes2)%block_vector(3)%block3dc
 
@@ -2341,7 +2360,7 @@ MODULE gpstd_solver
     at_op(nmatrixes2)%block_vector(3)%block3dc
 
 
-    cc_mat(nmatrixes)%block_matrix2d(6, 9)%block3dc = - mu0*                            &
+    cc_mat(nmatrixes)%block_matrix2d(6, 9)%block3dc =  - mu0*                            &
     kspace(nmatrixes2)%block_vector(1)%block3dc*                                        &
     at_op(nmatrixes2)%block_vector(3)%block3dc
     
@@ -2352,13 +2371,13 @@ MODULE gpstd_solver
     !> if current mpi task contains the null frequency then this processor it
     !> tagged by switch = .TRUE. in order perform Taylor expansion
     !> for certain blocks
-
+    ALLOCATE(switch(nmodes))
     switch = .FALSE.
     DO imode=1, nmodes
       !> Spots mpis that contain null frequency to perform Taylor expansion later
       IF(ABS(kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, imode)) .EQ. 0.0_num) THEN
         kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, imode) = (1.0_num, 0.0_num)
-        switch = .TRUE.
+        switch(imode) = .TRUE.
       ENDIF
     END DO
 
@@ -2386,24 +2405,26 @@ MODULE gpstd_solver
     !> expansion for cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc(1, 1,
     !1)
 
-    IF (switch) THEN
-      DO imode=1, nmodes
+    DO imode=1, nmodes
+      IF (switch(imode)) THEN
         cc_mat(nmatrixes)%block_matrix2d(1, 10_idp)%block3dc(1, 1, imode) =             &
            -1.0_num/3.0_num*DCMPLX(0.0_num, 1.0_num)*(clight*dt)**2
 
-        cc_mat(nmatrixes)%block_matrix2d(2, 10_idp)%block3dc(1, 1, imode) =             &
+       cc_mat(nmatrixes)%block_matrix2d(2, 10_idp)%block3dc(1, 1, imode) =             &
            1.0_num/3.0_num*(clight*dt)**2
 
         cc_mat(nmatrixes)%block_matrix2d(3, 10_idp)%block3dc(1, 1, imode) =             &
            -1.0_num/3.0_num*(clight*dt)**2  
-      END DO
-    END IF
+      END IF
+    END DO
     
     DO i = 1, 3
-!      IF(switch) THEN
-!        cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc(1, 1, 1) =             &
-!         -1.0_num/3.0_num*DCMPLX(0.0_num, 1.0_num)*(clight*dt)**2
-!      ENDIF
+      DO imode=1,nmodes
+        IF(switch(imode)) THEN
+          cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc(1, 1, 1) =             &
+           -1.0_num/3.0_num*DCMPLX(0.0_num, 1.0_num)*(clight*dt)**2
+        ENDIF
+      END DO
       cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc = 1.0_num/eps0           &
       *cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc
     ENDDO
@@ -2417,12 +2438,12 @@ MODULE gpstd_solver
     *(DCMPLX(1.,0.)- 1./(clight*dt)* at_op(nmatrixes2)%block_vector(1)%block3dc)    &
     /kspace(nmatrixes2)%block_vector(10)%block3dc**2
 
-    cc_mat(nmatrixes)%block_matrix2d(2, 11_idp)%block3dc =                          &
+    cc_mat(nmatrixes)%block_matrix2d(2, 11_idp)%block3dc =                           &
     kspace(nmatrixes2)%block_vector(4)%block3dc                                     & 
     *(DCMPLX(1.,0.)- 1./(clight*dt)* at_op(nmatrixes2)%block_vector(1)%block3dc)    &
     /(2.*kspace(nmatrixes2)%block_vector(10)%block3dc**2)
     
-    cc_mat(nmatrixes)%block_matrix2d(3, 11_idp)%block3dc = -                        &
+    cc_mat(nmatrixes)%block_matrix2d(3, 11_idp)%block3dc =   -                        &
     kspace(nmatrixes2)%block_vector(4)%block3dc                                     & 
     *(DCMPLX(1.,0.)- 1./(clight*dt)* at_op(nmatrixes2)%block_vector(1)%block3dc)    &
     /(2.*kspace(nmatrixes2)%block_vector(10)%block3dc**2)
@@ -2432,30 +2453,36 @@ MODULE gpstd_solver
     !expansion for cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc(1, 1,
     !1)
     
-    IF (switch) THEN
-      DO imode=1, nmodes
+    DO imode=1, nmodes
+      IF (switch(imode)) THEN
         cc_mat(nmatrixes)%block_matrix2d(1, 11_idp)%block3dc(1, 1, imode) =               &
            1.0_num/6.0_num*(0.0_num, 1.0_num)*(clight*dt)**2
 
-        cc_mat(nmatrixes)%block_matrix2d(1, 11_idp)%block3dc(1, 1, imode) =               &
+        cc_mat(nmatrixes)%block_matrix2d(2, 11_idp)%block3dc(1, 1, imode) =               &
           -DCMPLX(0.,1.)* 1.0_num/6.0_num*(0.0_num, 1.0_num)*(clight*dt)**2
 
-        cc_mat(nmatrixes)%block_matrix2d(1, 11_idp)%block3dc(1, 1, imode) =               &
+        cc_mat(nmatrixes)%block_matrix2d(3, 11_idp)%block3dc(1, 1, imode) =               &
            DCMPLX(0.,1.)*1.0_num/6.0_num*(0.0_num, 1.0_num)*(clight*dt)**2
-      END DO
-    END IF       
+      END IF
+    END DO
+  
     !> IMPORTANT TO REMEMBER TAYLOR EXPANSION SHOULD BE VERIFIED FOR AM_rz
     Do i = 1, 3
-    !  IF(switch) THEN
-    !    cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc(1, 1, 1) =               &
-    !    -1.0_num/6.0_num*(0.0_num, 1.0_num)*(clight*dt)**2
-    !  ENDIF
+      DO imode=1,nmodes
+        IF(switch(imode)) THEN
+          cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc(1, 1, 1) =               &
+          -1.0_num/6.0_num*(0.0_num, 1.0_num)*(clight*dt)**2
+        ENDIF
+      END DO
       cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc = 1.0_num/eps0 *           &
       cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc
     ENDDO
-    IF(switch) THEN
-      kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)   = DCMPLX(0., 0.)
-    ENDIF
+
+    DO imode=1, nmodes
+      IF(switch(imode)) THEN
+        kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, imode)   = DCMPLX(0., 0.)
+      ENDIF
+    END DO
     !> End contribution of rho field to E field   
   END SUBROUTINE compute_cc_mat_merged_fields_AM_rz
 

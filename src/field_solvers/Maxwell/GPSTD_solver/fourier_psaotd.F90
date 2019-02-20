@@ -1073,12 +1073,12 @@ MODULE fourier_psaotd
     ALLOCATE (jrt_m(nfftx,nffty,nfftz))
     
 
-    ert_p=0.0_num
-    ert_m=0.0_num
-    brt_p=0.0_num
-    brt_m=0.0_num
-    jrt_p=0.0_num
-    jrt_m=0.0_num 
+    ert_p=DCMPLX(0.0_num,0.0_num)
+    ert_m=DCMPLX(0.0_num,0.0_num)
+    brt_p=DCMPLX(0.0_num,0.0_num)
+    brt_m=DCMPLX(0.0_num,0.0_num)
+    jrt_p=DCMPLX(0.0_num,0.0_num)
+    jrt_m=DCMPLX(0.0_num,0.0_num)
     ii=DCMPLX(0.0_num, 1.0_num)
     ert_p = (er_c+ii*et_c)/2.0_num
     ert_m = (er_c-ii*et_c)/2.0_num
@@ -1108,7 +1108,7 @@ MODULE fourier_psaotd
     !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, br_c, bp_f, plan_rz_f)
     !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, bt_c, bm_f, plan_rz_f)
     !write (*,*) "et_f =" , MAXVAL(abs(em_f))
-    write (*,*) "er_f =" , abs(ep_f)
+    !write (*,*) "er_f =" , abs(ep_f)
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
     ENDIF
@@ -1826,13 +1826,17 @@ MODULE fourier_psaotd
     nyy=nky
     nzz=nmodes
     write (0,*) "nxx= ", nxx, "nyy = ", nyy, "nzz =", nzz
-    write (0,*) "upper and lower bound of ep_h", LBOUND(ep_h), UBOUND(ep_h)
-    !write (0,*), "max of ep_h_old", MAXVAL(ABS (ep_h))
-    !write (0,*), "max of bl_h_old ", MAXVAL(ABS (bl_h))
-    !write (0,*), "max of bm_h_old ", MAXVAL(ABS (bm_h ))
-    !write (0,*), "max of jp_h_old ", MAXVAL(ABS (jp_h ))
-    !write (0,*), "max of rho_h_old", MAXVAL(ABS (rho_h))
-    !write (0,*), "max of rhoold_h_old", MAXVAL(ABS (rhoold_h))
+    write (0,*), "max of ep_h_old", MAXVAL(ABS (ep_h))
+    write (0,*), "max of em_h_old", MAXVAL(ABS (em_h))
+    write (0,*), "max of el_h_old", MAXVAL(ABS (el_h))
+    write (0,*), "max of bl_h_old ", MAXVAL(ABS (bl_h))
+    write (0,*), "max of bm_h_old ", MAXVAL(ABS (bm_h ))
+    write (0,*), "max of bp_h_old ", MAXVAL(ABS (bp_h))
+    write (0,*), "max of jp_h_old ", MAXVAL(ABS (jp_h ))
+    write (0,*), "max of jl_h_old ", MAXVAL(ABS (jl_h ))
+    write (0,*), "max of jm_h_old ", MAXVAL(ABS (jm_h ))
+    write (0,*), "max of rho_h_old", MAXVAL(ABS (rho_h))
+    write (0,*), "max of rhoold_h_old", MAXVAL(ABS (rhoold_h))
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, el_h_old, ep_h_old, em_h_old,     &
     !$OMP bl_h_old, bp_h_old, bm_h_old,jl_h_old,jp_h_old,jm_h_old,rho_h_old,rhoold_h_old) COLLAPSE(3)
     DO iz=1, nzz
@@ -1957,19 +1961,63 @@ MODULE fourier_psaotd
            IF (bl_h_old /= bl_h_old) THEN
             write (0,*) "bl_h_old   ", "ix=", ix, "iy=", iy, "iz=", iz
           END IF
+           IF (em_h_old /= em_h_old) THEN
+            write (0,*) "em_h_old   ", "ix=", ix, "iy=", iy, "iz=", iz
+          END IF
+           IF (bm_h_old /= bm_h_old) THEN
+            write (0,*) "bm_h_old   ", "ix=", ix, "iy=", iy, "iz=", iz
+          END IF
+           IF (jm_h_old /= jm_h_old) THEN
+            write (0,*) "jm_h_old   ", "ix=", ix, "iy=", iy, "iz=", iz
+          END IF
+           IF (rho_h_old /= rho_h_old) THEN
+            write (0,*) "bl_h_old   ", "ix=", ix, "iy=", iy, "iz=", iz
+          END IF
+           IF (rhoold_h_old /= rhoold_h_old) THEN
+            write (0,*) "rhoold_h_old   ", "ix=", ix, "iy=", iy, "iz=", iz
+          END IF
         END DO
       END DO
     END DO
     
-    
-    !write (0,*), "ccmat1", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(3, 3)%block3dc))
+   !$OMP END PARALLEL DO 
+    write (0,*), "(3,3)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(3, 3)%block3dc))
+    write (0,*), "(3,4)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(3, 4)%block3dc))
+    write (0,*), "(3,6)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(3, 6)%block3dc))
+    write (0,*), "(3,9)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(3, 9)%block3dc))
+    write (0,*), "(2,10)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(3, 10)%block3dc))
+    write (0,*), "(2,11)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(2, 11)%block3dc))
+    write (0,*), "(2,2)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(2, 2)%block3dc))
+    write (0,*), "(2,4)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(2,4)%block3dc))
+    write (0,*), "(2,5)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(2, 5)%block3dc))
+    write (0,*), "(1,1)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(1, 1)%block3dc))
+    write (0,*), "(1,5)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(1, 5)%block3dc))
+    write (0,*), "(1,6)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(1, 6)%block3dc))
+    write (0,*), "(1,7)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(1, 7)%block3dc))
+    write (0,*), "(1,10)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(1, 10)%block3dc))
+    write (0,*), "(1,11)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(1, 11)%block3dc))
+    write (0,*), "(6,9)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(6, 9)%block3dc))
+    write (0,*), "(6,7)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(6, 7)%block3dc))
+    write (0,*), "(6,3)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(6, 3)%block3dc))
+    write (0,*), "(6,1)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(6, 1)%block3dc))
+    write (0,*), "(6,6)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(6, 6)%block3dc))
+    write (0,*), "(5,5)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(5, 5)%block3dc))
+    write (0,*), "(5,8)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(5, 8)%block3dc))
+    write (0,*), "(5,7)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(5,7)%block3dc))
+    write (0,*), "(5,2)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(5, 2)%block3dc))
+    write (0,*), "(5,1)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(5, 1)%block3dc))
+    write (0,*), "(4,4)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(4, 4)%block3dc))
+    write (0,*), "(4,9)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(4, 9)%block3dc))
+    write (0,*), "(4,8)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(4, 8)%block3dc))
+    write (0,*), "(4,3)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(4, 3)%block3dc))  
+    write (0,*), "(4,2)", MAXVAL(ABS (cc_mat(nmatrixes)%block_matrix2d(4, 2)%block3dc))
+
     !write (0,*), "ccmat2 ", MAXVAL(ABS (bl_h_old ))
     !write (0,*), "ccmat3 ", MAXVAL(ABS (bm_h_old ))
     !write (0,*), "max of jp_h_old ", MAXVAL(ABS (jp_h_old ))
     !write (0,*), "max of rho_h_old", MAXVAL(ABS (rho_h_old))
     !write (0,*), "max of rhoold_h_old", MAXVAL(ABS (rhoold_h_old))
 
-    !$OMP END PARALLEL DO
     IF (it.ge.timestat_itstart) THEN
       localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime)
     ENDIF
