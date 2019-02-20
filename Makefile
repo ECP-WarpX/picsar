@@ -413,6 +413,8 @@ $(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_depositio
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_circ.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_circ.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
@@ -462,6 +464,8 @@ $(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_depositio
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_circ.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_circ.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
@@ -510,6 +514,8 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_circ.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_circ.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
         $(SRCDIR)/housekeeping/load_balancing.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
@@ -563,6 +569,8 @@ $(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_depositio
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_circ.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_circ.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
