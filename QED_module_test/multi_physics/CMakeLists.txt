@@ -21,6 +21,7 @@ add_library (multi_physics
             src/nonlin_breit_wheeler_engine.h src/nonlin_breit_wheeler_engine.cpp
             src/quadrature.h src/quadrature.cpp
             src/rng_wrapper.h src/rng_wrapper.cpp
+            src/lookup_table.hpp
             )
 
 target_include_directories(multi_physics PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)

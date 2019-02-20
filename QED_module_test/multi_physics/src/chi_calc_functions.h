@@ -56,21 +56,21 @@ namespace picsar{
         }
 
         inline double chi_lepton_lambda(const std::array<double, 3>& mom, const std::array<double, 6>& emfl, double mass, double lambda){
-            return chi_lepton_inv_schwinger(mom, emfl, 1.0/picsar::multi_physics::calc_schwinger_given_lambda_SI(lambda), mass);
+            return chi_lepton_inv_schwinger(mom, emfl, 1.0/picsar::multi_physics::calc_schwinger_given_lambda(lambda), mass);
         }
 
         inline double chi_photon_inv_schwinger(const std::array<double, 3>& mom, const std::array<double, 6>& emfl, double normalized_inv_schwinger_field){
-            double p2 = mom[0]*mom[0] + mom[1]*mom[1] + mom[2]*mom[2];
-            double inv_p = 1.0/sqrt(p2);
+            double p = sqrt(mom[0]*mom[0] + mom[1]*mom[1] + mom[2]*mom[2]);
+            double inv_p = 1.0/p;
 
             double cx = mom[0]*inv_p;
             double cy = mom[1]*inv_p;
             double cz = mom[2]*inv_p;
 
             double cdote = cx*emfl[0] + cy*emfl[1] + cz*emfl[2];
-            double eperx = cdote*cx*inv_p;
-            double epery = cdote*cy*inv_p;
-            double eperz = cdote*cz*inv_p;
+            double eperx = cdote*cx;
+            double epery = cdote*cy;
+            double eperz = cdote*cz;
 
             double ccrossbx = cy * emfl[5] - cz*emfl[4];
             double ccrossby = cz * emfl[3] - cx*emfl[5];
@@ -82,11 +82,11 @@ namespace picsar{
 
             double eplusccrossbz2 = eplusccrossbx*eplusccrossbx + eplusccrossby*eplusccrossby + eplusccrossbz*eplusccrossbz;
 
-            return p2 * sqrt(eplusccrossbz2)*normalized_inv_schwinger_field;
+            return p * sqrt(eplusccrossbz2)*normalized_inv_schwinger_field;
         }
 
         inline double chi_photon_lambda(const std::array<double, 3>& mom, const std::array<double, 6>& emfl, double lambda){
-            return chi_photon_inv_schwinger(mom, emfl, 1.0/picsar::multi_physics::calc_schwinger_given_lambda_SI(lambda));
+            return chi_photon_inv_schwinger(mom, emfl, 1.0/picsar::multi_physics::calc_schwinger_given_lambda(lambda));
         }
 
     }

@@ -20,7 +20,8 @@ namespace picsar{
         const double classical_electron_radius = elementary_charge*elementary_charge /
                     (4.0*M_PI*vacuum_permittivity*electron_mass*speed_of_light*speed_of_light);
 
-        inline double calc_schwinger_given_lambda_SI(double lambda){
+        //Calculate Schwinger field in CODE units given lambda in SI units
+        inline double calc_schwinger_given_lambda(double lambda){
              return electron_mass*speed_of_light*lambda / (reduced_plank * 2.0 * M_PI);
         }
 

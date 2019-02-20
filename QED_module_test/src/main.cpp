@@ -18,6 +18,7 @@
 #include "special_functions.h"
 #include "quadrature.h"
 #include "rng_wrapper.h"
+#include "chi_calc_functions.h"
 
 using namespace std;
 using namespace testbed;
@@ -60,13 +61,13 @@ int main(int argc, char** argv){
     cout << endl;
 
     //Fix lambda
-    double lambda = 1 * picsar::multi_physics::_um;
+    double lambda = 0.8 * picsar::multi_physics::_um;
 
     //Init nonlin_breit_wheeler_engine
     picsar::multi_physics::nonlin_breit_wheeler_engine breit_wheeler_engine{seed, lambda};
 
 
-    cout << "********************Test RNG ***********************************" << endl;
+    cout << "********************Test RNG ****************************************" << endl;
     picsar::multi_physics::rng_wrapper rngw{seed};
     cout << "3 random numbers in [0, 1):    ";
     cout << rngw.get_unf_0_1() << " " <<  rngw.get_unf_0_1() << " " << rngw.get_unf_0_1() << endl;
@@ -75,6 +76,25 @@ int main(int argc, char** argv){
     cout << "*********************************************************************" << endl;
     cout << endl;
 
+    cout << "********************Test Schwinger field ****************************" << endl;
+    cout << "Calc Schwinger field in code units (exp. 329719 for l=800nm): ";
+    cout << picsar::multi_physics::calc_schwinger_given_lambda(800*picsar::multi_physics::_nm) << endl;
+    cout << "*********************************************************************" << endl;
+    cout << endl;
+
+    cout << "********************Test ChiPhot Functions***************************" << endl;
+    cout << "calc Chi for photons (mom=[195.417, 128.709, -43.351], EB=[-154.214, 199.139, 197.890, 40.676, 12.243, 42.457], l = 800 nm, exp. 0.0539495) :" << endl;
+    cout << picsar::multi_physics::chi_photon_lambda({195.417, 128.709, -43.351},{-154.214, 199.139, 197.890, 40.676, 12.243, 42.457}, 0.8 * picsar::multi_physics::_um) << endl;
+    cout << "*********************************************************************" << endl;
+    cout << endl;
+
+    cout << "********************Test BWFunctions *********************************" << endl;
+    cout << "calc BW d2N/dchi_ele/dt (code units) for gamma_phot=3, chi_phot=2, chi_ele=1 :" << endl;
+    cout << breit_wheeler_engine.compute_d2N_dchi_dt(3, 2, 1) << endl;
+    cout << "calc BW dN/dt (code units) for gamma_phot=3, chi_phot=2 :" << endl;
+    cout << breit_wheeler_engine.compute_dN_dt(3, 2) << endl;
+    cout << "*********************************************************************" << endl;
+    cout << endl;
 
     vector<shared_ptr<species>> specs;
     //Init a photon
