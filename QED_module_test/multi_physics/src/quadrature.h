@@ -3,6 +3,8 @@
 
 #include <functional>
 
+//For the moment quadrature is based on trapezoidal quadrature from boost
+
 #if HAS_BOOST_MATH
     #define QUADRATURE_BUILD_WITH_BOOST //If possible use integration from boost library
 #else
