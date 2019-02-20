@@ -9,6 +9,7 @@
 #include <functional>
 
 #include "commons.h"
+#include "rng_wrapper.h"
 
 namespace picsar{
   namespace multi_physics{
@@ -20,22 +21,8 @@ namespace picsar{
 
       bool has_lookup_tables();
 
-      inline double get_unf_0_1(){
-          return unf_dist_0_1();
-      }
-
-      inline double get_unf_eps_1(){
-          return unf_dist_eps_1();
-      }
-
-      inline double get_optical_depth(){
-          return -log(unf_dist_eps_1());
-      }
-
     private:
-        std::mt19937_64 rng;
-        std::function<double()> unf_dist_0_1; //Uniform distribution between [0,1)
-        std::function<double()> unf_dist_eps_1; //Uniform distrubtion between [e, 1), where e is numeric_limits<double>::min()
+        rng_wrapper rng;
 
         double lambda;
         double normalized_schwinger_field; //Normalized according to Smilei conventions

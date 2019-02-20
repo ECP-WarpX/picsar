@@ -20,6 +20,7 @@ add_library (multi_physics
             src/chi_calc_functions.h src/chi_calc_functions.cpp
             src/nonlin_breit_wheeler_engine.h src/nonlin_breit_wheeler_engine.cpp
             src/quadrature.h src/quadrature.cpp
+            src/rng_wrapper.h src/rng_wrapper.cpp
             )
 
 target_include_directories(multi_physics PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)

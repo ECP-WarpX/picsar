@@ -17,6 +17,7 @@
 #include "nonlin_breit_wheeler_engine.h"
 #include "special_functions.h"
 #include "quadrature.h"
+#include "rng_wrapper.h"
 
 using namespace std;
 using namespace testbed;
@@ -65,15 +66,12 @@ int main(int argc, char** argv){
     picsar::multi_physics::nonlin_breit_wheeler_engine breit_wheeler_engine{seed, lambda};
 
 
-    cout << "********************Test functions in NL BW module*******************" << endl;
-
+    cout << "********************Test RNG ***********************************" << endl;
+    picsar::multi_physics::rng_wrapper rngw{seed};
     cout << "3 random numbers in [0, 1):    ";
-    cout << breit_wheeler_engine.get_unf_0_1() << " " <<  breit_wheeler_engine.get_unf_0_1() << " " << breit_wheeler_engine.get_unf_0_1() << endl;
-    cout << "3 random numbers in [epsi 1):  ";
-    cout << breit_wheeler_engine.get_unf_eps_1() << " " <<  breit_wheeler_engine.get_unf_eps_1() << " " << breit_wheeler_engine.get_unf_eps_1() << endl;
-    cout << "3 random optical depths:       ";
-    cout << breit_wheeler_engine.get_optical_depth() << " " <<  breit_wheeler_engine.get_optical_depth() << " " << breit_wheeler_engine.get_optical_depth() << endl;
-
+    cout << rngw.get_unf_0_1() << " " <<  rngw.get_unf_0_1() << " " << rngw.get_unf_0_1() << endl;
+    cout << "3 random numbers from exponential distributions:       ";
+    cout << rngw.get_exp_l1() << " " <<  rngw.get_exp_l1() << " " << rngw.get_exp_l1() << endl;
     cout << "*********************************************************************" << endl;
     cout << endl;
 
