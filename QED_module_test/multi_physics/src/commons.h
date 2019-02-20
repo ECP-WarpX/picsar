@@ -15,6 +15,7 @@ namespace picsar{
         const double speed_of_light = 299792458;
         const double reduced_plank = 1.054571800e-34;
         const double vacuum_permittivity =  8.854187817e-12;
+        const double fine_structure_constant =  0.0072973525664;
 
         const double classical_electron_radius = elementary_charge*elementary_charge /
                     (4.0*M_PI*vacuum_permittivity*electron_mass*speed_of_light*speed_of_light);
