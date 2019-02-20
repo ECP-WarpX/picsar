@@ -218,7 +218,7 @@ END SUBROUTINE modify_vec_block
 ! ________________________________________________________________________________________
 SUBROUTINE point_to_vector_block_p2f(ain, n1, n2, n3, iv, mat_index, old, is_source)
   USE matrix_coefficients, ONLY: vnew, vold
-  USE picsar_precision, ONLY: idp, lp, cpx
+  USE picsar_precision, ONLY: cpx, idp, lp
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN) :: n1, n2, n3, mat_index, iv
   LOGICAL(lp), INTENT(IN) :: old, is_source
@@ -277,8 +277,8 @@ END SUBROUTINE nullify_vector_block
 !
 ! ________________________________________________________________________________________
 SUBROUTINE allocate_new_matrix_vector(nvar)
-  USE matrix_coefficients, ONLY: vnew, cc_mat, vold
-  USE matrix_data, ONLY: ns_max, nmatrixes
+  USE matrix_coefficients, ONLY: cc_mat, vnew, vold
+  USE matrix_data, ONLY: nmatrixes, ns_max
   USE picsar_precision, ONLY: idp
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN) :: nvar
@@ -320,7 +320,7 @@ END SUBROUTINE allocate_new_matrix_vector
 ! ________________________________________________________________________________________
 
 SUBROUTINE multiply_mat_vector(matrix_index)
-  USE matrix_coefficients, ONLY: vnew, cc_mat, block3d, vold
+  USE matrix_coefficients, ONLY: block3d, cc_mat, vnew, vold
 #ifdef _OPENMP
   USE omp_lib
 #endif
@@ -400,7 +400,7 @@ SUBROUTINE multiply_unit_blocks(anew, block1, n1, n2, n3, coeff1, nc1, nc2, nc3,
 #ifdef _OPENMP
   USE omp_lib
 #endif
-  USE picsar_precision, ONLY: idp, cpx
+  USE picsar_precision, ONLY: cpx, idp
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN) :: n1, n2, n3, nc1, nc2, nc3, nthreads
   COMPLEX(cpx), INTENT(IN OUT), DIMENSION(n1, n2, n3) :: anew, block1

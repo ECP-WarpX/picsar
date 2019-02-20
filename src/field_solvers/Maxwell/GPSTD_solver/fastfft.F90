@@ -90,10 +90,10 @@ CONTAINS
 ! FFTW_EXHAUSTIVE (very high overhead, brute force optimization)
 SUBROUTINE fast_fftw_create_plan_3d_dft(nopenmp,nx,ny,nz,array_in,array_out, &
     plan,plan_type,dir)
-    USE fftw3_fortran, ONLY: plans_cint, nplan
+    USE fftw3_fortran, ONLY: nplan, plans_cint
     USE iso_c_binding
     USE omp_lib
-    USE picsar_precision, ONLY: idp, cpx
+    USE picsar_precision, ONLY: cpx, idp
 
     IMPLICIT NONE
 
@@ -130,10 +130,10 @@ END SUBROUTINE fast_fftw_create_plan_3d_dft
 ! FFTW_EXHAUSTIVE (very high overhead, brute force optimization)
 SUBROUTINE fast_fftw_create_plan_r2c_3d_dft(nopenmp,nx,ny,nz,array_in, &
     array_out,plan,plan_type,dir)
-    USE fftw3_fortran, ONLY: plans_cint, nplan
+    USE fftw3_fortran, ONLY: nplan, plans_cint
     USE iso_c_binding
     USE omp_lib
-    USE picsar_precision, ONLY: idp, num, cpx
+    USE picsar_precision, ONLY: cpx, idp, num
     INTEGER(idp), INTENT(IN) ::  nopenmp, nx,ny,nz
     REAL(num), DIMENSION(nx,ny,nz), INTENT(IN OUT)  :: array_in
     COMPLEX(cpx), DIMENSION(nx/2+1,ny,nz), INTENT(IN OUT)  :: array_out
@@ -167,10 +167,10 @@ END SUBROUTINE fast_fftw_create_plan_r2c_3d_dft
 ! FFTW_EXHAUSTIVE (very high overhead, brute force optimization)
 SUBROUTINE fast_fftw_create_plan_c2r_3d_dft(nopenmp,nx,ny,nz,array_in, &
     array_out,plan,plan_type,dir)
-    USE fftw3_fortran, ONLY: plans_cint, nplan
+    USE fftw3_fortran, ONLY: nplan, plans_cint
     USE iso_c_binding
     USE omp_lib
-    USE picsar_precision, ONLY: idp, num, cpx
+    USE picsar_precision, ONLY: cpx, idp, num
     INTEGER(idp), INTENT(IN) ::  nopenmp, nx,ny,nz
     REAL(num), DIMENSION(nx,ny,nz), INTENT(IN OUT)  :: array_out
     COMPLEX(cpx), DIMENSION(nx/2+1,ny,nz), INTENT(IN OUT)  :: array_in
@@ -204,10 +204,10 @@ END SUBROUTINE fast_fftw_create_plan_c2r_3d_dft
 ! FFTW_EXHAUSTIVE (very high overhead, brute force optimization)
 SUBROUTINE fast_fftw_create_plan_2d_dft(nopenmp,nx,nz,array_in, &
     array_out,plan,plan_type,dir)
-    USE fftw3_fortran, ONLY: plans_cint, nplan
+    USE fftw3_fortran, ONLY: nplan, plans_cint
     USE iso_c_binding
     USE omp_lib
-    USE picsar_precision, ONLY: idp, cpx
+    USE picsar_precision, ONLY: cpx, idp
     INTEGER(idp), INTENT(IN) ::  nopenmp, nx,nz
     COMPLEX(cpx), DIMENSION(nx,nz), INTENT(IN OUT)  :: array_in, array_out
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
@@ -240,10 +240,10 @@ END SUBROUTINE fast_fftw_create_plan_2d_dft
 ! FFTW_EXHAUSTIVE (very high overhead, brute force optimization)
 SUBROUTINE fast_fftw_create_plan_r2c_2d_dft(nopenmp,nx,nz,array_in,&
     array_out,plan,plan_type,dir)
-    USE fftw3_fortran, ONLY: plans_cint, nplan
+    USE fftw3_fortran, ONLY: nplan, plans_cint
     USE iso_c_binding
     USE omp_lib
-    USE picsar_precision, ONLY: idp, num, cpx
+    USE picsar_precision, ONLY: cpx, idp, num
     INTEGER(idp), INTENT(IN) ::  nopenmp, nx,nz
     REAL(num), DIMENSION(nx,nz), INTENT(IN OUT)  :: array_in
     COMPLEX(cpx), DIMENSION(nx/2+1,nz), INTENT(IN OUT)  :: array_out
@@ -276,10 +276,10 @@ END SUBROUTINE fast_fftw_create_plan_r2c_2d_dft
 ! FFTW_EXHAUSTIVE (very high overhead, brute force optimization)
 SUBROUTINE fast_fftw_create_plan_c2r_2d_dft(nopenmp,nx,nz,array_in, &
     array_out,plan,plan_type, dir)
-    USE fftw3_fortran, ONLY: plans_cint, nplan
+    USE fftw3_fortran, ONLY: nplan, plans_cint
     USE iso_c_binding
     USE omp_lib
-    USE picsar_precision, ONLY: idp, num, cpx
+    USE picsar_precision, ONLY: cpx, idp, num
     INTEGER(idp), INTENT(IN) ::  nopenmp, nx,nz
     REAL(num), DIMENSION(nx,nz), INTENT(IN OUT)  :: array_out
     COMPLEX(cpx), DIMENSION(nx/2+1,nz), INTENT(IN OUT)  :: array_in
@@ -313,10 +313,10 @@ END SUBROUTINE fast_fftw_create_plan_c2r_2d_dft
 ! FFTW_EXHAUSTIVE (very high overhead, brute force optimization)
 SUBROUTINE fast_fftw_create_plan_1d_dft(nopenmp,nx,array_in,array_out, &
     plan,plan_type, dir)
-    USE fftw3_fortran, ONLY: plans_cint, nplan
+    USE fftw3_fortran, ONLY: nplan, plans_cint
     USE iso_c_binding
     USE omp_lib
-    USE picsar_precision, ONLY: idp, cpx
+    USE picsar_precision, ONLY: cpx, idp
     INTEGER(idp), INTENT(IN) ::  nopenmp, nx
     COMPLEX(cpx), DIMENSION(nx), INTENT(IN OUT)  :: array_in, array_out
     INTEGER(idp), DIMENSION(1), INTENT(IN OUT) :: plan
@@ -347,10 +347,10 @@ END SUBROUTINE fast_fftw_create_plan_1d_dft
 ! FFTW_EXHAUSTIVE (very high overhead, brute force optimization)
 SUBROUTINE fast_fftw_create_plan_r2c_1d_dft(nopenmp,nx,array_in,array_out, &
     plan,plan_type, dir)
-    USE fftw3_fortran, ONLY: plans_cint, nplan
+    USE fftw3_fortran, ONLY: nplan, plans_cint
     USE iso_c_binding
     USE omp_lib
-    USE picsar_precision, ONLY: idp, num, cpx
+    USE picsar_precision, ONLY: cpx, idp, num
     INTEGER(idp), INTENT(IN) ::  nopenmp, nx
     REAL(num), DIMENSION(nx), INTENT(IN OUT)  :: array_in
     COMPLEX(cpx), DIMENSION(nx/2+1), INTENT(IN OUT)  :: array_out
@@ -383,10 +383,10 @@ END SUBROUTINE fast_fftw_create_plan_r2c_1d_dft
 ! FFTW_EXHAUSTIVE (very high overhead, brute force optimization)
 SUBROUTINE fast_fftw_create_plan_c2r_1d_dft(nopenmp,nx,array_in,array_out, &
     plan,plan_type,dir)
-    USE fftw3_fortran, ONLY: plans_cint, nplan
+    USE fftw3_fortran, ONLY: nplan, plans_cint
     USE iso_c_binding
     USE omp_lib
-    USE picsar_precision, ONLY: idp, num, cpx
+    USE picsar_precision, ONLY: cpx, idp, num
     INTEGER(idp), INTENT(IN) ::  nopenmp, nx
     REAL(num), DIMENSION(nx), INTENT(IN OUT)  :: array_out
     COMPLEX(cpx), DIMENSION(nx/2+1), INTENT(IN OUT)  :: array_in
@@ -475,7 +475,7 @@ SUBROUTINE fast_fftw3d_with_plan(nx,ny,nz,array_in, array_out, plan)
     USE fftw3_fortran, ONLY: plans_cint
     USE iso_c_binding
     USE omp_lib
-    USE picsar_precision, ONLY: idp, cpx
+    USE picsar_precision, ONLY: cpx, idp
     INTEGER(idp), INTENT(IN) ::  nx, ny,nz
     COMPLEX(cpx), DIMENSION(nx,ny,nz), INTENT(IN OUT)  :: array_in
     COMPLEX(cpx), DIMENSION(nx,ny,nz), INTENT(IN OUT)  :: array_out
@@ -493,7 +493,7 @@ SUBROUTINE fast_fftw3d_r2c_with_plan(nx,ny,nz,array_in, array_out, plan)
     USE fftw3_fortran, ONLY: plans_cint
     USE iso_c_binding
     USE omp_lib
-    USE picsar_precision, ONLY: idp, num, cpx
+    USE picsar_precision, ONLY: cpx, idp, num
     INTEGER(idp), INTENT(IN) ::  nx, ny,nz
     REAL(num), DIMENSION(nx,ny,nz), INTENT(IN OUT)  :: array_in
     COMPLEX(cpx), DIMENSION(nx/2+1,ny,nz), INTENT(IN OUT)  :: array_out
@@ -511,7 +511,7 @@ SUBROUTINE fast_fftw3d_c2r_with_plan(nx,ny,nz,array_in, array_out, plan)
     USE fftw3_fortran, ONLY: plans_cint
     USE iso_c_binding
     USE omp_lib
-    USE picsar_precision, ONLY: idp, num, cpx
+    USE picsar_precision, ONLY: cpx, idp, num
     INTEGER(idp), INTENT(IN) ::  nx, ny,nz
     COMPLEX(cpx), DIMENSION(nx/2+1,ny,nz), INTENT(IN OUT)  :: array_in
     REAL(num), DIMENSION(nx,ny,nz), INTENT(IN OUT)  :: array_out
@@ -531,7 +531,7 @@ SUBROUTINE fast_fftw2d_with_plan(nx,nz,array_in, array_out, plan)
     USE fftw3_fortran, ONLY: plans_cint
     USE iso_c_binding
     USE omp_lib
-    USE picsar_precision, ONLY: idp, cpx
+    USE picsar_precision, ONLY: cpx, idp
     INTEGER(idp), INTENT(IN) ::  nx,nz
     COMPLEX(cpx), DIMENSION(nx,nz), INTENT(IN OUT)  :: array_in
     COMPLEX(cpx), DIMENSION(nx,nz), INTENT(IN OUT)  :: array_out
@@ -550,7 +550,7 @@ SUBROUTINE fast_fftw2d_r2c_with_plan(nx,nz,array_in, array_out, plan)
     USE fftw3_fortran, ONLY: plans_cint
     USE iso_c_binding
     USE omp_lib
-    USE picsar_precision, ONLY: idp, num, cpx
+    USE picsar_precision, ONLY: cpx, idp, num
     INTEGER(idp), INTENT(IN) ::  nx,nz
     REAL(num), DIMENSION(nx,nz), INTENT(IN)  :: array_in
     COMPLEX(cpx), DIMENSION(nx/2+1,nz), INTENT(IN OUT)  :: array_out
@@ -568,7 +568,7 @@ SUBROUTINE fast_fftw2d_c2r_with_plan(nx,nz,array_in, array_out, plan)
     USE fftw3_fortran, ONLY: plans_cint
     USE iso_c_binding
     USE omp_lib
-    USE picsar_precision, ONLY: idp, num, cpx
+    USE picsar_precision, ONLY: cpx, idp, num
     INTEGER(idp), INTENT(IN) :: nx,nz
     COMPLEX(cpx), DIMENSION(nx/2+1,nz), INTENT(IN OUT)  :: array_in
     REAL(num), DIMENSION(nx,nz), INTENT(IN OUT)  :: array_out
@@ -588,7 +588,7 @@ SUBROUTINE fast_fftw1d_with_plan(nx,array_in, array_out, plan)
     USE fftw3_fortran, ONLY: plans_cint
     USE iso_c_binding
     USE omp_lib
-    USE picsar_precision, ONLY: idp, cpx
+    USE picsar_precision, ONLY: cpx, idp
     INTEGER(idp), INTENT(IN) ::  nx
     COMPLEX(cpx), DIMENSION(nx), INTENT(IN OUT)  :: array_in
     COMPLEX(cpx), DIMENSION(nx), INTENT(IN OUT)  :: array_out
@@ -606,7 +606,7 @@ SUBROUTINE fast_fftw1d_r2c_with_plan(nx,array_in, array_out, plan)
     USE fftw3_fortran, ONLY: plans_cint
     USE iso_c_binding
     USE omp_lib
-    USE picsar_precision, ONLY: idp, num, cpx
+    USE picsar_precision, ONLY: cpx, idp, num
     INTEGER(idp), INTENT(IN) :: nx
     REAL(num), DIMENSION(nx), INTENT(IN OUT)  :: array_in
     COMPLEX(cpx), DIMENSION(nx/2+1), INTENT(IN OUT)  :: array_out
@@ -624,7 +624,7 @@ SUBROUTINE fast_fftw1d_c2r_with_plan(nx,array_in, array_out, plan)
     USE fftw3_fortran, ONLY: plans_cint
     USE iso_c_binding
     USE omp_lib
-    USE picsar_precision, ONLY: idp, num, cpx
+    USE picsar_precision, ONLY: cpx, idp, num
     INTEGER(idp), INTENT(IN) ::  nx
     COMPLEX(cpx), DIMENSION(nx/2+1), INTENT(IN OUT)  :: array_in
     REAL(num), DIMENSION(nx), INTENT(IN OUT)  :: array_out

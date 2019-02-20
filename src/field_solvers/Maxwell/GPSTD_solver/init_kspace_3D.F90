@@ -712,6 +712,53 @@ MODULE gpstd_solver
   COMPLEX(cpx), DIMENSION(:), ALLOCATABLE :: kxc, kxb, kxf, kyc, kyb, kyf, kzc, kzb,  &
   kzf
   COMPLEX(cpx), DIMENSION(:,:), ALLOCATABLE :: krc
+
+  ! Flattened array of matrix_blocks indices that are usefull for the PSATD push 
+  ! in the case of periodic boundary conditions
+  ! if is_usefull_per(i) == 1 then the cc_mat(1)%matrix_blocks(k,j) is allocated 
+  ! and corresponds to a required block for the PSATD computation
+  ! else if is_usefull_per(i) == 0 then cc_mat(1)%matrix_blocks(k,j)  is 1x1x1 null block
+  ! with i = (k-1) * 11 + (j-1) + 1
+ ! INTEGER(isp)  :: is_usefull_per(121) = &
+ !    (/1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1 ,&
+ !      0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0 ,&
+ !      1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0 ,&
+ !      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,&
+ !      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,&
+ !      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
+  INTEGER(idp) :: is_usefull_per(33) = &
+     (/ 0,  4,  5,  6,  9, 10, 12, 14, 16, 18, 20, 21, 24,               & 
+       25, 26, 30, 31, 32, 34, 35, 36, 40, 41, 44, 46, 48,               & 
+       50, 52, 55, 56, 60, 61, 62/)
+
+  ! Flattened array of matrix_blocks indices that are usefull for the PSATD push 
+  ! in the case of absorbing boundary conditions
+  ! if is_usefull_abs(i) == 1 then the cc_mat(1)%matrix_blocks(k,j) is allocated 
+  ! and corresponds to a required block for the PSATD computation
+  ! else if is_usefull_abs(i) == 0 then cc_mat(1)%matrix_blocks(k,j)  is 1x1x1 null block
+  ! with i = (k-1) * 17 + (j-1) + 1
+  !INTEGER(isp) :: is_usefull_abs(289) = &
+  !   (/1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, &
+  !      0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, &
+  !      1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, &
+  !      0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, &
+  !      0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, &
+  !      0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, &
+  !      0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, &
+  !      1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, &
+  !      0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
+  !      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
+  !      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
+  !      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
+  !      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
+  !      0, 0, 0/)
+  INTEGER(idp) :: is_usefull_abs(51) = &
+        (/0,  10,  11,  12,  15,  16,  18,  25,  26,  36,  44,            &
+        45,  47,  49,  50,  54,  57,  58,  72,  76,  77,  82,             &
+        83,  84,  90,  91,  92, 106, 107, 108, 115, 116, 121,             &
+        122, 126, 140, 141, 144, 148, 150, 153, 154, 162, 172,            &
+        173, 180, 182, 183, 187, 188, 198/)
+
   CONTAINS
 #if defined(FFTW)
   ! ______________________________________________________________________________________
@@ -739,12 +786,12 @@ MODULE gpstd_solver
   ! ______________________________________________________________________________________
   SUBROUTINE select_case_dims_local(nfftx, nffty, nfftz)
     USE fields, ONLY: nzguards, nxguards, nyguards, l_AM_rz
-    USE group_parameters, ONLY: p3d_fsize, nx_group, ny_group, nz_group
+    USE group_parameters, ONLY: nx_group, ny_group, nz_group, p3d_fsize
     USE iso_c_binding
     USE mpi_fftw3, ONLY: local_nz, local_nz_tr
     USE picsar_precision, ONLY: idp
-    USE shared_data, ONLY: nz, ny,nmodes, fftw_with_mpi, nx, nx_global, p3dfft_flag,        &
-      ny_global, c_dim, nz_global, fftw_mpi_transpose, fftw_hybrid
+    USE shared_data, ONLY: c_dim, fftw_hybrid, fftw_mpi_transpose, fftw_with_mpi,    &
+      nx, nx_global, ny, ny_global, nz, nz_global, p3dfft_flag, nmodes
     INTEGER(idp), INTENT(INOUT) :: nfftx, nffty, nfftz
 
     IF(fftw_with_mpi) THEN
@@ -839,8 +886,8 @@ MODULE gpstd_solver
     USE group_parameters, ONLY: nx_group, ny_group, nz_group
     USE iso_c_binding
     USE picsar_precision, ONLY: idp
-    USE shared_data, ONLY: nmodes,nz, ny, fftw_with_mpi, nx, p3dfft_stride, nx_global,      &
-      p3dfft_flag, ny_global, c_dim, nz_global, fftw_mpi_transpose, fftw_hybrid
+    USE shared_data, ONLY: c_dim, fftw_hybrid, fftw_mpi_transpose, fftw_with_mpi,    &
+      nx, nx_global, ny, ny_global, nz, nz_global, p3dfft_flag, p3dfft_stride, nmodes
     INTEGER(idp), INTENT(INOUT) :: nfftx, nffty, nfftz
     !> When using global or hybrid pseudo spectral solver
     IF( fftw_with_mpi) THEN
@@ -927,15 +974,17 @@ MODULE gpstd_solver
   ! ______________________________________________________________________________________
   SUBROUTINE init_kspace
     USE constants, ONLY: clight
+    USE fields, ONLY: l_staggered, norderx, nordery, norderz, nxguards, nyguards,    &
+      nzguards
     USE iso_c_binding
-    USE matrix_coefficients, ONLY: kspace, at_op
-    USE matrix_data, ONLY: ns_max, nmatrixes2
+    USE matrix_coefficients, ONLY: at_op, kspace
+    USE matrix_data, ONLY: nmatrixes2, ns_max
     USE omp_lib
     USE fields, ONLY : nxguards, nyguards, nzguards, l_staggered, l_AM_rz
     USE fields, ONLY : norderx, nordery, norderz
-    USE params, ONLY : dt
+    USE params, ONLY: dt
     USE picsar_precision, ONLY: idp, num, lp, cpx
-    USE shared_data, ONLY: p3dfft_stride, p3dfft_flag, c_dim, fftw_mpi_transpose
+    USE shared_data, ONLY: c_dim, fftw_mpi_transpose, p3dfft_flag, p3dfft_stride
 
     REAL(num), ALLOCATABLE, DIMENSION(:, :, :)    :: temp, temp2
     INTEGER(idp)                                  :: i, j, k
@@ -1216,7 +1265,7 @@ MODULE gpstd_solver
   !> Creation 2017
   ! ______________________________________________________________________________________
   SUBROUTINE delete_k_space
-    USE matrix_coefficients, ONLY: kspace, at_op
+    USE matrix_coefficients, ONLY: at_op, kspace
     USE matrix_data, ONLY: nmatrixes2
     USE picsar_precision, ONLY: idp
     INTEGER(idp)  :: i
@@ -1226,8 +1275,8 @@ MODULE gpstd_solver
     DO i=1,4
        DEALLOCATE(at_op(nmatrixes2)%block_vector(i)%block3dc)
     ENDDO
-    DEALLOCATE(kxc,kxb,kxf,kyc,kyb,kyf,kzc,kzb,kzf)
-    DEALLOCATE(krc)
+    !DEALLOCATE(kxc,kxb,kxf,kyc,kyb,kyf,kzc,kzb,kzf,krc)
+
   END SUBROUTINE delete_k_space
 
   ! ______________________________________________________________________________________
@@ -1244,12 +1293,12 @@ MODULE gpstd_solver
   ! ______________________________________________________________________________________
   SUBROUTINE compute_k_vec(l_stg)
     USE fields, ONLY: nordery, norderz, norderx, l_AM_rz
-    USE group_parameters, ONLY: p3d_fsize, p3d_fstart, p3d_fend
+    USE group_parameters, ONLY: p3d_fend, p3d_fsize, p3d_fstart
     USE iso_c_binding
-    USE mpi_fftw3, ONLY: local_z0_tr, local_z0, local_nz, local_nz_tr
+    USE mpi_fftw3, ONLY: local_nz, local_nz_tr, local_z0, local_z0_tr
     USE picsar_precision, ONLY: idp, num, lp, cpx
-    USE shared_data, ONLY: nmodes, nz, fftw_with_mpi, p3dfft_stride, p3dfft_flag, dx,        &
-      fftw_mpi_transpose, dy, dz
+    USE shared_data, ONLY: dx, dy, dz, fftw_mpi_transpose, fftw_with_mpi, nz,        &
+      p3dfft_flag, p3dfft_stride, nmodes
     IMPLICIT NONE
     LOGICAL(lp), INTENT(IN)                     :: l_stg
     COMPLEX(cpx), ALLOCATABLE, DIMENSION(:)     ::                                     &
@@ -1428,7 +1477,7 @@ MODULE gpstd_solver
   ! ______________________________________________________________________________________
   SUBROUTINE compute_k_1d(nfft,kvec,kvecf,kvecb,norder,d,l_stg)
      USE constants, ONLY: pi
-     USE picsar_precision, ONLY: idp, num, lp, cpx
+     USE picsar_precision, ONLY: cpx, idp, lp, num
      REAL(num) , INTENT(IN)  :: d
      INTEGER(idp) , INTENT(IN) :: norder,nfft
      COMPLEX(cpx) , DIMENSION(:) , ALLOCATABLE , INTENT(INOUT) :: kvec,kvecf,kvecb
@@ -1559,7 +1608,7 @@ MODULE gpstd_solver
 
   SUBROUTINE fftfreq(nxx, kxx, dxx)
     USE constants, ONLY: pi
-    USE picsar_precision, ONLY: idp, num, cpx
+    USE picsar_precision, ONLY: cpx, idp, num
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN)                    :: nxx
     REAL(num), INTENT(IN)                    :: dxx
@@ -1605,35 +1654,41 @@ MODULE gpstd_solver
   !> Creation 2017
   ! ______________________________________________________________________________________
   SUBROUTINE init_gpstd()
-    USE constants, ONLY: mu0, eps0, clight
-    USE fields, ONLY: ezf, jxf, rhooldf, rhof, bxf, g_spectral, jzf, eyf, jyf, byf,  &
-      bzf, exf, l_AM_rz
+    USE constants, ONLY: clight, eps0, mu0
+    USE fields, ONLY: bxf, byf, bzf, exf, eyf, ezf, g_spectral, jxf, jyf, jzf, rhof, &
+      rhooldf, l_AM_rz
     USE iso_c_binding
-    USE matrix_coefficients, ONLY: vnew, kspace, cc_mat, at_op, vold
+    USE matrix_coefficients, ONLY: at_op, cc_mat, kspace, vnew, vold
     USE matrix_data, ONLY: nmatrixes, nmatrixes2
-    USE mpi_fftw3, ONLY: fftw_alloc_complex, alloc_local
+    USE mpi_fftw3, ONLY: alloc_local, fftw_alloc_complex
     USE omp_lib
     USE params, ONLY: dt
     USE picsar_precision, ONLY: idp, num, lp, cpx
-    USE shared_data, ONLY: nz, ny, nx, fftw_with_mpi, nkx, nky, nkz,  p3dfft_flag,   &
-                           absorbing_bcs, nmodes
+    USE shared_data, ONLY: absorbing_bcs, c_dim, fftw_with_mpi, nkx, nky, nkz, nx,   &
+      ny, nz, p3dfft_flag, nmodes
 
-    INTEGER(idp)           :: i, j
+    INTEGER(idp)           :: i, j,incr, lin_ind
     COMPLEX(cpx)           :: ii
     INTEGER(idp)           :: nfftx, nffty, nfftz,nfftxr, nbloc_ccmat, nbloc_vnew
     LOGICAL(lp)            :: switch
     REAL(num)              :: coeff_norm
     TYPE(C_PTR)            :: cdata
+    INTEGER(idp) , ALLOCATABLE, DIMENSION(:) :: is_usefull
  
     IF(absorbing_bcs) THEN
       !> When using pmls, cc_mat is a 12x17 matrix
       nbloc_ccmat = 17_idp
       nbloc_vnew = 12_idp
+      ALLOCATE(is_usefull(51))
+      is_usefull=is_usefull_abs
     ELSE IF(.NOT. absorbing_bcs) THEN
       !> When using peridic bcs, cc_mat is a 6x11 matrix
       nbloc_ccmat = 11_idp
       nbloc_vnew = 6_idp
+      ALLOCATE(is_usefull(33))
+      is_usefull=is_usefull_per
     ENDIF
+  
     CALL select_case_dims_local(nfftx, nffty, nfftz)
     ii=DCMPLX(0.0_num, 1.0_num)
     CALL allocate_new_matrix_vector(nbloc_ccmat)
@@ -1654,14 +1709,27 @@ MODULE gpstd_solver
     END IF
     !> Allocates cc_mat  block matrix
     !> cc_mat blocks are initally as an nbloc_ccmat x nbloc_ccmat block matrix 
-    !> At the end of the routine, useless blcoks are deleted  
+    !> At the end of the routine, useless blocks are deleted  
+    incr = 1
     DO i=1_idp, nbloc_ccmat
       DO j=1_idp, nbloc_ccmat
-        ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(nkx, nky,    &
-        nkz))
-        cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = nkx
-        cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = nky
-        cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = nkz
+        lin_ind = (i-1)*nbloc_ccmat + (j-1) 
+        IF (is_usefull(incr) == lin_ind) THEN
+          ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(nfftxr, nffty,    &
+          nfftz))
+          cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = nfftxr
+          cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = nffty
+          cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = nfftz
+          IF (incr<SIZE(is_usefull)) THEN
+             incr = incr + 1
+          ENDIF
+        ELSE  
+          ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(1,1,1))
+          cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = 1_idp
+          cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = 1_idp
+          cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = 1_idp
+          
+        ENDIF
       ENDDO
     ENDDO
 
@@ -1768,25 +1836,13 @@ MODULE gpstd_solver
       ENDDO
     ENDDO
 
-    !> Delete uninitialized blocks
-    DO i=1,nbloc_ccmat
-      DO j=1,nbloc_ccmat
-        IF(sum(abs(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc))                   &
-        /size(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc)  == 0.0_num) THEN
-          DEALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc)
-          ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc(1,1,1))
-          cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc(1,1,1) = (0._num,0._num)
-          cc_mat(nmatrixes)%block_matrix2d(i,j)%nx = 1
-          cc_mat(nmatrixes)%block_matrix2d(i,j)%ny = 1
-          cc_mat(nmatrixes)%block_matrix2d(i,j)%nz = 1
-        ENDIF
-      ENDDO
-    ENDDO
+
 
     !> Delete kspace and at_op blocks
     !> Might not delete these blocks if current filtering or field correction is
     !> needed in Fourier space
-    !CALL delete_k_space
+    CALL delete_k_space
+    DEALLOCATE(is_usefull)
   END SUBROUTINE init_gpstd
 
   ! ______________________________________________________________________________________
@@ -1803,10 +1859,11 @@ MODULE gpstd_solver
 
 
   SUBROUTINE compute_cc_mat_splitted_fields()
-    USE shared_data
-    USE matrix_coefficients
-    USE constants
-    USE params, ONLY : dt
+    USE constants, ONLY: clight, eps0, mu0
+    USE matrix_coefficients, ONLY: at_op, cc_mat, kspace
+    USE matrix_data, ONLY: nmatrixes, nmatrixes2
+    USE params, ONLY: dt
+    USE picsar_precision, ONLY: cpx, idp, lp, num
     INTEGER(idp) :: i,j,k
     COMPLEX(cpx) ::  ii
     LOGICAL(lp)  :: switch
@@ -2054,10 +2111,11 @@ MODULE gpstd_solver
 
 
   SUBROUTINE compute_cc_mat_merged_fields()
-    USE shared_data
-    USE matrix_coefficients
-    USE constants
-    USE params, ONLY : dt
+    USE constants, ONLY: clight, eps0, mu0
+    USE matrix_coefficients, ONLY: at_op, cc_mat, kspace
+    USE matrix_data, ONLY: nmatrixes, nmatrixes2
+    USE params, ONLY: dt
+    USE picsar_precision, ONLY: cpx, idp, lp, num
     INTEGER(idp)  :: i,j   
     COMPLEX(cpx) ::  ii
     LOGICAL(lp)            :: switch
@@ -2505,9 +2563,9 @@ MODULE gpstd_solver
   !> Creation 2017
   ! ______________________________________________________________________________________
   SUBROUTINE FD_weights_hvincenti(p, w, is_staggered)
-    USE picsar_precision, ONLY: idp, num
+    USE picsar_precision, ONLY: idp, lp, num
     IMPLICIT NONE
-    LOGICAL(idp), INTENT(IN) :: is_staggered
+    LOGICAL(lp) , INTENT(IN) :: is_staggered
     INTEGER(idp), INTENT(IN) :: p
     REAL(num), DIMENSION(p/2), INTENT(OUT) :: w
     INTEGER(idp) :: i, l
@@ -2594,15 +2652,13 @@ MODULE gpstd_solver
   END SUBROUTINE copy_field_forward_AM_rz
 
   SUBROUTINE copy_field_forward()
-    USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
-    USE fields, ONLY : ex_r, ey_r, ez_r, bx_r, by_r, bz_r, jx_r, jy_r, jz_r, rho_r,   &
-                       rhoold_r
-    USE fields, ONLY : exy, exz, eyx,  eyz, ezx, ezy , bxy, bxz, byx, byz, bzx, bzy
-    USE fields, ONLY : exy_r, exz_r, eyx_r,  eyz_r, ezx_r, ezy_r, bxy_r, bxz_r, byx_r,&
-                       byz_r, bzx_r, bzy_r
+    USE fields, ONLY: bx, bx_r, bxy, bxy_r, bxz, bxz_r, by, by_r, byx, byx_r, byz,   &
+      byz_r, bz, bz_r, bzx, bzx_r, bzy, bzy_r, ex, ex_r, exy, exy_r, exz, exz_r, ey, &
+      ey_r, eyx, eyx_r, eyz, eyz_r, ez, ez_r, ezx, ezx_r, ezy, ezy_r, jx, jx_r, jy,  &
+      jy_r, jz, jz_r, rho_r, rhoold_r
     USE omp_lib
     USE picsar_precision, ONLY: idp
-    USE shared_data, ONLY: rho, rhoold, nz, ny, nx, absorbing_bcs
+    USE shared_data, ONLY: absorbing_bcs, nx, ny, nz, rho, rhoold
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz, ixx, iyy, izz, ixxx, iyyy, izzz
     INTEGER(idp) , dimension(3) :: lbound_r, ubound_r, lbound_p ,ubound_p,lbound_s, ubound_s
@@ -2721,14 +2777,13 @@ MODULE gpstd_solver
 
 
   SUBROUTINE copy_field_backward()
-    USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
-    USE fields, ONLY : ex_r, ey_r, ez_r, bx_r, by_r, bz_r, jx_r, jy_r, jz_r
-    USE fields, ONLY : exy, exz, eyx,  eyz, ezx, ezy , bxy, bxz, byx, byz, bzx, bzy
-    USE fields, ONLY : exy_r, exz_r, eyx_r,  eyz_r, ezx_r, ezy_r, bxy_r, bxz_r, byx_r,&
-                       byz_r, bzx_r, bzy_r
+    USE fields, ONLY: bx, bx_r, bxy, bxy_r, bxz, bxz_r, by, by_r, byx, byx_r, byz,   &
+      byz_r, bz, bz_r, bzx, bzx_r, bzy, bzy_r, ex, ex_r, exy, exy_r, exz, exz_r, ey, &
+      ey_r, eyx, eyx_r, eyz, eyz_r, ez, ez_r, ezx, ezx_r, ezy, ezy_r, jx, jx_r, jy,  &
+      jy_r, jz, jz_r
     USE omp_lib
     USE picsar_precision, ONLY: idp
-    USE shared_data, ONLY:  nz, ny, nx, absorbing_bcs
+    USE shared_data, ONLY: absorbing_bcs, nx, ny, nz
 
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz, ixx ,iyy , izz

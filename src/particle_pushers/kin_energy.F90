@@ -31,17 +31,17 @@
 !> Creation 2017
 ! ________________________________________________________________________________________
 SUBROUTINE compute_kin_energy
-  USE grid_tilemodule, ONLY: grid_tile, aofgrid_tiles
+  USE grid_tilemodule, ONLY: aofgrid_tiles, grid_tile
   USE mpi
-  USE params, ONLY: fieldgathe, nc, lvec_fieldgathe
+  USE params, ONLY: fieldgathe, lvec_fieldgathe, nc
   USE particle_properties, ONLY: nspecies
-  USE particle_speciesmodule, ONLY: particle_species, kin_energy_total,              &
-    kin_energy_mpi
+  USE particle_speciesmodule, ONLY: kin_energy_mpi, kin_energy_total,                &
+    particle_species
   USE particle_tilemodule, ONLY: particle_tile
   USE particles, ONLY: species_parray
-  USE picsar_precision, ONLY: idp, num, isp
-  USE shared_data, ONLY: errcode, dx, comm, dy, dz
-  USE tile_params, ONLY: ntilez, ntilex, ntiley
+  USE picsar_precision, ONLY: idp, isp, num
+  USE shared_data, ONLY: comm, dx, dy, dz, errcode
+  USE tile_params, ONLY: ntilex, ntiley, ntilez
   IMPLICIT NONE
   INTEGER(idp)             :: ispecies, ix, iy, iz, count
   INTEGER(idp)             :: jmin, jmax, kmin, kmax, lmin, lmax

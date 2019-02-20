@@ -92,6 +92,9 @@ SUBROUTINE pxr_boris_push_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by, bz
 #elif defined __INTEL_COMPILER
   !DIR$ SIMD
 #endif
+  
+!$acc parallel deviceptr(uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by, bz)
+!$acc loop gang vector
   DO ip=1, np
     ! Push using the electric field
     uxp(ip) = uxp(ip) + ex(ip)*const
@@ -127,6 +130,8 @@ SUBROUTINE pxr_boris_push_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by, bz
     gaminv(ip) = 1.0_num/sqrt(1.0_num + usq)
 
   ENDDO
+!$acc end loop
+!$acc end parallel
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !$OMP END SIMD
@@ -158,7 +163,7 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_boris_push_rr_S09_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by, bz, q,  &
   m, dt)
-  USE constants, ONLY: mu0, pi, clight
+  USE constants, ONLY: clight, mu0, pi
   USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   ! Input/Output parameters
@@ -331,7 +336,7 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_boris_push_rr_B08_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by, bz, q,  &
   m, dt)
-  USE constants, ONLY: eps0, pi, clight
+  USE constants, ONLY: clight, eps0, pi
   USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   ! Input/Output parameters
@@ -515,7 +520,7 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_boris_push_rr_LL_u_3d(np, uxp, uyp, uzp, gaminv, exold, eyold, ezold, & 
            bxold, byold, bzold, ex, ey, ez, bx, by, bz, q, m, dt)
-  USE constants, ONLY: eps0, pi, clight
+  USE constants, ONLY: clight, eps0, pi
   USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   ! Input/Output parameters
@@ -873,11 +878,15 @@ SUBROUTINE pxr_pushxyz(np, xp, yp, zp, uxp, uyp, uzp, gaminv, dt)
 #elif defined __INTEL_COMPILER
   !DIR$ SIMD
 #endif
+!$acc parallel deviceptr(xp, yp, zp, uxp, uyp, uzp, gaminv)
+!$acc loop gang vector
   DO ip=1, np
     xp(ip) = xp(ip) + uxp(ip)*gaminv(ip)*dt
     yp(ip) = yp(ip) + uyp(ip)*gaminv(ip)*dt
     zp(ip) = zp(ip) + uzp(ip)*gaminv(ip)*dt
   ENDDO
+!$acc end loop
+!$acc end parallel
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
   !$OMP END SIMD

@@ -48,7 +48,7 @@ FC=mpif90
 # C compiler
 CC=mpicc
 # Fortran compiler arguments
-FARGS= -g -fbounds-check -O3 -fopenmp -JModules 
+FARGS= -g -fbounds-check -O3 -fopenmp -JModules
 
 # External libs 
 FFTW3_LIB=/Users/imen/PICSAR_SOFTWARE_AND_DEPENDENCIES/FFTW_INSTALL_DIR/lib     #/home/llr/galop/izemzemi/soft/picsar_and_dep/FFTW_INSTALL_DIR/lib
@@ -259,10 +259,10 @@ ifeq ($(COMP),gnu)
 	else ifeq ($(MODE),debug)
 	  FC=mpif90
 	  FARGS= -O3 -fopenmp -g -JModules -Wunused-variable -fcheck=bound -ftree-vectorize
-	else ifeq($(MODE),prod_spectral)
+	else ifeq ($(MODE),prod_spectral)
 	  FC=mpif90
 	  FARGS= -O3 -fopenmp -JModules -ftree-vectorize
-	else ifeq($(MODE),debug_spectral)
+	else ifeq ($(MODE),debug_spectral)
 	  FC=mpif90
 	  FARGS= -g -fopenmp -JModules -Wunused-variable -fcheck=bound -ftree-vectorize
 	else ifeq ($(MODE),dev)
@@ -321,7 +321,7 @@ else ifeq ($(COMP),intel)
   endif
 
 endif
-FARGS= -g  -fopenmp -JModules -Wunused-variable -fcheck=bound -ftree-vectorize
+FARGS= -g -fbounds-check -fopenmp -JModules -Wunused-variable -ftree-vectorize
 FARGS+= $(LARCH)
 
 # ________________________________________________________
@@ -333,8 +333,8 @@ FARGS+= $(LARCH)
 # ________________________________________________________
 
 ifeq ($(MODE),$(filter $(MODE),prod_spectral debug_spectral))
-	FARGS +=   -I$(FFTW3_INCLUDE) -D FFTW=1 
-	LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_threads
+	FARGS += -I$(FFTW3_INCLUDE) -D FFTW=1
+	LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_omp
 endif
 ifeq ($(IS_P3DFFT),true)
         FARGS += -I$(P3DFFT_INCLUDE)  -D P3DFFT
@@ -342,8 +342,8 @@ ifeq ($(IS_P3DFFT),true)
 endif
 
 ifeq ($(MODE),library)
-        FARGS += -fPIC -I$(FFTW3_INCLUDE) -D LIBRARY=1  -D  FFTW=1  
-        LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_threads
+        FARGS += -fPIC -I$(FFTW3_INCLUDE) -D LIBRARY=1  -D  FFTW=1
+        LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_omp
 endif
 
 ifeq ($(IS_HANKEL),true)
@@ -370,9 +370,9 @@ build_lib:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/housekeeping/load_balancing.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fourier_psaotd.o \
-	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
-	$(SRCDIR)/init_external.o 
+	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
+	$(SRCDIR)/init_external.o
 	ar rcs libpxr.a $(SRCDIR)/*.o $(SRCDIR)/*/*.o  $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o
 	$(FC) $(FARGS) -shared -o libpxr.so $(SRCDIR)/*.o  $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o  $(SRCDIR)/*/*/*/*.o
 	mv libpxr.a $(LIBDIR)
@@ -397,6 +397,8 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_circ.o \
+
+$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_circ.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
@@ -411,6 +413,8 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_circ.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_circ.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
@@ -444,6 +448,8 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_circ.o \
+
+$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_circ.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
@@ -458,6 +464,8 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_circ.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_circ.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
@@ -491,6 +499,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_circ.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_circ.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
@@ -505,6 +514,8 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_circ.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_circ.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
         $(SRCDIR)/housekeeping/load_balancing.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
@@ -542,6 +553,8 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_circ.o \
+	
+$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_circ.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
@@ -556,6 +569,8 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o1_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
+	$(SRCDIR)/field_gathering/field_gathering_manager_circ.o \
+	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_on_circ.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
@@ -744,6 +759,7 @@ build_current_deposition_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
@@ -753,6 +769,7 @@ build_current_deposition_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
@@ -819,6 +836,8 @@ build_tile_mpi_part_com_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o2_3d.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
@@ -826,6 +845,8 @@ build_tile_mpi_part_com_test: $(SRCDIR)/modules/modules.o \
 	Acceptance_testing/Gcov_tests/tile_mpi_part_com_test.o
 	$(FC) $(FARGS) -o Acceptance_testing/Gcov_tests/tile_mpi_part_com_test \
 	$(SRCDIR)/modules/modules.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_pushers/vay_pusher/vay_3d.o \
 	$(SRCDIR)/particle_pushers/boris_pusher/boris_3d.o \
@@ -851,6 +872,7 @@ build_tile_mpi_part_com_test: $(SRCDIR)/modules/modules.o \
 
 build_rho_deposition_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
@@ -865,6 +887,8 @@ build_rho_deposition_3d_test: $(SRCDIR)/modules/modules.o \
 
 build_tile_rho_depo_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
@@ -878,6 +902,8 @@ build_tile_rho_depo_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
@@ -891,10 +917,13 @@ build_tile_curr_depo_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
@@ -905,10 +934,13 @@ build_tile_curr_depo_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
+	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
@@ -919,6 +951,7 @@ build_esirkepov_3d_test:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
@@ -928,6 +961,7 @@ build_esirkepov_3d_test:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
@@ -937,6 +971,7 @@ build_esirkepov_2d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
@@ -946,6 +981,7 @@ build_esirkepov_2d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
@@ -968,6 +1004,7 @@ build_maxwell_2d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
@@ -1014,6 +1051,7 @@ build_maxwell_2d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
@@ -1029,11 +1067,11 @@ build_maxwell_2d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/housekeeping/load_balancing.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/init_kspace_3D.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fourier_psaotd.o \
-	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
@@ -1060,6 +1098,7 @@ build_maxwell_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
@@ -1106,6 +1145,7 @@ build_maxwell_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_pushers/particle_pusher_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_3d.o \
@@ -1121,11 +1161,11 @@ build_maxwell_3d_test: $(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_gathering/energy_conserving/field_gathering_o3_3d.o \
 	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/housekeeping/load_balancing.o \
+	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
 	$(SRCDIR)/boundary_conditions/particle_boundaries.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/init_kspace_3D.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fourier_psaotd.o \
-	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_manager.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/charge_deposition/charge_deposition_3d.o \
@@ -1248,8 +1288,8 @@ test_plane_wave_fdtd_2d:
 	cd Acceptance_testing/Gcov_tests && \
 	mpirun -np 1 ./maxwell_2d_test --nsteps 161 --l_spectral .FALSE. &&\
 	mpirun -np 2 ./maxwell_2d_test --nsteps 161 --l_spectral .FALSE. --nprocz 2 &&\
-	mpirun -np 4 ./maxwell_2d_test --nsteps 161 --l_spectral .FALSE. --nprocz 2 --nprocx 2 
-test_plane_wave_psatd_2d: 
+	mpirun -np 4 ./maxwell_2d_test --nsteps 161 --l_spectral .FALSE. --nprocz 2 --nprocx 2
+test_plane_wave_psatd_2d:
 	cp examples/example_decks_fortran/plane_wave_test_2d.pixr \
 	Acceptance_testing/Gcov_tests/input_file.pixr
 	# 1 OpenMP vary number of MPIs
@@ -1268,7 +1308,7 @@ test_plane_wave_fdtd_3d:
 	mpirun -np 2 ./maxwell_3d_test --l_spectral .FALSE. --nsteps 106 && \
 	mpirun -np 4 ./maxwell_3d_test --l_spectral .FALSE. --nsteps 106 && \
 	mpirun -np 8 ./maxwell_3d_test --l_spectral .FALSE. --nsteps 106
-	# 4 OpenMP vary number of MPIs 
+	# 4 OpenMP vary number of MPIs
 	cd Acceptance_testing/Gcov_tests && \
 	export OMP_NUM_THREADS=4 && \
 	mpirun -np 1 ./maxwell_3d_test --l_spectral .FALSE. --nsteps 106 && \
@@ -1290,10 +1330,10 @@ test_plane_wave_psatd_global_3d:
 	mpirun -np 2 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 --fftw_with_mpi .TRUE. && \
 	mpirun -np 2 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 --fftw_with_mpi .TRUE. --fftw_hybrid .TRUE. --nb_group 1 \
 	mpirun -np 2 ./maxwell_3d_test --l_spectral .TRUE. --nsteps 61 --fftw_with_mpi .TRUE. --fftw_hybrid .TRUE. --nb_group 1 \
-	--fftw_mpi_tr .TRUE. 
+	--fftw_mpi_tr .TRUE.
 
 test_lb:
 	cd Acceptance_testing/Gcov_tests && \
 	export OMP_NUM_THREADS=1 &&\
 	mpirun -np 8 ./maxwell_2d_test --l_spectral .TRUE. --nsteps 81 --nprocz 8 --fftw_with_mpi .TRUE. --fftw_hybrid .TRUE. --nb_group 1 \
-	is_lb_grp .TRUE.	
+	is_lb_grp .TRUE.

@@ -66,15 +66,16 @@
 ! ________________________________________________________________________________________
 subroutine pxr_gete2dxz_n_energy_conserving( np, xp, yp, zp, ex, ey, ez, xmin, zmin,  &
   dx, dz, nox, noz, exg, exg_nguard, exg_nvalid, eyg, eyg_nguard, eyg_nvalid, ezg,      &
-  ezg_nguard, ezg_nvalid, l4symtry, l_2drz, l_lower_order_in_v)     !#do not wrap
-  USE picsar_precision, ONLY: idp, num
+  ezg_nguard, ezg_nvalid, l4symtry, l_2drz, l_lower_order_in_v, l_nodal)     !#do not wrap
+  USE picsar_precision, ONLY: idp, lp, num
   implicit none
 
   integer(idp)             :: np, nox, noz
   integer(idp), intent(IN) :: exg_nguard(2), exg_nvalid(2), eyg_nguard(2),            &
   eyg_nvalid(2), ezg_nguard(2), ezg_nvalid(2)
   real(num), dimension(np) :: xp, yp, zp, ex, ey, ez
-  logical(idp)             :: l4symtry, l_2drz, l_lower_order_in_v
+  logical(lp)              :: l4symtry, l_2drz, l_lower_order_in_v, l_nodal
+  real(num)                :: stagger_shift
   REAL(num), intent(IN):: exg(-exg_nguard(1):exg_nvalid(1)+exg_nguard(1)-1, 1,        &
   -exg_nguard(2):exg_nvalid(2)+exg_nguard(2)-1)
   REAL(num), intent(IN):: eyg(-eyg_nguard(1):eyg_nvalid(1)+eyg_nguard(1)-1, 1,        &
@@ -90,6 +91,12 @@ subroutine pxr_gete2dxz_n_energy_conserving( np, xp, yp, zp, ex, ey, ez, xmin, z
   real(num), DIMENSION(-int(noz/2):int((noz+1)/2)) :: sz
   real(num), dimension(:), allocatable :: sx0, sz0
   real(num), parameter :: onesixth=1./6., twothird=2./3.
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1./dx
   dzi = 1./dz
@@ -146,32 +153,32 @@ subroutine pxr_gete2dxz_n_energy_conserving( np, xp, yp, zp, ex, ey, ez, xmin, z
     if (l_lower_order_in_v) then
       if (nox==2*(nox/2)) then
         j=nint(x)
-        j0=floor(x-0.5)
+        j0=floor(x-stagger_shift)
       else
         j=floor(x)
-        j0=floor(x)
+        j0=floor(x+0.5_num-stagger_shift)
       end if
       if (noz==2*(noz/2)) then
         l=nint(z)
-        l0=floor(z-0.5)
+        l0=floor(z-stagger_shift)
       else
         l=floor(z)
-        l0=floor(z)
+        l0=floor(z+0.5_num-stagger_shift)
       end if
     else
       if (nox==2*(nox/2)) then
         j=nint(x)
-        j0=floor(x)
+        j0=floor(x+0.5_num-stagger_shift)
       else
         j=floor(x)
-        j0=floor(x-0.5)
+        j0=floor(x-stagger_shift)
       end if
       if (noz==2*(noz/2)) then
         l=nint(z)
-        l0=floor(z)
+        l0=floor(z+0.5_num-stagger_shift)
       else
         l=floor(z)
-        l0=floor(z-0.5)
+        l0=floor(z-stagger_shift)
       end if
     end if
 
@@ -214,8 +221,8 @@ subroutine pxr_gete2dxz_n_energy_conserving( np, xp, yp, zp, ex, ey, ez, xmin, z
       sz( 2) = onesixth*zintsq*zint
     end if
 
-    xint=x-0.5-j0
-    zint=z-0.5-l0
+    xint=x-stagger_shift-j0
+    zint=z-stagger_shift-l0
 
     if (l_lower_order_in_v) then
 
@@ -353,14 +360,15 @@ end subroutine pxr_gete2dxz_n_energy_conserving
 ! ________________________________________________________________________________________
 subroutine pxr_getb2dxz_n_energy_conserving( np, xp, yp, zp, bx, by, bz, xmin, zmin,  &
   dx, dz, nox, noz, bxg, bxg_nguard, bxg_nvalid, byg, byg_nguard, byg_nvalid, bzg,      &
-  bzg_nguard, bzg_nvalid, l4symtry, l_2drz, l_lower_order_in_v)     !#do not wrap
-  USE picsar_precision, ONLY: idp, num
+  bzg_nguard, bzg_nvalid, l4symtry, l_2drz, l_lower_order_in_v, l_nodal)     !#do not wrap
+  USE picsar_precision, ONLY: idp, lp, num
   implicit none
   integer(idp) :: np, nox, noz
   integer(idp), intent(IN)                :: bxg_nguard(2), bxg_nvalid(2),            &
   byg_nguard(2), byg_nvalid(2), bzg_nguard(2), bzg_nvalid(2)
   real(num), dimension(np) :: xp, yp, zp, bx, by, bz
-  logical(idp) :: l4symtry, l_2drz, l_lower_order_in_v
+  logical(lp)  :: l4symtry, l_2drz, l_lower_order_in_v, l_nodal
+  real(num)    :: stagger_shift
   REAL(num), intent(IN):: bxg(-bxg_nguard(1):bxg_nvalid(1)+bxg_nguard(1)-1, 1,        &
   -bxg_nguard(2):bxg_nvalid(2)+bxg_nguard(2)-1)
   REAL(num), intent(IN):: byg(-byg_nguard(1):byg_nvalid(1)+byg_nguard(1)-1, 1,        &
@@ -376,6 +384,12 @@ subroutine pxr_getb2dxz_n_energy_conserving( np, xp, yp, zp, bx, by, bz, xmin, z
   real(num), DIMENSION(-int(noz/2):int((noz+1)/2)) :: sz
   real(num), dimension(:), allocatable :: sx0, sz0
   real(num), parameter :: onesixth=1./6., twothird=2./3.
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1./dx
   dzi = 1./dz
@@ -437,32 +451,32 @@ subroutine pxr_getb2dxz_n_energy_conserving( np, xp, yp, zp, bx, by, bz, xmin, z
     if (l_lower_order_in_v) then
       if (nox==2*(nox/2)) then
         j=nint(x)
-        j0=floor(x-0.5)
+        j0=floor(x-stagger_shift)
       else
         j=floor(x)
-        j0=floor(x)
+        j0=floor(x+0.5_num-stagger_shift)
       end if
       if (noz==2*(noz/2)) then
         l=nint(z)
-        l0=floor(z-0.5)
+        l0=floor(z-stagger_shift)
       else
         l=floor(z)
-        l0=floor(z)
+        l0=floor(z+0.5_num-stagger_shift)
       end if
     else
       if (nox==2*(nox/2)) then
         j=nint(x)
-        j0=floor(x)
+        j0=floor(x+0.5_num-stagger_shift)
       else
         j=floor(x)
-        j0=floor(x-0.5)
+        j0=floor(x-stagger_shift)
       end if
       if (noz==2*(noz/2)) then
         l=nint(z)
-        l0=floor(z)
+        l0=floor(z+0.5_num-stagger_shift)
       else
         l=floor(z)
-        l0=floor(z-0.5)
+        l0=floor(z-stagger_shift)
       end if
     end if
 
@@ -505,8 +519,8 @@ subroutine pxr_getb2dxz_n_energy_conserving( np, xp, yp, zp, bx, by, bz, xmin, z
       sz( 2) = onesixth*zintsq*zint
     end if
 
-    xint=x-0.5-j0
-    zint=z-0.5-l0
+    xint=x-stagger_shift-j0
+    zint=z-stagger_shift-l0
 
     if (l_lower_order_in_v) then
 

@@ -5,6 +5,7 @@ you will need to install FFTW_MPI and P3DFFT library.
 
 
 I-Install FFTW_MPI Library:
+
 To install FFTW_MPI you can follow the instructions here :
 http://www.fftw.org/fftw2_doc/fftw_6.html
 Use this configuration (for gnu compilation):
@@ -15,10 +16,14 @@ Then
 -make install
 and
 -export LD_LIBRARY_FILE=LD_LIBRARY_FILE:install_dir_fftw/lib
-II-P3DFFT library can be downloaded here:
+
+II- Install P3DFFT library:
 
 
+This step is optional.
+But it is highly recommanded to use p3dfft to perform distributed FFTs as it gives better performances than FFTW_MPI
 
+P3DFFT library can be downloaded here:
 "https://www.p3dfft.net/"
 
 
@@ -66,16 +71,24 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:path_to_install_directory/lib (you may w
 
 
 
-## Editing configure file:
+III- Generating Makefile_Forthon
 
-In configure file line 36: 
-Set 
--fftw_lib="/path_to_fftw_directory/lib"
--p3dfft_lib="/path_to_p3dfft_directory/lib"
--fftw_link ="-I /path_to_fftw_directory/include"
--p3dfft_link = "-I path_to_p3dfft_directory/include" 
-Finally type:
+To generate the Makefile_Forthon that builds the picsar python module with FFTW only use: 
+python configure --pxr_spectral_hybrid True --fftw_dir /path/to/fftw_directory # --other_flags(see doc)
+where fftw_directory is the install directory of fftw. 
+To include the additional support of p3dfft use this command line indstead:
+python configure --pxr_spectral_hybrid True --fftw_dir /path/to/fftw_directory --p3dfft_dir /path/to/p3dfft_directory # --other_flags(see doc)
 
-python configure --pxr_spectral_hybrid True --other_flags(compiler - architecture) ...
+Once you get this message :
+''' Configure succeeded.
+To compile PICSAR in Python mode, type `make -f Makefile_Forthon`'''
+then run : 
+make -f Makefile_Forthon
+cd  python_module
+python setup.py install
+
+
+
+
 
 

@@ -237,7 +237,7 @@ def rewrite_subroutines( lines, dict_subs_modules, dict_ifdef_modules ):
                 else:
                     variable_list = dict_subs_modules[ current_subroutine ][module]
                     if variable_list != []:
-                        variables = ', '.join(variable_list)
+                        variables = ', '.join(sorted(variable_list))
                         new_line = 'USE %s, ONLY: %s\n' %(module, variables)
                         final_line = format_less_than_85_characters( new_line, indent )
                         lines[i] += final_line

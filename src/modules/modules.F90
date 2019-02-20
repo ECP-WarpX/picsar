@@ -160,6 +160,11 @@ MODULE fields
   INTEGER(idp):: ny_pml
   !> n_pml in z direction 
   INTEGER(idp):: nz_pml
+  !> shift_pml :: number of guardcells forced to 0 when using PMLS.
+  !> Available option only for local solver.
+  !> When using hybrid solver all guardcells are forced to 0 because the  guardcells 
+  !> of the local fields (ex, ey ....) are not filled from the FFT-grid fields (ex_r,ey_r ...)
+  INTEGER(idp) :: shift_x_pml ,shift_y_pml, shift_z_pml
   !> Number of guard cells in x
   INTEGER(idp):: nxguards
   !> Number of guard cells in y
@@ -525,9 +530,9 @@ MODULE particle_tilemodule!#do not parse
     !> Flag: tile arrays are allocated
     LOGICAL(lp) :: l_arrays_allocated= .FALSE.
     !> Current number of particles in tile
-    INTEGER(idp), DIMENSION(1) :: np_tile
+    INTEGER(idp), DIMENSION(1) :: np_tile= (/0_idp/)
     !> Max number of particles per tile: size of the arrays
-    INTEGER(idp) :: npmax_tile
+    INTEGER(idp) :: npmax_tile = 0_idp
     !> Number of guard cells in x
     INTEGER(idp) :: nxg_tile
     !> Number of guard cells in y
@@ -655,16 +660,10 @@ MODULE antenna!#do not parse
   USE PICSAR_precision
   USE constants
   TYPE particle_antenna
-    REAL(num)         ::  vector_x
-    REAL(num)         ::  vector_y
-    REAL(num)         ::  vector_z
     REAL(num)         ::  spot_x
     REAL(num)         ::  spot_y
     REAL(num)         ::  spot_z
-    REAL(num)         ::  pvec_x
-    REAL(num)         ::  pvec_y
-    REAL(num)         ::  pvec_z
-    REAL(num), DIMENSION(3) ::  polvector1, polvector2, vector!source_v
+    REAL(num), DIMENSION(3) ::  polvector1, polvector2, vector
     REAL(num)         :: laser_a_1!laser particle max_v_1 at focus (in clight unit)
     REAL(num)         :: laser_a_2!laser particle max_v_2 at focus (in clight unit)
     REAL(num)         :: Emax_laser_1
@@ -673,23 +672,16 @@ MODULE antenna!#do not parse
     REAL(num)         :: laser_w0!laser waist at focus
     REAL(num)         :: inv_w02! 1./w0**2
     COMPLEX(cpx)      :: q_z! complex curv on the plan
-    COMPLEX(cpx)      :: q_0! complex_curv at focus
     REAL(num)         :: laser_ctau! length of the pulse --->
     ! ---> (length from the peak to 1/e*pick= c*time_duration_of_the_pulse)
     REAL(num)         :: laser_tau! time duration of the pulse
     REAL(num)         :: t_peak
-    REAL(num)         :: laser_z0! initial position with respect to (spot, vector)
-    LOGICAL(lp)       :: is_lens! if .TRUE. the is a this lens beteen plan and source
-    REAL(num)         :: laser_zf! distance between lens and plan
-    REAL(num)         :: laser_z! distance between focus and lens
-    REAL(num)         :: focal_length! focal length of the lens
     REAL(num)         :: zr! rayleigh length of the laser
     REAL(num)         :: inv_zr!1/zr
     REAL(num)         :: polangle! phase shift between laser along povector2 -->
     ! --> and polvector1
     REAL(num)         :: lambda_laser
     REAL(num)         :: k0_laser
-    COMPLEX(cpx)      :: diffract_factor
     INTEGER(idp)      :: temporal_order
     INTEGER(idp)      :: time_window! 0 for Gaussian 1 Hanning Window
   END TYPE particle_antenna
@@ -761,6 +753,9 @@ MODULE particle_speciesmodule!#do not parse
     !> Flag indicating if this particle species deposit current/charge on
     !> the grid (useful for test particles). Default is TRUE
     LOGICAL(lp)   :: ldodepos =.TRUE.
+    !> Flag indicating if current particle species is freezed (no push, no field gathering)
+    !> To completely stop particle routines set ldodepos to False and lfreeze to True  
+    LOGICAL(lp)   :: lfreeze  =.FALSE.
     ! For some stupid reason, cannot use ALLOCATABLE in derived types
     ! in Fortran 90 - Need to use POINTER instead
     !> List of tiles (of objects particle_tile) in the MPI domain for the
@@ -837,11 +832,11 @@ MODULE particle_properties
   !> Particle initial distribution
   INTEGER(idp) :: pdistr
   !> Number of species
-  INTEGER(idp) :: nspecies
+  INTEGER(idp) :: nspecies = 0 
   !> total number of particles (all species, all subdomains -> useful for stat)
   INTEGER(idp) :: ntot
   !> Max number of particle species
-  INTEGER(idp) :: nspecies_max=6
+  INTEGER(idp) :: nspecies_max = 40_idp
   !> this parameter it not used
   REAL(num) :: fdxrand=0.0_num
   !> this parameter it not used
@@ -853,6 +848,9 @@ MODULE particle_properties
   LOGICAL(lp) :: l_species_allocated=.FALSE.
   !> Flag for the allocation of the particle dump array
   LOGICAL(lp) :: l_pdumps_allocated=.FALSE.
+  !> Flag for the allocation of the grid tile arrays
+  LOGICAL(lp) :: l_aofgrid_tiles_allocated=.FALSE.
+  LOGICAL(lp) :: l_aofgrid_tiles_array_allocated=.FALSE.
   !> Flag for plasma init/push
   LOGICAL(lp) :: l_plasma = .TRUE.
 END MODULE particle_properties
@@ -1433,7 +1431,7 @@ MODULE shared_data
   ! MPI subdomain data
   !----------------------------------------------------------------------------
   !> FFTW distributed
-  LOGICAL(idp) :: fftw_with_mpi, fftw_mpi_transpose, fftw_threads_ok, fftw_hybrid
+  LOGICAL(lp)  :: fftw_with_mpi, fftw_mpi_transpose, fftw_threads_ok, fftw_hybrid
   !> Number of groups (this is a parameter in the input file)
   INTEGER(idp)    ::  nb_group
   !> Number of groups in each direction
@@ -1446,7 +1444,7 @@ MODULE shared_data
   LOGICAL(lp)   :: absorbing_bcs_x = .FALSE.
   LOGICAL(lp)   :: absorbing_bcs_y = .FALSE.
   LOGICAL(lp)   :: absorbing_bcs_z = .FALSE.
-  LOGICAL(idp) :: fftw_plan_measure=.TRUE.
+  LOGICAL(lp)  :: fftw_plan_measure=.TRUE.
   !> First and last indexes of real data in group (only z is relevant for now)
   INTEGER(idp)  ::   iz_min_r, iz_max_r, iy_min_r, iy_max_r, ix_min_r, ix_max_r
 

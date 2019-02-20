@@ -70,7 +70,7 @@ MODULE sorting
     USE picsar_precision, ONLY: num
     USE shared_data, ONLY: sorting_activated
     USE tiling
-    USE time_stat, ONLY: timestat_itstart, localtimes
+    USE time_stat, ONLY: localtimes, timestat_itstart
     IMPLICIT NONE
 
     !LOGICAL(lp)  :: verbose=.TRUE.
@@ -104,17 +104,18 @@ MODULE sorting
   !> @date 2016
   ! ______________________________________________________________________________________
   SUBROUTINE particle_sorting_sub
-    USE grid_tilemodule, ONLY: grid_tile, aofgrid_tiles
+    USE grid_tilemodule, ONLY: aofgrid_tiles, grid_tile
     USE mpi
     USE params, ONLY: it
     USE particle_properties, ONLY: nspecies, wpid
     USE particle_speciesmodule, ONLY: particle_species
     USE particle_tilemodule, ONLY: particle_tile
     USE particles, ONLY: species_parray
-    USE picsar_precision, ONLY: idp, num, lp
-    USE shared_data, ONLY: sorting_dx, sorting_shiftx, sorting_dy, y, z, dx, c_dim,  &
-      sorting_verbose, sorting_shiftz, x, dy, rank, sorting_shifty, sorting_dz, dz
-    USE tile_params, ONLY: ntilez, ntilex, ntiley
+    USE picsar_precision, ONLY: idp, lp, num
+    USE shared_data, ONLY: c_dim, dx, dy, dz, rank, sorting_dx, sorting_dy,          &
+      sorting_dz, sorting_shiftx, sorting_shifty, sorting_shiftz, sorting_verbose,   &
+      x, y, z
+    USE tile_params, ONLY: ntilex, ntiley, ntilez
     USE tiling
     IMPLICIT NONE
 
