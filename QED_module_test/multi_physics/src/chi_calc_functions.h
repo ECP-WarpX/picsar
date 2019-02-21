@@ -68,9 +68,9 @@ namespace picsar{
             double cz = mom[2]*inv_p;
 
             double cdote = cx*emfl[0] + cy*emfl[1] + cz*emfl[2];
-            double eperx = cdote*cx;
-            double epery = cdote*cy;
-            double eperz = cdote*cz;
+            double eperx = emfl[0] - cdote*cx;
+            double epery = emfl[1] - cdote*cy;
+            double eperz = emfl[2] - cdote*cz;
 
             double ccrossbx = cy * emfl[5] - cz*emfl[4];
             double ccrossby = cz * emfl[3] - cx*emfl[5];

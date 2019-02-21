@@ -83,7 +83,7 @@ int main(int argc, char** argv){
     cout << endl;
 
     cout << "********************Test ChiPhot Functions***************************" << endl;
-    cout << "calc Chi for photons (mom=[195.417, 128.709, -43.351], EB=[-154.214, 199.139, 197.890, 40.676, 12.243, 42.457], l = 800 nm, exp. 0.0539495) :" << endl;
+    cout << "calc Chi for photons (mom=[195.417, 128.709, -43.351], EB=[-154.214, 199.139, 197.890, 40.676, 12.243, 42.457], l = 800 nm, exp. 0.19474847) :" << endl;
     cout << picsar::multi_physics::chi_photon_lambda({195.417, 128.709, -43.351},{-154.214, 199.139, 197.890, 40.676, 12.243, 42.457}, 0.8 * picsar::multi_physics::_um) << endl;
     cout << "*********************************************************************" << endl;
     cout << endl;
