@@ -88,9 +88,20 @@ int main(int argc, char** argv){
     cout << "calc Chi for photons (mom=[-2314.45, -2356.30, 546.28], EB=[1230.11, 1638.02, -2911.04, -2203.66, 1243.79, -2830.99], l = 800 nm, exp. 57.2204397969) :" << endl;
     cout << picsar::multi_physics::chi_photon_lambda({-2314.45, -2356.30, 546.2},{1230.11, 1638.02, -2911.04, -2203.66, 1243.79, -2830.99}, 0.8 * picsar::multi_physics::_um) << endl;
     cout << "calc Chi for photons (mom=[9.2627, -25.4575, -10.2246], EB=[2.9271, 10.4293, 3.6103, 1.7439, 1.9778, 17.8799], l = 800 nm, exp. 0.000904147405336) :" << endl;
-    cout << picsar::multi_physics::chi_photon_lambda({9.2627, -25.4575, -10.2246},{2.9271, 10.4293, 3.6103, 1.7439, 1.9778, 17.8799}, 0.8 * picsar::multi_physics::_um) << endl;    
+    cout << picsar::multi_physics::chi_photon_lambda({9.2627, -25.4575, -10.2246},{2.9271, 10.4293, 3.6103, 1.7439, 1.9778, 17.8799}, 0.8 * picsar::multi_physics::_um) << endl;
     cout << "*********************************************************************" << endl;
     cout << endl;
+
+    cout << "********************Test ChiLept Functions***************************" << endl;
+    cout << "calc Chi for leptons (mom=[24.3752, -11.5710, -10.0841], EB=[57.185, -16.6555, 22.4340,6.6911, -23.8724, 13.9934], l = 800 nm, exp. 0.00216716627219670) :" << endl;
+    cout << picsar::multi_physics::chi_photon_lambda({24.3752, -11.5710, -10.0841},{57.185, -16.6555, 22.4340,6.6911, -23.8724, 13.9934}, 0.8 * picsar::multi_physics::_um) << endl;
+    cout << "calc Chi for leptons (mom=[4.015, 197.287, 141.705], EB=[30.287, 115.740, 120.891, -190.161, -129.115, -57.002], l = 800 nm, exp. 0.166318112874468) :" << endl;
+    cout << picsar::multi_physics::chi_photon_lambda({4.015, 197.287, 141.705},{30.287, 115.740, 120.891, -190.161, -129.115, -57.002}, 0.8 * picsar::multi_physics::_um) << endl;
+    cout << "calc Chi for leptons (mom=[9.2627, -25.4575, -10.2246], EB=[741.67, -2359.97, 1463.50, 1477.19, -1448.33, 1953.68], l = 800 nm, exp. 16.0114572646993) :" << endl;
+    cout << picsar::multi_physics::chi_photon_lambda({-2534.83, 1011.54, -793.04},{741.67, -2359.97, 1463.50, 1477.19, -1448.33, 1953.68}, 0.8 * picsar::multi_physics::_um) << endl;
+    cout << "*********************************************************************" << endl;
+    cout << endl;
+
 
     cout << "********************Test BWFunctions *********************************" << endl;
     cout << "calc BW d2N/dchi_ele/dt (code units) for gamma_phot=3, chi_phot=2, chi_ele=1 :" << endl;
