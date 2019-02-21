@@ -83,8 +83,12 @@ int main(int argc, char** argv){
     cout << endl;
 
     cout << "********************Test ChiPhot Functions***************************" << endl;
-    cout << "calc Chi for photons (mom=[195.417, 128.709, -43.351], EB=[-154.214, 199.139, 197.890, 40.676, 12.243, 42.457], l = 800 nm, exp. 0.19474847) :" << endl;
-    cout << picsar::multi_physics::chi_photon_lambda({195.417, 128.709, -43.351},{-154.214, 199.139, 197.890, 40.676, 12.243, 42.457}, 0.8 * picsar::multi_physics::_um) << endl;
+    cout << "calc Chi for photons (mom=[83.759, 139.311, -230.553], EB=[-166.145, -78.231, -278.856, -279.174, -158.849, -93.826], l = 800 nm, exp. 0.347111844317) :" << endl;
+    cout << picsar::multi_physics::chi_photon_lambda({83.759, 139.311, -230.553},{-166.145, -78.231, -278.856, -279.174, -158.849, -93.826}, 0.8 * picsar::multi_physics::_um) << endl;
+    cout << "calc Chi for photons (mom=[-2314.45, -2356.30, 546.28], EB=[1230.11, 1638.02, -2911.04, -2203.66, 1243.79, -2830.99], l = 800 nm, exp. 57.2204397969) :" << endl;
+    cout << picsar::multi_physics::chi_photon_lambda({-2314.45, -2356.30, 546.2},{1230.11, 1638.02, -2911.04, -2203.66, 1243.79, -2830.99}, 0.8 * picsar::multi_physics::_um) << endl;
+    cout << "calc Chi for photons (mom=[9.2627, -25.4575, -10.2246], EB=[2.9271, 10.4293, 3.6103, 1.7439, 1.9778, 17.8799], l = 800 nm, exp. 0.000904147405336) :" << endl;
+    cout << picsar::multi_physics::chi_photon_lambda({9.2627, -25.4575, -10.2246},{2.9271, 10.4293, 3.6103, 1.7439, 1.9778, 17.8799}, 0.8 * picsar::multi_physics::_um) << endl;    
     cout << "*********************************************************************" << endl;
     cout << endl;
 
