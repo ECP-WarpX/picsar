@@ -1,3 +1,4 @@
+//STL
 #include <iostream>
 #include <vector>
 #include <memory>
@@ -7,12 +8,14 @@
 #include <cstdint>
 #include <fstream>
 
+//Testbed header files
 #include "commons.h"
 #include "species.h"
 #include "photons.h"
 #include "electrons.h"
 #include "positrons.h"
 
+//QED library files
 #include "landau_lifshitz.h"
 #include "nonlin_breit_wheeler_engine.h"
 #include "special_functions.h"
@@ -23,14 +26,22 @@
 using namespace std;
 using namespace testbed;
 
-const double dt = 0.01;
-const int num_steps = 10000;
+//Different test cases
+void test_individual_functions();
+void test_testbed();
+void test_BW();
 
-inline bool is_out(int t_step){return (t_step % 1000 == 0);}
+int main(){
 
-const int64_t seed = 3397169560718639567;
+    //test_individual_functions();
+    //test_testbed();
+    test_BW();
+}
 
-int main(int argc, char** argv){
+// ######################################################################TEST INDIVIDUAL FUNCTIONS###########################################################
+void test_individual_functions(){
+    const int64_t seed = 1382411575986112467;
+
 
     cout << "********************Test special functions***************************" << endl;
     cout << "k_1_3 (0.5) = " << picsar::multi_physics::k_1_3 (0.5) << " (exp. 0.989031)" << endl;
@@ -55,10 +66,6 @@ int main(int argc, char** argv){
     cout << "*********************************************************************" << endl;
     cout << endl;
 
-    std::ofstream dump_file{"dump.dat"}; //dump file to store data for later analysis
-
-    cout << "********************QED module testbed***************************" << endl;
-    cout << endl;
 
     //Fix lambda
     double lambda = 0.8 * picsar::multi_physics::_um;
@@ -107,22 +114,37 @@ int main(int argc, char** argv){
     // WARNING 2% discrepancy for first case, entirely due to integration for T function!!!!
     auto nn = [](double px,double py, double pz){return sqrt(px*px + py*py + pz*pz);};
     cout << "calc BW dN/dt (mom=[61019.1, -24359.3, 65116.2], EB=[69942.0, 38024.7, -43604.1, -26990.0, 58267.8, -63485.8], l = 800 nm, exp. 7.63488202211) : " << endl;
-    cout << breit_wheeler_engine.compute_dN_dt(nn(61019.1, -24359.3, 65116.2),
+    cout << breit_wheeler_engine.get_total_pair_production_rate(nn(61019.1, -24359.3, 65116.2),
         picsar::multi_physics::chi_photon_lambda({61019.1, -24359.3, 65116.2},{69942.0, 38024.7, -43604.1, -26990.0, 58267.8, -63485.8}, 0.8 * picsar::multi_physics::_um)) << endl;
     cout << "calc BW dN/dt (mom=[-965.61, -3975.11, 6917.22], EB=[11.17, -2117.72, -1407.19, 6259.79, 7557.54, 773.11], l = 800 nm, exp. 3.51855878777) : " << endl;
-    cout << breit_wheeler_engine.compute_dN_dt(nn(-965.61, -3975.11, 6917.22),
+    cout << breit_wheeler_engine.get_total_pair_production_rate(nn(-965.61, -3975.11, 6917.22),
         picsar::multi_physics::chi_photon_lambda({-965.61, -3975.11, 6917.22},{11.17, -2117.72, -1407.19, 6259.79, 7557.54, 773.11}, 0.8 * picsar::multi_physics::_um)) << endl;
     cout << "calc BW dN/dt (mom=[149.825, 933.115, -538.195], EB=[931.686, -861.074, 944.652, 531.406, 670.933, 660.057], l = 800 nm, exp. 1.50648551484) : " << endl;
-    cout << breit_wheeler_engine.compute_dN_dt(nn(149.825, 933.115, -538.195),
+    cout << breit_wheeler_engine.get_total_pair_production_rate(nn(149.825, 933.115, -538.195),
         picsar::multi_physics::chi_photon_lambda({149.825, 933.115, -538.195},{931.686, -861.074, 944.652, 531.406, 670.933, 660.057}, 0.8 * picsar::multi_physics::_um)) << endl;
     cout << "calc BW dN/dt (mom=[-44.4546, -0.2033, 94.5843], EB=[39.8996, -29.2501, 58.7720, 44.3417, 15.5024, 29.4024], l = 800 nm, exp. 4.69766211952e-73) : " << endl;
-    cout << breit_wheeler_engine.compute_dN_dt(nn(-44.4546, -0.2033, 94.5843),
+    cout << breit_wheeler_engine.get_total_pair_production_rate(nn(-44.4546, -0.2033, 94.5843),
         picsar::multi_physics::chi_photon_lambda({-44.4546, -0.2033, 94.5843},{39.8996, -29.2501, 58.7720, 44.3417, 15.5024, 29.4024}, 0.8 * picsar::multi_physics::_um)) << endl;
     cout << "calc BW dN/dt (mom=[6.81696,9.68933,2.81229], EB=[-4.89986,-9.65535,3.69471, 8.89549,-5.46574,-6.75393], l = 800 nm, exp. 0.0) : " << endl;
-    cout << breit_wheeler_engine.compute_dN_dt(nn(6.81696,9.68933,2.81229),
+    cout << breit_wheeler_engine.get_total_pair_production_rate(nn(6.81696,9.68933,2.81229),
         picsar::multi_physics::chi_photon_lambda({6.81696,9.68933,2.81229},{-4.89986,-9.65535,3.69471, 8.89549,-5.46574,-6.75393}, 0.8 * picsar::multi_physics::_um)) << endl;
     cout << "*********************************************************************" << endl;
     cout << endl;
+}
+
+void test_testbed(){
+    const double dt = 0.01;
+    const int num_steps = 10000;
+
+    auto is_out = [](int t_step){return (t_step % 1000 == 0);};
+
+    std::ofstream dump_file{"dump.dat"}; //dump file to store data for later analysis
+
+    cout << "********************QED module testbed***************************" << endl;
+    cout << endl;
+
+    //Fix lambda
+    double lambda = 0.8 * picsar::multi_physics::_um;
 
     vector<shared_ptr<species>> specs;
     //Init a photon
@@ -163,10 +185,10 @@ int main(int argc, char** argv){
         dump_file << tmom[0][0] << " " << tmom[1][0] << " " << tmom[2][0] << endl;
 
         for (auto& sp : specs)
-            sp->push_momenta(dt);
+            sp->calc_fields([](position pos, double ttime){return em_field{0,0,0,100.0,0.0,0.0};}, i*dt);
 
         for (auto& sp : specs)
-            sp->calc_fields([](position pos, double ttime){return em_field{0,0,0,100.0,0.0,0.0};}, i*dt);
+            sp->push_momenta(dt);
 
         for (auto& sp : specs)
             sp->push_positions(dt);
@@ -180,8 +202,95 @@ int main(int argc, char** argv){
     cout << "*****************************************************************" << endl;
 
     dump_file.close();
+}
 
-    return 0;
+void test_BW(){
+    const double dt = 0.01;
+    const int num_steps = 10000;
+
+    auto is_out = [](int t_step){return (t_step % 1000 == 0);};
+
+    const int64_t seed_BW = 3397169560718639567;
+
+    //Fix lambda to 800 nm
+    double lambda = 0.8 * picsar::multi_physics::_um;
+
+    //Init nonlin_breit_wheeler_engine
+    picsar::multi_physics::nonlin_breit_wheeler_engine bw_engine{seed_BW, lambda};
+
+    //Init some photons
+    auto ptr_phot1 = make_shared<photons>("phot1");
+    ptr_phot1->add_particle({0,0,0},{1200.0,0.0,0.0});
+    ptr_phot1->add_particle({0,0,0},{0.0,1200.0,0.0});
+    ptr_phot1->add_particle({0,0,0},{0.0,0.0,1200.0});
+    bw_engine.init_optical_depth_vector(ptr_phot1->get_ref_of_optical_depth());
+
+    //Add BW decrease of optical depth to photons
+    auto BW_opticaldepth =
+    [&bw_engine, lambda](positions_list& pos, momenta_list& mom,
+      const em_field_list& fields, std::vector<double>& opt_depth, double mass, double charge, ttime dt)->void{
+          size_t size = pos.size();
+          for(int i = 0; i < size; i++){
+              double chi =
+                picsar::multi_physics::chi_photon_lambda({mom[0][i], mom[1][i], mom[2][i]},
+                {fields[0][i], fields[1][i], fields[2][i],
+                fields[3][i], fields[4][i], fields[5][i]},
+                lambda);
+              double prod_rate =  bw_engine.get_total_pair_production_rate( mom[0][i]* mom[0][i] + mom[1][i]* mom[1][i] + mom[2][i]* mom[2][i], chi);
+
+              opt_depth[i] -= prod_rate*dt;
+          }
+    };
+    ptr_phot1->add_simple_process(BW_opticaldepth, 0);
+
+    //Add a signaler for debug purposes
+    auto BW_diag =
+    [](positions_list& pos, momenta_list& mom,
+      const em_field_list& fields, std::vector<double>& opt_depth, double mass, double charge, ttime dt)->void{
+          for(auto opt: opt_depth)
+            std::cout << opt << endl;
+    };
+    ptr_phot1->add_simple_process(BW_diag, 777);
+
+    //Create LL pusher using multi_physics library
+    auto pusher =
+    [lambda](momenta_list& mom, const em_field_list& fields,  double mass, double charge, double dt)->void{
+        picsar::multi_physics::boris_plus_landau_lifshitz_push(
+        mom[0], mom[1], mom[2],
+        fields[0], fields[1], fields[2],
+        fields[3], fields[4], fields[5],
+        mass, charge, dt, lambda);
+    };
+
+    //Create EMPTY electron and positron species, using LL
+    auto ptr_ele1 = make_shared<electrons>("ele1");
+    ptr_ele1->replace_pusher_momenta(pusher);
+    auto ptr_pos1 = make_shared<positrons>("pos1");
+    ptr_pos1->replace_pusher_momenta(pusher);
+
+    //Prepare a species vector
+    vector<shared_ptr<species>> specs{ptr_phot1, ptr_ele1, ptr_pos1};
+
+    // Main loop
+    for (int i = 0; i < num_steps; i++){
+
+        for (auto& sp : specs)
+            sp->calc_fields([](position pos, double ttime){return em_field{0,0,0,900.0,0,0.0};}, i*dt);
+
+        for (auto& sp : specs)
+            sp->push_momenta(dt);
+
+        for (auto& sp : specs)
+            sp->push_positions(dt);
+
+        for (auto& sp : specs)
+            sp->do_simple_processes(dt);
+
+        if(is_out(i)){
+            for (auto& sp : specs)
+                sp->print_on_disk("out", i);
+        }
+    }
 }
 
 //Nice field!

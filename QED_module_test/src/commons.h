@@ -16,7 +16,10 @@ namespace testbed{
   typedef std::function<em_field(position, ttime)> em_field_function;
   typedef std::array<std::vector<double>, 6> em_field_list;
 
-  typedef std::function<void(momenta_list&, const em_field_list&, double mass, double charge, ttime)> mom_pusher_function;
+  typedef std::function<void(momenta_list&, const em_field_list&, double mass, double charge, ttime dt)> mom_pusher_function;
+
+  typedef std::function<void(positions_list&, momenta_list&,
+    const em_field_list&, std::vector<double>&, double mass, double charge, ttime dt)> simple_process;
 }
 
 #endif

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <tuple>
+#include <map>
 
 #include "commons.h"
 
@@ -25,6 +26,9 @@ namespace testbed{
         virtual void push_momenta(ttime dt) = 0;
         void calc_fields(em_field_function em_function, ttime tt);
 
+        void add_simple_process(simple_process proc, int ID);
+        void do_simple_processes(ttime dt);
+
         void print_on_disk(std::string prefix, int step_num) const;
 
         std::tuple<positions_list, momenta_list,
@@ -36,6 +40,7 @@ namespace testbed{
         em_field_list&,  std::vector<double>&> get_ref_of_all_data();
         positions_list& get_ref_of_positions();
         momenta_list& get_ref_of_momenta();
+        std::vector<double>& get_ref_of_optical_depth();
 
     protected:
         std::string name;
@@ -46,6 +51,8 @@ namespace testbed{
         momenta_list mom;
         em_field_list fields;
         std::vector<double> optical_depth;
+
+        std::map<int,simple_process> simple_processes;
 
         std::string header = "species";
     };

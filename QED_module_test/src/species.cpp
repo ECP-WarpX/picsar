@@ -22,6 +22,19 @@ int species::get_num_particles() const{
     return pos[0].size();
 }
 
+void species::add_simple_process(simple_process proc, int ID){
+    if (simple_processes.find(ID) != simple_processes.end())
+        throw std::logic_error("ID already assigned");
+    else
+        simple_processes.insert(std::pair<int, simple_process>(ID, proc));
+}
+
+void species::do_simple_processes(ttime dt){
+    for(auto& proc : simple_processes){
+        proc.second(pos, mom,  fields, optical_depth, mass, charge, dt);    
+    }
+}
+
 void species::add_particle(position part_pos, momentum part_mom){
     for(int i = 0; i < 3; i++){
         pos[i].push_back(part_pos[i]);
@@ -97,10 +110,13 @@ em_field_list&,  std::vector<double>&> species::get_ref_of_all_data(){
     return {pos, mom, fields, optical_depth};
 }
 
-
 positions_list& species::get_ref_of_positions(){
     return pos;
 }
 momenta_list& species::get_ref_of_momenta(){
     return mom;
+}
+
+std::vector<double>& species::get_ref_of_optical_depth(){
+    return optical_depth;   
 }

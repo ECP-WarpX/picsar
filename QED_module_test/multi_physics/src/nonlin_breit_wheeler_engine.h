@@ -20,13 +20,15 @@ namespace picsar{
     class nonlin_breit_wheeler_engine{
     public:
       nonlin_breit_wheeler_engine(int64_t seed, double lambda);
-      double calc_total_pair_production_rate(double chi_phot);
+
+      //get a single optical depth
+      double get_optical_depth();
+      //initialize an optical depth vector
+      void init_optical_depth_vector(std::vector<double>& opt_vec);
+
+      double get_total_pair_production_rate(double gamma_phot, double chi_phot);
 
       bool has_lookup_tables();
-
-      double compute_d2N_dchi_dt(double gamma_phot, double chi_phot, double chi_ele);
-      double compute_dN_dt(double gamma_phot, double chi_phot);
-
     private:
         const double pair_prod_coeff =
             fine_structure_constant * electron_mass * speed_of_light * speed_of_light   / reduced_plank;
@@ -41,13 +43,8 @@ namespace picsar{
         bool lookup_tables_flag = false;
 
         double compute_inner_integral(double x);
-
         double compute_T_function(double chi_phot);
-
-        double calc_total_pair_production_rate_from_scratch(double chi_phot);
-
-        double calc_total_pair_production_rate_from_lookup(double chi_phot);
-
+        double compute_dN_dt(double gamma_phot, double chi_phot);
 
     };
 

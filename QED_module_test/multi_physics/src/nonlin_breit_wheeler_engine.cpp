@@ -11,11 +11,13 @@ nonlin_breit_wheeler_engine::nonlin_breit_wheeler_engine(int64_t seed, double _l
     rate_conversion_factor_SI_to_code =  lambda/(2.0*speed_of_light*M_PI);
 }
 
-double nonlin_breit_wheeler_engine::calc_total_pair_production_rate(double chi_phot){
-    if(lookup_tables_flag)
-        return calc_total_pair_production_rate_from_lookup(chi_phot);
-    else
-        return calc_total_pair_production_rate_from_scratch(chi_phot);
+double nonlin_breit_wheeler_engine::get_optical_depth(){
+    return rng.get_exp_l1();
+}
+
+void nonlin_breit_wheeler_engine::init_optical_depth_vector(std::vector<double>& opt_vec){
+    for (auto& opt: opt_vec)
+        opt = get_optical_depth();
 }
 
 bool nonlin_breit_wheeler_engine::has_lookup_tables(){
@@ -27,19 +29,9 @@ double nonlin_breit_wheeler_engine::compute_inner_integral(double x){
     return quad_a_inf(func, x);
 }
 
-double nonlin_breit_wheeler_engine::compute_d2N_dchi_dt(double gamma_phot, double chi_phot, double chi_ele){
-    /*double chi_pos = chi_phot - chi_ele;
-    double x = pow(chi_phot/(chi_pos*chi_ele), 2./3.);
-
-    double inner = compute_inner_integral(x);
-    double x_3_2 = pow(x, 3./2.);
-
-    return rate_conversion_factor*pair_prod_coeff*(inner-(2.0-chi_phot*x_3_2)*k_2_3(2.0*x_3_2/3.0))/(gamma_phot*chi_phot);*/
-    return 0.0;
-
-}
-
 double nonlin_breit_wheeler_engine::compute_T_function(double chi_phot){
+    if(chi_phot == 0)
+        return 0.0;
     double coeff = 1./(M_PI * sqrt(3.0) * chi_phot * chi_phot);
     auto func = [chi_phot, this](double chi_ele){
         double X;
@@ -58,12 +50,7 @@ double nonlin_breit_wheeler_engine::compute_dN_dt(double gamma_phot, double chi_
      return rate_conversion_factor_SI_to_code*pair_prod_coeff*compute_T_function(chi_phot)*(chi_phot/gamma_phot);
  }
 
-double nonlin_breit_wheeler_engine::calc_total_pair_production_rate_from_scratch(double chi_phot){
-    //TODO
-    return 0.0;
-}
-
-double nonlin_breit_wheeler_engine::calc_total_pair_production_rate_from_lookup(double chi_phot){
-    //TODO
-    return 0.0;
-}
+//Will use lookup tables soon
+ double nonlin_breit_wheeler_engine::get_total_pair_production_rate(double gamma_phot, double chi_phot){
+     return compute_dN_dt(gamma_phot, chi_phot);
+ }

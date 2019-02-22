@@ -59,6 +59,7 @@ namespace picsar{
             return chi_lepton_inv_schwinger(mom, emfl, 1.0/picsar::multi_physics::calc_schwinger_given_lambda(lambda), mass);
         }
 
+        //WARNING! FAILS IF MOMENTUM IS EXACTLY 0
         inline double chi_photon_inv_schwinger(const std::array<double, 3>& mom, const std::array<double, 6>& emfl, double normalized_inv_schwinger_field){
             double p = sqrt(mom[0]*mom[0] + mom[1]*mom[1] + mom[2]*mom[2]);
             double inv_p = 1.0/p;
