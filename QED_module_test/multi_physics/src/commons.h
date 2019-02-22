@@ -17,6 +17,8 @@ namespace picsar{
         const double vacuum_permittivity =  8.854187817e-12;
         const double fine_structure_constant =  0.0072973525664;
 
+        const double BIG_POSITIVE_DOUBLE = 1.0e30;
+
         const double classical_electron_radius = elementary_charge*elementary_charge /
                     (4.0*M_PI*vacuum_permittivity*electron_mass*speed_of_light*speed_of_light);
 

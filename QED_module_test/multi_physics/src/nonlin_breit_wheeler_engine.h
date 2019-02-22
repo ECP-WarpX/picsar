@@ -29,14 +29,14 @@ namespace picsar{
 
     private:
         const double pair_prod_coeff =
-            fine_structure_constant * electron_mass * electron_mass * pow(speed_of_light, 4) / reduced_plank;
+            fine_structure_constant * electron_mass * speed_of_light * speed_of_light   / reduced_plank;
 
         rng_wrapper rng;
 
         double lambda;
         double normalized_schwinger_field; //Normalized according to Smilei conventions
         double normalized_inv_schwinger_field;
-        double rate_conversion_factor;
+        double rate_conversion_factor_SI_to_code;
 
 
         bool lookup_tables_flag = false;
