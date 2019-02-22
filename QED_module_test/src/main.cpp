@@ -104,6 +104,7 @@ int main(int argc, char** argv){
 
 
     cout << "********************Test BWFunctions *********************************" << endl;
+    // WARNING 2% discrepancy for first case, entirely due to integration for T function!!!!
     auto nn = [](double px,double py, double pz){return sqrt(px*px + py*py + pz*pz);};
     cout << "calc BW dN/dt (mom=[61019.1, -24359.3, 65116.2], EB=[69942.0, 38024.7, -43604.1, -26990.0, 58267.8, -63485.8], l = 800 nm, exp. 7.63488202211) : " << endl;
     cout << breit_wheeler_engine.compute_dN_dt(nn(61019.1, -24359.3, 65116.2),

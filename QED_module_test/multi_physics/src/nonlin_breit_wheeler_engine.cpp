@@ -53,8 +53,8 @@ double nonlin_breit_wheeler_engine::compute_T_function(double chi_phot){
     return coeff*quad_a_b(func, 0.0, chi_phot);
 }
 
-// Now in SI units
- double nonlin_breit_wheeler_engine::compute_dN_dt(double gamma_phot, double chi_phot){
+// In CODE UNITS
+double nonlin_breit_wheeler_engine::compute_dN_dt(double gamma_phot, double chi_phot){
      return rate_conversion_factor_SI_to_code*pair_prod_coeff*compute_T_function(chi_phot)*(chi_phot/gamma_phot);
  }
 

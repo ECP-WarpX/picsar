@@ -38,7 +38,6 @@ namespace picsar{
         double normalized_inv_schwinger_field;
         double rate_conversion_factor_SI_to_code;
 
-
         bool lookup_tables_flag = false;
 
         double compute_inner_integral(double x);
