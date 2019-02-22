@@ -57,7 +57,7 @@ MODULE fourier_psaotd
   !> @params[in] nopenmp - INTEGER(idp) - number of OpenMP threads/MPI processes  
   ! ______________________________________________________________________________________
   SUBROUTINE init_plans_fourier_mpi(nopenmp)
-    USE fields, ONLY: ex_r, exf, exy_r
+    USE fields, ONLY: ex_r, exf, exy_r, g_spectral
     USE group_parameters, ONLY: nx_group, ny_group, mpi_comm_group_id,              &
       nz_group
     USE iso_c_binding
@@ -76,6 +76,9 @@ MODULE fourier_psaotd
     INTEGER(C_INTPTR_T) :: nx_cint, ny_cint, nz_cint
     INTEGER(idp)        :: i
     INTEGER(isp)        :: planner_flag_1, planner_flag_2
+    REAL(num), POINTER, DIMENSION(:, :, :) :: temp_r
+    COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: temp_f
+
     nopenmp_cint=nopenmp
     IF(.NOT. p3dfft_flag) THEN
       IF  (fftw_threads_ok) THEN
@@ -97,6 +100,17 @@ MODULE fourier_psaotd
     !> using transposed plans
     !> A similar optimization is possible when using p3dfft (p3dfft_stride =
     !.TRUE.) but z and x axis are then transposed 
+    IF(g_spectral) THEN
+      temp_f => vold(nmatrixes)%block_vector(1)%block3dc
+      IF(absorbing_bcs) THEN
+        temp_r => exy_r
+      ELSE IF(.NOT. absorbing_bcs) THEN
+        temp_r => ex_r
+      ENDIF
+    ELSE IF (.NOT. g_spectral) THEN
+      temp_f => exf
+    ENDIF
+
     IF(fftw_plan_measure) THEN
        planner_flag_1 = FFTW_MEASURE
        planner_flag_2 = FFTW_MEASURE
@@ -109,50 +123,43 @@ MODULE fourier_psaotd
       planner_flag_1 = IOR(planner_flag_1,FFTW_MPI_TRANSPOSED_OUT)
       planner_flag_2 = IOR(planner_flag_2,FFTW_MPI_TRANSPOSED_IN)
     ENDIF
-
     IF(.NOT. fftw_hybrid) THEN
       nz_cint=nz_global
       ny_cint=ny_global
       nx_cint=nx_global
-      IF(c_dim == 3) THEN 
-        plan_r2c_mpi = fftw_mpi_plan_dft_r2c_3d(nz_cint, ny_cint, nx_cint, ex_r, exf,   &
+      IF(c_dim == 3) THEN
+        plan_r2c_mpi = fftw_mpi_plan_dft_r2c_3d(nz_cint, ny_cint, nx_cint,temp_r, temp_f,   &
         comm, planner_flag_1)
-        plan_c2r_mpi = fftw_mpi_plan_dft_c2r_3d(nz_cint, ny_cint, nx_cint, exf, ex_r,   &
+        plan_c2r_mpi = fftw_mpi_plan_dft_c2r_3d(nz_cint, ny_cint, nx_cint,temp_f, temp_r,   &
         comm, planner_flag_2)
       ELSE IF(c_dim == 2) THEN
-        plan_r2c_mpi = fftw_mpi_plan_dft_r2c_2d(nz_cint, nx_cint,ex_r, exf,   &
+        plan_r2c_mpi = fftw_mpi_plan_dft_r2c_2d(nz_cint, nx_cint,temp_r, temp_f,&
         comm, planner_flag_1)
-        plan_c2r_mpi = fftw_mpi_plan_dft_c2r_2d(nz_cint,nx_cint, exf,ex_r,   &
+        plan_c2r_mpi = fftw_mpi_plan_dft_c2r_2d(nz_cint,nx_cint, temp_f,temp_r,&
         comm, planner_flag_2)
       ENDIF
-    ELSE 
+    ELSE
       nz_cint = nz_group
       ny_cint = ny_group
       nx_cint = nx_group
       DO i=1, nb_group
         IF(MPI_COMM_GROUP_ID(i) .NE. MPI_COMM_NULL) THEN
           IF(c_dim == 3) THEN
-            plan_r2c_mpi = fftw_mpi_plan_dft_r2c_3d(nz_cint, ny_cint, nx_cint, ex_r,    &
-            exf, MPI_COMM_GROUP_ID(i), planner_flag_1)
-            plan_c2r_mpi = fftw_mpi_plan_dft_c2r_3d(nz_cint, ny_cint, nx_cint, exf,     &
-            ex_r, MPI_COMM_GROUP_ID(i), planner_flag_2)
+            plan_r2c_mpi = fftw_mpi_plan_dft_r2c_3d(nz_cint, ny_cint, nx_cint,temp_r,    &
+            temp_f, MPI_COMM_GROUP_ID(i), planner_flag_1)
+            plan_c2r_mpi = fftw_mpi_plan_dft_c2r_3d(nz_cint, ny_cint, nx_cint,temp_f,     &
+            temp_r, MPI_COMM_GROUP_ID(i), planner_flag_2)
           ELSE IF(c_dim == 2) THEN
-            IF(absorbing_bcs .EQV. .FALSE.) THEN
-              plan_r2c_mpi = fftw_mpi_plan_dft_r2c_2d(nz_cint, nx_cint,ex_r,    &
-              exf, MPI_COMM_GROUP_ID(i), planner_flag_1)
-              plan_c2r_mpi = fftw_mpi_plan_dft_c2r_2d(nz_cint, nx_cint,exf,     &
-              ex_r, MPI_COMM_GROUP_ID(i), planner_flag_2)
-            ELSE IF(absorbing_bcs) THEN
-              plan_r2c_mpi = fftw_mpi_plan_dft_r2c_2d(nz_cint, nx_cint,exy_r,    &
-              exf, MPI_COMM_GROUP_ID(i), planner_flag_1)
-              plan_c2r_mpi = fftw_mpi_plan_dft_c2r_2d(nz_cint, nx_cint, exf,     &
-              exy_r, MPI_COMM_GROUP_ID(i), planner_flag_2)
-
-            ENDIF
+            plan_r2c_mpi = fftw_mpi_plan_dft_r2c_2d(nz_cint, nx_cint,temp_r,&
+            temp_f, MPI_COMM_GROUP_ID(i), planner_flag_1)
+            plan_c2r_mpi = fftw_mpi_plan_dft_c2r_2d(nz_cint, nx_cint,temp_f,&
+            temp_r, MPI_COMM_GROUP_ID(i), planner_flag_2)
           ENDIF
         ENDIF
       ENDDO
     ENDIF
+
+
   END SUBROUTINE init_plans_fourier_mpi
 
   ! ______________________________________________________________________________________
@@ -1677,6 +1684,10 @@ MODULE fourier_psaotd
       ny_global, c_dim, nz_global, rank, absorbing_bcs
 
     INTEGER(idp) :: nfftx, nffty, nfftz, nopenmp
+    REAL(num), POINTER, DIMENSION(:, :, :) :: temp_r
+    COMPLEX(cpx), POINTER, DIMENSION(:, :, :) :: temp_f
+
+
 #ifdef _OPENMP
     nopenmp=OMP_GET_MAX_THREADS()
 #else
@@ -1712,10 +1723,14 @@ MODULE fourier_psaotd
     !> If g_spectral == .FALSE. then exf is already allocated 
 
     IF(g_spectral) THEN
-      exf => vold(nmatrixes)%block_vector(1)%block3dc
+      temp_f => vold(nmatrixes)%block_vector(1)%block3dc
       IF(absorbing_bcs) THEN
-        ex_r => exy_r
+        temp_r => exy_r
+      ELSE IF(.NOT. absorbing_bcs) THEN
+        temp_r => ex_r
       ENDIF
+    ELSE IF (.NOT. g_spectral) THEN
+      temp_f => exf
     ENDIF      
     !> Init fftw plans if used
     !> NB: if p3dfft is used, then the init is performed in mpi_routines during
@@ -1727,14 +1742,14 @@ MODULE fourier_psaotd
       !> If local psatd, plans are initialized here
       ELSE IF(.NOT. fftw_with_mpi) THEN
         IF(c_dim ==3) THEN
-          CALL fast_fftw_create_plan_r2c_3d_dft(nopenmp, nfftx, nffty, nfftz,ex_r, exf,  &
+          CALL fast_fftw_create_plan_r2c_3d_dft(nopenmp, nfftx, nffty, nfftz,temp_r, exf,  &
           plan_r2c, INT(FFTW_MEASURE, idp), INT(FFTW_FORWARD, idp))
-          CALL fast_fftw_create_plan_c2r_3d_dft(nopenmp, nfftx, nffty, nfftz, exf,ex_r,  &
+          CALL fast_fftw_create_plan_c2r_3d_dft(nopenmp, nfftx, nffty, nfftz, exf,temp_r,  &
           plan_c2r, INT(FFTW_MEASURE, idp), INT(FFTW_BACKWARD, idp))
         ELSE IF(c_dim == 2) THEN
-          CALL fast_fftw_create_plan_r2c_2d_dft(nopenmp, nfftx, nfftz, ex_r, exf,        &
+          CALL fast_fftw_create_plan_r2c_2d_dft(nopenmp, nfftx, nfftz, temp_r, exf,        &
           plan_r2c, INT(FFTW_MEASURE, idp), INT(FFTW_FORWARD, idp))
-          CALL fast_fftw_create_plan_c2r_2d_dft(nopenmp, nfftx, nfftz, exf, ex_r,        &
+          CALL fast_fftw_create_plan_c2r_2d_dft(nopenmp, nfftx, nfftz, exf, temp_r,        &
           plan_c2r, INT(FFTW_MEASURE, idp), INT(FFTW_BACKWARD, idp))
         ENDIF
       ENDIF

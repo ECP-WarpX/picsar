@@ -20,7 +20,8 @@ MODULE link_external_tools
   USE iso_c_binding
   CONTAINS 
   SUBROUTINE init_params_external(n1,n2,n3,d1,d2,d3,dtt,ng1,ng2,ng3,nor1,nor2,nor3,is_spec,&
-      field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11, cdim) &
+      field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11, cdim, &
+      is_pml_x, is_pml_y, is_pml_z)
       BIND(C,name='init_params_picsar') 
     USE fastfft
     USE fields, ONLY: ezf, ez_r, ez, jx_r, jxf, nordery, ey_r, rhooldf, l_staggered, &
@@ -35,7 +36,8 @@ MODULE link_external_tools
     USE picsar_precision, ONLY: idp, isp, lp
     USE shared_data, ONLY: nz, ny, fftw_with_mpi, nx, nkx, p3dfft_stride, nky,       &
       p3dfft_flag, fftw_threads_ok, dx, c_dim, nkz, fftw_mpi_transpose, dy, rank,    &
-      fftw_hybrid, dz
+      fftw_hybrid, dz, absorbing_bcs_x, absorbing_bcs_y, absorbing_bcs_z,            &
+      absorbing_bcs
     IMPLICIT NONE 
     INTEGER(C_INT) , INTENT(IN) :: n1,n2,n3,ng1,ng2,ng3,nor1,nor2,nor3,cdim
     REAL(C_DOUBLE) , INTENT(INOUT), TARGET , DIMENSION(-ng3:n3+ng3,-ng2:n2+ng2,-ng1:n1+ng1) :: &
@@ -45,6 +47,9 @@ MODULE link_external_tools
     LOGICAL(C_BOOL)   , INTENT(IN)   :: is_spec
     LOGICAL(lp)                      :: l_stg
     INTEGER(isp)                     :: iret
+    LOGICAL(C_BOOL),    INTENT(IN)   :: is_pml_x, is_pml_y, is_pml_z     
+    INTEGER(isp) , DIMENSIOn(1:2*cdim) :: mpi_neighbors 
+    
 
     IF(rank==0) PRINT*, 'BEGIN INIT EXTERNAL'
     l_spectral  = LOGICAL(is_spec,lp) 
@@ -73,6 +78,22 @@ MODULE link_external_tools
     nordery = INT(nor2,idp)
     norderz = INT(nor1,idp) 
 
+    absorbing_bcs_x = LOGICAL(is_pml_z,lp)
+    absorbing_bcs_y = LOGICAL(is_pml_y,lp)
+    absorbing_bcs_z = LOGICAL(is_pml_x,lp)
+ 
+    IF(.NOT. l_spectral) THEN
+      absorbing_bcs_x = .FALSE._lp
+      absorbing_bcs_y = .FALSE._lp
+      absorbing_bcs_z = .FALSE._lp
+    ENDIF
+    IF(absorbing_bcs_x .OR. absorbing_bcs_y .OR. absorbing_bcs_y) THEN
+      absorbing_bcs = .TRUE._lp
+    ELSE
+      absorbing_bcs = .FALSE._lp
+    ENDIF
+    g_spectral = absorbing_bcs
+
     IF(.NOT. l_spectral) THEN
       ex => field3
       ey => field2
@@ -80,7 +101,6 @@ MODULE link_external_tools
       bx => field6
       by => field5
       bz => field4
-
       jx => field9 
       jy => field8
       jz => field7
@@ -91,32 +111,78 @@ MODULE link_external_tools
       bx_r => field6
       by_r => field5
       bz_r => field4
-
       jx_r => field9
       jy_r => field8
       jz_r => field7
       rho_r =>field10
       rhoold_r =>field11
+      ex => field3
+      ey => field2
+      ez => field1
+      bx => field6
+      by => field5
+      bz => field4
+      jx => field9
+      jy => field8
+      jz => field7
+      rho =>field10
+      rhoold =>field11
+
 
       nkx=(2*nxguards+nx+1)/2+1! Real To Complex Transform
       nky=(2*nyguards+ny+1)
       nkz=(2*nzguards+nz+1)
 
-      IF(.NOT. ASSOCIATED(exf)) ALLOCATE(exf(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(eyf)) ALLOCATE(eyf(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(ezf)) ALLOCATE(ezf(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(bxf)) ALLOCATE(bxf(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(byf)) ALLOCATE(byf(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(bzf)) ALLOCATE(bzf(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(jxf)) ALLOCATE(jxf(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(jyf)) ALLOCATE(jyf(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(jzf)) ALLOCATE(jzf(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(rhof)) ALLOCATE(rhof(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(rhooldf)) ALLOCATE(rhooldf(nkx, nky, nkz))
-
+      IF(.NOT. g_spectral) THEN
+        IF(.NOT. ASSOCIATED(exf)) ALLOCATE(exf(nkx, nky, nkz))
+        IF(.NOT. ASSOCIATED(eyf)) ALLOCATE(eyf(nkx, nky, nkz))
+        IF(.NOT. ASSOCIATED(ezf)) ALLOCATE(ezf(nkx, nky, nkz))
+        IF(.NOT. ASSOCIATED(bxf)) ALLOCATE(bxf(nkx, nky, nkz))
+        IF(.NOT. ASSOCIATED(byf)) ALLOCATE(byf(nkx, nky, nkz))
+        IF(.NOT. ASSOCIATED(bzf)) ALLOCATE(bzf(nkx, nky, nkz))
+        IF(.NOT. ASSOCIATED(jxf)) ALLOCATE(jxf(nkx, nky, nkz))
+        IF(.NOT. ASSOCIATED(jyf)) ALLOCATE(jyf(nkx, nky, nkz))
+        IF(.NOT. ASSOCIATED(jzf)) ALLOCATE(jzf(nkx, nky, nkz))
+        IF(.NOT. ASSOCIATED(rhof)) ALLOCATE(rhof(nkx, nky, nkz))
+        IF(.NOT. ASSOCIATED(rhooldf)) ALLOCATE(rhooldf(nkx, nky, nkz))
+      ENDIF
     ENDIF
-    IF(l_spectral) CALL init_plans_blocks
-    IF(.NOT. l_spectral) THEN 
+    dx = -dx; dy = -dy; dz = -dz
+    IF(l_spectral) THEN
+      CALL init_plans_blocks()
+      IF(absoring_bcs) THEN
+        ALLOCATE(exy(nx,ny,z))
+        ALLOCATE(exz(nx,ny,z))
+        ALLOCATE(eyx(nx,ny,z))
+        ALLOCATE(eyz(nx,ny,z))
+        ALLOCATE(ezx(nx,ny,z))
+        ALLOCATE(ezy(nx,ny,z))
+        ALLOCATE(bxy(nx,ny,z))
+        ALLOCATE(bxz(nx,ny,z))
+        ALLOCATE(byx(nx,ny,z))
+        ALLOCATE(byz(nx,ny,z))
+        ALLOCATE(bzx(nx,ny,z))
+        ALLOCATE(bzy(nx,ny,z))
+
+        exy_r => exy
+        exz_r => exz
+        eyx_r => eyx
+        eyz_r => eyz
+        ezx_r => ezx
+        ezy_r => ezy
+        bxy_r => bxy
+        bxz_r => bxz
+        byx_r => byx
+        byz_r => byz
+        bzx_r => bzx
+        bzy_r => bzy
+
+        dx = -dx; dy = -dy; dz = -dz
+        CALL init_pml_arrays()
+        dx = -dx; dy = -dy; dz = -dz
+
+      ENDIF
+    ELSE IF (.NOT. l_spectral) THEN 
       ALLOCATE(xcoeffs(norderx/2))
       ALLOCATE(ycoeffs(nordery/2))
       ALLOCATE(zcoeffs(norderz/2))
@@ -130,6 +196,24 @@ MODULE link_external_tools
     ENDIF 
     IF(rank==0) PRINT*, 'END INIT EXTERNAL'
   END SUBROUTINE init_params_external
+
+
+  SUBROUTINE push_psatd_ebfield_picsar() BIND(C,name="push_psatd_ebfield_picsar")
+    USE field_boundary
+    USE shared_data , ONLY : absorbing_bcs
+
+  
+    CALL push_psatd_ebfield()
+    CALL efield_bcs
+    CALL bfield_bcs
+    IF(absorbing_bcs) THEN
+      CALL field_damping_bcs()
+      CALL merge_fields()
+    ENDIF
+
+
+
+  END SUBROUTINE push_psatd_ebfield_picsar
 
   SUBROUTINE evec3d_push_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, dt, dtsdx,  &
   dtsdy, dtsdz, nx, ny, nz, norderx, nordery, norderz, nxguard, nyguard,nzguard)
@@ -287,7 +371,7 @@ SUBROUTINE bvec3d_push_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx,  
 
 END SUBROUTINE bvec3d_push_norder
 
-SUBROUTINE solve_maxwell_fdtd_pxr() bind(C,name='solve_maxwell_fdtd_pxr')
+SUBROUTINE solve_maxwell_fdtd_picsar() bind(C,name='solve_maxwell_fdtd_picsar')
   USE fields, ONLY: ez, nordery, jz, zcoeffs, xcoeffs, bz, nzguards, nxguards,       &
     norderz, nyguards, jy, jx, ex, bx, by, ycoeffs, norderx, ey
   USE params, ONLY: dt
@@ -298,5 +382,5 @@ SUBROUTINE solve_maxwell_fdtd_pxr() bind(C,name='solve_maxwell_fdtd_pxr')
   CALL bvec3d_push_norder(ex,ey,ez,bx,by,bz,xcoeffs,ycoeffs,zcoeffs,&
         nx, ny, nz, norderx, nordery, norderz, nxguards,nyguards,nzguards)
 
-END SUBROUTINE solve_maxwell_fdtd_pxr
+END SUBROUTINE solve_maxwell_fdtd_picsar
 END MODULE
