@@ -21,7 +21,7 @@ MODULE link_external_tools
   CONTAINS 
   SUBROUTINE init_params_external(n1,n2,n3,d1,d2,d3,dtt,ng1,ng2,ng3,nor1,nor2,nor3,is_spec,&
       field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11, cdim, &
-      is_pml_x, is_pml_y, is_pml_z)
+      is_pml_x, is_pml_y, is_pml_z,mpi_neighbors,comm_in)
       BIND(C,name='init_params_picsar') 
     USE fastfft
     USE fields, ONLY: ezf, ez_r, ez, jx_r, jxf, nordery, ey_r, rhooldf, l_staggered, &
@@ -38,6 +38,7 @@ MODULE link_external_tools
       p3dfft_flag, fftw_threads_ok, dx, c_dim, nkz, fftw_mpi_transpose, dy, rank,    &
       fftw_hybrid, dz, absorbing_bcs_x, absorbing_bcs_y, absorbing_bcs_z,            &
       absorbing_bcs
+    USE mpi_routines
     IMPLICIT NONE 
     INTEGER(C_INT) , INTENT(IN) :: n1,n2,n3,ng1,ng2,ng3,nor1,nor2,nor3,cdim
     REAL(C_DOUBLE) , INTENT(INOUT), TARGET , DIMENSION(-ng3:n3+ng3,-ng2:n2+ng2,-ng1:n1+ng1) :: &
@@ -48,10 +49,10 @@ MODULE link_external_tools
     LOGICAL(lp)                      :: l_stg
     INTEGER(isp)                     :: iret
     LOGICAL(C_BOOL),    INTENT(IN)   :: is_pml_x, is_pml_y, is_pml_z     
-    INTEGER(isp) , DIMENSIOn(1:2*cdim) :: mpi_neighbors 
+    INTEGER(isp) , INTENT(IN) , DIMENSIOn(1:2*cdim) :: mpi_neighbors 
+    INTEGER(isp) , INTENT(IN) :: comm_in
     
 
-    IF(rank==0) PRINT*, 'BEGIN INIT EXTERNAL'
     l_spectral  = LOGICAL(is_spec,lp) 
     fftw_with_mpi = .FALSE. 
     fftw_hybrid = .FALSE.
@@ -194,6 +195,9 @@ MODULE link_external_tools
       ycoeffs = dt/dy*ycoeffs
       zcoeffs = dt/dz*zcoeffs
     ENDIF 
+    ! Dupplicate communicator 
+    CALL mpi_minimal_init_python(comm_in)
+
     IF(rank==0) PRINT*, 'END INIT EXTERNAL'
   END SUBROUTINE init_params_external
 
@@ -202,7 +206,6 @@ MODULE link_external_tools
     USE field_boundary
     USE shared_data , ONLY : absorbing_bcs
 
-  
     CALL push_psatd_ebfield()
     CALL efield_bcs
     CALL bfield_bcs
@@ -210,8 +213,6 @@ MODULE link_external_tools
       CALL field_damping_bcs()
       CALL merge_fields()
     ENDIF
-
-
 
   END SUBROUTINE push_psatd_ebfield_picsar
 
