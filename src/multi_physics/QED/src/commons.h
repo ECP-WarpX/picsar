@@ -9,11 +9,26 @@
 namespace picsar{
     namespace multi_physics{
 
-        //Restrict qualifier
+        //Restrict qualifier (compiler specific!)
         #ifdef _WIN32
             #define PXR_RESTRICT __restrict
         #else
             #define PXR_RESTRICT __restrict__
+        #endif
+
+        //Force inline pragmas (compiler specific!)
+        #if defined(__CUDA_ARCH__)
+            #define PXR_FORCE_INLINE __forceinline__
+        #elif defined(__INTEL_COMPILER)
+            #define PXR_FORCE_INLINE inline __attribute__((always_inline))
+        #elif defined(__clang__)
+            #define PXR_FORCE_INLINE inline __attribute__((always_inline))
+        #elif defined(__GNUC__)
+            #define PXR_FORCE_INLINE inline __attribute__((always_inline))
+        #elif defined(__ibmxl__)
+            #define PXR_FORCE_INLINE inline __attribute__((always_inline))
+        #else
+            #define PXR_FORCE_INLINE inline
         #endif
 
 
