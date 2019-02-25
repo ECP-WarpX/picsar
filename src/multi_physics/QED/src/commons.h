@@ -9,6 +9,14 @@
 namespace picsar{
     namespace multi_physics{
 
+        //Restrict qualifier
+        #ifdef _WIN32
+            #define PXR_RESTRICT __restrict
+        #else
+            #define PXR_RESTRICT __restrict__
+        #endif
+
+
         //Parameters in S.I. units
         const double electron_mass = 9.10938356e-31;
         const double elementary_charge = 1.6021766208e-19;
