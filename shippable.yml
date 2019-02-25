@@ -14,21 +14,34 @@ build:
     - cd /home/warp_user/warp/pywarp90 && git pull && make install && make pinstall
     - cd /home/warp_user/src/bitbucket.org/berkeleylab/picsar/
 
+    #QED LIBRARY
+    #Install dependencies
+    sudo apt-get update && sudo apt-get install -y libboost-math-dev
+
+    cd src/multi_physics
+    mkdir build
+    cd build
+    cmake ../.
+    make
+    cd ../../..
+
+    #-----------
+
     # Compile the unit tests
     - make build_test
-    # Run tests on particle routines 
+    # Run tests on particle routines
     - make test_gcov
     # Compile Picsar with fftw
     - make clean
     - sed -i 's/MODE=prod/MODE=prod_spectral/g' Makefile
     - make
     # Compile and run tests on Maxwell solver (plane wave test)
-    - make clean 
+    - make clean
     - make build_test_spectral_3d
     - make test_maxwell_solver_3d
     - make clean
     - make build_test_spectral_2d
-    - make test_maxwell_solver_2d 
+    - make test_maxwell_solver_2d
     # Compile Picsar as library
     - make clean
     - sed -i 's/MODE=prod_spectral/MODE=library/g' Makefile
@@ -60,4 +73,4 @@ build:
     - export OMP_NUM_THREADS=2
     - python test_Langmuir_wave_3d.py
     - cd ../test_radiation_reaction
-    - py.test 
+    - py.test
