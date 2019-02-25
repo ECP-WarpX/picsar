@@ -13,7 +13,7 @@ if(Boost_FOUND)
   add_definitions(-DHAS_BOOST_MATH)
 endif()
 
-add_library (multi_physics
+add_library (qed
             src/commons.h
             src/landau_lifshitz.cpp src/landau_lifshitz.h
             src/special_functions.h src/special_functions.cpp
@@ -24,5 +24,5 @@ add_library (multi_physics
             src/lookup_table.hpp
             )
 
-target_include_directories(multi_physics PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_compile_features(multi_physics PUBLIC cxx_std_11)
+target_include_directories(qed PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_compile_features(qed PUBLIC cxx_std_11)

@@ -1,5 +1,5 @@
 ********************************************************************************
-In order to compile from the QED_module_test folder just do:
+In order to compile from the QED folder just do:
 
 $ mkdir build
 

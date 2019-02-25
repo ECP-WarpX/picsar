@@ -1,0 +1,8 @@
+/home/lfedeli/projects/picsar/src/multi_physics/build/CMakeFiles/rebuild_cache.dir
+/home/lfedeli/projects/picsar/src/multi_physics/build/CMakeFiles/edit_cache.dir
+/home/lfedeli/projects/picsar/src/multi_physics/build/QED/CMakeFiles/rebuild_cache.dir
+/home/lfedeli/projects/picsar/src/multi_physics/build/QED/CMakeFiles/qed.dir
+/home/lfedeli/projects/picsar/src/multi_physics/build/QED/CMakeFiles/edit_cache.dir
+/home/lfedeli/projects/picsar/src/multi_physics/build/QED_Tests/CMakeFiles/rebuild_cache.dir
+/home/lfedeli/projects/picsar/src/multi_physics/build/QED_Tests/CMakeFiles/testbed.dir
+/home/lfedeli/projects/picsar/src/multi_physics/build/QED_Tests/CMakeFiles/edit_cache.dir
