@@ -80,14 +80,6 @@ PROGRAM main
   CALL DFP_INIT_START
 #endif
 
-! C++ interface test
-  REAL(8) :: a, b, res
-  a = 1.0
-  b = 2.0
-  call dummy_func_c(a, b, res)
-  print *,res
-! END TEST
-
 ! --- default init
   CALL default_init
 

@@ -355,8 +355,6 @@ $(SRCDIR)/%.o $(SRCDIR)/*/%.o $(SRCDIR)/*/*/%.o $(SRCDIR)/*/*/*/%.o $(SRCDIR)/%.
 	$(FC) $(FARGS) -c -o $@ $<
 $(SRCDIR)/profiling/%.o:$(SRCDIR)/profiling/%.c
 	$(CC) $(CARGS) -c -o $@ $<
-$(SRCDIR)/multi_physics/breit_wheeler/%.o:$(SRCDIR)/multi_physics/breit_wheeler/%.cpp
-	$(CPP) $(CPPARGS) -c -o $@ $<
 
 all: echo createdir build
 test: test1 test2 test3
@@ -565,8 +563,6 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/submain.o \
 	$(SRCDIR)/initialization/control_file.o \
-	$(SRCDIR)/multi_physics/breit_wheeler/breit_wheeler.o \
-	$(SRCDIR)/multi_physics/breit_wheeler/breit_wheeler_wrapper.o \
 	$(SRCDIR)/main.o
 	$(FC) $(FARGS) -o $(APPNAME) $(SRCDIR)/*.o $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o
 	mkdir -p $(BINDIR)
