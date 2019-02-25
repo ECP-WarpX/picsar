@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.5)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -29,5 +29,5 @@ target_include_directories(qed PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 if(NOT ${CMAKE_VERSION} VERSION_LESS "3.8.0")
   target_compile_features(qed PUBLIC cxx_std_11)
 else()
-  set (CMAKE_CXX_STANDARD 11)
+  set_property(qed CXX_STANDARD 11)
 endif()
