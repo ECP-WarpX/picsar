@@ -1,6 +1,7 @@
 #ifndef __PMP_SPEC_FUNCTIONS__
 #define __PMP_SPEC_FUNCTIONS__
 
+#include <stdexcept>
 #include <string>
 #include <cmath>
 

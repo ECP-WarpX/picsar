@@ -1,6 +1,7 @@
 #ifndef __PMP_QUADRATURE__
 #define __PMP_QUADRATURE__
 
+#include <stdexcept>
 #include <string>
 #include <functional>
 
