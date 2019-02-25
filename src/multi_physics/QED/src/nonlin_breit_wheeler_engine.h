@@ -12,6 +12,7 @@
 #include "rng_wrapper.h"
 #include "special_functions.h"
 #include "quadrature.h"
+#include "lookup_table.hpp"
 
 
 namespace picsar{

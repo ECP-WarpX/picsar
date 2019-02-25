@@ -22,6 +22,7 @@
 #include "quadrature.h"
 #include "rng_wrapper.h"
 #include "chi_calc_functions.h"
+#include "lookup_table.hpp"
 
 using namespace std;
 using namespace testbed;
@@ -30,12 +31,15 @@ using namespace testbed;
 void test_individual_functions();
 void test_testbed();
 void test_BW();
+void test_lookup();
+
 
 int main(){
 
     //test_individual_functions();
     //test_testbed();
-    test_BW();
+    //test_BW();
+    test_lookup();
 }
 
 // ######################################################################TEST INDIVIDUAL FUNCTIONS###########################################################
@@ -291,6 +295,22 @@ void test_BW(){
                 sp->print_on_disk("out", i);
         }
     }
+}
+
+void test_lookup(){
+    vector<double> c1{1,2,3,4,5,6,7,8,9,10};
+    vector<double> c2{-1.0,0,1.0};
+    vector<double> c3{-100,0.0,100};
+    picsar::multi_physics::lookup_table<double, double> table{c1, c2, c3};
+    cout << "********************Test Lookup table***************************" << endl;
+    cout << "c1 = {1,2,3,4,5,6,7,8,9,10}" << endl;
+    cout << "c2{-1.0,0,1.0}" << endl;
+    cout << "c3{-100,0.0,100}" << endl;
+    cout << "picsar::multi_physics::lookup_table<3, double, double>(c1, c2, c3);" << endl;
+    cout << "Dims are: " << table.get_dims() << endl;
+    cout << "Size is: " << table.get_data_size() << endl;
+    cout << "*********************************************************************" << endl;
+    cout << endl;
 }
 
 //Nice field!
