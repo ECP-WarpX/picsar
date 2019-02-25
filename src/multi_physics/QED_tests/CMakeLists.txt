@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.5)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -13,9 +13,9 @@ add_executable(testbed src/main.cpp src/species.h src/species.cpp src/photons.h
                         )
 
 if(NOT ${CMAKE_VERSION} VERSION_LESS "3.8.0")
-  target_compile_features(qed PUBLIC cxx_std_11)
+  target_compile_features(testbed PUBLIC cxx_std_11)
 else()
-  set (CMAKE_CXX_STANDARD 11)
+  set_target_properties(testbed PROPERTIES CXX_STANDARD 11)
 endif()
 
 target_link_libraries(testbed qed)
