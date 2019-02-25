@@ -334,7 +334,7 @@ FARGS+= $(LARCH)
 
 ifeq ($(MODE),$(filter $(MODE),prod_spectral debug_spectral))
 	FARGS += -I$(FFTW3_INCLUDE) -D FFTW=1
-	LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_omp
+	LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_threads
 endif
 ifeq ($(IS_P3DFFT),true)
         FARGS += -I$(P3DFFT_INCLUDE)  -D P3DFFT
@@ -343,7 +343,7 @@ endif
 
 ifeq ($(MODE),library)
         FARGS += -fPIC -I$(FFTW3_INCLUDE) -D LIBRARY=1  -D  FFTW=1
-        LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_omp
+        LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_threads
 endif
 
 ifeq ($(IS_HANKEL),true)
