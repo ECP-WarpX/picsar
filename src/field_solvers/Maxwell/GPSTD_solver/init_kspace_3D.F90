@@ -1667,26 +1667,21 @@ MODULE gpstd_solver
     USE shared_data, ONLY: absorbing_bcs, c_dim, fftw_with_mpi, nkx, nky, nkz, nx,   &
       ny, nz, p3dfft_flag, nmodes
 
-    INTEGER(idp)           :: i, j,incr, lin_ind
+    INTEGER(idp)           :: i, j
     COMPLEX(cpx)           :: ii
     INTEGER(idp)           :: nfftx, nffty, nfftz,nfftxr, nbloc_ccmat, nbloc_vnew
     LOGICAL(lp)            :: switch
     REAL(num)              :: coeff_norm
     TYPE(C_PTR)            :: cdata
-    INTEGER(idp) , ALLOCATABLE, DIMENSION(:) :: is_usefull
  
     IF(absorbing_bcs) THEN
       !> When using pmls, cc_mat is a 12x17 matrix
       nbloc_ccmat = 17_idp
       nbloc_vnew = 12_idp
-      ALLOCATE(is_usefull(51))
-      is_usefull=is_usefull_abs
     ELSE IF(.NOT. absorbing_bcs) THEN
       !> When using peridic bcs, cc_mat is a 6x11 matrix
       nbloc_ccmat = 11_idp
       nbloc_vnew = 6_idp
-      ALLOCATE(is_usefull(33))
-      is_usefull=is_usefull_per
     ENDIF
   
     CALL select_case_dims_local(nfftx, nffty, nfftz)
@@ -1709,27 +1704,14 @@ MODULE gpstd_solver
     END IF
     !> Allocates cc_mat  block matrix
     !> cc_mat blocks are initally as an nbloc_ccmat x nbloc_ccmat block matrix 
-    !> At the end of the routine, useless blocks are deleted  
-    incr = 1
+    !> At the end of the routine, useless blcoks are deleted  
     DO i=1_idp, nbloc_ccmat
       DO j=1_idp, nbloc_ccmat
-        lin_ind = (i-1)*nbloc_ccmat + (j-1) 
-        IF (is_usefull(incr) == lin_ind) THEN
-          ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(nfftxr, nffty,    &
-          nfftz))
-          cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = nfftxr
-          cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = nffty
-          cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = nfftz
-          IF (incr<SIZE(is_usefull)) THEN
-             incr = incr + 1
-          ENDIF
-        ELSE  
-          ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(1,1,1))
-          cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = 1_idp
-          cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = 1_idp
-          cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = 1_idp
-          
-        ENDIF
+        ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(nkx, nky,    &
+        nkz))
+        cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = nkx
+        cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = nky
+        cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = nkz
       ENDDO
     ENDDO
 
@@ -1825,7 +1807,7 @@ MODULE gpstd_solver
     CALL select_case_dims_global(nfftx,nffty,nfftz)
     !> Here i'm not sure if it shoud be divided by nfftx* nffty or just nffty ....
     IF (l_AM_rz) THEN
-      coeff_norm = 1.0_num/nffty
+      coeff_norm = 1.0_num
     ELSE 
       coeff_norm = 1.0_num/(nfftx*nffty*nfftz)
     ENDIF
@@ -1836,13 +1818,25 @@ MODULE gpstd_solver
       ENDDO
     ENDDO
 
-
+    !> Delete uninitialized blocks
+    DO i=1,nbloc_ccmat
+      DO j=1,nbloc_ccmat
+        IF(sum(abs(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc))                   &
+        /size(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc)  == 0.0_num) THEN
+          DEALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc)
+          ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc(1,1,1))
+          cc_mat(nmatrixes)%block_matrix2d(i,j)%block3dc(1,1,1) = (0._num,0._num)
+          cc_mat(nmatrixes)%block_matrix2d(i,j)%nx = 1
+          cc_mat(nmatrixes)%block_matrix2d(i,j)%ny = 1
+          cc_mat(nmatrixes)%block_matrix2d(i,j)%nz = 1
+        ENDIF
+      ENDDO
+    ENDDO
 
     !> Delete kspace and at_op blocks
     !> Might not delete these blocks if current filtering or field correction is
     !> needed in Fourier space
-    CALL delete_k_space
-    DEALLOCATE(is_usefull)
+    !CALL delete_k_space
   END SUBROUTINE init_gpstd
 
   ! ______________________________________________________________________________________
