@@ -23,13 +23,13 @@ double picsar::multi_physics::quad_a_inf(const std::function<double(double)>& fu
 
 double picsar::multi_physics::quad_a_b(const std::function<double(double)>& func, double a, double b){
     //TO DO
-    throw std::logic_error("Function not yet implemented");
+    throw std::logic_error(std::string("Function not yet implemented"));
     return 0;
 }
 
 double picsar::multi_physics::quad_a_inf(const std::function<double(double)>& func, double a){
     //TO DO
-    throw std::logic_error("Function not yet implemented");
+    throw std::logic_error(std::string("Function not yet implemented"));
     return 0;
 }
 

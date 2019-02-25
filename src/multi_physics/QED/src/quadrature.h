@@ -1,6 +1,7 @@
 #ifndef __PMP_QUADRATURE__
 #define __PMP_QUADRATURE__
 
+#include <string>
 #include <functional>
 
 //For the moment quadrature is based on trapezoidal quadrature from boost

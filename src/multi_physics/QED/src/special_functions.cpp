@@ -34,7 +34,7 @@ double  picsar::multi_physics::k_v(double v, double x){
 
 double picsar::multi_physics::k_v(double v, double x){
     // TO IMPLEMENT (fails for safety reasons)
-    throw std::logic_error("Function not yet implemented");
+    throw std::logic_error(std::string("Function not yet implemented"));
     return 0.0;
 }
 

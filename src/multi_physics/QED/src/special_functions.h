@@ -1,6 +1,7 @@
 #ifndef __PMP_SPEC_FUNCTIONS__
 #define __PMP_SPEC_FUNCTIONS__
 
+#include <string>
 #include <cmath>
 
 //Set build option for the Bessel functions.
@@ -24,7 +25,7 @@
 #endif
 
 namespace picsar{
-    namespace multi_physics{        
+    namespace multi_physics{
         double k_1_3(double x);
         double k_2_3(double x);
         double k_5_3(double x);
