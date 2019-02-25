@@ -14,4 +14,4 @@ set(
     )
 
 add_subdirectory(QED)
-add_subdirectory(QED_Tests)
+add_subdirectory(QED_tests)
