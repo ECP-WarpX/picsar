@@ -31,7 +31,7 @@ void species::add_simple_process(simple_process proc, int ID){
 
 void species::do_simple_processes(ttime dt){
     for(auto& proc : simple_processes){
-        proc.second(pos, mom,  fields, optical_depth, mass, charge, dt);    
+        proc.second(pos, mom,  fields, optical_depth, mass, charge, dt);
     }
 }
 
@@ -94,7 +94,8 @@ void species::print_on_disk(std::string prefix, int step_num) const{
 
 std::tuple<positions_list, momenta_list,
 em_field_list,  std::vector<double>> species::get_copy_of_all_data(){
-    return {pos, mom, fields, optical_depth};
+    return std::tuple<positions_list, momenta_list,
+    em_field_list,  std::vector<double>>{pos, mom, fields, optical_depth};
 }
 
 positions_list species::get_copy_of_positions(){
@@ -107,7 +108,8 @@ momenta_list species::get_copy_of_momenta(){
 
 std::tuple<positions_list&, momenta_list&,
 em_field_list&,  std::vector<double>&> species::get_ref_of_all_data(){
-    return {pos, mom, fields, optical_depth};
+    return std::tuple<positions_list&, momenta_list&,
+    em_field_list&,  std::vector<double>&>{pos, mom, fields, optical_depth};
 }
 
 positions_list& species::get_ref_of_positions(){
@@ -118,5 +120,5 @@ momenta_list& species::get_ref_of_momenta(){
 }
 
 std::vector<double>& species::get_ref_of_optical_depth(){
-    return optical_depth;   
+    return optical_depth;
 }
