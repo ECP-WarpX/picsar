@@ -6,14 +6,6 @@ build:
     pull: true
 
   ci:
-    # Install dependencies
-    - pip install matplotlib pytest
-    # Install FFTW3
-    - sudo apt-get update && sudo apt-get install -y libfftw3-dev libfftw3-mpi-dev
-    # Get the latest version of warp
-    - cd /home/warp_user/warp/pywarp90 && git pull && make install && make pinstall
-    - cd /home/warp_user/src/bitbucket.org/berkeleylab/picsar/
-
     #QED LIBRARY
     #Install dependencies
     - sudo apt-get update && sudo apt-get install -y libboost-math-dev cmake3
@@ -24,8 +16,17 @@ build:
     - cmake ../.
     - make
     - cd ../../..
-
     #-----------
+
+    # Install dependencies
+    - pip install matplotlib pytest
+    # Install FFTW3
+    - sudo apt-get update && sudo apt-get install -y libfftw3-dev libfftw3-mpi-dev
+    # Get the latest version of warp
+    - cd /home/warp_user/warp/pywarp90 && git pull && make install && make pinstall
+    - cd /home/warp_user/src/bitbucket.org/berkeleylab/picsar/
+
+
 
     # Compile the unit tests
     - make build_test
