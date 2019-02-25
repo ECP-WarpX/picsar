@@ -1,2 +1,0 @@
-/usr/bin/ar qc libqed.a  CMakeFiles/qed.dir/src/landau_lifshitz.cpp.o CMakeFiles/qed.dir/src/special_functions.cpp.o CMakeFiles/qed.dir/src/chi_calc_functions.cpp.o CMakeFiles/qed.dir/src/nonlin_breit_wheeler_engine.cpp.o CMakeFiles/qed.dir/src/quadrature.cpp.o CMakeFiles/qed.dir/src/rng_wrapper.cpp.o
-/usr/bin/ranlib libqed.a

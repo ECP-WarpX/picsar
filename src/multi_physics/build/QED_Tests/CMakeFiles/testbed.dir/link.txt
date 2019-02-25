@@ -1,1 +1,0 @@
-/usr/bin/c++    -rdynamic CMakeFiles/testbed.dir/src/main.cpp.o CMakeFiles/testbed.dir/src/species.cpp.o CMakeFiles/testbed.dir/src/photons.cpp.o CMakeFiles/testbed.dir/src/leptons.cpp.o CMakeFiles/testbed.dir/src/electrons.cpp.o CMakeFiles/testbed.dir/src/positrons.cpp.o  -o ../bin/testbed ../QED/libqed.a 
