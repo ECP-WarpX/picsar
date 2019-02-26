@@ -152,7 +152,7 @@ MODULE simple_io
         ! - Write current density er
         IF (rank.eq.0) WRITE(0, *) "Write electric field bt"
         CALL write_RZ_field('./RESULTS/'//TRIM(ADJUSTL(fileel))//                   &
-        TRIM(ADJUSTL(strtemp))//'.txt', abs(el_c), nx,ny,nmodes,nxguards,nyguards)
+        TRIM(ADJUSTL(strtemp))//'.txt', REAL(el_c, KIND=8), nx,ny,nmodes,nxguards,nyguards)
       ENDIF
       IF (c_output_et .EQ. 1) THEN
         IF (rank.eq.0) WRITE(0, *) "Write electric field bt"
@@ -685,9 +685,9 @@ SUBROUTINE write_RZ_field(filename, array, nx_loc,ny_loc,nmode,nxg,nyg)
 
   numrows=nx_loc+2*nxg
   numcols=ny_loc+2*nyg
-
+  
   OPEN(UNIT=12, FILE=filename, ACTION="write", STATUS="replace")
-  write (0,*) "file opened and   start writing"
+  write (0,*) "file opened and   start writing", "nx_loc ==", nx_loc , "nxg== ", nxg
   DO imode=1,nmode
     DO i=1,numrows
       WRITE(12,*) (array(i,j,imode), j=1,numcols)

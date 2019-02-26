@@ -107,9 +107,9 @@ USE shared_data , ONLY : dx, dy
         CALL laser_gaussian 
         write (*,*) "Laser GAUSSIAN" 
       ENDIF
-      do k=1,nx   
-        do j=1,ny 
-          do m=1,2
+      do k=0,nx-1   
+        do j=0,ny-1 
+          do m=0,1
             if (er_c(k,j,m) /= er_c(k,j,m)) then
               write (0,*) "Max of ERRRRRRRRRRR" , er_c(k,j,m), "k=", k, "j= ", j, "m= ",m
             end if
@@ -456,6 +456,12 @@ SUBROUTINE laser_gaussian
   jt_c=0.0_num 
   rho_c=0.0_num
   rhoold_c=0.0_num
+  el=0.0_num
+  er=0.0_num
+  et=0.0_num
+  bl=0.0_num
+  br=0.0_num
+  bt=0.0_num
   DO k=0, ny-1
     diffract_factor = 1._num + ii * prop_dir*(z(k) - zf) * inv_zr
      !write (0,*) "entered k loop ", k
@@ -469,11 +475,11 @@ SUBROUTINE laser_gaussian
      !write (*,*) "exp_argument(i,k)" , exp_argument(i,k)
      profile (i,k)= exp(exp_argument(i,k)) /(diffract_factor * stretch_factor**0.5)
      !write (*,*) "profile (i,k) ", profile (i,k)
-     Er_laser(i+1,k+1) = E0* profile(i,k)*exp(ii*theta_pol)
+     Er_laser(i,k) = E0* profile(i,k)*exp(ii*theta_pol)
      !write (*,*) "Er_laser(i,k) ", Er_laser(i,k)
-     Et_laser(i+1,k+1) = -ii* E0 * profile(i,k)* exp(ii* theta_pol)
+     Et_laser(i,k) = -ii* E0 * profile(i,k)* exp(ii* theta_pol)
      !write (*,*) "Et_laser(i,k) ", Et_laser(i,k) 
-     er_c(i+1,k+1,2) =er_c(i+1,k+1,2)+  Er_laser(i+1,k+1)
+     el_c(i,k,1) =el_c(i,k,1)+  Er_laser(i,k)
      !er_c(i,k,0) = CMPLX(i,0.0_NUM)
      !et_c(i,k,0)= CMPLX(0.,0.0_NUM)
      !el_c(i,k,0)= CMPLX(0.,0.0_NUM)
@@ -481,7 +487,7 @@ SUBROUTINE laser_gaussian
      !et_c(i,k,1)= CMPLX(0.,0.0_NUM)
      !el_c(i,k,1)= CMPLX(0.,0.0_NUM)     
      !write (*,*) "er_c(i,k,1) ", er_c(i,k,1)
-     et_c(i+1,k+1,2) =er_c(i+1,k+1,2)+  Et_laser(i+1,k+1)
+     !et_c(i,k,1) =et_c(i,k,1)+  Et_laser(i,k)
      !et_c(i,k,1) = DCMPLX(i,0_NUM)
      !write (*,*) "et_c(i,k,1) " , et_c(i,k,1)
    END DO

@@ -279,15 +279,26 @@ MODULE mpi_routines
     nysplit = ny_global_grid / nprocy
     nzsplit = nz_global_grid / nprocz
     IF(c_dim == 3 ) THEN
-      IF (nxsplit .LT. nxguards .OR. nysplit .LT. nyguards .OR. nzsplit .LT. &
-         nzguards)  THEN
-        IF (rank .EQ. 0) THEN
-          WRITE(0, *) 'WRONG CPU SPLIT nlocal<nguards 1'
-          WRITE(0, *) nxsplit, nysplit, nzsplit
-          WRITE(0, *) nx_global_grid, ny_global_grid, nz_global_grid
-          CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
+      IF (l_AM_rz) THEN 
+        IF (nxsplit .LT. nxguards .OR. nysplit .LT.  nyguards)  THEN
+          IF (rank .EQ. 0) THEN
+            WRITE(0, *) 'WRONG CPU SPLIT nlocal<nguards 2'
+            WRITE(0, *) nxsplit, nysplit
+            WRITE(0, *) nx_global_grid, ny_global_grid
+            CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
+          ENDIF
         ENDIF
-      ENDIF
+      ELSE
+        IF (nxsplit .LT. nxguards .OR. nysplit .LT. nyguards .OR. nzsplit .LT. &
+           nzguards)  THEN
+          IF (rank .EQ. 0) THEN
+            WRITE(0, *) 'WRONG CPU SPLIT nlocal<nguards 1'
+            WRITE(0, *) nxsplit, nysplit, nzsplit
+            WRITE(0, *) nx_global_grid, ny_global_grid, nz_global_grid
+            CALL MPI_ABORT(MPI_COMM_WORLD, errcode, ierr)
+          ENDIF
+        ENDIF
+      END IF 
     ELSE IF(c_dim ==2) THEN
       IF (nxsplit .LT. nxguards .OR. nzsplit .LT.  nzguards)  THEN
         IF (rank .EQ. 0) THEN
@@ -685,7 +696,12 @@ LOGICAL(isp)                               :: is_in_place
     nyguards = 0_idp
     nyjguards = 0_idp
   ENDIF
-
+  
+  IF (l_AM_rz) THEN 
+    nz_global = nmodes
+    nzguards = 0_idp
+    nzjguards = 0_idp
+  END IF
   ! - Create the base group upon which all other groups are defined
   CALL MPI_COMM_GROUP(comm, mpi_world_group, errcode)
 
@@ -1537,6 +1553,14 @@ IF(c_dim == 2) THEN
   nyjguards = 0_idp
 ENDIF
 
+IF (l_AM_rz) THEN 
+  nz=nmodes
+  nz_global=nmodes
+  nz_grid =nmodes+1
+  nzguards =0_idp
+  nzjguards =0_idp
+END IF
+
 #if defined(FFTW)
 ! -- Case of distributed FFT
 IF(fftw_with_mpi) THEN
@@ -1721,25 +1745,36 @@ IF (.NOT. l_axis_allocated) THEN
   ALLOCATE(x_global(-nxguards:nx_global+nxguards))
   ALLOCATE(y_global(-nyguards:ny_global+nyguards))
   IF (l_AM_rz) THEN
-    ALLOCATE (z(0:nmodes))
-    ALLOCATE(z_global(0:nmodes))
+    ALLOCATE (z(nmodes))
+    ALLOCATE(z_global(nmodes))
   ELSE
     ALLOCATE(z(-nzguards:nz+nzguards))
     ALLOCATE(z_global(-nzguards:nz_global+nzguards))
+  ENDIF
   l_axis_allocated=.TRUE.
-  ENDIF 
 ENDIF
 !!! --- Set up global grid
-DO ix = -nxguards, nx_global+nxguards
-  x_global(ix) = x_grid_min + ix * dx
-ENDDO
-DO iy = -nyguards, ny_global+nyguards
-  y_global(iy) = y_grid_min + iy * dy
-ENDDO
-DO iz = -nzguards, nz_global+nzguards
-  z_global(iz) = z_grid_min + iz * dz
-ENDDO
-
+IF (l_AM_rz ) THEN 
+  DO ix = -nxguards, nx_global+nxguards
+    x_global(ix) = x_grid_min + (ix * dx+0.5)
+  ENDDO
+  DO iy = -nyguards, ny_global+nyguards
+    y_global(iy) = y_grid_min + iy * dy
+  ENDDO
+  DO iz = 1, nmodes
+    z_global(iz) = iz
+  ENDDO
+ELSE
+  DO ix = -nxguards, nx_global+nxguards
+    x_global(ix) = x_grid_min + ix * dx
+  ENDDO
+  DO iy = -nyguards, ny_global+nyguards
+    y_global(iy) = y_grid_min + iy * dy
+  ENDDO
+  DO iz = -nzguards, nz_global+nzguards
+    z_global(iz) = z_grid_min + iz * dz
+  ENDDO
+END IF
 !!! --- Set up local grid maxima and minima
 DO iproc = 1, nprocx
   x_grid_mins(iproc) = x_global(cell_x_min(iproc))
@@ -1753,12 +1788,16 @@ IF(c_dim == 3) THEN
 ELSE
  y_grid_mins(1) = 0
  y_grid_maxs(1) = 0
-ENDIF 
-DO iproc = 1, nprocz
-  z_grid_mins(iproc) = z_global(cell_z_min(iproc))
-  z_grid_maxs(iproc) = z_global(cell_z_max(iproc)+1)
-ENDDO
-
+ENDIF
+IF (l_AM_rz) THEN 
+  z_grid_mins(1) = 0
+  z_grid_maxs(1) = 0
+ELSE 
+  DO iproc = 1, nprocz
+    z_grid_mins(iproc) = z_global(cell_z_min(iproc))
+    z_grid_maxs(iproc) = z_global(cell_z_max(iproc)+1)
+  ENDDO
+END IF 
 END SUBROUTINE compute_simulation_axis
 
 ! ______________________________________________________________________________________
@@ -2104,7 +2143,7 @@ IF (l_spectral) THEN
       nky=(2*nyguards+ny)
       nkz= nmodes
       !write (*,*) "nx= ", nx , "nxguards= ", nxguards, "ny= ", ny, "nmodes= ", nmodes
-      IF (.NOT. g_spectral) THEN
+      !IF (.NOT. g_spectral) THEN
       ! - Allocate complex FFT arrays
         ALLOCATE(el_f(nkx, nky, nkz))
         ALLOCATE(ep_f(nkx, nky, nkz))
@@ -2148,33 +2187,33 @@ IF (l_spectral) THEN
         ! - neither ex_r,ey_r ... components
         ! - In this case only splitted fields are allocated  
         ! - The merge is done using local fields (ex = exy+exz )
-        !ALLOCATE(el_c(imn:imx, jmn:jmx, kmn:kmx))
-        !ALLOCATE(er_c(imn:imx, jmn:jmx, kmn:kmx))
-        !ALLOCATE(et_c(imn:imx, jmn:jmx, kmn:kmx))
-        !ALLOCATE(bl_c(imn:imx, jmn:jmx, kmn:kmx))
-        !ALLOCATE(br_c(imn:imx, jmn:jmx, kmn:kmx))
-        !ALLOCATE(bt_c(imn:imx, jmn:jmx, kmn:kmx))
-        !ALLOCATE(jl_c(imn:imx, jmn:jmx, kmn:kmx))
-        !ALLOCATE(jr_c(imn:imx, jmn:jmx, kmn:kmx))
-        !ALLOCATE(jt_c(imn:imx, jmn:jmx, kmn:kmx))
-        !ALLOCATE(rho_c(imn:imx, jmn:jmx, kmn:kmx))
-        !ALLOCATE(rhoold_c(imn:imx, jmn:jmx, kmn:kmx))
-        !ALLOCATE(Er_laser(imn:imx, jmn:jmx))
-        !ALLOCATE(Et_laser(imn:imx, jmn:jmx))
-        ALLOCATE(el_c(nkx, nky, nkz))
-        ALLOCATE(er_c(nkx, nky, nkz))
-        ALLOCATE(et_c(nkx, nky, nkz))
-        ALLOCATE(bl_c(nkx, nky, nkz))
-        ALLOCATE(br_c(nkx, nky, nkz))
-        ALLOCATE(bt_c(nkx, nky, nkz))
-        ALLOCATE(jl_c(nkx, nky, nkz))
-        ALLOCATE(jr_c(nkx, nky, nkz))
-        ALLOCATE(jt_c(nkx, nky, nkz))
-        ALLOCATE(rho_c(nkx, nky, nkz))
-        ALLOCATE(rhoold_c(nkx, nky, nkz))
-        ALLOCATE(Er_laser(nkx, nky))
-        ALLOCATE(Et_laser(nkx, nky))
-      ENDIF
+        ALLOCATE(el_c(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(er_c(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(et_c(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(bl_c(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(br_c(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(bt_c(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(jl_c(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(jr_c(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(jt_c(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(rho_c(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(rhoold_c(imn:imx, jmn:jmx, kmn:kmx))
+        ALLOCATE(Er_laser(imn:imx, jmn:jmx))
+        ALLOCATE(Et_laser(imn:imx, jmn:jmx))
+        !ALLOCATE(el_c(nkx, nky, nkz))
+        !ALLOCATE(er_c(nkx, nky, nkz))
+        !ALLOCATE(et_c(nkx, nky, nkz))
+        !ALLOCATE(bl_c(nkx, nky, nkz))
+        !ALLOCATE(br_c(nkx, nky, nkz))
+        !ALLOCATE(bt_c(nkx, nky, nkz))
+        !ALLOCATE(jl_c(nkx, nky, nkz))
+        !ALLOCATE(jr_c(nkx, nky, nkz))
+        !ALLOCATE(jt_c(nkx, nky, nkz))
+        !ALLOCATE(rho_c(nkx, nky, nkz))
+        !ALLOCATE(rhoold_c(nkx, nky, nkz))
+        !ALLOCATE(Er_laser(nkx, nky))
+        !ALLOCATE(Et_laser(nkx, nky))
+      !ENDIF
     ENDIF
   ENDIF
 ENDIF
