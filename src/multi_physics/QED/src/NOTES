@@ -1,2 +1,0 @@
-Why don't we create a RNG class which is just a thread safe wrapper (e.g. using mutex) around
-Mersenne Twister plus some utility functions.
