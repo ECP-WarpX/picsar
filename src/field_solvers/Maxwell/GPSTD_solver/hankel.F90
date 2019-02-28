@@ -87,9 +87,9 @@ implicit none
 EXTERNAL DGEMM
 INTEGER (idp), INTENT(in) :: nfftr,nffty
 INTEGER  (idp):: I, J
-COMPLEX(cpx) ,  INTENT(in) :: a(:,:)
-REAL(num) ,  INTENT(in) :: b(:,:)
-COMPLEX(cpx) , INTENT(out) :: c(:,:)
+COMPLEX(cpx) , dimension(:,:), INTENT(in) :: a
+REAL(num) ,  dimension(:,:), INTENT(in) :: b
+COMPLEX(cpx) , dimension(:,:), INTENT(out) :: c
 COMPLEX (cpx), DIMENSION(size(c,2), size(c,1)) :: d 
 REAL (num) , dimension(size(a,1),size(a,2)) :: a_r, a_im 
 REAL (num) , dimension(size(c,2),size(c,1)) :: d_r, d_im
@@ -113,7 +113,7 @@ ii=DCMPLX(0._num,1_num)
 
 a_r= 0.0_num
 a_im =0.0_num
-c=0.0_num
+d=0.0_num
 d_im=0.0_num
 d_r =0.0_num
 #ifdef _OPENMP
@@ -166,7 +166,7 @@ SUBROUTINE hankel_matrix_init(nfftr,imode,p,rmax,invM)
   m= imode
   dr= dx
   !nfftr=10
-  !rmax=nx*dx
+  !rmax=nfftr*dx
   ALLOCATE (r(nfftr))
   ALLOCATE (x(nfftr))
   ALLOCATE (nu(nfftr))
@@ -548,6 +548,7 @@ SUBROUTINE Hankel_M_and_invM(imode)
   !s1=0.0_num
   !v1= 0.0_num
   rmax= dx *nfftr
+  !rmax=xmax
   DO p=imode-1, imode+1
     SELECT CASE(p-imode)
       CASE(-1)
@@ -682,9 +683,11 @@ SUBROUTINE get_Hfields()
   USE fields, ONLY:  nxguards, nyguards
   !INTEGER (idp), intent(in) :: nfftr
   !REAL(num), dimension(:,:), allocatable :: Ma
+  IMPLICIT NONE
   INTEGER(idp) :: nfftr, nffty
   INTEGER (idp) :: imode, i,j 
   REAL(num) :: t1, t2
+  complex(cpx)::ii
   COMPLEX(cpx),POINTER, DIMENSION(:, :) :: el_h_ptr, ep_h_ptr, em_h_ptr, bl_h_ptr, bp_h_ptr, &
                             bm_h_ptr, jl_h_ptr, jp_h_ptr, jm_h_ptr, rhoold_h_ptr, rho_h_ptr, &
                                  el_f_ptr, ep_f_ptr, em_f_ptr, bl_f_ptr, bp_f_ptr, bm_f_ptr, &
@@ -706,18 +709,24 @@ SUBROUTINE get_Hfields()
     nfftr=nx+2*nxguards
     nffty=ny+2*nyguards
 #endif
-  el_h = DCMPLX(0.0_NUM, 0.0_NUM)
-  em_h = DCMPLX(0.0_NUM, 0.0_NUM)
-  ep_h = DCMPLX(0.0_NUM, 0.0_NUM)
-  bl_h = DCMPLX(0.0_NUM, 0.0_NUM)
-  bm_h = DCMPLX(0.0_NUM, 0.0_NUM)
-  bp_h = DCMPLX(0.0_NUM, 0.0_NUM)
-  jl_h = DCMPLX(0.0_NUM, 0.0_NUM)
-  jm_h = DCMPLX(0.0_NUM, 0.0_NUM)
-  jp_h = DCMPLX(0.0_NUM, 0.0_NUM)
-  rho_h = DCMPLX(0.0_NUM, 0.0_NUM)
-  rhoold_h = DCMPLX(0.0_NUM, 0.0_NUM)
+  ii= DCMPLX(0.0_NUM,1.0_NUM)
+  !el_h = DCMPLX(0.0_NUM, 0.0_NUM)
+  !em_h = DCMPLX(0.0_NUM, 0.0_NUM)
+  !ep_h = DCMPLX(0.0_NUM, 0.0_NUM)
+  !bl_h = DCMPLX(0.0_NUM, 0.0_NUM)
+  !bm_h = DCMPLX(0.0_NUM, 0.0_NUM)
+  !bp_h = DCMPLX(0.0_NUM, 0.0_NUM)
+  !jl_h = DCMPLX(0.0_NUM, 0.0_NUM)
+  !jm_h = DCMPLX(0.0_NUM, 0.0_NUM)
+  !jp_h = DCMPLX(0.0_NUM, 0.0_NUM)
+  !rho_h = DCMPLX(0.0_NUM, 0.0_NUM)
+  !rhoold_h = DCMPLX(0.0_NUM, 0.0_NUM)
   Call get_Ffields_AM_rz()
+  !el_f=el_c
+  !em_f= (er_c+ii*et_c)/2.0_num
+  !ep_f=(er_c-ii*et_c)/2.0_num
+  !bm_f= (br_c+ii*bt_c)/2.0_num
+  !bp_f=(br_c-ii*bt_c)/2.0_num  
   write (*,*) "==========START GET H FIELD HERE AFTER GET F FIELD =============================="
   DO i=1, nfftr
    DO j=1, ny
@@ -741,51 +750,51 @@ SUBROUTINE get_Hfields()
   DO imode=1, nmodes
     !Ma = Ma_tot(:,:,imode)
     Call Hankel_M_and_invM(imode-1)
-    !write (0,*), "Ma ======" , Ma
-    !write (0,*), "Ma_1 ======" , Ma_1
-    !write (0,*), "Ma1 ======" , Ma1
-    !call cpu_time ( t1 )
-    el_h_ptr=>el_h(:,:,imode)
-    ep_h_ptr=>ep_h(:,:,imode)
-    em_h_ptr=>em_h(:,:,imode)
-    bl_h_ptr=>bl_h(:,:,imode)
-    bp_h_ptr=>bp_h(:,:,imode)
-    bm_h_ptr=>bm_h(:,:,imode)
-    jl_h_ptr=>jl_h(:,:,imode)
-    jp_h_ptr=>jp_h(:,:,imode)
-    jm_h_ptr=>jm_h(:,:,imode)
-    rhoold_h_ptr=>rhoold_h(:,:,imode)
-    rho_h_ptr=>rho_h(:,:,imode)
-    el_f_ptr=>el_f(:,:,imode)
-    ep_f_ptr=>ep_f(:,:,imode)
-    em_f_ptr=>em_f(:,:,imode)
-    bl_f_ptr=>bl_f(:,:,imode)
-    bp_f_ptr=>bp_f(:,:,imode)
-    bm_f_ptr=>bm_f(:,:,imode)
-    jl_f_ptr=>jl_f(:,:,imode)
-    jp_f_ptr=>jp_f(:,:,imode)
-    jm_f_ptr=>jm_f(:,:,imode)
-    rho_f_ptr=>rho_f(:,:,imode)
-    rhoold_f_ptr=>rhoold_f(:,:,imode)
-    Call  dgemm_example(el_f_ptr, Ma, el_h_ptr, nfftr, nffty)
-    Call  dgemm_example(ep_f_ptr, Ma_1, em_h_ptr, nfftr, nffty)
-    Call  dgemm_example(em_f_ptr, Ma1, ep_h_ptr, nfftr, nffty)
-    Call  dgemm_example(bl_f_ptr, Ma, bl_h_ptr, nfftr, nffty)
-    Call  dgemm_example(bp_f_ptr, Ma_1, bm_h_ptr, nfftr, nffty)
-    Call  dgemm_example(bm_f_ptr, Ma1, bp_h_ptr, nfftr, nffty)
-    Call  dgemm_example(jl_f_ptr, Ma, jl_h_ptr, nfftr, nffty)
-    Call  dgemm_example(jm_f_ptr, Ma1, jp_h_ptr, nfftr, nffty)
-    Call  dgemm_example(jp_f_ptr, Ma_1, jm_h_ptr, nfftr, nffty)
-    Call  dgemm_example(rho_f_ptr, Ma, rho_h_ptr, nfftr, nffty)
-    Call  dgemm_example(rhoold_f_ptr, Ma, rhoold_h_ptr, nfftr, nffty)
+  !  !write (0,*), "Ma ======" , Ma
+  !  !write (0,*), "Ma_1 ======" , Ma_1
+  !  !write (0,*), "Ma1 ======" , Ma1
+  !  !call cpu_time ( t1 )
+  !  el_h_ptr=>el_h(:,:,imode)
+  !  ep_h_ptr=>ep_h(:,:,imode)
+  !  em_h_ptr=>em_h(:,:,imode)
+  !  bl_h_ptr=>bl_h(:,:,imode)
+  !  bp_h_ptr=>bp_h(:,:,imode)
+  !  bm_h_ptr=>bm_h(:,:,imode)
+  !  jl_h_ptr=>jl_h(:,:,imode)
+  !  jp_h_ptr=>jp_h(:,:,imode)
+  !  jm_h_ptr=>jm_h(:,:,imode)
+  !  rhoold_h_ptr=>rhoold_h(:,:,imode)
+  !  rho_h_ptr=>rho_h(:,:,imode)
+  !  el_f_ptr=>el_f(:,:,imode)
+  !  ep_f_ptr=>ep_f(:,:,imode)
+  !  em_f_ptr=>em_f(:,:,imode)
+  !  bl_f_ptr=>bl_f(:,:,imode)
+  !  bp_f_ptr=>bp_f(:,:,imode)
+  !  bm_f_ptr=>bm_f(:,:,imode)
+  !  jl_f_ptr=>jl_f(:,:,imode)
+  !  jp_f_ptr=>jp_f(:,:,imode)
+  !  jm_f_ptr=>jm_f(:,:,imode)
+  !  rho_f_ptr=>rho_f(:,:,imode)
+  !  rhoold_f_ptr=>rhoold_f(:,:,imode)
+  !  Call  dgemm_example(el_f_ptr, Ma, el_h_ptr, nfftr, nffty)
+  !  Call  dgemm_example(ep_f_ptr, Ma_1, em_h_ptr, nfftr, nffty)
+  !  Call  dgemm_example(em_f_ptr, Ma1, ep_h_ptr, nfftr, nffty)
+  !  Call  dgemm_example(bl_f_ptr, Ma, bl_h_ptr, nfftr, nffty)
+  !  Call  dgemm_example(bp_f_ptr, Ma_1, bm_h_ptr, nfftr, nffty)
+  !  Call  dgemm_example(bm_f_ptr, Ma1, bp_h_ptr, nfftr, nffty)
+    !Call  dgemm_example(jl_f_ptr, Ma, jl_h_ptr, nfftr, nffty)
+    !Call  dgemm_example(jm_f_ptr, Ma1, jp_h_ptr, nfftr, nffty)
+    !Call  dgemm_example(jp_f_ptr, Ma_1, jm_h_ptr, nfftr, nffty)
+    !Call  dgemm_example(rho_f_ptr, Ma, rho_h_ptr, nfftr, nffty)
+    !Call  dgemm_example(rhoold_f_ptr, Ma, rhoold_h_ptr, nfftr, nffty)
     !call cpu_time ( t2 )
 
-    !Call  dgemm_example(el_f(:,:,imode), Ma, el_h(:,:,imode), nfftr, nffty )
-    !Call  dgemm_example(ep_f(:,:,imode), Ma_1, em_h(:,:,imode), nfftr, nffty)
-    !Call  dgemm_example(em_f(:,:,imode), Ma1, ep_h(:,:,imode), nfftr, nffty)
-    !Call  dgemm_example(bl_f(:,:,imode), Ma, bl_h(:,:,imode), nfftr, nffty)
-    !Call  dgemm_example(bp_f(:,:,imode), Ma_1, bm_h(:,:,imode), nfftr, nffty)
-    !Call  dgemm_example(bm_f(:,:,imode), Ma1, bp_h(:,:,imode), nfftr, nffty)
+    Call  dgemm_example(el_f(:,:,imode), Ma, el_h(:,:,imode), nfftr, nffty )
+    Call  dgemm_example(em_f(:,:,imode), Ma_1, em_h(:,:,imode), nfftr, nffty)
+    Call  dgemm_example(ep_f(:,:,imode), Ma1, ep_h(:,:,imode), nfftr, nffty)
+    Call  dgemm_example(bl_f(:,:,imode), Ma, bl_h(:,:,imode), nfftr, nffty)
+    Call  dgemm_example(bm_f(:,:,imode), Ma_1, bm_h(:,:,imode), nfftr, nffty)
+    Call  dgemm_example(bp_f(:,:,imode), Ma1, bp_h(:,:,imode), nfftr, nffty)
     !Call  dgemm_example(jl_f(:,:,imode), Ma, jl_h(:,:,imode), nfftr, nffty)
     !Call  dgemm_example(jm_f(:,:,imode), Ma1, jp_h(:,:,imode), nfftr, nffty)
     !Call  dgemm_example(jp_f(:,:,imode), Ma_1, jm_h(:,:,imode), nfftr, nffty)
@@ -822,7 +831,12 @@ SUBROUTINE get_Hfields()
   ! end do
   !end do 
   END DO
-
+  !el_h= el_f
+  !em_h= ep_f
+  !ep_h= em_f
+  !bl_h= bl_f
+  !bm_h= bp_f
+  !bp_h= bm_f
 
   !write (0,*) "em_f"
   !DO i=1, nfftr
@@ -909,28 +923,28 @@ SUBROUTINE get_Hfields_inv()
   bp_h_inv = DCMPLX(0.0_NUM, 0.0_NUM)
   write (*,*) "====================== START OF  GET H FIELD INV   =============================="
   DO imode=1, nmodes
-   ! Ma = Ma_tot(:,:,imode)
+  ! ! Ma = Ma_tot(:,:,imode)
     Call Hankel_M_and_invM(imode-1)
-    !call cpu_time ( t1 )
-    el_h_ptr=>el_h(:,:,imode)
-    ep_h_ptr=>ep_h(:,:,imode)
-    em_h_ptr=>em_h(:,:,imode)
-    bl_h_ptr=>bl_h(:,:,imode)
-    bp_h_ptr=>bp_h(:,:,imode)
-    bm_h_ptr=>bm_h(:,:,imode)
-    el_h_inv_ptr=>el_h_inv(:,:,imode)
-    ep_h_inv_ptr=>ep_h_inv(:,:,imode)
-    em_h_inv_ptr=>em_h_inv(:,:,imode)
-    bl_h_inv_ptr=>bl_h_inv(:,:,imode)
-    bp_h_inv_ptr=>bp_h_inv(:,:,imode)
-    bm_h_inv_ptr=>bm_h_inv(:,:,imode)
-    !write (0,*) "ep_h", MAXVAL(ABS(ep_h))
-    Call  dgemm_example(el_h_ptr, invM, el_h_inv_ptr, nfftr, nffty)
-    Call  dgemm_example(em_h_ptr, invM_1, em_h_inv_ptr, nfftr, nffty)
-    Call  dgemm_example(ep_h_ptr, invM1, ep_h_inv_ptr, nfftr, nffty)
-    Call  dgemm_example(bl_h_ptr, invM, bl_h_inv_ptr, nfftr, nffty)
-    Call  dgemm_example(bm_h_ptr, invM_1, bm_h_inv_ptr, nfftr, nffty)
-    Call  dgemm_example(bp_h_ptr, invM1, bp_h_inv_ptr, nfftr, nffty)
+  !  !call cpu_time ( t1 )
+  !  el_h_ptr=>el_h(:,:,imode)
+  !  ep_h_ptr=>ep_h(:,:,imode)
+  !  em_h_ptr=>em_h(:,:,imode)
+  !  bl_h_ptr=>bl_h(:,:,imode)
+  !  bp_h_ptr=>bp_h(:,:,imode)
+  !  bm_h_ptr=>bm_h(:,:,imode)
+  !  el_h_inv_ptr=>el_h_inv(:,:,imode)
+  !  ep_h_inv_ptr=>ep_h_inv(:,:,imode)
+  !  em_h_inv_ptr=>em_h_inv(:,:,imode)
+  !  bl_h_inv_ptr=>bl_h_inv(:,:,imode)
+  !  bp_h_inv_ptr=>bp_h_inv(:,:,imode)
+  !  bm_h_inv_ptr=>bm_h_inv(:,:,imode)
+  !  !write (0,*) "ep_h", MAXVAL(ABS(ep_h))
+  !  Call  dgemm_example(el_h_ptr, invM, el_h_inv_ptr, nfftr, nffty)
+  !  Call  dgemm_example(em_h_ptr, invM_1, em_h_inv_ptr, nfftr, nffty)
+  !  Call  dgemm_example(ep_h_ptr, invM1, ep_h_inv_ptr, nfftr, nffty)
+  !  Call  dgemm_example(bl_h_ptr, invM, bl_h_inv_ptr, nfftr, nffty)
+  !  Call  dgemm_example(bm_h_ptr, invM_1, bm_h_inv_ptr, nfftr, nffty)
+  !  Call  dgemm_example(bp_h_ptr, invM1, bp_h_inv_ptr, nfftr, nffty)
  !   Call  dgemm_example(jl_h(:,:,imode), invM, jl_h_inv(:,:,imode), nfftr)
  !   Call  dgemm_example(jp_h(:,:,imode), invM1, jp_h_inv(:,:,imode), nfftr)
  !   Call  dgemm_example(jm_h(:,:,imode), invM_1, jm_h_inv(:,:,imode), nfftr)
@@ -938,12 +952,12 @@ SUBROUTINE get_Hfields_inv()
  !   Call  dgemm_example(rhoold_h(:,:,imode), invM, rho_hold_inv(:,:,imode), nfftr)
     !call cpu_time ( t2 )
 
-    !Call  dgemm_example(el_h(:,:,imode), invM, el_h_inv(:,:,imode), nfftr, nffty)
-    !Call  dgemm_example(em_h(:,:,imode), invM_1, em_h_inv(:,:,imode), nfftr, nffty)
-    !Call  dgemm_example(ep_h(:,:,imode), invM1, ep_h_inv(:,:,imode), nfftr, nffty)
-    !Call  dgemm_example(bl_h(:,:,imode), invM, bl_h_inv(:,:,imode), nfftr, nffty)
-    !Call  dgemm_example(bm_h(:,:,imode), invM_1, bm_h_inv(:,:,imode), nfftr, nffty)
-    !Call  dgemm_example(bp_h(:,:,imode), invM1, bp_h_inv(:,:,imode), nfftr, nffty)
+    Call  dgemm_example(el_h(:,:,imode), invM, el_h_inv(:,:,imode), nfftr, nffty)
+    Call  dgemm_example(em_h(:,:,imode), invM_1, em_h_inv(:,:,imode), nfftr, nffty)
+    Call  dgemm_example(ep_h(:,:,imode), invM1, ep_h_inv(:,:,imode), nfftr, nffty)
+    Call  dgemm_example(bl_h(:,:,imode), invM, bl_h_inv(:,:,imode), nfftr, nffty)
+    Call  dgemm_example(bm_h(:,:,imode), invM_1, bm_h_inv(:,:,imode), nfftr, nffty)
+    Call  dgemm_example(bp_h(:,:,imode), invM1, bp_h_inv(:,:,imode), nfftr, nffty)
  ! write ( *, * ) 'Elapsed CPU time = ', t2 - t1
 
   !write (0,*) "el_h(10,10)", el_h_inv(10,10,:), "-------", el_h_inv_ptr(10,10)
@@ -973,6 +987,13 @@ SUBROUTINE get_Hfields_inv()
   !end do
 
   END DO
+  !el_h_inv=el_h
+  !em_h_inv=em_h
+  !ep_h_inv= ep_h
+  !bl_h_inv=bl_h
+  !bm_h_inv=bm_h
+  !bp_h_inv=bp_h
+
 
   !write (*,*) "dgemm successful"
 
@@ -1078,12 +1099,18 @@ END SUBROUTINE get_Hfields_inv
      write (0,*), er_h_inv(i,j,:)
    end do
   end do
-  el_c = DCMPLX(0.0_NUM, 0.0_NUM)
-  er_c = DCMPLX(0.0_NUM, 0.0_NUM)
-  et_c = DCMPLX(0.0_NUM, 0.0_NUM)
-  bl_c = DCMPLX(0.0_NUM, 0.0_NUM)
-  br_c = DCMPLX(0.0_NUM, 0.0_NUM)
-  bt_c = DCMPLX(0.0_NUM, 0.0_NUM)
+  !el_c = DCMPLX(0.0_NUM, 0.0_NUM)
+  !er_c = DCMPLX(0.0_NUM, 0.0_NUM)
+  !et_c = DCMPLX(0.0_NUM, 0.0_NUM)
+  !bl_c = DCMPLX(0.0_NUM, 0.0_NUM)
+  !br_c = DCMPLX(0.0_NUM, 0.0_NUM)
+  !bt_c = DCMPLX(0.0_NUM, 0.0_NUM)
+  !el_c =el_h_inv
+  !er_c=er_h_inv
+  !et_c=et_h_inv
+  !bl_c=bl_h_inv
+  !br_c=br_h_inv
+  !bt_c=-bt_h_inv
     CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, el_h_inv, el_c,plan_rz_f_inv)
     CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, er_h_inv, er_c,plan_rz_f_inv)
     CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, et_h_inv, et_c,plan_rz_f_inv)

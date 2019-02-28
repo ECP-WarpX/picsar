@@ -479,7 +479,7 @@ SUBROUTINE laser_gaussian
      !write (*,*) "Er_laser(i,k) ", Er_laser(i,k)
      Et_laser(i,k) = -ii* E0 * profile(i,k)* exp(ii* theta_pol)
      !write (*,*) "Et_laser(i,k) ", Et_laser(i,k) 
-     el_c(i,k,1) =el_c(i,k,1)+  Er_laser(i,k)
+     er_c(i,k,1) =er_c(i,k,1)+  Er_laser(i,k)
      !er_c(i,k,0) = CMPLX(i,0.0_NUM)
      !et_c(i,k,0)= CMPLX(0.,0.0_NUM)
      !el_c(i,k,0)= CMPLX(0.,0.0_NUM)
@@ -487,7 +487,7 @@ SUBROUTINE laser_gaussian
      !et_c(i,k,1)= CMPLX(0.,0.0_NUM)
      !el_c(i,k,1)= CMPLX(0.,0.0_NUM)     
      !write (*,*) "er_c(i,k,1) ", er_c(i,k,1)
-     !et_c(i,k,1) =et_c(i,k,1)+  Et_laser(i,k)
+     et_c(i,k,1) =et_c(i,k,1)+  Et_laser(i,k)
      !et_c(i,k,1) = DCMPLX(i,0_NUM)
      !write (*,*) "et_c(i,k,1) " , et_c(i,k,1)
    END DO
@@ -541,7 +541,12 @@ SUBROUTINE init_rz_fields
   bl_h_inv= DCMPLX(0.0_num, 0.0_num)
   bm_h_inv= DCMPLX(0.0_num, 0.0_num)
   bp_h_inv= DCMPLX(0.0_num, 0.0_num)
-
+  el_f= DCMPLX(0.0_num, 0.0_num)
+  em_f= DCMPLX(0.0_num, 0.0_num)
+  ep_f=  DCMPLX(0.0_num, 0.0_num)
+  bl_f= DCMPLX(0.0_num, 0.0_num)
+  bm_f= DCMPLX(0.0_num, 0.0_num)
+  bp_f= DCMPLX(0.0_num, 0.0_num)
 
 
 

@@ -1051,8 +1051,9 @@ MODULE fourier_psaotd
     USE fourier, ONLY: plan_rz_f
     USE mpi
     USE params, ONLY: it
-    USE picsar_precision, ONLY: idp, num
+    USE picsar_precision, ONLY: idp, num,cpx
     USE time_stat, ONLY: timestat_itstart, localtimes
+    IMPLICIT NONE
     REAL(num)   :: tmptime
     INTEGER(idp), INTENT(IN)    ::   nfftx,nffty,nfftz
     COMPLEX(cpx), dimension(:,:,:), allocatable :: ert_p, ert_m, brt_p,brt_m,jrt_p, jrt_m
@@ -1068,18 +1069,30 @@ MODULE fourier_psaotd
     ALLOCATE (jrt_m(nfftx,nffty,nfftz))
     
 
-    ert_p=DCMPLX(0.0_num,0.0_num)
-    ert_m=DCMPLX(0.0_num,0.0_num)
-    brt_p=DCMPLX(0.0_num,0.0_num)
-    brt_m=DCMPLX(0.0_num,0.0_num)
-    jrt_p=DCMPLX(0.0_num,0.0_num)
-    jrt_m=DCMPLX(0.0_num,0.0_num)
-    el_f=DCMPLX(0.0_num,0.0_num)
-    ep_f=DCMPLX(0.0_num,0.0_num)
-    em_f=DCMPLX(0.0_num,0.0_num)
-    bl_f=DCMPLX(0.0_num,0.0_num)
-    bp_f=DCMPLX(0.0_num,0.0_num)
-    bm_f=DCMPLX(0.0_num,0.0_num)
+    !ert_p=DCMPLX(0.0_num,0.0_num)
+    !ert_m=DCMPLX(0.0_num,0.0_num)
+    !brt_p=DCMPLX(0.0_num,0.0_num)
+    !brt_m=DCMPLX(0.0_num,0.0_num)
+    !jrt_p=DCMPLX(0.0_num,0.0_num)
+    !jrt_m=DCMPLX(0.0_num,0.0_num)
+    !el_f=DCMPLX(0.0_num,0.0_num)
+    !ep_f=DCMPLX(0.0_num,0.0_num)
+    !em_f=DCMPLX(0.0_num,0.0_num)
+    !bl_f=DCMPLX(0.0_num,0.0_num)
+    !bp_f=DCMPLX(0.0_num,0.0_num)
+    !bm_f=DCMPLX(0.0_num,0.0_num)
+    ert_p=0.0_num
+    ert_m=0.0_num
+    brt_p=0.0_num
+    brt_m=0.0_num
+    jrt_p=0.0_num
+    jrt_m=0.0_num
+    el_f=0.0_num
+    ep_f=0.0_num
+    em_f=0.0_num
+    bl_f=0.0_num
+    bp_f=0.0_num
+    bm_f=0.0_num
     ii=DCMPLX(0.0_num, 1.0_num)
     ert_p = (er_c+ii*et_c)/2.0_num
     ert_m = (er_c-ii*et_c)/2.0_num
