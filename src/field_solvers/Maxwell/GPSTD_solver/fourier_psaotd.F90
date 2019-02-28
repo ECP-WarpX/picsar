@@ -1901,7 +1901,7 @@ MODULE fourier_psaotd
           cc_mat(nmatrixes)%block_matrix2d(2, 2)%block3dc(ix, iy,                     &
           iz)*ep_h_old + cc_mat(nmatrixes)%block_matrix2d(2, 4)%block3dc(ix, iy,        &
           iz)*bl_h_old  + cc_mat(nmatrixes)%block_matrix2d(2, 5)%block3dc(ix, iy,       &
-          iz)*bm_h_old  + cc_mat(nmatrixes)%block_matrix2d(2, 8)%block3dc(ix, iy,       &
+          iz)*bp_h_old  + cc_mat(nmatrixes)%block_matrix2d(2, 8)%block3dc(ix, iy,       &
           iz)*jp_h_old + cc_mat(nmatrixes)%block_matrix2d(2, 11)%block3dc(ix,           &
           iy, iz)*rho_h_old + cc_mat(nmatrixes)%block_matrix2d(2,                       &
           10)%block3dc(ix, iy, iz)*rhoold_h_old

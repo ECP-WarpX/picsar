@@ -2303,6 +2303,7 @@ MODULE gpstd_solver
     USE matrix_coefficients
     USE constants
     USE params, ONLY : dt
+    IMPLICIT NONE
     INTEGER(idp)  :: i,j, imode   
     COMPLEX(cpx) ::  ii
     LOGICAL(lp), DIMENSION(:), ALLOCATABLE      :: switch
@@ -2398,7 +2399,7 @@ MODULE gpstd_solver
 
 
     cc_mat(nmatrixes)%block_matrix2d(5, 7)%block3dc = - mu0*                           &
-    ii*kspace(nmatrixes2)%block_vector(4)%block3dc/2.*                                 &
+    ii*kspace(nmatrixes2)%block_vector(4)%block3dc*0.5*                                 &
     at_op(nmatrixes2)%block_vector(3)%block3dc
 
 
@@ -2408,7 +2409,7 @@ MODULE gpstd_solver
 
 
     cc_mat(nmatrixes)%block_matrix2d(6, 7)%block3dc = - mu0*                           &
-    ii*kspace(nmatrixes2)%block_vector(4)%block3dc/2.*                                 &
+    ii*kspace(nmatrixes2)%block_vector(4)%block3dc*0.5*                                 &
     at_op(nmatrixes2)%block_vector(3)%block3dc
 
 

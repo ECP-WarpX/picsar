@@ -629,7 +629,7 @@ END SUBROUTINE push_efield_2d
       IF (.NOT. l_AM_rz) THEN
         CALL push_psaotd_ebfielfs_3d! - PUSH PSATD
       ELSE IF (l_AM_rz) THEN 
-        !CALL push_psaotd_ebfielfs_AM_rz !- push psatd in azimuthal cylindrical
+        CALL push_psaotd_ebfielfs_AM_rz !- push psatd in azimuthal cylindrical
         write (*,*) " without push_psaotd AM", MAXval( abs(er_c))
       END IF 
     ELSE IF(c_dim == 2) THEN

@@ -469,8 +469,8 @@ SUBROUTINE laser_gaussian
    DO i=0, nx-1
      !write (0,*) "entered i loop ", i
      !exp_argument(i,k) =  prop_dir*z(k)   
-     ! exp_argument(i,k) = - ii*cep_phase+ ii*k0*( prop_dir*(z(k) - z0)-clight*t )  &
-     exp_argument(i,k) = &
+     exp_argument(i,k) = - ii*cep_phase+ ii*k0*( prop_dir*(z(k) - z0)-clight*t )  &
+     !exp_argument(i,k) = &
       - (r(i)**2) / (w0**2 * diffract_factor) - 1./stretch_factor*inv_ctau2 * ( prop_dir*(z(k)-z0)-clight*t )**2
      !write (*,*) "exp_argument(i,k)" , exp_argument(i,k)
      profile (i,k)= exp(exp_argument(i,k)) /(diffract_factor * stretch_factor**0.5)
@@ -492,6 +492,9 @@ SUBROUTINE laser_gaussian
      !write (*,*) "et_c(i,k,1) " , et_c(i,k,1)
    END DO
   END DO
+
+  br_c= et_c/clight
+  bt_c= -er_c/clight
   !do k=0,nx-1
   !  Do i=0,ny-1
   !    write (0,*), "max value of erC" ,er_c(k,i,:)
