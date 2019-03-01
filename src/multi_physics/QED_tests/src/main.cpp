@@ -36,10 +36,10 @@ void test_lookup();
 
 int main(){
 
-    //test_individual_functions();
+    test_individual_functions();
     //test_testbed();
     //test_BW();
-    test_lookup();
+    //test_lookup();
 }
 
 // ######################################################################TEST INDIVIDUAL FUNCTIONS###########################################################
@@ -114,7 +114,7 @@ void test_individual_functions(){
     cout << endl;
 
 
-    cout << "********************Test BWFunctions *********************************" << endl;
+    cout << "********************Test Total production rate *********************************" << endl;
     // WARNING 2% discrepancy for first case, entirely due to integration for T function!!!!
     auto nn = [](double px,double py, double pz){return sqrt(px*px + py*py + pz*pz);};
     cout << "calc BW dN/dt (mom=[61019.1, -24359.3, 65116.2], EB=[69942.0, 38024.7, -43604.1, -26990.0, 58267.8, -63485.8], l = 800 nm, exp. 7.63488202211) : " << endl;
@@ -134,6 +134,22 @@ void test_individual_functions(){
         picsar::multi_physics::chi_photon_lambda({6.81696,9.68933,2.81229},{-4.89986,-9.65535,3.69471, 8.89549,-5.46574,-6.75393}, 0.8 * picsar::multi_physics::_um)) << endl;
     cout << "*********************************************************************" << endl;
     cout << endl;
+
+    cout << "********************Generate table on disk *********************************" << endl;
+    picsar::multi_physics::cumulative_distrib_params_list params;
+    params.chi_phot_low = 0.01;
+    params.chi_phot_how_many = 30;
+    params.chi_phot_mul = 1.2;
+    params.chi_ele_frac_min = 0.001;
+    params.chi_ele_frac_how_many = 20;
+    breit_wheeler_engine.generate_cumulative_distrib_pair_table(params);
+    cout << "********************Now I will write the table on disk *********************************" << endl;
+    breit_wheeler_engine.print_cumulative_distrib_pair_table("table.dat");
+    cout << "*********************************************************************" << endl;
+    cout << endl;
+
+
+
 }
 
 void test_testbed(){
@@ -234,7 +250,7 @@ void test_BW(){
     [&bw_engine, lambda](positions_list& pos, momenta_list& mom,
       const em_field_list& fields, std::vector<double>& opt_depth, double mass, double charge, ttime dt)->void{
           size_t size = pos.size();
-          for(int i = 0; i < size; i++){
+          for(size_t i = 0; i < size; i++){
               double chi =
                 picsar::multi_physics::chi_photon_lambda({mom[0][i], mom[1][i], mom[2][i]},
                 {fields[0][i], fields[1][i], fields[2][i],
@@ -298,10 +314,10 @@ void test_BW(){
 }
 
 void test_lookup(){
-    vector<double> c1{1,2,3,4,5,6,7,8,9,10};
-    vector<double> c2{-1.0,0,1.0};
-    vector<double> c3{-100,0.0,100};
-    picsar::multi_physics::lookup_table<double, double> table{c1, c2, c3};
+    vector<double> c1{0,1};
+    vector<double> c2{2,3,4};
+    vector<double> c3{5,6,7,8};
+    picsar::multi_physics::lookup_table<3, double, double> table{c1, c2, c3};
     cout << "********************Test Lookup table***************************" << endl;
     cout << "c1 = {1,2,3,4,5,6,7,8,9,10}" << endl;
     cout << "c2{-1.0,0,1.0}" << endl;
@@ -309,6 +325,42 @@ void test_lookup(){
     cout << "picsar::multi_physics::lookup_table<3, double, double>(c1, c2, c3);" << endl;
     cout << "Dims are: " << table.get_dims() << endl;
     cout << "Size is: " << table.get_data_size() << endl;
+    cout << "Coords are:" << endl;
+    for (int i = 0; i < 3; i++){
+        for(auto cc: table.get_coords(i))
+            cout << cc << " ";
+        cout << endl;
+    }
+    cout << "Filling with c1 + c2 + c3:" << endl;
+    for(auto cc1: c1){
+        for(auto cc2: c2){
+            for(auto cc3: c3){
+                table.fill_at(std::array<double,3>{cc1, cc2, cc3}, cc1 + cc2 + cc3);
+            }
+        }
+    }
+
+    for(auto cc1: c1){
+        for(auto cc2: c2){
+            for(auto cc3: c3){
+                table.fill_at(std::array<double,3>{cc1, cc2, cc3}, cc1 + cc2 + cc3);
+            }
+        }
+    }
+
+    for(auto cc1: c1){
+        for(auto cc2: c2){
+            for(auto cc3: c3){
+                double val;
+                table.get_at(std::array<double,3>{cc1, cc2, cc3}, val);
+                cout << cc1 << ", " << cc2 << ", "  << cc3 << " --> " ;
+                cout << val << endl;
+            }
+        }
+    }
+
+
+
     cout << "*********************************************************************" << endl;
     cout << endl;
 }
