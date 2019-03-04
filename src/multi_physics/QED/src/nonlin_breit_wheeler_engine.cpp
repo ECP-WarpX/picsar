@@ -115,15 +115,27 @@ void nonlin_breit_wheeler_engine::print_cumulative_distrib_pair_table(std::strin
 
 // In CODE UNITS
 double nonlin_breit_wheeler_engine::compute_dN_dt(double gamma_phot, double chi_phot){
+    if(chi_phot == 0.0)
+        return 0.0;
     return rate_conversion_factor_SI_to_code*pair_prod_coeff*(1.0/( chi_phot * chi_phot))*compute_TT_function(chi_phot)*(chi_phot/gamma_phot);
  }
+
+double nonlin_breit_wheeler_engine::compute_dN_dt_from_tables(double gamma_phot, double chi_phot){
+    if(chi_phot == 0.0)
+        return 0.0;
+    double T_from_table  = 0;
+    T_table.interp_at(std::array<double,1>{chi_phot}, T_from_table);
+    return rate_conversion_factor_SI_to_code*pair_prod_coeff*(1.0/( chi_phot * chi_phot))*T_from_table*(chi_phot/gamma_phot);
+}
 
  double nonlin_breit_wheeler_engine::compute_cumulative_distrib_pair(double chi_phot, double chi_ele){
     double num = quad_a_b(std::bind(compute_TT_integrand, chi_phot, _1), 0.0, chi_ele);
     return num/compute_TT_function(chi_phot) ;
  }
 
-//Will use lookup tables soon
  double nonlin_breit_wheeler_engine::get_total_pair_production_rate(double gamma_phot, double chi_phot){
-     return compute_dN_dt(gamma_phot, chi_phot);
+     if(lookup_tables_flag)
+        return compute_dN_dt_from_tables(gamma_phot, chi_phot);
+    else
+        return compute_dN_dt(gamma_phot, chi_phot);
  }

@@ -57,7 +57,7 @@ void species::remove_particle(int particle_index){
     for (auto& f: fields)
         f.erase(f.begin() + particle_index);
 
-        optical_depth.erase(optical_depth.begin() + particle_index);
+    optical_depth.erase(optical_depth.begin() + particle_index);
 }
 
 
@@ -66,7 +66,7 @@ void species::calc_fields(em_field_function em_function, ttime tt){
 
     for (int i = 0; i < num_particles; i++){
         em_field EB = em_function({pos[0][i], pos[1][i], pos[2][i]}, tt);
-        for (int j = 0; j < EB.size(); j++){
+        for (size_t j = 0; j < EB.size(); j++){
             fields[j][i] = EB[j];
         }
     }

@@ -36,9 +36,9 @@ void test_lookup();
 
 int main(){
 
-    test_individual_functions();
+    //test_individual_functions();
     //test_testbed();
-    //test_BW();
+    test_BW();
     //test_lookup();
 }
 
@@ -146,7 +146,7 @@ void test_individual_functions(){
     picsar::multi_physics::prod_rate_params_list prod_params;
     prod_params.chi_phot_low = 0.01;
     prod_params.chi_phot_how_many = 60;
-    prod_params.chi_phot_mul = 1.2;
+    prod_params.chi_phot_mul = 1.1;
 
     breit_wheeler_engine.generate_tables(cum_params, prod_params, &cout);
 
@@ -213,7 +213,7 @@ void test_testbed(){
         dump_file << tmom[0][0] << " " << tmom[1][0] << " " << tmom[2][0] << endl;
 
         for (auto& sp : specs)
-            sp->calc_fields([](position pos, double ttime){return em_field{0,0,0,100.0,0.0,0.0};}, i*dt);
+            sp->calc_fields([](position , double ){return em_field{0,0,0,100.0,0.0,0.0};}, i*dt);
 
         for (auto& sp : specs)
             sp->push_momenta(dt);
@@ -245,6 +245,19 @@ void test_BW(){
 
     //Init nonlin_breit_wheeler_engine
     picsar::multi_physics::nonlin_breit_wheeler_engine bw_engine{seed_BW, lambda};
+    picsar::multi_physics::cumulative_distrib_params_list cum_params;
+    cum_params.chi_phot_low = 0.01;
+    cum_params.chi_phot_how_many = 30;
+    cum_params.chi_phot_mul = 1.2;
+    cum_params.chi_ele_frac_min = 0.001;
+    cum_params.chi_ele_frac_how_many = 20;
+
+    picsar::multi_physics::prod_rate_params_list prod_params;
+    prod_params.chi_phot_low = 0.01;
+    prod_params.chi_phot_how_many = 60;
+    prod_params.chi_phot_mul = 1.1;
+
+    bw_engine.generate_tables(cum_params, prod_params, &cout);
 
     //Init some photons
     auto ptr_phot1 = make_shared<photons>("phot1");
@@ -256,7 +269,7 @@ void test_BW(){
     //Add BW decrease of optical depth to photons
     auto BW_opticaldepth =
     [&bw_engine, lambda](positions_list& pos, momenta_list& mom,
-      const em_field_list& fields, std::vector<double>& opt_depth, double mass, double charge, ttime dt)->void{
+      const em_field_list& fields, std::vector<double>& opt_depth, double, double, ttime dt)->void{
           size_t size = pos.size();
           for(size_t i = 0; i < size; i++){
               double chi =
@@ -273,8 +286,8 @@ void test_BW(){
 
     //Add a signaler for debug purposes
     auto BW_diag =
-    [](positions_list& pos, momenta_list& mom,
-      const em_field_list& fields, std::vector<double>& opt_depth, double mass, double charge, ttime dt)->void{
+    [](positions_list& , momenta_list& ,
+      const em_field_list& , std::vector<double>& opt_depth, double , double , ttime )->void{
           for(auto opt: opt_depth)
             std::cout << opt << endl;
     };
@@ -303,7 +316,7 @@ void test_BW(){
     for (int i = 0; i < num_steps; i++){
 
         for (auto& sp : specs)
-            sp->calc_fields([](position pos, double ttime){return em_field{0,0,0,900.0,0,0.0};}, i*dt);
+            sp->calc_fields([](position, double){return em_field{0,0,0,900.0,0,0.0};}, i*dt);
 
         for (auto& sp : specs)
             sp->push_momenta(dt);

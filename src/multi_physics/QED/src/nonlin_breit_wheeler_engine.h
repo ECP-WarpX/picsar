@@ -72,10 +72,12 @@ namespace picsar{
         static double compute_TT_integrand(double chi_phot, double chi_ele);
         static double compute_TT_function(double chi_phot);
         static double compute_cumulative_distrib_pair(double chi_phot, double chi_ele);
+        double compute_dN_dt(double gamma_phot, double chi_phot);
+
         void generate_cumulative_distrib_pair_table(cumulative_distrib_params_list params, std::ostream* diag);
         void generate_TT_table(prod_rate_params_list params, std::ostream* diag);
 
-        double compute_dN_dt(double gamma_phot, double chi_phot);
+        double compute_dN_dt_from_tables(double gamma_phot, double chi_phot);
 
     };
 

@@ -22,6 +22,6 @@ void photons::push_positions(ttime dt){
         pos[2][i] += coeff*mom[2][i];
     }
 }
-void photons::push_momenta(ttime dt){
+void photons::push_momenta(ttime){
     return;
 }
