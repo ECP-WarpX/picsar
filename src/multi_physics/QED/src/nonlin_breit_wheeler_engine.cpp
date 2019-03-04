@@ -103,7 +103,7 @@ void nonlin_breit_wheeler_engine::generate_TT_table(prod_rate_params_list params
     T_table = lookup_table<1, double>{chi_phot_v};
     for(auto cpp: chi_phot_v){
             T_table.fill_at(std::array<double,1>{cpp}, compute_TT_function(cpp));
-        message("    Generation of cumulative_distrib_table: chi_phot = " + std::to_string(cpp), diag);
+        message("    Generation of pair_prod_table: chi_phot = " + std::to_string(cpp), diag);
     }
 
     message("    Generation of pair_prod_table: END", diag);

@@ -145,7 +145,7 @@ void test_individual_functions(){
 
     picsar::multi_physics::prod_rate_params_list prod_params;
     prod_params.chi_phot_low = 0.01;
-    prod_params.chi_phot_how_many = 60;
+    prod_params.chi_phot_how_many = 150;
     prod_params.chi_phot_mul = 1.1;
 
     breit_wheeler_engine.generate_tables(cum_params, prod_params, &cout);
@@ -247,23 +247,23 @@ void test_BW(){
     picsar::multi_physics::nonlin_breit_wheeler_engine bw_engine{seed_BW, lambda};
     picsar::multi_physics::cumulative_distrib_params_list cum_params;
     cum_params.chi_phot_low = 0.01;
-    cum_params.chi_phot_how_many = 30;
-    cum_params.chi_phot_mul = 1.2;
+    cum_params.chi_phot_how_many = 2;
+    cum_params.chi_phot_mul = 1.025;
     cum_params.chi_ele_frac_min = 0.001;
-    cum_params.chi_ele_frac_how_many = 20;
+    cum_params.chi_ele_frac_how_many = 2;
 
     picsar::multi_physics::prod_rate_params_list prod_params;
     prod_params.chi_phot_low = 0.01;
-    prod_params.chi_phot_how_many = 60;
-    prod_params.chi_phot_mul = 1.1;
+    prod_params.chi_phot_how_many = 300;
+    prod_params.chi_phot_mul = 1.04;
 
     bw_engine.generate_tables(cum_params, prod_params, &cout);
 
     //Init some photons
     auto ptr_phot1 = make_shared<photons>("phot1");
-    ptr_phot1->add_particle({0,0,0},{1200.0,0.0,0.0});
-    ptr_phot1->add_particle({0,0,0},{0.0,1200.0,0.0});
-    ptr_phot1->add_particle({0,0,0},{0.0,0.0,1200.0});
+    ptr_phot1->add_particle({0,0,0},{-965.61, -3975.11, 6917.22});
+    ptr_phot1->add_particle({0,0,0},{0.0,300.0,0.0});
+    ptr_phot1->add_particle({0,0,0},{0.0,0.0,300.0});
     bw_engine.init_optical_depth_vector(ptr_phot1->get_ref_of_optical_depth());
 
     //Add BW decrease of optical depth to photons
@@ -278,20 +278,24 @@ void test_BW(){
                 fields[3][i], fields[4][i], fields[5][i]},
                 lambda);
               double prod_rate =  bw_engine.get_total_pair_production_rate( mom[0][i]* mom[0][i] + mom[1][i]* mom[1][i] + mom[2][i]* mom[2][i], chi);
-
               opt_depth[i] -= prod_rate*dt;
           }
     };
     ptr_phot1->add_simple_process(BW_opticaldepth, 0);
 
-    //Add a signaler for debug purposes
-    auto BW_diag =
-    [](positions_list& , momenta_list& ,
+    //Test when pair should be generated
+    auto BW_gen_test =
+    [&bw_engine, lambda](positions_list& , momenta_list& ,
       const em_field_list& , std::vector<double>& opt_depth, double , double , ttime )->void{
-          for(auto opt: opt_depth)
-            std::cout << opt << endl;
+          for(auto opt = opt_depth.begin(); opt != opt_depth.end(); opt++){
+              if(*opt < 0){
+                  std::cout << "Particle " << std::distance(opt_depth.begin(), opt)  << "should generate a pair!" << endl;
+                  *opt = bw_engine.get_optical_depth();
+              }
+          }
+
     };
-    ptr_phot1->add_simple_process(BW_diag, 777);
+    ptr_phot1->add_simple_process(BW_gen_test, 777);
 
     //Create LL pusher using multi_physics library
     auto pusher =
@@ -314,9 +318,8 @@ void test_BW(){
 
     // Main loop
     for (int i = 0; i < num_steps; i++){
-
         for (auto& sp : specs)
-            sp->calc_fields([](position, double){return em_field{0,0,0,900.0,0,0.0};}, i*dt);
+            sp->calc_fields([](position, double){return em_field{11.17, -2117.72, -1407.19, 6259.79, 7557.54, 773.11};}, i*dt);
 
         for (auto& sp : specs)
             sp->push_momenta(dt);

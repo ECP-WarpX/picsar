@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <array>
 #include <utility>
-
 #include <iostream>
 
 //This source file contains a templated lookup table (work in progress)
@@ -226,8 +225,11 @@ namespace picsar{
         template<size_t DIM, typename DATA_TYPE>
         bool lookup_table<DIM, DATA_TYPE>::interp_at(const std::array<DATA_TYPE, DIM>& where, DATA_TYPE& what){
             for(size_t i = 0; i < DIM; i++){
-                if(where[i] < coords[i].front() || where[i] > coords[i].back())
+                if(where[i] < coords[i].front() || where[i] > coords[i].back()){
+                    err("Warning: coord " + std::to_string(where[i]) +
+                        " outside table limits [" + std::to_string(coords[i].front()) + ":" + std::to_string(coords[i].back())  + "]!");
                     return false;
+                }
             }
             std::array<DATA_TYPE, DIM> left_coord;
             std::array<DATA_TYPE, DIM> right_coord;

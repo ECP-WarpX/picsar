@@ -5,6 +5,7 @@
 #include<cmath>
 #include<string>
 #include<fstream>
+#include<iostream>
 
 //Common definitions for the multi_physics library (header only)
 
@@ -73,6 +74,11 @@ namespace picsar{
         inline void message(const std::string& msg, std::ostream* diag){
             if(diag != nullptr)
                 *diag << msg << "\n";
+        }
+
+        //Error Message function
+        inline void err(const std::string& msg){
+            std::cerr << msg << "\n";
         }
 
 
