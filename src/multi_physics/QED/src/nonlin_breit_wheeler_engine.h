@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <random>
 #include <functional>
+#include <fstream>
 
 #include "commons.h"
 #include "rng_wrapper.h"
@@ -26,6 +27,12 @@ namespace picsar{
         size_t chi_ele_frac_how_many;
     } cumulative_distrib_params_list;
 
+    typedef struct{
+        double chi_phot_low;
+        size_t chi_phot_how_many;
+        double chi_phot_mul;
+    } prod_rate_params_list;
+
     class nonlin_breit_wheeler_engine{
     public:
       nonlin_breit_wheeler_engine(int64_t seed, double lambda);
@@ -37,7 +44,7 @@ namespace picsar{
 
       double get_total_pair_production_rate(double gamma_phot, double chi_phot);
 
-      void generate_cumulative_distrib_pair_table(cumulative_distrib_params_list params);
+      void generate_tables(cumulative_distrib_params_list cum_params, prod_rate_params_list rate_params, std::ostream* diag = nullptr);
       void print_cumulative_distrib_pair_table(std::string file_name);
 
       bool has_lookup_tables();
@@ -55,7 +62,7 @@ namespace picsar{
         bool lookup_tables_flag = false;
 
         cumulative_distrib_params_list cumulative_distrib_params;
-        lookup_table<2, double, double> cumulative_distrib_table;
+        lookup_table<2, double> cumulative_distrib_table;
 
 
         static double compute_x(double chi_phot, double chi_ele);
@@ -63,6 +70,8 @@ namespace picsar{
         static double compute_TT_integrand(double chi_phot, double chi_ele);
         static double compute_TT_function(double chi_phot);
         static double compute_cumulative_distrib_pair(double chi_phot, double chi_ele);
+        void generate_cumulative_distrib_pair_table(cumulative_distrib_params_list params, std::ostream* diag);
+        void generate_pair_prod_table(prod_rate_params_list params, std::ostream* diag);
 
         double compute_dN_dt(double gamma_phot, double chi_phot);
 

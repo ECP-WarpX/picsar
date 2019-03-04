@@ -3,6 +3,8 @@
 
 #include<cstdint>
 #include<cmath>
+#include<string>
+#include<fstream>
 
 //Common definitions for the multi_physics library (header only)
 
@@ -66,6 +68,12 @@ namespace picsar{
         //some checks on the size of the fundamental types
         static_assert(sizeof(int) == 4, "int type is not 32 bit!");
         static_assert(sizeof(double) == 8, "double type is not 64 bit!");
+
+        //Message function
+        inline void message(const std::string& msg, std::ostream* diag){
+            if(diag != nullptr)
+                *diag << msg << "\n";
+        }
 
 
     }

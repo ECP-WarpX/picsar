@@ -7,6 +7,7 @@
 #include <vector>
 #include <algorithm>
 #include <array>
+#include <utility>
 
 #include <iostream>
 
@@ -20,7 +21,7 @@
 namespace picsar{
     namespace multi_physics{
 
-        template<size_t DIM, typename COORD_TYPE, typename DATA_TYPE>
+        template<size_t DIM, typename DATA_TYPE>
         class lookup_table{
         public:
             lookup_table();
@@ -31,19 +32,24 @@ namespace picsar{
             template <typename... COORDS>
             lookup_table(COORDS... _coords, std::vector<DATA_TYPE>&& _raw_data);
 
-            bool fill_at(std::array<COORD_TYPE, DIM> where, DATA_TYPE what);
-            bool get_at(std::array<COORD_TYPE, DIM> where, DATA_TYPE& what);
+            bool fill_at(const std::array<DATA_TYPE, DIM>& where, DATA_TYPE what);
+            bool get_at(const std::array<DATA_TYPE, DIM>& where, DATA_TYPE& what);
+
+            bool interp_at(const std::array<DATA_TYPE, DIM>& where, DATA_TYPE& what);
+            bool interp_at_one_dim(size_t which_dim, DATA_TYPE where, const std::array<size_t, DIM>& pos, DATA_TYPE& what);
 
             size_t get_dims();
             size_t get_data_size();
-            std::vector<COORD_TYPE> get_coords(size_t dim);
+            std::vector<DATA_TYPE> get_coords(size_t dim);
 
             void print_on_disk(std::string file_name);
 
         private:
-            std::array<std::vector<COORD_TYPE>, DIM> coords;
+            std::array<std::vector<DATA_TYPE>, DIM> coords;
             size_t total_size = 0;
             std::vector<DATA_TYPE> raw_data;
+
+            static const size_t SIZE_2N = (1 << DIM);
 
             template <typename COORDS>
             void init_lookup_table(size_t counter, COORDS _coords);
@@ -52,7 +58,7 @@ namespace picsar{
             void init_lookup_table(size_t counter, COORDS _coords, REST... _other_coords);
 
             void do_coords_checks();
-            bool where_to_pos(const std::array<COORD_TYPE, DIM>& where, std::array<size_t, DIM>& pos);
+            bool where_to_pos(const std::array<DATA_TYPE, DIM>& where, std::array<size_t, DIM>& pos);
             void compute_total_size();
 
             PXR_FORCE_INLINE
@@ -61,12 +67,12 @@ namespace picsar{
 
         //##############################################################Implementation
 
-        template<size_t DIM, typename COORD_TYPE, typename DATA_TYPE>
-        lookup_table<DIM, COORD_TYPE, DATA_TYPE>::lookup_table(){}
+        template<size_t DIM, typename DATA_TYPE>
+        lookup_table<DIM, DATA_TYPE>::lookup_table(){}
 
-        template<size_t DIM, typename COORD_TYPE, typename DATA_TYPE>
+        template<size_t DIM, typename DATA_TYPE>
         template <typename... COORDS>
-        lookup_table<DIM, COORD_TYPE, DATA_TYPE>::lookup_table(COORDS... _coords){
+        lookup_table<DIM, DATA_TYPE>::lookup_table(COORDS... _coords){
             static_assert(sizeof...(_coords) == DIM, "Wrong number of arguments.");
             init_lookup_table(0, _coords...);
             do_coords_checks();
@@ -79,9 +85,9 @@ namespace picsar{
             raw_data.resize(total_size);
         }
 
-        template<size_t DIM, typename COORD_TYPE, typename DATA_TYPE>
+        template<size_t DIM, typename DATA_TYPE>
         template <typename... COORDS>
-        lookup_table<DIM, COORD_TYPE, DATA_TYPE>::lookup_table(COORDS... _coords, std::vector<DATA_TYPE>&& _raw_data){
+        lookup_table<DIM, DATA_TYPE>::lookup_table(COORDS... _coords, std::vector<DATA_TYPE>&& _raw_data){
             static_assert(sizeof...(_coords) == DIM, "Wrong number of arguments.");
             init_lookup_table(0, _coords...);
             do_coords_checks();
@@ -95,8 +101,8 @@ namespace picsar{
             raw_data.resize(total_size);
         }
 
-        template<size_t DIM, typename COORD_TYPE, typename DATA_TYPE>
-        bool lookup_table<DIM, COORD_TYPE, DATA_TYPE>::fill_at(std::array<COORD_TYPE, DIM> where, DATA_TYPE what){
+        template<size_t DIM, typename DATA_TYPE>
+        bool lookup_table<DIM, DATA_TYPE>::fill_at(const std::array<DATA_TYPE, DIM>& where, DATA_TYPE what){
             std::array<size_t, DIM> pos;
             bool success = where_to_pos(where, pos);
             if(success)
@@ -105,8 +111,8 @@ namespace picsar{
             return success;
         }
 
-        template<size_t DIM, typename COORD_TYPE, typename DATA_TYPE>
-        bool lookup_table<DIM, COORD_TYPE, DATA_TYPE>::get_at(std::array<COORD_TYPE, DIM> where, DATA_TYPE& what){
+        template<size_t DIM, typename DATA_TYPE>
+        bool lookup_table<DIM, DATA_TYPE>::get_at(const std::array<DATA_TYPE, DIM>& where, DATA_TYPE& what){
             std::array<size_t, DIM> pos;
             bool success = where_to_pos(where, pos);
             if(success)
@@ -115,35 +121,35 @@ namespace picsar{
             return success;
         }
 
-        template<size_t DIM, typename COORD_TYPE, typename DATA_TYPE>
+        template<size_t DIM, typename DATA_TYPE>
         template<typename COORDS>
-        void lookup_table<DIM, COORD_TYPE, DATA_TYPE>::init_lookup_table(size_t counter, COORDS _coords){
+        void lookup_table<DIM, DATA_TYPE>::init_lookup_table(size_t counter, COORDS _coords){
             coords[counter] = _coords;
         }
-        template<size_t DIM, typename COORD_TYPE, typename DATA_TYPE>
+        template<size_t DIM, typename DATA_TYPE>
         template<typename COORDS, typename... REST>
-        void lookup_table<DIM, COORD_TYPE, DATA_TYPE>::init_lookup_table(size_t counter, COORDS _coords, REST... _other_coords){
+        void lookup_table<DIM, DATA_TYPE>::init_lookup_table(size_t counter, COORDS _coords, REST... _other_coords){
             coords[counter] = (_coords);
             init_lookup_table(++counter, _other_coords...);
         }
 
-        template<size_t DIM, typename COORD_TYPE, typename DATA_TYPE>
-        size_t lookup_table<DIM, COORD_TYPE, DATA_TYPE>::get_dims(){
+        template<size_t DIM, typename DATA_TYPE>
+        size_t lookup_table<DIM, DATA_TYPE>::get_dims(){
             return coords.size();
         }
 
-        template<size_t DIM, typename COORD_TYPE, typename DATA_TYPE>
-        size_t lookup_table<DIM, COORD_TYPE, DATA_TYPE>::get_data_size(){
+        template<size_t DIM, typename DATA_TYPE>
+        size_t lookup_table<DIM, DATA_TYPE>::get_data_size(){
             return raw_data.size();
         }
 
-        template<size_t DIM, typename COORD_TYPE, typename DATA_TYPE>
-        std::vector<COORD_TYPE> lookup_table<DIM, COORD_TYPE, DATA_TYPE>::get_coords(size_t dim){
+        template<size_t DIM, typename DATA_TYPE>
+        std::vector<DATA_TYPE> lookup_table<DIM, DATA_TYPE>::get_coords(size_t dim){
             return coords.at(dim);
         }
 
-        template<size_t DIM, typename COORD_TYPE, typename DATA_TYPE>
-        void lookup_table<DIM, COORD_TYPE, DATA_TYPE>::do_coords_checks(){
+        template<size_t DIM, typename DATA_TYPE>
+        void lookup_table<DIM, DATA_TYPE>::do_coords_checks(){
             for(auto const& clist: coords){
                 if (!std::is_sorted(clist.begin(), clist.end()))
                     throw std::logic_error(std::string("Coordinates must be sorted!"));
@@ -157,16 +163,16 @@ namespace picsar{
             }
         }
 
-        template<size_t DIM, typename COORD_TYPE, typename DATA_TYPE>
-        void lookup_table<DIM, COORD_TYPE, DATA_TYPE>::compute_total_size(){
+        template<size_t DIM, typename DATA_TYPE>
+        void lookup_table<DIM, DATA_TYPE>::compute_total_size(){
             total_size = 1;
             for(auto const& clist: coords)
                 total_size *= clist.size();
         }
 
 
-        template<size_t DIM, typename COORD_TYPE, typename DATA_TYPE>
-        size_t lookup_table<DIM, COORD_TYPE, DATA_TYPE>::compute_index(std::array<size_t, DIM> pos){
+        template<size_t DIM, typename DATA_TYPE>
+        size_t lookup_table<DIM, DATA_TYPE>::compute_index(std::array<size_t, DIM> pos){
             size_t index = 0;
             size_t mul = 1;
             for(auto it = pos.rbegin(); it != pos.rend();  it++){
@@ -176,8 +182,8 @@ namespace picsar{
             return index;
         }
 
-        template<size_t DIM, typename COORD_TYPE, typename DATA_TYPE>
-        bool lookup_table<DIM, COORD_TYPE, DATA_TYPE>::where_to_pos(const std::array<COORD_TYPE, DIM>& where, std::array<size_t, DIM>& pos){
+        template<size_t DIM, typename DATA_TYPE>
+        bool lookup_table<DIM, DATA_TYPE>::where_to_pos(const std::array<DATA_TYPE, DIM>& where, std::array<size_t, DIM>& pos){
             for(size_t i = 0; i < where.size(); i++){
                 auto lower = std::lower_bound(coords[i].begin(), coords[i].end(), where[i]);
                 if(lower != coords[i].end() && *lower == where[i]){
@@ -190,8 +196,8 @@ namespace picsar{
             return true;
         }
 
-        template<size_t DIM, typename COORD_TYPE, typename DATA_TYPE>
-        void lookup_table<DIM, COORD_TYPE, DATA_TYPE>::print_on_disk(std::string file_name){
+        template<size_t DIM, typename DATA_TYPE>
+        void lookup_table<DIM, DATA_TYPE>::print_on_disk(std::string file_name){
             std::ofstream of;
             of.open(file_name.c_str());
 
@@ -217,6 +223,82 @@ namespace picsar{
             of.close();
         }
 
+        template<size_t DIM, typename DATA_TYPE>
+        bool lookup_table<DIM, DATA_TYPE>::interp_at(const std::array<DATA_TYPE, DIM>& where, DATA_TYPE& what){
+            for(size_t i = 0; i < DIM; i++){
+                if(where[i] < coords[i].front() || where[i] > coords[i].back())
+                    return false;
+            }
+            std::array<DATA_TYPE, DIM> left_coord;
+            std::array<DATA_TYPE, DIM> right_coord;
+            std::array<size_t, DIM> left_idx;
+            std::array<size_t, DIM> right_idx;
+            std::array<DATA_TYPE, DIM> dist;
+
+            for(size_t i = 0; i < DIM; i++){
+                auto right = std::upper_bound(coords[i].begin(), coords[i].end(), where[i]);
+                auto left = right - 1;
+                left_coord[i] = *left;
+                right_coord[i] = *right;
+                left_idx[i] = std::distance(coords[i].begin(), left);
+                right_idx[i] = std::distance(coords[i].begin(), right);
+                dist[i] = right_coord[i] - left_coord[i];
+            }
+
+            DATA_TYPE hypercube_vol = 1.0;
+            for(auto cc: dist){
+                hypercube_vol*= cc;
+            }
+            DATA_TYPE inverse_hypercube_vol = 1.0/hypercube_vol;
+
+
+            what = 0.0;
+
+            std::array<size_t, DIM> pos;
+            for (size_t idx = 0; idx < SIZE_2N; idx++){
+                DATA_TYPE temp_mul = 1.0;
+                for(size_t dim = 0; dim < DIM; dim++){
+                    if(idx & (1 << dim)){
+                        temp_mul *= (right_coord[dim] - where[dim]);
+                        pos[dim] = right_idx[dim];
+                    }
+                    else{
+                        temp_mul *= (where[dim] - left_coord[dim]);
+                        pos[dim] = left_idx[dim];
+                    }
+                }
+                what += raw_data[compute_index(pos)]*temp_mul;
+            }
+
+            what *= inverse_hypercube_vol;
+
+            return true;
+        }
+
+        template<size_t DIM, typename DATA_TYPE>
+        bool lookup_table<DIM, DATA_TYPE>::interp_at_one_dim(size_t which_dim, DATA_TYPE where, const std::array<size_t, DIM>& pos, DATA_TYPE& what){
+            if(where < coords[which_dim].front() || where > coords[which_dim].back())
+                return false;
+
+            auto right = std::upper_bound(coords[which_dim].begin(), coords[which_dim].end(), where);
+            auto left = right - 1;
+            double left_coord = *left;
+            double right_coord = *right;
+            double dist = right_coord - left_coord;
+            size_t left_idx = std::distance(coords[which_dim].begin(), left);
+            size_t right_idx = std::distance(coords[which_dim].begin(), right);
+
+            double left_coeff = (where - left_coord);
+            double right_coeff = (right_coord - where);
+            std::array<size_t, DIM>& left_pos = pos;
+            std::array<size_t, DIM>& right_pos = pos;
+            left_pos[which_dim] = left_idx;
+            right_pos[which_dim] = right_idx;
+
+            what = (raw_data[compute_index(left_pos)]*left_coeff + raw_data[compute_index(right_pos)]*right_coeff)/dist;
+
+            return true;
+        }
     }
 }
 

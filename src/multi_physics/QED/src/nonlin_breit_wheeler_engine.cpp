@@ -51,7 +51,16 @@ double nonlin_breit_wheeler_engine::compute_TT_function(double chi_phot){
     return quad_a_b(std::bind(compute_TT_integrand, chi_phot, _1), 0.0, chi_phot);
 }
 
-void nonlin_breit_wheeler_engine::generate_cumulative_distrib_pair_table(cumulative_distrib_params_list params){
+void nonlin_breit_wheeler_engine::generate_tables(cumulative_distrib_params_list cum_params, prod_rate_params_list prod_params, std::ostream* diag){
+    generate_cumulative_distrib_pair_table(cum_params, diag);
+
+    generate_pair_prod_table(prod_params, diag);
+
+    lookup_tables_flag = true;
+}
+
+void nonlin_breit_wheeler_engine::generate_cumulative_distrib_pair_table(cumulative_distrib_params_list params, std::ostream* diag){
+    message("    Generation of cumulative_distrib_table: START", diag);
     double chi_phot = params.chi_phot_low;
 
     std::vector<double> chi_phot_v(params.chi_phot_how_many);
@@ -71,13 +80,19 @@ void nonlin_breit_wheeler_engine::generate_cumulative_distrib_pair_table(cumulat
 
     cumulative_distrib_params = params;
 
-    cumulative_distrib_table = lookup_table<2, double, double>{chi_phot_v, chi_ele_frac_v};
+    cumulative_distrib_table = lookup_table<2, double>{chi_phot_v, chi_ele_frac_v};
     for(auto cpp: chi_phot_v){
         for(auto eef: chi_ele_frac_v){
             cumulative_distrib_table.fill_at(std::array<double,2>{cpp, eef}, compute_cumulative_distrib_pair(cpp, cpp*eef));
         }
+        message("    Generation of cumulative_distrib_table: chi_phot = " + std::to_string(cpp), diag);
     }
-
+    message("    Generation of cumulative_distrib_table: END", diag);
+}
+void nonlin_breit_wheeler_engine::generate_pair_prod_table(prod_rate_params_list params, std::ostream* diag){
+    message("    Generation of pair_prod_table: START", diag);
+    // TO DO
+    message("    Generation of pair_prod_table: END", diag);
 }
 
 void nonlin_breit_wheeler_engine::print_cumulative_distrib_pair_table(std::string file_name){

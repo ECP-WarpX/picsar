@@ -136,13 +136,21 @@ void test_individual_functions(){
     cout << endl;
 
     cout << "********************Generate table on disk *********************************" << endl;
-    picsar::multi_physics::cumulative_distrib_params_list params;
-    params.chi_phot_low = 0.01;
-    params.chi_phot_how_many = 30;
-    params.chi_phot_mul = 1.2;
-    params.chi_ele_frac_min = 0.001;
-    params.chi_ele_frac_how_many = 20;
-    breit_wheeler_engine.generate_cumulative_distrib_pair_table(params);
+    picsar::multi_physics::cumulative_distrib_params_list cum_params;
+    cum_params.chi_phot_low = 0.01;
+    cum_params.chi_phot_how_many = 30;
+    cum_params.chi_phot_mul = 1.2;
+    cum_params.chi_ele_frac_min = 0.001;
+    cum_params.chi_ele_frac_how_many = 20;
+
+    picsar::multi_physics::prod_rate_params_list prod_params;
+    prod_params.chi_phot_low = 0.01;
+    prod_params.chi_phot_how_many = 30;
+    prod_params.chi_phot_mul = 1.2;
+
+    breit_wheeler_engine.generate_tables(cum_params, prod_params, &cout);
+
+
     cout << "********************Now I will write the table on disk *********************************" << endl;
     breit_wheeler_engine.print_cumulative_distrib_pair_table("table.dat");
     cout << "*********************************************************************" << endl;
@@ -314,15 +322,15 @@ void test_BW(){
 }
 
 void test_lookup(){
-    vector<double> c1{0,1};
-    vector<double> c2{2,3,4};
-    vector<double> c3{5,6,7,8};
-    picsar::multi_physics::lookup_table<3, double, double> table{c1, c2, c3};
+    vector<double> c1{0,1,2};
+    vector<double> c2{0,1,2};
+    vector<double> c3{0,1,2};
+    picsar::multi_physics::lookup_table<3, double> table{c1, c2, c3};
     cout << "********************Test Lookup table***************************" << endl;
-    cout << "c1 = {1,2,3,4,5,6,7,8,9,10}" << endl;
-    cout << "c2{-1.0,0,1.0}" << endl;
-    cout << "c3{-100,0.0,100}" << endl;
-    cout << "picsar::multi_physics::lookup_table<3, double, double>(c1, c2, c3);" << endl;
+    cout << "c1 = {0,1,2}" << endl;
+    cout << "c2{0,1,2}" << endl;
+    cout << "c3{0,1,2}" << endl;
+    cout << "picsar::multi_physics::lookup_table<3, double>(c1, c2, c3);" << endl;
     cout << "Dims are: " << table.get_dims() << endl;
     cout << "Size is: " << table.get_data_size() << endl;
     cout << "Coords are:" << endl;
@@ -359,6 +367,21 @@ void test_lookup(){
         }
     }
 
+    cout << "Interpolation test at 0.5, 0.5, 0.5 :" << endl;
+    double val;
+    bool answ;
+    answ = table.interp_at(std::array<double,3>{0.5, 0.5, 0.5}, val);
+    if(answ)
+        cout << "Res: " << val << endl;
+    else
+        cout << "Failed!!" << endl;
+
+    cout << "Interpolation test at -0.5, 0.5, 0.5 :" << endl;
+    answ = table.interp_at(std::array<double,3>{-0.5, 0.5, 0.5}, val);
+        if(answ)
+            cout << "Res: " << val << endl;
+        else
+            cout << "Failed!!" << endl;
 
 
     cout << "*********************************************************************" << endl;
