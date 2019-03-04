@@ -64,6 +64,8 @@ namespace picsar{
         cumulative_distrib_params_list cumulative_distrib_params;
         lookup_table<2, double> cumulative_distrib_table;
 
+        prod_rate_params_list prod_rate_params;
+        lookup_table<1, double> T_table;
 
         static double compute_x(double chi_phot, double chi_ele);
         static double compute_inner_integral(double x);
@@ -71,7 +73,7 @@ namespace picsar{
         static double compute_TT_function(double chi_phot);
         static double compute_cumulative_distrib_pair(double chi_phot, double chi_ele);
         void generate_cumulative_distrib_pair_table(cumulative_distrib_params_list params, std::ostream* diag);
-        void generate_pair_prod_table(prod_rate_params_list params, std::ostream* diag);
+        void generate_TT_table(prod_rate_params_list params, std::ostream* diag);
 
         double compute_dN_dt(double gamma_phot, double chi_phot);
 

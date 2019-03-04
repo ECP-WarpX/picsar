@@ -145,7 +145,7 @@ void test_individual_functions(){
 
     picsar::multi_physics::prod_rate_params_list prod_params;
     prod_params.chi_phot_low = 0.01;
-    prod_params.chi_phot_how_many = 30;
+    prod_params.chi_phot_how_many = 60;
     prod_params.chi_phot_mul = 1.2;
 
     breit_wheeler_engine.generate_tables(cum_params, prod_params, &cout);

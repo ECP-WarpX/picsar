@@ -54,7 +54,7 @@ double nonlin_breit_wheeler_engine::compute_TT_function(double chi_phot){
 void nonlin_breit_wheeler_engine::generate_tables(cumulative_distrib_params_list cum_params, prod_rate_params_list prod_params, std::ostream* diag){
     generate_cumulative_distrib_pair_table(cum_params, diag);
 
-    generate_pair_prod_table(prod_params, diag);
+    generate_TT_table(prod_params, diag);
 
     lookup_tables_flag = true;
 }
@@ -89,9 +89,23 @@ void nonlin_breit_wheeler_engine::generate_cumulative_distrib_pair_table(cumulat
     }
     message("    Generation of cumulative_distrib_table: END", diag);
 }
-void nonlin_breit_wheeler_engine::generate_pair_prod_table(prod_rate_params_list params, std::ostream* diag){
+void nonlin_breit_wheeler_engine::generate_TT_table(prod_rate_params_list params, std::ostream* diag){
     message("    Generation of pair_prod_table: START", diag);
-    // TO DO
+
+    double chi_phot = params.chi_phot_low;
+    std::vector<double> chi_phot_v(params.chi_phot_how_many);
+    generate(chi_phot_v.begin(), chi_phot_v.end(),
+        [&chi_phot, params](){ double elem = chi_phot; chi_phot*=params.chi_phot_mul; return elem;}
+    );
+
+    prod_rate_params = params;
+
+    T_table = lookup_table<1, double>{chi_phot_v};
+    for(auto cpp: chi_phot_v){
+            T_table.fill_at(std::array<double,1>{cpp}, compute_TT_function(cpp));
+        message("    Generation of cumulative_distrib_table: chi_phot = " + std::to_string(cpp), diag);
+    }
+
     message("    Generation of pair_prod_table: END", diag);
 }
 
