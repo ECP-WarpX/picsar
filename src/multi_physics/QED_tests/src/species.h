@@ -6,6 +6,7 @@
 #include <fstream>
 #include <tuple>
 #include <map>
+#include <algorithm>
 
 #include "commons.h"
 
@@ -20,7 +21,10 @@ namespace testbed{
         int get_num_particles() const;
 
         void add_particle(position part_pos, momentum part_mom);
-        void remove_particle(int particle_index);
+        void swap_particles(size_t index1, size_t index2);
+        void remove_particle(size_t particle_index);
+        void remove_particles_from_toend(size_t particle_index);
+        void remove_particles_given_sorted_indices(const std::vector<size_t>& kill_index);
 
         virtual void push_positions(ttime dt) = 0;
         virtual void push_momenta(ttime dt) = 0;
@@ -29,6 +33,9 @@ namespace testbed{
         void add_simple_process(simple_process proc, int ID);
         void do_simple_process(int ID, ttime dt);
         void do_all_simple_processes(ttime dt);
+
+        void add_process_with_destruction(process_with_destruction proc, int ID);
+        void do_process_with_destruction(int ID, ttime dt);
 
         void print_on_disk(std::string prefix, int step_num) const;
 
@@ -54,8 +61,11 @@ namespace testbed{
         std::vector<double> optical_depth;
 
         std::map<int,simple_process> simple_processes;
+        std::map<int,process_with_destruction> processes_with_destruction;
 
         std::string header = "species";
+
+        void overwrite_particle(size_t isource, size_t idest);
     };
 }
 

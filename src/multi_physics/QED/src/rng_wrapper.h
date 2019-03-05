@@ -14,6 +14,7 @@ namespace picsar{
 
 
       double get_unf_0_1(); //Get rnd number uniformly distributed in [0,1)
+      double get_unf(double a, double b); //Get rnd number uniformly distributed in [a,b)
       double get_exp_l1(); //Get rnd number with exponential distribution (lambda=1)
 
     private:

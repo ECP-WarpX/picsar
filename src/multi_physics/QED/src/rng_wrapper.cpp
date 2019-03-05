@@ -14,6 +14,11 @@ double rng_wrapper::get_unf_0_1(){
     return unf_dist_0_1();
 }
 
+double rng_wrapper::get_unf(double a, double b){
+    auto unf_dist_a_b = bind(uniform_real_distribution<double>(a, b), ref(rng));
+    return unf_dist_a_b();
+}
+
 double rng_wrapper::get_exp_l1(){
     return exp_dist_l1();
 }

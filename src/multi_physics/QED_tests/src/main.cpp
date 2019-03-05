@@ -233,12 +233,12 @@ void test_testbed(){
 }
 
 void test_BW(){
-    const double dt = 0.01;
-    const int num_steps = 10000;
+    const double dt = 0.05;
+    const int num_steps = 200;
 
-    auto is_out = [](int t_step){return (t_step % 1000 == 0);};
+    auto is_out = [](int t_step){return (t_step % 1 == 0);};
 
-    const int64_t seed_BW = 3397169560718639567;
+    const int64_t seed_BW = 2997169562813639567;
 
     //Fix lambda to 800 nm
     double lambda = 0.8 * picsar::multi_physics::_um;
@@ -254,16 +254,22 @@ void test_BW(){
 
     picsar::multi_physics::prod_rate_params_list prod_params;
     prod_params.chi_phot_low = 0.01;
-    prod_params.chi_phot_how_many = 300;
-    prod_params.chi_phot_mul = 1.04;
+    prod_params.chi_phot_how_many = 150;
+    prod_params.chi_phot_mul = 1.08;
 
     bw_engine.generate_tables(cum_params, prod_params, &cout);
 
     //Init some photons
     auto ptr_phot1 = make_shared<photons>("phot1");
-    const size_t how_many_phot = 10000;
+    const size_t how_many_phot = 20000;
+    const int64_t seed_photons = 123043949938;
+    picsar::multi_physics::rng_wrapper rngp{seed_photons};
     for(size_t i = 0; i < how_many_phot; i++){
-        ptr_phot1->add_particle({0,0,0},{-965.61, -3975.11, 6917.22});
+        double mom = rngp.get_unf(8000,12000);
+        double theta = rngp.get_unf(0,2.0*M_PI);
+        double phi = acos(rngp.get_unf(-1.0,1.0));
+
+        ptr_phot1->add_particle({0,0,0},{mom*sin(phi)*cos(theta), mom*sin(phi)*sin(theta) , mom*cos(phi)});
     }
     bw_engine.init_optical_depth_vector(ptr_phot1->get_ref_of_optical_depth());
 
@@ -271,32 +277,27 @@ void test_BW(){
     auto BW_opticaldepth =
     [&bw_engine, lambda](positions_list& pos, momenta_list& mom,
       const em_field_list& fields, std::vector<double>& opt_depth, double, double, ttime dt)->void{
-          size_t size = pos.size();
+          size_t size = pos[0].size();
           for(size_t i = 0; i < size; i++){
               double chi =
                 picsar::multi_physics::chi_photon_lambda({mom[0][i], mom[1][i], mom[2][i]},
                 {fields[0][i], fields[1][i], fields[2][i],
                 fields[3][i], fields[4][i], fields[5][i]},
                 lambda);
-              double prod_rate =  bw_engine.get_total_pair_production_rate( mom[0][i]* mom[0][i] + mom[1][i]* mom[1][i] + mom[2][i]* mom[2][i], chi);
+              double prod_rate =  bw_engine.get_total_pair_production_rate( sqrt(mom[0][i]* mom[0][i] + mom[1][i]* mom[1][i] + mom[2][i]* mom[2][i]), chi);
               opt_depth[i] -= prod_rate*dt;
           }
     };
     ptr_phot1->add_simple_process(BW_opticaldepth, 0);
 
-    //Test when pair should be generated
-    auto BW_gen_test =
-    [&bw_engine, lambda](positions_list& , momenta_list& ,
-      const em_field_list& , std::vector<double>& opt_depth, double , double , ttime )->void{
-          for(auto opt = opt_depth.begin(); opt != opt_depth.end(); opt++){
-              if(*opt < 0){
-                  std::cout << "Particle " << std::distance(opt_depth.begin(), opt)  << "should generate a pair!" << endl;
-                  *opt = bw_engine.get_optical_depth();
-              }
-          }
 
-    };
-    ptr_phot1->add_simple_process(BW_gen_test, 777);
+        //Add simple process to print on disk how many photons are left
+        auto BW_howmanyphotons =
+        [&bw_engine, lambda](positions_list& pos, momenta_list& ,
+          const em_field_list& , std::vector<double>& , double, double, ttime dt)->void{
+              std::cout << "There are " << pos[0].size() << " photons left!" << std::endl;
+        };
+        ptr_phot1->add_simple_process(BW_howmanyphotons, 777);
 
     //Create LL pusher using multi_physics library
     auto pusher =
@@ -314,13 +315,28 @@ void test_BW(){
     auto ptr_pos1 = make_shared<positrons>("pos1");
     ptr_pos1->replace_pusher_momenta(pusher);
 
+    //add_process_with_destruction
+    auto BW_pair_prod=
+    [&bw_engine, lambda, ptr_ele1, ptr_pos1](const position& pos, const momentum& mom,
+       const em_field& field, const ooptical_depth& opt, double mass, double charge, ttime dt)->bool{
+           if(opt < 0.0){
+               cout << "a new pair!!" << endl;
+               ptr_ele1->add_particle({0,0,0},{0,0,0});
+               ptr_pos1->add_particle({0,0,0},{0,0,0});
+               return true;
+           }
+           return false;
+       };
+
+    ptr_phot1->add_process_with_destruction(BW_pair_prod, 42);
+
     //Prepare a species vector
     vector<shared_ptr<species>> specs{ptr_phot1, ptr_ele1, ptr_pos1};
 
     // Main loop
     for (int i = 0; i < num_steps; i++){
         for (auto& sp : specs)
-            sp->calc_fields([](position, double){return em_field{11.17, -2117.72, -1407.19, 6259.79, 7557.54, 773.11};}, i*dt);
+            sp->calc_fields([](position, double){return em_field{0.0, 0.0, 0.0, 0.0, 0.0, 2000.0};}, i*dt);
 
         for (auto& sp : specs)
             sp->push_momenta(dt);
@@ -331,11 +347,14 @@ void test_BW(){
         for (auto& sp : specs)
             sp->do_all_simple_processes(dt);
 
+        ptr_phot1->do_process_with_destruction(42, dt);
+
         if(is_out(i)){
             for (auto& sp : specs)
                 sp->print_on_disk("out", i);
         }
     }
+    cout << "BW END" << endl;
 }
 
 void test_lookup(){
