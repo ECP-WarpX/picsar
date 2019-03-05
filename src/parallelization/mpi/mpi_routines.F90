@@ -1768,20 +1768,13 @@ END SUBROUTINE compute_simulation_axis
 !> Creation 2015
 ! ______________________________________________________________________________________
 SUBROUTINE allocate_grid_quantities()
-USE iso_c_binding
-#if defined(SPECTRAL)
-USE mpi_fftw3, ONLY:  local_ny_tr,  local_ny,     &
-  local_nx_tr, alloc_local, local_nx, local_nz, local_nz_tr
-#endif
-#if defined(FFTW)
-USE mpi_fftw3, ONLY: fftw_alloc_complex,fftw_alloc_real
-#endif
 #if defined(CUDA_FFT)
 USE cufft
 #endif
+USE iso_c_binding
 #if defined(FFTW)
-USE fourier
-USE group_parameters
+USE mpi_fftw3, ONLY: alloc_local, fftw_alloc_complex, fftw_alloc_real, local_nx,     &
+  local_nx_tr, local_ny, local_ny_tr, local_nz, local_nz_tr
 #endif
 USE picsar_precision, ONLY: idp
 IMPLICIT NONE

@@ -57,22 +57,21 @@ MODULE fourier_psaotd
   !> @params[in] nopenmp - INTEGER(idp) - number of OpenMP threads/MPI processes
   ! ______________________________________________________________________________________
   SUBROUTINE init_plans_fourier_mpi(nopenmp)
-    USE fields, ONLY: ex_r, exf, exy_r
+#if defined(CUDA_FFT)
+    USE cufft
+#endif
+    USE fields, ONLY: ex_r, exf, exy_r, nxguards, nyguards, nzguards
+    USE fourier, ONLY: plan_c2r_cuda, plan_r2c_cuda
     USE group_parameters, ONLY: mpi_comm_group_id, nx_group, ny_group, nz_group
     USE iso_c_binding
-    USE fourier
-#if defined(CUDA_FFT)
-   USE cufft
-#endif
     USE mpi
     USE mpi_fftw3, ONLY: fftw_estimate, fftw_measure, fftw_mpi_plan_dft_c2r_2d,      &
       fftw_mpi_plan_dft_c2r_3d, fftw_mpi_plan_dft_r2c_2d, fftw_mpi_plan_dft_r2c_3d,  &
       fftw_mpi_transposed_in, fftw_mpi_transposed_out, plan_c2r_mpi, plan_r2c_mpi
     USE picsar_precision, ONLY: idp, isp
     USE shared_data, ONLY: absorbing_bcs, c_dim, comm, fftw_hybrid,                  &
-      fftw_mpi_transpose, fftw_plan_measure, fftw_threads_ok, nb_group,              &
-      nx, nx_global, ny, ny_global, nz, nz_global
-    USE fields, ONLY : nxguards, nyguards, nzguards
+      fftw_mpi_transpose, fftw_plan_measure, fftw_threads_ok, nb_group, nx,          &
+      nx_global, ny, ny_global, nz, nz_global, p3dfft_flag
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: nopenmp
     INTEGER(C_INT) :: nopenmp_cint, iret
@@ -1325,27 +1324,23 @@ MODULE fourier_psaotd
 
 #if defined(CUDA_FFT)
   SUBROUTINE fft_forward_r2c_local_cuda(nfftx,nffty,nfftz)
-    USE fastfft
-    USE fields, ONLY: g_spectral
-    USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
-    USE fields, ONLY : ex_r, ey_r, ez_r, bx_r, by_r, bz_r, jx_r, jy_r, jz_r,rho_r,   &
-                       rhoold_r
-    USE fields, ONLY : exy, exz, eyx,  eyz, ezx, ezy , bxy, bxz, byx, byz, bzx,bzy
-    USE fields, ONLY : exy_r, exz_r, eyx_r,  eyz_r, ezx_r, ezy_r, bxy_r, bxz_r,byx_r,&
-                       byz_r, bzx_r, bzy_r
-    USE fields, ONLY : exf, eyf, ezf, bxf, byf, bzf, jxf, jyf, jzf, rhof,   &
-                       rhooldf
-    USE shared_data, ONLY : absorbing_bcs
-    USE fields , ONLY : exyf,exzf,eyxf,eyzf,ezxf,ezyf,bxyf,bxzf,byxf,byzf,bzxf,bzyf
-
-
-
-    USE fourier, ONLY: plan_r2c_cuda
     USE cufft
+    USE fastfft
+    USE fields, ONLY: bx, bx_r, bxf, bxy, bxy_r, bxyf, bxz, bxz_r, bxzf, by, by_r,   &
+      byf, byx, byx_r, byxf, byz, byz_r, byzf, bz, bz_r, bzf, bzx, bzx_r, bzxf, bzy, &
+      bzy_r, bzyf, ex, ex_r, exf, exy, exy_r, exyf, exz, exz_r, exzf, ey, ey_r, eyf, &
+      eyx, eyx_r, eyxf, eyz, eyz_r, eyzf, ez, ez_r, ezf, ezx, ezx_r, ezxf, ezy,      &
+      ezy_r, ezyf, g_spectral, jx, jx_r, jxf, jy, jy_r, jyf, jz, jz_r, jzf, rho_r,   &
+      rhof, rhoold_r, rhooldf
+    USE fourier, ONLY: plan_r2c_cuda
     USE mpi
     USE params, ONLY: it
-    USE picsar_precision, ONLY: idp, num
-    USE time_stat, ONLY: timestat_itstart, localtimes
+    USE picsar_precision, ONLY: idp, isp, num
+    USE shared_data, ONLY: absorbing_bcs
+    USE time_stat, ONLY: localtimes, timestat_itstart
+
+
+
     REAL(num)   :: tmptime
     INTEGER(idp), INTENT(IN)    ::   nfftx,nffty,nfftz
     INTEGER(isp) :: err_cuda
@@ -1403,24 +1398,20 @@ MODULE fourier_psaotd
 
 #if defined(CUDA_FFT)
    SUBROUTINE fft_backward_c2r_local_cuda(nfftx,nffty,nfftz)
-     USE fastfft
      USE cufft
-     USE fields, ONLY: g_spectral
-     USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
-     USE fields, ONLY : ex_r, ey_r, ez_r, bx_r, by_r, bz_r, jx_r, jy_r, jz_r, rho_r,   &
-                        rhoold_r
-     USE fields, ONLY : exy, exz, eyx,  eyz, ezx, ezy , bxy, bxz, byx, byz, bzx, bzy
-     USE fields, ONLY : exy_r, exz_r, eyx_r,  eyz_r, ezx_r, ezy_r, bxy_r, bxz_r, byx_r,&
-                        byz_r, bzx_r, bzy_r
-     USE fields, ONLY : exf, eyf, ezf, bxf, byf, bzf, jxf, jyf, jzf, rhof,   &
-                        rhooldf
-     USE fourier, ONLY : plan_c2r_cuda
-     USE fields , ONLY : exyf,exzf,eyxf,eyzf,ezxf,ezyf,bxyf,bxzf,byxf,byzf,bzxf,bzyf
+     USE fastfft
+     USE fields, ONLY: bx, bx_r, bxf, bxy, bxy_r, bxyf, bxz, bxz_r, bxzf, by, by_r,  &
+       byf, byx, byx_r, byxf, byz, byz_r, byzf, bz, bz_r, bzf, bzx, bzx_r, bzxf,     &
+       bzy, bzy_r, bzyf, ex, ex_r, exf, exy, exy_r, exyf, exz, exz_r, exzf, ey,      &
+       ey_r, eyf, eyx, eyx_r, eyxf, eyz, eyz_r, eyzf, ez, ez_r, ezf, ezx, ezx_r,     &
+       ezxf, ezy, ezy_r, ezyf, g_spectral, jx, jx_r, jxf, jy, jy_r, jyf, jz, jz_r,   &
+       jzf, rho_r, rhof, rhoold_r, rhooldf
+     USE fourier, ONLY: plan_c2r_cuda
      USE mpi
      USE params, ONLY: it
-     USE picsar_precision, ONLY: idp, num
-     USE time_stat, ONLY: timestat_itstart, localtimes
+     USE picsar_precision, ONLY: idp, isp, num
      USE shared_data, ONLY: absorbing_bcs
+     USE time_stat, ONLY: localtimes, timestat_itstart
      REAL(num)   :: tmptime
      INTEGER(idp), INTENT(IN)     :: nfftx,nffty,nfftz
      INTEGER(isp) :: err_cuda
@@ -1673,13 +1664,13 @@ MODULE fourier_psaotd
   END SUBROUTINE fft_backward_c2r_hybrid
 
   SUBROUTINE push_psaotd_ebfielfs_2d()
-    USE fields, ONLY: bxf, byf, bzf, exf, eyf, ezf, jxf, jyf, jzf, rhof, rhooldf
-    USE fields, ONLY : exyf, exzf, eyxf, eyzf, ezxf, ezyf, bxyf, bxzf, byxf, byzf, bzxf, bzyf
+    USE fields, ONLY: bxf, bxyf, bxzf, byf, byxf, byzf, bzf, bzxf, bzyf, exf, exyf,  &
+      exzf, eyf, eyxf, eyzf, ezf, ezxf, ezyf, jxf, jyf, jzf, rhof, rhooldf
     USE iso_c_binding
     USE mpi
     USE params, ONLY: it
     USE picsar_precision, ONLY: cpx, idp, num
-    USE shared_data, ONLY: nkx, nkz
+    USE shared_data, ONLY: absorbing_bcs, nkx, nkz
     USE time_stat, ONLY: localtimes, timestat_itstart
 
     IMPLICIT NONE
@@ -1940,8 +1931,8 @@ MODULE fourier_psaotd
   END SUBROUTINE push_psaotd_ebfielfs_2d
 
   SUBROUTINE push_psaotd_ebfielfs_3d()
-    USE fields, ONLY: bxf, byf, bzf, exf, eyf, ezf, jxf, jyf, jzf, rhof, rhooldf
-    USE fields, ONLY: exyf,exzf,eyxf,eyzf,ezxf,ezyf,bxyf,bxzf,byxf,byzf,bzxf,bzyf
+    USE fields, ONLY: bxf, bxyf, bxzf, byf, byxf, byzf, bzf, bzxf, bzyf, exf, exyf,  &
+      exzf, eyf, eyxf, eyzf, ezf, ezxf, ezyf, jxf, jyf, jzf, rhof, rhooldf
     USE iso_c_binding
     USE mpi
     USE params, ONLY: it
@@ -2245,20 +2236,20 @@ MODULE fourier_psaotd
   END SUBROUTINE push_psaotd_ebfielfs_3d
 
   SUBROUTINE init_plans_blocks()
+#if defined(CUDA_FFT)
+    USE cufft
+#endif
     USE fastfft
 #if defined(FFTW)
     USE fftw3_fortran, ONLY: fftw_backward, fftw_forward, fftw_measure
 #endif
     USE fields, ONLY: ex_r, exf, exy_r, g_spectral, nxguards, nyguards, nzguards
-    USE fourier, ONLY: plan_c2r, plan_r2c
+    USE fourier, ONLY: plan_c2r, plan_c2r_cuda, plan_r2c, plan_r2c_cuda
     USE iso_c_binding
     USE omp_lib
-    USE picsar_precision, ONLY: idp
+    USE picsar_precision, ONLY: idp, isp
     USE shared_data, ONLY: absorbing_bcs, c_dim, fftw_with_mpi, nx, nx_global, ny,   &
       ny_global, nz, nz_global, p3dfft_flag, rank
-#if defined(CUDA_FFT)
-    USE cufft
-#endif
 
     INTEGER(idp) :: nfftx, nffty, nfftz, nopenmp
     INTEGER(isp) :: err_cu_r2c, err_cu_c2r

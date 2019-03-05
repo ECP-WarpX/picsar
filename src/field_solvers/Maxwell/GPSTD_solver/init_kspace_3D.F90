@@ -910,7 +910,7 @@ MODULE gpstd_solver
     USE matrix_coefficients, ONLY: at_op, cc_mat, kspace, vnew, vold
     USE matrix_data, ONLY: nmatrixes, nmatrixes2
 #if defined(FFTW)
-    USE mpi_fftw3, ONLY: fftw_alloc_complex, alloc_local
+    USE mpi_fftw3, ONLY: alloc_local, fftw_alloc_complex
 #endif
     USE omp_lib
     USE params, ONLY: dt

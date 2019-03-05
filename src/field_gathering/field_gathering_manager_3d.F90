@@ -295,8 +295,9 @@ END SUBROUTINE field_gathering_sub
 SUBROUTINE geteb3d_energy_conserving(np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin,    &
   ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, nox, noy, noz, exg,    &
   eyg, ezg, bxg, byg, bzg, ll4symtry, l_lower_order_in_v, lvect, field_gathe_algo)
+  USE fields, ONLY: bx, by, bz, ex, ey, ez, l_lower_order_in_v, l_nodalgrid, nox,    &
+    noy, noz
   USE picsar_precision, ONLY: idp, lp, num
-  USE fields, ONLY: l_nodalgrid
   implicit none
 
   integer(idp)                  :: field_gathe_algo

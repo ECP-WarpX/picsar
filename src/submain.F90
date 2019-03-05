@@ -49,17 +49,15 @@
 !
 ! ________________________________________________________________________________________
 SUBROUTINE step(nst)
-USE diagnostics
-USE field_boundary
-USE fields, ONLY: l_spectral, nzguards, nxguards, nyguards
-#if defined(SPECTRAL)
-USE gpstd_solver
-#endif
-#if defined(SPECTRAL)
-USE iso_c_binding
-#endif
 #if defined(CUDA_FFT)
 USE cufft
+#endif
+USE diagnostics
+USE field_boundary
+USE fields, ONLY: l_spectral, nxguards, nyguards, nzguards
+#if defined(SPECTRAL)
+USE gpstd_solver
+USE iso_c_binding
 #endif
 USE mpi
 USE mpi_routines
@@ -541,9 +539,9 @@ SUBROUTINE initall
     absorbing_bcs_z, c_dim, cell_y_max, cell_y_min, dx, dy, dz, fftw_hybrid,         &
     fftw_mpi_transpose, fftw_threads_ok, fftw_with_mpi, nb_group_x, nb_group_y,      &
     nb_group_z, nx, nx_grid, nxg_group, ny, ny_grid, nyg_group, nz, nz_grid,         &
-    nzg_group, p3dfft_flag, p3dfft_stride, rank, sorting_activated, sorting_dx,      &
-    sorting_dy, sorting_dz, sorting_shiftx, sorting_shifty, sorting_shiftz, x, y,    &
-    y_max_local, y_min_local, ymax, ymin, z
+    nzg_group, p3dfft_flag, p3dfft_stride, rank, rho, rhoold, sorting_activated,     &
+    sorting_dx, sorting_dy, sorting_dz, sorting_shiftx, sorting_shifty,              &
+    sorting_shiftz, x, y, y_max_local, y_min_local, ymax, ymin, z
   USE tile_params, ONLY: ntilex, ntiley, ntilez
   USE tiling
   USE time_stat, ONLY: init_localtimes, localtimes, nbuffertimestat,                 &
