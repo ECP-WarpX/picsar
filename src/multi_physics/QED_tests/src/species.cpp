@@ -29,10 +29,14 @@ void species::add_simple_process(simple_process proc, int ID){
         simple_processes.insert(std::pair<int, simple_process>(ID, proc));
 }
 
-void species::do_simple_processes(ttime dt){
+void species::do_all_simple_processes(ttime dt){
     for(auto& proc : simple_processes){
         proc.second(pos, mom,  fields, optical_depth, mass, charge, dt);
     }
+}
+
+void species::do_simple_process(int ID, ttime dt){
+    simple_processes[ID](pos, mom,  fields, optical_depth, mass, charge, dt);
 }
 
 void species::add_particle(position part_pos, momentum part_mom){

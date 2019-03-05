@@ -27,7 +27,8 @@ namespace testbed{
         void calc_fields(em_field_function em_function, ttime tt);
 
         void add_simple_process(simple_process proc, int ID);
-        void do_simple_processes(ttime dt);
+        void do_simple_process(int ID, ttime dt);
+        void do_all_simple_processes(ttime dt);
 
         void print_on_disk(std::string prefix, int step_num) const;
 

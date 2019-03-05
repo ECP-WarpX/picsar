@@ -261,9 +261,10 @@ void test_BW(){
 
     //Init some photons
     auto ptr_phot1 = make_shared<photons>("phot1");
-    ptr_phot1->add_particle({0,0,0},{-965.61, -3975.11, 6917.22});
-    ptr_phot1->add_particle({0,0,0},{0.0,300.0,0.0});
-    ptr_phot1->add_particle({0,0,0},{0.0,0.0,300.0});
+    const size_t how_many_phot = 10000;
+    for(size_t i = 0; i < how_many_phot; i++){
+        ptr_phot1->add_particle({0,0,0},{-965.61, -3975.11, 6917.22});
+    }
     bw_engine.init_optical_depth_vector(ptr_phot1->get_ref_of_optical_depth());
 
     //Add BW decrease of optical depth to photons
@@ -328,7 +329,7 @@ void test_BW(){
             sp->push_positions(dt);
 
         for (auto& sp : specs)
-            sp->do_simple_processes(dt);
+            sp->do_all_simple_processes(dt);
 
         if(is_out(i)){
             for (auto& sp : specs)
