@@ -74,7 +74,7 @@ PROGRAM main
 #endif
 
   IMPLICIT NONE
-  LOGICAL :: exist
+  LOGICAL(lp) :: exist
   CHARACTER(len=250) :: str1, str2, str3
   CHARACTER(len=250) :: str4, str5, str7
   CHARACTER(len=500) :: str6

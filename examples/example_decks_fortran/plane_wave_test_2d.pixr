@@ -26,6 +26,7 @@ end::cpusplit
 section::main
  # Number of grid points in x,y,z
  nx = 200
+ ny = 1
  nz = 200
 
  # Origin of simulation axes
@@ -132,7 +133,7 @@ section::antenna
   pvec_y = 0.0
   pvec_z = 0.0
   # Polar angle (0 - linear, 1/4 - Circular)
-  polangle =  0.25
+  polangle =  0.0
   # Laser duration 
   laser_ctau =3e-6
   # Laser amplitude component 
@@ -141,14 +142,7 @@ section::antenna
   # Laser waist 
   laser_w0 = 2e6
   # Focusing length 
-  focal_length = 0
   temporal_order = 0
-  t_peal = 0 
 end::antenna
 
-section::temporal
-  frequency=100000
-  # output 0 - binary, 1 - ascii
-  format=0
-end::temporal
 

@@ -108,7 +108,7 @@ MODULE field_boundary
     ny_local, nz_local)
     USE constants, ONLY: c_ndims
     USE mpi
-    USE picsar_precision, ONLY: idp, num, isp
+    USE picsar_precision, ONLY: idp, isp, num
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
@@ -974,20 +974,21 @@ write(0,*) "finished ixmin to xmax"
   !> of computations in the field gathering and Maxwell solvers stages of the PIC cycle. 
   ! ______________________________________________________________________________________
   SUBROUTINE generalized_comms_group_l2g()
-    USE fields, ONLY: ez_r, ez, jx_r, ey_r, ex_r, bx_r, jz, by_r, rho_r, bz,         &
-      nzguards, nxguards, bz_r, nyguards, jy, jx, ex, bx, jz_r, jy_r, by, rhoold_r,  &
-      ey
+    USE fields, ONLY: bx, bx_r, bxy, bxy_r, bxz, bxz_r, by, by_r, byx, byx_r, byz,   &
+      byz_r, bz, bz_r, bzx, bzx_r, bzy, bzy_r, ex, ex_r, exy, exy_r, exz, exz_r, ey, &
+      ey_r, eyx, eyx_r, eyz, eyz_r, ez, ez_r, ezx, ezx_r, ezy, ezy_r, jx, jx_r, jy,  &
+      jy_r, jz, jz_r, nxguards, nyguards, nzguards, rho_r, rhoold_r
 #if defined(FFTW) 
     USE iso_c_binding
     USE load_balance
 #endif
     USE mpi
 #if defined(FFTW) 
-    USE mpi_fftw3, ONLY: local_ny, local_nx, local_nz
+    USE mpi_fftw3, ONLY: local_nx, local_ny, local_nz
 #endif
     USE picsar_precision, ONLY: idp, num
-    USE shared_data, ONLY: rho, nz, ny, rhoold, nx
-    USE time_stat, ONLY: timestat_itstart, localtimes
+    USE shared_data, ONLY: absorbing_bcs, nx, ny, nz, rho, rhoold
+    USE time_stat, ONLY: localtimes, timestat_itstart
 #if defined(FFTW)
     INTEGER(idp)  :: nxx, nyy, nzz
     REAL(num)                                   :: tmptime
@@ -1166,17 +1167,17 @@ write(0,*) "finished ixmin to xmax"
   ! ______________________________________________________________________________________
   SUBROUTINE sendrecv_l2g_generalized(field_l,nx1,nxg,ny1,nyg,nz1,nzg,field_g,nxx,nyy,nzz)
 #if defined(FFTW)
-    USE group_parameters, ONLY: size_exchanges_l2g_send_z, l_first_cell_to_send_y,   &
-      l_first_cell_to_send_z, g_first_cell_to_recv_y, recv_type_g, send_type_l,      &
-      array_of_ranks_to_send_to_l2g, nb_comms_l2g, size_exchanges_l2g_recv_z,        &
-      array_of_ranks_to_recv_from_l2g, size_exchanges_l2g_recv_y,                    &
-      g_first_cell_to_recv_z, size_exchanges_l2g_send_y
+    USE group_parameters, ONLY: array_of_ranks_to_recv_from_l2g,                     &
+      array_of_ranks_to_send_to_l2g, g_first_cell_to_recv_y, g_first_cell_to_recv_z, &
+      l_first_cell_to_send_y, l_first_cell_to_send_z, nb_comms_l2g, recv_type_g,     &
+      send_type_l, size_exchanges_l2g_recv_y, size_exchanges_l2g_recv_z,             &
+      size_exchanges_l2g_send_y, size_exchanges_l2g_send_z
     USE load_balance
 #endif
     USE mpi
 #if defined(FFTW)
     USE mpi_type_constants, ONLY: status
-    USE picsar_precision, ONLY: idp, num, isp
+    USE picsar_precision, ONLY: idp, isp, num
 #endif
     INTEGER(idp), INTENT(IN)                    ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
     REAL(num)    ,INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)   & 
@@ -1231,16 +1232,16 @@ write(0,*) "finished ixmin to xmax"
   SUBROUTINE sendrecv_l2g_generalized_non_blocking(field_l,nx1,nxg,ny1,nyg,nz1,nzg,    &
   field_g,nxx,nyy,nzz)
 #if defined(FFTW)
-USE group_parameters, ONLY: size_exchanges_l2g_send_z, l_first_cell_to_send_y,       &
-  l_first_cell_to_send_z, g_first_cell_to_recv_y, requests_l2g, recv_type_g,         &
-  send_type_l, array_of_ranks_to_send_to_l2g, nb_comms_l2g,                          &
-  size_exchanges_l2g_recv_z, array_of_ranks_to_recv_from_l2g,                        &
-  size_exchanges_l2g_recv_y, g_first_cell_to_recv_z, size_exchanges_l2g_send_y
+USE group_parameters, ONLY: array_of_ranks_to_recv_from_l2g,                         &
+  array_of_ranks_to_send_to_l2g, g_first_cell_to_recv_y, g_first_cell_to_recv_z,     &
+  l_first_cell_to_send_y, l_first_cell_to_send_z, nb_comms_l2g, recv_type_g,         &
+  requests_l2g, send_type_l, size_exchanges_l2g_recv_y, size_exchanges_l2g_recv_z,   &
+  size_exchanges_l2g_send_y, size_exchanges_l2g_send_z
 USE load_balance
 #endif
 USE mpi
 #if defined(FFTW)
-USE picsar_precision, ONLY: idp, num, isp
+USE picsar_precision, ONLY: idp, isp, num
 #endif
 
     INTEGER(idp), INTENT(IN)                    ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
@@ -1297,19 +1298,21 @@ USE picsar_precision, ONLY: idp, num, isp
   !> of computations in the field gathering and Maxwell solvers stages of the PIC cycle. 
   ! ______________________________________________________________________________________
   SUBROUTINE generalized_comms_group_g2l()
-    USE fields, ONLY: ez_r, ez, ey_r, ex_r, bx_r, by_r, bz, nzguards, nxguards,      &
-      bz_r, nyguards, ex, bx, by, ey
+    USE fields, ONLY: bx, bx_r, bxy, bxy_r, bxz, bxz_r, by, by_r, byx, byx_r, byz,   &
+      byz_r, bz, bz_r, bzx, bzx_r, bzy, bzy_r, ex, ex_r, exy, exy_r, exz, exz_r, ey, &
+      ey_r, eyx, eyx_r, eyz, eyz_r, ez, ez_r, ezx, ezx_r, ezy, ezy_r, nxguards,      &
+      nyguards, nzguards
 #if defined(FFTW) 
     USE iso_c_binding
     USE load_balance
 #endif
     USE mpi
 #if defined(FFTW) 
-    USE mpi_fftw3, ONLY: local_ny, local_nx, local_nz
+    USE mpi_fftw3, ONLY: local_nx, local_ny, local_nz
 #endif
     USE picsar_precision, ONLY: idp, num
-    USE shared_data, ONLY: nz, ny, nx
-    USE time_stat, ONLY: timestat_itstart, localtimes
+    USE shared_data, ONLY: absorbing_bcs, nx, ny, nz
+    USE time_stat, ONLY: localtimes, timestat_itstart
     INTEGER(idp)  :: nxx, nyy, nzz
     REAL(num)     :: tmptime
 #if defined(FFTW)
@@ -1450,17 +1453,16 @@ USE picsar_precision, ONLY: idp, num, isp
   SUBROUTINE sendrecv_g2l_generalized_non_blocking(field_l,nx1,nxg,ny1,nyg,nz1,nzg,    &
   field_g,nxx,nyy,nzz)
 #if defined(FFTW)
-USE group_parameters, ONLY: g_first_cell_to_send_y, requests_g2l, recv_type_l,       &
-  size_exchanges_g2l_recv_z, l_first_cell_to_recv_z,                                 &
-  array_of_ranks_to_recv_from_g2l, g_first_cell_to_send_z, nb_comms_g2l,             &
-  l_first_cell_to_recv_y, send_type_g, size_exchanges_g2l_send_z,                    &
-  size_exchanges_g2l_recv_y, size_exchanges_g2l_send_y,                              &
-  array_of_ranks_to_send_to_g2l
+USE group_parameters, ONLY: array_of_ranks_to_recv_from_g2l,                         &
+  array_of_ranks_to_send_to_g2l, g_first_cell_to_send_y, g_first_cell_to_send_z,     &
+  l_first_cell_to_recv_y, l_first_cell_to_recv_z, nb_comms_g2l, recv_type_l,         &
+  requests_g2l, send_type_g, size_exchanges_g2l_recv_y, size_exchanges_g2l_recv_z,   &
+  size_exchanges_g2l_send_y, size_exchanges_g2l_send_z
 USE load_balance
 #endif
 USE mpi
 #if defined(FFTW)
-USE picsar_precision, ONLY: idp, num, isp
+USE picsar_precision, ONLY: idp, isp, num
 #endif
 
     INTEGER(idp), INTENT(IN)                      ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
@@ -1526,18 +1528,17 @@ USE picsar_precision, ONLY: idp, num, isp
   ! ______________________________________________________________________________________
   SUBROUTINE sendrecv_g2l_generalized(field_l,nx1,nxg,ny1,nyg,nz1,nzg,field_g,nxx,nyy,nzz)
 #if defined(FFTW)
-    USE group_parameters, ONLY: g_first_cell_to_send_y, recv_type_l,                 &
-      size_exchanges_g2l_recv_z, l_first_cell_to_recv_z,                             &
-      array_of_ranks_to_recv_from_g2l, g_first_cell_to_send_z, nb_comms_g2l,         &
-      l_first_cell_to_recv_y, send_type_g, size_exchanges_g2l_send_z,                &
-      size_exchanges_g2l_recv_y, size_exchanges_g2l_send_y,                          &
-      array_of_ranks_to_send_to_g2l
+    USE group_parameters, ONLY: array_of_ranks_to_recv_from_g2l,                     &
+      array_of_ranks_to_send_to_g2l, g_first_cell_to_send_y, g_first_cell_to_send_z, &
+      l_first_cell_to_recv_y, l_first_cell_to_recv_z, nb_comms_g2l, recv_type_l,     &
+      send_type_g, size_exchanges_g2l_recv_y, size_exchanges_g2l_recv_z,             &
+      size_exchanges_g2l_send_y, size_exchanges_g2l_send_z
     USE load_balance
 #endif
     USE mpi
 #if defined(FFTW)
     USE mpi_type_constants, ONLY: status
-    USE picsar_precision, ONLY: idp, num, isp
+    USE picsar_precision, ONLY: idp, isp, num
 #endif
     INTEGER(idp), INTENT(IN)                      :: nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
     REAL(num), INTENT(INOUT),                                                          &
@@ -1981,10 +1982,10 @@ USE picsar_precision, ONLY: idp, num, isp
   ! ______________________________________________________________________________________
   SUBROUTINE summation_bcs_persistent_jx(array, nxg, nyg, nzg, nx_local, ny_local,    &
     nz_local)
-    USE communications, ONLY: reqperjxz, reqperjxx, reqperjxy
+    USE communications, ONLY: reqperjxx, reqperjxy, reqperjxz
     USE constants, ONLY: c_ndims
     USE mpi
-    USE picsar_precision, ONLY: idp, num, isp
+    USE picsar_precision, ONLY: idp, isp, num
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
     REAL(num), DIMENSION(-nxg:nx_local+nxg, -nyg:ny_local+nyg, -nzg:nz_local+nzg),    &
@@ -2135,7 +2136,7 @@ USE picsar_precision, ONLY: idp, num, isp
     DEALLOCATE(temp1, temp2)
 
     CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
-  END SUBROUTINE
+  END SUBROUTINE summation_bcs_persistent_jx
 
   ! ______________________________________________________________________________________
   !> @brief
@@ -2150,10 +2151,10 @@ USE picsar_precision, ONLY: idp, num, isp
   ! ______________________________________________________________________________________
   SUBROUTINE summation_bcs_persistent_jy(array, nxg, nyg, nzg, nx_local, ny_local,    &
     nz_local)
-    USE communications, ONLY: reqperjyz, reqperjyx, reqperjyy
+    USE communications, ONLY: reqperjyx, reqperjyy, reqperjyz
     USE constants, ONLY: c_ndims
     USE mpi
-    USE picsar_precision, ONLY: idp, num, isp
+    USE picsar_precision, ONLY: idp, isp, num
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
     REAL(num), DIMENSION(-nxg:nx_local+nxg, -nyg:ny_local+nyg, -nzg:nz_local+nzg),    &
@@ -2300,7 +2301,7 @@ USE picsar_precision, ONLY: idp, num, isp
     DEALLOCATE(temp1, temp2)
 
     CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
-  END SUBROUTINE
+  END SUBROUTINE summation_bcs_persistent_jy
 
   ! ______________________________________________________________________________________
   !> @brief
@@ -2315,10 +2316,10 @@ USE picsar_precision, ONLY: idp, num, isp
   ! ______________________________________________________________________________________
   SUBROUTINE summation_bcs_persistent_jz(array, nxg, nyg, nzg, nx_local, ny_local,    &
     nz_local)
-    USE communications, ONLY: reqperjzy, reqperjzz, reqperjzx
+    USE communications, ONLY: reqperjzx, reqperjzy, reqperjzz
     USE constants, ONLY: c_ndims
     USE mpi
-    USE picsar_precision, ONLY: idp, num, isp
+    USE picsar_precision, ONLY: idp, isp, num
     INTEGER(idp), INTENT(IN) :: nxg, nyg, nzg
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
     REAL(num), DIMENSION(-nxg:nx_local+nxg, -nyg:ny_local+nyg, -nzg:nz_local+nzg),    &
@@ -2464,7 +2465,7 @@ USE picsar_precision, ONLY: idp, num, isp
     DEALLOCATE(temp1, temp2)
 
     CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
-  END SUBROUTINE
+  END SUBROUTINE summation_bcs_persistent_jz
 
   ! ______________________________________________________________________________________
   !> @brief
@@ -2505,7 +2506,7 @@ USE picsar_precision, ONLY: idp, num, isp
       CALL field_bc(ezx, nxguards, nyguards, nzguards, nx, ny, nz)
       CALL field_bc(ezy, nxguards, nyguards, nzguards, nx, ny, nz)
       !> When using absorbing bcs, the electric field is merged here
-      !> This is done here in order not to call merge_fields from warp 
+      !> This is done here in order not to call merge_e_fields from warp 
       CALL merge_e_fields()
 
     ENDIF
@@ -2638,7 +2639,7 @@ USE mpi
   SUBROUTINE charge_bcs
     USE mpi
     USE picsar_precision, ONLY: num
-    USE time_stat, ONLY: timestat_itstart, localtimes
+    USE time_stat, ONLY: localtimes, timestat_itstart
 
     REAL(num) :: tmptime
     IF (it.ge.timestat_itstart) THEN

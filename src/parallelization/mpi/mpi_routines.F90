@@ -114,7 +114,9 @@ MODULE mpi_routines
   ! ______________________________________________________________________________________
   SUBROUTINE mpi_minimal_init_python(comm_in)
 #if defined(FFTW)
-    USE mpi_fftw3
+    USE iso_c_binding
+    USE mpi_fftw3, ONLY: fftw_mpi_init
+    USE picsar_precision, ONLY: idp, isp
 #endif
     LOGICAL(isp) :: isinitialized
     INTEGER(isp) :: nproc_comm, rank_in_comm
@@ -163,7 +165,7 @@ MODULE mpi_routines
   SUBROUTINE get_neighbours_python
 
 
-  
+
     proc_x_min = MODULO(x_coords-1,nprocx) + y_coords*nprocx +z_coords*nprocx*nprocy
     proc_x_max = MODULO(x_coords+1,nprocx) + y_coords*nprocx +z_coords*nprocx*nprocy
     proc_y_min = x_coords + MODULO(y_coords-1,nprocy)*nprocx +z_coords*nprocx*nprocy
@@ -592,7 +594,7 @@ END SUBROUTINE setup_communicator
 
 ! ______________________________________________________________________________________
 !> @brief
-!> This routine subroutine sets proc_x/y/z_min/max to  MPI_PROC_NULL for mpi at the edge 
+!> This routine subroutine sets proc_x/y/z_min/max to  MPI_PROC_NULL for mpi at the edge
 !> of the domain when using absorbing_bcs
 !> @ author
 !> H. Kallala
@@ -625,41 +627,41 @@ END SUBROUTINE get_non_periodic_mpi_bcs
 ! ______________________________________________________________________________________
 SUBROUTINE setup_groups
 #if defined(FFTW)
-USE group_parameters, ONLY: group_z_max_boundary, is_on_boundary_group_z,            &
-  ny_group_global_grid, mpi_group_id, p3d_fsize, cell_y_min_g, nx_group, &
-  ny_group_grid, p3d_iend, ny_group, nz_group_global_array, nz_group_global_grid,    &
-  y_max_group, which_group, p3d_istart, p3d_fstart,                                  &
-  is_on_boundary_group_y, x_min_group, x_max_group, mpi_ordered_comm_world,          &
-  y_min_group, z_max_group, mpi_comm_group_id, x_group_coords, group_y_max_boundary, &
-  p3d_fend, local_size, cell_z_min_g,           root_size,            p3d_isize,     &
-  nx_group_global_array, group_y_min_boundary, nx_group_global_grid, mpi_root_comm,  &
-  group_sizes, root_rank, mpi_root_group,             ny_group_global,               &
-  cell_y_max_g, mpi_world_group, nz_group, ny_group_global_array, z_min_group,       &
-  y_group_coords, nx_group_global,            local_rank, nz_group_grid,             &
-  group_z_min_boundary, z_group_coords, nz_group_global, nx_group_grid,              &
-  cell_z_max_g, is_group_x_boundary_max, is_group_x_boundary_min,                    &
-  is_group_y_boundary_max, is_group_y_boundary_min, is_group_z_boundary_max,         &
-  is_group_z_boundary_min, cell_x_min_g, cell_x_max_g
+USE group_parameters, ONLY: cell_x_max_g, cell_x_min_g, cell_y_max_g, cell_y_min_g,  &
+  cell_z_max_g, cell_z_min_g, group_sizes, group_y_max_boundary,                     &
+  group_y_min_boundary, group_z_max_boundary, group_z_min_boundary,                  &
+  is_group_x_boundary_max, is_group_x_boundary_min, is_group_y_boundary_max,         &
+  is_group_y_boundary_min, is_group_z_boundary_max, is_group_z_boundary_min,         &
+  is_on_boundary_group_y, is_on_boundary_group_z, local_rank, local_size,            &
+  mpi_comm_group_id, mpi_group_id, mpi_ordered_comm_world, mpi_root_comm,            &
+  mpi_root_group, mpi_world_group, nx_group, nx_group_global, nx_group_global_array, &
+  nx_group_global_grid, nx_group_grid, ny_group, ny_group_global,                    &
+  ny_group_global_array, ny_group_global_grid, ny_group_grid, nz_group,              &
+  nz_group_global, nz_group_global_array, nz_group_global_grid, nz_group_grid,       &
+  p3d_fend, p3d_fsize, p3d_fstart, p3d_iend, p3d_isize, p3d_istart, root_rank,       &
+  root_size, which_group, x_group_coords, x_max_group, x_min_group, y_group_coords,  &
+  y_max_group, y_min_group, z_group_coords, z_max_group, z_min_group
 USE iso_c_binding
 #endif
 USE mpi
 #if defined(FFTW)
-USE mpi_fftw3, ONLY: local_y0_tr, local_z0_tr, fftw_mpi_local_size_3d, local_x0,     &
-  local_ny_tr, fftw_mpi_local_size_2d, local_ny, local_nx_tr,                        &
-  fftw_mpi_local_size_3d_transposed, alloc_local, local_z0, local_nx, local_x0_tr,   &
-  local_nz, local_y0, local_nz_tr
+USE mpi_fftw3, ONLY: alloc_local, fftw_mpi_local_size_2d, fftw_mpi_local_size_3d,    &
+  fftw_mpi_local_size_3d_transposed, local_nx, local_nx_tr, local_ny, local_ny_tr,   &
+  local_nz, local_nz_tr, local_x0, local_x0_tr, local_y0, local_y0_tr, local_z0,     &
+  local_z0_tr
 #endif
 USE mpi_type_constants, ONLY: mpidbl
 #if defined(P3DFFT)
 USE p3dfft
 #endif
 USE picsar_precision, ONLY: idp, isp
-USE shared_data, ONLY: nz, ny, errcode, nprocx, iy_max_r, nx, y_min_boundary,        &
-  z_coords, z_min_boundary, xmin, nproc, zmin, iz_max_r, p3dfft_flag, ny_global,     &
-  ymin, nprocz, iz_min_r, ix_min_r, ix_max_r, y, z_max_boundary, ymax, y_coords, z,  &
-  dx, comm, c_dim, nprocy, nz_global, x, x_coords, iy_min_r, zmax, y_max_boundary,   &
-  fftw_mpi_transpose, dy, rank, xmax, dz, nb_group, nb_group_x, nb_group_y,          &
-  nb_group_z, nxg_group, nyg_group, nzg_group
+USE shared_data, ONLY: absorbing_bcs, c_dim, cell_x_max, cell_x_min, comm, dx, dy,   &
+  dz, errcode, fftw_mpi_transpose, ix_max_r, ix_min_r, iy_max_r, iy_min_r, iz_max_r, &
+  iz_min_r, nb_group, nb_group_x, nb_group_y, nb_group_z, nproc, nprocx, nprocy,     &
+  nprocz, nx, nxg_group, ny, ny_global, nyg_group, nz, nz_global, nzg_group,         &
+  p3dfft_flag, rank, x, x_coords, xmax, xmin, y, y_coords, y_max_boundary,           &
+  y_min_boundary, ymax, ymin, z, z_coords, z_max_boundary, z_min_boundary, zmax,     &
+  zmin
 INTEGER(isp) :: ierr
 INTEGER(idp) :: group_size
 INTEGER(isp), ALLOCATABLE, DIMENSION(:)    ::  grp_comm
@@ -945,7 +947,7 @@ LOGICAL(isp)                               :: is_in_place
       errcode)
       CALL MPI_BCAST(nz_group_global_array,INT(nb_group,isp),MPI_INTEGER8,        &
       0_isp,mpi_comm_group_id(i),errcode)
-      CALL  MPI_BCAST(nx_group_global_array,INT(nb_group,isp),MPI_INTEGER8,       &
+      CALL MPI_BCAST(nx_group_global_array,INT(nb_group,isp),MPI_INTEGER8,       &
       0_isp,mpi_comm_group_id(i),errcode)
       CALL MPI_BCAST(ny_group_global_array,INT(nb_group,isp),MPI_INTEGER8,        &
       0_isp,mpi_comm_group_id(i),errcode)
@@ -982,13 +984,13 @@ LOGICAL(isp)                               :: is_in_place
           ! Fourier arrays have transposed dimensions
           IF(fftw_mpi_transpose) THEN
             ! - Init starting index/local size of FFT input arrays along Z
-            ! - and starting index/local size of FFT output arrays along Y 
+            ! - and starting index/local size of FFT output arrays along Y
             ! - (transposed case)
             alloc_local = fftw_mpi_local_size_3d_transposed(nz_group, ny_group,         &
             nx_group/2+1, mpi_comm_group_id(i), local_nz, local_z0, local_nz_tr,        &
             local_z0_tr)
             ! - Init starting index/ local size of FFT input arrays along Y
-            local_y0=0 
+            local_y0=0
             local_ny=ny_group
             ! - Sanity check:  if transposition leads to local_ny > nprocy in group
             ! - in that case, local_ny can be 0 --> Abort
@@ -1002,14 +1004,14 @@ LOGICAL(isp)                               :: is_in_place
             local_y0_tr=0
             local_ny_tr=nz_group
           ! Fourier arrays have same dimensions than real arrays
-          ELSE  
+          ELSE
             alloc_local = FFTW_MPI_LOCAL_SIZE_3D(nz_group, ny_group, nx_group/2+1,      &
             mpi_comm_group_id(i), local_nz, local_z0)
             IF(local_nz .EQ. 0_idp ) THEN
               WRITE(0,*) 'ERROR local_nz = 0 in rank ',rank
               CALL MPI_ABORT(comm,errcode,ierr)
             ENDIF
-            local_ny = ny_group 
+            local_ny = ny_group
             local_y0 =0_idp
             ! - Init starting indexes and local sizes of output FFT arrays along Y and Z
             local_ny_tr=local_ny
@@ -1018,12 +1020,12 @@ LOGICAL(isp)                               :: is_in_place
             local_z0_tr=local_z0
           ENDIF
           ! - Init starting index and local size of local input FFT arrays along X
-          local_nx = 2_idp*(nx_group/2+1) 
+          local_nx = 2_idp*(nx_group/2+1)
           local_x0 =0_idp
           ! - Init starting index and local size of local output FFT arrays along X
           local_nx_tr=nx_group/2+1
           local_x0_tr=local_x0
-        ! - 2D case 
+        ! - 2D case
         ELSE IF(c_dim == 2_idp) THEN
           ! - Init FFT
           alloc_local = FFTW_MPI_LOCAL_SIZE_2D(nz_group, nx_group/2+1,                  &
@@ -1040,15 +1042,15 @@ LOGICAL(isp)                               :: is_in_place
           local_nx = 2_idp*(nx_group/2_idp+1_idp)
           local_x0 = 0_idp
           ! - Init starting indexes/ local sizes of FFT output arrays along X,Y,Z
-          ! - NB: At present, 2D geometry does not support fftw_transpose mode 
-          ! - So dimensions and starting indexes of local input/output FFT arrays are 
-          ! - identical 
+          ! - NB: At present, 2D geometry does not support fftw_transpose mode
+          ! - So dimensions and starting indexes of local input/output FFT arrays are
+          ! - identical
           local_nz_tr=local_nz
           local_z0_tr=local_z0
           local_ny_tr=local_ny
           local_y0_tr=local_y0
           local_nx_tr=local_nx/2_idp
-          local_x0_tr=local_x0  
+          local_x0_tr=local_x0
         ENDIF
       ! - Case 2: P3DFFT is used for global FFT transpositions among groups
       ELSE
@@ -1065,16 +1067,16 @@ LOGICAL(isp)                               :: is_in_place
        ! - Get local dimensions/starting indices of FFT arrays in Fourier space
        CALL p3dfft_get_dims(p3d_fstart,p3d_fend,p3d_fsize,2_isp)
        ! - Init starting indexes/ local sizes of FFT input arrays along X,Y,Z
-       local_nz = p3d_isize(3) ! Local size of FFT array along Z 
+       local_nz = p3d_isize(3) ! Local size of FFT array along Z
        local_ny = p3d_isize(2) ! Local size of FFT array along Y
        local_nx = p3d_isize(1) ! Local size of FFT array along X
-       local_z0 = p3d_istart(3) - 1_idp ! Min global X-index boundary of local FFT array 
-       local_y0 = p3d_istart(2) - 1_idp ! Min global Y-index boundary of local FFT array 
-       local_x0 = p3d_istart(1) - 1_idp ! Min global Z-index boundary of local FFT array 
+       local_z0 = p3d_istart(3) - 1_idp ! Min global X-index boundary of local FFT array
+       local_y0 = p3d_istart(2) - 1_idp ! Min global Y-index boundary of local FFT array
+       local_x0 = p3d_istart(1) - 1_idp ! Min global Z-index boundary of local FFT array
        ! - Init starting indexes/ local sizes of FFT output array along X,Y,Z
-       ! - NB: At present, p3dfft does not support fftw_transpose mode 
-       ! - So dimensions and starting indexes of local input/output FFT arrays are 
-       ! - identical 
+       ! - NB: At present, p3dfft does not support fftw_transpose mode
+       ! - So dimensions and starting indexes of local input/output FFT arrays are
+       ! - identical
        local_nz_tr=p3d_fsize(3)
        local_ny_tr=p3d_fsize(2)
        local_nx_tr=p3d_fsize(1)
@@ -1098,12 +1100,12 @@ LOGICAL(isp)                               :: is_in_place
 
   ! -- Gets min and max indices of the global FFT array without
   ! -- the group guard cells
-  ! - Along Z 
+  ! - Along Z
   iz_min_r = 1_idp
   iz_max_r = local_nz
   IF(group_z_min_boundary) iz_min_r = nzg_group+1_idp
   IF(group_z_max_boundary) iz_max_r = local_nz-nzg_group
-  ! - Along Y 
+  ! - Along Y
   iy_min_r = 1_idp
   iy_max_r = local_nz
   IF(group_y_min_boundary) iy_min_r = nyg_group+1_idp
@@ -1120,9 +1122,9 @@ LOGICAL(isp)                               :: is_in_place
   ENDDO
   iz_min_global = local_z0-nzg_group + j !
   ! -- Computes global index of the upper z-boundary of the distributed FFT array
-  ! -- (The one that includes group guard cells) 
+  ! -- (The one that includes group guard cells)
   iz_max_global = iz_min_global + local_nz - 1_idp
-  
+
 
   ! -- Array allocation for performing an MPI allgather operation
   ALLOCATE(cell_z_min_g(nprocz),cell_z_max_g(nprocz))
@@ -1144,16 +1146,16 @@ LOGICAL(isp)                               :: is_in_place
   DEALLOCATE(all_iz_max_global,all_iz_min_global)
 
   ! -- Computes global index of the lower y-boundary of the distributed FFT array
-  ! -- (The one that includes group guard cells). 
-  ! -- 0 index corresponds to origin of the global simulation grid (WITHOUT guard cells) 
+  ! -- (The one that includes group guard cells).
+  ! -- 0 index corresponds to origin of the global simulation grid (WITHOUT guard cells)
   j=0_idp
   DO i = 1_idp,y_group_coords
-     j = j +ny_group_global_array(x_group_coords+(i-1_idp)*nb_group_x+               & 
+     j = j +ny_group_global_array(x_group_coords+(i-1_idp)*nb_group_x+               &
      z_group_coords*nb_group_x*nb_group_y+1_idp)
   ENDDO
   iy_min_global = local_y0-nyg_group + j
   ! -- Computes global index of the upper y-boundary of the distributed FFT array
-  ! -- (The one that includes group guard cells) 
+  ! -- (The one that includes group guard cells)
   iy_max_global = iy_min_global + local_ny - 1_idp
 
   ALLOCATE(cell_y_min_g(nprocy),cell_y_max_g(nprocy))
@@ -1170,19 +1172,19 @@ LOGICAL(isp)                               :: is_in_place
   ! -- Store min and max indices along y in 1D arrays
   IF (c_dim==3) THEN
   DO i=1, nprocy
-    cell_y_min_g(i) = all_iy_min_global(x_coords+(i-1)*nprocx+ & 
+    cell_y_min_g(i) = all_iy_min_global(x_coords+(i-1)*nprocx+ &
     z_coords*nprocx*nprocy+1_idp)
     cell_y_max_g(i) = all_iy_max_global(x_coords+(i-1)*nprocx+ &
     z_coords*nprocx*nprocy+1_idp)
   ENDDO
   ELSE
     cell_y_min_g(1)=0
-    cell_y_max_g(1)=0 
+    cell_y_max_g(1)=0
   ENDIF
-  
+
   DEALLOCATE(all_iy_max_global,all_iy_min_global)
-  
-  ! -- upper/lower x-boundaries of group 
+
+  ! -- upper/lower x-boundaries of group
   ix_min_r = 1_idp
   ! -- upper/lower x-boundaries of group
   ix_max_r = nx + 2*nxg_group
@@ -1215,7 +1217,7 @@ LOGICAL(isp)                               :: is_in_place
   ALLOCATE(cell_x_min_g(nprocx),cell_x_max_g(nprocx))
   cell_x_min_g = cell_x_min - nxguards
   cell_x_max_g = cell_x_max + nxguards
-     
+
 
 #if defined(DEBUG)
   WRITE(0, *) "setup_groups : end"
@@ -1224,6 +1226,93 @@ LOGICAL(isp)                               :: is_in_place
 #endif
 END SUBROUTINE setup_groups
 
+! ______________________________________________________________________________________
+!> @brief
+!> This routine gathers on all ranks, the sizes of the distributed FFT array along z
+!> on each rank. This is useful to obtain the grid decomposition performed by the
+!> FFTW distributed FFT library - This is used when fftw_with_mpi=.TRUE.
+!> and fftw_hybrid=.FALSE.
+!> @ author
+!> H. Kallala
+!> 2018
+! ______________________________________________________________________________________
+SUBROUTINE adjust_grid_mpi_global
+#if defined(FFTW)
+USE iso_c_binding
+USE mpi
+USE mpi_fftw3, ONLY: local_nx, local_nx_tr, local_ny, local_ny_tr, local_nz,         &
+  local_nz_tr, local_x0, local_x0_tr, local_y0, local_y0_tr, local_z0_tr
+#endif
+#if defined(FFTW)
+USE picsar_precision, ONLY: idp, isp
+USE shared_data, ONLY: cell_z_max, cell_z_min, comm, errcode, fftw_hybrid,           &
+  fftw_mpi_transpose, fftw_with_mpi, ix_max_r, ix_min_r, iy_max_r, iy_min_r,         &
+  iz_max_r, iz_min_r, nprocz, nx, nx_global, ny, ny_global, nz, nz_global,           &
+  nz_global_grid_max, nz_global_grid_min, nz_grid, z_coords
+#endif
+
+#if defined(FFTW)
+  INTEGER(idp), ALLOCATABLE, DIMENSION(:) :: all_nz
+  INTEGER(idp)  :: idim
+  nz = local_nz
+  nz_grid = nz + 1
+  ALLOCATE(all_nz(1:nprocz))
+
+  CALL MPI_ALLGATHER(nz, 1_isp, MPI_INTEGER8, all_nz, 1_isp, MPI_INTEGER8,    &
+  comm, errcode)
+
+  cell_z_min(1) = 0
+  cell_z_max(1) = all_nz(1)-1
+
+  DO idim=2, nprocz
+    cell_z_min(idim) = cell_z_max(idim-1)+1
+    cell_z_max(idim) = cell_z_min(idim) + all_nz(idim)-1
+  ENDDO
+
+  nz_global_grid_min = cell_z_min(z_coords+1)
+  nz_global_grid_max = cell_z_max(z_coords+1)+1
+
+  DEALLOCATE(all_nz)
+
+  ix_min_r = 1
+  ix_max_r = nx_global
+
+  iy_min_r = 1
+  iy_max_r = ny_global
+
+  iz_min_r = 1
+  iz_max_r = local_nz
+
+  ! - Get local sizes of FFT input/output arrays along directions orthogonal to
+  ! - the direction of MPI CPU-split (FFTW-MPI only)
+  IF ((.NOT. fftw_hybrid) .AND. (fftw_with_mpi)) THEN
+    IF (fftw_mpi_transpose) THEN
+      ! - Starting indexes/local sizes of FFT real arrays along Y
+      local_ny=ny_global
+      local_y0=0
+      ! - Starting indexes/local sizes of FFT Fourier arrays along Y
+      local_ny_tr=nz_global
+      local_y0_tr=0
+    ELSE
+      ! - Starting indexes/local sizes of FFT input arrays along Y
+      local_ny=ny_global
+      local_y0=0
+      ! - Starting indexes/local sizes of FFT output arrays along Y and Z
+      local_ny_tr=local_ny
+      local_y0_tr=local_y0
+      local_nz_tr=local_nz
+      local_z0_tr=0
+    ENDIF
+    ! - Starting indexes/local sizes of FFT input arrays along X
+    local_nx=(nx_global/2_idp+1)*2_idp
+    local_x0=0
+    ! - Starting indexes/local sizes of FFT output arrays along X
+    local_nx_tr=local_nx/2_idp
+    local_x0_tr=local_x0
+  ENDIF
+#endif
+
+END SUBROUTINE adjust_grid_mpi_global
 
 ! ______________________________________________________________________________________
 !> @brief
@@ -1239,20 +1328,39 @@ END SUBROUTINE setup_groups
 !> Creation 2015
 ! ______________________________________________________________________________________
 SUBROUTINE mpi_initialise
-#if defined(FFTW)
-USE shared_data, ONLY: nyg_group, nzg_group, nxg_group
-#endif
 USE iso_c_binding
 #if defined(FFTW)
 USE load_balance
 #endif
 USE mpi
 #if defined(FFTW)
-USE mpi_fftw3, ONLY: local_z0_tr, fftw_mpi_local_size_3d,                            &
-  fftw_mpi_local_size_3d_transposed, alloc_local, local_z0, local_nz, local_nz_tr
+USE mpi_fftw3, ONLY: alloc_local, fftw_mpi_local_size_3d,                            &
+  fftw_mpi_local_size_3d_transposed, local_nz, local_nz_tr, local_z0, local_z0_tr
 #endif
 #if defined(FFTW)
-USE picsar_precision, ONLY: idp, num, isp
+USE picsar_precision, ONLY: idp, isp, num
+USE shared_data, ONLY: absorbing_bcs, absorbing_bcs_x, absorbing_bcs_y,              &
+  absorbing_bcs_z, c_dim, cell_x_max, cell_x_min, cell_y_max, cell_y_min,            &
+  cell_z_max, cell_z_min, comm, dx, dy, dz, fftw_hybrid, fftw_mpi_transpose,         &
+  fftw_with_mpi, length_x, length_x_part, length_y, length_y_part, length_z,         &
+  length_z_part, nprocx, nprocy, nprocz, nx, nx_global, nx_global_grid_max,          &
+  nx_global_grid_min, nx_grid, nxg_group, ny, ny_global, ny_global_grid_max,         &
+  ny_global_grid_min, ny_grid, nyg_group, nz, nz_global, nz_global_grid_max,         &
+  nz_global_grid_min, nz_grid, nzg_group, offset_grid_part_x_max,                    &
+  offset_grid_part_x_min, offset_grid_part_y_max, offset_grid_part_y_min,            &
+  offset_grid_part_z_max, offset_grid_part_z_min, p3dfft_flag, pbound_x_max,         &
+  pbound_x_min, pbound_y_max, pbound_y_min, pbound_z_max, pbound_z_min, rank, x,     &
+  x_coords, x_grid_max, x_grid_max_local, x_grid_maxs, x_grid_min, x_grid_min_local, &
+  x_grid_mins, x_max_boundary, x_max_boundary_part, x_max_local, x_max_local_part,   &
+  x_min_boundary, x_min_boundary_part, x_min_local, x_min_local_part, xmax,          &
+  xmax_part, xmin, xmin_part, y, y_coords, y_grid_max, y_grid_max_local,             &
+  y_grid_maxs, y_grid_min, y_grid_min_local, y_grid_mins, y_max_boundary,            &
+  y_max_boundary_part, y_max_local, y_max_local_part, y_min_boundary,                &
+  y_min_boundary_part, y_min_local, y_min_local_part, ymax, ymax_part, ymin,         &
+  ymin_part, z, z_coords, z_grid_max, z_grid_max_local, z_grid_maxs, z_grid_min,     &
+  z_grid_min_local, z_grid_mins, z_max_boundary, z_max_boundary_part, z_max_local,   &
+  z_max_local_part, z_min_boundary, z_min_boundary_part, z_min_local,                &
+  z_min_local_part, zmax, zmax_part, zmin, zmin_part
 #endif
 INTEGER(isp) :: idim
 INTEGER(isp) :: nx0, nxp
@@ -1287,15 +1395,15 @@ ALLOCATE(cell_z_min(1:nprocz), cell_z_max(1:nprocz))
 #if defined(FFTW)
 IF(fftw_hybrid) THEN
   fftw_with_mpi = .TRUE.
-  ! - Properly sets group guard cells along X 
-  ! - As there is no group along x, impose nxg_group=nxguards 
+  ! - Properly sets group guard cells along X
+  ! - As there is no group along x, impose nxg_group=nxguards
   ! - (Only local FFTs along X at present)
-  nxg_group=nxguards 
+  nxg_group=nxguards
   ! - Properly sets group guard cells along Y
   IF (nyg_group .EQ. 0_idp) THEN
     nyg_group=nyguards ! Case when nyg_group has not been defined: use nyguards
   ENDIF
-  ! - Properly sets group guard cells along Z 
+  ! - Properly sets group guard cells along Z
   IF (nzg_group .EQ. 0_idp) THEN
     nzg_group=nzguards ! Case when nzg_group has not been defined: use nzguards
   ! - Properly sets group guard cells along X
@@ -1454,7 +1562,7 @@ IF(absorbing_bcs .AND. l_spectral) THEN
   g_spectral = .TRUE. ! absorbing_bcs push only available with mult_mat_vec
                         ! routine
 ENDIF
-#if(defined CUDA_FFT)  
+#if(defined CUDA_FFT)
    g_spectral = .FALSE.
 #endif
 IF(absorbing_bcs .AND. .NOT. l_spectral) THEN
@@ -1638,7 +1746,7 @@ IF(c_dim == 3) THEN
 ELSE
  y_grid_mins(1) = 0
  y_grid_maxs(1) = 0
-ENDIF 
+ENDIF
 DO iproc = 1, nprocz
   z_grid_mins(iproc) = z_global(cell_z_min(iproc))
   z_grid_maxs(iproc) = z_global(cell_z_max(iproc)+1)
@@ -1666,7 +1774,7 @@ USE mpi_fftw3, ONLY:  local_ny_tr,  local_ny,     &
   local_nx_tr, alloc_local, local_nx, local_nz, local_nz_tr
 #endif
 #if defined(FFTW)
-USE mpi_fftw3, ONLY: fftw_alloc_complex,fftw_alloc_rea
+USE mpi_fftw3, ONLY: fftw_alloc_complex,fftw_alloc_real
 #endif
 #if defined(CUDA_FFT)
 USE cufft
@@ -1699,7 +1807,7 @@ ALLOCATE(bz(-nxguards:nx+nxguards, -nyguards:ny+nyguards,&
 #if defined(CUDA_FFT)
       !$acc enter data create(ex,ey,ez,bx,by,bz)
 #endif
-! > When using absorbing_bcs , allocate splitted fields 
+! > When using absorbing_bcs , allocate splitted fields
 IF(absorbing_bcs) THEN
   ALLOCATE(exy(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
   ALLOCATE(exz(-nxguards:nx+nxguards,-nyguards:ny+nyguards,-nzguards:nz+nzguards))
@@ -1780,11 +1888,11 @@ IF(l_spectral) THEN
      IF(.NOT. g_spectral ) THEN
        ALLOCATE(rhof(nkx,nky,nkz))
        ALLOCATE(rhooldf(nkx,nky,nkz))
-       ALLOCATE(jxf(nkx,nky,nkz)) 
+       ALLOCATE(jxf(nkx,nky,nkz))
        ALLOCATE(jyf(nkx,nky,nkz))
        ALLOCATE(jzf(nkx,nky,nkz))
      ENDIF
-     
+
      IF(absorbing_bcs) THEN
        ALLOCATE(exy_r(nxx,nyy,nzz))
        ALLOCATE(exz_r(nxx,nyy,nzz))
@@ -1798,7 +1906,7 @@ IF(l_spectral) THEN
        ALLOCATE(byz_r(nxx,nyy,nzz))
        ALLOCATE(bzx_r(nxx,nyy,nzz))
        ALLOCATE(bzy_r(nxx,nyy,nzz))
-       IF(.NOT. g_spectral) THEN 
+       IF(.NOT. g_spectral) THEN
          ALLOCATE(exyf(nkx,nky,nkz))
          ALLOCATE(exzf(nkx,nky,nkz))
          ALLOCATE(eyxf(nkx,nky,nkz))
@@ -1810,7 +1918,7 @@ IF(l_spectral) THEN
          ALLOCATE(byxf(nkx,nky,nkz))
          ALLOCATE(byzf(nkx,nky,nkz))
          ALLOCATE(bzxf(nkx,nky,nkz))
-         ALLOCATE(bzyf(nkx,nky,nkz))     
+         ALLOCATE(bzyf(nkx,nky,nkz))
        ENDIF
 #if defined(CUDA_FFT)
        !$acc enter data create (exyf,exzf,eyxf,eyzf,ezxf,ezyf,bxyf,bxzf,byxf,byzf,bzxf,bzyf,jxf,jyf,jzf,rhooldf,rhof)
@@ -1829,7 +1937,7 @@ IF(l_spectral) THEN
          ALLOCATE(ezf(nkx,nky,nkz))
          ALLOCATE(bxf(nkx,nky,nkz))
          ALLOCATE(byf(nkx,nky,nkz))
-         ALLOCATE(bzf(nkx,nky,nkz))        
+         ALLOCATE(bzf(nkx,nky,nkz))
        ENDIF
 #if defined(CUDA_FFT)
       !$acc enter data create (exf,eyf,ezf,bxf,byf,bzf,jxf,jyf,jzf,rhof,rhooldf)
@@ -1854,7 +1962,7 @@ IF(l_spectral) THEN
      CALL c_f_pointer(cin, rho_r, [nxx, nyy, nzz])
      cin = fftw_alloc_real(2 * alloc_local);
      CALL c_f_pointer(cin, rhoold_r, [nxx, nyy, nzz])
-     IF(.NOT. g_spectral) THEN  
+     IF(.NOT. g_spectral) THEN
        cdata = fftw_alloc_complex(alloc_local)
        CALL c_f_pointer(cdata, jxf, [nkx, nky, nkz])
        cdata = fftw_alloc_complex(alloc_local)
@@ -1866,7 +1974,7 @@ IF(l_spectral) THEN
        cdata = fftw_alloc_complex(alloc_local)
        CALL c_f_pointer(cdata, rhooldf, [nkx, nky, nkz])
      ENDIF
-     
+
      IF(absorbing_bcs) THEN
        cin = fftw_alloc_real(2 * alloc_local);
        CALL c_f_pointer(cin, exy_r, [nxx, nyy, nzz])
@@ -1892,7 +2000,7 @@ IF(l_spectral) THEN
        CALL c_f_pointer(cin, bzx_r, [nxx, nyy, nzz])
        cin = fftw_alloc_real(2 * alloc_local);
        CALL c_f_pointer(cin, bzy_r, [nxx, nyy, nzz])
-       IF(.NOT. g_spectral) THEN 
+       IF(.NOT. g_spectral) THEN
          cdata = fftw_alloc_complex(alloc_local)
          CALL c_f_pointer(cdata, exyf, [nkx, nky, nkz])
          cdata = fftw_alloc_complex(alloc_local)
@@ -1918,7 +2026,7 @@ IF(l_spectral) THEN
          cdata = fftw_alloc_complex(alloc_local)
          CALL c_f_pointer(cdata, ezyf, [nkx, nky, nkz])
        ENDIF
-  
+
      ELSE IF(.NOT. absorbing_bcs) THEN
        cin = fftw_alloc_real(2 * alloc_local);
        CALL c_f_pointer(cin, ex_r, [nxx, nyy, nzz])
@@ -1933,7 +2041,7 @@ IF(l_spectral) THEN
        cin = fftw_alloc_real(2 * alloc_local);
        CALL c_f_pointer(cin, bz_r, [nxx, nyy, nzz])
        cin = fftw_alloc_real(2 * alloc_local);
-       IF(.NOT. g_spectral) THEN 
+       IF(.NOT. g_spectral) THEN
          cdata = fftw_alloc_complex(alloc_local)
          CALL c_f_pointer(cdata, exf, [nkx, nky, nkz])
          cdata = fftw_alloc_complex(alloc_local)
@@ -1948,11 +2056,11 @@ IF(l_spectral) THEN
          CALL c_f_pointer(cdata, bzf, [nkx, nky, nkz])
        ENDIF
      ENDIF
-#endif 
-  
+#endif
+
   ENDIF
 ENDIF
-#endif     
+#endif
 
 ! --- Quantities used by the dynamic load balancer for distributed FFTs
 ALLOCATE(new_cell_x_min(1:nprocx), new_cell_x_max(1:nprocx))
@@ -2006,10 +2114,10 @@ SUBROUTINE time_statistics
 #ifdef _OPENMP
 USE omp_lib
 #endif
-USE params, ONLY: currdepo, rhodepo, fieldgathe, fg_p_pp_separated, nsteps, it
-USE picsar_precision, ONLY: idp, num, isp
-USE time_stat, ONLY: maxtimes, init_avetimes, mintimes, init_localtimes, avetimes,   &
-  init_maxtimes, localtimes, init_mintimes
+USE params, ONLY: currdepo, fg_p_pp_separated, fieldgathe, it, nsteps, rhodepo
+USE picsar_precision, ONLY: idp, isp, num
+USE time_stat, ONLY: avetimes, init_avetimes, init_localtimes, init_maxtimes,        &
+  init_mintimes, localtimes, maxtimes, mintimes
 IMPLICIT NONE
 REAL(num), DIMENSION(26) :: percenttimes
 INTEGER(idp)             :: nthreads_tot
@@ -2018,7 +2126,7 @@ INTEGER(idp)             :: nthreads_tot
 localtimes(20) = sum(localtimes(1:14)) + localtimes(24)
 localtimes(19) = localtimes(2) + localtimes(4) + localtimes(6) + localtimes(8) +      &
 localtimes(11) + localtimes(13)
-localtimes(24)  = localtimes(24)  + localtimes(26) 
+localtimes(24)  = localtimes(24)  + localtimes(26)
 localtimes(18) = localtimes(5) + localtimes(6) + localtimes(7) + localtimes(8) +      &
 localtimes(24)
 
@@ -2169,10 +2277,10 @@ SUBROUTINE time_statistics_per_iteration
 #ifdef _OPENMP
 USE omp_lib
 #endif
-USE params, ONLY: fg_p_pp_separated, nsteps, it
-USE picsar_precision, ONLY: num, isp
-USE time_stat, ONLY: maxtimes, init_avetimes, mintimes, timestat_perit,              &
-  init_localtimes, avetimes, init_maxtimes, localtimes, init_mintimes
+USE params, ONLY: fg_p_pp_separated, it, nsteps
+USE picsar_precision, ONLY: isp, num
+USE time_stat, ONLY: avetimes, init_avetimes, init_localtimes, init_maxtimes,        &
+  init_mintimes, localtimes, maxtimes, mintimes, timestat_perit
 IMPLICIT NONE
 
 REAL(num), DIMENSION(26) :: percenttimes
@@ -2184,7 +2292,7 @@ IF (timestat_perit.gt.0) THEN
   localtimes(20) = sum(localtimes(1:14)) + localtimes(24)
   localtimes(19) = localtimes(2) + localtimes(4) + localtimes(6) + localtimes(8) +    &
   localtimes(11) + localtimes(13)
-  localtimes(24) = localtimes(24) + localtimes(26) 
+  localtimes(24) = localtimes(24) + localtimes(26)
   localtimes(18) = localtimes(5) + localtimes(6) + localtimes(7) + localtimes(8) +    &
   localtimes(24)
 
@@ -2277,7 +2385,7 @@ END SUBROUTINE time_statistics_per_iteration
 ! ________________________________________________________________________________________
 !> @brief
 !> Subroutine that gets total memory size in Bytes occupied by tile structures grid
-!> arrays on local rank. These memory sizes are stored in the mem_status module 
+!> arrays on local rank. These memory sizes are stored in the mem_status module
 !> variable local_grid_mem
 !
 !> @author
@@ -2288,13 +2396,15 @@ END SUBROUTINE time_statistics_per_iteration
 ! ________________________________________________________________________________________
 SUBROUTINE get_local_grid_mem()
   USE mem_status, ONLY: local_grid_mem
-  USE shared_data, ONLY: absorbing_bcs
-  USE picsar_precision, ONLY: num
-  IMPLICIT NONE 
+  USE mpi
+  USE mpi_type_constants, ONLY: status
+  USE picsar_precision, ONLY: idp, num
+  USE shared_data, ONLY: absorbing_bcs, divb, dive, divj, rho, rhoold
+  IMPLICIT NONE
   INTEGER(idp) :: field_size_f, field_size_r, cc_mat_size
   local_grid_mem = 0._num
-  
-  ! -- Update of memory size occupied by real-space arrays 
+
+  ! -- Update of memory size occupied by real-space arrays
   local_grid_mem = local_grid_mem + SIZEOF(ex)
   local_grid_mem = local_grid_mem + SIZEOF(ey)
   local_grid_mem = local_grid_mem + SIZEOF(ez)
@@ -2315,35 +2425,35 @@ SUBROUTINE get_local_grid_mem()
   ENDIF
 
 #if defined(FFTW)
-  ! -- Update of memory size occupied by Fourier arrays 
+  ! -- Update of memory size occupied by Fourier arrays
   IF(g_spectral) THEN
     IF(absorbing_bcs) THEN
-      field_size_f = SIZEOF(exf)*(17.0_num+12.0_num) 
-    ELSE 
+      field_size_f = SIZEOF(exf)*(17.0_num+12.0_num)
+    ELSE
       field_size_f = SIZEOF(exf)*(11.0_num+6.0_num)
     ENDIF
-  ELSE 
+  ELSE
     field_size_f = SIZEOF(exf)*11.0_num
   ENDIF
   local_grid_mem = local_grid_mem + field_size_f
   IF(absorbing_bcs) THEN
-    field_size_r = SIZEOF(ex_r)*17.0_num  
+    field_size_r = SIZEOF(ex_r)*17.0_num
     ! -- Memory occupied by blocs
-    cc_mat_size = SIZEOF(exf)*(34.0_num) 
-  ELSE 
-    field_size_r = SIZEOF(ex_r)*11.0_num 
+    cc_mat_size = SIZEOF(exf)*(34.0_num)
+  ELSE
+    field_size_r = SIZEOF(ex_r)*11.0_num
     ! -- Memory occupued by blocs
     cc_mat_size = SIZEOF(exf)*(33.0_num)
   ENDIF
   local_grid_mem =  local_grid_mem + field_size_r + cc_mat_size
-  
+
 #endif
-END SUBROUTINE get_local_grid_mem 
+END SUBROUTINE get_local_grid_mem
 
 ! ________________________________________________________________________________________
 !> @brief
-!> Subroutine that computes the total memory size in Bytes occupied by grid arrays 
-!> on all ranks. These memory sizes are reduced on rank 0 in the mem_status module 
+!> Subroutine that computes the total memory size in Bytes occupied by grid arrays
+!> on all ranks. These memory sizes are reduced on rank 0 in the mem_status module
 !> variable: global_grid_mem
 !
 !> @author
@@ -2353,13 +2463,13 @@ END SUBROUTINE get_local_grid_mem
 !> Creation 2018
 ! ________________________________________________________________________________________
 SUBROUTINE get_global_grid_mem()
-  USE mem_status, ONLY: local_grid_mem, global_grid_mem
+  USE mem_status, ONLY: global_grid_mem, local_grid_mem
   USE picsar_precision, ONLY: isp
-  IMPLICIT NONE 
+  IMPLICIT NONE
 
   ! - Estimate total grid arrays memory (reduce on proc 0)
   CALL MPI_REDUCE(local_grid_mem, global_grid_mem,                                     &
   1_isp, mpidbl, MPI_SUM, 0_isp,comm,errcode)
-END SUBROUTINE get_global_grid_mem 
+END SUBROUTINE get_global_grid_mem
 
 END MODULE mpi_routines

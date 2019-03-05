@@ -139,7 +139,7 @@ SUBROUTINE depose_jxjyjz_scalar_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
   ! Prevent loop to vectorize (dependencies)
   !DIR$ NOVECTOR
 !$acc parallel deviceptr(jx, jy, jz, xp, yp, zp, uxp, uyp, uzp, w, gaminv)
-!$acc loop gang vector private(sx(0:1), sy(0:1), sz(0:1), sx0(0:1), sy0(0:1), sz0(0:1))
+!$acc loop gang vector private(sx(0:1), sy(0:1), sz(0:1), sx0(0:1), sy0(0:1), sz0(0:1) )
   DO ip=1, np
 
     ! --- computes position in  grid units at (n+1)
@@ -669,7 +669,7 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells, jycells, jzcells, np, ncells, 
   yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz,    &
   nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
   USE constants, ONLY: lvec
-  USE picsar_precision, ONLY: idp, num, isp
+  USE picsar_precision, ONLY: idp, isp, num
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN)                      :: np, nx, ny, nz, ncells
   INTEGER(idp), INTENT(IN)                      :: nxguard, nyguard, nzguard
@@ -1638,7 +1638,7 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells, jycells, jzcells, np, ncells, 
   yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz,    &
   nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
   USE constants, ONLY: lvec
-  USE picsar_precision, ONLY: idp, num, isp
+  USE picsar_precision, ONLY: idp, isp, num
   IMPLICIT NONE
   ! ____ Parameter initialization _____________________________________
   INTEGER(idp), INTENT(IN)                      :: np, nx, ny, nz, ncells
@@ -2466,7 +2466,7 @@ SUBROUTINE depose_jxjyjz_scalar_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
 END SUBROUTINE depose_jxjyjz_scalar_3_3_3
 
 #if defined (DEV)
-!  _______________________________________________________________________________________
+! _______________________________________________________________________________________
 !> @brief
 !> Order 3 3D vector current deposition routine (rho*v)
 !
@@ -2484,7 +2484,7 @@ END SUBROUTINE depose_jxjyjz_scalar_3_3_3
 SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp,     &
   gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard,         &
   nzguard)
-  USE constants, ONLY: lvec, clight
+  USE constants, ONLY: clight, lvec
   USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
@@ -2890,7 +2890,7 @@ END SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3
 SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard,      &
   jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
   xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
-  USE constants, ONLY: lvec, clight
+  USE constants, ONLY: clight, lvec
   USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   ! ___ Parameter declaration _______________________________________
@@ -3377,7 +3377,7 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells, jycells, jzcells, np, ncells, 
   yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz,    &
   nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
   USE constants, ONLY: lvec
-  USE picsar_precision, ONLY: idp, num, isp
+  USE picsar_precision, ONLY: idp, isp, num
   IMPLICIT NONE
 
   INTEGER(idp), INTENT(IN)                      :: np, nx, ny, nz, ncells
@@ -3746,7 +3746,7 @@ END SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3
 ! ________________________________________________________________________________________
 SUBROUTINE current_reduction_1_1_1(jx, jy, jz, jxcells, jycells, jzcells, ncells, nx, &
   ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)
-  USE picsar_precision, ONLY: idp, num, isp
+  USE picsar_precision, ONLY: idp, isp, num
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN)                 :: nx, ny, nz, ncells
   INTEGER(idp), INTENT(IN)                 :: ncx, ncy, ncz
@@ -3859,7 +3859,7 @@ END SUBROUTINE current_reduction_1_1_1
 ! ________________________________________________________________________________________
 SUBROUTINE current_reduction_2_2_2(jx, jy, jz, jxcells, jycells, jzcells, ncells, nx, &
   ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)
-  USE picsar_precision, ONLY: idp, num, isp
+  USE picsar_precision, ONLY: idp, isp, num
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN)               :: nx, ny, nz, nxguard, nyguard, nzguard
   INTEGER(idp), INTENT(IN)               :: ncx, ncy, ncz
@@ -3946,7 +3946,7 @@ SUBROUTINE current_reduction_2_2_2(jx, jy, jz, jxcells, jycells, jzcells, ncells
   END DO
 
   RETURN
-END SUBROUTINE
+END SUBROUTINE current_reduction_2_2_2
 
 ! ________________________________________________________________________________________
 !> @brief
@@ -3972,7 +3972,7 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE current_reduction_3_3_3(jx, jy, jz, jxcells, jycells, jzcells, ncells, nx, &
   ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz)
-  USE picsar_precision, ONLY: idp, num, isp
+  USE picsar_precision, ONLY: idp, isp, num
   IMPLICIT NONE
 
   INTEGER(idp)                              :: nx, ny, nz, nxguard, nyguard, nzguard

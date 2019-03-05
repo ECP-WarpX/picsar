@@ -39,7 +39,7 @@ PROGRAM rho_deposition_3d_test
   INTEGER(idp)                             :: lvect
   INTEGER(idp)                             :: nx,ny,nz
   INTEGER(idp)                             :: nxguard,nyguard,nzguard
-  LOGICAL                                  :: passed
+  LOGICAL(lp)                              :: passed
   REAL(num)                                :: xmin,ymin,zmin
   REAL(num)                                :: xmax,ymax,zmax
   REAL(num)                                :: q,m
@@ -316,7 +316,7 @@ SUBROUTINE check(rho_ref,rho,nc,sum_rho_ref,sum_rho,min_err_rho,ave_err_rho,max_
   REAL(num)                      :: sum_rho, sum_rho_ref
   REAL(num)                      :: epsilon
   REAL(num), DIMENSION(nc)       :: rho_ref, rho
-  LOGICAL, INTENT(INOUT)         :: passed
+  LOGICAL(lp), INTENT(INOUT)         :: passed
 
   REAL(num), DIMENSION(nc)       :: diff_rho
   REAL(num)                      :: max_err_rho,min_err_rho

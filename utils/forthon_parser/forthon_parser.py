@@ -1118,6 +1118,7 @@ listfiles=["modules/modules.F90", \
            "particle_pushers/laser_pusher_manager_3d.F90", \
            "particle_pushers/particle_pusher_manager_2d.F90", \
            "particle_pushers/particle_pusher_manager_3d.F90", \
+           "particle_deposition/current_deposition/direct/direct_current_deposition_2d.F90", \
            "particle_deposition/current_deposition/direct/direct_current_deposition_3d.F90", \
            "particle_deposition/current_deposition/esirkepov/esirkepov_2d.F90", \
            "particle_deposition/current_deposition/esirkepov/esirkepov_3d.F90", \
@@ -1146,6 +1147,24 @@ listfiles=["modules/modules.F90", \
            "initialization/control_file.F90", \
            "housekeeping/load_balancing.F90"]
 
+def create_listfiles(folder):
+    listfiles = []
+    for root, subFolder, files in os.walk(folder):
+        for file in files:
+           formatted_file = '%s/%s'%(root, file)
+           listfiles.append(formatted_file[2:])
+    return listfiles
+
+listfiles_miniapp = create_listfiles('.')
+print listfiles_miniapp
+
+new_listfile = []
+for files in listfiles:
+    if files in listfiles_miniapp:
+       new_listfile.append(files)
+
+listfiles = new_listfile
+print listfiles
 
 # Pre-parse all application files in two .F90 files
 # appname_subroutines.F90 and appnam_modules.F90

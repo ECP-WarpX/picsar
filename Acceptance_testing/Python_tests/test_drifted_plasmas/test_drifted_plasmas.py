@@ -325,6 +325,8 @@ def test_drifted_plasmas():
       ntilex = max(1,w3d.nxlocal/10)
       ntiley = max(1,w3d.nylocal/10)
       ntilez = max(1,w3d.nzlocal/10)
+      top.nextpid()
+      top.nextpid()
   #    pg.sw=0.
       em = EM3DPXR(laser_func=laser_func,
                    laser_source_z=laser_source_z,

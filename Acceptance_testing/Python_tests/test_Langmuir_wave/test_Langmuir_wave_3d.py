@@ -217,7 +217,10 @@ def test_langmuir_wave():
   #-------------------------------------------------------------------------------
   weight_C   = dens0 *w3d.dx*w3d.dy*w3d.dz/(nppcellx*nppcelly*nppcellz)
   top.wpid = nextpid() # Activate variable weights in the method addpart
-
+  if(l_pxr):
+    # PXR antenna requires two additional pids to store virtual particles initial  positions
+    top.nextpid()
+    top.nextpid() 
   # --- create plasma species
   electron = Species(type=Electron,weight=weight_C,name='elec')
   ion = Species(type=Proton,weight=weight_C,name='ions')

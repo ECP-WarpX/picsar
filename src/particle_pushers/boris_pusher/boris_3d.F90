@@ -138,7 +138,7 @@ SUBROUTINE pxr_boris_push_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by, bz
 #endif
 #endif
 
-END SUBROUTINE
+END SUBROUTINE pxr_boris_push_u_3d
 
 
 ! ________________________________________________________________________________________
@@ -163,7 +163,7 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_boris_push_rr_S09_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by, bz, q,  &
   m, dt)
-  USE constants, ONLY: mu0, pi, clight
+  USE constants, ONLY: clight, mu0, pi
   USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   ! Input/Output parameters
@@ -311,7 +311,7 @@ SUBROUTINE pxr_boris_push_rr_S09_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx,
 #endif
 #endif
 
-END SUBROUTINE
+END SUBROUTINE pxr_boris_push_rr_S09_u_3d
 
 
 ! ________________________________________________________________________________________
@@ -336,7 +336,7 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_boris_push_rr_B08_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, by, bz, q,  &
   m, dt)
-  USE constants, ONLY: eps0, pi, clight
+  USE constants, ONLY: clight, eps0, pi
   USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   ! Input/Output parameters
@@ -492,7 +492,7 @@ SUBROUTINE pxr_boris_push_rr_B08_u_3d(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx,
 #endif
 #endif
 
-END SUBROUTINE
+END SUBROUTINE pxr_boris_push_rr_B08_u_3d
 
 
 ! ________________________________________________________________________________________
@@ -520,7 +520,7 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE pxr_boris_push_rr_LL_u_3d(np, uxp, uyp, uzp, gaminv, exold, eyold, ezold, & 
            bxold, byold, bzold, ex, ey, ez, bx, by, bz, q, m, dt)
-  USE constants, ONLY: eps0, pi, clight
+  USE constants, ONLY: clight, eps0, pi
   USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   ! Input/Output parameters
@@ -705,7 +705,7 @@ SUBROUTINE pxr_boris_push_rr_LL_u_3d(np, uxp, uyp, uzp, gaminv, exold, eyold, ez
 #endif
 #endif
 
-END SUBROUTINE
+END SUBROUTINE pxr_boris_push_rr_LL_u_3d
 
 
 
@@ -827,12 +827,8 @@ SUBROUTINE pxr_boris_push_u_3d_block(np, uxp, uyp, uzp, gaminv, ex, ey, ez, bx, 
 #endif
 #endif
   ENDDO
-END SUBROUTINE
+END SUBROUTINE pxr_boris_push_u_3d_block
 
-SUBROUTINE pxr_boris_push_u_3d_block_rr
-
-
-END SUBROUTINE 
 ! ________________________________________________________________________________________
 !> @brief
 !> Advance particle positions
@@ -1093,10 +1089,14 @@ SUBROUTINE pxr_set_gamma(np, uxp, uyp, uzp, gaminv)
   !DIR$ SIMD
 #endif
 
+!$acc parallel deviceptr(uxp, uyp, uzp, gaminv)
+!$acc loop gang vector
   DO ip=1, np
     usq = (uxp(ip)**2 + uyp(ip)**2+ uzp(ip)**2)*clghtisq
     gaminv(ip) = 1.0_num/sqrt(1.0_num + usq)
   END DO
+!$acc end loop
+!$acc end parallel
 
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC

@@ -1,0 +1,154 @@
+######################### INPUT FILE FOR THE CODE PICSAR
+section::cpusplit
+ nprocx = 2
+ nprocy = 2
+ nprocz = 2
+ 
+ # MPI com type
+ mpicom_curr = 0
+ 
+ # Size of the local mpi buffers
+ mpi_buf_size = 100
+ 
+end::cpusplit
+
+section::main
+ # Number of grid points in x,y,z
+ nx = 100
+ ny = 100
+ nz = 100
+
+ # Origin of simulation axes
+ xmin = -20e-6
+ ymin = -20e-6
+ zmin = -20e-6
+ xmax = 20e-6
+ ymax = 20e-6
+ zmax = 20e-6
+ # Simulation duration (in 1/w0)
+ t_max = 2
+ 
+ ntilex = 1
+ ntiley = 1
+ ntilez = 1
+ 
+ # Guard cells
+ nguardsx = 3
+ nguardsy = 3
+ nguardsz = 3
+ njguardsx = 3
+ njguardsy = 3
+ njguardsz = 3
+ 
+end::main
+
+section::solver
+ # Maxwell solver order
+ norderx = 2
+ nordery = 2
+ norderz = 2
+ 
+ nox = 1
+ noy = 1
+ noz = 1
+
+ # Current deposition method (5 = scalar, unoptimized)
+ currdepo = 5
+ 
+ # Field gathering method (1 = scalar, unoptimized)
+ fieldgathe = 1 
+ 
+ # Charge deposition method (1 = scalar, unoptimized)
+ rhodepo = 1
+ 
+ # Particle pusher and field gathering separated
+ fg_p_pp_separated = 0
+ 
+ # Particle pusher algorithm
+ particle_pusher = 0
+ 
+ # Type of particle communication (use 1 or 2)
+ partcom = 1
+
+end::solver
+
+section::sorting
+ activation = 0
+ dx=1.
+ dy=1.
+ dz=1.
+ shiftx=-0.5
+ shifty=-0.5
+ shiftz=-0.5
+end::sorting 
+
+section::plasma
+
+ nlab=1e25
+ gamma0=1.
+ 
+ # Initialization type
+ pdistr=1
+ 
+end::plasma
+
+section::species
+ name = electron
+ mass = 1.
+ charge = -1
+ nppcell = 5
+ x_min = -20e-6
+ y_min = -20e-6
+ z_min = -20e-6
+ x_max = 20e-6
+ y_max = 20e-6
+ z_max = 20e-6
+ ! Drift velocity (in clight)
+ vdrift_x = 0.0
+ vdrift_y = 0.0
+ vdrift_z = 0.0
+ ! Thermal velocity (in clight)
+ vth_x = 0.1
+ vth_y = 0.1
+ vth_z = 0.1
+ sorting_period=10  
+ sorting_start=0
+end::species
+
+section::species
+ name = proton
+ mass = 1836.
+ charge = 1
+ nppcell = 5
+ x_min = -20e-6
+ y_min = -20e-6
+ z_min = -20e-6
+ x_max = 20e-6
+ y_max = 20e-6
+ z_max = 20e-6
+ ! Drift velocity (in clight)
+ vdrift_x = 0.0
+ vdrift_y = 0.0
+ vdrift_z = 0.0
+ ! Thermal velocity (in clight)
+ vth_x = 0.001
+ vth_y = 0.001
+ vth_z = 0.001
+ sorting_period=10  
+ sorting_start=0
+end::species
+
+section::output
+ output_frequency = 20
+ output_step_min  = 20
+ output_step_max  = 1000
+ ex = 1
+ ey = 1
+ ez = 1
+ bx = 1
+ by = 1
+ bz = 1
+ rho = 1
+ dive = 1
+ jy = 1
+end::output

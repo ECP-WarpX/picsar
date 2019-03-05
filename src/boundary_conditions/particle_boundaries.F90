@@ -86,7 +86,7 @@ MODULE particle_boundary
     USE omp_lib
 #endif
     USE picsar_precision, ONLY: num
-    USE time_stat, ONLY: timestat_itstart, localtimes
+    USE time_stat, ONLY: localtimes, timestat_itstart
     IMPLICIT NONE
 
     REAL(num) :: tdeb, tend
@@ -1040,7 +1040,7 @@ END SUBROUTINE particle_bsc_openmp_reordering
 SUBROUTINE particle_bcs_mpi_blocking
 USE buff_exchange_part, ONLY: buff_part
 USE mpi
-USE picsar_precision, ONLY: idp, num, isp, lp
+USE picsar_precision, ONLY: idp, isp, lp, num
 INTEGER(isp) :: nvar! Simple implementation
 INTEGER(idp) :: nold, nnew
 INTEGER(isp), DIMENSION(-1:1, -1:1, -1:1) :: nptoexch
@@ -1388,7 +1388,7 @@ END SUBROUTINE particle_bcs_mpi_blocking
 SUBROUTINE particle_bcs_mpi_non_blocking
 USE buff_exchange_part, ONLY: buff_part
 USE mpi
-USE picsar_precision, ONLY: idp, num, isp, lp
+USE picsar_precision, ONLY: idp, isp, lp, num
 IMPLICIT NONE
 INTEGER(isp) :: nvar! Simple implementation
 INTEGER(isp), DIMENSION(-1:1, -1:1, -1:1) :: nptoexch
@@ -2110,8 +2110,8 @@ USE mpi
 #ifdef _OPENMP
 USE omp_lib
 #endif
-USE params, ONLY: resize_factor, mpi_buf_size
-USE picsar_precision, ONLY: idp, num, isp
+USE params, ONLY: mpi_buf_size, resize_factor
+USE picsar_precision, ONLY: idp, isp, num
 IMPLICIT NONE
 INTEGER(idp)                    :: is, ix, iy, iz
 INTEGER(idp)                    :: i, i2, i3

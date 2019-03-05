@@ -45,9 +45,9 @@
 !> @date
 !> Creation 2016
 ! ________________________________________________________________________________________
-subroutine pxr_depose_rho_n_2dxz(rho, np, xp, yp, zp, w, q, xmin, zmin, dx, dz, nx,   &
+SUBROUTINE pxr_depose_rho_n_2dxz(rho, np, xp, yp, zp, w, q, xmin, zmin, dx, dz, nx,   &
   nz, nxguard, nzguard, nox, noz, l_particles_weight, l4symtry, l_2drz, type_rz_depose)
-  USE picsar_precision, ONLY: idp, num, lp
+  USE picsar_precision, ONLY: idp, lp, num
   implicit none
   integer(idp) :: np, nx, nz, nox, noz, nxguard, nzguard, type_rz_depose
   real(num), dimension(-nxguard:nx+nxguard, 0:0, -nzguard:nz+nzguard), intent(in out) &
@@ -175,7 +175,7 @@ subroutine pxr_depose_rho_n_2dxz(rho, np, xp, yp, zp, w, q, xmin, zmin, dx, dz, 
   end do
 
   return
-end subroutine pxr_depose_rho_n_2dxz
+END SUBROUTINE pxr_depose_rho_n_2dxz
 
 ! ________________________________________________________________________________________
 !> @brief
@@ -187,10 +187,10 @@ end subroutine pxr_depose_rho_n_2dxz
 !> @date
 !> Creation 2016
 ! ________________________________________________________________________________________
-subroutine pxr_depose_rhoold_n_2dxz(rhoold, np, xp, zp, ux, uy, uz, gaminv, w, q,     &
+SUBROUTINE pxr_depose_rhoold_n_2dxz(rhoold, np, xp, zp, ux, uy, uz, gaminv, w, q,     &
   xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, l_particles_weight,       &
   l4symtry)
-  USE picsar_precision, ONLY: idp, num, lp
+  USE picsar_precision, ONLY: idp, lp, num
   implicit none
   integer(idp) :: np, nx, nz, nox, noz, nxguard, nzguard
   real(num), dimension(-nxguard:nx+nxguard, 0:0, -nzguard:nz+nzguard), intent(in out) &
@@ -380,4 +380,4 @@ subroutine pxr_depose_rhoold_n_2dxz(rhoold, np, xp, zp, ux, uy, uz, gaminv, w, q
   end do
 
   return
-end subroutine pxr_depose_rhoold_n_2dxz
+END SUBROUTINE pxr_depose_rhoold_n_2dxz

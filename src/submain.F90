@@ -63,12 +63,12 @@ USE cufft
 #endif
 USE mpi
 USE mpi_routines
-USE output_data, ONLY: dive_computed, timeit, pushtime, startit
-USE params, ONLY: dt, nsteps, it
+USE output_data, ONLY: dive_computed, pushtime, startit, timeit
+USE params, ONLY: dt, it, nsteps
 USE particle_boundary
-USE particle_properties, ONLY: ntot, particle_pusher, l_plasma
+USE particle_properties, ONLY: l_plasma, ntot, particle_pusher
 USE picsar_precision, ONLY: idp, num
-USE shared_data, ONLY: rho, nz, ny, rhoold, nx, c_dim, rank
+USE shared_data, ONLY: absorbing_bcs, c_dim, nx, ny, nz, rank, rho, rhoold
 USE simple_io
 USE sorting
 
@@ -124,7 +124,7 @@ USE sorting
         !IF (rank .EQ. 0) PRINT *, "#3"
 #if defined(SPECTRAL)
         IF (l_spectral) THEN
-          CALL  copy_field(rhoold, nx+2*nxguards+1, ny+2*nyguards+1,      &
+          CALL copy_field(rhoold, nx+2*nxguards+1, ny+2*nyguards+1,      &
                 nz+2*nzguards+1, rho, nx+2*nxguards+1, ny+2*nyguards+1,   &
                 nz+2*nzguards+1)
           CALL pxrdepose_rho_on_grid
@@ -240,7 +240,7 @@ USE sorting
       IF (l_spectral) THEN
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
    !     CALL harris_pulse(dt*i,0*pi/4._num,10_idp)
-     
+
         CALL push_psatd_ebfield
         !IF (rank .EQ. 0) PRINT *, "#0"
         !!! --- Boundary conditions for E AND B
@@ -320,7 +320,7 @@ USE sorting
 END SUBROUTINE step
 ! ________________________________________________________________________________________
 !> @brief
-!> init pml arrays 
+!> init pml arrays
 !
 !> @author
 !> Haithem Kallala
@@ -329,20 +329,26 @@ END SUBROUTINE step
 !> Creation 2018
 
 SUBROUTINE init_pml_arrays
+  USE constants, ONLY: clight
   USE field_boundary
-  USE fields
-  USE shared_data
-  USE constants  
-  USE params, ONLY : dt 
+  USE fields, ONLY: nx_pml, nxguards, ny_pml, nyguards, nz_pml, nzguards,            &
+    shift_x_pml, shift_y_pml, shift_z_pml, sigma_x_b, sigma_x_e, sigma_y_b,          &
+    sigma_y_e, sigma_z_b, sigma_z_e
   USE mpi
   USE mpi_derived_types
+  USE params, ONLY: dt
+  USE picsar_precision, ONLY: idp, lp, num
+  USE shared_data, ONLY: absorbing_bcs_x, absorbing_bcs_y, absorbing_bcs_z, c_dim,   &
+    cell_x_max, cell_x_min, cell_y_max, cell_y_min, cell_z_max, cell_z_min, dx, dy,  &
+    dz, fftw_hybrid, nx, nx_global, ny, ny_global, nz, nz_global, x, x_coords, y,    &
+    y_coords, z, z_coords
 
   LOGICAL(lp)  :: is_intersection_x, is_intersection_y, is_intersection_z
   INTEGER(idp) :: ix,iy,iz,pow
   REAL(num)    :: coeff,b_offset, e_offset
-  INTEGER(idp) :: type_id  
+  INTEGER(idp) :: type_id
   REAL(num)    , ALLOCATABLE, DIMENSION(:) :: temp
-  INTEGER(idp) :: cx, cy, cz 
+  INTEGER(idp) :: cx, cy, cz
 
   coeff = 4._num/25._num
   b_offset = .50_num
@@ -351,11 +357,11 @@ SUBROUTINE init_pml_arrays
 
   !> Inits pml arrays of the same size as ex fields in the daming direction!
   !> sigmas are 1d arrray to economize memory
-  
+
   !> Pml arrays are initializd to 0.0_num because exp(0.0_num) = 1.0!
   !> So in case of no pml region inside the mpi domain, pml acts as vaccum
 
-  !> first each proc allocates sigma as a 1d array of size n_global + 2*ng 
+  !> first each proc allocates sigma as a 1d array of size n_global + 2*ng
   !> then each proc will compute sigma in the whole domain and will then extract
   !> the relevent part for its subdomain
   !> Note that a pml region can overlap many procs even with local psatd !
@@ -376,11 +382,11 @@ SUBROUTINE init_pml_arrays
   sigma_z_e = 0.0_num
   ALLOCATE(sigma_z_b(-nzguards:nz_global+nzguards-1));
   sigma_z_b = 0.0_num
-  
+
   !> Inits sigma_x_e and sigma_x_b in the lower bound of the domain along x
   !> axis
   !> first, each proc will compute sigma in the whole domain
-    
+
   cx = nxguards - shift_x_pml
   cy = nyguards - shift_y_pml
   cz = nzguards - shift_z_pml
@@ -402,17 +408,17 @@ SUBROUTINE init_pml_arrays
     sigma_x_b(ix-1+cx) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+b_offset-1)**pow
   ENDDO
 
-  !> Each proc extracts the relevent part of sigma 
-  ALLOCATE(temp(-nxguards:nx_global+nxguards)) 
+  !> Each proc extracts the relevent part of sigma
+  ALLOCATE(temp(-nxguards:nx_global+nxguards))
   temp = sigma_x_e
   DEALLOCATE(sigma_x_e); ALLOCATE(sigma_x_e(-nxguards:nx+nxguards-1))
   sigma_x_e = temp(cell_x_min(x_coords+1)-nxguards:cell_x_max(x_coords+1)+nxguards)
- 
+
   temp = sigma_x_b
   DEALLOCATE(sigma_x_b); ALLOCATE(sigma_x_b(-nxguards:nx+nxguards-1))
   sigma_x_b = temp(cell_x_min(x_coords+1)-nxguards:cell_x_max(x_coords+1)+nxguards)
   DEALLOCATE(temp)
-  IF(c_dim == 3) THEN 
+  IF(c_dim == 3) THEN
     ! > Inits sigma_y_e and sigma_y_b in the lower bound of the domain along y
     !> axis
     !> first, each proc will compute sigma in the whole domain
@@ -420,7 +426,7 @@ SUBROUTINE init_pml_arrays
       sigma_y_e(iy-cy) =  coeff*clight/dy*(ny_pml-iy-e_offset)**pow
       sigma_y_b(iy-cy) =  coeff*clight/dy*(ny_pml-iy-b_offset)**pow
     ENDDO
-  
+
     ! > Inits sigma_y_e and sigma_y_b in the upper bound of the domain along y
     !> axis
     !> first, each proc will compute sigma in the whole domain
@@ -428,9 +434,9 @@ SUBROUTINE init_pml_arrays
       sigma_y_e(iy+cy) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+e_offset)**pow
       sigma_y_b(iy-1+cy) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+b_offset-1)**pow
     ENDDO
-    
-    !> Each proc extracts the relevent part of sigma 
-    ALLOCATE(temp(-nyguards:ny_global+nyguards)) 
+
+    !> Each proc extracts the relevent part of sigma
+    ALLOCATE(temp(-nyguards:ny_global+nyguards))
     temp = sigma_y_e
     DEALLOCATE(sigma_y_e); ALLOCATE(sigma_y_e(-nyguards:ny+nyguards-1))
     sigma_y_e = temp(cell_y_min(y_coords+1)-nyguards:cell_y_max(y_coords+1)+nyguards)
@@ -452,30 +458,30 @@ SUBROUTINE init_pml_arrays
   !> axis
   !> first, each proc will compute sigma in the whole domain
   !> Need more straightforward way to do this
-  DO iz =  nz_global-nz_pml,nz_global-1 
+  DO iz =  nz_global-nz_pml,nz_global-1
      sigma_z_e(iz+cz) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+e_offset)**pow
      sigma_z_b(iz-1+cz) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+b_offset-1)**pow
   ENDDO
 
-  !> Each proc extracts the relevent part of sigma 
+  !> Each proc extracts the relevent part of sigma
   ALLOCATE(temp(-nzguards:nz_global+nzguards))
   temp = sigma_z_e
   DEALLOCATE(sigma_z_e); ALLOCATE(sigma_z_e(-nzguards:nz+nzguards-1))
   sigma_z_e = temp(cell_z_min(z_coords+1)-nzguards:cell_z_max(z_coords+1)+nzguards)
 
-  temp = sigma_z_b 
+  temp = sigma_z_b
   DEALLOCATE(sigma_z_b); ALLOCATE(sigma_z_b(-nzguards:nz+nzguards-1))
   sigma_z_b = temp(cell_z_min(z_coords+1)-nzguards:cell_z_max(z_coords+1)+nzguards)
   DEALLOCATE(temp)
- 
-  !> sigma=exp(-sigma*dt) 
+
+  !> sigma=exp(-sigma*dt)
   !> Uses an exact formulation to damp fields :
   !> dE/dt = -sigma * E => E(n)=exp(-sigma*dt)*E(n-1)
   !> Note that fdtd pml solving requires field time centering
-  IF(absorbing_bcs_x) THEN 
+  IF(absorbing_bcs_x) THEN
     sigma_x_e = EXP(-sigma_x_e*dt)
     sigma_x_b = EXP(-sigma_x_b*dt)
-  ELSE 
+  ELSE
     sigma_x_e = 1.0_num
     sigma_x_b = 1.0_num
   ENDIF
@@ -485,11 +491,11 @@ SUBROUTINE init_pml_arrays
   ELSE
     sigma_y_e = 1.0_num
     sigma_y_b = 1.0_num
-  ENDIF  
+  ENDIF
   IF(absorbing_bcs_z) THEN
     sigma_z_e = EXP(-sigma_z_e*dt)
     sigma_z_b = EXP(-sigma_z_b*dt)
-  ELSE 
+  ELSE
     sigma_z_e = 1.0_num
     sigma_z_b = 1.0_num
   ENDIF
@@ -512,34 +518,36 @@ END SUBROUTINE init_pml_arrays
 !> @date
 !> Creation 2015
 SUBROUTINE initall
-  USE constants, ONLY: eps0, emass, pi, echarge, clight
-  USE fields, ONLY: ez, nox, noy, noz, jz, l_spectral, xcoeffs, bz, nzguards,        &
-    nxguards, nyguards, jy, jx, ex, bx, by, ey
-#if defined(SPECTRAL)
+  USE constants, ONLY: clight, echarge, emass, eps0, pi
+  USE fields, ONLY: bx, by, bz, ex, ey, ez, g_spectral, jx, jy, jz, l_spectral, nox, &
+    noy, noz, nx_pml, nxguards, ny_pml, nyguards, nz_pml, nzguards, xcoeffs
+#if defined(FFTW)
   USE fourier_psaotd
   USE gpstd_solver
-  USE shared_data, ONLY: nb_group_x, nb_group_y, nb_group_z
 #endif
   USE mpi
-  USE output_data, ONLY: particle_dump, npdumps, particle_dumps
-  USE params, ONLY: g0, w0_l, currdepo, lvec_charge_depo, w0_t, mpicom_curr, dtcoef, &
-    tmax, rhodepo, fieldgathe, fg_p_pp_separated, partcom, lvec_curr_depo, dt, nc,   &
-    mpi_buf_size, wlab, w0, topology, nsteps, lambdalab, lvec_fieldgathe, it, nlab
+  USE output_data, ONLY: npdumps, particle_dump, particle_dumps
+  USE params, ONLY: currdepo, dt, dtcoef, fg_p_pp_separated, fieldgathe, g0, it,     &
+    lambdalab, lvec_charge_depo, lvec_curr_depo, lvec_fieldgathe, mpi_buf_size,      &
+    mpicom_curr, nc, nlab, nsteps, partcom, rhodepo, tmax, topology, w0, w0_l, w0_t, &
+    wlab
   USE particle_properties, ONLY: nspecies, particle_pusher, pdistr
   USE particle_speciesmodule, ONLY: particle_species
   USE particles, ONLY: species_parray
   USE picsar_precision, ONLY: idp, num
-  USE precomputed, ONLY: dts2dz, dys2, dts2dx, dzs2, dts2dy, dzi, invvol, dyi,       &
-    dtsdy0, dtsdz0, dxi, clightsq, dtsdx0, dxs2
-  USE shared_data, ONLY: nz, ny, fftw_with_mpi, y_min_local, nx_grid, sorting_dx,    &
-    nx, nz_grid, p3dfft_stride, y_max_local, p3dfft_flag, sorting_shiftx, ymin,      &
-    fftw_threads_ok, sorting_dy, y, ymax, z, dx, c_dim, sorting_activated, ny_grid,  &
-    sorting_shiftz, x, fftw_mpi_transpose, dy, rank, sorting_shifty, fftw_hybrid,    &
-    sorting_dz, dz
-  USE tile_params, ONLY: ntilez, ntilex, ntiley
+  USE precomputed, ONLY: clightsq, dts2dx, dts2dy, dts2dz, dtsdx0, dtsdy0, dtsdz0,   &
+    dxi, dxs2, dyi, dys2, dzi, dzs2, invvol
+  USE shared_data, ONLY: absorbing_bcs, absorbing_bcs_x, absorbing_bcs_y,            &
+    absorbing_bcs_z, c_dim, cell_y_max, cell_y_min, dx, dy, dz, fftw_hybrid,         &
+    fftw_mpi_transpose, fftw_threads_ok, fftw_with_mpi, nb_group_x, nb_group_y,      &
+    nb_group_z, nx, nx_grid, nxg_group, ny, ny_grid, nyg_group, nz, nz_grid,         &
+    nzg_group, p3dfft_flag, p3dfft_stride, rank, sorting_activated, sorting_dx,      &
+    sorting_dy, sorting_dz, sorting_shiftx, sorting_shifty, sorting_shiftz, x, y,    &
+    y_max_local, y_min_local, ymax, ymin, z
+  USE tile_params, ONLY: ntilex, ntiley, ntilez
   USE tiling
-  USE time_stat, ONLY: timestat_itstart, timestat_activated, nbuffertimestat,        &
-    init_localtimes, localtimes
+  USE time_stat, ONLY: init_localtimes, localtimes, nbuffertimestat,                 &
+    timestat_activated, timestat_itstart
   ! ________________________________________________________________________________________
 
   !use IFPORT ! uncomment if using the intel compiler (for rand)
@@ -561,8 +569,8 @@ SUBROUTINE initall
     ymax = 0_idp
     ny = 1_idp
     nyguards = 0_idp
-    ymin = -HUGE(1.0_num) 
-    ymax = HUGE(1.0_num) 
+    ymin = -HUGE(1.0_num)
+    ymax = HUGE(1.0_num)
     y_min_local = -HUGE(1.0_num)
     y_max_local = HUGE(1.0_num)
     cell_y_min = 0_idp
@@ -587,7 +595,7 @@ SUBROUTINE initall
       dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
     ENDIF
   ELSE IF (c_dim.eq.2) THEN
-    IF (l_spectral) THEN 
+    IF (l_spectral) THEN
       dt=MIN(dx,dz)/clight
     ELSE
       dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dz**2))
@@ -685,7 +693,7 @@ SUBROUTINE initall
     WRITE(0, *) ''
     IF(absorbing_bcs_x) THEN
        WRITE(0, '(" Absorbing field bcs X axis, nx_pml =:", I5)')  nx_pml
-    ELSE 
+    ELSE
        WRITE(0, '(" Periodic field bcs X axis")')
     ENDIF
     IF(absorbing_bcs_y) THEN
@@ -712,8 +720,10 @@ SUBROUTINE initall
       IF (p3dfft_flag)   WRITE(0, '(" USING PDFFT")')
       IF(p3dfft_stride .AND. p3dfft_flag) WRITE(0, '(" USING STRIDED  PDFFT")')
       IF(p3dfft_stride .EQV. .FALSE. .AND. p3dfft_flag) WRITE(0, '(" USING UNSTRIDED PDFFT")')
-      IF(fftw_hybrid) WRITE(0, '(" nb_groups :", I5, X, I5, X, I5)') nb_group_x,nb_group_y,nb_group_z
-      IF(fftw_hybrid) WRITE(0, '(" nb guards groups :", I5, X, I5, X, I5)') nxg_group,nyg_group,nzg_group
+      IF(fftw_hybrid) WRITE(0, '(" nb_groups :", I5, X, I5, X, I5)')                  &
+                              nb_group_x,nb_group_y,nb_group_z
+      IF(fftw_hybrid) WRITE(0, '(" nb guards groups :", I5, X, I5, X, I5)')           &
+                              nxg_group,nyg_group,nzg_group
       IF (fftw_threads_ok) WRITE(0, '(" FFTW MPI - Threaded support enabled ")')
       IF (fftw_mpi_transpose) WRITE(0, '(" FFTW MPI Transpose plans enabled ")')
 #endif
@@ -830,7 +840,9 @@ END SUBROUTINE initall
 
 
 SUBROUTINE init_splitted_fields_random()
-  USE fields
+  USE fields, ONLY: bx, bxy, bxz, by, byx, byz, bz, bzx, bzy, ex, exy, exz, ey, eyx, &
+    eyz, ez, ezx, ezy
+  USE picsar_precision, ONLY: num
   exy = 0.5_num * ex
   exz = 0.5_num * ex
   eyx = 0.5_num * ey
@@ -848,7 +860,7 @@ END SUBROUTINE init_splitted_fields_random
 
 ! ________________________________________________________________________________________
 !> @brief
-!> Subroutine that computes total memory consumption (particle/grid tile structures and 
+!> Subroutine that computes total memory consumption (particle/grid tile structures and
 !> regular grid arrays used in the Maxwell solver)
 !
 !> @author
@@ -858,12 +870,12 @@ END SUBROUTINE init_splitted_fields_random
 !> Creation 2018
 ! ________________________________________________________________________________________
 SUBROUTINE estimate_total_memory_consumption
-  USE mem_status, ONLY: local_grid_mem, global_part_tiles_mem,                       &
-    global_grid_tiles_mem, global_grid_mem
+  USE mem_status, ONLY: global_grid_mem, global_grid_tiles_mem,                      &
+    global_part_tiles_mem, local_grid_mem
   USE mpi_routines
   USE picsar_precision, ONLY: num
   USE tiling
-  IMPLICIT NONE 
+  IMPLICIT NONE
   REAL(num) :: total_memory=0._num, avg_per_mpi=0._num
   ! - Get local/global memory occupied by tile arrays (grid and particles)
   CALL get_local_tile_mem()
@@ -873,8 +885,8 @@ SUBROUTINE estimate_total_memory_consumption
   CALL get_local_grid_mem()
   CALL get_global_grid_mem()
 
-  ! - Output results on standard output 
-  IF (rank .EQ. 0) THEN 
+  ! - Output results on standard output
+  IF (rank .EQ. 0) THEN
     total_memory=global_grid_mem+global_grid_tiles_mem+global_part_tiles_mem
     avg_per_mpi=total_memory/nproc
     WRITE(0, *) 'Total memory (GB) for grid arrays ', global_grid_mem/1e9
@@ -882,7 +894,7 @@ SUBROUTINE estimate_total_memory_consumption
     WRITE(0, *) 'Total memory (GB) for particle tile arrays ', global_part_tiles_mem/1e9
     WRITE(0, *) 'Total memory (GB)', total_memory/1e9
     WRITE(0, *) 'Avg memory (GB) /MPI process ', avg_per_mpi/1e9
-  ENDIF 
+  ENDIF
 END SUBROUTINE estimate_total_memory_consumption
 
 
@@ -898,7 +910,7 @@ END SUBROUTINE estimate_total_memory_consumption
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE init_stencil_coefficients()
-USE fields, ONLY: nordery, zcoeffs, l_nodalgrid, xcoeffs, norderz, ycoeffs, norderx
+USE fields, ONLY: l_nodalgrid, norderx, nordery, norderz, xcoeffs, ycoeffs, zcoeffs
 USE params, ONLY: l_coeffs_allocated
 USE tiling
 
@@ -935,7 +947,7 @@ END SUBROUTINE init_stencil_coefficients
 !> @date
 !> Creation 2015
 SUBROUTINE FD_weights(coeffs, norder, l_nodal)
-  USE picsar_precision, ONLY: idp, num, lp
+  USE picsar_precision, ONLY: idp, lp, num
   ! ________________________________________________________________________________________
 
   IMPLICIT NONE
@@ -1008,7 +1020,7 @@ END SUBROUTINE FD_weights
 !> Creation 2016
 SUBROUTINE current_debug
   USE fields, ONLY: jy
-  USE shared_data, ONLY: nz, ny, nx
+  USE shared_data, ONLY: nx, ny, nz
   ! ________________________________________________________________________________________
   IMPLICIT NONE
 
@@ -1081,7 +1093,7 @@ w_num = w_num *clight**2*dt**2
 w_num = asin(sqrt(w_num))
 w_num = w_num *2._num/dt
 w_num  = w_num/cos(thetaa)
-!$acc parallel loop present(jy) 
+!$acc parallel loop present(jy)
 do i = -nzguards,nz+nzguards
 jy(nx/2,:,i) =sin(w_num*t +  k*dz *i*sin(thetaa)+k*dx*cos(thetaa))*arg/mu0
 enddo

@@ -23,7 +23,7 @@
 !
 ! Purpose:
 ! This file contains subroutines for:
-! (i)  fftw init plans   
+! (i)  fftw init plans
 ! (ii) Forward/Backward Fourier transform of EM fields using,
 ! FFTW (Distributed/Shared version) or P3DFFT
 ! (iii) Maxwell push in the spectral space using the Pseudo-Spectral Arbitrary Order
@@ -46,37 +46,33 @@ MODULE fourier_psaotd
 
   ! ______________________________________________________________________________________
   !> @brief
-  !> This subroutine computes FFTW plans 
+  !> This subroutine computes FFTW plans
   !
   !> @author
   !> Haithem Kallala
-  !> H. Vincenti 
+  !> H. Vincenti
   !> @date
   !> Creation 2017
   !
-  !> @params[in] nopenmp - INTEGER(idp) - number of OpenMP threads/MPI processes  
+  !> @params[in] nopenmp - INTEGER(idp) - number of OpenMP threads/MPI processes
   ! ______________________________________________________________________________________
   SUBROUTINE init_plans_fourier_mpi(nopenmp)
     USE fields, ONLY: ex_r, exf, exy_r
-    USE group_parameters, ONLY: nx_group, ny_group, mpi_comm_group_id,              &
-      nz_group
+    USE group_parameters, ONLY: mpi_comm_group_id, nx_group, ny_group, nz_group
     USE iso_c_binding
     USE fourier
 #if defined(CUDA_FFT)
    USE cufft
 #endif
     USE mpi
-#if defined(FFTW)
-    USE mpi_fftw3, ONLY: plan_r2c_mpi, fftw_mpi_transposed_out, fftw_estimate,       &
-      fftw_mpi_plan_dft_c2r_3d, fftw_mpi_plan_dft_c2r_2d, plan_c2r_mpi,              &
-      fftw_mpi_plan_dft_r2c_3d, fftw_mpi_transposed_in, fftw_measure,                &
-      fftw_mpi_plan_dft_r2c_2d
-#endif
+    USE mpi_fftw3, ONLY: fftw_estimate, fftw_measure, fftw_mpi_plan_dft_c2r_2d,      &
+      fftw_mpi_plan_dft_c2r_3d, fftw_mpi_plan_dft_r2c_2d, fftw_mpi_plan_dft_r2c_3d,  &
+      fftw_mpi_transposed_in, fftw_mpi_transposed_out, plan_c2r_mpi, plan_r2c_mpi
     USE picsar_precision, ONLY: idp, isp
-    USE shared_data, ONLY: fftw_plan_measure, nx_global, ny_global, fftw_threads_ok, &
-      comm, c_dim, nz_global, fftw_mpi_transpose, fftw_hybrid, nb_group,             &
-      p3dfft_flag ,absorbing_bcs,nx,ny,nz
-      USE fields, ONLY : nxguards,nyguards,nzguards
+    USE shared_data, ONLY: absorbing_bcs, c_dim, comm, fftw_hybrid,                  &
+      fftw_mpi_transpose, fftw_plan_measure, fftw_threads_ok, nb_group,              &
+      nx, nx_global, ny, ny_global, nz, nz_global
+    USE fields, ONLY : nxguards, nyguards, nzguards
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN) :: nopenmp
     INTEGER(C_INT) :: nopenmp_cint, iret
@@ -102,7 +98,7 @@ MODULE fourier_psaotd
     nopenmp_cint=nopenmp
     IF(.NOT. p3dfft_flag) THEN
       IF  (fftw_threads_ok) THEN
-        CALL  DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
+        CALL DFFTW_PLAN_WITH_NTHREADS(nopenmp_cint)
       ENDIF
     ENDIF
     !> If fftw_mpi_transpose then use FFTW_MPI_TRANSPOSED_OUT/IN plans
@@ -119,7 +115,7 @@ MODULE fourier_psaotd
     !> Block matrixes are also transposed conveniently  during init_gpstd when
     !> using transposed plans
     !> A similar optimization is possible when using p3dfft (p3dfft_stride =
-    !.TRUE.) but z and x axis are then transposed 
+    !.TRUE.) but z and x axis are then transposed
     IF(fftw_plan_measure) THEN
        planner_flag_1 = FFTW_MEASURE
        planner_flag_2 = FFTW_MEASURE
@@ -127,7 +123,7 @@ MODULE fourier_psaotd
        planner_flag_1 = FFTW_ESTIMATE
        planner_flag_2 = FFTW_ESTIMATE
     ENDIF
-    
+
     IF(fftw_mpi_transpose) THEN
       planner_flag_1 = IOR(planner_flag_1,FFTW_MPI_TRANSPOSED_OUT)
       planner_flag_2 = IOR(planner_flag_2,FFTW_MPI_TRANSPOSED_IN)
@@ -137,7 +133,7 @@ MODULE fourier_psaotd
       nz_cint=nz_global
       ny_cint=ny_global
       nx_cint=nx_global
-      IF(c_dim == 3) THEN 
+      IF(c_dim == 3) THEN
         plan_r2c_mpi = fftw_mpi_plan_dft_r2c_3d(nz_cint, ny_cint, nx_cint, ex_r, exf,   &
         comm, planner_flag_1)
         plan_c2r_mpi = fftw_mpi_plan_dft_c2r_3d(nz_cint, ny_cint, nx_cint, exf, ex_r,   &
@@ -148,7 +144,7 @@ MODULE fourier_psaotd
         plan_c2r_mpi = fftw_mpi_plan_dft_c2r_2d(nz_cint,nx_cint, exf,ex_r,   &
         comm, planner_flag_2)
       ENDIF
-    ELSE 
+    ELSE
       nz_cint = nz_group
       ny_cint = ny_group
       nx_cint = nx_group
@@ -181,11 +177,11 @@ MODULE fourier_psaotd
 
   ! ______________________________________________________________________________________
   !> @brief
-  !> This subroutine computes forward  R2Clocal FFTs - concerns only the local 
+  !> This subroutine computes forward  R2Clocal FFTs - concerns only the local
   !> pseudo-spectral solver
   !
   !> @author
-  !> H. Vincenti 
+  !> H. Vincenti
   !> Haithem Kallala
   !
   !> @date
@@ -193,20 +189,18 @@ MODULE fourier_psaotd
   ! ______________________________________________________________________________________
   SUBROUTINE get_Ffields()
     USE fastfft
-    USE fields, ONLY: nzguards, nxguards, nyguards, shift_x_pml, shift_y_pml,         &
-                        shift_z_pml
-    USE fields, ONLY: exy_r, exz_r, eyx_r, eyz_r, ezx_r, ezy_r
-    USE fields, ONLY: bxy_r, bxz_r, byx_r, byz_r, bzx_r, bzy_r
+    USE fields, ONLY: bxy_r, bxz_r, byx_r, byz_r, bzx_r, bzy_r, exy_r, exz_r, eyx_r, &
+      eyz_r, ezx_r, ezy_r, nxguards, nyguards, nzguards, shift_x_pml, shift_y_pml,   &
+      shift_z_pml
     USE mpi
     USE params, ONLY: it
     USE picsar_precision, ONLY: idp, num
-    USE shared_data, ONLY: nz, ny, nx, absorbing_bcs, absorbing_bcs_x,                &
-                           absorbing_bcs_y, absorbing_bcs_z, c_dim
-    USE shared_data, ONLY : x_max_boundary, y_max_boundary, z_max_boundary
-    USE shared_data, ONLY : x_min_boundary, y_min_boundary, z_min_boundary
+    USE shared_data, ONLY: absorbing_bcs, absorbing_bcs_x, absorbing_bcs_y,          &
+      absorbing_bcs_z, c_dim, nx, ny, nz, x, x_max_boundary, x_min_boundary, y,      &
+      y_max_boundary, y_min_boundary, z, z_max_boundary, z_min_boundary
+    USE time_stat, ONLY: localtimes, timestat_itstart
 
-    USE time_stat, ONLY: timestat_itstart, localtimes
-     
+
 
     IMPLICIT NONE
     INTEGER(idp) :: nfftx, nffty, nfftz, nxx, nyy, nzz
@@ -249,7 +243,7 @@ MODULE fourier_psaotd
           exz_r(ix,:,:) = 0.0_num
           eyx_r(ix,:,:) = 0.0_num
           eyz_r(ix,:,:) = 0.0_num
-          ezx_r(ix,:,:) = 0.0_num  
+          ezx_r(ix,:,:) = 0.0_num
           ezy_r(ix,:,:) = 0.0_num
           bxy_r(ix,:,:) = 0.0_num
           bxz_r(ix,:,:) = 0.0_num
@@ -277,7 +271,7 @@ MODULE fourier_psaotd
           bzy_r(ix-1,:,:) = 0.0_num
         ENDDO
         !$acc end parallel
-        !$acc kernels 
+        !$acc kernels
         byx_r(u_bound(1),:,:) = 0.0_num
         byz_r(u_bound(1),:,:) = 0.0_num
         bzx_r(u_bound(1),:,:) = 0.0_num
@@ -285,7 +279,7 @@ MODULE fourier_psaotd
         !$acc end kernels
       ENDIF
     ENDIF
-    IF(c_dim == 3) THEN 
+    IF(c_dim == 3) THEN
       IF(absorbing_bcs_y) THEN
         IF(y_min_boundary) THEN
           !$acc parallel present(exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r,byx_r,byz_r,bzx_r,bzy_r)
@@ -307,7 +301,7 @@ MODULE fourier_psaotd
         ENDIF
         IF(y_max_boundary) THEN
         !$acc parallel present(exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r,byx_r,byz_r,bzx_r,bzy_r)
-          DO iy=u_bound(2)-1-shift_y_pml,u_bound(2)  
+          DO iy=u_bound(2)-1-shift_y_pml,u_bound(2)
             exy_r(:,iy,:) = 0.0_num
             exz_r(:,iy,:) = 0.0_num
             eyx_r(:,iy,:) = 0.0_num
@@ -322,7 +316,7 @@ MODULE fourier_psaotd
             bzy_r(:,iy-1,:) = 0.0_num
           ENDDO
           !$acc end parallel
-          !$acc kernels 
+          !$acc kernels
           bxy_r(:,u_bound(2),:) = 0.0_num
           bxz_r(:,u_bound(2),:) = 0.0_num
           bzx_r(:,u_bound(2),:) = 0.0_num
@@ -368,7 +362,7 @@ MODULE fourier_psaotd
           bzy_r(:,:,iz) = 0.0_num
         ENDDO
         !$acc end parallel
-        !$acc kernels 
+        !$acc kernels
         bxy_r(:,:,u_bound(3)) = 0.0_num
         bxz_r(:,:,u_bound(3)) = 0.0_num
         byx_r(:,:,u_bound(3)) = 0.0_num
@@ -379,8 +373,8 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
-    
-    ! Perform local forward FFTs R2C of all grid arrays 
+
+    ! Perform local forward FFTs R2C of all grid arrays
 #if defined(CUDA_FFT)
       CALL  fft_forward_r2c_local_cuda(nfftx,nffty,nfftz)
 #else
@@ -388,47 +382,42 @@ MODULE fourier_psaotd
 #endif
 
   END SUBROUTINE get_Ffields
- 
+
   ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine computes forward R2C distributed FFTs (with MPI groups)
   !
   !> @author
   !> Haithem Kallala
-  !> H. Vincenti 
-  !> 
+  !> H. Vincenti
+  !>
   !> @date
   !> Creation 2017
   ! ______________________________________________________________________________________
   SUBROUTINE get_Ffields_mpi_lb()
     USE field_boundary
-    
-    USE fields, ONLY : nxguards
-    USE fields, ONLY: g_spectral
-    USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
-    USE fields, ONLY : ex_r, ey_r, ez_r, bx_r, by_r, bz_r, jx_r, jy_r, jz_r, rho_r,   &
-                       rhoold_r
-    USE fields, ONLY : exy, exz, eyx,  eyz, ezx, ezy , bxy, bxz, byx, byz, bzx, bzy
-    USE fields, ONLY : exy_r, exz_r, eyx_r,  eyz_r, ezx_r, ezy_r, bxy_r, bxz_r, byx_r,&
-                       byz_r, bzx_r, bzy_r
-    USE fields, ONLY : exf, eyf, ezf, bxf, byf, bzf, jxf, jyf, jzf, rhof,   &
-                       rhooldf
-
-    USE group_parameters, ONLY: l_first_cell_to_send_y, l_first_cell_to_send_z,      &
-      g_first_cell_to_recv_y, size_exchanges_l2g_recv_z, size_exchanges_l2g_recv_y,  &
-      g_first_cell_to_recv_z
-    USE group_parameters, ONLY : is_group_x_boundary_min, is_group_x_boundary_max
-    USE group_parameters, ONLY : is_group_y_boundary_min, is_group_y_boundary_max
-    USE group_parameters, ONLY : is_group_z_boundary_min, is_group_z_boundary_max
-    USE group_parameters, ONLY : cell_x_min_g, cell_y_min_g, cell_z_min_g
-    USE group_parameters, ONLY : cell_x_max_g, cell_y_max_g, cell_z_max_g
+    USE fields, ONLY: bx, bx_r, bxf, bxy, bxy_r, bxz, bxz_r, by, by_r, byf, byx,     &
+      byx_r, byz, byz_r, bz, bz_r, bzf, bzx, bzx_r, bzy, bzy_r, ex, ex_r, exf, exy,  &
+      exy_r, exz, exz_r, ey, ey_r, eyf, eyx, eyx_r, eyz, eyz_r, ez, ez_r, ezf, ezx,  &
+      ezx_r, ezy, ezy_r, g_spectral, jx, jx_r, jxf, jy, jy_r, jyf, jz, jz_r, jzf,    &
+      nxguards, nyguards, nzguards, rho_r, rhof, rhoold_r, rhooldf
+    USE group_parameters, ONLY: cell_x_max_g, cell_x_min_g, cell_y_max_g,            &
+      cell_y_min_g, cell_z_max_g, cell_z_min_g, g_first_cell_to_recv_y,              &
+      g_first_cell_to_recv_z, is_group_x_boundary_max, is_group_x_boundary_min,      &
+      is_group_y_boundary_max, is_group_y_boundary_min, is_group_z_boundary_max,     &
+      is_group_z_boundary_min, l_first_cell_to_send_y, l_first_cell_to_send_z,       &
+      size_exchanges_l2g_recv_y, size_exchanges_l2g_recv_z
     USE iso_c_binding
     USE mpi
     USE params, ONLY: it
     USE picsar_precision, ONLY: idp, num
-    USE shared_data, ONLY: rho, rhoold, ix_min_r, ix_max_r, y, z, absorbing_bcs,     &
-                           absorbing_bcs_x, absorbing_bcs_y, absorbing_bcs_z
-    USE time_stat, ONLY: timestat_itstart, localtimes
+    USE shared_data, ONLY: absorbing_bcs, absorbing_bcs_x, absorbing_bcs_y,          &
+      absorbing_bcs_z, c_dim, ix_max_r, ix_min_r, nx_global, ny_global, nz_global,   &
+      rho, rhoold, x, x_coords, x_max_boundary, y, y_coords, y_max_boundary, z,      &
+      z_coords, z_max_boundary
+    USE time_stat, ONLY: localtimes, timestat_itstart
+
+
 
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz,ixx,iyy,izz
@@ -447,14 +436,14 @@ MODULE fourier_psaotd
       ubound_e = UBOUND(ex)
       lbound_e = LBOUND(ex)
     ENDIF
-    ! Performs copies of overlapping portions of local arrays (ex,ey,ez, etc.) 
-    ! and FFT arrays (ex_r,ey_r,ez_r etc.) - non overlapping portions requires 
-    ! MPI exchanges that are performed further below in this subroutine 
+    ! Performs copies of overlapping portions of local arrays (ex,ey,ez, etc.)
+    ! and FFT arrays (ex_r,ey_r,ez_r etc.) - non overlapping portions requires
+    ! MPI exchanges that are performed further below in this subroutine
 
     ! When using periodic bcs, standard EM fields are communicated between local
     ! and hybrid grids
-    ! Else, when using absorbing bcs, splitted EM fields are communicated 
-    IF(.NOT. absorbing_bcs) THEN 
+    ! Else, when using absorbing bcs, splitted EM fields are communicated
+    IF(.NOT. absorbing_bcs) THEN
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
       DO iz=1,size_exchanges_l2g_recv_z(1)
         DO iy =1,size_exchanges_l2g_recv_y(1)
@@ -589,16 +578,16 @@ MODULE fourier_psaotd
      ENDDO
      !$OMP END PARALLEL DO
      ENDIF
-    ! Timers 
+    ! Timers
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
 
-    ! Performs MPI exchanges for non-overlapping portions of local and FFT ARRAYS 
+    ! Performs MPI exchanges for non-overlapping portions of local and FFT ARRAYS
     CALL generalized_comms_group_l2g()
     !> Set splitted fields to 0 in the guardcells next to pml region to act as a
     !> reflective mirrorr
-    IF(absorbing_bcs) THEN 
+    IF(absorbing_bcs) THEN
     ! reflective bcs after pml
       IF(absorbing_bcs_x) THEN
         IF(is_group_x_boundary_min) THEN
@@ -608,7 +597,7 @@ MODULE fourier_psaotd
             exz_r(ixx,:,:) = 0.0_num
             eyx_r(ixx,:,:) = 0.0_num
             eyz_r(ixx,:,:) = 0.0_num
-            ezx_r(ixx,:,:) = 0.0_num  
+            ezx_r(ixx,:,:) = 0.0_num
             ezy_r(ixx,:,:) = 0.0_num
             bxy_r(ixx,:,:) = 0.0_num
             bxz_r(ixx,:,:) = 0.0_num
@@ -620,8 +609,8 @@ MODULE fourier_psaotd
 
         ENDIF
         IF(is_group_x_boundary_max) THEN
-          DO ix=nx_global ,cell_x_max_g(x_coords+1) 
-            ixx = ix - cell_x_min_g(x_coords+1)+1_idp 
+          DO ix=nx_global ,cell_x_max_g(x_coords+1)
+            ixx = ix - cell_x_min_g(x_coords+1)+1_idp
             exy_r(ixx,:,:) = 0.0_num
             exz_r(ixx,:,:) = 0.0_num
             eyx_r(ixx,:,:) = 0.0_num
@@ -640,7 +629,7 @@ MODULE fourier_psaotd
             byz_r(ixx,:,:) = 0.0_num
             bzx_r(ixx,:,:) = 0.0_num
             bzy_r(ixx,:,:) = 0.0_num
-          ENDIF        
+          ENDIF
         ENDIF
       ENDIF
       IF(c_dim == 3_idp) THEN
@@ -663,8 +652,8 @@ MODULE fourier_psaotd
             ENDDO
           ENDIF
           IF(is_group_y_boundary_max) THEN
-            DO iy=ny_global ,cell_y_max_g(y_coords+1)  
-              iyy = iy - cell_y_min_g(y_coords+1)+1_idp 
+            DO iy=ny_global ,cell_y_max_g(y_coords+1)
+              iyy = iy - cell_y_min_g(y_coords+1)+1_idp
               exy_r(:,iyy,:) = 0.0_num
               exz_r(:,iyy,:) = 0.0_num
               eyx_r(:,iyy,:) = 0.0_num
@@ -706,8 +695,8 @@ MODULE fourier_psaotd
           ENDDO
         ENDIF
         IF(is_group_z_boundary_max) THEN
-          DO iz=nz_global ,cell_z_max_g(z_coords+1)  
-            izz = iz - cell_z_min_g(z_coords+1)+1_idp 
+          DO iz=nz_global ,cell_z_max_g(z_coords+1)
+            izz = iz - cell_z_min_g(z_coords+1)+1_idp
             exy_r(:,:,izz) = 0.0_num
             exz_r(:,:,izz) = 0.0_num
             eyx_r(:,:,izz) = 0.0_num
@@ -726,21 +715,79 @@ MODULE fourier_psaotd
             bxz_r(:,:,izz) = 0.0_num
             byx_r(:,:,izz) = 0.0_num
             byz_r(:,:,izz) = 0.0_num
-          ENDIF 
+          ENDIF
         ENDIF
       ENDIF
     ENDIF
-    CALL fft_forward_r2c_hybrid() 
+    CALL fft_forward_r2c_hybrid()
 
-  END SUBROUTINE get_Ffields_mpi_lb 
+  END SUBROUTINE get_Ffields_mpi_lb
+
+ ! _______________________________________________________________________________________
+ !> @brief
+ !> This subroutine is used perform forward R2C distributed FFTs with fftw_with_mpi=true
+ !> and without MPI groups
+ !> N.B: this routine is deprecated and will be integrally replaced by get_Ffields_mpi_lb
+ !> in the future
+ !>
+ !> @author
+ !> Henri Vincenti
+ !
+ !> @date
+ !> Creation 2017
+ ! _______________________________________________________________________________________
+  SUBROUTINE get_Ffields_mpi
+    USE field_boundary
+    USE fields, ONLY: bx, bx_r, by, by_r, bz, bz_r, ex, ex_r, ey, ey_r, ez, ez_r,    &
+      jx, jx_r, jy, jy_r, jz, jz_r, rho_r, rhoold_r
+    USE iso_c_binding
+    USE mpi
+    USE params, ONLY: it
+    USE picsar_precision, ONLY: idp, num
+    USE shared_data, ONLY: ix_max_r, ix_min_r, iy_max_r, iy_min_r, iz_max_r,         &
+      iz_min_r, rho, rhoold
+    USE time_stat, ONLY: localtimes, timestat_itstart
+    IMPLICIT NONE
+    INTEGER(idp) :: ix, iy, iz
+    REAL(num)    :: tmptime
+
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+    DO iz=iz_min_r, iz_max_r
+      DO iy=iy_min_r, iy_max_r
+        DO ix=ix_min_r, ix_max_r
+          ex_r(ix, iy, iz)=ex(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)
+          ey_r(ix, iy, iz)=ey(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)
+          ez_r(ix, iy, iz)=ez(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)
+          bx_r(ix, iy, iz)=bx(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)
+          by_r(ix, iy, iz)=by(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)
+          bz_r(ix, iy, iz)=bz(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)
+          jx_r(ix, iy, iz)=jx(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)
+          jy_r(ix, iy, iz)=jy(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)
+          jz_r(ix, iy, iz)=jz(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)
+          rho_r(ix, iy, iz)=rho(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)
+          rhoold_r(ix, iy, iz)=rhoold(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)
+        END DO
+      END DO
+    END DO
+    !$OMP END PARALLEL DO
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
+    ENDIF
+    ! Get global Fourier transform of all fields components and currents
+    CALL fft_forward_r2c_hybrid
+
+  END SUBROUTINE get_Ffields_mpi
 
   ! ______________________________________________________________________________________
   !> @brief
-  !> This subroutine computes backward C2R local FFTs - concerns only the local 
+  !> This subroutine computes backward C2R local FFTs - concerns only the local
   !> pseudo-spectral solver
   !
   !> @author
-  !> H. Vincenti 
+  !> H. Vincenti
   !> Haithem Kallala
   !
   !> @date
@@ -748,12 +795,12 @@ MODULE fourier_psaotd
   ! ______________________________________________________________________________________
   SUBROUTINE get_fields()
     USE fastfft
-    USE fields, ONLY: nzguards, nxguards, nyguards
+    USE fields, ONLY: nxguards, nyguards, nzguards
     USE mpi
     USE params, ONLY: it
     USE picsar_precision, ONLY: idp, num
-    USE shared_data, ONLY: nz, ny, nx
-    USE time_stat, ONLY: timestat_itstart, localtimes
+    USE shared_data, ONLY: nx, ny, nz
+    USE time_stat, ONLY: localtimes, timestat_itstart
     IMPLICIT NONE
     REAL(num) :: tmptime
     INTEGER(idp) :: ix, iy, iz, nxx, nyy, nzz, nfftx, nffty, nfftz
@@ -767,7 +814,7 @@ MODULE fourier_psaotd
     nffty=ny+2*nyguards
     nfftz=nz+2*nzguards
 #endif
-    ! Get Inverse Fourier transform of all fields components 
+    ! Get Inverse Fourier transform of all fields components
 #if defined(CUDA_FFT)
       CALL fft_backward_c2r_local_cuda(nfftx,nffty,nfftz)
 #else
@@ -786,35 +833,90 @@ MODULE fourier_psaotd
     ENDIF
   END SUBROUTINE get_fields
 
+ ! _______________________________________________________________________________________
+ !> @brief
+ !> This subroutine is used perform backward C2R distributed FFTs with fftw_with_mpi=true
+ !> and without MPI groups
+ !> N.B: this routine is deprecated and will be integrally replaced by get_fields_mpi_lb
+ !> in the future
+ !>
+ !> @author
+ !> Henri Vincenti
+ !
+ !> @date
+ !> Creation 2017
+ ! _______________________________________________________________________________________
+  SUBROUTINE get_fields_mpi
+    USE fields, ONLY: bx, bx_r, by, by_r, bz, bz_r, ex, ex_r, ey, ey_r, ez, ez_r
+    USE iso_c_binding
+    USE mpi
+    USE params, ONLY: it
+    USE picsar_precision, ONLY: idp, num
+    USE shared_data, ONLY: ix_max_r, ix_min_r, iy_max_r, iy_min_r, iz_max_r,         &
+      iz_min_r
+    USE time_stat, ONLY: localtimes, timestat_itstart
+    IMPLICIT NONE
+    REAL(num) :: tmptime
+    INTEGER(idp) :: ix, iy, iz
+
+    ! Get global Fourier transform of all fields components
+    CALL fft_backward_c2r_hybrid
+    IF (it.ge.timestat_itstart) THEN
+      tmptime = MPI_WTIME()
+    ENDIF
+
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz) COLLAPSE(3)
+    DO iz=iz_min_r, iz_max_r
+      DO iy=iy_min_r, iy_max_r
+        DO ix=ix_min_r, ix_max_r
+          ex(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)=ex_r(ix, iy, iz)
+          ey(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)=ey_r(ix, iy, iz)
+          ez(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)=ez_r(ix, iy, iz)
+          bx(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)=bx_r(ix, iy, iz)
+          by(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)=by_r(ix, iy, iz)
+          bz(ix-ix_min_r, iy-iy_min_r, iz-iz_min_r)=bz_r(ix, iy, iz)
+        END DO
+      END DO
+    END DO
+      !$OMP END PARALLEL DO
+    IF (it.ge.timestat_itstart) THEN
+      localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
+    ENDIF
+
+  END SUBROUTINE get_fields_mpi
+
+
   ! ______________________________________________________________________________________
   !> @brief
   !> This subroutine computes backward C2R distributed FFTs (with MPI groups)
   !
   !> @author
   !> Haithem Kallala
-  !> H. Vincenti 
-  !> 
+  !> H. Vincenti
+  !>
   !> @date
   !> Creation 2017
   ! ______________________________________________________________________________________
   SUBROUTINE get_fields_mpi_lb
     USE field_boundary
-    USE fields, ONLY: ez_r, ez, ey_r, ex_r, bx_r, by_r, bz, nxguards, bz_r, ex, bx,  &
-      by, ey
-    USE group_parameters, ONLY: g_first_cell_to_send_y, size_exchanges_g2l_recv_z,   &
-      l_first_cell_to_recv_z, g_first_cell_to_send_z, l_first_cell_to_recv_y,        &
-      size_exchanges_g2l_recv_y
+    USE fields, ONLY: bx, bx_r, bxy, bxy_r, bxz, bxz_r, by, by_r, byx, byx_r, byz,   &
+      byz_r, bz, bz_r, bzx, bzx_r, bzy, bzy_r, ex, ex_r, exy, exy_r, exz, exz_r, ey, &
+      ey_r, eyx, eyx_r, eyz, eyz_r, ez, ez_r, ezx, ezx_r, ezy, ezy_r, nxguards,      &
+      nyguards, nzguards
+    USE group_parameters, ONLY: g_first_cell_to_send_y, g_first_cell_to_send_z,      &
+      l_first_cell_to_recv_y, l_first_cell_to_recv_z, size_exchanges_g2l_recv_y,     &
+      size_exchanges_g2l_recv_z
     USE iso_c_binding
     USE mpi
     USE params, ONLY: it
     USE picsar_precision, ONLY: idp, num
-    USE shared_data, ONLY: ix_min_r, ix_max_r, y, z
-    USE time_stat, ONLY: timestat_itstart, localtimes
+    USE shared_data, ONLY: absorbing_bcs, ix_max_r, ix_min_r, y, z
+    USE time_stat, ONLY: localtimes, timestat_itstart
     IMPLICIT NONE
     REAL(num) ::  tmptime
     INTEGER(idp) :: ix, iy, iz
     INTEGER(idp) , DIMENSION(3) :: lbound_w , ubound_w
-    
+
     ! Perform distributed C2R FFTs of all grid arrays (including fields, currents, charge)
     CALL fft_backward_c2r_hybrid
 
@@ -822,13 +924,13 @@ MODULE fourier_psaotd
       tmptime = MPI_WTIME()
     ENDIF
 
-    ! Performs copies of overlapping portions of FFT arrays (ex_r,ey_r,ez_r, etc.) 
-    ! and local arrays (ex,ey,ez etc.) - non overlapping portions requires 
+    ! Performs copies of overlapping portions of FFT arrays (ex_r,ey_r,ez_r, etc.)
+    ! and local arrays (ex,ey,ez etc.) - non overlapping portions requires
     ! MPI exchanges that are performed further below in this subroutine
 
     ! When using periodic bcs, standard EM fields are communicated between local
     ! and hybrid grids
-    ! Else, when using absorbing bcs, splitted EM fields are communicated 
+    ! Else, when using absorbing bcs, splitted EM fields are communicated
     IF(.NOT. absorbing_bcs) THEN
       ubound_w = UBOUND(ex)
       lbound_w = LBOUND(ex)
@@ -943,31 +1045,27 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
-    ! Performs MPI exchanges for non-overlapping portions of local and FFT ARRAYS 
+    ! Performs MPI exchanges for non-overlapping portions of local and FFT ARRAYS
     CALL generalized_comms_group_g2l()
   END SUBROUTINE get_fields_mpi_lb
-  
-  SUBROUTINE fft_forward_r2c_local(nfftx,nffty,nfftz) 
-    USE fastfft
-    USE fields, ONLY: g_spectral
-    USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
-    USE fields, ONLY : ex_r, ey_r, ez_r, bx_r, by_r, bz_r, jx_r, jy_r, jz_r, rho_r,   &
-                       rhoold_r
-    USE fields, ONLY : exy, exz, eyx,  eyz, ezx, ezy , bxy, bxz, byx, byz, bzx, bzy
-    USE fields, ONLY : exy_r, exz_r, eyx_r,  eyz_r, ezx_r, ezy_r, bxy_r, bxz_r, byx_r,&
-                       byz_r, bzx_r, bzy_r
-    USE fields, ONLY : exf, eyf, ezf, bxf, byf, bzf, jxf, jyf, jzf, rhof,   &
-                       rhooldf
-    USE shared_data, ONLY : absorbing_bcs
 
+  SUBROUTINE fft_forward_r2c_local(nfftx,nffty,nfftz)
+    USE fastfft
+    USE fields, ONLY: bx, bx_r, bxf, bxy, bxy_r, bxz, bxz_r, by, by_r, byf, byx,     &
+      byx_r, byz, byz_r, bz, bz_r, bzf, bzx, bzx_r, bzy, bzy_r, ex, ex_r, exf, exy,  &
+      exy_r, exz, exz_r, ey, ey_r, eyf, eyx, eyx_r, eyz, eyz_r, ez, ez_r, ezf, ezx,  &
+      ezx_r, ezy, ezy_r, g_spectral, jx, jx_r, jxf, jy, jy_r, jyf, jz, jz_r, jzf,    &
+      rho_r, rhof, rhoold_r, rhooldf
     USE fourier, ONLY: plan_r2c
     USE mpi
     USE params, ONLY: it
     USE picsar_precision, ONLY: idp, num
-    USE time_stat, ONLY: timestat_itstart, localtimes
+    USE shared_data, ONLY: absorbing_bcs
+    USE time_stat, ONLY: localtimes, timestat_itstart
+
     REAL(num)   :: tmptime
     INTEGER(idp), INTENT(IN)    ::   nfftx,nffty,nfftz
-    
+
 
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
@@ -985,7 +1083,7 @@ MODULE fourier_psaotd
             vold(nmatrixes)%block_vector(4)%block3dc , plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, by_r,                      &
             vold(nmatrixes)%block_vector(5)%block3dc , plan_r2c)
-        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bz_r,                      &  
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bz_r,                      &
             vold(nmatrixes)%block_vector(6)%block3dc , plan_r2c)
         CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jx_r,                      &
             vold(nmatrixes)%block_vector(7)%block3dc , plan_r2c)
@@ -1000,40 +1098,40 @@ MODULE fourier_psaotd
 #endif
       ELSE IF(absorbing_bcs) THEN
 #if defined(FFTW)
-        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, exy_r,                      & 
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, exy_r,                      &
              vold(nmatrixes)%block_vector(1)%block3dc, plan_r2c)
-        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, exz_r,                      & 
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, exz_r,                      &
             vold(nmatrixes)%block_vector(2)%block3dc, plan_r2c)
-        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, eyx_r,                      & 
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, eyx_r,                      &
             vold(nmatrixes)%block_vector(3)%block3dc , plan_r2c)
-        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, eyz_r,                      & 
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, eyz_r,                      &
             vold(nmatrixes)%block_vector(4)%block3dc , plan_r2c)
-        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ezx_r,                      & 
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ezx_r,                      &
             vold(nmatrixes)%block_vector(5)%block3dc , plan_r2c)
-        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ezy_r,                      &  
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, ezy_r,                      &
             vold(nmatrixes)%block_vector(6)%block3dc , plan_r2c)
-        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bxy_r,                      & 
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bxy_r,                      &
              vold(nmatrixes)%block_vector(7)%block3dc, plan_r2c)
-        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bxz_r,                      & 
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bxz_r,                      &
             vold(nmatrixes)%block_vector(8)%block3dc, plan_r2c)
-        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, byx_r,                      & 
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, byx_r,                      &
             vold(nmatrixes)%block_vector(9)%block3dc , plan_r2c)
-        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, byz_r,                      & 
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, byz_r,                      &
             vold(nmatrixes)%block_vector(10)%block3dc , plan_r2c)
-        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bzx_r,                      & 
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bzx_r,                      &
             vold(nmatrixes)%block_vector(11)%block3dc , plan_r2c)
-        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bzy_r,                      &  
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, bzy_r,                      &
             vold(nmatrixes)%block_vector(12)%block3dc , plan_r2c)
-        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jx_r,                      & 
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jx_r,                      &
             vold(nmatrixes)%block_vector(13)%block3dc , plan_r2c)
-        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jy_r,                      & 
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jy_r,                      &
             vold(nmatrixes)%block_vector(14)%block3dc, plan_r2c)
-        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jz_r,                      & 
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jz_r,                      &
             vold(nmatrixes)%block_vector(15)%block3dc, plan_r2c)
-        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rhoold_r,                  & 
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rhoold_r,                  &
             vold(nmatrixes)%block_vector(16)%block3dc,plan_r2c)
-        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rho_r,                     & 
-            vold(nmatrixes)%block_vector(17)%block3dc, plan_r2c) 
+        CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rho_r,                     &
+            vold(nmatrixes)%block_vector(17)%block3dc, plan_r2c)
 #endif
       ENDIF
     ELSE IF (.NOT. g_spectral) THEN
@@ -1048,7 +1146,7 @@ MODULE fourier_psaotd
       CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jy_r, jyf, plan_r2c)
       CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, jz_r, jzf, plan_r2c)
       CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rhoold_r, rhooldf,plan_r2c)
-      CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rho_r, rhof, plan_r2c) 
+      CALL fast_fftw3d_r2c_with_plan(nfftx, nffty, nfftz, rho_r, rhof, plan_r2c)
 #endif
     ENDIF
     IF (it.ge.timestat_itstart) THEN
@@ -1060,28 +1158,24 @@ MODULE fourier_psaotd
 
   SUBROUTINE fft_forward_r2c_hybrid()
     USE fastfft
-    USE fields, ONLY: g_spectral
-    USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
-    USE fields, ONLY : ex_r, ey_r, ez_r, bx_r, by_r, bz_r, jx_r, jy_r, jz_r, rho_r,   &
-                       rhoold_r
-    USE fields, ONLY : exy, exz, eyx,  eyz, ezx, ezy , bxy, bxz, byx, byz, bzx, bzy
-    USE fields, ONLY : exy_r, exz_r, eyx_r,  eyz_r, ezx_r, ezy_r, bxy_r, bxz_r, byx_r,&
-                       byz_r, bzx_r, bzy_r
-    USE fields, ONLY : exf, eyf, ezf, bxf, byf, bzf, jxf, jyf, jzf, rhof,   &
-                       rhooldf
-
+    USE fields, ONLY: bx, bx_r, bxf, bxy, bxy_r, bxz, bxz_r, by, by_r, byf, byx,     &
+      byx_r, byz, byz_r, bz, bz_r, bzf, bzx, bzx_r, bzy, bzy_r, ex, ex_r, exf, exy,  &
+      exy_r, exz, exz_r, ey, ey_r, eyf, eyx, eyx_r, eyz, eyz_r, ez, ez_r, ezf, ezx,  &
+      ezx_r, ezy, ezy_r, g_spectral, jx, jx_r, jxf, jy, jy_r, jyf, jz, jz_r, jzf,    &
+      rho_r, rhof, rhoold_r, rhooldf
     USE iso_c_binding
     USE mpi
 #if defined(FFTW)
-    USE mpi_fftw3, ONLY: plan_r2c_mpi, fftw_mpi_execute_dft_r2c
+    USE mpi_fftw3, ONLY: fftw_mpi_execute_dft_r2c, plan_r2c_mpi
 #endif
-#if defined(P3DFFT) 
+#if defined(P3DFFT)
     USE p3dfft
 #endif
     USE params, ONLY: it
     USE picsar_precision, ONLY: num
-    USE shared_data, ONLY: p3dfft_flag, absorbing_bcs
-    USE time_stat, ONLY: timestat_itstart, localtimes
+    USE shared_data, ONLY: absorbing_bcs, p3dfft_flag
+    USE time_stat, ONLY: localtimes, timestat_itstart
+
     REAL(num)   :: tmptime
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
@@ -1244,7 +1338,7 @@ MODULE fourier_psaotd
     USE shared_data, ONLY : absorbing_bcs
     USE fields , ONLY : exyf,exzf,eyxf,eyzf,ezxf,ezyf,bxyf,bxzf,byxf,byzf,bzxf,bzyf
 
-    
+
 
     USE fourier, ONLY: plan_r2c_cuda
     USE cufft
@@ -1331,8 +1425,8 @@ MODULE fourier_psaotd
      INTEGER(idp), INTENT(IN)     :: nfftx,nffty,nfftz
      INTEGER(isp) :: err_cuda
      INTEGER(idp) :: ind
- 
- 
+
+
      IF (it.ge.timestat_itstart) THEN
        tmptime = MPI_WTIME()
      ENDIF
@@ -1371,21 +1465,17 @@ MODULE fourier_psaotd
 
   SUBROUTINE fft_backward_c2r_local(nfftx,nffty,nfftz)
     USE fastfft
-    USE fields, ONLY: g_spectral
-    USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
-    USE fields, ONLY : ex_r, ey_r, ez_r, bx_r, by_r, bz_r, jx_r, jy_r, jz_r, rho_r,   &
-                       rhoold_r
-    USE fields, ONLY : exy, exz, eyx,  eyz, ezx, ezy , bxy, bxz, byx, byz, bzx, bzy
-    USE fields, ONLY : exy_r, exz_r, eyx_r,  eyz_r, ezx_r, ezy_r, bxy_r, bxz_r, byx_r,&
-                       byz_r, bzx_r, bzy_r
-    USE fields, ONLY : exf, eyf, ezf, bxf, byf, bzf, jxf, jyf, jzf, rhof,   &
-                       rhooldf
+    USE fields, ONLY: bx, bx_r, bxf, bxy, bxy_r, bxz, bxz_r, by, by_r, byf, byx,     &
+      byx_r, byz, byz_r, bz, bz_r, bzf, bzx, bzx_r, bzy, bzy_r, ex, ex_r, exf, exy,  &
+      exy_r, exz, exz_r, ey, ey_r, eyf, eyx, eyx_r, eyz, eyz_r, ez, ez_r, ezf, ezx,  &
+      ezx_r, ezy, ezy_r, g_spectral, jx, jx_r, jxf, jy, jy_r, jyf, jz, jz_r, jzf,    &
+      rho_r, rhof, rhoold_r, rhooldf
     USE fourier, ONLY: plan_c2r
     USE mpi
     USE params, ONLY: it
     USE picsar_precision, ONLY: idp, num
-    USE time_stat, ONLY: timestat_itstart, localtimes
     USE shared_data, ONLY: absorbing_bcs
+    USE time_stat, ONLY: localtimes, timestat_itstart
     REAL(num)   :: tmptime
     INTEGER(idp), INTENT(IN)     :: nfftx,nffty,nfftz
 
@@ -1407,7 +1497,7 @@ MODULE fourier_psaotd
     ELSE IF(g_spectral) THEN
       IF(absorbing_bcs) THEN
 #if defined(FFTW)
-        CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           & 
+        CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
         vnew(nmatrixes)%block_vector(1)%block3dc, exy_r, plan_c2r)
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
         vnew(nmatrixes)%block_vector(2)%block3dc, exz_r, plan_c2r)
@@ -1438,7 +1528,7 @@ MODULE fourier_psaotd
         vnew(nmatrixes)%block_vector(1)%block3dc, ex_r, plan_c2r)
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
         vnew(nmatrixes)%block_vector(2)%block3dc, ey_r, plan_c2r)
-        CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           & 
+        CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
         vnew(nmatrixes)%block_vector(3)%block3dc, ez_r, plan_c2r)
         CALL fast_fftw3d_c2r_with_plan(nfftx, nffty, nfftz,                           &
         vnew(nmatrixes)%block_vector(4)%block3dc, bx_r, plan_c2r)
@@ -1456,29 +1546,25 @@ MODULE fourier_psaotd
 
   SUBROUTINE fft_backward_c2r_hybrid()
     USE fastfft
-    USE fields, ONLY:  g_spectral
-    USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
-    USE fields, ONLY : ex_r, ey_r, ez_r, bx_r, by_r, bz_r, jx_r, jy_r, jz_r, rho_r,   &
-                       rhoold_r
-    USE fields, ONLY : exy, exz, eyx,  eyz, ezx, ezy , bxy, bxz, byx, byz, bzx, bzy
-    USE fields, ONLY : exy_r, exz_r, eyx_r,  eyz_r, ezx_r, ezy_r, bxy_r, bxz_r, byx_r,&
-                       byz_r, bzx_r, bzy_r
-    USE fields, ONLY : exf, eyf, ezf, bxf, byf, bzf, jxf, jyf, jzf, rhof,   &
-                       rhooldf
-
-
+    USE fields, ONLY: bx, bx_r, bxf, bxy, bxy_r, bxz, bxz_r, by, by_r, byf, byx,     &
+      byx_r, byz, byz_r, bz, bz_r, bzf, bzx, bzx_r, bzy, bzy_r, ex, ex_r, exf, exy,  &
+      exy_r, exz, exz_r, ey, ey_r, eyf, eyx, eyx_r, eyz, eyz_r, ez, ez_r, ezf, ezx,  &
+      ezx_r, ezy, ezy_r, g_spectral, jx, jx_r, jxf, jy, jy_r, jyf, jz, jz_r, jzf,    &
+      rho_r, rhof, rhoold_r, rhooldf
     USE iso_c_binding
     USE mpi
 #if defined(FFTW)
-    USE mpi_fftw3, ONLY: plan_c2r_mpi, fftw_mpi_execute_dft_c2r
+    USE mpi_fftw3, ONLY: fftw_mpi_execute_dft_c2r, plan_c2r_mpi
 #endif
 #if defined(P3DFFT)
     USE p3dfft
 #endif
     USE params, ONLY: it
     USE picsar_precision, ONLY: num
-    USE shared_data, ONLY: p3dfft_flag, absorbing_bcs, p3dfft_flag
-    USE time_stat, ONLY: timestat_itstart, localtimes
+    USE shared_data, ONLY: absorbing_bcs, p3dfft_flag
+    USE time_stat, ONLY: localtimes, timestat_itstart
+
+
     REAL(num)   :: tmptime
 
     IF (it.ge.timestat_itstart) THEN
@@ -1587,20 +1673,20 @@ MODULE fourier_psaotd
   END SUBROUTINE fft_backward_c2r_hybrid
 
   SUBROUTINE push_psaotd_ebfielfs_2d()
-    USE fields, ONLY: ezf, jxf, rhooldf, rhof, bxf, jzf, eyf, jyf, byf, bzf, exf
-    USE fields, ONLY : exyf,exzf,eyxf,eyzf,ezxf,ezyf,bxyf,bxzf,byxf,byzf,bzxf,bzyf
+    USE fields, ONLY: bxf, byf, bzf, exf, eyf, ezf, jxf, jyf, jzf, rhof, rhooldf
+    USE fields, ONLY : exyf, exzf, eyxf, eyzf, ezxf, ezyf, bxyf, bxzf, byxf, byzf, bzxf, bzyf
     USE iso_c_binding
     USE mpi
     USE params, ONLY: it
-    USE picsar_precision, ONLY: idp, num, cpx
-    USE shared_data, ONLY: nkx, nkz, absorbing_bcs
-    USE time_stat, ONLY: timestat_itstart, localtimes
+    USE picsar_precision, ONLY: cpx, idp, num
+    USE shared_data, ONLY: nkx, nkz
+    USE time_stat, ONLY: localtimes, timestat_itstart
 
     IMPLICIT NONE
     INTEGER(idp) ::  ix, iy, iz, nxx, nzz
     REAL(num) :: tmptime
     COMPLEX(cpx) :: bxfold, byfold, bzfold, exfold, eyfold, ezfold,jxfold,jyfold,jzfold,rhofold,rhooldfold
-    COMPLEX(cpx) :: exyfold,exzfold,eyxfold,eyzfold,ezxfold,ezyfold,bxyfold,bxzfold,byxfold,byzfold,bzxfold,bzyfold 
+    COMPLEX(cpx) :: exyfold,exzfold,eyxfold,eyzfold,ezxfold,ezyfold,bxyfold,bxzfold,byxfold,byzfold,bzxfold,bzyfold
 
     IF (it.ge.timestat_itstart) THEN
       tmptime = MPI_WTIME()
@@ -1666,7 +1752,7 @@ MODULE fourier_psaotd
           bxf(ix, iy, iz) = cc_mat(nmatrixes)%block_matrix2d(4, 4)%block3dc(ix, iy,   &
           iz)*bxfold + cc_mat(nmatrixes)%block_matrix2d(4, 2)%block3dc(ix, iy,        &
           iz)*eyfold + cc_mat(nmatrixes)%block_matrix2d(4, 8)%block3dc(ix, iy,        &
-          iz)*jyf(ix, iy, iz)  
+          iz)*jyf(ix, iy, iz)
           ! - By
           byf(ix, iy, iz) = cc_mat(nmatrixes)%block_matrix2d(5, 5)%block3dc(ix, iy,   &
           iz)*byfold + cc_mat(nmatrixes)%block_matrix2d(5, 1)%block3dc(ix, iy,        &
@@ -1697,7 +1783,7 @@ MODULE fourier_psaotd
           iz)*eyfold  + cc_mat(nmatrixes)%block_matrix2d(2, 4)%block3dc(ix, iy,        &
           iz)*bxfold  + cc_mat(nmatrixes)%block_matrix2d(2, 6)%block3dc(ix, iy,       &
           iz)*bzfold  + cc_mat(nmatrixes)%block_matrix2d(2, 8)%block3dc(ix, iy,       &
-          iz)*jyf(ix, iy, iz) 
+          iz)*jyf(ix, iy, iz)
 
           ! - Ez
           ezf(ix, iy, iz) = cc_mat(nmatrixes)%block_matrix2d(3, 3)%block3dc(ix, iy,   &
@@ -1726,45 +1812,45 @@ MODULE fourier_psaotd
     !$acc parallel present(exyf,exzf,eyxf,eyzf,ezxf,ezyf,bxyf , &
     !$acc& bxzf,byxf,byzf,bzxf,bzyf,jxf,jyf,jzf,rhof,rhooldf,cc_mat,cc_mat(nmatrixes)) &
     !$acc& attach(&
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,1)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,16)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,17)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,13)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(2,2)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(2,9)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(2,10)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,3)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,11)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,12)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,14)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(4,4)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(4,7)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(4,8)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,5)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,9)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,10)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,16)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,17)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,15)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(6,6)%block3dc ,&   
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(7,7)%block3dc ,&   
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(7,14)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(7,15)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(8,8)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(8,3)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(8,4)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,9)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,5)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,6)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,13)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,15)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(10,10)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(10,1)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(10,2)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,11)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,3)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,4)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,14)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,1)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,16)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,17)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,13)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(2,2)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(2,9)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(2,10)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,3)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,11)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,12)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,14)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(4,4)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(4,7)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(4,8)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,5)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,9)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,10)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,16)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,17)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,15)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(6,6)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(7,7)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(7,14)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(7,15)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(8,8)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(8,3)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(8,4)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,9)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,5)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,6)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,13)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,15)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(10,10)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(10,1)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(10,2)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,11)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,3)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,4)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,14)%block3dc ,&
     !$acc& cc_mat(nmatrixes)%block_matrix2d(12,12)%block3dc)
     !$acc loop gang vector collapse(2)
 #endif
@@ -1781,58 +1867,58 @@ MODULE fourier_psaotd
         jzfold=jzf(ix, iy, iz)
         rhofold=rhof(ix, iy, iz)
         rhooldfold=rhooldf(ix, iy, iz)
-          exyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(1,1)%block3dc(ix,iy,iz)*exyfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(1,16)%block3dc(ix,iy,iz)*rhooldfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(1,17)%block3dc(ix,iy,iz)*rhofold + & 
-        cc_mat(nmatrixes)%block_matrix2d(1,13)%block3dc(ix,iy,iz)*jxfold 
-      
-          exzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(2,2)%block3dc(ix,iy,iz)*exzfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(2,9)%block3dc(ix,iy,iz)*byxfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(2,10)%block3dc(ix,iy,iz)*byzfold 
-      
-          eyxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(3,3)%block3dc(ix,iy,iz)*eyxfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(3,11)%block3dc(ix,iy,iz)*bzxfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(3,12)%block3dc(ix,iy,iz)*bzyfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(3,16)%block3dc(ix,iy,iz)*rhooldfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(3,17)%block3dc(ix,iy,iz)*rhofold + & 
-        cc_mat(nmatrixes)%block_matrix2d(3,14)%block3dc(ix,iy,iz)*jyfold 
-      
-          eyzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(4,4)%block3dc(ix,iy,iz)*eyzfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(4,7)%block3dc(ix,iy,iz)*bxyfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(4,8)%block3dc(ix,iy,iz)*bxzfold 
-      
-          ezxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(5,5)%block3dc(ix,iy,iz)*ezxfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(5,9)%block3dc(ix,iy,iz)*byxfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(5,10)%block3dc(ix,iy,iz)*byzfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(5,16)%block3dc(ix,iy,iz)*rhooldfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(5,17)%block3dc(ix,iy,iz)*rhofold + & 
-        cc_mat(nmatrixes)%block_matrix2d(5,15)%block3dc(ix,iy,iz)*jzfold 
-      
-          ezyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(6,6)%block3dc(ix,iy,iz)*ezyfold 
-      
-          bxyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(7,7)%block3dc(ix,iy,iz)*bxyfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(7,14)%block3dc(ix,iy,iz)*jyfold 
-      
-          bxzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(8,8)%block3dc(ix,iy,iz)*bxzfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(8,3)%block3dc(ix,iy,iz)*eyxfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(8,4)%block3dc(ix,iy,iz)*eyzfold 
-      
-          byxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(9,9)%block3dc(ix,iy,iz)*byxfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(9,5)%block3dc(ix,iy,iz)*ezxfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(9,6)%block3dc(ix,iy,iz)*ezyfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(9,13)%block3dc(ix,iy,iz)*jxfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(9,15)%block3dc(ix,iy,iz)*jzfold 
-      
-          byzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(10,10)%block3dc(ix,iy,iz)*byzfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(10,1)%block3dc(ix,iy,iz)*exyfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(10,2)%block3dc(ix,iy,iz)*exzfold 
-      
-          bzxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(11,11)%block3dc(ix,iy,iz)*bzxfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(11,3)%block3dc(ix,iy,iz)*eyxfold + & 
+          exyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(1,1)%block3dc(ix,iy,iz)*exyfold + &
+        cc_mat(nmatrixes)%block_matrix2d(1,16)%block3dc(ix,iy,iz)*rhooldfold + &
+        cc_mat(nmatrixes)%block_matrix2d(1,17)%block3dc(ix,iy,iz)*rhofold + &
+        cc_mat(nmatrixes)%block_matrix2d(1,13)%block3dc(ix,iy,iz)*jxfold
+
+          exzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(2,2)%block3dc(ix,iy,iz)*exzfold + &
+        cc_mat(nmatrixes)%block_matrix2d(2,9)%block3dc(ix,iy,iz)*byxfold + &
+        cc_mat(nmatrixes)%block_matrix2d(2,10)%block3dc(ix,iy,iz)*byzfold
+
+          eyxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(3,3)%block3dc(ix,iy,iz)*eyxfold + &
+        cc_mat(nmatrixes)%block_matrix2d(3,11)%block3dc(ix,iy,iz)*bzxfold + &
+        cc_mat(nmatrixes)%block_matrix2d(3,12)%block3dc(ix,iy,iz)*bzyfold + &
+        cc_mat(nmatrixes)%block_matrix2d(3,16)%block3dc(ix,iy,iz)*rhooldfold + &
+        cc_mat(nmatrixes)%block_matrix2d(3,17)%block3dc(ix,iy,iz)*rhofold + &
+        cc_mat(nmatrixes)%block_matrix2d(3,14)%block3dc(ix,iy,iz)*jyfold
+
+          eyzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(4,4)%block3dc(ix,iy,iz)*eyzfold + &
+        cc_mat(nmatrixes)%block_matrix2d(4,7)%block3dc(ix,iy,iz)*bxyfold + &
+        cc_mat(nmatrixes)%block_matrix2d(4,8)%block3dc(ix,iy,iz)*bxzfold
+
+          ezxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(5,5)%block3dc(ix,iy,iz)*ezxfold + &
+        cc_mat(nmatrixes)%block_matrix2d(5,9)%block3dc(ix,iy,iz)*byxfold + &
+        cc_mat(nmatrixes)%block_matrix2d(5,10)%block3dc(ix,iy,iz)*byzfold + &
+        cc_mat(nmatrixes)%block_matrix2d(5,16)%block3dc(ix,iy,iz)*rhooldfold + &
+        cc_mat(nmatrixes)%block_matrix2d(5,17)%block3dc(ix,iy,iz)*rhofold + &
+        cc_mat(nmatrixes)%block_matrix2d(5,15)%block3dc(ix,iy,iz)*jzfold
+
+          ezyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(6,6)%block3dc(ix,iy,iz)*ezyfold
+
+          bxyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(7,7)%block3dc(ix,iy,iz)*bxyfold + &
+        cc_mat(nmatrixes)%block_matrix2d(7,14)%block3dc(ix,iy,iz)*jyfold
+
+          bxzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(8,8)%block3dc(ix,iy,iz)*bxzfold + &
+        cc_mat(nmatrixes)%block_matrix2d(8,3)%block3dc(ix,iy,iz)*eyxfold + &
+        cc_mat(nmatrixes)%block_matrix2d(8,4)%block3dc(ix,iy,iz)*eyzfold
+
+          byxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(9,9)%block3dc(ix,iy,iz)*byxfold + &
+        cc_mat(nmatrixes)%block_matrix2d(9,5)%block3dc(ix,iy,iz)*ezxfold + &
+        cc_mat(nmatrixes)%block_matrix2d(9,6)%block3dc(ix,iy,iz)*ezyfold + &
+        cc_mat(nmatrixes)%block_matrix2d(9,13)%block3dc(ix,iy,iz)*jxfold + &
+        cc_mat(nmatrixes)%block_matrix2d(9,15)%block3dc(ix,iy,iz)*jzfold
+
+          byzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(10,10)%block3dc(ix,iy,iz)*byzfold + &
+        cc_mat(nmatrixes)%block_matrix2d(10,1)%block3dc(ix,iy,iz)*exyfold + &
+        cc_mat(nmatrixes)%block_matrix2d(10,2)%block3dc(ix,iy,iz)*exzfold
+
+          bzxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(11,11)%block3dc(ix,iy,iz)*bzxfold + &
+        cc_mat(nmatrixes)%block_matrix2d(11,3)%block3dc(ix,iy,iz)*eyxfold + &
         cc_mat(nmatrixes)%block_matrix2d(11,4)%block3dc(ix,iy,iz)*eyzfold + &
-        cc_mat(nmatrixes)%block_matrix2d(11,14)%block3dc(ix,iy,iz)*jyfold 
-      
-          bzyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(12,12)%block3dc(ix,iy,iz)*bzyfold  
+        cc_mat(nmatrixes)%block_matrix2d(11,14)%block3dc(ix,iy,iz)*jyfold
+
+          bzyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(12,12)%block3dc(ix,iy,iz)*bzyfold
 
       ENDDO
     ENDDO
@@ -1854,14 +1940,14 @@ MODULE fourier_psaotd
   END SUBROUTINE push_psaotd_ebfielfs_2d
 
   SUBROUTINE push_psaotd_ebfielfs_3d()
-    USE fields, ONLY: ezf, jxf, rhooldf, rhof, bxf, jzf, eyf, jyf, byf, bzf, exf
+    USE fields, ONLY: bxf, byf, bzf, exf, eyf, ezf, jxf, jyf, jzf, rhof, rhooldf
     USE fields, ONLY: exyf,exzf,eyxf,eyzf,ezxf,ezyf,bxyf,bxzf,byxf,byzf,bzxf,bzyf
     USE iso_c_binding
     USE mpi
     USE params, ONLY: it
-    USE picsar_precision, ONLY: idp, num, cpx
-    USE shared_data, ONLY : nkx, nky, nkz, absorbing_bcs
-    USE time_stat, ONLY: timestat_itstart, localtimes
+    USE picsar_precision, ONLY: cpx, idp, num
+    USE shared_data, ONLY: absorbing_bcs, nkx, nky, nkz
+    USE time_stat, ONLY: localtimes, timestat_itstart
 
     IMPLICIT NONE
     INTEGER(idp) ::  ix, iy, iz, nxx, nyy, nzz
@@ -1877,7 +1963,7 @@ MODULE fourier_psaotd
     nxx=nkx
     nyy=nky
     nzz=nkz
-    IF (.NOT.absorbing_bcs) THEN   
+    IF (.NOT.absorbing_bcs) THEN
 #if !defined(CUDA_FFT)
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, exfold, eyfold, ezfold,     &
     !$OMP bxfold, byfold, bzfold,jxfold,jyfold,jzfold,rhofold,rhooldfold) COLLAPSE(3)
@@ -2002,7 +2088,7 @@ MODULE fourier_psaotd
     !$acc end loop
     !$acc end parallel
 #endif
-    ELSE 
+    ELSE
 #if !defined(CUDA_FFT)
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz,jxfold,jyfold, &
     !$OMP jzfold,rhofold,rhooldfold  , exyfold,exzfold,  eyxfold,eyzfold, &
@@ -2011,56 +2097,56 @@ MODULE fourier_psaotd
     !$acc parallel present(exyf,exzf,eyxf,eyzf,ezxf,ezyf,bxyf , &
     !$acc& bxzf,byxf,byzf,bzxf,bzyf,jxf,jyf,jzf,rhof,rhooldf,cc_mat,cc_mat(nmatrixes)) &
     !$acc& attach(&
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,1)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,11)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,12)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,16)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,17)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,13)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(2,2)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(2,9)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(2,10)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,3)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,11)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,12)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,16)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,17)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,14)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(4,4)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(4,7)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(4,8)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,5)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,9)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,10)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,16)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,17)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,15)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(6,6)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(6,7)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(6,8)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(7,7)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(7,5)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(7,6)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(7,14)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(7,15)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(8,8)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(8,3)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(8,4)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,9)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,5)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,6)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,13)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,15)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(10,10)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(10,1)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(10,2)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,11)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,3)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,4)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,13)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,14)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(12,12)%block3dc ,&  
-    !$acc& cc_mat(nmatrixes)%block_matrix2d(12,1)%block3dc ,&  
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,1)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,11)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,12)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,16)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,17)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(1,13)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(2,2)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(2,9)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(2,10)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,3)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,11)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,12)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,16)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,17)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(3,14)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(4,4)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(4,7)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(4,8)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,5)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,9)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,10)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,16)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,17)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(5,15)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(6,6)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(6,7)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(6,8)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(7,7)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(7,5)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(7,6)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(7,14)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(7,15)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(8,8)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(8,3)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(8,4)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,9)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,5)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,6)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,13)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(9,15)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(10,10)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(10,1)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(10,2)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,11)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,3)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,4)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,13)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(11,14)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(12,12)%block3dc ,&
+    !$acc& cc_mat(nmatrixes)%block_matrix2d(12,1)%block3dc ,&
     !$acc& cc_mat(nmatrixes)%block_matrix2d(12,2)%block3dc )
     !$acc loop gang vector collapse(3)
 #endif
@@ -2078,71 +2164,71 @@ MODULE fourier_psaotd
           jzfold=jzf(ix, iy, iz)
           rhofold=rhof(ix, iy, iz)
           rhooldfold=rhooldf(ix, iy, iz)
-          exyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(1,1)%block3dc(ix,iy,iz)*exyfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(1,11)%block3dc(ix,iy,iz)*bzxfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(1,12)%block3dc(ix,iy,iz)*bzyfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(1,16)%block3dc(ix,iy,iz)*rhooldfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(1,17)%block3dc(ix,iy,iz)*rhofold + & 
-        cc_mat(nmatrixes)%block_matrix2d(1,13)%block3dc(ix,iy,iz)*jxfold 
-      
-          exzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(2,2)%block3dc(ix,iy,iz)*exzfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(2,9)%block3dc(ix,iy,iz)*byxfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(2,10)%block3dc(ix,iy,iz)*byzfold 
-      
-          eyxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(3,3)%block3dc(ix,iy,iz)*eyxfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(3,11)%block3dc(ix,iy,iz)*bzxfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(3,12)%block3dc(ix,iy,iz)*bzyfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(3,16)%block3dc(ix,iy,iz)*rhooldfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(3,17)%block3dc(ix,iy,iz)*rhofold + & 
-        cc_mat(nmatrixes)%block_matrix2d(3,14)%block3dc(ix,iy,iz)*jyfold 
-      
-          eyzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(4,4)%block3dc(ix,iy,iz)*eyzfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(4,7)%block3dc(ix,iy,iz)*bxyfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(4,8)%block3dc(ix,iy,iz)*bxzfold 
-      
-          ezxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(5,5)%block3dc(ix,iy,iz)*ezxfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(5,9)%block3dc(ix,iy,iz)*byxfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(5,10)%block3dc(ix,iy,iz)*byzfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(5,16)%block3dc(ix,iy,iz)*rhooldfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(5,17)%block3dc(ix,iy,iz)*rhofold + & 
-        cc_mat(nmatrixes)%block_matrix2d(5,15)%block3dc(ix,iy,iz)*jzfold 
-      
-          ezyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(6,6)%block3dc(ix,iy,iz)*ezyfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(6,7)%block3dc(ix,iy,iz)*bxyfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(6,8)%block3dc(ix,iy,iz)*bxzfold 
-      
-          bxyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(7,7)%block3dc(ix,iy,iz)*bxyfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(7,5)%block3dc(ix,iy,iz)*ezxfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(7,6)%block3dc(ix,iy,iz)*ezyfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(7,14)%block3dc(ix,iy,iz)*jyfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(7,15)%block3dc(ix,iy,iz)*jzfold 
-      
-          bxzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(8,8)%block3dc(ix,iy,iz)*bxzfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(8,3)%block3dc(ix,iy,iz)*eyxfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(8,4)%block3dc(ix,iy,iz)*eyzfold 
-      
-          byxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(9,9)%block3dc(ix,iy,iz)*byxfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(9,5)%block3dc(ix,iy,iz)*ezxfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(9,6)%block3dc(ix,iy,iz)*ezyfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(9,13)%block3dc(ix,iy,iz)*jxfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(9,15)%block3dc(ix,iy,iz)*jzfold 
-      
-          byzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(10,10)%block3dc(ix,iy,iz)*byzfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(10,1)%block3dc(ix,iy,iz)*exyfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(10,2)%block3dc(ix,iy,iz)*exzfold 
-      
-          bzxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(11,11)%block3dc(ix,iy,iz)*bzxfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(11,3)%block3dc(ix,iy,iz)*eyxfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(11,4)%block3dc(ix,iy,iz)*eyzfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(11,13)%block3dc(ix,iy,iz)*jxfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(11,14)%block3dc(ix,iy,iz)*jyfold 
-      
-          bzyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(12,12)%block3dc(ix,iy,iz)*bzyfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(12,1)%block3dc(ix,iy,iz)*exyfold + & 
-        cc_mat(nmatrixes)%block_matrix2d(12,2)%block3dc(ix,iy,iz)*exzfold 
+          exyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(1,1)%block3dc(ix,iy,iz)*exyfold + &
+        cc_mat(nmatrixes)%block_matrix2d(1,11)%block3dc(ix,iy,iz)*bzxfold + &
+        cc_mat(nmatrixes)%block_matrix2d(1,12)%block3dc(ix,iy,iz)*bzyfold + &
+        cc_mat(nmatrixes)%block_matrix2d(1,16)%block3dc(ix,iy,iz)*rhooldfold + &
+        cc_mat(nmatrixes)%block_matrix2d(1,17)%block3dc(ix,iy,iz)*rhofold + &
+        cc_mat(nmatrixes)%block_matrix2d(1,13)%block3dc(ix,iy,iz)*jxfold
+
+          exzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(2,2)%block3dc(ix,iy,iz)*exzfold + &
+        cc_mat(nmatrixes)%block_matrix2d(2,9)%block3dc(ix,iy,iz)*byxfold + &
+        cc_mat(nmatrixes)%block_matrix2d(2,10)%block3dc(ix,iy,iz)*byzfold
+
+          eyxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(3,3)%block3dc(ix,iy,iz)*eyxfold + &
+        cc_mat(nmatrixes)%block_matrix2d(3,11)%block3dc(ix,iy,iz)*bzxfold + &
+        cc_mat(nmatrixes)%block_matrix2d(3,12)%block3dc(ix,iy,iz)*bzyfold + &
+        cc_mat(nmatrixes)%block_matrix2d(3,16)%block3dc(ix,iy,iz)*rhooldfold + &
+        cc_mat(nmatrixes)%block_matrix2d(3,17)%block3dc(ix,iy,iz)*rhofold + &
+        cc_mat(nmatrixes)%block_matrix2d(3,14)%block3dc(ix,iy,iz)*jyfold
+
+          eyzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(4,4)%block3dc(ix,iy,iz)*eyzfold + &
+        cc_mat(nmatrixes)%block_matrix2d(4,7)%block3dc(ix,iy,iz)*bxyfold + &
+        cc_mat(nmatrixes)%block_matrix2d(4,8)%block3dc(ix,iy,iz)*bxzfold
+
+          ezxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(5,5)%block3dc(ix,iy,iz)*ezxfold + &
+        cc_mat(nmatrixes)%block_matrix2d(5,9)%block3dc(ix,iy,iz)*byxfold + &
+        cc_mat(nmatrixes)%block_matrix2d(5,10)%block3dc(ix,iy,iz)*byzfold + &
+        cc_mat(nmatrixes)%block_matrix2d(5,16)%block3dc(ix,iy,iz)*rhooldfold + &
+        cc_mat(nmatrixes)%block_matrix2d(5,17)%block3dc(ix,iy,iz)*rhofold + &
+        cc_mat(nmatrixes)%block_matrix2d(5,15)%block3dc(ix,iy,iz)*jzfold
+
+          ezyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(6,6)%block3dc(ix,iy,iz)*ezyfold + &
+        cc_mat(nmatrixes)%block_matrix2d(6,7)%block3dc(ix,iy,iz)*bxyfold + &
+        cc_mat(nmatrixes)%block_matrix2d(6,8)%block3dc(ix,iy,iz)*bxzfold
+
+          bxyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(7,7)%block3dc(ix,iy,iz)*bxyfold + &
+        cc_mat(nmatrixes)%block_matrix2d(7,5)%block3dc(ix,iy,iz)*ezxfold + &
+        cc_mat(nmatrixes)%block_matrix2d(7,6)%block3dc(ix,iy,iz)*ezyfold + &
+        cc_mat(nmatrixes)%block_matrix2d(7,14)%block3dc(ix,iy,iz)*jyfold + &
+        cc_mat(nmatrixes)%block_matrix2d(7,15)%block3dc(ix,iy,iz)*jzfold
+
+          bxzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(8,8)%block3dc(ix,iy,iz)*bxzfold + &
+        cc_mat(nmatrixes)%block_matrix2d(8,3)%block3dc(ix,iy,iz)*eyxfold + &
+        cc_mat(nmatrixes)%block_matrix2d(8,4)%block3dc(ix,iy,iz)*eyzfold
+
+          byxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(9,9)%block3dc(ix,iy,iz)*byxfold + &
+        cc_mat(nmatrixes)%block_matrix2d(9,5)%block3dc(ix,iy,iz)*ezxfold + &
+        cc_mat(nmatrixes)%block_matrix2d(9,6)%block3dc(ix,iy,iz)*ezyfold + &
+        cc_mat(nmatrixes)%block_matrix2d(9,13)%block3dc(ix,iy,iz)*jxfold + &
+        cc_mat(nmatrixes)%block_matrix2d(9,15)%block3dc(ix,iy,iz)*jzfold
+
+          byzf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(10,10)%block3dc(ix,iy,iz)*byzfold + &
+        cc_mat(nmatrixes)%block_matrix2d(10,1)%block3dc(ix,iy,iz)*exyfold + &
+        cc_mat(nmatrixes)%block_matrix2d(10,2)%block3dc(ix,iy,iz)*exzfold
+
+          bzxf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(11,11)%block3dc(ix,iy,iz)*bzxfold + &
+        cc_mat(nmatrixes)%block_matrix2d(11,3)%block3dc(ix,iy,iz)*eyxfold + &
+        cc_mat(nmatrixes)%block_matrix2d(11,4)%block3dc(ix,iy,iz)*eyzfold + &
+        cc_mat(nmatrixes)%block_matrix2d(11,13)%block3dc(ix,iy,iz)*jxfold + &
+        cc_mat(nmatrixes)%block_matrix2d(11,14)%block3dc(ix,iy,iz)*jyfold
+
+          bzyf(ix,iy,iz) = cc_mat(nmatrixes)%block_matrix2d(12,12)%block3dc(ix,iy,iz)*bzyfold + &
+        cc_mat(nmatrixes)%block_matrix2d(12,1)%block3dc(ix,iy,iz)*exyfold + &
+        cc_mat(nmatrixes)%block_matrix2d(12,2)%block3dc(ix,iy,iz)*exzfold
 
         ENDDO
-      ENDDO     
+      ENDDO
     ENDDO
 
 #if !defined(CUDA_FFT)
@@ -2161,17 +2247,17 @@ MODULE fourier_psaotd
   SUBROUTINE init_plans_blocks()
     USE fastfft
 #if defined(FFTW)
-    USE fftw3_fortran, ONLY: fftw_measure, fftw_backward, fftw_forward
+    USE fftw3_fortran, ONLY: fftw_backward, fftw_forward, fftw_measure
 #endif
-    USE fields, ONLY: ex_r, nzguards, nxguards, g_spectral, nyguards, exf, exy_r
-    USE fourier, ONLY: plan_c2r, plan_r2c, plan_c2r_cuda, plan_r2c_cuda
+    USE fields, ONLY: ex_r, exf, exy_r, g_spectral, nxguards, nyguards, nzguards
+    USE fourier, ONLY: plan_c2r, plan_r2c
     USE iso_c_binding
     USE omp_lib
     USE picsar_precision, ONLY: idp
-    USE shared_data, ONLY: nz, ny, fftw_with_mpi, nx, nx_global, p3dfft_flag,        &
-      ny_global, c_dim, nz_global, rank, absorbing_bcs
+    USE shared_data, ONLY: absorbing_bcs, c_dim, fftw_with_mpi, nx, nx_global, ny,   &
+      ny_global, nz, nz_global, p3dfft_flag, rank
 #if defined(CUDA_FFT)
-USE cufft
+    USE cufft
 #endif
 
     INTEGER(idp) :: nfftx, nffty, nfftz, nopenmp
@@ -2204,17 +2290,17 @@ USE cufft
     !> If g_spectral == .TRUE. then exf is not initialized in mpi_routine.F90
     !> Instead, vector blocks structures are used to store fourier fields
     !> and multiply_mat_vector(GPSTD.F90) is used to push fields in Fourier
-    !> space 
+    !> space
     !> exf only points to vold(nmatrixes)%block_vector(1)%block3dc to initialize
     !> fftw plans
-    !> If g_spectral == .FALSE. then exf is already allocated 
+    !> If g_spectral == .FALSE. then exf is already allocated
 
     IF(g_spectral) THEN
       exf => vold(nmatrixes)%block_vector(1)%block3dc
       IF(absorbing_bcs) THEN
         ex_r => exy_r
       ENDIF
-    ENDIF      
+    ENDIF
     !> Init fftw plans if used
     !> NB: if p3dfft is used, then the init is performed in mpi_routines during
     !> p3dfft_setup

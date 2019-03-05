@@ -12,11 +12,11 @@
 !> Creation 2017
 ! ________________________________________________________________________________________
 
-MODULE math_tools !#do not parse 
+MODULE math_tools !#do not parse
 
   USE PICSAR_PRECISION
   IMPLICIT NONE
-  CONTAINS 
+  CONTAINS
   ! ______________________________________________________________________________________
   !> @brief
   !> This function computes SINC value of an array of real
@@ -117,9 +117,9 @@ MODULE gpstd_solver
   COMPLEX(cpx), DIMENSION(:), ALLOCATABLE :: kxc, kxb, kxf, kyc, kyb, kyf, kzc, kzb,  &
   kzf
 
-  ! Flattened array of matrix_blocks indices that are usefull for the PSATD push 
+  ! Flattened array of matrix_blocks indices that are usefull for the PSATD push
   ! in the case of periodic boundary conditions
-  ! if is_usefull_per(i) == 1 then the cc_mat(1)%matrix_blocks(k,j) is allocated 
+  ! if is_usefull_per(i) == 1 then the cc_mat(1)%matrix_blocks(k,j) is allocated
   ! and corresponds to a required block for the PSATD computation
   ! else if is_usefull_per(i) == 0 then cc_mat(1)%matrix_blocks(k,j)  is 1x1x1 null block
   ! with i = (k-1) * 11 + (j-1) + 1
@@ -131,13 +131,13 @@ MODULE gpstd_solver
  !      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,&
  !      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
   INTEGER(idp) :: is_usefull_per(33) = &
-     (/ 0,  4,  5,  6,  9, 10, 12, 14, 16, 18, 20, 21, 24,               & 
-       25, 26, 30, 31, 32, 34, 35, 36, 40, 41, 44, 46, 48,               & 
+     (/ 0,  4,  5,  6,  9, 10, 12, 14, 16, 18, 20, 21, 24,               &
+       25, 26, 30, 31, 32, 34, 35, 36, 40, 41, 44, 46, 48,               &
        50, 52, 55, 56, 60, 61, 62/)
 
-  ! Flattened array of matrix_blocks indices that are usefull for the PSATD push 
+  ! Flattened array of matrix_blocks indices that are usefull for the PSATD push
   ! in the case of absorbing boundary conditions
-  ! if is_usefull_abs(i) == 1 then the cc_mat(1)%matrix_blocks(k,j) is allocated 
+  ! if is_usefull_abs(i) == 1 then the cc_mat(1)%matrix_blocks(k,j) is allocated
   ! and corresponds to a required block for the PSATD computation
   ! else if is_usefull_abs(i) == 0 then cc_mat(1)%matrix_blocks(k,j)  is 1x1x1 null block
   ! with i = (k-1) * 17 + (j-1) + 1
@@ -183,13 +183,13 @@ MODULE gpstd_solver
   !> @params[in,out] nfftz INTEGER(idp) - Number of points in spectral space along Z
   ! ______________________________________________________________________________________
   SUBROUTINE select_case_dims_local(nfftx, nffty, nfftz)
-    USE fields, ONLY: nzguards, nxguards, nyguards
-    USE group_parameters, ONLY: p3d_fsize, nx_group, ny_group, nz_group
+    USE fields, ONLY: nxguards, nyguards, nzguards
+    USE group_parameters, ONLY: nx_group, ny_group, nz_group, p3d_fsize
     USE iso_c_binding
     USE mpi_fftw3, ONLY: local_nz, local_nz_tr
     USE picsar_precision, ONLY: idp
-    USE shared_data, ONLY: nz, ny, fftw_with_mpi, nx, nx_global, p3dfft_flag,        &
-      ny_global, c_dim, nz_global, fftw_mpi_transpose, fftw_hybrid
+    USE shared_data, ONLY: c_dim, fftw_hybrid, fftw_mpi_transpose, fftw_with_mpi,    &
+      nx, nx_global, ny, ny_global, nz, nz_global, p3dfft_flag
     INTEGER(idp), INTENT(INOUT) :: nfftx, nffty, nfftz
 
     IF(fftw_with_mpi) THEN
@@ -261,12 +261,12 @@ MODULE gpstd_solver
   !> @params[in,out] nfftz INTEGER(idp) - Number of points in spectral space along Z
   ! ______________________________________________________________________________________
   SUBROUTINE select_case_dims_global(nfftx, nffty, nfftz)
-    USE fields, ONLY: nzguards, nxguards, nyguards
+    USE fields, ONLY: nxguards, nyguards, nzguards
     USE group_parameters, ONLY: nx_group, ny_group, nz_group
     USE iso_c_binding
     USE picsar_precision, ONLY: idp
-    USE shared_data, ONLY: nz, ny, fftw_with_mpi, nx, p3dfft_stride, nx_global,      &
-      p3dfft_flag, ny_global, c_dim, nz_global, fftw_mpi_transpose, fftw_hybrid
+    USE shared_data, ONLY: c_dim, fftw_hybrid, fftw_mpi_transpose, fftw_with_mpi,    &
+      nx, nx_global, ny, ny_global, nz, nz_global, p3dfft_flag, p3dfft_stride
     INTEGER(idp), INTENT(INOUT) :: nfftx, nffty, nfftz
     !> When using global or hybrid pseudo spectral solver
     IF( fftw_with_mpi) THEN
@@ -340,15 +340,15 @@ MODULE gpstd_solver
   ! ______________________________________________________________________________________
   SUBROUTINE init_kspace
     USE constants, ONLY: clight
+    USE fields, ONLY: l_staggered, norderx, nordery, norderz, nxguards, nyguards,    &
+      nzguards
     USE iso_c_binding
-    USE matrix_coefficients, ONLY: kspace, at_op
-    USE matrix_data, ONLY: ns_max, nmatrixes2
+    USE matrix_coefficients, ONLY: at_op, kspace
+    USE matrix_data, ONLY: nmatrixes2, ns_max
     USE omp_lib
-    USE fields, ONLY : nxguards, nyguards, nzguards, l_staggered
-    USE fields, ONLY : norderx, nordery, norderz
-    USE params, ONLY : dt
-    USE picsar_precision, ONLY: idp, num, lp, cpx
-    USE shared_data, ONLY: p3dfft_stride, p3dfft_flag, c_dim, fftw_mpi_transpose
+    USE params, ONLY: dt
+    USE picsar_precision, ONLY: cpx, idp, lp, num
+    USE shared_data, ONLY: c_dim, fftw_mpi_transpose, p3dfft_flag, p3dfft_stride
 
     REAL(num), ALLOCATABLE, DIMENSION(:, :, :)    :: temp, temp2
     INTEGER(idp)                                  :: i, j, k
@@ -356,10 +356,10 @@ MODULE gpstd_solver
     INTEGER(idp)                                  :: nfftx, nffty, nfftz, nfftxr
     LOGICAL(lp)                                   :: switch
 
-    !> kspace is the (inf)finite order wave vector block matrix in 
+    !> kspace is the (inf)finite order wave vector block matrix in
     !> different directions
-    !> It has 10 blocks: 
-    !> i=3,6,9 => kspace(nmatrixes2)%block_vector(i) = 
+    !> It has 10 blocks:
+    !> i=3,6,9 => kspace(nmatrixes2)%block_vector(i) =
     !> centered  derivative  operator
     !> along x,y,z directions respectively.
     !> i=1,4,7 => kspace(nmatrixes2)%block_vector(i) =
@@ -373,15 +373,15 @@ MODULE gpstd_solver
 
     !> PS: If using fftw_mpi_transpose or strided p3dfft then
     !> y and z axis (or x and z for strided p3dfft) are transposed inside kspace
-    !> blocks. 
+    !> blocks.
     !> But the convention above remains  identical
-  
+
     !> at_op is the block matrix for different operators involved
     !> in psatd block matrixes computations.
     !> It has 4 blocks
-  
+
     !> The first component (for null frequency) of each block
-    !> except block 2 is computed using Taylor expansion 
+    !> except block 2 is computed using Taylor expansion
 
     !> at_op(nmatrixes2)%block_vector(1) = sin(|K|*c*dt)/(|K|)
     !> at_op(nmatrixes2)%block_vector(2) = cos(|K|*c*dt)
@@ -423,7 +423,7 @@ MODULE gpstd_solver
     ENDDO
     !construct kspace
     ii=DCMPLX(0.0_num, 1.0_num)
-    !> computes wave vector for a staggered or an unstaggered grid 
+    !> computes wave vector for a staggered or an unstaggered grid
     !> takes into account norderx, nordery, norderz
     !> if norder == 0 then compute wave vector for an infinite order stencil
     CALL compute_k_vec(l_staggered)
@@ -443,15 +443,15 @@ MODULE gpstd_solver
                 !> If c_dim == 2 Then y derivative is null
                 !> c_dim = 2 cannot be used with p3dfft or fftw_mpi_transpose
                 !> flag
-                kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k)= (0.0_num,0.0_num) 
+                kspace(nmatrixes2)%block_vector(4)%block3dc(i, j, k)= (0.0_num,0.0_num)
                 kspace(nmatrixes2)%block_vector(5)%block3dc(i, j, k)= (0.0_num,0.0_num)
-                kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k)= (0.0_num,0.0_num) 
+                kspace(nmatrixes2)%block_vector(6)%block3dc(i, j, k)= (0.0_num,0.0_num)
               ENDIF
               kspace(nmatrixes2)%block_vector(7)%block3dc(i, j, k) = kzf(k)
               kspace(nmatrixes2)%block_vector(8)%block3dc(i, j, k) = kzb(k)
               kspace(nmatrixes2)%block_vector(9)%block3dc(i, j, k) = kzc(k)
             ELSE IF(fftw_mpi_transpose) THEN
-              !> If fftw_mpi_transpose kyc is the derivative operator along z and 
+              !> If fftw_mpi_transpose kyc is the derivative operator along z and
               !> kzc is the derivative  operator along y
               kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kxf(i)
               kspace(nmatrixes2)%block_vector(2)%block3dc(i, j, k) = kxb(i)
@@ -465,7 +465,7 @@ MODULE gpstd_solver
             ENDIF
           ELSE IF(p3dfft_flag) THEN
             IF(p3dfft_stride) THEN
-                !> If p3dfft_stride x and z axis are transposed: 
+                !> If p3dfft_stride x and z axis are transposed:
                 !> kzc is the derivative along x and kxc is the derivative
                 !> along z
                 kspace(nmatrixes2)%block_vector(1)%block3dc(i, j, k) = kzf(k)
@@ -493,7 +493,7 @@ MODULE gpstd_solver
       ENDDO
     ENDDO
 
-    !> Computes the norm of wave vector in fourier space 
+    !> Computes the norm of wave vector in fourier space
     kspace(nmatrixes2)%block_vector(10)%block3dc=                                    &
     SQRT(ABS(kspace(nmatrixes2)%block_vector(9)%block3dc)**2 +                       &
         ABS(kspace(nmatrixes2)%block_vector(6)%block3dc)**2 +                        &
@@ -527,7 +527,7 @@ MODULE gpstd_solver
       0.0_num)
       switch = .TRUE.
     ENDIF
-    
+
     at_op(nmatrixes2)%block_vector(3)%block3dc = (DCMPLX(1.0_num, 0.0_num) -          &
     at_op(nmatrixes2)%block_vector(2)%block3dc)                                       &
     /kspace(nmatrixes2)%block_vector(10)%block3dc**2
@@ -572,19 +572,19 @@ MODULE gpstd_solver
   !> Creation 2017
   ! ______________________________________________________________________________________
   SUBROUTINE delete_k_space
-    USE matrix_coefficients, ONLY: kspace, at_op
+    USE matrix_coefficients, ONLY: at_op, kspace
     USE matrix_data, ONLY: nmatrixes2
     USE picsar_precision, ONLY: idp
     INTEGER(idp)  :: i
     DO i = 1,10
       DEALLOCATE(kspace(nmatrixes2)%block_vector(i)%block3dc)
-#if defined(CUDA_FFT) 
+#if defined(CUDA_FFT)
       !$acc exit data delete(kspace(nmatrixes2)%block_vector(i)%block3dc)
 #endif
     ENDDO
     DO i=1,4
       DEALLOCATE(at_op(nmatrixes2)%block_vector(i)%block3dc)
-#if defined(CUDA_FFT) 
+#if defined(CUDA_FFT)
       !$acc exit data delete(at_op(nmatrixes2)%block_vector(i)%block3dc)
 #endif
     ENDDO
@@ -605,13 +605,13 @@ MODULE gpstd_solver
   !> Creation 2017
   ! ______________________________________________________________________________________
   SUBROUTINE compute_k_vec(l_stg)
-    USE fields, ONLY: nordery, norderz, norderx
-    USE group_parameters, ONLY: p3d_fsize, p3d_fstart, p3d_fend
+    USE fields, ONLY: norderx, nordery, norderz
+    USE group_parameters, ONLY: p3d_fend, p3d_fsize, p3d_fstart
     USE iso_c_binding
-    USE mpi_fftw3, ONLY: local_z0_tr, local_z0, local_nz, local_nz_tr
-    USE picsar_precision, ONLY: idp, num, lp, cpx
-    USE shared_data, ONLY: nz, fftw_with_mpi, p3dfft_stride, p3dfft_flag, dx,        &
-      fftw_mpi_transpose, dy, dz
+    USE mpi_fftw3, ONLY: local_nz, local_nz_tr, local_z0, local_z0_tr
+    USE picsar_precision, ONLY: cpx, idp, lp, num
+    USE shared_data, ONLY: dx, dy, dz, fftw_mpi_transpose, fftw_with_mpi, nz,        &
+      p3dfft_flag, p3dfft_stride
     IMPLICIT NONE
     LOGICAL(lp), INTENT(IN)                     :: l_stg
     COMPLEX(cpx), ALLOCATABLE, DIMENSION(:)     ::                                     &
@@ -634,15 +634,15 @@ MODULE gpstd_solver
     !> Hence fftw_mpi_exec is faster when using transposed plans
     !> But the user should keep in mind that fourier fields are then transposed
     !> in memory and data splitting along mpi procs is done along y axis instead
-    !of z 
+    !of z
     !> axis  with regular fftw_mpi.
     !> block matrixes are also transposed conveniently  during init_gpstd when
     !> using transposed plans
     !> A similar optimization is possible when using p3dfft (p3dfft_stride =
-    !.TRUE.)  but z and x axis are then transposed 
+    !.TRUE.)  but z and x axis are then transposed
 
 
-    !> If fftw_mpi_transpose, y and z are transposed so nordery, norderz, and  dy 
+    !> If fftw_mpi_transpose, y and z are transposed so nordery, norderz, and  dy
     !> dz are switched
     IF(fftw_mpi_transpose) THEN
       sd=dz
@@ -665,7 +665,7 @@ MODULE gpstd_solver
       ENDIF
     ENDIF
 
-    !> computes fourier space size for all the group (if hybrid)  
+    !> computes fourier space size for all the group (if hybrid)
     !> or only locally (if local psatd) or for the whole domain(if gloal psatd)
     CALL select_case_dims_global(nfftx, nffty, nfftz)
 
@@ -686,7 +686,7 @@ MODULE gpstd_solver
       DEALLOCATE(k_temp)
     ENDIF
 
-    !> Selects only relevent wave vector components for each processor    
+    !> Selects only relevent wave vector components for each processor
     IF(fftw_with_mpi) THEN
       IF( .NOT. p3dfft_flag) THEN
         IF(.NOT. fftw_mpi_transpose) THEN
@@ -778,7 +778,7 @@ MODULE gpstd_solver
   ! ______________________________________________________________________________________
   SUBROUTINE compute_k_1d(nfft,kvec,kvecf,kvecb,norder,d,l_stg)
      USE constants, ONLY: pi
-     USE picsar_precision, ONLY: idp, num, lp, cpx
+     USE picsar_precision, ONLY: cpx, idp, lp, num
      REAL(num) , INTENT(IN)  :: d
      INTEGER(idp) , INTENT(IN) :: norder,nfft
      COMPLEX(cpx) , DIMENSION(:) , ALLOCATABLE , INTENT(INOUT) :: kvec,kvecf,kvecb
@@ -812,7 +812,11 @@ MODULE gpstd_solver
        !> unstaggered grid
        CALL FD_weights_hvincenti(norder, FD, l_stg)
        DO i=1_idp, norder/2
-         kvec=kvec+2.0_num/d*FD(i)*SIN((i*2.0_num-1.0_num)*PI*ones/nfft)
+           IF(l_stg) THEN
+              kvec=kvec+2.0_num/d*FD(i)*SIN((i*2.0_num-1.0_num)*PI*ones/nfft)
+           ELSE
+              kvec=kvec+2.0_num/d*FD(i)*SIN(i*2.0_num*PI*ones/nfft)
+           ENDIF
        ENDDO
        DEALLOCATE(FD)
      ELSE
@@ -820,14 +824,14 @@ MODULE gpstd_solver
        !> with an infinite stencil
        CALL fftfreq(nfft, kvec,  d)
      ENDIF
-     !> If staggered grid then computes staggered derivative operator  
-     !> (dual to primal and primal to dual)  
+     !> If staggered grid then computes staggered derivative operator
+     !> (dual to primal and primal to dual)
 
      IF(l_stg) THEN
        kvecf=kvec*EXP(-ii*PI*onesp/nfft)
        kvecb=kvec*EXP(ii*PI*onesp/nfft)
      ELSE
-     !> If unstaggered grid 
+     !> If unstaggered grid
        kvecb=kvec
        kvecf=kvec
      ENDIF
@@ -853,7 +857,7 @@ MODULE gpstd_solver
 
   SUBROUTINE fftfreq(nxx, kxx, dxx)
     USE constants, ONLY: pi
-    USE picsar_precision, ONLY: idp, num, cpx
+    USE picsar_precision, ONLY: cpx, idp, num
     IMPLICIT NONE
     INTEGER(idp), INTENT(IN)                    :: nxx
     REAL(num), INTENT(IN)                    :: dxx
@@ -890,7 +894,7 @@ MODULE gpstd_solver
 
   ! ______________________________________________________________________________________
   !> @brief
-  !> This subroutine allocated block matrixes  
+  !> This subroutine allocated block matrixes
   !
   !> @author
   !> Haithem Kallala
@@ -899,20 +903,20 @@ MODULE gpstd_solver
   !> Creation 2017
   ! ______________________________________________________________________________________
   SUBROUTINE init_gpstd()
-    USE constants, ONLY: mu0, eps0, clight
-    USE fields, ONLY: ezf, jxf, rhooldf, rhof, bxf, g_spectral, jzf, eyf, jyf, byf,  &
-      bzf, exf
+    USE constants, ONLY: clight, eps0, mu0
+    USE fields, ONLY: bxf, byf, bzf, exf, eyf, ezf, g_spectral, jxf, jyf, jzf, rhof, &
+      rhooldf
     USE iso_c_binding
-    USE matrix_coefficients, ONLY: vnew, kspace, cc_mat, at_op, vold
+    USE matrix_coefficients, ONLY: at_op, cc_mat, kspace, vnew, vold
     USE matrix_data, ONLY: nmatrixes, nmatrixes2
 #if defined(FFTW)
     USE mpi_fftw3, ONLY: fftw_alloc_complex, alloc_local
 #endif
     USE omp_lib
     USE params, ONLY: dt
-    USE picsar_precision, ONLY: idp, num, lp, cpx
-    USE shared_data, ONLY: nz, ny, nx, fftw_with_mpi, nkx, nky, nkz,  p3dfft_flag,   &
-                           absorbing_bcs,c_dim
+    USE picsar_precision, ONLY: cpx, idp, lp, num
+    USE shared_data, ONLY: absorbing_bcs, c_dim, fftw_with_mpi, nkx, nky, nkz, nx,   &
+      ny, nz, p3dfft_flag
 
     INTEGER(idp)           :: i, j,incr, lin_ind
     COMPLEX(cpx)           :: ii
@@ -921,7 +925,7 @@ MODULE gpstd_solver
     REAL(num)              :: coeff_norm
     TYPE(C_PTR)            :: cdata
     INTEGER(idp) , ALLOCATABLE, DIMENSION(:) :: is_usefull
- 
+
     IF(absorbing_bcs) THEN
       !> When using pmls, cc_mat is a 12x17 matrix
       nbloc_ccmat = 17_idp
@@ -935,7 +939,7 @@ MODULE gpstd_solver
       ALLOCATE(is_usefull(33))
       is_usefull=is_usefull_per
     ENDIF
-  
+
     CALL select_case_dims_local(nfftx, nffty, nfftz)
     ii=DCMPLX(0.0_num, 1.0_num)
     CALL allocate_new_matrix_vector(nbloc_ccmat)
@@ -946,31 +950,32 @@ MODULE gpstd_solver
     nky = nffty
     nkz = nfftz
     !> Allocates cc_mat  block matrix
-    !> cc_mat blocks are initally as an nbloc_ccmat x nbloc_ccmat block matrix 
-    !> At the end of the routine, useless blcoks are deleted  
+    !> cc_mat blocks are initally as an nbloc_ccmat x nbloc_ccmat block matrix
+    !> At the end of the routine, useless blcoks are deleted
     incr = 1
     DO i=1_idp, nbloc_ccmat
       DO j=1_idp, nbloc_ccmat
-        lin_ind = (i-1)*nbloc_ccmat + (j-1) 
-        IF(is_usefull(incr) == lin_ind) THEN
+        lin_ind = (i-1)*nbloc_ccmat + (j-1)
+        IF (is_usefull(incr) == lin_ind) THEN
           ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(nfftxr, nffty,    &
           nfftz))
           cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = nfftxr
           cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = nffty
           cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = nfftz
-
-          incr = incr + 1
-        ELSE  
+          IF (incr<SIZE(is_usefull)) THEN
+             incr = incr + 1
+          ENDIF
+        ELSE
           ALLOCATE(cc_mat(nmatrixes)%block_matrix2d(i, j)%block3dc(1,1,1))
           cc_mat(nmatrixes)%block_matrix2d(i, j)%nx = 1_idp
           cc_mat(nmatrixes)%block_matrix2d(i, j)%ny = 1_idp
           cc_mat(nmatrixes)%block_matrix2d(i, j)%nz = 1_idp
-          
+
         ENDIF
       ENDDO
     ENDDO
 
-    !> If g_spectral then psatd uses multiply_mat_vec routine in GPSTD.F90 
+    !> If g_spectral then psatd uses multiply_mat_vec routine in GPSTD.F90
     !> to perform the maxwell push in Fourier space
     !> So we need to allocate vold/vnew vector blocks
     !> else if g_spectral == false these arrays are not allocated, and
@@ -1064,16 +1069,16 @@ MODULE gpstd_solver
       !> exy , eyx , ezx, bxy, byx, bzx
       !> Hence, contribution of J to exz is null
       CALL compute_cc_mat_splitted_fields()
-    ELSE IF(.NOT. absorbing_bcs) THEN  
+    ELSE IF(.NOT. absorbing_bcs) THEN
       !> When not using absorbing bcs, standard EM equations are solved in
       ! fourier space
       CALL compute_cc_mat_merged_fields()
     ENDIF
-  
- 
+
+
     !> Renormalize cc_mat blocks
-    !> Because fftw_r2c and followed by fftw_c2r multiplies fields by 
-    !> nfftx*nffty*nfftz 
+    !> Because fftw_r2c and followed by fftw_c2r multiplies fields by
+    !> nfftx*nffty*nfftz
     !> This way, no need to normalize fields in a separate step
 
 
@@ -1119,22 +1124,23 @@ MODULE gpstd_solver
 
 
   SUBROUTINE compute_cc_mat_splitted_fields()
-    USE shared_data
-    USE matrix_coefficients
-    USE constants
-    USE params, ONLY : dt
+    USE constants, ONLY: clight, eps0, mu0
+    USE matrix_coefficients, ONLY: at_op, cc_mat, kspace
+    USE matrix_data, ONLY: nmatrixes, nmatrixes2
+    USE params, ONLY: dt
+    USE picsar_precision, ONLY: cpx, idp, lp, num
     INTEGER(idp) :: i,j,k
     COMPLEX(cpx) ::  ii
     LOGICAL(lp)  :: switch
 
     !> cc_mat_(nmatrixes)block_matrix2d(i,j) components are sorted using the
-    !>following nomenclature 
+    !>following nomenclature
     !> In this case cc_mat is a 12x17 block matrix
     !> 1-> exyf; 2->exzf; 3->eyxf; 4->eyzf; 5->ezxf; 6->ezyf
     !> 7-> bxyf; 8->bxzf; 9->byxf; 10->byzf; 11->bzxf; 12->bzyf
     !> 13-> jxf; 14->jyf; 15->jzf; 16->rhooldf; 17->rhof
     !> cc_mat_(nmatrixes)block_matrix2d(i,j) is the contribution of the j-th
-    !> scalar field to the i-th scalar field 
+    !> scalar field to the i-th scalar field
 
     ii=DCMPLX(0.0_num, 1.0_num)
 
@@ -1143,8 +1149,8 @@ MODULE gpstd_solver
      cc_mat(nmatrixes)%block_matrix2d(i, i)%block3dc =&
      AT_OP(nmatrixes2)%block_vector(2)%block3dc
     ENDDO
-     ! contribution of current to elec field 
-     ! by convention, j will only contribute to exy, eyx, ezx 
+     ! contribution of current to elec field
+     ! by convention, j will only contribute to exy, eyx, ezx
     DO i = 1, 3
       j = 2*(i-1) + 1
       k = i+12
@@ -1171,10 +1177,10 @@ MODULE gpstd_solver
       /Kspace(nmatrixes2)%block_vector(10)%block3dc**2
       cc_mat(nmatrixes)%block_matrix2d(j, 16_idp)%block3dc =&
       cc_mat(nmatrixes)%block_matrix2d(j, 16_idp)%block3dc&
-      *Kspace(nmatrixes2)%block_vector(3*i-1)%block3dc  
+      *Kspace(nmatrixes2)%block_vector(3*i-1)%block3dc
      IF(switch) THEN
         cc_mat(nmatrixes)%block_matrix2d(j, 16_idp)%block3dc(1, 1, 1) =&
-        -1.0_num/3.0_num*(0.0_num, 1.0_num)*(clight*dt)**2    
+        -1.0_num/3.0_num*(0.0_num, 1.0_num)*(clight*dt)**2
      ENDIF
 
       !> If current mpi task contains null frequency then performs Taylor
@@ -1184,7 +1190,7 @@ MODULE gpstd_solver
       *cc_mat(nmatrixes)%block_matrix2d(j, 16_idp)%block3dc
     ENDDO
     !> End contribution rhooldf to E
-    
+
     !> Begin contribution rhof to E
     !> rho only contributes to bxy, byx, bzx
 
@@ -1207,7 +1213,7 @@ MODULE gpstd_solver
       cc_mat(nmatrixes)%block_matrix2d(j, 17_idp)%block3dc = 1.0_num/eps0 *&
       cc_mat(nmatrixes)%block_matrix2d(j, 17_idp)%block3dc
     ENDDO
-    !> END contribution rhof to E    
+    !> END contribution rhof to E
     IF(switch) THEN
       Kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)   = DCMPLX(0., 0.)
     ENDIF
@@ -1301,9 +1307,9 @@ MODULE gpstd_solver
     *AT_OP(nmatrixes2)%block_vector(1)%block3dc
 
     !> End contribution of B to E
- 
+
     !> Begin contribution E to B
- 
+
     cc_mat(nmatrixes)%block_matrix2d(8, 4)%block3dc =&
     ii*Kspace(nmatrixes2)%block_vector(8)%block3dc/clight&
     *AT_OP(nmatrixes2)%block_vector(1)%block3dc
@@ -1323,33 +1329,33 @@ MODULE gpstd_solver
     cc_mat(nmatrixes)%block_matrix2d(10, 1)%block3dc =&
     -ii*Kspace(nmatrixes2)%block_vector(8)%block3dc/clight&
     *AT_OP(nmatrixes2)%block_vector(1)%block3dc
-   
-   
+
+
     cc_mat(nmatrixes)%block_matrix2d(10, 2)%block3dc =&
     -ii*Kspace(nmatrixes2)%block_vector(8)%block3dc/clight&
     *AT_OP(nmatrixes2)%block_vector(1)%block3dc
-   
+
     cc_mat(nmatrixes)%block_matrix2d(9, 5)%block3dc =&
     ii*Kspace(nmatrixes2)%block_vector(2)%block3dc/clight&
     *AT_OP(nmatrixes2)%block_vector(1)%block3dc
-   
+
     cc_mat(nmatrixes)%block_matrix2d(9, 6)%block3dc =&
     ii*Kspace(nmatrixes2)%block_vector(2)%block3dc/clight&
     *AT_OP(nmatrixes2)%block_vector(1)%block3dc
-   
-   
+
+
     cc_mat(nmatrixes)%block_matrix2d(12, 1)%block3dc =&
     ii*Kspace(nmatrixes2)%block_vector(5)%block3dc/clight&
     *AT_OP(nmatrixes2)%block_vector(1)%block3dc
-   
+
     cc_mat(nmatrixes)%block_matrix2d(12, 2)%block3dc =&
     ii*Kspace(nmatrixes2)%block_vector(5)%block3dc/clight&
     *AT_OP(nmatrixes2)%block_vector(1)%block3dc
-   
+
     cc_mat(nmatrixes)%block_matrix2d(11, 3)%block3dc =&
     -ii*Kspace(nmatrixes2)%block_vector(2)%block3dc/clight&
     *AT_OP(nmatrixes2)%block_vector(1)%block3dc
-   
+
     cc_mat(nmatrixes)%block_matrix2d(11, 4)%block3dc =&
     -ii*Kspace(nmatrixes2)%block_vector(2)%block3dc/clight&
     *AT_OP(nmatrixes2)%block_vector(1)%block3dc
@@ -1370,25 +1376,26 @@ MODULE gpstd_solver
 
 
   SUBROUTINE compute_cc_mat_merged_fields()
-    USE shared_data
-    USE matrix_coefficients
-    USE constants
-    USE params, ONLY : dt
-    INTEGER(idp)  :: i,j   
+    USE constants, ONLY: clight, eps0, mu0
+    USE matrix_coefficients, ONLY: at_op, cc_mat, kspace
+    USE matrix_data, ONLY: nmatrixes, nmatrixes2
+    USE params, ONLY: dt
+    USE picsar_precision, ONLY: cpx, idp, lp, num
+    INTEGER(idp)  :: i,j
     COMPLEX(cpx) ::  ii
     LOGICAL(lp)            :: switch
     ii=DCMPLX(0.0_num, 1.0_num)
 
     !> cc_mat_(nmatrixes)block_matrix2d(i,j) components are sorted using the
-    !>following nomenclature 
+    !>following nomenclature
     !> In this case cc_mat is a 6x11 block matrix
     !> 1-> exf; 2->eyf; 3->ezf; 4->bxf; 5->byf; 6->bzf
     !> 7->jxf; 8->jyf; 9->jzf; 10-> rhooldf; 11->rhof
     !> cc_mat_(nmatrixes)block_matrix2d(i,j) is the contribution of the j-th
-    !> scalar field to the i-th scalar field 
-    
+    !> scalar field to the i-th scalar field
 
-  
+
+
     !> Contribution of B field to E field update
     cc_mat(nmatrixes)%block_matrix2d(1, 5)%block3dc = -                               &
     ii*kspace(nmatrixes2)%block_vector(7)%block3dc*clight                             &
@@ -1412,9 +1419,9 @@ MODULE gpstd_solver
     cc_mat(nmatrixes)%block_matrix2d(3, 5)%block3dc =                                 &
     ii*kspace(nmatrixes2)%block_vector(1)%block3dc*clight                             &
     *at_op(nmatrixes2)%block_vector(1)%block3dc
-    
+
     !> End contribution B field to E field
-    
+
     !> Contribution of E field to B field
     cc_mat(nmatrixes)%block_matrix2d(4, 2)%block3dc =                                 &
     ii*kspace(nmatrixes2)%block_vector(8)%block3dc/clight                             &
@@ -1439,15 +1446,15 @@ MODULE gpstd_solver
     cc_mat(nmatrixes)%block_matrix2d(6, 2)%block3dc =                                 &
     -ii*kspace(nmatrixes2)%block_vector(2)%block3dc/clight                            &
     *at_op(nmatrixes2)%block_vector(1)%block3dc
-   
+
     !> End contribiton E field to B field
- 
+
     !> Contribution of E field to E field and B field to B field
     DO i=1, 6
       cc_mat(nmatrixes)%block_matrix2d(i, i)%block3dc =                               &
       at_op(nmatrixes2)%block_vector(2)%block3dc
     ENDDO
-    !> End contribution of E field To E field and B field to B field    
+    !> End contribution of E field To E field and B field to B field
 
     !> Contribution of J field to E field
     DO i = 1, 3
@@ -1486,7 +1493,7 @@ MODULE gpstd_solver
     cc_mat(nmatrixes)%block_matrix2d(6, 8)%block3dc =                                 &
     -mu0*(-ii)*kspace(nmatrixes2)%block_vector(2)%block3dc*                           &
     at_op(nmatrixes2)%block_vector(3)%block3dc
-    
+
     !> End contribution of J field to B field
 
     !> Contribution of rhoold field to E field
@@ -1522,7 +1529,7 @@ MODULE gpstd_solver
       *cc_mat(nmatrixes)%block_matrix2d(i, 10_idp)%block3dc
     ENDDO
     !> End contribution of rhoold field to E field
-  
+
     !> Contribution of rho field to E field
     DO i = 1, 3
       cc_mat(nmatrixes)%block_matrix2d(i, 11_idp)%block3dc = DCMPLX(0.,               &
@@ -1546,7 +1553,7 @@ MODULE gpstd_solver
     IF(switch) THEN
       kspace(nmatrixes2)%block_vector(10)%block3dc(1, 1, 1)   = DCMPLX(0., 0.)
     ENDIF
-    !> End contribution of rho field to E field   
+    !> End contribution of rho field to E field
   END SUBROUTINE compute_cc_mat_merged_fields
 
   ! ______________________________________________________________________________________
@@ -1568,9 +1575,9 @@ MODULE gpstd_solver
   !> Creation 2017
   ! ______________________________________________________________________________________
   SUBROUTINE FD_weights_hvincenti(p, w, is_staggered)
-    USE picsar_precision, ONLY: idp, num
+    USE picsar_precision, ONLY: idp, lp, num
     IMPLICIT NONE
-    LOGICAL(idp), INTENT(IN) :: is_staggered
+    LOGICAL(lp) , INTENT(IN) :: is_staggered
     INTEGER(idp), INTENT(IN) :: p
     REAL(num), DIMENSION(p/2), INTENT(OUT) :: w
     INTEGER(idp) :: i, l
@@ -1625,21 +1632,19 @@ MODULE gpstd_solver
   END SUBROUTINE copy_field
 
   SUBROUTINE copy_field_forward()
-    USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
-    USE fields, ONLY : ex_r, ey_r, ez_r, bx_r, by_r, bz_r, jx_r, jy_r, jz_r, rho_r,   &
-                       rhoold_r
-    USE fields, ONLY : exy, exz, eyx,  eyz, ezx, ezy , bxy, bxz, byx, byz, bzx, bzy
-    USE fields, ONLY : exy_r, exz_r, eyx_r,  eyz_r, ezx_r, ezy_r, bxy_r, bxz_r, byx_r,&
-                       byz_r, bzx_r, bzy_r
+    USE fields, ONLY: bx, bx_r, bxy, bxy_r, bxz, bxz_r, by, by_r, byx, byx_r, byz,   &
+      byz_r, bz, bz_r, bzx, bzx_r, bzy, bzy_r, ex, ex_r, exy, exy_r, exz, exz_r, ey, &
+      ey_r, eyx, eyx_r, eyz, eyz_r, ez, ez_r, ezx, ezx_r, ezy, ezy_r, jx, jx_r, jy,  &
+      jy_r, jz, jz_r, rho_r, rhoold_r
     USE omp_lib
     USE picsar_precision, ONLY: idp
-    USE shared_data, ONLY: rho, rhoold, nz, ny, nx, absorbing_bcs
+    USE shared_data, ONLY: absorbing_bcs, nx, ny, nz, rho, rhoold
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz, ixx, iyy, izz, ixxx, iyyy, izzz
     INTEGER(idp) , dimension(3) :: lbound_r, ubound_r, lbound_p ,ubound_p,lbound_s, ubound_s
      ! WRITE(0,*)"started copyfield bac"
 
-    IF(absorbing_bcs) THEN 
+    IF(absorbing_bcs) THEN
       lbound_r = LBOUND(exy_r)
       lbound_p = LBOUND(exy)
       ubound_r = UBOUND(exy_r)
@@ -1663,15 +1668,15 @@ MODULE gpstd_solver
     !$acc enter data copyin(ubound_s)
 #endif
 
-    ! When using periodic bcs, standard EM fields are communicated 
-    ! Else, when using absorbing bcs, splitted EM fields are communicated 
+    ! When using periodic bcs, standard EM fields are communicated
+    ! Else, when using absorbing bcs, splitted EM fields are communicated
     IF(.NOT. absorbing_bcs) THEN
 #if !defined(CUDA_FFT)
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx, iyy ,izz,ixxx,iyyy,izzz) COLLAPSE(3)
 #else
 
       !$acc parallel present(ex_r,ey_r,ez_r,bx_r,by_r,bz_r,jx_r,jy_r,jz_r,rhoold_r, &
-      !$acc& rho_r,ex,ey,ez,bx,by,bz,jx,jy,jz,rho,rhoold) 
+      !$acc& rho_r,ex,ey,ez,bx,by,bz,jx,jy,jz,rho,rhoold)
       !$acc loop gang vector collapse(3)
 #endif
       DO iz=lbound_r(3),ubound_r(3)
@@ -1711,7 +1716,7 @@ MODULE gpstd_solver
       !$acc parallel present(exy_r,exz_r,eyx_r,eyz_r,ezx_r,ezy_r,bxy_r,bxz_r,byx_r,byz_r, &
       !$acc& bzx_r,bzy_r,exy,exz,eyx,eyz,ezx,ezy,bxy,bxz,byx,byz,bzx,bzy,jx,jy,jz,rhoold, &
       !$acc& rho,jx_r,jy_r,jz_r,rhoold_r,rho_r) private(ixx,iyy,izz,ixxx,iyyy,izzz)
-      !$acc loop gang vector collapse(3) 
+      !$acc loop gang vector collapse(3)
 
 #endif
 
@@ -1748,20 +1753,19 @@ MODULE gpstd_solver
       !$acc end loop
       !$acc end parallel
 #else
-      !$OMP END PARALLEL DO  
+      !$OMP END PARALLEL DO
 #endif
     ENDIF
   END SUBROUTINE copy_field_forward
 
   SUBROUTINE copy_field_backward()
-    USE fields, ONLY : ex, ey, ez, bx, by, bz, jx, jy, jz
-    USE fields, ONLY : ex_r, ey_r, ez_r, bx_r, by_r, bz_r, jx_r, jy_r, jz_r
-    USE fields, ONLY : exy, exz, eyx,  eyz, ezx, ezy , bxy, bxz, byx, byz, bzx, bzy
-    USE fields, ONLY : exy_r, exz_r, eyx_r,  eyz_r, ezx_r, ezy_r, bxy_r, bxz_r, byx_r,&
-                       byz_r, bzx_r, bzy_r
+    USE fields, ONLY: bx, bx_r, bxy, bxy_r, bxz, bxz_r, by, by_r, byx, byx_r, byz,   &
+      byz_r, bz, bz_r, bzx, bzx_r, bzy, bzy_r, ex, ex_r, exy, exy_r, exz, exz_r, ey, &
+      ey_r, eyx, eyx_r, eyz, eyz_r, ez, ez_r, ezx, ezx_r, ezy, ezy_r, jx, jx_r, jy,  &
+      jy_r, jz, jz_r
     USE omp_lib
     USE picsar_precision, ONLY: idp
-    USE shared_data, ONLY:  nz, ny, nx, absorbing_bcs
+    USE shared_data, ONLY: absorbing_bcs, nx, ny, nz
 
     IMPLICIT NONE
     INTEGER(idp) :: ix, iy, iz, ixx ,iyy , izz
@@ -1785,13 +1789,13 @@ MODULE gpstd_solver
     !$acc enter data copyin(ubound_p)
 #endif
 
-    ! When using periodic bcs, standard EM fields are communicated 
-    ! Else, when using absorbing bcs, splitted EM fields are communicated 
+    ! When using periodic bcs, standard EM fields are communicated
+    ! Else, when using absorbing bcs, splitted EM fields are communicated
     IF(.NOT. absorbing_bcs) THEN
-#if !defined(CUDA_FFT) 
+#if !defined(CUDA_FFT)
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx , iyy ,izz) COLLAPSE(3)
 #else
-      !$acc parallel  present (ex_r,ey_r,ez_r,bx_r,by_r,bz_r,ex,ey,ez,bx,by,bz) 
+      !$acc parallel  present (ex_r,ey_r,ez_r,bx_r,by_r,bz_r,ex,ey,ez,bx,by,bz)
       !$acc loop gang vector collapse(3)
 #endif
       DO iz=lbound_r(3),ubound_r(3)
@@ -1813,10 +1817,10 @@ MODULE gpstd_solver
       !$acc end loop
       !$acc end parallel
 #else
-      !$OMP END PARALLEL DO  
+      !$OMP END PARALLEL DO
 #endif
     ELSE IF(absorbing_bcs) THEN
-#if !defined(CUDA_FFT) 
+#if !defined(CUDA_FFT)
       !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz, ixx , iyy ,izz)
       !COLLAPSE(3)
 #else
@@ -1849,7 +1853,7 @@ MODULE gpstd_solver
       !$acc end loop
       !$acc end parallel
 #else
-      !$OMP END PARALLEL DO  
+      !$OMP END PARALLEL DO
 #endif
     ENDIF
   END SUBROUTINE copy_field_backward

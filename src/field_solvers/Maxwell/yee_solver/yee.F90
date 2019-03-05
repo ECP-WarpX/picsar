@@ -46,7 +46,7 @@
 SUBROUTINE pxrpush_em3d_evec_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx,  &
   dtsdy, dtsdz, nx, ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard, nxs,  &
   nys, nzs, l_nodalgrid)
-  USE picsar_precision, ONLY: idp, num, lp
+  USE picsar_precision, ONLY: idp, lp, num
 
   INTEGER(idp), INTENT(IN) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs
   INTEGER(idp), INTENT(IN) :: norderx, nordery, norderz
@@ -135,7 +135,7 @@ END SUBROUTINE pxrpush_em3d_evec_norder
 SUBROUTINE pxrpush_em2d_evec_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, mudt, dtsdx,  &
   dtsdy, dtsdz, nx, ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard, nxs,  &
   nys, nzs, l_nodalgrid)
-  USE picsar_precision, ONLY: idp, num, lp
+  USE picsar_precision, ONLY: idp, lp, num
   INTEGER(idp) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, norderx,      &
   nordery, norderz
   REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
@@ -200,7 +200,7 @@ END SUBROUTINE pxrpush_em2d_evec_norder
 ! ________________________________________________________________________________________
 !> @brief
 !> Push electric field Yee 2D order 2
-!> This subroutine is general enough to be called by AMReX.
+!> This SUBROUTINE is general enough to be called by AMReX.
 !> OMP pragmas are ignored when compiled for WarpX.
 !
 !> @author
@@ -213,7 +213,7 @@ END SUBROUTINE pxrpush_em2d_evec_norder
 !> @date
 !> Creation 2015
 ! ________________________________________________________________________________________
-subroutine pxrpush_em2d_evec( &
+SUBROUTINE pxrpush_em2d_evec( &
      xlo, xhi, ylo, yhi, zlo, zhi, &
      ex, exlo, exhi, &
      ey, eylo, eyhi, &
@@ -225,7 +225,7 @@ subroutine pxrpush_em2d_evec( &
      jy, jylo, jyhi, &
      jz, jzlo, jzhi, &
      mudt, dtsdx, dtsdy, dtsdz)
-     USE picsar_precision, ONLY: idp, num, isp
+     USE picsar_precision, ONLY: idp, isp, num
 
 
 #ifdef WARPX
@@ -307,12 +307,12 @@ subroutine pxrpush_em2d_evec( &
   !$OMP END PARALLEL
 #endif
 
-end subroutine pxrpush_em2d_evec
+END SUBROUTINE pxrpush_em2d_evec
 
 ! ________________________________________________________________________________________
 !> @brief
 !> Push electric field Yee 3D order 2
-!> This subroutine is general enough to be called by AMReX.
+!> This SUBROUTINE is general enough to be called by AMReX.
 !> OMP pragmas are ignored when compiled for WarpX.
 !
 !> @author
@@ -325,7 +325,7 @@ end subroutine pxrpush_em2d_evec
 !> @date
 !> Creation 2015
 ! ________________________________________________________________________________________
-subroutine pxrpush_em3d_evec( &
+SUBROUTINE pxrpush_em3d_evec( &
      xlo, xhi, ylo, yhi, zlo, zhi, &
      ex,exlo,exhi,&
      ey,eylo, eyhi, &
@@ -337,7 +337,7 @@ subroutine pxrpush_em3d_evec( &
      jy, jylo, jyhi, &
      jz, jzlo, jzhi, &
      mudt, dtsdx,dtsdy,dtsdz)
-USE picsar_precision, ONLY: idp, num, isp
+USE picsar_precision, ONLY: idp, isp, num
 ! ______________________________________________________________________________
 
 
@@ -428,7 +428,7 @@ USE picsar_precision, ONLY: idp, num, isp
   !$OMP END PARALLEL
 #endif
 
-end subroutine pxrpush_em3d_evec
+END SUBROUTINE pxrpush_em3d_evec
 
 ! ________________________________________________________________________________________
 !> @brief
@@ -443,7 +443,7 @@ end subroutine pxrpush_em3d_evec
 SUBROUTINE pxrpush_em3d_bvec_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx,  &
   ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard, nxs, nys, nzs,          &
   l_nodalgrid)
-  USE picsar_precision, ONLY: idp, num, lp
+  USE picsar_precision, ONLY: idp, lp, num
   INTEGER(idp), INTENT(IN)    :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs,      &
   norderx, nordery, norderz
   REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
@@ -524,7 +524,7 @@ END SUBROUTINE pxrpush_em3d_bvec_norder
 SUBROUTINE pxrpush_em2d_bvec_norder(ex, ey, ez, bx, by, bz, dtsdx, dtsdy, dtsdz, nx,  &
   ny, nz, norderx, nordery, norderz, nxguard, nyguard, nzguard, nxs, nys, nzs,          &
   l_nodalgrid)
-  USE picsar_precision, ONLY: idp, num, lp
+  USE picsar_precision, ONLY: idp, lp, num
   INTEGER(idp) , INTENT(IN) :: nx, ny, nz, nxguard, nyguard, nzguard, nxs, nys, nzs, norderx,      &
   nordery, norderz
   REAL(num), INTENT(IN OUT), DIMENSION(-nxguard:nx+nxguard, -nyguard:ny+nyguard,      &
@@ -584,9 +584,9 @@ END SUBROUTINE pxrpush_em2d_bvec_norder
 
 ! ________________________________________________________________________________________
 !> @brief
-!> This subroutine pushes the magnetic field with the 2D Yee FDTD
+!> This SUBROUTINE pushes the magnetic field with the 2D Yee FDTD
 !> scheme (order 2).
-!> This subroutine is general enough to be called by AMReX.
+!> This SUBROUTINE is general enough to be called by AMReX.
 !> OMP pragmas are ignored when compiled for WarpX.
 !> regions.
 !
@@ -600,7 +600,7 @@ END SUBROUTINE pxrpush_em2d_bvec_norder
 !> @date
 !> Creation 2015
 ! ________________________________________________________________________________________
-subroutine pxrpush_em2d_bvec( &
+SUBROUTINE pxrpush_em2d_bvec( &
      xlo, xhi, ylo, yhi, zlo, zhi, &
      ex,exlo,exhi,&
      ey,eylo, eyhi, &
@@ -609,7 +609,7 @@ subroutine pxrpush_em2d_bvec( &
      by, bylo, byhi, &
      bz, bzlo, bzhi, &
      dtsdx,dtsdy,dtsdz)
-USE picsar_precision, ONLY: idp, num, isp
+USE picsar_precision, ONLY: idp, isp, num
 ! ______________________________________________________________________________
 
 
@@ -682,12 +682,12 @@ USE picsar_precision, ONLY: idp, num, isp
   !$OMP END DO
   !$OMP END PARALLEL
 #endif
-end subroutine pxrpush_em2d_bvec
+END SUBROUTINE pxrpush_em2d_bvec
 
 ! ________________________________________________________________________________________
 !> @brief
 !> Push magnetic field Yee 3D order 2
-!> This subroutine is general enough to be called by AMReX.
+!> This SUBROUTINE is general enough to be called by AMReX.
 !> OMP pragmas are ignored when compiled for WarpX.
 !
 !> @author
@@ -700,7 +700,7 @@ end subroutine pxrpush_em2d_bvec
 !> @date
 !> Creation 2015
 ! ________________________________________________________________________________________
-subroutine pxrpush_em3d_bvec( &
+SUBROUTINE pxrpush_em3d_bvec( &
      xlo, xhi, ylo, yhi, zlo, zhi, &
      ex,exlo,exhi,&
      ey,eylo, eyhi, &
@@ -709,7 +709,7 @@ subroutine pxrpush_em3d_bvec( &
      by, bylo, byhi, &
      bz, bzlo, bzhi, &
      dtsdx,dtsdy,dtsdz)
-USE picsar_precision, ONLY: idp, num, isp
+USE picsar_precision, ONLY: idp, isp, num
 ! ______________________________________________________________________________
 
 
@@ -789,7 +789,7 @@ USE picsar_precision, ONLY: idp, num, isp
   !$OMP END PARALLEL
 #endif
 
-end subroutine pxrpush_em3d_bvec
+END SUBROUTINE pxrpush_em3d_bvec
 
 
 
@@ -819,7 +819,7 @@ subroutine pxrpush_em2d_evec_f( &
      ez,ezlo, ezhi, &
      f, flo, fhi, &
      dtsdx, dtsdy, dtsdz)
-USE picsar_precision, ONLY: idp, num, isp
+USE picsar_precision, ONLY: idp, isp, num
 ! ______________________________________________________________________________
 
 
@@ -901,7 +901,7 @@ subroutine pxrpush_em3d_evec_f( &
      ez,ezlo, ezhi, &
      f, flo, fhi, &
      dtsdx,dtsdy,dtsdz)
-USE picsar_precision, ONLY: idp, num, isp
+USE picsar_precision, ONLY: idp, isp, num
 ! ______________________________________________________________________________
 
 
