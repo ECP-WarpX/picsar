@@ -118,8 +118,8 @@ void nonlin_breit_wheeler_engine::print_T_table(std::string file_name, bool relo
 void nonlin_breit_wheeler_engine::load_tables(std::string cumulative_distrib_tab_file, std::string rate_tab_file){
     cumulative_distrib_table.read_from_disk(cumulative_distrib_tab_file);
     T_table.read_from_disk(rate_tab_file);
-    cumulative_distrib_chi_ele_frac_v = cumulative_distrib_table.get_coords(1);
-    chi_ele_frac_v = T_table.get_coords(0);
+    chi_ele_frac_v = cumulative_distrib_table.get_coords(1);
+    cumulative_distrib_chi_ele_frac_v = std::vector<double>(chi_ele_frac_v.size());
     lookup_tables_flag = true;
 }
 

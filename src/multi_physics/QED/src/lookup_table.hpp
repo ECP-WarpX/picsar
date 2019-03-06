@@ -351,7 +351,10 @@ namespace picsar{
             left_pos[which_dim] = left_idx;
             right_pos[which_dim] = right_idx;
 
-            what = (raw_data[compute_index(left_pos)]*left_coeff + raw_data[compute_index(right_pos)]*right_coeff)/dist;
+            size_t i1 = compute_index(left_pos);
+            size_t i2 = compute_index(right_pos);
+
+            what = (raw_data[i1]*left_coeff + raw_data[i2]*right_coeff)/dist;
 
             return true;
         }
