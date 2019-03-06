@@ -231,8 +231,8 @@ USE sorting
           CALL pxrdepose_rho_on_grid
           CALL charge_bcs
         ENDIF
-      ENDIF
 #endif
+      ENDIF
 
 #if defined(SPECTRAL)
       IF (l_spectral) THEN
