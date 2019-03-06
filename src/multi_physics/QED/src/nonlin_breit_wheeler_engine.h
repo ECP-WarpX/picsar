@@ -15,7 +15,6 @@
 #include "quadrature.h"
 #include "lookup_table.hpp"
 
-
 namespace picsar{
   namespace multi_physics{
 
@@ -43,9 +42,12 @@ namespace picsar{
       void init_optical_depth_vector(std::vector<double>& opt_vec);
 
       double get_total_pair_production_rate(double gamma_phot, double chi_phot);
+      double extract_pair_chi(double chi_phot);
 
       void generate_tables(cumulative_distrib_params_list cum_params, prod_rate_params_list rate_params, std::ostream* diag = nullptr);
-      void print_cumulative_distrib_pair_table(std::string file_name);
+      void load_tables(std::string cumulative_distrib_tab_file, std::string rate_tab_file);
+      void print_cumulative_distrib_pair_table(std::string file_name, bool reloadable=true);
+      void print_T_table(std::string file_name, bool reloadable=true);
 
       bool has_lookup_tables();
     private:
@@ -63,6 +65,8 @@ namespace picsar{
 
         cumulative_distrib_params_list cumulative_distrib_params;
         lookup_table<2, double> cumulative_distrib_table;
+        std::vector<double> chi_ele_frac_v;
+        std::vector<double> cumulative_distrib_chi_ele_frac_v;
 
         prod_rate_params_list prod_rate_params;
         lookup_table<1, double> T_table;
@@ -74,10 +78,14 @@ namespace picsar{
         static double compute_cumulative_distrib_pair(double chi_phot, double chi_ele);
         double compute_dN_dt(double gamma_phot, double chi_phot);
 
+        double extract_pair_chi_table(double chi_phot);
+
         void generate_cumulative_distrib_pair_table(cumulative_distrib_params_list params, std::ostream* diag);
         void generate_TT_table(prod_rate_params_list params, std::ostream* diag);
 
         double compute_dN_dt_from_tables(double gamma_phot, double chi_phot);
+
+        double extract_from_cumulative(const std::vector<double>& x, const std::vector<double>& y);
 
     };
 

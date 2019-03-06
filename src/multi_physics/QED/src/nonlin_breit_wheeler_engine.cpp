@@ -13,7 +13,7 @@ nonlin_breit_wheeler_engine::nonlin_breit_wheeler_engine(int64_t seed, double _l
 }
 
 double nonlin_breit_wheeler_engine::get_optical_depth(){
-    return rng.get_exp_l1();
+    return rng.expl1();
 }
 
 void nonlin_breit_wheeler_engine::init_optical_depth_vector(std::vector<double>& opt_vec){
@@ -64,7 +64,8 @@ void nonlin_breit_wheeler_engine::generate_cumulative_distrib_pair_table(cumulat
     double chi_phot = params.chi_phot_low;
 
     std::vector<double> chi_phot_v(params.chi_phot_how_many);
-    std::vector<double> chi_ele_frac_v(params.chi_ele_frac_how_many);
+    chi_ele_frac_v = std::vector<double>(params.chi_ele_frac_how_many);
+    cumulative_distrib_chi_ele_frac_v = std::vector<double>(params.chi_ele_frac_how_many);
 
     generate(chi_phot_v.begin(), chi_phot_v.end(),
         [&chi_phot, params](){ double elem = chi_phot; chi_phot*=params.chi_phot_mul; return elem;}
@@ -78,9 +79,10 @@ void nonlin_breit_wheeler_engine::generate_cumulative_distrib_pair_table(cumulat
         *it = (tanh(ddd) + 1.0)*0.5;
     }
 
+    cumulative_distrib_table = lookup_table<2, double>{chi_phot_v, chi_ele_frac_v};
+
     cumulative_distrib_params = params;
 
-    cumulative_distrib_table = lookup_table<2, double>{chi_phot_v, chi_ele_frac_v};
     for(auto cpp: chi_phot_v){
         for(auto eef: chi_ele_frac_v){
             cumulative_distrib_table.fill_at(std::array<double,2>{cpp, eef}, compute_cumulative_distrib_pair(cpp, cpp*eef));
@@ -109,8 +111,17 @@ void nonlin_breit_wheeler_engine::generate_TT_table(prod_rate_params_list params
     message("    Generation of pair_prod_table: END", diag);
 }
 
-void nonlin_breit_wheeler_engine::print_cumulative_distrib_pair_table(std::string file_name){
-    cumulative_distrib_table.print_on_disk(file_name);
+void nonlin_breit_wheeler_engine::print_cumulative_distrib_pair_table(std::string file_name, bool reloadable){
+    cumulative_distrib_table.print_on_disk(file_name, reloadable);
+}
+
+void nonlin_breit_wheeler_engine::print_T_table(std::string file_name, bool reloadable){
+    T_table.print_on_disk(file_name, reloadable);
+}
+
+void nonlin_breit_wheeler_engine::load_tables(std::string cumulative_distrib_tab_file, std::string rate_tab_file){
+    cumulative_distrib_table.read_from_disk(cumulative_distrib_tab_file);
+    T_table.read_from_disk(rate_tab_file);
 }
 
 // In CODE UNITS
@@ -139,3 +150,36 @@ double nonlin_breit_wheeler_engine::compute_dN_dt_from_tables(double gamma_phot,
     else
         return compute_dN_dt(gamma_phot, chi_phot);
  }
+
+ double nonlin_breit_wheeler_engine::extract_pair_chi(double chi_phot){
+     if(lookup_tables_flag)
+        return extract_pair_chi_table(chi_phot);
+    else{
+        throw std::logic_error(std::string("Pair extraction without tables is not yet implemented"));
+    }
+}
+
+double nonlin_breit_wheeler_engine::extract_pair_chi_table(double chi_phot){
+    for(size_t i = 0; i < chi_ele_frac_v.size(); i++)
+        cumulative_distrib_table.interp_at_one_dim(0, chi_phot, {0, i}, cumulative_distrib_chi_ele_frac_v[i]);
+    return chi_phot*extract_from_cumulative(chi_ele_frac_v, cumulative_distrib_chi_ele_frac_v);
+}
+
+double nonlin_breit_wheeler_engine::extract_from_cumulative(const std::vector<double>& x, const std::vector<double>& y){
+    double randnum = rng.unf(0,1);
+    auto right = std::upper_bound(y.begin(),  y.end(), randnum);
+
+    if(right == y.begin())
+        return x.front();
+    if(right == y.end())
+        return x.back();
+
+    auto left = right - 1;
+    double yl = *left;
+    double yr = *right;
+    double xl = x[std::distance(y.begin(), left)];
+    double xr = x[std::distance(y.begin(), right)];
+
+    return ( (yr - randnum)*xl + (randnum - yl)*xr  )/(yr - yl);
+
+}

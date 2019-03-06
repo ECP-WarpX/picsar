@@ -41,7 +41,8 @@ namespace picsar{
             size_t get_data_size();
             std::vector<DATA_TYPE> get_coords(size_t dim);
 
-            void print_on_disk(std::string file_name);
+            void print_on_disk(std::string file_name, bool reloadable);
+            void read_from_disk(std::string file_name);
 
         private:
             std::array<std::vector<DATA_TYPE>, DIM> coords;
@@ -196,30 +197,81 @@ namespace picsar{
         }
 
         template<size_t DIM, typename DATA_TYPE>
-        void lookup_table<DIM, DATA_TYPE>::print_on_disk(std::string file_name){
+        void lookup_table<DIM, DATA_TYPE>::print_on_disk(std::string file_name, bool reloadable){
             std::ofstream of;
             of.open(file_name.c_str());
 
-            std::array<size_t, DIM> base_vec;
+            if(!reloadable){
 
-            size_t m = 1;
-            for(auto it = base_vec.rbegin(); it != base_vec.rend();  it++){
-                *it = m;
-                m *= coords[ std::distance(base_vec.begin(),it.base())-1].size();
-            }
+                std::array<size_t, DIM> base_vec;
 
-            for(auto raw = raw_data.begin(); raw != raw_data.end(); raw++){
-                size_t indx = std::distance(raw_data.begin(), raw);
-                for(auto c_list = coords.begin(); c_list != coords.end(); c_list++){
-                    auto c_index = std::distance(coords.begin(), c_list);
-                    auto cc_index = indx/base_vec[c_index];
-                    of << (*c_list)[cc_index] << " " ;
-                    indx -= cc_index*base_vec[c_index];
+                size_t m = 1;
+                for(auto it = base_vec.rbegin(); it != base_vec.rend();  it++){
+                    *it = m;
+                    m *= coords[ std::distance(base_vec.begin(),it.base())-1].size();
                 }
-                of << *raw << std::endl;
+
+                for(auto raw = raw_data.begin(); raw != raw_data.end(); raw++){
+                    size_t indx = std::distance(raw_data.begin(), raw);
+                    for(auto c_list = coords.begin(); c_list != coords.end(); c_list++){
+                        auto c_index = std::distance(coords.begin(), c_list);
+                        auto cc_index = indx/base_vec[c_index];
+                        of << (*c_list)[cc_index] << " " ;
+                        indx -= cc_index*base_vec[c_index];
+                    }
+                    of << *raw << std::endl;
+                }
+            }
+            else{
+                of << DIM << std::endl;
+                for(auto& cc: coords){
+                    of << cc.size() << std::endl;
+                    for(auto ee: cc){
+                        of << ee << " ";
+                    }
+                    of << std::endl;
+                }
+                for (auto dd: raw_data){
+                    of << dd << " ";
+                }
+                of << std::endl;
             }
 
             of.close();
+        }
+
+        template<size_t DIM, typename DATA_TYPE>
+        void lookup_table<DIM, DATA_TYPE>::read_from_disk(std::string file_name){
+            std::ifstream ifile;
+            ifile.open(file_name.c_str());
+
+            size_t dim;
+            ifile >> dim;
+            if(dim != DIM)
+                throw std::logic_error(std::string("Wrong file!"));
+
+            size_t totsize = 1;
+            for(size_t idim = 0; idim < DIM; idim++){
+                size_t dimsize;
+                ifile >> dimsize;
+                totsize *= dimsize;
+                coords[idim].resize(dimsize);
+                for(size_t icc = 0; icc < dimsize; icc++){
+                    DATA_TYPE dummy;
+                    ifile >> dummy;
+                    coords[idim][icc] = dummy;
+                }
+
+            }
+
+            raw_data.resize(totsize);
+            for(size_t iraw = 0; iraw < totsize; iraw++){
+                DATA_TYPE dummy;
+                ifile >> dummy;
+                raw_data[iraw] = dummy;
+            }
+
+            ifile.close();
         }
 
         template<size_t DIM, typename DATA_TYPE>
@@ -261,11 +313,11 @@ namespace picsar{
                 DATA_TYPE temp_mul = 1.0;
                 for(size_t dim = 0; dim < DIM; dim++){
                     if(idx & (1 << dim)){
-                        temp_mul *= (right_coord[dim] - where[dim]);
+                        temp_mul *= (where[dim] - left_coord[dim]);
                         pos[dim] = right_idx[dim];
                     }
                     else{
-                        temp_mul *= (where[dim] - left_coord[dim]);
+                        temp_mul *= (right_coord[dim] - where[dim]);
                         pos[dim] = left_idx[dim];
                     }
                 }
@@ -290,10 +342,10 @@ namespace picsar{
             size_t left_idx = std::distance(coords[which_dim].begin(), left);
             size_t right_idx = std::distance(coords[which_dim].begin(), right);
 
-            double left_coeff = (where - left_coord);
-            double right_coeff = (right_coord - where);
-            std::array<size_t, DIM>& left_pos = pos;
-            std::array<size_t, DIM>& right_pos = pos;
+            double left_coeff = (right_coord - where);
+            double right_coeff = (where - left_coord);
+            std::array<size_t, DIM> left_pos = pos;
+            std::array<size_t, DIM> right_pos = pos;
             left_pos[which_dim] = left_idx;
             right_pos[which_dim] = right_idx;
 

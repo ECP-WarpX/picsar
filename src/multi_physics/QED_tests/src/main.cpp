@@ -81,9 +81,9 @@ void test_individual_functions(){
     cout << "********************Test RNG ****************************************" << endl;
     picsar::multi_physics::rng_wrapper rngw{seed};
     cout << "3 random numbers in [0, 1):    ";
-    cout << rngw.get_unf_0_1() << " " <<  rngw.get_unf_0_1() << " " << rngw.get_unf_0_1() << endl;
+    cout << rngw.unf(0,1) << " " <<  rngw.unf(0,1) << " " << rngw.unf(0,1) << endl;
     cout << "3 random numbers from exponential distributions:       ";
-    cout << rngw.get_exp_l1() << " " <<  rngw.get_exp_l1() << " " << rngw.get_exp_l1() << endl;
+    cout << rngw.expl1() << " " <<  rngw.expl1() << " " << rngw.expl1() << endl;
     cout << "*********************************************************************" << endl;
     cout << endl;
 
@@ -150,11 +150,14 @@ void test_individual_functions(){
 
     breit_wheeler_engine.generate_tables(cum_params, prod_params, &cout);
 
+    cout << breit_wheeler_engine.extract_pair_chi(10.0) << endl;
 
     cout << "********************Now I will write the table on disk *********************************" << endl;
     breit_wheeler_engine.print_cumulative_distrib_pair_table("table.dat");
     cout << "*********************************************************************" << endl;
     cout << endl;
+
+
 
 
 
@@ -247,17 +250,22 @@ void test_BW(){
     picsar::multi_physics::nonlin_breit_wheeler_engine bw_engine{seed_BW, lambda};
     picsar::multi_physics::cumulative_distrib_params_list cum_params;
     cum_params.chi_phot_low = 0.01;
-    cum_params.chi_phot_how_many = 2;
-    cum_params.chi_phot_mul = 1.025;
-    cum_params.chi_ele_frac_min = 0.001;
-    cum_params.chi_ele_frac_how_many = 2;
+    cum_params.chi_phot_how_many = 130;
+    cum_params.chi_phot_mul = 1.08;
+    cum_params.chi_ele_frac_min = 0.0001;
+    cum_params.chi_ele_frac_how_many = 40;
 
     picsar::multi_physics::prod_rate_params_list prod_params;
     prod_params.chi_phot_low = 0.01;
-    prod_params.chi_phot_how_many = 150;
+    prod_params.chi_phot_how_many = 130;
     prod_params.chi_phot_mul = 1.08;
 
     bw_engine.generate_tables(cum_params, prod_params, &cout);
+    bw_engine.print_cumulative_distrib_pair_table("cuml.hmn",false);
+    bw_engine.print_T_table("tfunc.hmn",false);
+    bw_engine.print_cumulative_distrib_pair_table("cuml.tab");
+    bw_engine.print_T_table("tfunc.tab");
+
 
     //Init some photons
     auto ptr_phot1 = make_shared<photons>("phot1");
@@ -265,9 +273,9 @@ void test_BW(){
     const int64_t seed_photons = 123043949938;
     picsar::multi_physics::rng_wrapper rngp{seed_photons};
     for(size_t i = 0; i < how_many_phot; i++){
-        double mom = rngp.get_unf(8000,12000);
-        double theta = rngp.get_unf(0,2.0*M_PI);
-        double phi = acos(rngp.get_unf(-1.0,1.0));
+        double mom = rngp.unf(8000,12000);
+        double theta = rngp.unf(0,2.0*M_PI);
+        double phi = acos(rngp.unf(-1.0,1.0));
 
         ptr_phot1->add_particle({0,0,0},{mom*sin(phi)*cos(theta), mom*sin(phi)*sin(theta) , mom*cos(phi)});
     }
@@ -311,18 +319,30 @@ void test_BW(){
 
     //Create EMPTY electron and positron species, using LL
     auto ptr_ele1 = make_shared<electrons>("ele1");
-    ptr_ele1->replace_pusher_momenta(pusher);
+    //ptr_ele1->replace_pusher_momenta(pusher);
     auto ptr_pos1 = make_shared<positrons>("pos1");
-    ptr_pos1->replace_pusher_momenta(pusher);
+    //ptr_pos1->replace_pusher_momenta(pusher);
 
     //add_process_with_destruction
     auto BW_pair_prod=
     [&bw_engine, lambda, ptr_ele1, ptr_pos1](const position& pos, const momentum& mom,
        const em_field& field, const ooptical_depth& opt, double mass, double charge, ttime dt)->bool{
            if(opt < 0.0){
-               cout << "a new pair!!" << endl;
-               ptr_ele1->add_particle({0,0,0},{0,0,0});
-               ptr_pos1->add_particle({0,0,0},{0,0,0});
+               double gamma_phot = sqrt(mom[0]*mom[0] + mom[1]*mom[1] + mom[2]*mom[2]);
+               if (gamma_phot > 2.0){
+                   double inv_gamma_phot = 1.0/gamma_phot;
+                   double chi_phot = picsar::multi_physics::chi_photon_lambda(mom, field, lambda);
+                   double chi_ele = bw_engine.extract_pair_chi(chi_phot);
+                   double chi_pos = chi_phot - chi_ele;                   //WHY?!
+                   double temp = (gamma_phot-2.0)/chi_phot;
+                   double coeff_ele = sqrt((1.+chi_ele*temp)*(1.+chi_ele*temp)-1.)*inv_gamma_phot;
+                   double coeff_pos = sqrt((1.+chi_pos*temp)*(1.+chi_pos*temp)-1.)*inv_gamma_phot;
+                   //?!
+                   momentum mom_ele{mom[0]*coeff_ele, mom[1]*coeff_ele, mom[2]*coeff_ele};
+                   momentum mom_pos{mom[0]*coeff_pos, mom[1]*coeff_pos, mom[2]*coeff_pos};
+                   ptr_ele1->add_particle(pos, mom_ele);
+                   ptr_pos1->add_particle(pos, mom_pos);
+               }
                return true;
            }
            return false;
@@ -336,7 +356,7 @@ void test_BW(){
     // Main loop
     for (int i = 0; i < num_steps; i++){
         for (auto& sp : specs)
-            sp->calc_fields([](position, double){return em_field{0.0, 0.0, 0.0, 0.0, 0.0, 2000.0};}, i*dt);
+            sp->calc_fields([](position, double){return em_field{0.0, 0.0, 2000.0, 0.0, 0.0, 0.0};}, i*dt);
 
         for (auto& sp : specs)
             sp->push_momenta(dt);
@@ -418,6 +438,17 @@ void test_lookup(){
             cout << "Res: " << val << endl;
         else
             cout << "Failed!!" << endl;
+
+    cout <<  "Interpolation test!" << endl;
+    for(size_t i = 0; i < c3.size(); i++){
+            if(table.interp_at_one_dim(1, 0.9, {i,2,2}, val)){
+                cout << val << endl;
+            }
+            else{
+                cout << "Failed!!" << endl;
+            }
+    }
+
 
 
     cout << "*********************************************************************" << endl;
