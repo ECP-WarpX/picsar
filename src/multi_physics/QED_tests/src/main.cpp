@@ -260,12 +260,13 @@ void test_BW(){
     prod_params.chi_phot_how_many = 130;
     prod_params.chi_phot_mul = 1.08;
 
-    bw_engine.generate_tables(cum_params, prod_params, &cout);
+    /*bw_engine.generate_tables(cum_params, prod_params, &cout);
     bw_engine.print_cumulative_distrib_pair_table("cuml.hmn",false);
     bw_engine.print_T_table("tfunc.hmn",false);
     bw_engine.print_cumulative_distrib_pair_table("cuml.tab");
     bw_engine.print_T_table("tfunc.tab");
-
+    */
+    bw_engine.load_tables("cuml.tab", "tfunc.tab");
 
     //Init some photons
     auto ptr_phot1 = make_shared<photons>("phot1");
@@ -317,11 +318,22 @@ void test_BW(){
         mass, charge, dt, lambda);
     };
 
+    //Create "immobile pusher"
+    //auto do_nothing =
+    //[lambda](momenta_list& mom, const em_field_list& ,  double , double , double )->void{
+    //    for(size_t im = 0; im < mom[0].size(); im++){
+    //        mom[0][im] = 0.0;
+    //        mom[1][im] = 0.0;
+    //        mom[2][im] = 0.0;
+    //    }
+    //    return;
+    //};
+
     //Create EMPTY electron and positron species, using LL
     auto ptr_ele1 = make_shared<electrons>("ele1");
-    //ptr_ele1->replace_pusher_momenta(pusher);
+    //ptr_ele1->replace_pusher_momenta(do_nothing);
     auto ptr_pos1 = make_shared<positrons>("pos1");
-    //ptr_pos1->replace_pusher_momenta(pusher);
+    //ptr_pos1->replace_pusher_momenta(do_nothing);
 
     //add_process_with_destruction
     auto BW_pair_prod=
@@ -407,14 +419,6 @@ void test_lookup(){
     for(auto cc1: c1){
         for(auto cc2: c2){
             for(auto cc3: c3){
-                table.fill_at(std::array<double,3>{cc1, cc2, cc3}, cc1 + cc2 + cc3);
-            }
-        }
-    }
-
-    for(auto cc1: c1){
-        for(auto cc2: c2){
-            for(auto cc3: c3){
                 double val;
                 table.get_at(std::array<double,3>{cc1, cc2, cc3}, val);
                 cout << cc1 << ", " << cc2 << ", "  << cc3 << " --> " ;
@@ -447,6 +451,28 @@ void test_lookup(){
             else{
                 cout << "Failed!!" << endl;
             }
+    }
+
+    cout <<  "read_from_disk test!" << endl;
+    table.print_on_disk("temp.dat",true);
+    picsar::multi_physics::lookup_table<3, double> table2;
+    table2.read_from_disk("temp.dat");
+
+    for (int i = 0; i < 3; i++){
+        for(auto cc: table2.get_coords(i))
+            cout << cc << " ";
+        cout << endl;
+    }
+
+    for(auto cc1: c1){
+        for(auto cc2: c2){
+            for(auto cc3: c3){
+                double val;
+                table2.get_at(std::array<double,3>{cc1, cc2, cc3}, val);
+                cout << cc1 << ", " << cc2 << ", "  << cc3 << " --> " ;
+                cout << val << endl;
+            }
+        }
     }
 
 

@@ -271,6 +271,8 @@ namespace picsar{
                 raw_data[iraw] = dummy;
             }
 
+            total_size = totsize;
+
             ifile.close();
         }
 

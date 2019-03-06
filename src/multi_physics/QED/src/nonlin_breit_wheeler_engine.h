@@ -63,12 +63,12 @@ namespace picsar{
 
         bool lookup_tables_flag = false;
 
-        cumulative_distrib_params_list cumulative_distrib_params;
+        //cumulative_distrib_params_list cumulative_distrib_params;
         lookup_table<2, double> cumulative_distrib_table;
         std::vector<double> chi_ele_frac_v;
         std::vector<double> cumulative_distrib_chi_ele_frac_v;
 
-        prod_rate_params_list prod_rate_params;
+        //prod_rate_params_list prod_rate_params;
         lookup_table<1, double> T_table;
 
         static double compute_x(double chi_phot, double chi_ele);

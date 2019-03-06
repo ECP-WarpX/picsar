@@ -81,8 +81,6 @@ void nonlin_breit_wheeler_engine::generate_cumulative_distrib_pair_table(cumulat
 
     cumulative_distrib_table = lookup_table<2, double>{chi_phot_v, chi_ele_frac_v};
 
-    cumulative_distrib_params = params;
-
     for(auto cpp: chi_phot_v){
         for(auto eef: chi_ele_frac_v){
             cumulative_distrib_table.fill_at(std::array<double,2>{cpp, eef}, compute_cumulative_distrib_pair(cpp, cpp*eef));
@@ -99,8 +97,6 @@ void nonlin_breit_wheeler_engine::generate_TT_table(prod_rate_params_list params
     generate(chi_phot_v.begin(), chi_phot_v.end(),
         [&chi_phot, params](){ double elem = chi_phot; chi_phot*=params.chi_phot_mul; return elem;}
     );
-
-    prod_rate_params = params;
 
     T_table = lookup_table<1, double>{chi_phot_v};
     for(auto cpp: chi_phot_v){
@@ -122,6 +118,9 @@ void nonlin_breit_wheeler_engine::print_T_table(std::string file_name, bool relo
 void nonlin_breit_wheeler_engine::load_tables(std::string cumulative_distrib_tab_file, std::string rate_tab_file){
     cumulative_distrib_table.read_from_disk(cumulative_distrib_tab_file);
     T_table.read_from_disk(rate_tab_file);
+    cumulative_distrib_chi_ele_frac_v = cumulative_distrib_table.get_coords(1);
+    chi_ele_frac_v = T_table.get_coords(0);
+    lookup_tables_flag = true;
 }
 
 // In CODE UNITS
