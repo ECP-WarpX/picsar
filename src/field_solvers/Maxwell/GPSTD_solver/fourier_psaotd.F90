@@ -59,9 +59,9 @@ MODULE fourier_psaotd
   SUBROUTINE init_plans_fourier_mpi(nopenmp)
 #if defined(CUDA_FFT)
     USE cufft
+    USE fourier, ONLY: plan_c2r_cuda, plan_r2c_cuda
 #endif
     USE fields, ONLY: ex_r, exf, exy_r, nxguards, nyguards, nzguards
-    USE fourier, ONLY: plan_c2r_cuda, plan_r2c_cuda
     USE group_parameters, ONLY: mpi_comm_group_id, nx_group, ny_group, nz_group
     USE iso_c_binding
     USE mpi
@@ -93,7 +93,7 @@ MODULE fourier_psaotd
             err_cu_c2r=CUFFTPLAN2D(plan_c2r_cuda,INT(nfftz,isp),INT(nfftx,isp),CUFFT_Z2D)
           ENDIF
           !$acc end host_data
-#else ifdef (FFTW)
+#elif defined(FFTW)
     nopenmp_cint=nopenmp
     IF(.NOT. p3dfft_flag) THEN
       IF  (fftw_threads_ok) THEN
@@ -1796,8 +1796,8 @@ MODULE fourier_psaotd
     ELSE IF(absorbing_bcs) THEN
 #if !defined(CUDA_FFT)
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ix, iy, iz,jxfold,jyfold, &
-    !$OMP jzfold,rhofold,rhooldfold  , exyfold,exzfold,  eyxfold,eyzfold, &
-    !$OMP ezxfold,ezyfold,bxyfold,bxzfold,byxfold, byzfold,bzxfold,bzyfold)
+    !$OMP jzfold,rhofold,rhooldfold, exyfold,exzfold,  eyxfold,eyzfold, &
+    !$OMP ezxfold,ezyfold,bxyfold,bxzfold,byxfold, byzfold,bzxfold,bzyfold) &
     !$OMP COLLAPSE(2)
 #else
     !$acc parallel present(exyf,exzf,eyxf,eyzf,ezxf,ezyf,bxyf , &
@@ -2238,13 +2238,14 @@ MODULE fourier_psaotd
   SUBROUTINE init_plans_blocks()
 #if defined(CUDA_FFT)
     USE cufft
+    USE fourier, ONLY: plan_c2r_cuda, plan_r2c_cuda
 #endif
     USE fastfft
 #if defined(FFTW)
     USE fftw3_fortran, ONLY: fftw_backward, fftw_forward, fftw_measure
 #endif
     USE fields, ONLY: ex_r, exf, exy_r, g_spectral, nxguards, nyguards, nzguards
-    USE fourier, ONLY: plan_c2r, plan_c2r_cuda, plan_r2c, plan_r2c_cuda
+    USE fourier, ONLY: plan_c2r, plan_r2c
     USE iso_c_binding
     USE omp_lib
     USE picsar_precision, ONLY: idp, isp
