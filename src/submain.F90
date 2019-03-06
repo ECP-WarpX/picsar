@@ -233,14 +233,14 @@ USE sorting
           CALL pxrdepose_rho_on_grid
           CALL charge_bcs
         ENDIF
-      ENDIF
 #endif
+      ENDIF
 
 #if defined(SPECTRAL)
       IF (l_spectral) THEN
         !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
    !     CALL harris_pulse(dt*i,0*pi/4._num,10_idp)
-     
+
         CALL push_psatd_ebfield
         !IF (rank .EQ. 0) PRINT *, "#0"
         !!! --- Boundary conditions for E AND B
@@ -320,7 +320,7 @@ USE sorting
 END SUBROUTINE step
 ! ________________________________________________________________________________________
 !> @brief
-!> init pml arrays 
+!> init pml arrays
 !
 !> @author
 !> Haithem Kallala
@@ -332,17 +332,17 @@ SUBROUTINE init_pml_arrays
   USE field_boundary
   USE fields
   USE shared_data
-  USE constants  
-  USE params, ONLY : dt 
+  USE constants
+  USE params, ONLY : dt
   USE mpi
   USE mpi_derived_types
 
   LOGICAL(lp)  :: is_intersection_x, is_intersection_y, is_intersection_z
   INTEGER(idp) :: ix,iy,iz,pow
   REAL(num)    :: coeff,b_offset, e_offset
-  INTEGER(idp) :: type_id  
+  INTEGER(idp) :: type_id
   REAL(num)    , ALLOCATABLE, DIMENSION(:) :: temp
-  INTEGER(idp) :: cx, cy, cz 
+  INTEGER(idp) :: cx, cy, cz
 
   coeff = 4._num/25._num
   b_offset = .50_num
@@ -351,11 +351,11 @@ SUBROUTINE init_pml_arrays
 
   !> Inits pml arrays of the same size as ex fields in the daming direction!
   !> sigmas are 1d arrray to economize memory
-  
+
   !> Pml arrays are initializd to 0.0_num because exp(0.0_num) = 1.0!
   !> So in case of no pml region inside the mpi domain, pml acts as vaccum
 
-  !> first each proc allocates sigma as a 1d array of size n_global + 2*ng 
+  !> first each proc allocates sigma as a 1d array of size n_global + 2*ng
   !> then each proc will compute sigma in the whole domain and will then extract
   !> the relevent part for its subdomain
   !> Note that a pml region can overlap many procs even with local psatd !
@@ -376,11 +376,11 @@ SUBROUTINE init_pml_arrays
   sigma_z_e = 0.0_num
   ALLOCATE(sigma_z_b(-nzguards:nz_global+nzguards-1));
   sigma_z_b = 0.0_num
-  
+
   !> Inits sigma_x_e and sigma_x_b in the lower bound of the domain along x
   !> axis
   !> first, each proc will compute sigma in the whole domain
-    
+
   cx = nxguards - shift_x_pml
   cy = nyguards - shift_y_pml
   cz = nzguards - shift_z_pml
@@ -402,17 +402,17 @@ SUBROUTINE init_pml_arrays
     sigma_x_b(ix-1+cx) = coeff*clight/dx *(ix-(nx_global-nx_pml-1)+b_offset-1)**pow
   ENDDO
 
-  !> Each proc extracts the relevent part of sigma 
-  ALLOCATE(temp(-nxguards:nx_global+nxguards)) 
+  !> Each proc extracts the relevent part of sigma
+  ALLOCATE(temp(-nxguards:nx_global+nxguards))
   temp = sigma_x_e
   DEALLOCATE(sigma_x_e); ALLOCATE(sigma_x_e(-nxguards:nx+nxguards-1))
   sigma_x_e = temp(cell_x_min(x_coords+1)-nxguards:cell_x_max(x_coords+1)+nxguards)
- 
+
   temp = sigma_x_b
   DEALLOCATE(sigma_x_b); ALLOCATE(sigma_x_b(-nxguards:nx+nxguards-1))
   sigma_x_b = temp(cell_x_min(x_coords+1)-nxguards:cell_x_max(x_coords+1)+nxguards)
   DEALLOCATE(temp)
-  IF(c_dim == 3) THEN 
+  IF(c_dim == 3) THEN
     ! > Inits sigma_y_e and sigma_y_b in the lower bound of the domain along y
     !> axis
     !> first, each proc will compute sigma in the whole domain
@@ -420,7 +420,7 @@ SUBROUTINE init_pml_arrays
       sigma_y_e(iy-cy) =  coeff*clight/dy*(ny_pml-iy-e_offset)**pow
       sigma_y_b(iy-cy) =  coeff*clight/dy*(ny_pml-iy-b_offset)**pow
     ENDDO
-  
+
     ! > Inits sigma_y_e and sigma_y_b in the upper bound of the domain along y
     !> axis
     !> first, each proc will compute sigma in the whole domain
@@ -428,9 +428,9 @@ SUBROUTINE init_pml_arrays
       sigma_y_e(iy+cy) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+e_offset)**pow
       sigma_y_b(iy-1+cy) = coeff*clight/dy*(iy-(ny_global-ny_pml-1)+b_offset-1)**pow
     ENDDO
-    
-    !> Each proc extracts the relevent part of sigma 
-    ALLOCATE(temp(-nyguards:ny_global+nyguards)) 
+
+    !> Each proc extracts the relevent part of sigma
+    ALLOCATE(temp(-nyguards:ny_global+nyguards))
     temp = sigma_y_e
     DEALLOCATE(sigma_y_e); ALLOCATE(sigma_y_e(-nyguards:ny+nyguards-1))
     sigma_y_e = temp(cell_y_min(y_coords+1)-nyguards:cell_y_max(y_coords+1)+nyguards)
@@ -452,30 +452,30 @@ SUBROUTINE init_pml_arrays
   !> axis
   !> first, each proc will compute sigma in the whole domain
   !> Need more straightforward way to do this
-  DO iz =  nz_global-nz_pml,nz_global-1 
+  DO iz =  nz_global-nz_pml,nz_global-1
      sigma_z_e(iz+cz) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+e_offset)**pow
      sigma_z_b(iz-1+cz) = coeff*clight/dz*(iz-(nz_global-nz_pml-1)+b_offset-1)**pow
   ENDDO
 
-  !> Each proc extracts the relevent part of sigma 
+  !> Each proc extracts the relevent part of sigma
   ALLOCATE(temp(-nzguards:nz_global+nzguards))
   temp = sigma_z_e
   DEALLOCATE(sigma_z_e); ALLOCATE(sigma_z_e(-nzguards:nz+nzguards-1))
   sigma_z_e = temp(cell_z_min(z_coords+1)-nzguards:cell_z_max(z_coords+1)+nzguards)
 
-  temp = sigma_z_b 
+  temp = sigma_z_b
   DEALLOCATE(sigma_z_b); ALLOCATE(sigma_z_b(-nzguards:nz+nzguards-1))
   sigma_z_b = temp(cell_z_min(z_coords+1)-nzguards:cell_z_max(z_coords+1)+nzguards)
   DEALLOCATE(temp)
- 
-  !> sigma=exp(-sigma*dt) 
+
+  !> sigma=exp(-sigma*dt)
   !> Uses an exact formulation to damp fields :
   !> dE/dt = -sigma * E => E(n)=exp(-sigma*dt)*E(n-1)
   !> Note that fdtd pml solving requires field time centering
-  IF(absorbing_bcs_x) THEN 
+  IF(absorbing_bcs_x) THEN
     sigma_x_e = EXP(-sigma_x_e*dt)
     sigma_x_b = EXP(-sigma_x_b*dt)
-  ELSE 
+  ELSE
     sigma_x_e = 1.0_num
     sigma_x_b = 1.0_num
   ENDIF
@@ -485,11 +485,11 @@ SUBROUTINE init_pml_arrays
   ELSE
     sigma_y_e = 1.0_num
     sigma_y_b = 1.0_num
-  ENDIF  
+  ENDIF
   IF(absorbing_bcs_z) THEN
     sigma_z_e = EXP(-sigma_z_e*dt)
     sigma_z_b = EXP(-sigma_z_b*dt)
-  ELSE 
+  ELSE
     sigma_z_e = 1.0_num
     sigma_z_b = 1.0_num
   ENDIF
@@ -561,8 +561,8 @@ SUBROUTINE initall
     ymax = 0_idp
     ny = 1_idp
     nyguards = 0_idp
-    ymin = -HUGE(1.0_num) 
-    ymax = HUGE(1.0_num) 
+    ymin = -HUGE(1.0_num)
+    ymax = HUGE(1.0_num)
     y_min_local = -HUGE(1.0_num)
     y_max_local = HUGE(1.0_num)
     cell_y_min = 0_idp
@@ -587,7 +587,7 @@ SUBROUTINE initall
       dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dy**2+1.0_num/dz**2))
     ENDIF
   ELSE IF (c_dim.eq.2) THEN
-    IF (l_spectral) THEN 
+    IF (l_spectral) THEN
       dt=MIN(dx,dz)/clight
     ELSE
       dt = dtcoef/(clight*sqrt(1.0_num/dx**2+1.0_num/dz**2))
@@ -685,7 +685,7 @@ SUBROUTINE initall
     WRITE(0, *) ''
     IF(absorbing_bcs_x) THEN
        WRITE(0, '(" Absorbing field bcs X axis, nx_pml =:", I5)')  nx_pml
-    ELSE 
+    ELSE
        WRITE(0, '(" Periodic field bcs X axis")')
     ENDIF
     IF(absorbing_bcs_y) THEN
@@ -848,7 +848,7 @@ END SUBROUTINE init_splitted_fields_random
 
 ! ________________________________________________________________________________________
 !> @brief
-!> Subroutine that computes total memory consumption (particle/grid tile structures and 
+!> Subroutine that computes total memory consumption (particle/grid tile structures and
 !> regular grid arrays used in the Maxwell solver)
 !
 !> @author
@@ -863,7 +863,7 @@ SUBROUTINE estimate_total_memory_consumption
   USE mpi_routines
   USE picsar_precision, ONLY: num
   USE tiling
-  IMPLICIT NONE 
+  IMPLICIT NONE
   REAL(num) :: total_memory=0._num, avg_per_mpi=0._num
   ! - Get local/global memory occupied by tile arrays (grid and particles)
   CALL get_local_tile_mem()
@@ -873,8 +873,8 @@ SUBROUTINE estimate_total_memory_consumption
   CALL get_local_grid_mem()
   CALL get_global_grid_mem()
 
-  ! - Output results on standard output 
-  IF (rank .EQ. 0) THEN 
+  ! - Output results on standard output
+  IF (rank .EQ. 0) THEN
     total_memory=global_grid_mem+global_grid_tiles_mem+global_part_tiles_mem
     avg_per_mpi=total_memory/nproc
     WRITE(0, *) 'Total memory (GB) for grid arrays ', global_grid_mem/1e9
@@ -882,7 +882,7 @@ SUBROUTINE estimate_total_memory_consumption
     WRITE(0, *) 'Total memory (GB) for particle tile arrays ', global_part_tiles_mem/1e9
     WRITE(0, *) 'Total memory (GB)', total_memory/1e9
     WRITE(0, *) 'Avg memory (GB) /MPI process ', avg_per_mpi/1e9
-  ENDIF 
+  ENDIF
 END SUBROUTINE estimate_total_memory_consumption
 
 
@@ -1081,7 +1081,7 @@ w_num = w_num *clight**2*dt**2
 w_num = asin(sqrt(w_num))
 w_num = w_num *2._num/dt
 w_num  = w_num/cos(thetaa)
-!$acc parallel loop present(jy) 
+!$acc parallel loop present(jy)
 do i = -nzguards,nz+nzguards
 jy(nx/2,:,i) =sin(w_num*t +  k*dz *i*sin(thetaa)+k*dx*cos(thetaa))*arg/mu0
 enddo
