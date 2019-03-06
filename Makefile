@@ -39,6 +39,7 @@ SYS=default
 # - ivy
 # - hsw
 # - host
+# - GPU
 ARCH=
 
 
@@ -51,15 +52,16 @@ CC=mpicc
 FARGS= -g -fbounds-check -O3 -fopenmp -JModules
 
 # External libs
-FFTW3_LIB=/usr/lib/x86_64-linux-gnu
-FFTW3_INCLUDE=/usr/include
+FFTW3_LIB=$(FFTW_HOME)/lib
+FFTW3_INCLUDE=$(FFTW_HOME)/include
 VTUNEDIR=/opt/intel/vtune_amplifier_xe_2017.2.0.499904
 
 P3DFFT_INCLUDE=
 P3DFFT_LIB=
 IS_P3DFFT = false
 
-
+CUDAFFT_LIB=$(CUDAFFT_HOME)/lib64
+CUDAFFT_INCLUDE=$(CUDAFFT_HOME)/include
 
 # Source directory
 SRCDIR=src
@@ -322,6 +324,11 @@ endif
 
 FARGS+= $(LARCH)
 
+ifeq ($(ARCH),GPU)
+        FARGS=-O3 -Mcudalib=cufft -acc -openmp -ta=tesla -Minfo=all  -g
+        FARGS+= -D CUDA
+endif
+
 # ________________________________________________________
 # Not used for the moment
 #FSOURCE= $(wildcard $(SRCDIR)/*.F90)
@@ -331,12 +338,18 @@ FARGS+= $(LARCH)
 # ________________________________________________________
 
 ifeq ($(MODE),$(filter $(MODE),prod_spectral debug_spectral))
-	FARGS += -I$(FFTW3_INCLUDE) -D FFTW=1
-	LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_omp
-endif
-ifeq ($(IS_P3DFFT),true)
+	FARGS += -D SPECTRAL=1
+	ifeq ($(ARCH),GPU)
+		FARGS+= -I$(CUDAFFT_INCLUDE) -D CUDA_FFT
+    LDFLAGS+= -L $(CUDAFFT_LIB)  -lcufft
+	else
+		FARGS += -I$(FFTW3_INCLUDE) -D FFTW=1
+		LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_omp
+		ifeq ($(IS_P3DFFT),true)
         FARGS += -I$(P3DFFT_INCLUDE)  -D P3DFFT
         LDFLAGS += $(P3DFFT_LIB)/libp3dfft.a
+		endif
+	endif
 endif
 
 ifeq ($(MODE),library)
@@ -1263,8 +1276,8 @@ test_plane_wave_fdtd_2d:
 	cd Acceptance_testing/Gcov_tests && \
 	mpirun -np 1 ./maxwell_2d_test input_file.pixr --nsteps 161 --l_spectral .FALSE. &&\
 	mpirun -np 2 ./maxwell_2d_test input_file.pixr --nsteps 161 --l_spectral .FALSE. --nprocz 2 &&\
-	mpirun -np 4 ./maxwell_2d_test input_file.pixr --nsteps 161 --l_spectral .FALSE. --nprocz 2 --nprocx 2 
-test_plane_wave_psatd_2d: 
+	mpirun -np 4 ./maxwell_2d_test input_file.pixr --nsteps 161 --l_spectral .FALSE. --nprocz 2 --nprocx 2
+test_plane_wave_psatd_2d:
 	cp examples/example_decks_fortran/plane_wave_test_2d.pixr \
 	Acceptance_testing/Gcov_tests/input_file.pixr
 	# 1 OpenMP vary number of MPIs
@@ -1283,7 +1296,7 @@ test_plane_wave_fdtd_3d:
 	mpirun -np 2 ./maxwell_3d_test input_file.pixr --l_spectral .FALSE. --nsteps 106 && \
 	mpirun -np 4 ./maxwell_3d_test input_file.pixr --l_spectral .FALSE. --nsteps 106 && \
 	mpirun -np 8 ./maxwell_3d_test input_file.pixr --l_spectral .FALSE. --nsteps 106
-	# 4 OpenMP vary number of MPIs 
+	# 4 OpenMP vary number of MPIs
 	cd Acceptance_testing/Gcov_tests && \
 	export OMP_NUM_THREADS=4 && \
 	mpirun -np 1 ./maxwell_3d_test input_file.pixr --l_spectral .FALSE. --nsteps 106 && \
@@ -1305,10 +1318,10 @@ test_plane_wave_psatd_global_3d:
 	mpirun -np 2 ./maxwell_3d_test input_file.pixr --l_spectral .TRUE. --nsteps 61 --fftw_with_mpi .TRUE. && \
 	mpirun -np 2 ./maxwell_3d_test input_file.pixr --l_spectral .TRUE. --nsteps 61 --fftw_with_mpi .TRUE. --fftw_hybrid .TRUE. --nb_group 1 \
 	mpirun -np 2 ./maxwell_3d_test input_file.pixr --l_spectral .TRUE. --nsteps 61 --fftw_with_mpi .TRUE. --fftw_hybrid .TRUE. --nb_group 1 \
-	--fftw_mpi_tr .TRUE. 
+	--fftw_mpi_tr .TRUE.
 
 test_lb:
 	cd Acceptance_testing/Gcov_tests && \
 	export OMP_NUM_THREADS=1 &&\
 	mpirun -np 8 ./maxwell_2d_test input_file.pixr --l_spectral .TRUE. --nsteps 81 --nprocz 8 --fftw_with_mpi .TRUE. --fftw_hybrid .TRUE. --nb_group 1 \
-	is_lb_grp .TRUE.	
+	is_lb_grp .TRUE.
