@@ -138,11 +138,11 @@ SUBROUTINE field_gathering_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
   !$OMP LVEC_fieldgathe) PRIVATE(ix, iy, iz, ispecies, curr, curr_tile, count,        &
   !$OMP extile, eytile, eztile, bxtile, bytile, bztile, nxt, nyt, nzt,                &
   !$OMP jmin, jmax, kmin, kmax, lmin, lmax, nxc, nyc, nzc, nxjg, nyjg, nzjg,          &
-  !$OMP isgathered, nxt_o, nyt_o, nzt_o)      
+  !$OMP isgathered, nxt_o, nyt_o, nzt_o)
   nxt_o=0_idp
   nyt_o=0_idp
-  nzt_o=0_idp   
-  !$OMP DO COLLAPSE(3) SCHEDULE(runtime)               
+  nzt_o=0_idp
+  !$OMP DO COLLAPSE(3) SCHEDULE(runtime)
   DO iz=1, ntilez! LOOP ON TILES
     DO iy=1, ntiley
       DO ix=1, ntilex
@@ -198,7 +198,7 @@ SUBROUTINE field_gathering_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
           nxt_o=nxt
           nyt_o=nyt
           nzt_o=nzt
-          ! - Copy values of field arrays in temporary grid tile arrays 
+          ! - Copy values of field arrays in temporary grid tile arrays
           extile=exg(jmin:jmax, kmin:kmax, lmin:lmax)
           eytile=eyg(jmin:jmax, kmin:kmax, lmin:lmax)
           eztile=ezg(jmin:jmax, kmin:kmax, lmin:lmax)
@@ -238,12 +238,12 @@ SUBROUTINE field_gathering_sub(exg, eyg, ezg, bxg, byg, bzg, nxx, nyy, nzz, nxgu
       END DO
     END DO
   END DO! END LOOP ON TILES
-  !$OMP END DO 
-  IF (ALLOCATED(extile)) THEN ! Deallocation of tile arrays 
+  !$OMP END DO
+  IF (ALLOCATED(extile)) THEN ! Deallocation of tile arrays
     DEALLOCATE(extile,eytile,eztile,bxtile,bytile,bztile)
   ENDIF
   !$OMP END PARALLEL
-  
+
 #if VTUNE==3
   CALL stop_vtune_collection()
 #endif
@@ -295,8 +295,7 @@ END SUBROUTINE field_gathering_sub
 SUBROUTINE geteb3d_energy_conserving(np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin,    &
   ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, nox, noy, noz, exg,    &
   eyg, ezg, bxg, byg, bzg, ll4symtry, l_lower_order_in_v, lvect, field_gathe_algo)
-  USE fields, ONLY: bx, by, bz, ex, ey, ez, l_lower_order_in_v, l_nodalgrid, nox,    &
-    noy, noz
+  USE fields, ONLY: l_nodalgrid
   USE picsar_precision, ONLY: idp, lp, num
   implicit none
 

@@ -143,7 +143,7 @@ MODULE field_boundary
     sz = subsizes(1) * subsizes(2) * subsizes(3)
 
     ! MOVE EDGES ALONG X
-  
+
     !$acc data create(temp,temp2)
     !$acc kernels
     temp2(:)=0._num
@@ -169,7 +169,7 @@ MODULE field_boundary
     isp), tag, temp, sz, basetype, INT(proc_x_max, isp), tag, comm, status, errcode)
     !$acc end host_data
 
-    !Copy data from buffer to field from nx_local=>nx_local+nxg along X 
+    !Copy data from buffer to field from nx_local=>nx_local+nxg along X
     IF (proc_x_max .NE. MPI_PROC_NULL) THEN
       !$acc parallel loop present(field,temp) collapse(3)
       DO k = -nzg, subsizes(3)-nzg-1
@@ -203,7 +203,7 @@ MODULE field_boundary
     INT(proc_x_max, isp), tag, temp, sz, basetype, INT(proc_x_min, isp), tag, comm,   &
     status, errcode)
     !$acc end host_data
-  
+
     !Copy data from buffer to field from -nxg=>0
     IF (proc_x_min .NE. MPI_PROC_NULL) THEN
       !$acc parallel loop present(field,temp) collapse(3)
@@ -329,7 +329,7 @@ MODULE field_boundary
           ENDDO
         ENDDO
       ENDDO
-      !$acc end parallel loop 
+      !$acc end parallel loop
     ENDIF
     IF (proc_z_max .NE. MPI_PROC_NULL) THEN
       !$acc parallel loop present(field,temp2) collapse(3)
@@ -362,9 +362,9 @@ MODULE field_boundary
           ENDDO
         ENDDO
       ENDDO
-      !$acc end parallel loop 
+      !$acc end parallel loop
     ENDIF
-    !$acc end data 
+    !$acc end data
 
     DEALLOCATE(temp,temp2)
 
@@ -432,14 +432,14 @@ MODULE field_boundary
     ENDIF
 #endif
 write(0,*) "finished init"
-#if !defined(CUAD_FFT) 
+#if !defined(CUAD_FFT)
     CALL MPI_ISEND(field(0, -nyg, -nzg), 1_isp, mpi_dtypes(4), INT(proc_x_min, isp),  &
     tag, comm, requests(1), errcode)
     CALL MPI_IRECV(field(nx_local, -nyg, -nzg), 1_isp, mpi_dtypes(4), INT(proc_x_max, &
     isp), tag, comm, requests(2), errcode)
     ! --- Need to wait here to avoid modifying buffer at field(nx_local) and field(0)
     CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
-#else 
+#else
     IF (proc_x_min .NE. MPI_PROC_NULL) THEN
       !$acc parallel loop present(field,temp2) collapse(3)
       DO k = -nzg, subsizes(3)-nzg-1
@@ -474,7 +474,7 @@ write(0,*) "finished ixmin to xmax"
 
 
     ! --- -X
-#if !defined(CUAD_FFT) 
+#if !defined(CUAD_FFT)
     CALL MPI_ISEND(field(nx_local-nxg, -nyg, -nzg), 1_isp, mpi_dtypes(4),             &
     INT(proc_x_max, isp), tag, comm, requests(1), errcode)
     CALL MPI_IRECV(field(-nxg, -nyg, -nzg), 1_isp, mpi_dtypes(4), INT(proc_x_min,     &
@@ -519,7 +519,7 @@ write(0,*) "finished ixmin to xmax"
       subsizes(1) = sizes(1)
       subsizes(2) = nyg+1
       subsizes(3) = sizes(3)
-      sz = subsizes(1)*subsizes(2)*subsizes(3) 
+      sz = subsizes(1)*subsizes(2)*subsizes(3)
 #if !defined(CUDA)
       IF (is_dtype_init(5)) THEN
         mpi_dtypes(5) = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
@@ -605,14 +605,14 @@ write(0,*) "finished ixmin to xmax"
         !$acc end parallel loop
       ENDIF
 #endif
-    ENDIF  
+    ENDIF
 
     ! MOVE EDGES ALONG Z
     subsizes(1) = sizes(1)
     subsizes(2) = sizes(2)
     subsizes(3) = nzg+1
     sz = subsizes(1) * subsizes(2) * subsizes(3)
-  
+
 #if !defined(CUDA)
     IF (is_dtype_init(6)) THEN
       mpi_dtypes(6) = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
@@ -653,7 +653,7 @@ write(0,*) "finished ixmin to xmax"
           ENDDO
         ENDDO
       ENDDO
-      !$acc end parallel loop 
+      !$acc end parallel loop
     ENDIF
 #endif
 
@@ -693,11 +693,11 @@ write(0,*) "finished ixmin to xmax"
           ENDDO
         ENDDO
       ENDDO
-      !$acc end parallel loop 
+      !$acc end parallel loop
     ENDIF
 #endif
   DEALLOCATE(temp,temp2)
-  !$acc end data 
+  !$acc end data
 
 
 
@@ -738,10 +738,10 @@ write(0,*) "finished ixmin to xmax"
     ALLOCATE(temp(szmax))
     ALLOCATE(temp2(szmax))
     !$acc data create(temp,temp2)
-    !$acc kernels 
+    !$acc kernels
     temp = 0.0_num
     temp2 =0.0_num
-    !$acc end kernels 
+    !$acc end kernels
 
 
     !! -- Summation along X- direction
@@ -769,7 +769,7 @@ write(0,*) "finished ixmin to xmax"
     mpidbl, INT(proc_x_min,isp), tag, comm, status, errcode)
     !$acc end host_data
 
-    IF(proc_x_min .NE. MPI_PROC_NULL) THEN 
+    IF(proc_x_min .NE. MPI_PROC_NULL) THEN
       !$acc parallel loop present(array,temp) collapse(3)
       DO k = -nzg, subsizes(3)-nzg-1
         DO j = -nyg, subsizes(2)-nyg-1
@@ -819,7 +819,7 @@ write(0,*) "finished ixmin to xmax"
       subsizes(3) = sizes(3)
       nn =  ny_local
       sz = subsizes(1) * subsizes(2) * subsizes(3)
-      
+
       IF (proc_y_max .NE. MPI_PROC_NULL) THEN
         !$acc parallel loop present(array,temp2) collapse(3)
         DO k = -nzg, subsizes(3)-nzg-1
@@ -832,12 +832,12 @@ write(0,*) "finished ixmin to xmax"
         ENDDO
         !$acc end parallel loop
       ENDIF
-  
+
       !$acc host_data use_device(temp,temp2)
       CALL MPI_SENDRECV(temp2, sz, mpidbl ,INT(proc_y_max,isp), tag, temp, sz,&
       mpidbl, INT(proc_y_min,isp), tag, comm, status, errcode)
       !$acc end host_data
-  
+
       IF(proc_y_min .NE. MPI_PROC_NULL) THEN
         !$acc parallel loop present(array,temp) collapse(3)
         DO k = -nzg, subsizes(3)-nzg-1
@@ -850,7 +850,7 @@ write(0,*) "finished ixmin to xmax"
         ENDDO
         !$acc end parallel loop
       ENDIF
-  
+
       IF (proc_y_min .NE. MPI_PROC_NULL) THEN
         !$acc parallel loop present(array,temp2) collapse(3)
         DO k = -nzg, subsizes(3)-nzg-1
@@ -863,12 +863,12 @@ write(0,*) "finished ixmin to xmax"
         ENDDO
         !$acc end parallel loop
       ENDIF
-  
+
       !$acc host_data use_device(temp,temp2)
       CALL MPI_SENDRECV(temp2, sz, mpidbl, INT(proc_y_min,isp), tag, temp, sz,mpidbl,  &
       INT(proc_y_max, isp), tag, comm, status, errcode)
       !$acc end host_data
-      
+
       IF(proc_y_max .NE. MPI_PROC_NULL) THEN
         !$acc parallel loop present(array,temp) collapse(3)
         DO k = -nzg, subsizes(3)-nzg-1
@@ -887,7 +887,7 @@ write(0,*) "finished ixmin to xmax"
     subsizes(3) = nzg+1
     nn =  nz_local
     sz = subsizes(1) * subsizes(2) * subsizes(3)
-    
+
     IF (proc_z_max .NE. MPI_PROC_NULL) THEN
       !$acc parallel loop present(array,temp2) collapse(3)
       DO k = nz_local, nz_local+subsizes(3)-1
@@ -936,7 +936,7 @@ write(0,*) "finished ixmin to xmax"
     CALL MPI_SENDRECV(temp2, sz, mpidbl, INT(proc_z_min,isp), tag, temp, sz,mpidbl,  &
     INT(proc_z_max, isp), tag, comm, status, errcode)
     !$acc end host_data
-    
+
     IF(proc_z_max .NE. MPI_PROC_NULL) THEN
       !$acc parallel loop present(array,temp) collapse(3)
       DO k = nz_local - nzg, nz_local
@@ -951,7 +951,7 @@ write(0,*) "finished ixmin to xmax"
     ENDIF
 
 
-    !$acc end data 
+    !$acc end data
     DEALLOCATE(temp,temp2)
 
     CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
@@ -962,28 +962,28 @@ write(0,*) "finished ixmin to xmax"
   !
   !> @author
   !> Haithem Kallala
-  !> 
+  !>
   !> @date
   !> Creation 2017
-  !> 
-  !> @ brief 
-  !> This routine is copying values from the local  field arrays to the 
-  !> FFT field arrays. FFT arrays are used to perform distributed FFTs on each MPI 
-  !> groups. Local field arrays are used to perform field gathering operations during 
-  !> the PIC cycle. Keeping two different grids allows for efficient load balancing 
-  !> of computations in the field gathering and Maxwell solvers stages of the PIC cycle. 
+  !>
+  !> @ brief
+  !> This routine is copying values from the local  field arrays to the
+  !> FFT field arrays. FFT arrays are used to perform distributed FFTs on each MPI
+  !> groups. Local field arrays are used to perform field gathering operations during
+  !> the PIC cycle. Keeping two different grids allows for efficient load balancing
+  !> of computations in the field gathering and Maxwell solvers stages of the PIC cycle.
   ! ______________________________________________________________________________________
   SUBROUTINE generalized_comms_group_l2g()
     USE fields, ONLY: bx, bx_r, bxy, bxy_r, bxz, bxz_r, by, by_r, byx, byx_r, byz,   &
       byz_r, bz, bz_r, bzx, bzx_r, bzy, bzy_r, ex, ex_r, exy, exy_r, exz, exz_r, ey, &
       ey_r, eyx, eyx_r, eyz, eyz_r, ez, ez_r, ezx, ezx_r, ezy, ezy_r, jx, jx_r, jy,  &
       jy_r, jz, jz_r, nxguards, nyguards, nzguards, rho_r, rhoold_r
-#if defined(FFTW) 
+#if defined(FFTW)
     USE iso_c_binding
     USE load_balance
 #endif
     USE mpi
-#if defined(FFTW) 
+#if defined(FFTW)
     USE mpi_fftw3, ONLY: local_nx, local_ny, local_nz
 #endif
     USE picsar_precision, ONLY: idp, num
@@ -997,7 +997,7 @@ write(0,*) "finished ixmin to xmax"
       tmptime = MPI_WTIME()
     ENDIF
 
-    nxx = local_nx 
+    nxx = local_nx
     nyy = local_ny
     nzz = local_nz
     IF(mpicom_curr == 1) THEN
@@ -1069,7 +1069,7 @@ write(0,*) "finished ixmin to xmax"
         CALL sendrecv_l2g_generalized(rhoold,nx,nxguards,ny,nyguards,nz,nzguards,      &
         rhoold_r,nxx,nyy,nzz)
       ENDIF
-    ELSE 
+    ELSE
       IF(.NOT. absorbing_bcs) THEN
 
         !> When using period bcs for fields, standard EM equations are solved
@@ -1146,8 +1146,8 @@ write(0,*) "finished ixmin to xmax"
   END SUBROUTINE generalized_comms_group_l2g
 
   ! ______________________________________________________________________________________
-  !> @brief 
-  !> Routine for exchanging data from the local grid arrays to the FFT grid arrays 
+  !> @brief
+  !> Routine for exchanging data from the local grid arrays to the FFT grid arrays
   !> This routine uses blocking SENDRECV MPI exchanges
   !> @author
   !> Haithem Kallala
@@ -1159,7 +1159,7 @@ write(0,*) "finished ixmin to xmax"
   !> @params[in] nyg - number of guard cells along dimension Y of field_l
   !> @params[in] nz1 - number of cells along dimension Z of field_l
   !> @params[in] nzg - number of guard cells along dimension Z of field_l
-  !> @params[in] nxx - size of array field_g along X 
+  !> @params[in] nxx - size of array field_g along X
   !> @params[in] nyy - size of array field_g along Y
   !> @params[in] nyz - size of array field_g along Y
   !> @date
@@ -1180,19 +1180,19 @@ write(0,*) "finished ixmin to xmax"
     USE picsar_precision, ONLY: idp, isp, num
 #endif
     INTEGER(idp), INTENT(IN)                    ::  nx1,nxg,ny1,nyg,nz1,nzg,nxx,nyy,nzz
-    REAL(num)    ,INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)   & 
+    REAL(num)    ,INTENT(INOUT)  , DIMENSION(-nxg:nx1+nxg,-nyg:ny1+nyg,-nzg:nz1+nzg)   &
     :: field_l
     REAL(num)    ,INTENT(INOUT)  , DIMENSION(nxx,nyy,nzz)  :: field_g
     INTEGER(idp)                                ::  ii
     INTEGER(isp)                                :: rank_to_send_to, rank_to_recv_from
 #if defined(FFTW)
     DO ii=1,nb_comms_l2g
-     ! ii==1 corresponds to target_rank = my_rank 
-     ! and recv_rank = my_rank 
+     ! ii==1 corresponds to target_rank = my_rank
+     ! and recv_rank = my_rank
      ! this copy is done locally in fourier_psaod.F90
 
-      IF (ii==1) CYCLE  
-                         
+      IF (ii==1) CYCLE
+
       rank_to_send_to = INT(array_of_ranks_to_send_to_l2g(ii),isp)
       rank_to_recv_from = INT(array_of_ranks_to_recv_from_l2g(ii),isp)
 
@@ -1210,9 +1210,9 @@ write(0,*) "finished ixmin to xmax"
   END SUBROUTINE  sendrecv_l2g_generalized
 
   ! ______________________________________________________________________________________
-  !> @brief 
-  !> Routine for exchanging data from the local grid arrays to the FFT grid arrays 
-  !> This routine uses ISEND and IRECV MPI exchanges (non-blocking exchanges) 
+  !> @brief
+  !> Routine for exchanging data from the local grid arrays to the FFT grid arrays
+  !> This routine uses ISEND and IRECV MPI exchanges (non-blocking exchanges)
   !> @author
   !> Haithem Kallala
   !> @params[in,out] 3D REAL(num) array field_l - local field array (e.g. ex)
@@ -1223,7 +1223,7 @@ write(0,*) "finished ixmin to xmax"
   !> @params[in] nyg - number of guard cells along dimension Y of field_l
   !> @params[in] nz1 - number of cells along dimension Z of field_l
   !> @params[in] nzg - number of guard cells along dimension Z of field_l
-  !> @params[in] nxx - size of array field_g along X 
+  !> @params[in] nxx - size of array field_g along X
   !> @params[in] nyy - size of array field_g along Y
   !> @params[in] nyz - size of array field_g along Y
   !> @date
@@ -1256,15 +1256,15 @@ USE picsar_precision, ONLY: idp, isp, num
     requests_l2g = 0
     n=0
     DO ii=1,nb_comms_l2g
-     ! ii==1 corresponds to target_rank = my_rank 
-     ! and recv_rank = my_rank 
+     ! ii==1 corresponds to target_rank = my_rank
+     ! and recv_rank = my_rank
      ! this copy is done locally in fourier_psaod.F90
       IF(ii==1) CYCLE
       rank_to_send_to = INT(array_of_ranks_to_send_to_l2g(ii),isp)
       rank_to_recv_from = INT(array_of_ranks_to_recv_from_l2g(ii),isp)
 
       IF(size_exchanges_l2g_recv_z(ii) .GT. 0 .AND.                                    &
-      size_exchanges_l2g_recv_y(ii) .GT. 0)   THEN                                     
+      size_exchanges_l2g_recv_y(ii) .GT. 0)   THEN
         n=n+1
         CALL MPI_IRECV(field_g(1, g_first_cell_to_recv_y(ii),                          &
         g_first_cell_to_recv_z(ii)), 1_isp,recv_type_g(ii),                            &
@@ -1281,33 +1281,33 @@ USE picsar_precision, ONLY: idp, isp, num
     CALL MPI_WAITALL(INT(n,isp),requests_l2g, MPI_STATUSES_IGNORE, errcode)
 #endif
   END SUBROUTINE  sendrecv_l2g_generalized_non_blocking
-  
+
   ! ______________________________________________________________________________________
   !
   !> @author
   !> Haithem Kallala
-  !> 
+  !>
   !> @date
   !> Creation 2017
-  !> 
-  !> @ brief 
-  !> This routine is copying values from the FFT field arrays to the 
-  !> local field arrays. FFT arrays are used to perform distributed FFTs on each MPI 
-  !> groups. Local field arrays are used to perform field gathering operations during 
-  !> the PIC cycle. Keeping two different grids allows for efficient load balancing 
-  !> of computations in the field gathering and Maxwell solvers stages of the PIC cycle. 
+  !>
+  !> @ brief
+  !> This routine is copying values from the FFT field arrays to the
+  !> local field arrays. FFT arrays are used to perform distributed FFTs on each MPI
+  !> groups. Local field arrays are used to perform field gathering operations during
+  !> the PIC cycle. Keeping two different grids allows for efficient load balancing
+  !> of computations in the field gathering and Maxwell solvers stages of the PIC cycle.
   ! ______________________________________________________________________________________
   SUBROUTINE generalized_comms_group_g2l()
     USE fields, ONLY: bx, bx_r, bxy, bxy_r, bxz, bxz_r, by, by_r, byx, byx_r, byz,   &
       byz_r, bz, bz_r, bzx, bzx_r, bzy, bzy_r, ex, ex_r, exy, exy_r, exz, exz_r, ey, &
       ey_r, eyx, eyx_r, eyz, eyz_r, ez, ez_r, ezx, ezx_r, ezy, ezy_r, nxguards,      &
       nyguards, nzguards
-#if defined(FFTW) 
+#if defined(FFTW)
     USE iso_c_binding
     USE load_balance
 #endif
     USE mpi
-#if defined(FFTW) 
+#if defined(FFTW)
     USE mpi_fftw3, ONLY: local_nx, local_ny, local_nz
 #endif
     USE picsar_precision, ONLY: idp, num
@@ -1320,7 +1320,7 @@ USE picsar_precision, ONLY: idp, isp, num
       tmptime = MPI_WTIME()
     ENDIF
 
-    nxx = local_nx 
+    nxx = local_nx
     nyy = local_ny
     nzz = local_nz
     IF(mpicom_curr ==1) THEN
@@ -1358,7 +1358,7 @@ USE picsar_precision, ONLY: idp, isp, num
         CALL sendrecv_g2l_generalized(byx,nx,nxguards,ny,nyguards,nz,nzguards,          &
         byx_r,nxx,nyy,nzz)
         CALL sendrecv_g2l_generalized(bzx,nx,nxguards,ny,nyguards,nz,nzguards,          &
-        bzx_r,nxx,nyy,nzz) 
+        bzx_r,nxx,nyy,nzz)
         CALL sendrecv_g2l_generalized(exz,nx,nxguards,ny,nyguards,nz,nzguards,          &
         exz_r,nxx,nyy,nzz)
         CALL sendrecv_g2l_generalized(eyz,nx,nxguards,ny,nyguards,nz,nzguards,          &
@@ -1372,7 +1372,7 @@ USE picsar_precision, ONLY: idp, isp, num
         CALL sendrecv_g2l_generalized(bzy,nx,nxguards,ny,nyguards,nz,nzguards,          &
         bzy_r,nxx,nyy,nzz)
       ENDIF
-    ELSE 
+    ELSE
       IF (.NOT. absorbing_bcs) THEN
 
         !> When using period bcs for fields, standard EM equations are solved
@@ -1431,9 +1431,9 @@ USE picsar_precision, ONLY: idp, isp, num
   END SUBROUTINE generalized_comms_group_g2l
 
   ! ______________________________________________________________________________________
-  !> @brief 
-  !> Routine for exchanging data from the FFT grid arrays to the local grid arrays 
-  !> This routine uses ISEND and IRECV MPI exchanges (non-blocking exchanges) 
+  !> @brief
+  !> Routine for exchanging data from the FFT grid arrays to the local grid arrays
+  !> This routine uses ISEND and IRECV MPI exchanges (non-blocking exchanges)
   !> @author
   !> Haithem Kallala
   !> @params[in,out] 3D REAL(num) array field_l - local field array (e.g. ex)
@@ -1444,7 +1444,7 @@ USE picsar_precision, ONLY: idp, isp, num
   !> @params[in] nyg - number of guard cells along dimension Y of field_l
   !> @params[in] nz1 - number of cells along dimension Z of field_l
   !> @params[in] nzg - number of guard cells along dimension Z of field_l
-  !> @params[in] nxx - size of array field_g along X 
+  !> @params[in] nxx - size of array field_g along X
   !> @params[in] nyy - size of array field_g along Y
   !> @params[in] nyz - size of array field_g along Y
   !> @date
@@ -1473,21 +1473,21 @@ USE picsar_precision, ONLY: idp, isp, num
     INTEGER(idp)        :: ii
     INTEGER(isp)                                  :: rank_to_send_to, rank_to_recv_from
     INTEGER(idp)                                :: n
-   
+
 #if defined(FFTW)
-    requests_g2l = 0 
+    requests_g2l = 0
     n = 0
     DO ii=1,nb_comms_g2l
-     ! ii==1 corresponds to target_rank = my_rank 
-     ! and recv_rank = my_rank 
+     ! ii==1 corresponds to target_rank = my_rank
+     ! and recv_rank = my_rank
      ! this copy is done locally in fourier_psaod.F90
 
       IF(ii==1) CYCLE
       rank_to_send_to = INT(array_of_ranks_to_send_to_g2l(ii),isp)
       rank_to_recv_from = INT(array_of_ranks_to_recv_from_g2l(ii),isp)
- 
+
       IF(size_exchanges_g2l_recv_z(ii) .GT. 0 .AND.                                    &
-      size_exchanges_g2l_recv_y(ii) .GT. 0) THEN                                       
+      size_exchanges_g2l_recv_y(ii) .GT. 0) THEN
         n=n+1
         CALL MPI_IRECV(field_l(-nxg, l_first_cell_to_recv_y(ii),                       &
         l_first_cell_to_recv_z(ii)), 1_isp,recv_type_l(ii)                             &
@@ -1498,7 +1498,7 @@ USE picsar_precision, ONLY: idp, isp, num
         n=n+1
         CALL MPI_ISEND(field_g(1,g_first_cell_to_send_y(ii),                           &
         g_first_cell_to_send_z(ii)) ,1_isp,send_type_g(ii),                            &
-        rank_to_send_to,tag,comm,requests_g2l(n),errcode)   
+        rank_to_send_to,tag,comm,requests_g2l(n),errcode)
       ENDIF
 
     ENDDO
@@ -1507,9 +1507,9 @@ USE picsar_precision, ONLY: idp, isp, num
   END SUBROUTINE  sendrecv_g2l_generalized_non_blocking
 
   ! ______________________________________________________________________________________
-  !> @brief 
-  !> Routine for exchanging data from the FFT grid arrays to the local grid arrays 
-  !> This routine uses blocking SENDRECV MPI exchanges 
+  !> @brief
+  !> Routine for exchanging data from the FFT grid arrays to the local grid arrays
+  !> This routine uses blocking SENDRECV MPI exchanges
   !> @author
   !> Haithem Kallala
   !> @params[in,out] 3D REAL(num) array field_l - local field array (e.g. ex)
@@ -1520,7 +1520,7 @@ USE picsar_precision, ONLY: idp, isp, num
   !> @params[in] nyg - number of guard cells along dimension Y of field_l
   !> @params[in] nz1 - number of cells along dimension Z of field_l
   !> @params[in] nzg - number of guard cells along dimension Z of field_l
-  !> @params[in] nxx - size of array field_g along X 
+  !> @params[in] nxx - size of array field_g along X
   !> @params[in] nyy - size of array field_g along Y
   !> @params[in] nyz - size of array field_g along Y
   !> @date
@@ -1549,8 +1549,8 @@ USE picsar_precision, ONLY: idp, isp, num
 #if defined(FFTW)
 
     DO ii=1,nb_comms_g2l
-     ! ii==1 corresponds to target_rank = my_rank 
-     ! and recv_rank = my_rank 
+     ! ii==1 corresponds to target_rank = my_rank
+     ! and recv_rank = my_rank
      ! this copy is done locally in fourier_psaod.F90
 
 
@@ -1599,10 +1599,10 @@ USE picsar_precision, ONLY: idp, isp, num
     ALLOCATE(temp(szmax))
     ALLOCATE(temp2(szmax))
     !$acc data create(temp,temp2)
-    !$acc kernels 
+    !$acc kernels
     temp = 0.0_num
     temp2 =0.0_num
-    !$acc end kernels 
+    !$acc end kernels
 
 
     !! -- Summation along X- direction
@@ -1625,13 +1625,13 @@ USE picsar_precision, ONLY: idp, isp, num
       !$acc end parallel loop
     ENDIF
 
-    !$acc host_data use_device(temp,temp2)    
+    !$acc host_data use_device(temp,temp2)
     CALL MPI_ISEND(temp2, sz, mpidbl, INT(proc_x_max, isp),tag,comm,requests(1),errcode)
     CALL MPI_IRECV(temp, sz, mpidbl, INT(proc_x_min, isp),tag,comm,requests(2),errcode)
     CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
     !$acc end host_data
 
-    IF(proc_x_min .NE. MPI_PROC_NULL) THEN 
+    IF(proc_x_min .NE. MPI_PROC_NULL) THEN
       !$acc parallel loop present(array,temp) collapse(3)
       DO k = -nzg, subsizes(3)-nzg-1
         DO j = -nyg, subsizes(2)-nyg-1
@@ -1682,7 +1682,7 @@ USE picsar_precision, ONLY: idp, isp, num
       subsizes(3) = sizes(3)
       nn =  ny_local
       sz = subsizes(1) * subsizes(2) * subsizes(3)
-      
+
       IF (proc_y_max .NE. MPI_PROC_NULL) THEN
         !$acc parallel loop present(array,temp2) collapse(3)
         DO k = -nzg, subsizes(3)-nzg-1
@@ -1695,13 +1695,13 @@ USE picsar_precision, ONLY: idp, isp, num
         ENDDO
         !$acc end parallel loop
       ENDIF
-  
+
       !$acc host_data use_device(temp,temp2)
       CALL MPI_ISEND(temp2, sz, mpidbl, INT(proc_y_max,isp),tag,comm,requests(1), errcode)
       CALL MPI_IRECV(temp, sz, mpidbl, INT(proc_y_min, isp),tag,comm,requests(2),errcode)
       CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
       !$acc end host_data
-  
+
       IF(proc_y_min .NE. MPI_PROC_NULL) THEN
         !$acc parallel loop present(array,temp) collapse(3)
         DO k = -nzg, subsizes(3)-nzg-1
@@ -1714,7 +1714,7 @@ USE picsar_precision, ONLY: idp, isp, num
         ENDDO
         !$acc end parallel loop
       ENDIF
-  
+
       IF (proc_y_min .NE. MPI_PROC_NULL) THEN
         !$acc parallel loop present(array,temp2) collapse(3)
         DO k = -nzg, subsizes(3)-nzg-1
@@ -1727,13 +1727,13 @@ USE picsar_precision, ONLY: idp, isp, num
         ENDDO
         !$acc end parallel loop
       ENDIF
-  
+
       !$acc host_data use_device(temp,temp2)
       CALL MPI_ISEND(temp2, sz, mpidbl, INT(proc_y_min,isp),tag,comm,requests(1), errcode)
       CALL MPI_IRECV(temp, sz, mpidbl, INT(proc_y_max, isp),tag,comm,requests(2),errcode)
       CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
       !$acc end host_data
-      
+
       IF(proc_y_max .NE. MPI_PROC_NULL) THEN
         !$acc parallel loop present(array,temp) collapse(3)
         DO k = -nzg, subsizes(3)-nzg-1
@@ -1752,7 +1752,7 @@ USE picsar_precision, ONLY: idp, isp, num
     subsizes(3) = nzg+1
     nn =  nz_local
     sz = subsizes(1) * subsizes(2) * subsizes(3)
-    
+
     IF (proc_z_max .NE. MPI_PROC_NULL) THEN
       !$acc parallel loop present(array,temp2) collapse(3)
       DO k = nz_local, nz_local+subsizes(3)-1
@@ -1803,7 +1803,7 @@ USE picsar_precision, ONLY: idp, isp, num
     CALL MPI_IRECV(temp, sz, mpidbl, INT(proc_z_max, isp),tag,comm,requests(2),errcode)
     CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
     !$acc end host_data
-    
+
     IF(proc_z_max .NE. MPI_PROC_NULL) THEN
       !$acc parallel loop present(array,temp) collapse(3)
       DO k = nz_local - nzg, nz_local
@@ -1818,14 +1818,14 @@ USE picsar_precision, ONLY: idp, isp, num
     ENDIF
 
 
-    !$acc end data 
+    !$acc end data
     DEALLOCATE(temp,temp2)
 
     CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
 
   END SUBROUTINE summation_bcs_non_blocking_gpgpu
 
-    
+
   ! ______________________________________________________________________________________
   !> Routine for adding current contributions fron adjacent subdomains
   ! nonblocking version
@@ -1888,7 +1888,7 @@ USE picsar_precision, ONLY: idp, isp, num
     array(nn-nxg:nn, :, :) = array(nn-nxg:nn, :, :) + temp2
     !$acc end kernels
     !$acc end host_data
-    !$acc end data 
+    !$acc end data
     DEALLOCATE(temp1, temp2)
     IF(c_dim == 3) THEN
       !! -- Summation along Y- direction
@@ -1896,17 +1896,17 @@ USE picsar_precision, ONLY: idp, isp, num
       subsizes(2) = nyg+1
       subsizes(3) = sizes(3)
       nn = ny_local
-  
+
       IF (is_dtype_init(11)) THEN
         mpi_dtypes(11) = create_3d_array_derived_type(mpidbl, subsizes, sizes, starts)
         is_dtype_init(11) = .FALSE.
       ENDIF
-  
+
       sz = subsizes(1) * subsizes(2) * subsizes(3)
       ALLOCATE(temp1(subsizes(1), subsizes(2), subsizes(3)), temp2(subsizes(1),         &
       subsizes(2), subsizes(3)))
       !$acc data create(temp1, temp2)
-      !$acc kernels 
+      !$acc kernels
       temp1  = 0.0_num
       temp2 = 0.0_num
       !$acc end kernels
@@ -1925,7 +1925,7 @@ USE picsar_precision, ONLY: idp, isp, num
       array(:, nn-nyg:nn, :) = array(:, nn-nyg:nn, :) + temp2
       !$acc end kernels
       !$acc end host_data
-      !$acc end data 
+      !$acc end data
       DEALLOCATE(temp1, temp2)
     ENDIF
     !! -- Summation along Z- direction
@@ -1962,7 +1962,7 @@ USE picsar_precision, ONLY: idp, isp, num
     array(:, :, nn-nzg:nn) = array(:, :, nn-nzg:nn) + temp2
     !$acc end kernels
     !$acc end host_data
-    !$acc end data 
+    !$acc end data
     DEALLOCATE(temp1, temp2)
 
     CALL field_bc(array, nxg, nyg, nzg, nx_local, ny_local, nz_local)
@@ -2490,7 +2490,7 @@ USE picsar_precision, ONLY: idp, isp, num
     ENDIF
     ! Electric field MPI exchange between subdomains
     IF(.NOT. absorbing_bcs) THEN
-    
+
       !> When using periodic bcs, exchange standard EM fields
 
       CALL field_bc(ex, nxguards, nyguards, nzguards, nx, ny, nz)
@@ -2506,7 +2506,7 @@ USE picsar_precision, ONLY: idp, isp, num
       CALL field_bc(ezx, nxguards, nyguards, nzguards, nx, ny, nz)
       CALL field_bc(ezy, nxguards, nyguards, nzguards, nx, ny, nz)
       !> When using absorbing bcs, the electric field is merged here
-      !> This is done here in order not to call merge_e_fields from warp 
+      !> This is done here in order not to call merge_e_fields from warp
       CALL merge_e_fields()
 
     ENDIF
@@ -2540,7 +2540,7 @@ USE mpi
       tmptime = MPI_WTIME()
     ENDIF
     ! Magnetic field MPI exchange between subdomains
-    IF(.NOT. absorbing_bcs) THEN 
+    IF(.NOT. absorbing_bcs) THEN
 
       !> When using periodic bcs, exchange standard EM fields
 
@@ -2559,7 +2559,7 @@ USE mpi
       CALL field_bc(bzy, nxguards, nyguards, nzguards, nx, ny, nz)
 
       !> When using absorbing bcs, the magnetic field is merged here
-      !> This is done here in order not to call merge_fields from warp 
+      !> This is done here in order not to call merge_fields from warp
 
       CALL merge_b_fields()
     ENDIF
@@ -2650,8 +2650,7 @@ USE mpi
       CALL summation_bcs(rho, nxjguards, nyjguards, nzjguards, nx, ny, nz)
     ELSE
 #if !defined(CUDA)
-      CALL summation_bcs_nonblocking(rho, nxjguards, nyjguards, nzjguards, nx, ny,    &
-      ,nz)
+      CALL summation_bcs_nonblocking(rho, nxjguards, nyjguards, nzjguards, nx, ny, nz)
 #else
       CALL summation_bcs_non_blocking_gpgpu(rho, nxjguards, nyjguards, nzjguards,      &
       nx,ny, nz)

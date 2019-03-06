@@ -61,8 +61,7 @@
 SUBROUTINE geteb2dxz_energy_conserving(np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin,  &
   ymin, zmin, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, nox, noy, noz, exg,    &
   eyg, ezg, bxg, byg, bzg, l4symtry, l_lower_order_in_v, lvect, field_gathe_algo)
-  USE fields, ONLY: bx, by, bz, ex, ey, ez, l4symtry, l_lower_order_in_v,            &
-    l_nodalgrid, nox, noy, noz
+  USE fields, ONLY: l_nodalgrid
   USE picsar_precision, ONLY: idp, lp, num
   implicit none
 
