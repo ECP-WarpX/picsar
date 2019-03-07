@@ -1065,7 +1065,7 @@ use shared_data
 use constants
 use params
 use field_boundary
-REAL(num) :: t_harris,arg,kz,freq,L,lambda,k,w_num
+REAL(num) :: t_harris,arg,kz,kx,freq,L,lambda,k,w
 integer(idp) :: i,j,n
 real(num)  :: t,thetaa
 
@@ -1085,15 +1085,15 @@ k=2*pi/lambda
 freq = clight/lambda/cos(thetaa)
 kx = k*cos(thetaa)
 kz=k*sin(thetaa)
-w_num = (1.0_num/dx*sin(kx*dx/2._num))**2+(1.0_num/dz*sin(kz*dz/2._num))**2
-w_num = w_num *clight**2*dt**2
+w = (1.0_num/dx*sin(kx*dx/2._num))**2+(1.0_num/dz*sin(kz*dz/2._num))**2
+w = w *clight**2*dt**2
 
-w_num = asin(sqrt(w_num))
-w_num = w_num *2._num/dt
-w_num  = w_num/cos(thetaa)
+w = asin(sqrt(w))
+w = w *2._num/dt
+w  = w/cos(thetaa)
 !$acc parallel loop present(jy)
 do i = -nzguards,nz+nzguards
-jy(nx/2,:,i) =sin(w_num*t +  k*dz *i*sin(thetaa)+k*dx*cos(thetaa))*arg/mu0
+jy(nx/2,:,i) =sin(w*t +  k*dz *i*sin(thetaa)+k*dx*cos(thetaa))*arg/mu0
 enddo
 !$acc end parallel loop
 
