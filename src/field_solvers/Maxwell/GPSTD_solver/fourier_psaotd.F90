@@ -59,15 +59,19 @@ MODULE fourier_psaotd
   SUBROUTINE init_plans_fourier_mpi(nopenmp)
 #if defined(CUDA_FFT)
     USE cufft
-    USE fourier, ONLY: plan_c2r_cuda, plan_r2c_cuda
 #endif
     USE fields, ONLY: ex_r, exf, exy_r, nxguards, nyguards, nzguards
+#if defined(CUDA_FFT)
+    USE fourier, ONLY: plan_c2r_cuda, plan_r2c_cuda
+#endif
     USE group_parameters, ONLY: mpi_comm_group_id, nx_group, ny_group, nz_group
     USE iso_c_binding
     USE mpi
+#if defined(FFTW)
     USE mpi_fftw3, ONLY: fftw_estimate, fftw_measure, fftw_mpi_plan_dft_c2r_2d,      &
       fftw_mpi_plan_dft_c2r_3d, fftw_mpi_plan_dft_r2c_2d, fftw_mpi_plan_dft_r2c_3d,  &
       fftw_mpi_transposed_in, fftw_mpi_transposed_out, plan_c2r_mpi, plan_r2c_mpi
+#endif
     USE picsar_precision, ONLY: idp, isp
     USE shared_data, ONLY: absorbing_bcs, c_dim, comm, fftw_hybrid,                  &
       fftw_mpi_transpose, fftw_plan_measure, fftw_threads_ok, nb_group, nx,          &
@@ -2238,14 +2242,13 @@ MODULE fourier_psaotd
   SUBROUTINE init_plans_blocks()
 #if defined(CUDA_FFT)
     USE cufft
-    USE fourier, ONLY: plan_c2r_cuda, plan_r2c_cuda
 #endif
     USE fastfft
 #if defined(FFTW)
     USE fftw3_fortran, ONLY: fftw_backward, fftw_forward, fftw_measure
 #endif
     USE fields, ONLY: ex_r, exf, exy_r, g_spectral, nxguards, nyguards, nzguards
-    USE fourier, ONLY: plan_c2r, plan_r2c
+    USE fourier, ONLY: plan_c2r, plan_c2r_cuda, plan_r2c, plan_r2c_cuda
     USE iso_c_binding
     USE omp_lib
     USE picsar_precision, ONLY: idp, isp

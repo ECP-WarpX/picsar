@@ -519,7 +519,7 @@ SUBROUTINE initall
   USE constants, ONLY: clight, echarge, emass, eps0, pi
   USE fields, ONLY: bx, by, bz, ex, ey, ez, g_spectral, jx, jy, jz, l_spectral, nox, &
     noy, noz, nx_pml, nxguards, ny_pml, nyguards, nz_pml, nzguards, xcoeffs
-#if defined(FFTW)
+#if defined(SPECTRAL)
   USE fourier_psaotd
   USE gpstd_solver
 #endif

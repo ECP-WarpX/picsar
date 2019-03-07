@@ -641,15 +641,15 @@ USE group_parameters, ONLY: cell_x_max_g, cell_x_min_g, cell_y_max_g, cell_y_min
   p3d_fend, p3d_fsize, p3d_fstart, p3d_iend, p3d_isize, p3d_istart, root_rank,       &
   root_size, which_group, x_group_coords, x_max_group, x_min_group, y_group_coords,  &
   y_max_group, y_min_group, z_group_coords, z_max_group, z_min_group
-USE iso_c_binding
 #endif
+USE iso_c_binding
 USE mpi
 #if defined(FFTW)
 USE mpi_fftw3, ONLY: alloc_local, fftw_mpi_local_size_2d, fftw_mpi_local_size_3d,    &
-  fftw_mpi_local_size_3d_transposed, local_nx, local_nx_tr, local_ny, local_ny_tr,   &
-  local_nz, local_nz_tr, local_x0, local_x0_tr, local_y0, local_y0_tr, local_z0,     &
-  local_z0_tr
+     fftw_mpi_local_size_3d_transposed
 #endif
+USE mpi_fftw3, ONLY: local_nx, local_nx_tr, local_ny, local_ny_tr, local_nz, local_nz_tr, &
+     local_x0, local_x0_tr, local_y0, local_y0_tr, local_z0, local_z0_tr
 USE mpi_type_constants, ONLY: mpidbl
 #if defined(P3DFFT)
 USE p3dfft
@@ -1773,9 +1773,9 @@ USE cufft
 #endif
 USE iso_c_binding
 #if defined(FFTW)
-USE mpi_fftw3, ONLY: alloc_local, fftw_alloc_complex, fftw_alloc_real, local_nx,     &
-  local_nx_tr, local_ny, local_ny_tr, local_nz, local_nz_tr
+USE mpi_fftw3, ONLY: alloc_local, fftw_alloc_complex, fftw_alloc_real
 #endif
+USE mpi_fftw3, ONLY: local_nx, local_nx_tr, local_ny, local_ny_tr, local_nz, local_nz_tr
 USE picsar_precision, ONLY: idp
 IMPLICIT NONE
 #if defined(FFTW)
