@@ -83,7 +83,7 @@ ifeq ($(SYS),cori1)
 	FC=ftn
 	CC=cc
 	APPNAME=picsar_cori1
-  ifeq ($(MODE),prod)
+	ifeq ($(MODE),prod)
 		APPNAME=picsar_cori1
 		COMP=none
 		FARGS= -O3 -xCORE-AVX2 -qopenmp -align array64byte -qopt-streaming-stores auto
@@ -124,7 +124,7 @@ else ifeq ($(SYS),edison)
 	FC=ftn
 	CC=cc
 	APPNAME=picsar_edison
-  ifeq ($(MODE),prod)
+	ifeq ($(MODE),prod)
 		COMP=none
 		FARGS= -O3 -xAVX -align array64byte -qopt-streaming-stores auto
 		# -qopt-report:5
@@ -151,15 +151,15 @@ else ifeq ($(SYS),cori2)
 	FC=ftn
 	CC=cc
 	APPNAME=picsar_cori2
-  ifeq ($(MODE),prod)
+	ifeq ($(MODE),prod)
 		COMP=none
 		FARGS= -O3 -xMIC-AVX512 -qopenmp -align array64byte -qopt-streaming-stores auto -qopt-report:5
 		LARCH=
-  	else ifeq ($(MODE),prod_spectral)
+	else ifeq ($(MODE),prod_spectral)
 		COMP=none
 		FARGS= -O3 -xMIC-AVX512 -qopenmp -align array64byte -qopt-streaming-stores auto -qopt-report:5
 		LARCH=
-  	else ifeq ($(MODE),debug_spectral)
+	else ifeq ($(MODE),debug_spectral)
 		APPNAME=picsar_cori2_debug
 		COMP=none
 		FARGS= -g -O3 -D DEBUG=0 -xMIC-AVX512 -qopenmp -debug inline-debug-info -traceback
