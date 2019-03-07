@@ -431,8 +431,7 @@ MODULE field_boundary
       is_dtype_init(4) = .FALSE.
     ENDIF
 #endif
-write(0,*) "finished init"
-#if !defined(CUAD_FFT)
+#if !defined(CUDA_FFT)
     CALL MPI_ISEND(field(0, -nyg, -nzg), 1_isp, mpi_dtypes(4), INT(proc_x_min, isp),  &
     tag, comm, requests(1), errcode)
     CALL MPI_IRECV(field(nx_local, -nyg, -nzg), 1_isp, mpi_dtypes(4), INT(proc_x_max, &
@@ -470,11 +469,10 @@ write(0,*) "finished init"
       !$acc end parallel loop
     ENDIF
 #endif
-write(0,*) "finished ixmin to xmax"
 
 
     ! --- -X
-#if !defined(CUAD_FFT)
+#if !defined(CUDA_FFT)
     CALL MPI_ISEND(field(nx_local-nxg, -nyg, -nzg), 1_isp, mpi_dtypes(4),             &
     INT(proc_x_max, isp), tag, comm, requests(1), errcode)
     CALL MPI_IRECV(field(-nxg, -nyg, -nzg), 1_isp, mpi_dtypes(4), INT(proc_x_min,     &
