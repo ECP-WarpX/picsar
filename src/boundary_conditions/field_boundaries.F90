@@ -695,11 +695,9 @@ write(0,*) "finished ixmin to xmax"
       ENDDO
       !$acc end parallel loop
     ENDIF
-#endif
   DEALLOCATE(temp,temp2)
   !$acc end data
-
-
+#endif
 
   END SUBROUTINE exchange_mpi_3d_grid_array_with_guards_nonblocking
 
