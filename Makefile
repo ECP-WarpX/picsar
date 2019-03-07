@@ -353,7 +353,7 @@ ifeq ($(MODE),$(filter $(MODE),prod_spectral debug_spectral))
 endif
 
 ifeq ($(MODE),library)
-        FARGS += -fPIC -I$(FFTW3_INCLUDE) -D LIBRARY=1  -D  FFTW=1
+        FARGS += -fPIC -I$(FFTW3_INCLUDE) -D LIBRARY=1  -D FFTW=1 -D SPECTRAL=1
         LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_omp
 endif
 
