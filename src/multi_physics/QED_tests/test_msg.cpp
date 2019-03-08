@@ -23,5 +23,5 @@ BOOST_AUTO_TEST_CASE( msg_hello_world )
     std::stringbuf buf;
     std::ostream stream(&buf);
     msg("Hello world!", &stream);
-    BOOST_TEST( buf.str() == "Hello world!");
+    BOOST_CHECK_EQUAL( buf.str(), "Hello world!");
 }
