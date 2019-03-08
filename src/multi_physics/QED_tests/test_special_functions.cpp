@@ -3,7 +3,7 @@
 //Define Module name
  #define BOOST_TEST_MODULE "special functions"
 
-//Will automatically define a main
+//Will automatically define a main for this test 
  #define BOOST_TEST_DYN_LINK
 
 //Include Boost unit tests library & library for floating point comparison
