@@ -2,14 +2,16 @@ cmake_minimum_required (VERSION 3.5)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-#Setup CMake to run tests
-enable_testing()
-
 #########THIS IS ONLY FOR DEBUG PURPOSES#########################################
 add_compile_options(-Wall -Wextra -Wpedantic)
 #################################################################################
 
-project (qed)
+project (testbed)
+
+set(
+    CMAKE_RUNTIME_OUTPUT_DIRECTORY
+    ${CMAKE_BINARY_DIR}/bin
+    )
 
 add_subdirectory(QED)
 add_subdirectory(QED_tests)

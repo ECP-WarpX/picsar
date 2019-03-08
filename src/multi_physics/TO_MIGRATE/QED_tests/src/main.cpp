@@ -24,6 +24,9 @@
 #include "chi_calc_functions.h"
 #include "lookup_table.hpp"
 
+//NEW QED library files (migration to header only library)
+#include "special_functions.hpp"
+
 using namespace std;
 using namespace testbed;
 
@@ -36,9 +39,9 @@ void test_lookup();
 
 int main(){
 
-    //test_individual_functions();
+    test_individual_functions();
     //test_testbed();
-    test_BW();
+    //test_BW();
     //test_lookup();
 }
 

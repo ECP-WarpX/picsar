@@ -8,13 +8,14 @@ build:
   ci:
     #QED LIBRARY
     #Install dependencies
-    - sudo apt-get update && sudo apt-get install -y libboost-math-dev cmake3
+    - sudo apt-get update && sudo apt-get install -y libboost-math-dev libboost-test-dev cmake3
     - cmake --version
     - cd src/multi_physics
     - mkdir build
     - cd build
     - cmake ../.
     - make
+    - make test
     - cd ../../..
     #-----------
 
