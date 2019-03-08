@@ -709,7 +709,7 @@ SUBROUTINE initall
 
 #if defined(SPECTRAL)
 #if defined(CUDA_FFT)
-      WRITE(0, '(" CUDA_FFT IS ON)')
+      WRITE(0, '(" CUDA_FFT IS ON ")')
 #else
       WRITE(0, '(" FFTW - parameters ")')
       IF (g_spectral)    WRITE(0, '(" G_spectral = TRUE")')
