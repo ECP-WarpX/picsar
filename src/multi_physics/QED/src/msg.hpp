@@ -5,8 +5,7 @@
 //ostream (which might be std::cout) or to std::err for error messages
 
 #include<string>
-#include<ostream>
-#include<memory>
+#include<iostream>
 
 //Should be included by all the src files of the library
 #include "qed_commons.h"
@@ -17,7 +16,7 @@ namespace picsar{
     namespace multi_physics{
         //A message function which writes to a stream (provided that the
         //pointer is not NULL)
-        void msg(const std::string& msg, std::shared_ptr<std::ostream> stream);
+        void msg(const std::string& msg, std::ostream* stream);
 
         //An error message function which writes to stderr
         void err(const std::string& msg);
@@ -27,15 +26,15 @@ namespace picsar{
 //############################################### Implementation
 
 void picsar::multi_physics::msg(const std::string& msg,
-    std::shared_ptr<std::ostream> stream)
+    std::ostream* stream)
     {
         if(stream != nullptr)
-            *stream << msg << "\n";
+            *stream << msg;
     }
 
 void picsar::multi_physics::err(const std::string& msg)
     {
-        std::cerr << msg << "\n";
+        std::cerr << msg;
     }
 
 #endif //__PICSAR_MULTIPHYSICS_MSG__
