@@ -21,8 +21,8 @@ MODULE link_external_tools
   CONTAINS 
   SUBROUTINE init_params_external(n1,n2,n3,d1,d2,d3,dtt,ng1,ng2,ng3,nor1,nor2,nor3,is_spec,&
       field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11, cdim, &
-      is_pml_x, is_pml_y, is_pml_z,mpi_neighbors,comm_in)
-      BIND(C,name='init_params_picsar') 
+      is_pml_x, is_pml_y, is_pml_z,mpi_neighbors,comm_in,is_x_min, is_x_max, is_y_min,&
+      is_y_max,is_z_min, is_z_max)      BIND(C,name='init_params_picsar') 
     USE fastfft
     USE fields, ONLY: ezf, ez_r, ez, jx_r, jxf, nordery, ey_r, rhooldf, l_staggered, &
       ex_r, rhof, bx_r, jz, by_r, bxf, l_spectral, zcoeffs, rho_r, xcoeffs, bz,      &
@@ -37,7 +37,8 @@ MODULE link_external_tools
     USE shared_data, ONLY: nz, ny, fftw_with_mpi, nx, nkx, p3dfft_stride, nky,       &
       p3dfft_flag, fftw_threads_ok, dx, c_dim, nkz, fftw_mpi_transpose, dy, rank,    &
       fftw_hybrid, dz, absorbing_bcs_x, absorbing_bcs_y, absorbing_bcs_z,            &
-      absorbing_bcs
+      absorbing_bcs, proc_x_min, proc_x_max, proc_y_min, proc_y_max, proc_z_min,     &
+      proc_z_max
     USE mpi_routines
     IMPLICIT NONE 
     INTEGER(C_INT) , INTENT(IN) :: n1,n2,n3,ng1,ng2,ng3,nor1,nor2,nor3,cdim
@@ -51,7 +52,15 @@ MODULE link_external_tools
     LOGICAL(C_BOOL),    INTENT(IN)   :: is_pml_x, is_pml_y, is_pml_z     
     INTEGER(isp) , INTENT(IN) , DIMENSIOn(1:2*cdim) :: mpi_neighbors 
     INTEGER(isp) , INTENT(IN) :: comm_in
-    
+    INTEGER(idp)  :: comm_in_idp
+
+    LOGICAL(lp), INTENT(IN) :: is_x_min, is_x_max, is_y_min, is_y_max,is_z_min, is_z_max    
+
+      print *,"cocococococoococococesdgh"
+      write(*,*),"pppppppppp"
+      stop
+
+
 
     l_spectral  = LOGICAL(is_spec,lp) 
     fftw_with_mpi = .FALSE. 
@@ -82,7 +91,16 @@ MODULE link_external_tools
     absorbing_bcs_x = LOGICAL(is_pml_z,lp)
     absorbing_bcs_y = LOGICAL(is_pml_y,lp)
     absorbing_bcs_z = LOGICAL(is_pml_x,lp)
- 
+
+    proc_x_min = mpi_neighbors(5)
+    proc_x_max = mpi_neighbors(6)
+    IF(c_dim == 3) THEN
+      proc_y_min = mpi_neighbors(3)
+      proc_y_max = mpi_neighbors(4)
+    ENDIF
+    proc_z_min = mpi_neighbors(1)
+    proc_z_max = mpi_neighbors(2)
+
     IF(.NOT. l_spectral) THEN
       absorbing_bcs_x = .FALSE._lp
       absorbing_bcs_y = .FALSE._lp
@@ -151,19 +169,19 @@ MODULE link_external_tools
     dx = -dx; dy = -dy; dz = -dz
     IF(l_spectral) THEN
       CALL init_plans_blocks()
-      IF(absoring_bcs) THEN
-        ALLOCATE(exy(nx,ny,z))
-        ALLOCATE(exz(nx,ny,z))
-        ALLOCATE(eyx(nx,ny,z))
-        ALLOCATE(eyz(nx,ny,z))
-        ALLOCATE(ezx(nx,ny,z))
-        ALLOCATE(ezy(nx,ny,z))
-        ALLOCATE(bxy(nx,ny,z))
-        ALLOCATE(bxz(nx,ny,z))
-        ALLOCATE(byx(nx,ny,z))
-        ALLOCATE(byz(nx,ny,z))
-        ALLOCATE(bzx(nx,ny,z))
-        ALLOCATE(bzy(nx,ny,z))
+      IF(absorbing_bcs) THEN
+        ALLOCATE(exy(2*nxguards+nx+1,2*nyguards+ny+1,2*nzguards+nz+1))
+        ALLOCATE(exz(2*nxguards+nx+1,2*nyguards+ny+1,2*nzguards+nz+1))
+        ALLOCATE(eyx(2*nxguards+nx+1,2*nyguards+ny+1,2*nzguards+nz+1))
+        ALLOCATE(eyz(2*nxguards+nx+1,2*nyguards+ny+1,2*nzguards+nz+1))
+        ALLOCATE(ezx(2*nxguards+nx+1,2*nyguards+ny+1,2*nzguards+nz+1))
+        ALLOCATE(ezy(2*nxguards+nx+1,2*nyguards+ny+1,2*nzguards+nz+1))
+        ALLOCATE(bxy(2*nxguards+nx+1,2*nyguards+ny+1,2*nzguards+nz+1))
+        ALLOCATE(bxz(2*nxguards+nx+1,2*nyguards+ny+1,2*nzguards+nz+1))
+        ALLOCATE(byx(2*nxguards+nx+1,2*nyguards+ny+1,2*nzguards+nz+1))
+        ALLOCATE(byz(2*nxguards+nx+1,2*nyguards+ny+1,2*nzguards+nz+1))
+        ALLOCATE(bzx(2*nxguards+nx+1,2*nyguards+ny+1,2*nzguards+nz+1))
+        ALLOCATE(bzy(2*nxguards+nx+1,2*nyguards+ny+1,2*nzguards+nz+1))
 
         exy_r => exy
         exz_r => exz
@@ -179,7 +197,7 @@ MODULE link_external_tools
         bzy_r => bzy
 
         dx = -dx; dy = -dy; dz = -dz
-        CALL init_pml_arrays()
+        CALL init_pml_arrays_smilei(is_z_min, is_z_max, is_y_min, is_y_max,is_x_min, is_x_max)
         dx = -dx; dy = -dy; dz = -dz
 
       ENDIF
@@ -196,10 +214,117 @@ MODULE link_external_tools
       zcoeffs = dt/dz*zcoeffs
     ENDIF 
     ! Dupplicate communicator 
-    CALL mpi_minimal_init_python(comm_in)
+    comm_in_idp = int(comm_in,idp)
+    CALL mpi_minimal_init_python(comm_in_idp)
 
     IF(rank==0) PRINT*, 'END INIT EXTERNAL'
   END SUBROUTINE init_params_external
+
+
+
+
+  SUBROUTINE init_pml_arrays_smilei (is_x_min, is_x_max, is_y_min,is_y_max,is_z_min, is_z_max)
+    USE shared_data
+    USE fields
+    USE params
+   
+    INTEGER(idp) :: nxx, nyy ,nzz
+    INTEGER(idp) :: ix,iy,iz,pow
+    REAL(num)    :: coeff,b_offset, e_offset
+    LOGICAL(lp) , INTENT(IN) :: is_x_min, is_x_max, is_y_min,is_y_max,is_z_min, is_z_max
+    coeff = 4._num/25._num
+    b_offset = 0.0_num
+    e_offset = 0.5_num
+    pow = 2._idp
+
+   
+    nxx = 2*nxguards+nx+1
+    nyy = 2*nyguards+ny+1
+    nzz = 2*nyguards+nz+1
+
+    ALLOCATE(sigma_z_e(nzz),sigma_z_b(nzz),sigma_y_e(nyy),sigma_y_b(nyy),sigma_x_e(nxx),sigma_x_b(nxx))
+    sigma_z_e = 0.0_num
+    sigma_z_b = 0.0_num
+    sigma_y_e = 0.0_num
+    sigma_y_b = 0.0_num
+    sigma_x_e = 0.0_num
+    sigma_x_b = 0.0_num
+    nx_pml = MIN(8,nx-1)
+    IF(c_dim == 3) THEN
+      ny_pml = MIN(8,ny-1)
+    ELSE
+      ny_pml = 0
+    ENDIF
+    nz_pml = MIN(8,nz-1)
+    shift_x_pml = nxguards
+    shift_y_pml = nyguards
+    shift_z_pml = nzguards
+
+    IF(is_x_min) THEN
+      DO ix = 0,nx_pml-1 
+        sigma_x_e(ix) = coeff*clight/dx*(nx_pml-ix-e_offset)**pow
+        sigma_x_b(ix) = coeff*clight/dx*(nx_pml-ix-b_offset)**pow
+      ENDDO
+    ENDIF
+    IF(is_x_max) THEN 
+      DO ix = nx-nx_pml, nx-1
+        sigma_x_e(ix-1) = coeff*clight/dx *(ix-(nx-nx_pml-1)+e_offset)**pow
+        sigma_x_b(ix) = coeff*clight/dx*(ix-(nx-nx_pml-1)+b_offset-1)**pow
+      ENDDO
+    ENDIF
+
+    IF(c_dim == 3) THEN
+      IF(is_y_min) THEN
+        DO iy = 0,ny_pml-1
+          sigma_y_e(iy) = coeff*clight/dy*(ny_pml-iy-e_offset)**pow
+          sigma_y_b(iy) = coeff*clight/dy*(ny_pml-iy-b_offset)**pow
+        ENDDO
+      ENDIF
+      IF(is_y_max) THEN
+        DO iy = ny-ny_pml, ny-1
+          sigma_y_e(iy-1) = coeff*clight/dy*(iy-(ny-ny_pml-1)+e_offset)**pow
+          sigma_y_b(iy) =coeff*clight/dy*(iy-(ny-ny_pml-1)+b_offset-1)**pow
+        ENDDO
+      ENDIF
+    ENDIF
+
+    IF(is_z_min) THEN
+      DO iz = 0,nz_pml-1
+        sigma_z_e(iz) = coeff*clight/dz*(nz_pml-iz-e_offset)**pow
+        sigma_z_b(iz) = coeff*clight/dz*(nz_pml-iz-b_offset)**pow
+      ENDDO
+    ENDIF
+
+    IF(is_z_max) THEN
+      DO iz = nz-nz_pml, nz-1
+        sigma_z_e(iz-1) = coeff*clight/dz*(iz-(nz-nz_pml-1)+e_offset)**pow
+        sigma_z_b(iz) =coeff*clight/dz*(iz-(nz-nz_pml-1)+b_offset-1)**pow
+      ENDDO
+    ENDIF
+
+
+    IF(absorbing_bcs_x) THEN
+      sigma_x_e = EXP(-sigma_x_e*dt)
+      sigma_x_b = EXP(-sigma_x_b*dt)
+    ELSE
+      sigma_x_e = 1.0_num
+      sigma_x_b = 1.0_num
+    ENDIF
+    IF(absorbing_bcs_y) THEN
+      sigma_y_e = EXP(-sigma_y_e*dt)
+      sigma_y_b = EXP(-sigma_y_b*dt)
+    ELSE
+      sigma_y_e = 1.0_num
+      sigma_y_b = 1.0_num
+    ENDIF
+    IF(absorbing_bcs_z) THEN
+      sigma_z_e = EXP(-sigma_z_e*dt)
+      sigma_z_b = EXP(-sigma_z_b*dt)
+    ELSE
+      sigma_z_e = 1.0_num
+      sigma_z_b = 1.0_num
+    ENDIF
+  END SUBROUTINE init_pml_arrays_smilei
 
 
   SUBROUTINE push_psatd_ebfield_picsar() BIND(C,name="push_psatd_ebfield_picsar")
