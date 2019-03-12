@@ -27,7 +27,7 @@
 ! - David Grote
 !
 ! List of subroutines:
-! - geteb2drz_energy_conserving
+! - geteb2dcirc_energy_conserving
 !
 ! ________________________________________________________________________________________
 
@@ -56,7 +56,7 @@
 !> @param[in] brg, btg, blg field arrays
 !
 ! ________________________________________________________________________________________
-SUBROUTINE geteb2drz_energy_conserving(np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin,  &
+SUBROUTINE geteb2dcirc_energy_conserving(np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin,  &
   zmin, dx, dz, nx, nz, nmodes, nxguard, nzguard, nox, noz, erg, etg, elg, brg, btg, blg)
   USE picsar_precision, ONLY: idp, lp, num
   implicit none
@@ -72,7 +72,7 @@ SUBROUTINE geteb2drz_energy_conserving(np, xp, yp, zp, ex, ey, ez, bx, by, bz, x
   nguard = (/ nxguard, nzguard /)
   nvalid = (/ nx+1, nz+1 /)
 
-  call geteb2drz_energy_conserving_generic(np, xp, yp, zp, ex, ey, ez, bx, by, bz,    &
+  call geteb2dcirc_energy_conserving_generic(np, xp, yp, zp, ex, ey, ez, bx, by, bz,    &
   xmin, zmin, dx, dz, nmodes, nox, noz, erg, nguard, nvalid, etg, nguard,      &
   nvalid, elg, nguard, nvalid, brg, nguard, nvalid, btg, nguard, nvalid, blg, nguard, &
   nvalid)
@@ -101,7 +101,7 @@ END SUBROUTINE
 !> @param[in] erg, etg, elg electric field grid
 !>
 ! ________________________________________________________________________________________
-SUBROUTINE geteb2drz_energy_conserving_generic(np, xp, yp, zp, ex, ey, ez, bx, by,    &
+SUBROUTINE geteb2dcirc_energy_conserving_generic(np, xp, yp, zp, ex, ey, ez, bx, by,    &
   bz, xmin, zmin, dx, dz, nmodes, nox, noz, erg, erg_nguard, erg_nvalid, &
   etg, etg_nguard, etg_nvalid, elg, elg_nguard, elg_nvalid, brg, brg_nguard, brg_nvalid,&
   btg, btg_nguard, btg_nvalid, blg, blg_nguard, blg_nvalid)            !#do not wrap
