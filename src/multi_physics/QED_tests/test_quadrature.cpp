@@ -6,8 +6,9 @@
 //Will automatically define a main for this test
  #define BOOST_TEST_DYN_LINK
 
-//Include Boost unit tests library
-#include <boost/test/unit_test.hpp>
+ //Include Boost unit tests library & library for floating point comparison
+ #include <boost/test/unit_test.hpp>
+ #include <boost/test/floating_point_comparison.hpp>
 
 #include "quadrature.hpp"
 

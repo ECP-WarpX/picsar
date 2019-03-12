@@ -1,5 +1,5 @@
-#ifndef __PICSAR_MULTIPHYSICS_SPEC_FUNCTIONS__
-#define __PICSAR_MULTIPHYSICS_SPEC_FUNCTIONS__
+#ifndef __PICSAR_MULTIPHYSICS_SPECIAL_FUNCTIONS__
+#define __PICSAR_MULTIPHYSICS_SPECIAL_FUNCTIONS__
 
 //This .hpp file is an extremely thin wrapper around special functions
 //(Bessel functions for now) defined either in the STL (if C++17 is available)
@@ -66,4 +66,4 @@ constexpr auto picsar::multi_physics::k_v(_REAL_ARG1 v, _REAL_ARG2 x)
 
 #endif
 
-#endif //__PICSAR_MULTIPHYSICS_SPEC_FUNCTIONS__
+#endif //__PICSAR_MULTIPHYSICS_SPECIAL_FUNCTIONS__
