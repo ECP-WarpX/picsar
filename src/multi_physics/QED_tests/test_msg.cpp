@@ -17,7 +17,7 @@ using namespace picsar::multi_physics;
 
 // ------------- Tests --------------
 
-//Test Bmsg to output stream
+//Test msg to output stream
 BOOST_AUTO_TEST_CASE( msg_hello_world )
 {
     std::stringbuf buf;
