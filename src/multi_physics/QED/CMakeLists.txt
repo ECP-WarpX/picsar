@@ -11,7 +11,7 @@ add_library(pxrmp_qed INTERFACE)
 
 ###Finds Boost library (multithreaded version).
 set(Boost_USE_MULTITHREADED      ON)
-find_package(Boost COMPONENTS math_c99 REQUIRED)
+find_package(Boost REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 target_include_directories(pxrmp_qed INTERFACE src/)
