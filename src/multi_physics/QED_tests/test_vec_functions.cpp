@@ -81,3 +81,127 @@ BOOST_AUTO_TEST_CASE( vec_functions_cross_single_1 )
     BOOST_CHECK_SMALL(1.0f - fres[1]/fexp[1], float_tolerance);
     BOOST_CHECK_SMALL(1.0f - fres[2]/fexp[2], float_tolerance);
 }
+
+//Test vector times scalar in double precision
+BOOST_AUTO_TEST_CASE( vec_functions_vsprod_double_1 )
+{
+    vec3<double> vv{1.0,2.0,-3.0};
+    double s = -2.0;
+    vec3<double> exp{-2.0,-4.0,6.0};
+
+    vec3<double> r1 = s * vv;
+    vec3<double> r2 = vv * s;
+
+    BOOST_CHECK_SMALL(1.0 - r1[0]/exp[0], double_tolerance);
+    BOOST_CHECK_SMALL(1.0 - r1[1]/exp[1], double_tolerance);
+    BOOST_CHECK_SMALL(1.0 - r1[2]/exp[2], double_tolerance);
+    BOOST_CHECK_SMALL(1.0 - r2[0]/exp[0], double_tolerance);
+    BOOST_CHECK_SMALL(1.0 - r2[1]/exp[1], double_tolerance);
+    BOOST_CHECK_SMALL(1.0 - r2[2]/exp[2], double_tolerance);
+}
+
+//Test vector times scalar in single precision
+BOOST_AUTO_TEST_CASE( vec_functions_vsprod_float_1 )
+{
+    vec3<float> fvv{1.0f,2.0f,-3.0f};
+    float fs = -2.0f;
+    vec3<float> fexp{-2.0f,-4.0f,6.0f};
+
+    vec3<float> fr1 = fs * fvv;
+    vec3<float> fr2 = fvv * fs;
+
+    BOOST_CHECK_SMALL(1.0f - fr1[0]/fexp[0], float_tolerance);
+    BOOST_CHECK_SMALL(1.0f - fr1[1]/fexp[1], float_tolerance);
+    BOOST_CHECK_SMALL(1.0f - fr1[2]/fexp[2], float_tolerance);
+    BOOST_CHECK_SMALL(1.0f - fr2[0]/fexp[0], float_tolerance);
+    BOOST_CHECK_SMALL(1.0f - fr2[1]/fexp[1], float_tolerance);
+    BOOST_CHECK_SMALL(1.0f - fr2[2]/fexp[2], float_tolerance);
+}
+
+//Test vector divided by scalar in double precision
+BOOST_AUTO_TEST_CASE( vec_functions_vsdiv_double_1 )
+{
+    vec3<double> vv{2.0,4.0,-6.0};
+    double s = -2.0;
+    vec3<double> exp{-1.0,-2.0,3.0};
+
+    vec3<double> r = vv / s;
+
+    BOOST_CHECK_SMALL(1.0 - r[0]/exp[0], double_tolerance);
+    BOOST_CHECK_SMALL(1.0 - r[1]/exp[1], double_tolerance);
+    BOOST_CHECK_SMALL(1.0 - r[2]/exp[2], double_tolerance);
+}
+
+//Test vector divided by scalar in single precision
+BOOST_AUTO_TEST_CASE( vec_functions_vsdiv_float_1 )
+{
+    vec3<float> fvv{2.0f,4.0f,-6.0f};
+    float fs = -2.0f;
+    vec3<float> fexp{-1.0f,-2.0f,3.0f};
+
+    vec3<float> fr =  fvv / fs;
+
+    BOOST_CHECK_SMALL(1.0f - fr[0]/fexp[0], float_tolerance);
+    BOOST_CHECK_SMALL(1.0f - fr[1]/fexp[1], float_tolerance);
+    BOOST_CHECK_SMALL(1.0f - fr[2]/fexp[2], float_tolerance);
+}
+
+//Test vector add in double precision
+BOOST_AUTO_TEST_CASE( vec_functions_vadd_double_1 )
+{
+    vec3<double> vv1{1.0,2.0,3.0};
+    vec3<double> vv2{1.0,-1.0,-2.0};
+
+    vec3<double> exp{2.0,1.0,1.0};
+
+    vec3<double> r = vv1 + vv2;
+
+    BOOST_CHECK_SMALL(1.0 - r[0]/exp[0], double_tolerance);
+    BOOST_CHECK_SMALL(1.0 - r[1]/exp[1], double_tolerance);
+    BOOST_CHECK_SMALL(1.0 - r[2]/exp[2], double_tolerance);
+}
+
+//Test vector add in single precision
+BOOST_AUTO_TEST_CASE( vec_functions_vadd_single_1 )
+{
+    vec3<float> vv1{1.0f,2.0f,3.0f};
+    vec3<float> vv2{1.0f,-1.0f,-2.0f};
+
+    vec3<float> exp{2.0f,1.0f,1.0f};
+
+    vec3<float> r = vv1 + vv2;
+
+    BOOST_CHECK_SMALL(1.0f - r[0]/exp[0], float_tolerance);
+    BOOST_CHECK_SMALL(1.0f - r[1]/exp[1], float_tolerance);
+    BOOST_CHECK_SMALL(1.0f - r[2]/exp[2], float_tolerance);
+}
+
+//Test vector diff in double precision
+BOOST_AUTO_TEST_CASE( vec_functions_vdiff_double_1 )
+{
+    vec3<double> vv1{1.0,2.0,3.0};
+    vec3<double> vv2{2.0,-1.0,-2.0};
+
+    vec3<double> exp{-1.0,3.0,5.0};
+
+    vec3<double> r = vv1 - vv2;
+
+    BOOST_CHECK_SMALL(1.0 - r[0]/exp[0], double_tolerance);
+    BOOST_CHECK_SMALL(1.0 - r[1]/exp[1], double_tolerance);
+    BOOST_CHECK_SMALL(1.0 - r[2]/exp[2], double_tolerance);
+}
+
+//Test vector diff in single precision
+BOOST_AUTO_TEST_CASE( vec_functions_vdiff_single_1 )
+{
+    vec3<float> vv1{1.0f,2.0f,3.0f};
+    vec3<float> vv2{2.0f,-1.0f,-2.0f};
+
+    vec3<float> exp{-1.0f,3.0f,5.0f};
+
+    vec3<float> r = vv1 - vv2;
+
+    BOOST_CHECK_SMALL(1.0f - r[0]/exp[0], float_tolerance);
+    BOOST_CHECK_SMALL(1.0f - r[1]/exp[1], float_tolerance);
+    BOOST_CHECK_SMALL(1.0f - r[2]/exp[2], float_tolerance);
+}

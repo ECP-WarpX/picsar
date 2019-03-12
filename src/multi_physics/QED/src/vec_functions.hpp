@@ -34,6 +34,31 @@ namespace picsar{
         PXRMP_FORCE_INLINE
         vec3<_REAL> cross(const vec3<_REAL>& va, const vec3<_REAL>& vb);
 
+        //Product of a vector times a scalar
+        template <typename _REAL>
+        PXRMP_FORCE_INLINE
+        vec3<_REAL> operator*(const vec3<_REAL>& v, const _REAL s);
+
+        //Product of a scalar times a vector
+        template <typename _REAL>
+        PXRMP_FORCE_INLINE
+        vec3<_REAL> operator*(const _REAL s, const vec3<_REAL>& v);
+
+        //Vector divided by a scalar
+        template <typename _REAL>
+        PXRMP_FORCE_INLINE
+        vec3<_REAL> operator/(const vec3<_REAL>& v, const _REAL s);
+
+        //Add two vectors
+        template <typename _REAL>
+        PXRMP_FORCE_INLINE
+        vec3<_REAL> operator+(const vec3<_REAL>& va, const vec3<_REAL>& vb);
+
+        //Subtract two vectors
+        template <typename _REAL>
+        PXRMP_FORCE_INLINE
+        vec3<_REAL> operator-(const vec3<_REAL>& va, const vec3<_REAL>& vb);
+
     }
 }
 
@@ -65,6 +90,71 @@ picsar::multi_physics::cross(const vec3<_REAL>& va, const vec3<_REAL>& vb)
     out[0] = va[1]*vb[2] - va[2]*vb[1];
     out[1] = va[2]*vb[0] - va[0]*vb[2];
     out[2] = va[0]*vb[1] - va[1]*vb[0];
+    return out;
+}
+
+//Product of a vector times a scalar
+template <typename _REAL>
+PXRMP_FORCE_INLINE
+picsar::multi_physics::vec3<_REAL>
+picsar::multi_physics::operator*(const vec3<_REAL>& v, const _REAL s)
+{
+    picsar::multi_physics::vec3<_REAL> out;
+    out[0] = v[0]*s;
+    out[1] = v[1]*s;
+    out[2] = v[2]*s;
+    return out;
+}
+
+//Product of a scalar times a vector
+template <typename _REAL>
+PXRMP_FORCE_INLINE
+picsar::multi_physics::vec3<_REAL>
+picsar::multi_physics::operator*(const _REAL s, const vec3<_REAL>& v)
+{
+    picsar::multi_physics::vec3<_REAL> out;
+    out[0] = v[0]*s;
+    out[1] = v[1]*s;
+    out[2] = v[2]*s;
+    return out;
+}
+
+//Vector divided by a scalar
+template <typename _REAL>
+PXRMP_FORCE_INLINE
+picsar::multi_physics::vec3<_REAL>
+picsar::multi_physics::operator/(const vec3<_REAL>& v, const _REAL s)
+{
+    picsar::multi_physics::vec3<_REAL> out;
+    out[0] = v[0]/s;
+    out[1] = v[1]/s;
+    out[2] = v[2]/s;
+    return out;
+}
+
+//Add two vectors
+template <typename _REAL>
+PXRMP_FORCE_INLINE
+picsar::multi_physics::vec3<_REAL>
+picsar::multi_physics::operator+(const vec3<_REAL>& va, const vec3<_REAL>& vb)
+{
+    picsar::multi_physics::vec3<_REAL> out;
+    out[0] = va[0] + vb[0];
+    out[1] = va[1] + vb[1];
+    out[2] = va[2] + vb[2];
+    return out;
+}
+
+//Subtract two vectors
+template <typename _REAL>
+PXRMP_FORCE_INLINE
+picsar::multi_physics::vec3<_REAL>
+picsar::multi_physics::operator-(const vec3<_REAL>& va, const vec3<_REAL>& vb)
+{
+    picsar::multi_physics::vec3<_REAL> out;
+    out[0] = va[0] - vb[0];
+    out[1] = va[1] - vb[1];
+    out[2] = va[2] - vb[2];
     return out;
 }
 
