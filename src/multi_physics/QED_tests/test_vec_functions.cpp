@@ -22,6 +22,22 @@ const float float_tolerance = 1.0e-5;
 
 // ------------- Tests --------------
 
+//Test norm2 in double precision
+BOOST_AUTO_TEST_CASE( vec_functions_norm2_double_1 )
+{
+    vec3<double> vv{1.0,-2.0,3.0};
+    double exp = (1.0 + 4.0 + 9.0);
+    BOOST_CHECK_SMALL(1.0 - norm2(vv)/exp, double_tolerance);
+}
+
+//Test norm2 in single precision
+BOOST_AUTO_TEST_CASE( vec_functions_norm2_single_1 )
+{
+    vec3<float> fvv{1.0f,-2.0f,3.0f};
+    float fexp = (1.0f + 4.0f + 9.0f);
+    BOOST_CHECK_SMALL(1.0f - norm2(fvv)/fexp, float_tolerance);
+}
+
 //Test norm in double precision
 BOOST_AUTO_TEST_CASE( vec_functions_norm_double_1 )
 {

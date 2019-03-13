@@ -19,6 +19,11 @@ namespace picsar{
         template <typename _REAL>
         using vec3 = std::array<_REAL, 3>;
 
+        //Squared norm of a 3-vector
+        template <typename _REAL>
+        PXRMP_FORCE_INLINE
+        _REAL norm2(const vec3<_REAL>& vec);
+
         //Norm of a 3-vector
         template <typename _REAL>
         PXRMP_FORCE_INLINE
@@ -64,12 +69,20 @@ namespace picsar{
 
 //############################################### Implementation
 
+//Squared norm of a 3-vector
+template <typename _REAL>
+PXRMP_FORCE_INLINE
+_REAL picsar::multi_physics::norm2(const vec3<_REAL>& vec)
+{
+    return vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2];
+}
+
 //Norm of a 3-vector
 template <typename _REAL>
 PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::norm(const vec3<_REAL>& vec)
 {
-    return sqrt(dot(vec, vec));
+    return sqrt(norm2(vec));
 }
 
 //Dot product of two 3-vectors
