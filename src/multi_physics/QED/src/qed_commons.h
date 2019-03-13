@@ -118,7 +118,7 @@ namespace picsar{
     #elif defined(PXRMP_USE_SI_UNITS)
       #define PXRMP_WITH_SI_UNITS
     #else
-      #pragma message("Units not explicitely chosen. Library will use SI.")
+      #pragma message("Units not explicitly chosen. Library will use SI.")
       #define PXRMP_WITH_SI_UNITS
     #endif
 
