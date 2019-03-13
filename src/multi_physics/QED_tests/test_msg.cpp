@@ -11,6 +11,9 @@
 
 #include<sstream>
 
+//Units choice. Not relevant here, but avoids compile-time warning
+#define PXRMP_USE_SI_UNITS
+
 #include "msg.hpp"
 
 using namespace picsar::multi_physics;

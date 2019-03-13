@@ -1,9 +1,14 @@
+//This header file contains usefuls definitions (macros, physical constants...)
+//Should be included by all the source files of the QED library before
+
+//The library allows to use either normalized or SI units.
+//These compile-time directives protect against mixing
+#if defined(PXRMP_USE_NORMALIZED_UNITS) && defined(PXRMP_USE_SI_UNITS)
+  #error The library cannot be used mixing normalized and SI units!
+#endif
+
 #ifndef __PICSAR_MULTIPHYSICS_QED_COMMONS__
 #define __PICSAR_MULTIPHYSICS_QED_COMMONS__
-
-//This header file contains usefuls definitions (macros, physical constants...)
-//Should be included by all the source files of the QED library
-
 //############################################## Compiler specific macros ######
 
         //Restrict qualifier (compiler specific!)
@@ -49,6 +54,10 @@ namespace picsar{
         elementary_charge*elementary_charge /
         (4.0*pi*vacuum_permittivity*electron_mass*light_speed*light_speed);
 
+        const double schwinger_field =
+        electron_mass*electron_mass*(light_speed*light_speed*light_speed)/
+        elementary_charge*vacuum_permittivity;
+
         //Single precision
         const float flt_pi = static_cast<float>(pi);
 
@@ -68,6 +77,36 @@ namespace picsar{
         const float flt_classical_electron_radius =
         static_cast<float>(flt_classical_electron_radius);
 
+        const float flt_schwinger_field =
+        static_cast<float>(flt_schwinger_field);
+
+
+//##############################################################################
+
+//######################## Compile-time flags for SI or normalized units #######
+
+//The library should never uses directly physical constants, but rather the
+//constants defined below, which take into account the normalization choice
+
+    //Default is SI units
+    #ifdef PXRMP_USE_NORMALIZED_UNITS
+      #define PXRMP_WITH_NORMALIZED_UNITS
+    #elif defined(PXRMP_USE_SI_UNITS)
+      #define PXRMP_WITH_SI_UNITS
+    #else
+      #pragma message("Units not explicitely chosen. Library will use SI.")
+      #define PXRMP_WITH_SI_UNITS
+    #endif
+
+    #ifdef PXRMP_WITH_SI_UNITS
+      const double __c = light_speed;
+      const double __emass = electron_mass;
+      const double __schwinger = schwinger_field;
+    #else
+      const double __c = 1.0;
+      const double __emass = 1.0;
+      const double __schwinger = electron_mass*light_speed/(reduced_plank*2.*pi);
+    #endif
 
 //##############################################################################
 

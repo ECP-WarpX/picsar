@@ -10,6 +10,9 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 
+//Units choice. Not relevant here, but avoids compile-time warning
+#define PXRMP_USE_SI_UNITS
+
 #include "special_functions.hpp"
 
 using namespace picsar::multi_physics;
