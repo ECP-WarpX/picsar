@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE( quadrature_finite_interval_double_1 )
 
     double res_sin2 = quad_a_b<double>(sin2, a, b);
 
-    BOOST_CHECK_SMALL(1.0 - res_sin2/exp_res_sin2, double_tolerance);
+    BOOST_CHECK_SMALL((res_sin2-exp_res_sin2)/exp_res_sin2, double_tolerance);
 }
 
 BOOST_AUTO_TEST_CASE( quadrature_infinite_interval_double_1 )
@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE( quadrature_infinite_interval_double_1 )
 
     double res_expx2 = quad_a_inf<double>(expx2, a);
 
-    BOOST_CHECK_SMALL(1.0 - res_expx2/exp_expx2, double_tolerance);
+    BOOST_CHECK_SMALL((res_expx2-exp_expx2)/exp_expx2, double_tolerance);
 }
 
 BOOST_AUTO_TEST_CASE( quadrature_infinite_interval_double_2 )
@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE( quadrature_infinite_interval_double_2 )
 
     double res_datan = quad_a_inf<double>(datan, a);
 
-    BOOST_CHECK_SMALL(1.0 - res_datan/exp_datan, double_tolerance);
+    BOOST_CHECK_SMALL((res_datan-exp_datan)/exp_datan, double_tolerance);
 }
 
 //Test Bessel functions with single precision
@@ -82,7 +82,8 @@ BOOST_AUTO_TEST_CASE( quadrature_finite_interval_float_1 )
 
         float fres_sin2 = quad_a_b<float>(fsin2, fa, fb);
 
-        BOOST_CHECK_SMALL(1.0f - fres_sin2/fexp_res_sin2, float_tolerance);
+        BOOST_CHECK_SMALL((fres_sin2-fexp_res_sin2)/fexp_res_sin2,
+            float_tolerance);
 }
 
 BOOST_AUTO_TEST_CASE( quadrature_infinite_interval_float_1 )
@@ -96,7 +97,7 @@ BOOST_AUTO_TEST_CASE( quadrature_infinite_interval_float_1 )
 
     float fres_expx2 = quad_a_inf<float>(fexpx2, fa);
 
-    BOOST_CHECK_SMALL(1.0f - fres_expx2/fexp_expx2, float_tolerance);
+    BOOST_CHECK_SMALL((fres_expx2-fexp_expx2)/fexp_expx2, float_tolerance);
 }
 
 BOOST_AUTO_TEST_CASE( quadrature_infinite_interval_float_2 )
@@ -110,5 +111,5 @@ BOOST_AUTO_TEST_CASE( quadrature_infinite_interval_float_2 )
 
     float fres_datan = quad_a_inf<float>(fdatan, fa);
 
-    BOOST_CHECK_SMALL(1.0f - fres_datan/fexp_datan, float_tolerance);
+    BOOST_CHECK_SMALL((fres_datan-fexp_datan)/fexp_datan, float_tolerance);
 }

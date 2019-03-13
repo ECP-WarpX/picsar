@@ -56,7 +56,7 @@ namespace picsar{
 
         const double schwinger_field =
         electron_mass*electron_mass*(light_speed*light_speed*light_speed)/
-        elementary_charge*vacuum_permittivity;
+        (elementary_charge*reduced_plank);
 
         //Single precision
         const float flt_pi = static_cast<float>(pi);
@@ -78,7 +78,31 @@ namespace picsar{
         static_cast<float>(flt_classical_electron_radius);
 
         const float flt_schwinger_field =
-        static_cast<float>(flt_schwinger_field);
+        static_cast<float>(schwinger_field);
+
+        const double si_gigameter = 1.0e3;
+        const double si_megameter = 1.0e3;
+        const double si_kilometer = 1.0e3;
+        const double si_meter = 1.0;
+        const double si_decimeter = 1.0e-1;
+        const double si_centimeter = 1.0e-2;
+        const double si_millimeter = 1.0e-3;
+        const double si_micrometer = 1.0e-6;
+        const double si_nanometer = 1.0e-9;
+        const double si_picometer = 1.0e-12;
+        const double si_femtometer = 1.0e-15;
+
+        const float flt_si_gigameter = static_cast<float>(si_gigameter);
+        const float flt_si_megameter = static_cast<float>(si_megameter);
+        const float flt_si_kilometer = static_cast<float>(si_kilometer);
+        const float flt_si_meter = static_cast<float>(si_meter);
+        const float flt_si_decimeter = static_cast<float>(si_decimeter);
+        const float flt_si_centimeter = static_cast<float>(si_centimeter);
+        const float flt_si_millimeter = static_cast<float>(si_millimeter);
+        const float flt_si_micrometer =static_cast<float>(si_micrometer);
+        const float flt_si_nanometer = static_cast<float>(si_nanometer);
+        const float flt_si_picometer = static_cast<float>(si_picometer);
+        const float flt_si_femtometer = static_cast<float>(si_femtometer);
 
 
 //##############################################################################

@@ -21,7 +21,7 @@ namespace picsar{
         //lambda will be ignored if compiled with SI units
         template<typename _REAL>
         PXRMP_FORCE_INLINE
-        _REAL calc_chi_photon(
+        _REAL chi_photon(
             _REAL px, _REAL py, _REAL pz,
             _REAL ex, _REAL ey, _REAL ez,
             _REAL bx, _REAL by, _REAL bz,
@@ -32,7 +32,7 @@ namespace picsar{
         //lambda will be ignored if compiled with SI units
         template<typename _REAL>
         PXRMP_FORCE_INLINE
-        _REAL calc_chi_leptons(
+        _REAL chi_lepton(
             _REAL px, _REAL py, _REAL pz,
             _REAL ex, _REAL ey, _REAL ez,
             _REAL bx, _REAL by, _REAL bz,
@@ -48,7 +48,7 @@ namespace picsar{
 //take into account the unit convention
 template<typename _REAL>
 PXRMP_FORCE_INLINE
-_REAL picsar::multi_physics::calc_chi_photon(
+_REAL picsar::multi_physics::chi_photon(
     _REAL px, _REAL py, _REAL pz,
     _REAL ex, _REAL ey, _REAL ez,
     _REAL bx, _REAL by, _REAL bz,
@@ -63,11 +63,15 @@ _REAL picsar::multi_physics::calc_chi_photon(
     vec3<_REAL> em_e{ex, ey, ez};
     vec3<_REAL> em_b{bx, by, bz};
 
-    vec3<_REAL> p_unit = p / norm(p);
+    _REAL norm_p = norm(p);
+    if(norm_p == static_cast<_REAL>(0.0))
+        return static_cast<_REAL>(0.0);
+
+    vec3<_REAL> p_unit = p / norm_p;
     vec3<_REAL> em_eperp = em_e - dot(p_unit,em_e)*p_unit;
     _REAL mod = norm(em_eperp + cross(p_unit*static_cast<_REAL>(__c), em_b));
 
-    return mod*p/(static_cast<_REAL>(__emass*__c*__schwinger)*lambda);
+    return mod*norm_p/(static_cast<_REAL>(__emass*__c*__schwinger)*lambda);
 }
 
 //chi for leptons
@@ -75,7 +79,7 @@ _REAL picsar::multi_physics::calc_chi_photon(
 //take into account the unit convention
 template<typename _REAL>
 PXRMP_FORCE_INLINE
-_REAL picsar::multi_physics::calc_chi_leptons(
+_REAL picsar::multi_physics::chi_lepton(
     _REAL px, _REAL py, _REAL pz,
     _REAL ex, _REAL ey, _REAL ez,
     _REAL bx, _REAL by, _REAL bz,
@@ -86,7 +90,36 @@ _REAL picsar::multi_physics::calc_chi_leptons(
     lambda = static_cast<_REAL>(1.0);
 #endif
 
-    return 0.0;
+    _REAL one = static_cast<_REAL>(1.0);
+
+    vec3<_REAL> p{px, py, pz};
+    vec3<_REAL> em_e{ex, ey, ez};
+    vec3<_REAL> em_b{bx, by, bz};
+
+    _REAL norm_p2 = norm2(p);
+    if(norm_p2 == static_cast<_REAL>(0.0))
+        return static_cast<_REAL>(0.0);
+
+    _REAL norm_p = sqrt(norm_p2);
+    vec3<_REAL> p_unit = p / norm_p;
+
+    //For gamma_2, writing the operations like this is better for single
+    //precision (found with some tests).
+    _REAL gamma_2 = one +
+        (norm_p/static_cast<_REAL>(__emass*__c))*
+        (norm_p/static_cast<_REAL>(__emass*__c));
+    _REAL gamma = sqrt(gamma_2);
+
+    _REAL beta = sqrt(one-one/gamma_2);
+    vec3<_REAL> beta_vec = beta * p_unit;
+
+    _REAL beta_dot_e = dot(beta_vec, em_e);
+    _REAL beta_dot_e_2 = beta_dot_e*beta_dot_e;
+    _REAL e_plus_v_cross_b_2 = norm2(em_e +
+        cross(beta_vec * static_cast<_REAL>(__c), em_b));
+
+    return gamma*sqrt(fabs(beta_dot_e_2-e_plus_v_cross_b_2))
+        /(static_cast<_REAL>(__schwinger)*lambda);
 }
 
 
