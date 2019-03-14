@@ -21,7 +21,7 @@ foreach(test_src ${TEST_SRCS})
         #link to Boost libraries AND your targets and dependencies
         target_link_libraries(${test_name} ${Boost_LIBRARIES} pxrmp_qed)
 
-        if(DEFINED KOKKOS_DIRECTORY)
+        if(WITH_KOKKOS)
           target_compile_definitions(${test_name} PRIVATE PXRMP_BUILD_WITH_KOKKOS_SUPPORT)
           target_link_libraries(${test_name} kokkos)
         endif()

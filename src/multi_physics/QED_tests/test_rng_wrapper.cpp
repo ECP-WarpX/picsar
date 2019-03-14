@@ -18,11 +18,15 @@
 
 using namespace picsar::multi_physics;
 
+
+
 // ------------- Tests --------------
+
+//***STL***
 
 //***Constructors
 
-//Test STL rng_wrapper constructors test (double precision)
+//Test STL rng_wrapper constructors(double precision)
 BOOST_AUTO_TEST_CASE( rng_stl_wrapper_constructors_double )
 {
     int64_t seed = 2391892344079;
@@ -34,7 +38,7 @@ BOOST_AUTO_TEST_CASE( rng_stl_wrapper_constructors_double )
     BOOST_CHECK_EQUAL( wrp1.unf<double>(0.0,1.0), wrp2.unf<double>(0.0,1.0));
 }
 
-//Test STL rng_wrapper constructors test (single precision)
+//Test STL rng_wrapper constructors(single precision)
 BOOST_AUTO_TEST_CASE( rng_stl_wrapper_constructors_single )
 {
     int64_t seed = 2391892344079;
@@ -108,5 +112,20 @@ BOOST_AUTO_TEST_CASE( rng_stl_wrapper_exp_single )
     }
 }
 
+//***Kokkos***
+//Build ONLY if Kokkos is enabled
+#ifdef PXRMP_BUILD_WITH_KOKKOS_SUPPORT
+
+//***Constructors
+
+//Test Kokkos rng_wrapper constructor (double precision)
+BOOST_AUTO_TEST_CASE( dummy )
+{
+    kokkos_rng_wrapper wrp;
+
+    BOOST_CHECK_EQUAL( 1,1);
+}
+
+#endif
 
 //***Exponential distribution

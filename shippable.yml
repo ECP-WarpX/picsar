@@ -19,8 +19,13 @@ build:
     - mkdir build
     - cd build
     #The following instruction is not required on my pc:
+    #First test without Kokkos support
     - export BOOST_LIBRARYDIR=/usr/lib/x86_64-linux-gnu/
-    - cmake ../. -DKOKKOS_DIRECTORY=${kokkos_dir} -DKOKKOS_ENABLE_OPENMP=ON
+    - cmake ../. -DWITH_KOKKOS=OFF
+    - make
+    - make test
+    #Second test with Kokkos support
+    - cmake ../. -DWITH_KOKKOS=ON -DKOKKOS_DIRECTORY=${kokkos_dir} -DKOKKOS_ENABLE_OPENMP=ON
     - make
     - make test
     - cd ../../..

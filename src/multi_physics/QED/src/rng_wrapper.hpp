@@ -14,7 +14,7 @@
 
 //Kokkos library is included only if the appropriate flag is set
 #ifdef PXRMP_BUILD_WITH_KOKKOS_SUPPORT
-    #include <Kokkos_Core.hpp>
+    #include <Kokkos_Random.hpp>
 #endif
 
 
@@ -53,9 +53,13 @@ namespace picsar{
 
         //*** Kokkos RNG Wrapper ***
         //Only if built with the appropriate flag
-        #ifdef PXRMP_BUILD_WITH_KOKKOS_SUPPORT
-            //TODO
-        #endif
+    #ifdef PXRMP_BUILD_WITH_KOKKOS_SUPPORT
+        class kokkos_rng_wrapper
+        {
+            private:
+                int dummy;
+        };
+    #endif
 
     }
 }
