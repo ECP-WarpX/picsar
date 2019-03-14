@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE( chi_photons_double_6 )
 
     double chi_res = chi_photon(px,py,pz,ex,ey,ez,bx,by,bz);
 
-    BOOST_CHECK_EQUAL(chi_res, 0.0);
+    BOOST_CHECK_SMALL(chi_res, double_tolerance);
 }
 
 //Test chi function for photons with single precision (case 1)
@@ -268,7 +268,7 @@ BOOST_AUTO_TEST_CASE( chi_photons_float_6 )
 
     float chi_res = chi_photon(px,py,pz,ex,ey,ez,bx,by,bz);
 
-    BOOST_CHECK_EQUAL(chi_res, 0.0f);
+    BOOST_CHECK_SMALL(chi_res, float_tolerance);
 }
 
 //#################### Leptons
@@ -384,7 +384,7 @@ BOOST_AUTO_TEST_CASE( chi_leptons_double_6 )
 
     double chi_res = chi_lepton(px,py,pz,ex,ey,ez,bx,by,bz);
 
-    BOOST_CHECK_EQUAL(chi_res, 0.0);
+    BOOST_CHECK_SMALL(chi_res, double_tolerance);
 }
 
 //Test chi function for leptons with single precision (case 1)
@@ -499,5 +499,5 @@ BOOST_AUTO_TEST_CASE( chi_leptons_single_6 )
 
     float chi_res = chi_lepton(px,py,pz,ex,ey,ez,bx,by,bz);
 
-    BOOST_CHECK_EQUAL(chi_res, 0.0f);
+    BOOST_CHECK_SMALL(chi_res, float_tolerance);
 }
