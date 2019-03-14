@@ -7,7 +7,7 @@
  #define BOOST_TEST_DYN_LINK
 
 #include <cstdint>
- #include <random>
+#include <random>
 
 //Include Boost unit tests library
 #include <boost/test/unit_test.hpp>
@@ -15,6 +15,11 @@
 //Units choice. Not relevant here, but avoids compile-time warning
 #define PXRMP_USE_SI_UNITS
 #include "rng_wrapper.hpp"
+
+//Only include Kokkos if it is supported
+#ifdef PXRMP_BUILD_WITH_KOKKOS_SUPPORT
+    #include <Kokkos_Random.hpp>
+#endif
 
 using namespace picsar::multi_physics;
 
@@ -121,7 +126,7 @@ BOOST_AUTO_TEST_CASE( rng_stl_wrapper_exp_single )
 //Test Kokkos rng_wrapper constructor (double precision)
 BOOST_AUTO_TEST_CASE( dummy )
 {
-    kokkos_rng_wrapper wrp;
+    kokkos_rng_wrapper<Kokkos::Random_XorShift1024_Pool<>, double> wrp;
 
     BOOST_CHECK_EQUAL( 1,1);
 }

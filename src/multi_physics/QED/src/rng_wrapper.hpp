@@ -53,13 +53,19 @@ namespace picsar{
 
         //*** Kokkos RNG Wrapper ***
         //Only if built with the appropriate flag
-    #ifdef PXRMP_BUILD_WITH_KOKKOS_SUPPORT
+        #ifdef PXRMP_BUILD_WITH_KOKKOS_SUPPORT
+
+        //Kokkos-based wrapper is templated with respect to the generator pool
+        //and the
+        template<class generator_pool, typename _REAL>
         class kokkos_rng_wrapper
         {
             private:
-                int dummy;
+                Kokkos::View<_REAL*> vals;
+                generator_pool rand_pool;
         };
-    #endif
+
+        #endif
 
     }
 }
