@@ -10,6 +10,11 @@ build:
     #Install dependencies
     - sudo apt-get update && sudo apt-get install -y libboost-math-dev libboost-test-dev cmake3
     - cmake --version
+    - cd ..
+    - git clone https://github.com/kokkos/kokkos
+    - cd kokkos
+    - kokkos_dir=$(pwd)
+    - cd ../picsar
     - cd src/multi_physics
     - mkdir build
     - cd build

@@ -14,7 +14,7 @@
 
 //Kokkos library is included only if the appropriate flag is set
 #ifdef PXRMP_BUILD_WITH_KOKKOS_SUPPORT
-    #include "Kokkos_Random.hpp"
+    #include <Kokkos_Core.hpp>
 #endif
 
 

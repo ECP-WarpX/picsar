@@ -21,6 +21,11 @@ foreach(test_src ${TEST_SRCS})
         #link to Boost libraries AND your targets and dependencies
         target_link_libraries(${test_name} ${Boost_LIBRARIES} pxrmp_qed)
 
+        if(DEFINED KOKKOS_DIRECTORY)
+          target_compile_definitions(${test_name} PRIVATE PXRMP_BUILD_WITH_KOKKOS_SUPPORT)
+          target_link_libraries(${test_name} kokkos)
+        endif()
+
         #Move testing binaries in a test_bin subdirectory
         set_target_properties(${test_name} PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/test_bin)
@@ -32,7 +37,6 @@ foreach(test_src ${TEST_SRCS})
         else()
           set_target_properties(${test_name} PROPERTIES CXX_STANDARD 11)
         endif()
-
 
         #Finally add it to test execution
         message(${test_name})

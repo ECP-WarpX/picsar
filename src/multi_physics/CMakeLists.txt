@@ -11,5 +11,12 @@ add_compile_options(-Wall -Wextra -Wpedantic)
 
 project (qed)
 
+###If the user specifies Kokkos directory, build with Kokkos support
+if(DEFINED KOKKOS_DIRECTORY)
+  add_subdirectory(${KOKKOS_DIRECTORY}  ${CMAKE_BINARY_DIR}/kokkos)
+  include_directories(${Kokkos_INCLUDE_DIRS_RET})
+  message("The library will be built with Kokkos support")
+endif()
+
 add_subdirectory(QED)
 add_subdirectory(QED_tests)
