@@ -19,7 +19,7 @@ namespace picsar{
 
      //This class implements the Nonlinear Breit-Wheeler physical p
      //
-     template<typename _REAL>
+     template<typename _REAL, class _RNDWRAP>
      class breit_wheeler_engine
      {
      public:
@@ -27,7 +27,7 @@ namespace picsar{
          //constructor. The constructor can accept a lambda parameter.
          //It is ignored if the SI units option is selected
          breit_wheeler_engine
-         (std::unique_ptr<rng_wrapper<_REAL>>&& rng,
+         (_RNDWRAP&& rng,
          _REAL lambda = static_cast<_REAL>(1.0));
 
          //This explicit declaration makes sure that the move constructor
@@ -40,7 +40,7 @@ namespace picsar{
 
      private:
         _REAL lambda;
-        std::unique_ptr<rng_wrapper<_REAL>> rng;
+        _RNDWRAP rng;
      };
 
   }
@@ -48,10 +48,11 @@ namespace picsar{
 
 //############################################### Implementation
 
-template<typename _REAL>
-picsar::multi_physics::breit_wheeler_engine<_REAL>::breit_wheeler_engine
-(std::unique_ptr<rng_wrapper<_REAL>>&& rng, _REAL lambda):
-    lambda{lambda}, rng{move(rng)}
+template<typename _REAL, class _RNDWRAP>
+picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+breit_wheeler_engine
+(_RNDWRAP&& rng, _REAL lambda):
+    lambda{lambda}, rng{std::move(rng)}
 {
     //This enforces lambda=1 if SI units are used.
 #ifdef PXRMP_WITH_SI_UNITS
@@ -60,16 +61,18 @@ picsar::multi_physics::breit_wheeler_engine<_REAL>::breit_wheeler_engine
 }
 
 
- //Getter for lambda
- template<typename _REAL>
-_REAL picsar::multi_physics::breit_wheeler_engine<_REAL>::get_lambda() const
+//Getter for lambda
+template<typename _REAL, class _RNDWRAP>
+_REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+get_lambda() const
 {
     return lambda;
 }
 
 //Setter for lambda
-template<typename _REAL>
-void picsar::multi_physics::breit_wheeler_engine<_REAL>::set_lambda
+template<typename _REAL, class _RNDWRAP>
+void picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+set_lambda
 #ifdef PXRMP_WITH_NORMALIZED_UNITS
 (_REAL lambda)
 {

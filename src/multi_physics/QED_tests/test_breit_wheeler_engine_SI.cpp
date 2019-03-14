@@ -15,6 +15,8 @@
 #define PXRMP_USE_SI_UNITS
 #include "breit_wheeler_engine.hpp"
 
+#include "rng_wrapper.hpp"
+
 using namespace picsar::multi_physics;
 
 // ------------- Tests --------------
@@ -22,12 +24,11 @@ using namespace picsar::multi_physics;
 //Test get/set lambda for breit_wheeler_engine (double precision)
 BOOST_AUTO_TEST_CASE( breit_wheeler_engine_double_1 )
 {
-    //Cumbersome, but C++11 does not have make_unique :-(
-    auto ptr_wrp = std::unique_ptr<rng_wrapper<double>>
-    (new stl_rng_wrapper<double>(390109317));
+    stl_rng_wrapper rng{390109317};
 
     double lambda = 800.0*si_nanometer;
-    breit_wheeler_engine<double> bw_engine(move(ptr_wrp));
+    breit_wheeler_engine<double, stl_rng_wrapper> bw_engine(std::move(rng));
+
     bw_engine.set_lambda(lambda);
     BOOST_CHECK_EQUAL( 1.0, bw_engine.get_lambda()); //With SI lambda is 1
 }
@@ -35,12 +36,11 @@ BOOST_AUTO_TEST_CASE( breit_wheeler_engine_double_1 )
 //Test get/set lambda for breit_wheeler_engine (single precision)
 BOOST_AUTO_TEST_CASE( breit_wheeler_engine_single_1 )
 {
-    //Cumbersome, but C++11 does not have make_unique :-(
-    auto ptr_wrp = std::unique_ptr<rng_wrapper<float>>
-    (new stl_rng_wrapper<float>(390109317));
+    stl_rng_wrapper rng{390109317};
 
     float lambda = 800.0f*flt_si_nanometer;
-    breit_wheeler_engine<float> bw_engine(move(ptr_wrp));
+    breit_wheeler_engine<float, stl_rng_wrapper> bw_engine(std::move(rng));
+
     bw_engine.set_lambda(lambda);
-    BOOST_CHECK_EQUAL( 1.0f, bw_engine.get_lambda()); //With SI lambda is 1
+    BOOST_CHECK_EQUAL( 1.0, bw_engine.get_lambda()); //With SI lambda is 1
 }

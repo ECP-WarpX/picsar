@@ -28,10 +28,10 @@ BOOST_AUTO_TEST_CASE( rng_stl_wrapper_constructors_double )
     int64_t seed = 2391892344079;
     std::mt19937_64 rng{2391892344079};
 
-    stl_rng_wrapper<double> wrp1{seed};
-    stl_rng_wrapper<double> wrp2(move(rng));
+    stl_rng_wrapper wrp1{seed};
+    stl_rng_wrapper wrp2(move(rng));
 
-    BOOST_CHECK_EQUAL( wrp1.unf(0.0,1.0), wrp2.unf(0.0,1.0));
+    BOOST_CHECK_EQUAL( wrp1.unf<double>(0.0,1.0), wrp2.unf<double>(0.0,1.0));
 }
 
 //Test STL rng_wrapper constructors test (single precision)
@@ -40,10 +40,10 @@ BOOST_AUTO_TEST_CASE( rng_stl_wrapper_constructors_single )
     int64_t seed = 2391892344079;
     std::mt19937_64 rng{2391892344079};
 
-    stl_rng_wrapper<float> wrp1{seed};
-    stl_rng_wrapper<float> wrp2(move(rng));
+    stl_rng_wrapper wrp1{seed};
+    stl_rng_wrapper wrp2(move(rng));
 
-    BOOST_CHECK_EQUAL( wrp1.unf(0.0f,1.0f), wrp2.unf(0.0f,1.0f));
+    BOOST_CHECK_EQUAL( wrp1.unf<float>(0.0f,1.0f), wrp2.unf<float>(0.0f,1.0f));
 }
 
 //***Uniform distribution
@@ -52,13 +52,13 @@ BOOST_AUTO_TEST_CASE( rng_stl_wrapper_constructors_single )
 BOOST_AUTO_TEST_CASE( rng_stl_wrapper_unf_double )
 {
     int64_t seed = 2391892344079;
-    stl_rng_wrapper<double> wrp{seed};
+    stl_rng_wrapper wrp{seed};
     size_t how_many = 10000;
     double a = -7.0;
     double b = 11.1;
 
     for (size_t d = 0; d <= how_many; ++d){
-        double qq = wrp.unf(a,b);
+        double qq = wrp.unf<double> (a,b);
         BOOST_TEST( qq >= a);
         BOOST_TEST( qq < b);
     }
@@ -68,13 +68,13 @@ BOOST_AUTO_TEST_CASE( rng_stl_wrapper_unf_double )
 BOOST_AUTO_TEST_CASE( rng_stl_wrapper_unf_single )
 {
     int64_t seed = 2391892344079;
-    stl_rng_wrapper<float> wrp{seed};
+    stl_rng_wrapper wrp{seed};
     size_t how_many = 10000;
     float a = -7.0f;
     float b = 11.1f;
 
     for (size_t d = 0; d <= how_many; ++d){
-        float qq = wrp.unf(a,b);
+        float qq = wrp.unf<float>(a,b);
         BOOST_TEST( qq >= a);
         BOOST_TEST( qq < b);
     }
@@ -84,12 +84,12 @@ BOOST_AUTO_TEST_CASE( rng_stl_wrapper_unf_single )
 BOOST_AUTO_TEST_CASE( rng_stl_wrapper_exp_double )
 {
     int64_t seed = 2391892344079;
-    stl_rng_wrapper<double> wrp{seed};
+    stl_rng_wrapper wrp{seed};
     size_t how_many = 10000;
     double l = 1.0f;
 
     for (size_t d = 0; d <= how_many; ++d){
-        double qq = wrp.exp(l);
+        double qq = wrp.exp<double>(l);
         BOOST_TEST( qq >= 0.0);
     }
 }
@@ -98,12 +98,12 @@ BOOST_AUTO_TEST_CASE( rng_stl_wrapper_exp_double )
 BOOST_AUTO_TEST_CASE( rng_stl_wrapper_exp_single )
 {
     int64_t seed = 2391892344079;
-    stl_rng_wrapper<float> wrp{seed};
+    stl_rng_wrapper wrp{seed};
     size_t how_many = 10000;
     float l = 1.0f;
 
     for (size_t d = 0; d <= how_many; ++d){
-        double qq = wrp.exp(l);
+        double qq = wrp.exp<float>(l);
         BOOST_TEST( qq >= 0.0f);
     }
 }
