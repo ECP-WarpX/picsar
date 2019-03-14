@@ -19,28 +19,50 @@
 
 using namespace picsar::multi_physics;
 
+//Helper function
+template<class RNG, typename REAL, typename WHATEVER>
+breit_wheeler_engine<REAL, RNG> get_bw_set_lambda(int64_t seed, WHATEVER lambda)
+{
+    stl_rng_wrapper rng{seed};
+    auto bw_engine =  breit_wheeler_engine<REAL, stl_rng_wrapper>{std::move(rng)};
+    bw_engine.set_lambda(static_cast<REAL>(lambda));
+    return bw_engine;
+}
+
 // ------------- Tests --------------
+
+// ------------- get/set lambda --------------
 
 //Test get/set lambda for breit_wheeler_engine (double precision)
 BOOST_AUTO_TEST_CASE( breit_wheeler_engine_double_1 )
 {
-    stl_rng_wrapper rng{390109317};
-
-    double lambda = 800.0*si_nanometer;
-    breit_wheeler_engine<double, stl_rng_wrapper> bw_engine(std::move(rng));
-
-    bw_engine.set_lambda(lambda);
+    auto bw_engine = get_bw_set_lambda<stl_rng_wrapper, double>
+        (390109317, 800.0*si_nanometer);
     BOOST_CHECK_EQUAL( 1.0, bw_engine.get_lambda()); //With SI lambda is 1
 }
 
 //Test get/set lambda for breit_wheeler_engine (single precision)
 BOOST_AUTO_TEST_CASE( breit_wheeler_engine_single_1 )
 {
-    stl_rng_wrapper rng{390109317};
+    auto bw_engine = get_bw_set_lambda<stl_rng_wrapper, float>
+        (390109317, 800.0*si_nanometer);
+    BOOST_CHECK_EQUAL( 1.0f, bw_engine.get_lambda()); //With SI lambda is 1
+}
 
-    float lambda = 800.0f*flt_si_nanometer;
-    breit_wheeler_engine<float, stl_rng_wrapper> bw_engine(std::move(rng));
+// ------------- optical depth --------------
 
-    bw_engine.set_lambda(lambda);
-    BOOST_CHECK_EQUAL( 1.0, bw_engine.get_lambda()); //With SI lambda is 1
+//Test get new optical depth (double precision)
+BOOST_AUTO_TEST_CASE( breit_wheeler_engine_opt_double_1 )
+{
+    auto bw_engine = get_bw_set_lambda<stl_rng_wrapper, double>
+        (390109317, 800.0*si_nanometer);
+    BOOST_TEST ( bw_engine.get_optical_depth() >= 0.0 );
+}
+
+//Test get new optical depth (single precision)
+BOOST_AUTO_TEST_CASE( breit_wheeler_engine_opt_single_1 )
+{
+    auto bw_engine = get_bw_set_lambda<stl_rng_wrapper, float>
+        (390109317, 800.0*si_nanometer);
+    BOOST_TEST( bw_engine.get_optical_depth() >= 0.0 );
 }

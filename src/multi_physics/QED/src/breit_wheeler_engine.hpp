@@ -17,14 +17,18 @@
 namespace picsar{
   namespace multi_physics{
 
-     //This class implements the Nonlinear Breit-Wheeler physical p
-     //
+      //Templates are used for the numerical type and for the
+      //RNG wrapper
      template<typename _REAL, class _RNDWRAP>
      class breit_wheeler_engine
      {
      public:
-         //A unique pointer to a rng wrapper has to be passed to the
-         //constructor. The constructor can accept a lambda parameter.
+         //A random number generatator has to be passed by move.
+         //The RNG can be ANY object implementing the functions
+         //_REAL unf (_REAL a, _REAL b)
+         //and
+         //_REAL exp (_REAL l)
+         //The constructor can accept a lambda parameter.
          //It is ignored if the SI units option is selected
          breit_wheeler_engine
          (_RNDWRAP&& rng,
@@ -38,9 +42,15 @@ namespace picsar{
          _REAL get_lambda() const;
          void set_lambda(_REAL lambda);
 
+         //get a single optical depth
+         PXRMP_FORCE_INLINE
+         _REAL get_optical_depth();
+
      private:
         _REAL lambda;
         _RNDWRAP rng;
+
+        const _REAL one = static_cast<_REAL>(1.0); // Handy constant
      };
 
   }
@@ -56,7 +66,7 @@ breit_wheeler_engine
 {
     //This enforces lambda=1 if SI units are used.
 #ifdef PXRMP_WITH_SI_UNITS
-    lambda = static_cast<_REAL>(1.0);
+    lambda = one;
 #endif
 }
 
@@ -81,5 +91,14 @@ set_lambda
 #else
 (_REAL){} //Do nothing
 #endif
+
+//get a single optical depth (basically a single call to the internal RNG)
+template<typename _REAL, class _RNDWRAP>
+PXRMP_FORCE_INLINE
+_REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+get_optical_depth()
+{
+    return rng.exp(one);
+}
 
 #endif //__PICSAR_MULTIPHYSICS_BREIT_WHEELER_ENGINE__
