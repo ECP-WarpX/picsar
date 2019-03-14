@@ -134,6 +134,13 @@ namespace picsar{
 
 //##############################################################################
 
+//######################## Flag to enable kokkos support for thread-safe RNG####
+
+    //Default is to build without Kokkos support
+    //#define PXRMP_BUILD_WITH_KOKKOS_SUPPORT
+
+//##############################################################################
+
     }
 }
 
