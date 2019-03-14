@@ -55,6 +55,8 @@ namespace picsar{
         //Only if built with the appropriate flag
         #ifdef PXRMP_BUILD_WITH_KOKKOS_SUPPORT
 
+        //TO DO!
+
         //Kokkos-based wrapper is templated with respect to the generator pool
         //and the
         template<class generator_pool, typename _REAL>

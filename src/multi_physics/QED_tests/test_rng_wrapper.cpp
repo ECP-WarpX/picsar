@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE( rng_stl_wrapper_exp_single )
 BOOST_AUTO_TEST_CASE( dummy )
 {
     kokkos_rng_wrapper<Kokkos::Random_XorShift1024_Pool<>, double> wrp;
-
+    //TO DO!
     BOOST_CHECK_EQUAL( 1,1);
 }
 
