@@ -33,7 +33,7 @@ namespace picsar{
 
             //Get rnd numbers with exponential distribution (l is the lambda param.)
             PXRMP_FORCE_INLINE
-            virtual _REAL expl(_REAL l) = 0;
+            virtual _REAL exp(_REAL l) = 0;
         };
 
         //Derived class to encapsulate STL rng (NOT thread-safe!)
@@ -53,7 +53,7 @@ namespace picsar{
             PXRMP_FORCE_INLINE
             _REAL unf(_REAL a, _REAL b);
             PXRMP_FORCE_INLINE
-            _REAL expl(_REAL l);
+            _REAL exp(_REAL l);
 
         private:
             //Internally a 64 bit Mersenne Twister generator is used
@@ -93,7 +93,7 @@ _REAL picsar::multi_physics::stl_rng_wrapper<_REAL>::unf(_REAL a, _REAL b)
 //Get rnd numbers with exponential distribution (l is the lambda param.)
 template<typename _REAL>
 PXRMP_FORCE_INLINE
-_REAL picsar::multi_physics::stl_rng_wrapper<_REAL>::expl(_REAL l)
+_REAL picsar::multi_physics::stl_rng_wrapper<_REAL>::exp(_REAL l)
 {
     auto exp_dist_l = std::exponential_distribution<_REAL>(l);
     return exp_dist_l(rng);

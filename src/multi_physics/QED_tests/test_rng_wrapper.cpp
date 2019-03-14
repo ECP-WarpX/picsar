@@ -20,6 +20,8 @@ using namespace picsar::multi_physics;
 
 // ------------- Tests --------------
 
+//***Constructors
+
 //Test STL rng_wrapper constructors test (double precision)
 BOOST_AUTO_TEST_CASE( rng_stl_wrapper_constructors_double )
 {
@@ -43,3 +45,68 @@ BOOST_AUTO_TEST_CASE( rng_stl_wrapper_constructors_single )
 
     BOOST_CHECK_EQUAL( wrp1.unf(0.0f,1.0f), wrp2.unf(0.0f,1.0f));
 }
+
+//***Uniform distribution
+
+//Test STL rng_wrapper unf (double precision)
+BOOST_AUTO_TEST_CASE( rng_stl_wrapper_unf_double )
+{
+    int64_t seed = 2391892344079;
+    stl_rng_wrapper<double> wrp{seed};
+    size_t how_many = 10000;
+    double a = -7.0;
+    double b = 11.1;
+
+    for (size_t d = 0; d <= how_many; ++d){
+        double qq = wrp.unf(a,b);
+        BOOST_TEST( qq >= a);
+        BOOST_TEST( qq < b);
+    }
+}
+
+//Test STL rng_wrapper unf (single precision)
+BOOST_AUTO_TEST_CASE( rng_stl_wrapper_unf_single )
+{
+    int64_t seed = 2391892344079;
+    stl_rng_wrapper<float> wrp{seed};
+    size_t how_many = 10000;
+    float a = -7.0f;
+    float b = 11.1f;
+
+    for (size_t d = 0; d <= how_many; ++d){
+        float qq = wrp.unf(a,b);
+        BOOST_TEST( qq >= a);
+        BOOST_TEST( qq < b);
+    }
+}
+
+//Test STL rng_wrapper exp (double precision)
+BOOST_AUTO_TEST_CASE( rng_stl_wrapper_exp_double )
+{
+    int64_t seed = 2391892344079;
+    stl_rng_wrapper<double> wrp{seed};
+    size_t how_many = 10000;
+    double l = 1.0f;
+
+    for (size_t d = 0; d <= how_many; ++d){
+        double qq = wrp.exp(l);
+        BOOST_TEST( qq >= 0.0);
+    }
+}
+
+//Test STL rng_wrapper exp (single precision)
+BOOST_AUTO_TEST_CASE( rng_stl_wrapper_exp_single )
+{
+    int64_t seed = 2391892344079;
+    stl_rng_wrapper<float> wrp{seed};
+    size_t how_many = 10000;
+    float l = 1.0f;
+
+    for (size_t d = 0; d <= how_many; ++d){
+        double qq = wrp.exp(l);
+        BOOST_TEST( qq >= 0.0f);
+    }
+}
+
+
+//***Exponential distribution
