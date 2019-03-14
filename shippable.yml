@@ -20,7 +20,7 @@ build:
     - cd build
     #The following instruction is not required on my pc:
     - export BOOST_LIBRARYDIR=/usr/lib/x86_64-linux-gnu/
-    - cmake ../.
+    - cmake ../. -DKOKKOS_DIRECTORY=${kokkos_dir} -DKOKKOS_ENABLE_OPENMP=ON
     - make
     - make test
     - cd ../../..
