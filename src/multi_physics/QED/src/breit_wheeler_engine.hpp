@@ -12,6 +12,12 @@
 //Uses random numbers
 #include "rng_wrapper.hpp"
 
+//Uses special functions
+#include "special_functions.hpp"
+
+//Uses quadrature
+#include "quadrature.hpp"
+
 //############################################### Declaration
 
 namespace picsar{
@@ -36,7 +42,13 @@ namespace picsar{
 
          //This explicit declaration makes sure that the move constructor
          //can be generated automatically
-         breit_wheeler_engine(breit_wheeler_engine&& ) = default;
+          breit_wheeler_engine(breit_wheeler_engine& ):
+              lambda(lambda), rng(rng)
+              {};
+
+         breit_wheeler_engine(breit_wheeler_engine&& ):
+             lambda(std::move(lambda)), rng(std::move(rng))
+             {};
 
          //Getter & setter for lambda
          _REAL get_lambda() const;
@@ -46,6 +58,10 @@ namespace picsar{
          PXRMP_FORCE_INLINE
          _REAL get_optical_depth();
 
+         //Calculates the pair production rate (Warning: from scratch!)
+         PXRMP_FORCE_INLINE
+         _REAL compute_dN_dt(_REAL energy_phot, _REAL chi_phot);
+
      private:
         _REAL lambda;
 
@@ -53,7 +69,18 @@ namespace picsar{
         //exp(l)
         _RNDWRAP rng;
 
-        const _REAL one = static_cast<_REAL>(1.0); // Handy constant
+        //Internal functions to perform calculations
+        PXRMP_FORCE_INLINE
+        static _REAL compute_x(_REAL chi_phot, _REAL chi_ele);
+
+        PXRMP_FORCE_INLINE
+        static _REAL compute_inner_integral(_REAL x);
+
+        PXRMP_FORCE_INLINE
+        static _REAL compute_TT_integrand(_REAL chi_phot, _REAL chi_ele);
+
+        PXRMP_FORCE_INLINE
+        static _REAL compute_TT_function(_REAL chi_phot);
      };
 
   }
@@ -69,7 +96,7 @@ breit_wheeler_engine
 {
     //This enforces lambda=1 if SI units are used.
 #ifdef PXRMP_WITH_SI_UNITS
-    lambda = one;
+    lambda = static_cast<_REAL>(1.0);
 #endif
 }
 
@@ -101,7 +128,79 @@ PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 get_optical_depth()
 {
-    return rng.exp(one);
+    return rng.exp(static_cast<_REAL>(1.0));
+}
+
+//Calculates the pair production rate (Warning: from scratch!)
+template<typename _REAL, class _RNDWRAP>
+PXRMP_FORCE_INLINE
+_REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+compute_dN_dt(_REAL energy_phot, _REAL chi_phot)
+{
+     const _REAL one = static_cast<_REAL>(1.0);
+    _REAL coeff = static_cast<_REAL>(__pair_prod_coeff)*
+        lambda*(one/( chi_phot * energy_phot));
+    return coeff*compute_TT_function(chi_phot);
+}
+
+//Function to compute X (Warning: it doen't chek if chi_ele != 0 or
+//if chi_phot > chi_ele)
+template<typename _REAL, class _RNDWRAP>
+PXRMP_FORCE_INLINE
+_REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+compute_x(_REAL chi_phot, _REAL chi_ele)
+{
+    const _REAL two = static_cast<_REAL>(2.0);
+    const _REAL three = static_cast<_REAL>(3.0);
+    return pow(chi_phot/(chi_ele*(chi_phot-chi_ele)), two/three);
+}
+
+//Function to compute the inner integral of the pair production rate
+template<typename _REAL, class _RNDWRAP>
+PXRMP_FORCE_INLINE
+_REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+compute_inner_integral(_REAL x)
+{
+    const _REAL two = static_cast<_REAL>(2.0);
+    const _REAL three = static_cast<_REAL>(3.0);
+    auto func = [two, three](double s){
+        return sqrt(s)*k_v(two/three, two*pow(s, three/two)/three);
+    };
+    return quad_a_inf<_REAL>(func, x);
+}
+
+//Calculations of other parts of the pair production rate [I]
+template<typename _REAL, class _RNDWRAP>
+PXRMP_FORCE_INLINE
+_REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+compute_TT_integrand(_REAL chi_phot, _REAL chi_ele)
+{
+    const _REAL two = static_cast<_REAL>(2.0);
+    const _REAL three = static_cast<_REAL>(3.0);
+    _REAL xx = compute_x(chi_phot, chi_ele);
+    _REAL xx_3_2 = pow(xx, three/two);
+    return compute_inner_integral(xx)-(two-chi_phot*xx_3_2)
+        *k_v(two/three, (two/three)*xx_3_2);
+}
+
+//Calculations of other parts of the pair production rate [II]
+template<typename _REAL, class _RNDWRAP>
+PXRMP_FORCE_INLINE
+_REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+compute_TT_function(_REAL chi_phot)
+{
+    const _REAL zero = static_cast<_REAL>(0.0);
+    if(chi_phot == zero)
+        return zero;
+
+    auto func = [chi_phot, zero](_REAL chi_ele){
+        if(chi_ele - chi_phot == zero)
+            return zero;
+        else
+            return compute_TT_integrand(chi_phot, chi_ele);
+    };
+
+    return quad_a_b<_REAL>(func, zero, chi_phot);
 }
 
 #endif //__PICSAR_MULTIPHYSICS_BREIT_WHEELER_ENGINE__

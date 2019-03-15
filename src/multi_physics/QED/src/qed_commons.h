@@ -10,6 +10,9 @@
 #ifndef __PICSAR_MULTIPHYSICS_QED_COMMONS__
 #define __PICSAR_MULTIPHYSICS_QED_COMMONS__
 
+//Needed to calculate a square root
+#include <cmath>
+
 //######################## Flag to enable kokkos support for thread-safe RNG####
 
     //Default is to build without Kokkos support
@@ -71,6 +74,11 @@ namespace picsar{
         electron_mass*electron_mass*(light_speed*light_speed*light_speed)/
         (elementary_charge*reduced_plank);
 
+        const double pair_prod_rate_coeff =
+        fine_structure * electron_mass * light_speed * light_speed /
+        (pi * reduced_plank * sqrt(3.0));
+
+
         //Single precision
         const float flt_pi = static_cast<float>(pi);
 
@@ -92,6 +100,9 @@ namespace picsar{
 
         const float flt_schwinger_field =
         static_cast<float>(schwinger_field);
+
+        const float flt_pair_prod_rate_coeff =
+        static_cast<float>(pair_prod_rate_coeff);
 
         const double si_gigameter = 1.0e3;
         const double si_megameter = 1.0e3;
@@ -139,10 +150,12 @@ namespace picsar{
       const double __c = light_speed;
       const double __emass = electron_mass;
       const double __schwinger = schwinger_field;
+      const double __pair_prod_coeff = pair_prod_rate_coeff;
     #else
       const double __c = 1.0;
       const double __emass = 1.0;
       const double __schwinger = electron_mass*light_speed/(reduced_plank*2.*pi);
+      const double __pair_prod_coeff = pair_prod_rate_coeff/(2.0*pi*light_speed);
     #endif
 
 //##############################################################################
