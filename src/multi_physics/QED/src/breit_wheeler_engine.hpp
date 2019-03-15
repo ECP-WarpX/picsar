@@ -48,6 +48,9 @@ namespace picsar{
 
      private:
         _REAL lambda;
+
+        //The only requrement for the RNG is to be able to provide unf(a,b) and
+        //exp(l)
         _RNDWRAP rng;
 
         const _REAL one = static_cast<_REAL>(1.0); // Handy constant

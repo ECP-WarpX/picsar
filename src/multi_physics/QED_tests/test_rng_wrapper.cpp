@@ -160,6 +160,11 @@ BOOST_AUTO_TEST_CASE( rng_kokkos_unf_double_1 )
     //Copy from device to host
     Kokkos::deep_copy(vals.h_view,vals.d_view);
 
+    //Single test
+    double val = wrp.unf(a,b);
+    BOOST_TEST( val >= a);
+    BOOST_TEST( val < b);
+
     Kokkos::finalize();
 
     for(size_t i = 0; i < size; ++i){
@@ -202,6 +207,9 @@ BOOST_AUTO_TEST_CASE( rng_kokkos_exp_double_1 )
 
     //Copy from device to host
     Kokkos::deep_copy(vals.h_view,vals.d_view);
+
+    //Single test
+    BOOST_TEST( wrp.exp(1.0) >= 0.0);
 
     Kokkos::finalize();
 
@@ -249,6 +257,12 @@ BOOST_AUTO_TEST_CASE( rng_kokkos_unf_single_1 )
     //Copy from device to host
     Kokkos::deep_copy(vals.h_view,vals.d_view);
 
+    //Single test
+    float val = wrp.unf(a,b);
+    BOOST_TEST( val >= a);
+    BOOST_TEST( val < b);
+
+
     Kokkos::finalize();
 
     for(size_t i = 0; i < size; ++i){
@@ -291,6 +305,9 @@ BOOST_AUTO_TEST_CASE( rng_kokkos_exp_single_1 )
 
     //Copy from device to host
     Kokkos::deep_copy(vals.h_view,vals.d_view);
+
+    //Single test
+    BOOST_TEST( wrp.exp(1.0f) >= 0.0f);
 
     Kokkos::finalize();
 
