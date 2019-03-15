@@ -2,10 +2,6 @@ cmake_minimum_required(VERSION 3.5)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-#########THIS IS ONLY FOR DEBUG PURPOSES. NON-PORTABLE. WILL BE REMOVED#########
-add_compile_options(-Wall -Wextra -Wpedantic)
-################################################################################
-
 ###Header only library called "pxrmp_qed"
 add_library(pxrmp_qed INTERFACE)
 

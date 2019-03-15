@@ -5,10 +5,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 #Setup CMake to run tests
 enable_testing()
 
-#########THIS IS ONLY FOR DEBUG PURPOSES#########################################
-add_compile_options(-Wall -Wextra -Wpedantic)
-#################################################################################
-
 project (qed)
 
 ###If the user specifies Kokkos directory, build with Kokkos support

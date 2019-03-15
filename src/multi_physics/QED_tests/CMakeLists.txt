@@ -1,9 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
 
-#########THIS IS ONLY FOR DEBUG PURPOSES#########################################
-add_compile_options(-Wall -Wextra -Wpedantic)
-#################################################################################
-
 #Check if unit_test package is available
 find_package(Boost COMPONENTS unit_test_framework REQUIRED)
 include_directories (${Boost_INCLUDE_DIRS})
