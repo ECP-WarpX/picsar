@@ -7,6 +7,7 @@
 //thread safe RNG is also built.
 
 #include <random>
+#include <cmath>
 #include <cstdint>
 
 //Should be included by all the src files of the library
@@ -32,7 +33,8 @@ namespace picsar{
             //Alternatively, the constructor can take a generator (by move)
             stl_rng_wrapper(std::mt19937_64&& rng);
 
-            //This line is just to make sure that the move constructor is generated
+            //This line is just to make sure that copy and move constructor is generated
+            stl_rng_wrapper(stl_rng_wrapper& ) = default;
             stl_rng_wrapper(stl_rng_wrapper&& ) = default;
 
             //Get rnd number uniformly distributed in [a,b)
@@ -59,12 +61,46 @@ namespace picsar{
 
         //Kokkos-based wrapper is templated with respect to the generator pool
         //and the
-        template<class generator_pool, typename _REAL>
+        template<class generator_pool>
         class kokkos_rng_wrapper
         {
+            public:
+                //Constructor asks for a generator pool
+                kokkos_rng_wrapper(generator_pool pool);
+
+                //Copy constructor (this time explicitly defined to make Kokkos happy)
+                kokkos_rng_wrapper(const kokkos_rng_wrapper& other);
+                //Move constructor (this time explicitly defined to make Kokkos happy)
+                kokkos_rng_wrapper(const kokkos_rng_wrapper&& other);
+
+                //Get rnd number uniformly distributed in [a,b)
+                template<typename _REAL>
+                PXRMP_FORCE_INLINE
+                _REAL unf(_REAL a, _REAL b) const;
+
+                //Get rnd number with exponential distribution
+                template<typename _REAL>
+                PXRMP_FORCE_INLINE
+                _REAL exp(_REAL l) const;
+
+                //For Kokkos we need to
+                //specialize for double and floats :-(
+                //Non-template functions have precedence.
+                PXRMP_FORCE_INLINE
+                double unf(double a, double b) const;
+
+                PXRMP_FORCE_INLINE
+                float unf(float a, float b) const;
+
             private:
-                Kokkos::View<_REAL*> vals;
-                generator_pool rand_pool;
+                //Internally, it keeps a copy of the generator pool
+                const generator_pool pool;
+
+                //Transforms a random number between [0.0, 1) into
+                //a number extracted from exponential distribution
+                template<typename _REAL>
+                PXRMP_FORCE_INLINE
+                _REAL unf2exp(_REAL uu) const;
         };
 
         #endif
@@ -108,7 +144,96 @@ _REAL picsar::multi_physics::stl_rng_wrapper::exp(_REAL l)
 //*** Kokkos RNG Wrapper ***
 //Only if built with the appropriate flag
 #ifdef PXRMP_BUILD_WITH_KOKKOS_SUPPORT
-    //TODO
+
+//Constructor asks for a  pointer to a generator pool
+template<class generator_pool>
+picsar::multi_physics::kokkos_rng_wrapper<generator_pool>::
+kokkos_rng_wrapper(generator_pool pool):
+    pool{pool}
+{}
+
+//Copy constructor (this time explicitly defined to make Kokkos happy)
+template<class generator_pool>
+picsar::multi_physics::kokkos_rng_wrapper<generator_pool>::
+kokkos_rng_wrapper(const kokkos_rng_wrapper& other):
+    pool{other.pool}
+{}
+
+//Move constructor (this time explicitly defined to make Kokkos happy)
+template<class generator_pool>
+picsar::multi_physics::kokkos_rng_wrapper<generator_pool>::
+kokkos_rng_wrapper(const kokkos_rng_wrapper&& other):
+    pool{std::move(other.pool)}
+{}
+
+//Get rnd number uniformly distributed in [a,b)
+//generic (to be specialized)
+template<class generator_pool>
+template<typename _REAL>
+PXRMP_FORCE_INLINE
+_REAL
+picsar::multi_physics::kokkos_rng_wrapper<generator_pool>::
+unf(_REAL a, _REAL b) const
+{
+    auto rand_gen = pool.get_state();
+
+    //Since Kokkos RNG generates numbers between (a,b],
+    //here we ask fot r in (-b,-a] and then we return -r
+    _REAL res = -static_cast<_REAL>(rand_gen.drand(static_cast<_REAL>(-b),
+        static_cast<_REAL>(-a)));
+    pool.free_state(rand_gen);
+    return res;
+}
+
+//Transforms a random number between [0.0, 1) into
+//a number extracted from exponential distribution
+
+template<class generator_pool>
+template<typename _REAL>
+PXRMP_FORCE_INLINE
+_REAL
+picsar::multi_physics::kokkos_rng_wrapper<generator_pool>::
+ unf2exp(_REAL uu) const
+{
+    return -log(static_cast<_REAL>(1.0) - uu);
+}
+
+//Get rnd number with exponential distribution
+//generic, should be specialized
+template<class generator_pool>
+template<typename _REAL>
+PXRMP_FORCE_INLINE
+_REAL picsar::multi_physics::kokkos_rng_wrapper<generator_pool>::
+exp(_REAL l) const {
+    return unf2exp<_REAL>
+        (unf(static_cast<_REAL>(0.0), static_cast<_REAL>(1.0)));
+}
+
+
+//The specialized functions
+
+template<class generator_pool>
+PXRMP_FORCE_INLINE
+double picsar::multi_physics::kokkos_rng_wrapper<generator_pool>::
+unf(double a, double b) const
+{
+    auto rand_gen = pool.get_state();
+    double res = -rand_gen.drand(-b, -a);
+    pool.free_state(rand_gen);
+    return res;
+}
+
+template<class generator_pool>
+PXRMP_FORCE_INLINE
+float picsar::multi_physics::kokkos_rng_wrapper<generator_pool>::
+unf(float a, float b) const
+{
+    auto rand_gen = pool.get_state();
+    float res = -rand_gen.frand(-b, -a);
+    pool.free_state(rand_gen);
+    return res;
+}
+
 #endif
 
 

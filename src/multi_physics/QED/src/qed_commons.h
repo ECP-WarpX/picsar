@@ -9,6 +9,14 @@
 
 #ifndef __PICSAR_MULTIPHYSICS_QED_COMMONS__
 #define __PICSAR_MULTIPHYSICS_QED_COMMONS__
+
+//######################## Flag to enable kokkos support for thread-safe RNG####
+
+    //Default is to build without Kokkos support
+    //#define PXRMP_BUILD_WITH_KOKKOS_SUPPORT
+
+//##############################################################################
+
 //############################################## Compiler specific macros ######
 
         //Restrict qualifier (compiler specific!)
@@ -19,18 +27,23 @@
         #endif
 
         //Force inline pragmas (compiler specific!)
-        #if defined(__CUDA_ARCH__)
+        #ifndef PXRMP_BUILD_WITH_KOKKOS_SUPPORT
+          #if defined(__CUDA_ARCH__)
             #define PXRMP_FORCE_INLINE __forceinline__
-        #elif defined(__INTEL_COMPILER)
+          #elif defined(__INTEL_COMPILER)
             #define PXRMP_FORCE_INLINE inline __attribute__((always_inline))
-        #elif defined(__clang__)
+          #elif defined(__clang__)
             #define PXRMP_FORCE_INLINE inline __attribute__((always_inline))
-        #elif defined(__GNUC__)
+          #elif defined(__GNUC__)
             #define PXRMP_FORCE_INLINE inline __attribute__((always_inline))
-        #elif defined(__ibmxl__)
+          #elif defined(__ibmxl__)
             #define PXRMP_FORCE_INLINE inline __attribute__((always_inline))
-        #else
+          #else
             #define PXRMP_FORCE_INLINE inline
+          #endif
+        #else //Redefinition of PXRMP_FORCE_INLINE if Kokkos is enabled
+          #include <Kokkos_Macros.hpp>
+          #define PXRMP_FORCE_INLINE KOKKOS_INLINE_FUNCTION
         #endif
 
 //##############################################################################
@@ -131,13 +144,6 @@ namespace picsar{
       const double __emass = 1.0;
       const double __schwinger = electron_mass*light_speed/(reduced_plank*2.*pi);
     #endif
-
-//##############################################################################
-
-//######################## Flag to enable kokkos support for thread-safe RNG####
-
-    //Default is to build without Kokkos support
-    //#define PXRMP_BUILD_WITH_KOKKOS_SUPPORT
 
 //##############################################################################
 
