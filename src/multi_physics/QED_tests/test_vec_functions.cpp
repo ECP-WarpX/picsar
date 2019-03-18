@@ -23,204 +23,218 @@ const double double_tolerance = 1.0e-10;
 //Tolerance for single precision calculations
 const float float_tolerance = 1.0e-4;
 
+//Templated tolerance
+template <typename T>
+T tolerance()
+{
+    if(std::is_same<T,float>::value)
+        return float_tolerance;
+    else
+        return double_tolerance;
+}
+
 // ------------- Tests --------------
+
+//Test norm2 generic
+template<typename T>
+void vec_functions_norm2()
+{
+    vec3<T> vv{1.0,-2.0,3.0};
+    T exp = static_cast<T>(1.0 + 4.0 + 9.0);
+    BOOST_CHECK_SMALL((norm2(vv)-exp)/exp, tolerance<T>());
+}
 
 //Test norm2 in double precision
 BOOST_AUTO_TEST_CASE( vec_functions_norm2_double_1 )
 {
-    vec3<double> vv{1.0,-2.0,3.0};
-    double exp = (1.0 + 4.0 + 9.0);
-    BOOST_CHECK_SMALL((norm2(vv)-exp)/exp, double_tolerance);
+    vec_functions_norm2<double>();
 }
 
 //Test norm2 in single precision
 BOOST_AUTO_TEST_CASE( vec_functions_norm2_single_1 )
 {
-    vec3<float> fvv{1.0f,-2.0f,3.0f};
-    float fexp = (1.0f + 4.0f + 9.0f);
-    BOOST_CHECK_SMALL((norm2(fvv)-fexp)/fexp, float_tolerance);
+    vec_functions_norm2<float>();
+}
+
+//Test norm generic
+template<typename T>
+void vec_functions_norm()
+{
+    vec3<T> vv{1.0,-2.0,3.0};
+    T exp = sqrt(1.0 + 4.0 + 9.0);
+    BOOST_CHECK_SMALL((norm(vv)-exp)/exp,  tolerance<T>());
 }
 
 //Test norm in double precision
 BOOST_AUTO_TEST_CASE( vec_functions_norm_double_1 )
 {
-    vec3<double> vv{1.0,-2.0,3.0};
-    double exp = sqrt(1.0 + 4.0 + 9.0);
-    BOOST_CHECK_SMALL((norm(vv)-exp)/exp, double_tolerance);
+    vec_functions_norm<double>();
 }
 
 //Test norm in single precision
 BOOST_AUTO_TEST_CASE( vec_functions_norm_single_1 )
 {
-    vec3<float> fvv{1.0f,-2.0f,3.0f};
-    float fexp = sqrt(1.0f + 4.0f + 9.0f);
-    BOOST_CHECK_SMALL((norm(fvv)-fexp)/fexp, float_tolerance);
+    vec_functions_norm<float>();
+}
+
+//Test dot generic
+template<typename T>
+void vec_functions_dot()
+{
+    vec3<T> vv1{1.0,-2.0,3.0};
+    vec3<T> vv2{-1.0, 0.0,5.0};
+    T exp = 14.0;
+    BOOST_CHECK_SMALL((dot(vv1, vv2)-exp)/exp, tolerance<T>());
 }
 
 //Test dot in double precision
 BOOST_AUTO_TEST_CASE( vec_functions_dot_double_1 )
 {
-    vec3<double> vv1{1.0,-2.0,3.0};
-    vec3<double> vv2{-1.0, 0.0,5.0};
-    double exp = 14.0;
-    BOOST_CHECK_SMALL((dot(vv1, vv2)-exp)/exp, double_tolerance);
+    vec_functions_dot<double>();
 }
 
 //Test dot in single precision
 BOOST_AUTO_TEST_CASE( vec_functions_dot_single_1 )
 {
-    vec3<float> vv1{1.0f,-2.0f,3.0f};
-    vec3<float> vv2{-1.0f, 0.0f,5.0f};
-    float exp = 14.0f;
-    BOOST_CHECK_SMALL((dot(vv1, vv2)-exp)/exp, float_tolerance);
+    vec_functions_dot<float>();
+}
+
+//Test cross generic
+template<typename T>
+void vec_functions_cross()
+{
+    vec3<T> vv1{1./3., -1./4., 1./5.};
+    vec3<T> vv2{-2./3., -3./4., 4./5.};
+    vec3<T> exp{-1./20., -2./5., -5./12.};
+
+    vec3<T> res = cross(vv1,vv2);
+    BOOST_CHECK_SMALL((res[0]-exp[0])/exp[0], tolerance<T>());
+    BOOST_CHECK_SMALL((res[1]-exp[1])/exp[1], tolerance<T>());
+    BOOST_CHECK_SMALL((res[2]-exp[2])/exp[2], tolerance<T>());
 }
 
 //Test cross in double precision
 BOOST_AUTO_TEST_CASE( vec_functions_cross_double_1 )
 {
-    vec3<double> vv1{1./3., -1./4., 1./5.};
-    vec3<double> vv2{-2./3., -3./4., 4./5.};
-    vec3<double> exp{-1./20., -2./5., -5./12.};
-
-    vec3<double> res = cross(vv1,vv2);
-    BOOST_CHECK_SMALL((res[0]-exp[0])/exp[0], double_tolerance);
-    BOOST_CHECK_SMALL((res[1]-exp[1])/exp[1], double_tolerance);
-    BOOST_CHECK_SMALL((res[2]-exp[2])/exp[2], double_tolerance);
+    vec_functions_cross<double>();
 }
 
 //Test cross in single precision
 BOOST_AUTO_TEST_CASE( vec_functions_cross_single_1 )
 {
-    vec3<float> fvv1{1.0f/3.0f, -1.0f/4.0f, 1.0f/5.0f};
-    vec3<float> fvv2{-2.0f/3.0f, -3.0f/4.0f, 4.0f/5.0f};
-    vec3<float> fexp{-1.0f/20.0f, -2.0f/5.0f, -5.0f/12.};
+    vec_functions_cross<float>();
+}
 
-    vec3<float> fres = cross(fvv1,fvv2);
-    BOOST_CHECK_SMALL((fres[0]-fexp[0])/fexp[0], float_tolerance);
-    BOOST_CHECK_SMALL((fres[1]-fexp[1])/fexp[1], float_tolerance);
-    BOOST_CHECK_SMALL((fres[2]-fexp[2])/fexp[2], float_tolerance);
+//Test vector times scalar generic
+template<typename T>
+void vec_functions_vsprod()
+{
+    vec3<T> vv{1.0,2.0,-3.0};
+    T s = -2.0;
+    vec3<T> exp{-2.0,-4.0,6.0};
+
+    vec3<T> r1 = s * vv;
+    vec3<T> r2 = vv * s;
+
+    BOOST_CHECK_SMALL((r1[0]-exp[0])/exp[0], tolerance<T>());
+    BOOST_CHECK_SMALL((r1[1]-exp[1])/exp[1], tolerance<T>());
+    BOOST_CHECK_SMALL((r1[2]-exp[2])/exp[2], tolerance<T>());
+    BOOST_CHECK_SMALL((r2[0]-exp[0])/exp[0], tolerance<T>());
+    BOOST_CHECK_SMALL((r2[1]-exp[1])/exp[1], tolerance<T>());
+    BOOST_CHECK_SMALL((r2[2]-exp[2])/exp[2], tolerance<T>());
 }
 
 //Test vector times scalar in double precision
 BOOST_AUTO_TEST_CASE( vec_functions_vsprod_double_1 )
 {
-    vec3<double> vv{1.0,2.0,-3.0};
-    double s = -2.0;
-    vec3<double> exp{-2.0,-4.0,6.0};
-
-    vec3<double> r1 = s * vv;
-    vec3<double> r2 = vv * s;
-
-    BOOST_CHECK_SMALL((r1[0]-exp[0])/exp[0], double_tolerance);
-    BOOST_CHECK_SMALL((r1[1]-exp[1])/exp[1], double_tolerance);
-    BOOST_CHECK_SMALL((r1[2]-exp[2])/exp[2], double_tolerance);
-    BOOST_CHECK_SMALL((r2[0]-exp[0])/exp[0], double_tolerance);
-    BOOST_CHECK_SMALL((r2[1]-exp[1])/exp[1], double_tolerance);
-    BOOST_CHECK_SMALL((r2[2]-exp[2])/exp[2], double_tolerance);
+    vec_functions_vsprod<double>();
 }
 
 //Test vector times scalar in single precision
 BOOST_AUTO_TEST_CASE( vec_functions_vsprod_float_1 )
 {
-    vec3<float> fvv{1.0f,2.0f,-3.0f};
-    float fs = -2.0f;
-    vec3<float> fexp{-2.0f,-4.0f,6.0f};
+    vec_functions_vsprod<float>();
+}
 
-    vec3<float> fr1 = fs * fvv;
-    vec3<float> fr2 = fvv * fs;
+//Test vector divided by scalar generic
+template<typename T>
+void vec_functions_vsdiv()
+{
+    vec3<T> vv{2.0,4.0,-6.0};
+    T s = -2.0;
+    vec3<T> exp{-1.0,-2.0,3.0};
 
-    BOOST_CHECK_SMALL((fr1[0]-fexp[0])/fexp[0], float_tolerance);
-    BOOST_CHECK_SMALL((fr1[1]-fexp[1])/fexp[1], float_tolerance);
-    BOOST_CHECK_SMALL((fr1[2]-fexp[2])/fexp[2], float_tolerance);
-    BOOST_CHECK_SMALL((fr2[0]-fexp[0])/fexp[0], float_tolerance);
-    BOOST_CHECK_SMALL((fr2[1]-fexp[1])/fexp[1], float_tolerance);
-    BOOST_CHECK_SMALL((fr2[2]-fexp[2])/fexp[2], float_tolerance);
+    vec3<T> r = vv / s;
+
+    BOOST_CHECK_SMALL((r[0]-exp[0])/exp[0], tolerance<T>());
+    BOOST_CHECK_SMALL((r[1]-exp[1])/exp[1], tolerance<T>());
+    BOOST_CHECK_SMALL((r[2]-exp[2])/exp[2], tolerance<T>());
 }
 
 //Test vector divided by scalar in double precision
 BOOST_AUTO_TEST_CASE( vec_functions_vsdiv_double_1 )
 {
-    vec3<double> vv{2.0,4.0,-6.0};
-    double s = -2.0;
-    vec3<double> exp{-1.0,-2.0,3.0};
-
-    vec3<double> r = vv / s;
-
-    BOOST_CHECK_SMALL((r[0]-exp[0])/exp[0], double_tolerance);
-    BOOST_CHECK_SMALL((r[1]-exp[1])/exp[1], double_tolerance);
-    BOOST_CHECK_SMALL((r[2]-exp[2])/exp[2], double_tolerance);
+    vec_functions_vsdiv<double>();
 }
 
 //Test vector divided by scalar in single precision
 BOOST_AUTO_TEST_CASE( vec_functions_vsdiv_float_1 )
 {
-    vec3<float> fvv{2.0f,4.0f,-6.0f};
-    float fs = -2.0f;
-    vec3<float> fexp{-1.0f,-2.0f,3.0f};
+    vec_functions_vsdiv<float>();
+}
 
-    vec3<float> fr =  fvv / fs;
+//Test vector add generic
+template<typename T>
+void vec_functions_vadd()
+{
+    vec3<T> vv1{1.0,2.0,3.0};
+    vec3<T> vv2{1.0,-1.0,-2.0};
 
-    BOOST_CHECK_SMALL((fr[0]-fexp[0])/fexp[0], float_tolerance);
-    BOOST_CHECK_SMALL((fr[1]-fexp[1])/fexp[1], float_tolerance);
-    BOOST_CHECK_SMALL((fr[2]-fexp[2])/fexp[2], float_tolerance);
+    vec3<T> exp{2.0,1.0,1.0};
+
+    vec3<T> r = vv1 + vv2;
+
+    BOOST_CHECK_SMALL((exp[0]-r[0])/exp[0], tolerance<T>());
+    BOOST_CHECK_SMALL((exp[1]-r[1])/exp[1], tolerance<T>());
+    BOOST_CHECK_SMALL((exp[2]-r[2])/exp[2], tolerance<T>());
 }
 
 //Test vector add in double precision
 BOOST_AUTO_TEST_CASE( vec_functions_vadd_double_1 )
 {
-    vec3<double> vv1{1.0,2.0,3.0};
-    vec3<double> vv2{1.0,-1.0,-2.0};
-
-    vec3<double> exp{2.0,1.0,1.0};
-
-    vec3<double> r = vv1 + vv2;
-
-    BOOST_CHECK_SMALL((exp[0]-r[0])/exp[0], double_tolerance);
-    BOOST_CHECK_SMALL((exp[1]-r[1])/exp[1], double_tolerance);
-    BOOST_CHECK_SMALL((exp[2]-r[2])/exp[2], double_tolerance);
+    vec_functions_vadd<double>();
 }
 
 //Test vector add in single precision
 BOOST_AUTO_TEST_CASE( vec_functions_vadd_single_1 )
 {
-    vec3<float> vv1{1.0f,2.0f,3.0f};
-    vec3<float> vv2{1.0f,-1.0f,-2.0f};
+    vec_functions_vadd<float>();
+}
 
-    vec3<float> exp{2.0f,1.0f,1.0f};
+//Test vector diff generic
+template<typename T>
+void vec_functions_vdiff()
+{
+    vec3<T> vv1{1.0f,2.0f,3.0f};
+    vec3<T> vv2{2.0f,-1.0f,-2.0f};
 
-    vec3<float> r = vv1 + vv2;
+    vec3<T> exp{-1.0f,3.0f,5.0f};
 
-    BOOST_CHECK_SMALL((r[0]-exp[0])/exp[0], float_tolerance);
-    BOOST_CHECK_SMALL((r[1]-exp[1])/exp[1], float_tolerance);
-    BOOST_CHECK_SMALL((r[2]-exp[2])/exp[2], float_tolerance);
+    vec3<T> r = vv1 - vv2;
+
+    BOOST_CHECK_SMALL((r[0]-exp[0])/exp[0], tolerance<T>());
+    BOOST_CHECK_SMALL((r[1]-exp[1])/exp[1], tolerance<T>());
+    BOOST_CHECK_SMALL((r[2]-exp[2])/exp[2], tolerance<T>());
 }
 
 //Test vector diff in double precision
 BOOST_AUTO_TEST_CASE( vec_functions_vdiff_double_1 )
 {
-    vec3<double> vv1{1.0,2.0,3.0};
-    vec3<double> vv2{2.0,-1.0,-2.0};
-
-    vec3<double> exp{-1.0,3.0,5.0};
-
-    vec3<double> r = vv1 - vv2;
-
-    BOOST_CHECK_SMALL((r[0]-exp[0])/exp[0], double_tolerance);
-    BOOST_CHECK_SMALL((r[1]-exp[1])/exp[1], double_tolerance);
-    BOOST_CHECK_SMALL((r[2]-exp[2])/exp[2], double_tolerance);
+    vec_functions_vdiff<double>();
 }
 
 //Test vector diff in single precision
 BOOST_AUTO_TEST_CASE( vec_functions_vdiff_single_1 )
 {
-    vec3<float> vv1{1.0f,2.0f,3.0f};
-    vec3<float> vv2{2.0f,-1.0f,-2.0f};
-
-    vec3<float> exp{-1.0f,3.0f,5.0f};
-
-    vec3<float> r = vv1 - vv2;
-
-    BOOST_CHECK_SMALL((r[0]-exp[0])/exp[0], float_tolerance);
-    BOOST_CHECK_SMALL((r[1]-exp[1])/exp[1], float_tolerance);
-    BOOST_CHECK_SMALL((r[2]-exp[2])/exp[2], float_tolerance);
+    vec_functions_vdiff<float>();
 }
