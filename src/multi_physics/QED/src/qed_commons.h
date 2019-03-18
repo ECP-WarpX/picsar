@@ -150,7 +150,8 @@ namespace picsar{
       const double __c = light_speed;
       const double __emass = electron_mass;
       const double __schwinger = schwinger_field;
-      const double __pair_prod_coeff = pair_prod_rate_coeff;
+      const double __pair_prod_coeff = pair_prod_rate_coeff*electron_mass*
+        light_speed*light_speed;
     #else
       const double __c = 1.0;
       const double __emass = 1.0;

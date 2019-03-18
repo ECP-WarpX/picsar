@@ -79,39 +79,47 @@ T tolerance()
         return double_tolerance;
 }
 
-//Test get/set lambda for breit_wheeler_engine (double precision)
-BOOST_AUTO_TEST_CASE( breit_wheeler_engine_double_1 )
+//Test get/set lambda for breit_wheeler_engine generic
+template <typename T>
+void breit_wheeler_engine_gs()
 {
-    auto bw_engine = get_bw_stl_set_lambda<double>
-        (390109317, 800.0*si_nanometer);
-    BOOST_CHECK_EQUAL( 800.0*si_nanometer, bw_engine.get_lambda());
+    auto bw_engine = get_bw_stl_set_lambda<T>
+        (390109317, static_cast<T>(800.0*si_nanometer));
+    BOOST_CHECK_EQUAL( static_cast<T>(800.0*si_nanometer), bw_engine.get_lambda());
+}
+
+//Test get/set lambda for breit_wheeler_engine (double precision)
+BOOST_AUTO_TEST_CASE( breit_wheeler_engine_gs_double_1 )
+{
+    breit_wheeler_engine_gs<double>();
 }
 
 //Test get/set lambda for breit_wheeler_engine (single precision)
-BOOST_AUTO_TEST_CASE( breit_wheeler_engine_single_1 )
+BOOST_AUTO_TEST_CASE( breit_wheeler_engine_gs_single_1 )
 {
-    auto bw_engine = get_bw_stl_set_lambda<float>
-        (390109317, 800.0*si_nanometer);
-    BOOST_CHECK_EQUAL( static_cast<float>(800.0*si_nanometer),
-        bw_engine.get_lambda());
+    breit_wheeler_engine_gs<float>();
 }
 
 // ------------- optical depth --------------
+//Test get/set lambda for breit_wheeler_engine generic
+template <typename T>
+void breit_wheeler_engine_opt()
+{
+    auto bw_engine = get_bw_stl_set_lambda<T>
+        (390109317, static_cast<T>(800.0*si_nanometer));
+    BOOST_TEST ( bw_engine.get_optical_depth() >= static_cast<T>(0.0) );
+}
 
 //Test get new optical depth (double precision)
 BOOST_AUTO_TEST_CASE( breit_wheeler_engine_opt_double_1 )
 {
-    auto bw_engine = get_bw_stl_set_lambda<double>
-        (390109317, 800.0*si_nanometer);
-    BOOST_TEST ( bw_engine.get_optical_depth() >= 0.0 );
+    breit_wheeler_engine_opt<double>();
 }
 
 //Test get new optical depth (single precision)
 BOOST_AUTO_TEST_CASE( breit_wheeler_engine_opt_single_1 )
 {
-    auto bw_engine = get_bw_stl_set_lambda<float>
-        (390109317, 800.0*si_nanometer);
-    BOOST_TEST( bw_engine.get_optical_depth() >= 0.0 );
+    breit_wheeler_engine_opt<float>();
 }
 
 // ------------- Pair production rates --------------
