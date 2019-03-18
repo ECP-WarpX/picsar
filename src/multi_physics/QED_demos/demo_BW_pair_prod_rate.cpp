@@ -51,14 +51,14 @@ int main(){
 	double dt = 0.01*dtref;
 
 	//Initial optical depth
-	double opt_deph = 0.001;
+	double opt_depth = 0.001;
 
 	//Decrease optical depth & determine if an event has occured
 	bool has_event_happend;
     	double dt_prod;
    	std::tie(has_event_happend, dt_prod) =
         bw_engine.evolve_opt_depth_and_determine_event
-        (px, py, pz, ex, ey, ez, bx, by, bz, dt, opt_deph);
+        (px, py, pz, ex, ey, ez, bx, by, bz, dt, opt_depth);
 
 	if(has_event_happend){
 		std::cout << "An event occured after: "  << dt_prod <<
