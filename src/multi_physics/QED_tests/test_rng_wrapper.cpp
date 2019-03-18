@@ -25,98 +25,92 @@
 
 using namespace picsar::multi_physics;
 
-
-
 // ------------- Tests --------------
 
 //***STL***
 
 //***Constructors
 
-//Test STL rng_wrapper constructors(double precision)
-BOOST_AUTO_TEST_CASE( rng_stl_wrapper_constructors_double )
+//Test STL rng_wrapper constructors generic
+template<typename T>
+void  rng_stl_wrapper_constructors(int64_t seed)
 {
-    int64_t seed = 2391892344079;
-    std::mt19937_64 rng{2391892344079};
+    std::mt19937_64 rng{seed};
 
     stl_rng_wrapper wrp1{seed};
     stl_rng_wrapper wrp2(move(rng));
 
-    BOOST_CHECK_EQUAL( wrp1.unf<double>(0.0,1.0), wrp2.unf<double>(0.0,1.0));
+    BOOST_CHECK_EQUAL( wrp1.unf<T>(0.0,1.0), wrp2.unf<T>(0.0,1.0));
+}
+
+//Test STL rng_wrapper constructors(double precision)
+BOOST_AUTO_TEST_CASE( rng_stl_wrapper_constructors_double )
+{
+    rng_stl_wrapper_constructors<double>(2391892344079);
 }
 
 //Test STL rng_wrapper constructors(single precision)
 BOOST_AUTO_TEST_CASE( rng_stl_wrapper_constructors_single )
 {
-    int64_t seed = 2391892344079;
-    std::mt19937_64 rng{2391892344079};
-
-    stl_rng_wrapper wrp1{seed};
-    stl_rng_wrapper wrp2(move(rng));
-
-    BOOST_CHECK_EQUAL( wrp1.unf<float>(0.0f,1.0f), wrp2.unf<float>(0.0f,1.0f));
+    rng_stl_wrapper_constructors<float>(2391892344079);
 }
 
 //***Uniform distribution
 
-//Test STL rng_wrapper unf (double precision)
-BOOST_AUTO_TEST_CASE( rng_stl_wrapper_unf_double )
+//Test STL rng_wrapper unf generic
+template<typename T>
+void  rng_stl_wrapper_unf(int64_t seed)
 {
-    int64_t seed = 2391892344079;
     stl_rng_wrapper wrp{seed};
     size_t how_many = 10000;
-    double a = -7.0;
-    double b = 11.1;
+    T a = static_cast<T>(-7.0);
+    T b = static_cast<T>(11.1);
 
     for (size_t d = 0; d <= how_many; ++d){
-        double qq = wrp.unf<double> (a,b);
+        T qq = wrp.unf<T> (a,b);
         BOOST_TEST( qq >= a);
         BOOST_TEST( qq < b);
     }
+}
+
+//Test STL rng_wrapper unf (double precision)
+BOOST_AUTO_TEST_CASE( rng_stl_wrapper_unf_double )
+{
+    rng_stl_wrapper_unf<double>(2391892344079);
 }
 
 //Test STL rng_wrapper unf (single precision)
 BOOST_AUTO_TEST_CASE( rng_stl_wrapper_unf_single )
 {
-    int64_t seed = 2391892344079;
+    rng_stl_wrapper_unf<float>(2391892344079);
+}
+
+
+//Test STL rng_wrapper exp generic
+template<typename T>
+void  rng_stl_wrapper_exp(int64_t seed)
+{
     stl_rng_wrapper wrp{seed};
     size_t how_many = 10000;
-    float a = -7.0f;
-    float b = 11.1f;
+    T l = static_cast<T>(1.0);
 
     for (size_t d = 0; d <= how_many; ++d){
-        float qq = wrp.unf<float>(a,b);
-        BOOST_TEST( qq >= a);
-        BOOST_TEST( qq < b);
+        T qq = wrp.exp<T>(l);
+        BOOST_TEST( qq >= 0.0);
     }
 }
+
 
 //Test STL rng_wrapper exp (double precision)
 BOOST_AUTO_TEST_CASE( rng_stl_wrapper_exp_double )
 {
-    int64_t seed = 2391892344079;
-    stl_rng_wrapper wrp{seed};
-    size_t how_many = 10000;
-    double l = 1.0f;
-
-    for (size_t d = 0; d <= how_many; ++d){
-        double qq = wrp.exp<double>(l);
-        BOOST_TEST( qq >= 0.0);
-    }
+    rng_stl_wrapper_exp<double>(2391892344079);
 }
 
 //Test STL rng_wrapper exp (single precision)
 BOOST_AUTO_TEST_CASE( rng_stl_wrapper_exp_single )
 {
-    int64_t seed = 2391892344079;
-    stl_rng_wrapper wrp{seed};
-    size_t how_many = 10000;
-    float l = 1.0f;
-
-    for (size_t d = 0; d <= how_many; ++d){
-        double qq = wrp.exp<float>(l);
-        BOOST_TEST( qq >= 0.0f);
-    }
+    rng_stl_wrapper_exp<float>(2391892344079);
 }
 
 //***Kokkos***
