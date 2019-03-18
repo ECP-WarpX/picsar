@@ -69,18 +69,24 @@ namespace picsar{
         //exp(l)
         _RNDWRAP rng;
 
+        //Some handy constants
+        const _REAL zero = static_cast<_REAL>(0.0);
+        const _REAL one = static_cast<_REAL>(1.0);
+        const _REAL two = static_cast<_REAL>(2.0);
+        const _REAL three = static_cast<_REAL>(2.0);
+
         //Internal functions to perform calculations
         PXRMP_FORCE_INLINE
-        static _REAL compute_x(_REAL chi_phot, _REAL chi_ele);
+        _REAL compute_x(_REAL chi_phot, _REAL chi_ele) const;
 
         PXRMP_FORCE_INLINE
-        static _REAL compute_inner_integral(_REAL x);
+        _REAL compute_inner_integral(_REAL x) const;
 
         PXRMP_FORCE_INLINE
-        static _REAL compute_TT_integrand(_REAL chi_phot, _REAL chi_ele);
+        _REAL compute_TT_integrand(_REAL chi_phot, _REAL chi_ele) const;
 
         PXRMP_FORCE_INLINE
-        static _REAL compute_TT_function(_REAL chi_phot);
+        _REAL compute_TT_function(_REAL chi_phot) const;
      };
 
   }
@@ -137,7 +143,7 @@ PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 compute_dN_dt(_REAL energy_phot, _REAL chi_phot)
 {
-     const _REAL one = static_cast<_REAL>(1.0);
+
     _REAL coeff = static_cast<_REAL>(__pair_prod_coeff)*
         lambda*(one/( chi_phot * energy_phot));
     return coeff*compute_TT_function(chi_phot);
@@ -148,10 +154,8 @@ compute_dN_dt(_REAL energy_phot, _REAL chi_phot)
 template<typename _REAL, class _RNDWRAP>
 PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
-compute_x(_REAL chi_phot, _REAL chi_ele)
+compute_x(_REAL chi_phot, _REAL chi_ele) const
 {
-    const _REAL two = static_cast<_REAL>(2.0);
-    const _REAL three = static_cast<_REAL>(3.0);
     return pow(chi_phot/(chi_ele*(chi_phot-chi_ele)), two/three);
 }
 
@@ -159,11 +163,9 @@ compute_x(_REAL chi_phot, _REAL chi_ele)
 template<typename _REAL, class _RNDWRAP>
 PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
-compute_inner_integral(_REAL x)
+compute_inner_integral(_REAL x) const
 {
-    const _REAL two = static_cast<_REAL>(2.0);
-    const _REAL three = static_cast<_REAL>(3.0);
-    auto func = [two, three](double s){
+    auto func = [this](double s){
         return sqrt(s)*k_v(two/three, two*pow(s, three/two)/three);
     };
     return quad_a_inf<_REAL>(func, x);
@@ -173,10 +175,8 @@ compute_inner_integral(_REAL x)
 template<typename _REAL, class _RNDWRAP>
 PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
-compute_TT_integrand(_REAL chi_phot, _REAL chi_ele)
+compute_TT_integrand(_REAL chi_phot, _REAL chi_ele) const
 {
-    const _REAL two = static_cast<_REAL>(2.0);
-    const _REAL three = static_cast<_REAL>(3.0);
     _REAL xx = compute_x(chi_phot, chi_ele);
     _REAL xx_3_2 = pow(xx, three/two);
     return compute_inner_integral(xx)-(two-chi_phot*xx_3_2)
@@ -187,13 +187,12 @@ compute_TT_integrand(_REAL chi_phot, _REAL chi_ele)
 template<typename _REAL, class _RNDWRAP>
 PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
-compute_TT_function(_REAL chi_phot)
+compute_TT_function(_REAL chi_phot) const
 {
-    const _REAL zero = static_cast<_REAL>(0.0);
     if(chi_phot == zero)
         return zero;
 
-    auto func = [chi_phot, zero](_REAL chi_ele){
+    auto func = [chi_phot, this](_REAL chi_ele){
         if(chi_ele - chi_phot == zero)
             return zero;
         else
