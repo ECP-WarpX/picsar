@@ -5,6 +5,7 @@
 //nonlinear Breit Wheeler engine
 
 #include <memory>
+#include <utility>
 
 //Should be included by all the src files of the library
 #include "qed_commons.h"
@@ -15,8 +16,14 @@
 //Uses special functions
 #include "special_functions.hpp"
 
+//Uses vec functions
+#include "vec_functions.hpp"
+
 //Uses quadrature
 #include "quadrature.hpp"
+
+//Uses chi functions
+#include "chi_functions.hpp"
 
 //############################################### Declaration
 
@@ -58,9 +65,20 @@ namespace picsar{
          PXRMP_FORCE_INLINE
          _REAL get_optical_depth();
 
-         //Calculates the pair production rate (Warning: from scratch!)
+         //Calculates the pair production rate (Warning: no lookup tables)
          PXRMP_FORCE_INLINE
-         _REAL compute_dN_dt(_REAL energy_phot, _REAL chi_phot);
+         _REAL compute_dN_dt(_REAL energy_phot, _REAL chi_phot) const;
+
+         //This function evolves the optical depth for a particle and
+         //checks if it goes to zero. If it doesn't the output is false,0.
+         //On the contrary, if it goes to zero the output is true, dt_prod,
+         //where dt_prod (<= dt) is the time at which the event occurs.
+         PXRMP_FORCE_INLINE
+         std::pair<bool, _REAL> evolve_opt_depth_and_determine_event(
+         _REAL px, _REAL py, _REAL pz,
+         _REAL ex, _REAL ey, _REAL ez,
+         _REAL bx, _REAL by, _REAL bz,
+         _REAL dt, _REAL& opt_depth) const;
 
      private:
         _REAL lambda;
@@ -137,11 +155,11 @@ get_optical_depth()
     return rng.exp(static_cast<_REAL>(1.0));
 }
 
-//Calculates the pair production rate (Warning: from scratch!)
+//Calculates the pair production rate (Warning: no tables are used)
 template<typename _REAL, class _RNDWRAP>
 PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
-compute_dN_dt(_REAL energy_phot, _REAL chi_phot)
+compute_dN_dt(_REAL energy_phot, _REAL chi_phot) const
 {
     if(energy_phot == zero || chi_phot == zero)
         return zero;
@@ -149,6 +167,40 @@ compute_dN_dt(_REAL energy_phot, _REAL chi_phot)
     _REAL coeff = static_cast<_REAL>(__pair_prod_coeff)*
         lambda*(one/( chi_phot * energy_phot));
     return coeff*compute_TT_function(chi_phot);
+}
+
+//This function evolves the optical depth for a particle and
+//checks if it goes to zero. If it doesn't the output is false,0.
+//On the contrary, if it goes to zero the output is true, dt_em,
+//where dt_em (<= dt) is the time at which the event occurs.
+//Warning! For now it does not use tables!
+template<typename _REAL, class _RNDWRAP>
+PXRMP_FORCE_INLINE
+std::pair<bool, _REAL>
+picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+evolve_opt_depth_and_determine_event(
+_REAL px, _REAL py, _REAL pz,
+_REAL ex, _REAL ey, _REAL ez,
+_REAL bx, _REAL by, _REAL bz,
+_REAL dt, _REAL& opt_depth) const
+{
+    _REAL energy = norm<_REAL>(vec3<_REAL> {px, py, pz})*__c;
+    _REAL chi = chi_photon(px, py, pz, ex, ey, ez, bx, by, bz, lambda);
+
+    //***********TO REPLACE WITH LOOKUP TABLES****************************
+    _REAL dndt = compute_dN_dt(energy, chi);
+    //********************************************************************
+
+    opt_depth -= dndt*dt;
+
+    if(opt_depth > zero){
+        return std::make_pair(false, zero);
+    }
+    else{
+        //Calculates the time at which pair prod takes place
+        _REAL dt_prod = opt_depth/dndt + dt;
+        return std::make_pair(true, dt_prod);
+    }
 }
 
 //Function to compute X (Warning: it doen't chek if chi_ele != 0 or

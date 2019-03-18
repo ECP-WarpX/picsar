@@ -6,7 +6,7 @@
 //Will automatically define a main for this test
  #define BOOST_TEST_DYN_LINK
 
- #include <type_traits>
+ #include <utility>
 
  //Include Boost unit tests library & library for floating point comparison
  #include <boost/test/unit_test.hpp>
@@ -379,4 +379,108 @@ BOOST_AUTO_TEST_CASE( breit_wheeler_engine_prod_double_7 )
 BOOST_AUTO_TEST_CASE( breit_wheeler_engine_prod_single_7 )
 {
     breit_wheeler_engine_prod_7<float>();
+}
+
+//Test evolve_opt_depth_and_determine_event (generic)
+template <typename T>
+void breit_wheeler_engine_detopt_1()
+{
+    auto bw_engine = get_bw_stl_set_lambda<T>
+        (390109317, static_cast<T>(800.0*si_nanometer));
+
+    T px =  static_cast<T>(149.825);
+    T py =  static_cast<T>(933.115);
+    T pz =  static_cast<T>(-538.195);
+    T ex =  static_cast<T>(931.686);
+    T ey =  static_cast<T>(-861.074);
+    T ez =  static_cast<T>(944.652);
+    T bx =  static_cast<T>(531.406);
+    T by =  static_cast<T>(670.933);
+    T bz =  static_cast<T>(660.057);
+    T lambda = static_cast<T>(800. * si_nanometer);
+
+    T initial_optical_depth = static_cast<T>(1.0);
+    T optical_depth = initial_optical_depth;
+    T dt = static_cast<T>(0.01);
+
+    T exp_rate = static_cast<T>(1.50648551484);
+
+    bool has_event_happend;
+    T dt_prod;
+    std::tie(has_event_happend, dt_prod) =
+        bw_engine.evolve_opt_depth_and_determine_event
+        (px, py, pz, ex, ey, ez, bx, by, bz, dt, optical_depth);
+
+    T exp_opt_depth = initial_optical_depth - dt*exp_rate;
+
+    BOOST_CHECK_EQUAL(has_event_happend, false);
+    BOOST_CHECK_EQUAL(dt_prod, static_cast<T>(0.0));
+    BOOST_CHECK_SMALL((optical_depth-exp_opt_depth)/exp_opt_depth,
+        tolerance<T>());
+}
+
+
+//Test evolve_opt_depth_and_determine_event (double precision)
+BOOST_AUTO_TEST_CASE( breit_wheeler_engine_detopt_double_1 )
+{
+    breit_wheeler_engine_detopt_1<double>();
+}
+
+//Test evolve_opt_depth_and_determine_event (single precision)
+BOOST_AUTO_TEST_CASE( breit_wheeler_engine_detopt_single_1 )
+{
+    breit_wheeler_engine_detopt_1<float>();
+}
+
+
+//Test evolve_opt_depth_and_determine_event (generic)
+template <typename T>
+void breit_wheeler_engine_detopt_2()
+{
+    auto bw_engine = get_bw_stl_set_lambda<T>
+        (390109317, static_cast<T>(800.0*si_nanometer));
+
+    T px =  static_cast<T>(149.825);
+    T py =  static_cast<T>(933.115);
+    T pz =  static_cast<T>(-538.195);
+    T ex =  static_cast<T>(931.686);
+    T ey =  static_cast<T>(-861.074);
+    T ez =  static_cast<T>(944.652);
+    T bx =  static_cast<T>(531.406);
+    T by =  static_cast<T>(670.933);
+    T bz =  static_cast<T>(660.057);
+    T lambda = static_cast<T>(800. * si_nanometer);
+
+    T initial_optical_depth = static_cast<T>(1.0e-3);
+    T optical_depth = initial_optical_depth;
+    T dt = static_cast<T>(0.01);
+
+    T exp_rate = static_cast<T>(1.50648551484);
+
+    bool has_event_happend;
+    T dt_prod;
+    std::tie(has_event_happend, dt_prod) =
+        bw_engine.evolve_opt_depth_and_determine_event
+        (px, py, pz, ex, ey, ez, bx, by, bz, dt, optical_depth);
+
+    T exp_opt_depth = initial_optical_depth - dt*exp_rate;
+    T exp_dt_prod = initial_optical_depth/exp_rate ;
+
+    BOOST_CHECK_EQUAL(has_event_happend, true);
+    BOOST_CHECK_SMALL(exp_dt_prod, dt_prod);
+    BOOST_CHECK_SMALL((optical_depth-exp_opt_depth)/exp_opt_depth,
+        tolerance<T>());
+}
+
+
+//Test evolve_opt_depth_and_determine_event (double precision)
+BOOST_AUTO_TEST_CASE( breit_wheeler_engine_detopt_double_2 )
+{
+    breit_wheeler_engine_detopt_2<double>();
+}
+
+//Test evolve_opt_depth_and_determine_event (single precision)
+BOOST_AUTO_TEST_CASE( breit_wheeler_engine_detopt_single_2 )
+{
+    breit_wheeler_engine_detopt_2<float>();
 }
