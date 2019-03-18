@@ -30,6 +30,14 @@
 namespace picsar{
   namespace multi_physics{
 
+      //This structure contains parameters which control how the BW engine
+      //works
+      template<typename _REAL>
+      struct breit_wheeler_engine_ctrl{
+           //Minimum chi_phot to consider
+          _REAL chi_phot_min = static_cast<_REAL>(__minimum_chi_photons);
+      };
+
       //Templates are used for the numerical type and for the
       //RNG wrapper
      template<typename _REAL, class _RNDWRAP>
@@ -43,19 +51,19 @@ namespace picsar{
          //_REAL exp (_REAL l)
          //The constructor can accept a lambda parameter.
          //It is ignored if the SI units option is selected
+         //The constructor can accept also a breit_wheeler_engine_ctrl
+         //struct, which controls how the engine work
          breit_wheeler_engine
          (_RNDWRAP&& rng,
-         _REAL lambda = static_cast<_REAL>(1.0));
+         _REAL lambda = static_cast<_REAL>(1.0),
+         breit_wheeler_engine_ctrl<_REAL> bw_ctrl =
+         breit_wheeler_engine_ctrl<_REAL>());
 
-         //This explicit declaration makes sure that the move constructor
-         //can be generated automatically
-          breit_wheeler_engine(breit_wheeler_engine& ):
-              lambda(lambda), rng(rng)
-              {};
+         //Copy constructor
+         breit_wheeler_engine(breit_wheeler_engine& other);
 
-         breit_wheeler_engine(breit_wheeler_engine&& ):
-             lambda(std::move(lambda)), rng(std::move(rng))
-             {};
+         //Move constructor
+         breit_wheeler_engine(breit_wheeler_engine&& other);
 
          //Getter & setter for lambda
          _REAL get_lambda() const;
@@ -87,6 +95,9 @@ namespace picsar{
         //exp(l)
         _RNDWRAP rng;
 
+        //Parameters which control how the engine works
+        breit_wheeler_engine_ctrl<_REAL> bw_ctrl;
+
         //Some handy constants
         const _REAL zero = static_cast<_REAL>(0.0);
         const _REAL one = static_cast<_REAL>(1.0);
@@ -115,14 +126,30 @@ namespace picsar{
 template<typename _REAL, class _RNDWRAP>
 picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 breit_wheeler_engine
-(_RNDWRAP&& rng, _REAL lambda):
-    lambda{lambda}, rng{std::move(rng)}
+(_RNDWRAP&& rng, _REAL lambda, breit_wheeler_engine_ctrl<_REAL> bw_ctrl):
+    lambda{lambda}, rng{std::move(rng)}, bw_ctrl{bw_ctrl}
 {
     //This enforces lambda=1 if SI units are used.
 #ifdef PXRMP_WITH_SI_UNITS
     lambda = static_cast<_REAL>(1.0);
 #endif
 }
+
+
+//Copy constructor
+template<typename _REAL, class _RNDWRAP>
+picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+breit_wheeler_engine(breit_wheeler_engine& other):
+    lambda(other.lambda), rng(other.rng), bw_ctrl(other.bw_ctrl)
+    {};
+
+//Move constructor
+template<typename _REAL, class _RNDWRAP>
+picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+breit_wheeler_engine(breit_wheeler_engine&& other):
+    lambda(std::move(other.lambda)), rng(std::move(other.rng)),
+    bw_ctrl(std::move(other.bw_ctrl))
+    {};
 
 
 //Getter for lambda
@@ -187,6 +214,12 @@ _REAL dt, _REAL& opt_depth) const
     _REAL energy = norm<_REAL>(vec3<_REAL> {px, py, pz})*__c;
     _REAL chi = chi_photon(px, py, pz, ex, ey, ez, bx, by, bz, lambda);
 
+    auto false_zero_pair = std::make_pair(false, zero);
+
+    //Do NOT evolve opt_depth if the chi parameter is less then threshold
+    if(chi <= bw_ctrl.chi_phot_min)
+            return false_zero_pair;
+
     //***********TO REPLACE WITH LOOKUP TABLES****************************
     _REAL dndt = compute_dN_dt(energy, chi);
     //********************************************************************
@@ -194,7 +227,7 @@ _REAL dt, _REAL& opt_depth) const
     opt_depth -= dndt*dt;
 
     if(opt_depth > zero){
-        return std::make_pair(false, zero);
+        return false_zero_pair;
     }
     else{
         //Calculates the time at which pair prod takes place
