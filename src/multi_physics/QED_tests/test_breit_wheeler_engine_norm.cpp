@@ -37,12 +37,13 @@ using namespace picsar::multi_physics;
 template<typename REAL, typename WHATEVER>
 breit_wheeler_engine
 <REAL, kokkos_rng_wrapper<Kokkos::Random_XorShift1024_Pool<>>>
-get_bw_kokkos_set_lambda(int64_t seed, WHATEVER lambda)
+get_bw_kokkos_set_lambda(int64_t seed, WHATEVER lambda,
+breit_wheeler_engine_ctrl<REAL> bw_ctrl = breit_wheeler_engine_ctrl<REAL>())
 {
     auto pool = Kokkos::Random_XorShift1024_Pool<>{seed};
     kokkos_rng_wrapper<Kokkos::Random_XorShift1024_Pool<>> wrap{pool};
     auto bw_engine =  breit_wheeler_engine
-        <REAL, kokkos_rng_wrapper<Kokkos::Random_XorShift1024_Pool<>>>{std::move(wrap)};
+        <REAL, kokkos_rng_wrapper<Kokkos::Random_XorShift1024_Pool<>>>{std::move(wrap), 1.0, bw_ctrl};
     bw_engine.set_lambda(static_cast<REAL>(lambda));
     return bw_engine;
 }
@@ -51,10 +52,11 @@ get_bw_kokkos_set_lambda(int64_t seed, WHATEVER lambda)
 
 //No Kokkos version
 template<typename REAL, typename WHATEVER>
-breit_wheeler_engine<REAL, stl_rng_wrapper> get_bw_stl_set_lambda(int64_t seed, WHATEVER lambda)
+breit_wheeler_engine<REAL, stl_rng_wrapper> get_bw_stl_set_lambda(int64_t seed, WHATEVER lambda,
+breit_wheeler_engine_ctrl<REAL> bw_ctrl = breit_wheeler_engine_ctrl<REAL>())
 {
     stl_rng_wrapper wrap{seed};
-    auto bw_engine =  breit_wheeler_engine<REAL, stl_rng_wrapper>{std::move(wrap)};
+    auto bw_engine =  breit_wheeler_engine<REAL, stl_rng_wrapper>{std::move(wrap), 1.0, bw_ctrl};
     bw_engine.set_lambda(static_cast<REAL>(lambda));
     return bw_engine;
 }
@@ -483,4 +485,59 @@ BOOST_AUTO_TEST_CASE( breit_wheeler_engine_detopt_double_2 )
 BOOST_AUTO_TEST_CASE( breit_wheeler_engine_detopt_single_2 )
 {
     breit_wheeler_engine_detopt_2<float>();
+}
+
+//Test evolve_opt_depth_and_determine_event (generic)
+template <typename T>
+void breit_wheeler_engine_detopt_3()
+{
+    breit_wheeler_engine_ctrl<T> bw_ctrl;
+    bw_ctrl.chi_phot_min =  static_cast<T>(0.0001);
+
+    auto bw_engine = get_bw_stl_set_lambda<T>
+        (390109317, static_cast<T>(800.0*si_nanometer), bw_ctrl);
+
+    T px =  static_cast<T>(149.825);
+    T py =  static_cast<T>(933.115);
+    T pz =  static_cast<T>(-538.195);
+    T ex =  static_cast<T>(931.686);
+    T ey =  static_cast<T>(-861.074);
+    T ez =  static_cast<T>(944.652);
+    T bx =  static_cast<T>(531.406);
+    T by =  static_cast<T>(670.933);
+    T bz =  static_cast<T>(660.057);
+    T lambda = static_cast<T>(800. * si_nanometer);
+
+    T initial_optical_depth = static_cast<T>(1.0e-3);
+    T optical_depth = initial_optical_depth;
+    T dt = static_cast<T>(0.01);
+
+    T exp_rate = static_cast<T>(1.50648551484);
+
+    bool has_event_happend;
+    T dt_prod;
+    std::tie(has_event_happend, dt_prod) =
+        bw_engine.evolve_opt_depth_and_determine_event
+        (px, py, pz, ex, ey, ez, bx, by, bz, dt, optical_depth);
+
+    T exp_opt_depth = initial_optical_depth - dt*exp_rate;
+    T exp_dt_prod = initial_optical_depth/exp_rate ;
+
+    BOOST_CHECK_EQUAL(has_event_happend, true);
+    BOOST_CHECK_SMALL(exp_dt_prod, dt_prod);
+    BOOST_CHECK_SMALL((optical_depth-exp_opt_depth)/exp_opt_depth,
+        tolerance<T>());
+}
+
+
+//Test evolve_opt_depth_and_determine_event (double precision)
+BOOST_AUTO_TEST_CASE( breit_wheeler_engine_detopt_double_3 )
+{
+    breit_wheeler_engine_detopt_3<double>();
+}
+
+//Test evolve_opt_depth_and_determine_event (single precision)
+BOOST_AUTO_TEST_CASE( breit_wheeler_engine_detopt_single_3 )
+{
+    breit_wheeler_engine_detopt_3<float>();
 }
