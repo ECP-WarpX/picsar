@@ -17,3 +17,4 @@ endif()
 
 add_subdirectory(QED)
 add_subdirectory(QED_tests)
+add_subdirectory(QED_demos)
