@@ -25,137 +25,97 @@ const double double_tolerance = 1.0e-10;
 //Tolerance for single precision calculations
 const float float_tolerance = 1.0e-4;
 
+//Templated tolerance
+template <typename T>
+T tolerance()
+{
+    if(std::is_same<T,float>::value)
+        return float_tolerance;
+    else
+        return double_tolerance;
+}
+
+//Test Bessel functions generic
+template<typename T, typename WHATEVER>
+void bessel_functions_test(WHATEVER _v, WHATEVER _x, WHATEVER _exp)
+{
+    const T v = static_cast<T>(_v);
+    const T x = static_cast<T>(_x);
+    const T exp = static_cast<T>(_exp);
+
+    T res = k_v(v,x);
+    BOOST_CHECK_SMALL((res-exp)/exp, tolerance<T>());
+}
+
+
 //Test Bessel functions with double precision
 BOOST_AUTO_TEST_CASE( bessel_functions_double_1 )
 {
-    const double v = 1.0/3.0;
-    const double x = 0.5;
-    const double exp = 0.989031074246724;
-
-    const double k_1f3_05 = k_v(v,x);
-
-    BOOST_CHECK_SMALL((k_1f3_05-exp)/exp, double_tolerance);
-}
-
-BOOST_AUTO_TEST_CASE( bessel_functions_double_2 )
-{
-    const double v = 1.0/3.0;
-    const double x = 1.0;
-    const double exp = 0.438430633441534;
-
-    const double k_1f3_1 = k_v(v,x);
-
-    BOOST_CHECK_SMALL((k_1f3_1-exp)/exp , double_tolerance);
-}
-
-BOOST_AUTO_TEST_CASE( bessel_functions_double_3 )
-{
-    const double v = 1.0/3.0;
-    const double x = 2.0;
-    const double exp = 0.116544961296165;
-
-    const double k_1f3_2 = k_v(v,x);
-
-    BOOST_CHECK_SMALL((k_1f3_2-exp)/exp, double_tolerance);
-}
-
-BOOST_AUTO_TEST_CASE( bessel_functions_double_4 )
-{
-    const double v = 2.0/3.0;
-    const double x = 0.5;
-    const double exp = 1.205930464720336;
-
-    const double k_2f3_05 = k_v(v,x);
-
-    BOOST_CHECK_SMALL((k_2f3_05-exp)/exp, double_tolerance);
-}
-
-BOOST_AUTO_TEST_CASE( bessel_functions_double_5 )
-{
-    const double v = 2.0/3.0;
-    const double x = 1.0;
-    const double exp = 0.494475062104208;
-
-    const double k_2f3_1 = k_v(v,x);
-
-    BOOST_CHECK_SMALL((k_2f3_1-exp)/exp, double_tolerance);
-}
-
-BOOST_AUTO_TEST_CASE( bessel_functions_double_6 )
-{
-    const double v = 2.0/3.0;
-    const double x = 2.0;
-    const double exp = 0.124838927488128;
-
-    const double k_2f3_2 = k_v(v,x);
-
-    BOOST_CHECK_SMALL((k_2f3_2-exp)/exp, double_tolerance);
+    bessel_functions_test<double>(1.0/3.0, 0.5, 0.989031074246724);
 }
 
 //Test Bessel functions with single precision
-BOOST_AUTO_TEST_CASE( bessel_functions_float_1 )
+BOOST_AUTO_TEST_CASE( bessel_functions_single_1 )
 {
-    const float fv = static_cast<float>(1.0/3.0);
-    const float fx = static_cast<float>(0.5);
-    const float fexp = static_cast<float>(0.989031074246724);
-
-    const float fk_1f3_05 = k_v(fv,fx);
-
-    BOOST_CHECK_SMALL((fk_1f3_05-fexp)/fexp, float_tolerance);
+    bessel_functions_test<float>(1.0/3.0, 0.5, 0.989031074246724);
 }
 
-BOOST_AUTO_TEST_CASE( bessel_functions_float_2 )
+//Test Bessel functions with double precision
+BOOST_AUTO_TEST_CASE( bessel_functions_double_2 )
 {
-    const float fv = static_cast<float>(1.0/3.0);
-    const float fx = static_cast<float>(1.0);
-    const float fexp = static_cast<float>(0.438430633441534);
-
-    const float fk_1f3_1 = k_v(fv,fx);
-
-    BOOST_CHECK_SMALL((fk_1f3_1-fexp)/fexp, float_tolerance);
+    bessel_functions_test<double>(1.0/3.0, 1.0, 0.438430633441534);
 }
 
-BOOST_AUTO_TEST_CASE( bessel_functions_float_3 )
+//Test Bessel functions with single precision
+BOOST_AUTO_TEST_CASE( bessel_functions_single_2 )
 {
-    const float fv = static_cast<float>(1.0/3.0);
-    const float fx = static_cast<float>(2.0);
-    const float fexp = static_cast<float>(0.116544961296165);
-
-    const float fk_1f3_2 = k_v(fv,fx);
-
-    BOOST_CHECK_SMALL((fk_1f3_2-fexp)/fexp, float_tolerance);
+    bessel_functions_test<float>(1.0/3.0, 1.0, 0.438430633441534);
 }
 
+//Test Bessel functions with double precision
+BOOST_AUTO_TEST_CASE( bessel_functions_double_3 )
+{
+    bessel_functions_test<double>(1.0/3.0, 2.0, 0.116544961296165);
+}
+
+//Test Bessel functions with single precision
+BOOST_AUTO_TEST_CASE( bessel_functions_single_3 )
+{
+    bessel_functions_test<float>(1.0/3.0, 2.0, 0.116544961296165);
+}
+
+//Test Bessel functions with double precision
+BOOST_AUTO_TEST_CASE( bessel_functions_double_4 )
+{
+    bessel_functions_test<double>(2.0/3.0, 0.5, 1.205930464720336);
+}
+
+//Test Bessel functions with single precision
 BOOST_AUTO_TEST_CASE( bessel_functions_float_4 )
 {
-    const float fv = static_cast<float>(2.0/3.0);
-    const float fx = static_cast<float>(0.5);
-    const float fexp = static_cast<float>(1.205930464720336);
-
-    const float fk_2f3_05 = k_v(fv,fx);
-
-    BOOST_CHECK_SMALL((fk_2f3_05-fexp)/fexp, float_tolerance);
+    bessel_functions_test<float>(2.0/3.0, 0.5, 1.205930464720336);
 }
 
+//Test Bessel functions with double precision
+BOOST_AUTO_TEST_CASE( bessel_functions_double_5 )
+{
+    bessel_functions_test<double>(2.0/3.0, 1.0, 0.494475062104208);
+}
+
+//Test Bessel functions with single precision
 BOOST_AUTO_TEST_CASE( bessel_functions_float_5 )
 {
-    const float fv = static_cast<float>(2.0/3.0);
-    const float fx = static_cast<float>(1.0);
-    const float fexp = static_cast<float>(0.494475062104208);
-
-    const float fk_2f3_1 = k_v(fv,fx);
-
-    BOOST_CHECK_SMALL((fk_2f3_1-fexp)/fexp, float_tolerance);
+    bessel_functions_test<float>(2.0/3.0, 1.0, 0.494475062104208);
 }
 
+//Test Bessel functions with double precision
+BOOST_AUTO_TEST_CASE( bessel_functions_double_6 )
+{
+    bessel_functions_test<double>(2.0/3.0, 2.0, 0.124838927488128);
+}
 
+//Test Bessel functions with single precision
 BOOST_AUTO_TEST_CASE( bessel_functions_float_6 )
 {
-    const float fv = static_cast<float>(2.0/3.0);
-    const float fx = static_cast<float>(2.0);
-    const float fexp = static_cast<float>(0.124838927488128);
-
-    const float fk_2f3_2 = k_v(fv,fx);
-
-    BOOST_CHECK_SMALL((fk_2f3_2-fexp)/fexp, float_tolerance);
+    bessel_functions_test<float>(2.0/3.0, 2.0, 0.124838927488128);
 }
