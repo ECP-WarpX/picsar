@@ -373,8 +373,8 @@ subroutine pxrpush_emrz_evec( &
   ! dtsdy should not be used.
 
 #ifndef WARPX
-  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j), &
-  !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, mudt, dtsdx, dtsdz), &
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j, ru, rd), &
+  !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, mudt, dtsdx, dtsdz, rmin, dr), &
   !$OMP SHARED(Er, Et, Ez, Br, Bt, Bz, Jr, Jt, Jz)
   !$OMP DO COLLAPSE(2)
 #endif
@@ -879,8 +879,8 @@ USE picsar_precision, ONLY: idp, isp, num
   ! dtsdt should not be used.
 
 #ifndef WARPX
-  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j), &
-  !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdr, dtsdz), &
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j, ru, rd), &
+  !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdr, dtsdz, rmin, dr), &
   !$OMP SHARED(Er, Et, Ez, Br, Bt, Bz)
   !$OMP DO COLLAPSE(2)
 #endif
