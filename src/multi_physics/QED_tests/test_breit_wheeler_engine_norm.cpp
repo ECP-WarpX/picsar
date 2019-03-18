@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE( breit_wheeler_engine_opt_single_1 )
 
 //Test pair production rates (generic)
 template <typename T>
-T breit_wheeler_engine_prod_1()
+void breit_wheeler_engine_prod_1()
 {
     auto bw_engine = get_bw_stl_set_lambda<T>
         (390109317, static_cast<T>(800.0*si_nanometer));
@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE( breit_wheeler_engine_prod_single_1 )
 
 //Test pair production rates (generic)
 template <typename T>
-T breit_wheeler_engine_prod_2()
+void breit_wheeler_engine_prod_2()
 {
     auto bw_engine = get_bw_stl_set_lambda<T>
         (390109317, static_cast<T>(800.0*si_nanometer));
@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE( breit_wheeler_engine_prod_single_2 )
 }
 
 template <typename T>
-T breit_wheeler_engine_prod_3()
+void breit_wheeler_engine_prod_3()
 {
     auto bw_engine = get_bw_stl_set_lambda<T>
         (390109317, static_cast<T>(800.0*si_nanometer));
@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE( breit_wheeler_engine_prod_single_3 )
 
 //Test pair production rates (generic)
 template <typename T>
-T breit_wheeler_engine_prod_4()
+void breit_wheeler_engine_prod_4()
 {
     auto bw_engine = get_bw_stl_set_lambda<T>
         (390109317, static_cast<T>(800.0*si_nanometer));
@@ -266,7 +266,7 @@ BOOST_AUTO_TEST_CASE( breit_wheeler_engine_prod_single_4 )
 
 //Test pair production rates (generic)
 template <typename T>
-T breit_wheeler_engine_prod_5()
+void breit_wheeler_engine_prod_5()
 {
     auto bw_engine = get_bw_stl_set_lambda<T>
         (390109317, static_cast<T>(800.0*si_nanometer));
@@ -303,7 +303,7 @@ BOOST_AUTO_TEST_CASE( breit_wheeler_engine_prod_single_5 )
 
 //Test pair production rates (generic)
 template <typename T>
-T breit_wheeler_engine_prod_6()
+void breit_wheeler_engine_prod_6()
 {
     auto bw_engine = get_bw_stl_set_lambda<T>
         (390109317, static_cast<T>(800.0*si_nanometer));
@@ -340,7 +340,7 @@ BOOST_AUTO_TEST_CASE( breit_wheeler_engine_prod_single_6 )
 
 //Test pair production rates (generic)
 template <typename T>
-T breit_wheeler_engine_prod_7()
+void breit_wheeler_engine_prod_7()
 {
     auto bw_engine = get_bw_stl_set_lambda<T>
         (390109317, static_cast<T>(800.0*si_nanometer));
