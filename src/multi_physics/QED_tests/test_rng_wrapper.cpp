@@ -117,8 +117,9 @@ BOOST_AUTO_TEST_CASE( rng_stl_wrapper_exp_single )
 //Build ONLY if Kokkos is enabled
 #ifdef PXRMP_BUILD_WITH_KOKKOS_SUPPORT
 
-//Test Kokkos rng_wrapper unf (double precision)
-BOOST_AUTO_TEST_CASE( rng_kokkos_unf_double_1 )
+//Test Kokkos rng_wrapper generic
+template<typename T>
+void rng_kokkos_unf ()
 {
     //Initialize Kokkos passing argc and argv provided through Boost test suite
     Kokkos::initialize(
@@ -131,13 +132,13 @@ BOOST_AUTO_TEST_CASE( rng_kokkos_unf_double_1 )
     //We want to fill a 1D array with numbers extracted from a uniform
     //distribution between a and b
     size_t size = 100000;
-    double a = -7.0;
-    double b = 11.0;
+    T a = -7.0;
+    T b = 11.0;
 
     //A view is the way Kokkos manages multi-dimensional arrays
     //A dual view manages mirroring between a view living in the device memory
     //and a view living in the host memory.
-    Kokkos::DualView<double*> vals("A bunch of random numbers", size);
+    Kokkos::DualView<T*> vals("A bunch of random numbers", size);
 
     //I create my wrapper
     kokkos_rng_wrapper<Kokkos::Random_XorShift1024_Pool<>> wrp{pool};
@@ -155,7 +156,7 @@ BOOST_AUTO_TEST_CASE( rng_kokkos_unf_double_1 )
     Kokkos::deep_copy(vals.h_view,vals.d_view);
 
     //Single test
-    double val = wrp.unf(a,b);
+    T val = wrp.unf(a,b);
     BOOST_TEST( val >= a);
     BOOST_TEST( val < b);
 
@@ -168,8 +169,22 @@ BOOST_AUTO_TEST_CASE( rng_kokkos_unf_double_1 )
 
 }
 
-//Test Kokkos rng_wrapper exp (double precision)
-BOOST_AUTO_TEST_CASE( rng_kokkos_exp_double_1 )
+//Test Kokkos rng_wrapper unf (double precision)
+BOOST_AUTO_TEST_CASE( rng_kokkos_unf_double_1 )
+{
+    rng_kokkos_unf<double>();
+}
+
+//Test Kokkos rng_wrapper unf (single precision)
+BOOST_AUTO_TEST_CASE( rng_kokkos_unf_single_1 )
+{
+    rng_kokkos_unf<float>();
+}
+
+
+//Test Kokkos rng_wrapper exp generic
+template<typename T>
+void rng_kokkos_exp()
 {
     //Initialize Kokkos passing argc and argv provided through Boost test suite
     Kokkos::initialize(
@@ -185,7 +200,7 @@ BOOST_AUTO_TEST_CASE( rng_kokkos_exp_double_1 )
     //A view is the way Kokkos manages multi-dimensional arrays
     //A dual view manages mirroring between a view living in the device memory
     //and a view living in the host memory.
-    Kokkos::DualView<double*> vals("A bunch of random numbers", size);
+    Kokkos::DualView<T*> vals("A bunch of random numbers", size);
 
     //I create my wrapper
     kokkos_rng_wrapper<Kokkos::Random_XorShift1024_Pool<>> wrp{pool};
@@ -203,112 +218,27 @@ BOOST_AUTO_TEST_CASE( rng_kokkos_exp_double_1 )
     Kokkos::deep_copy(vals.h_view,vals.d_view);
 
     //Single test
-    BOOST_TEST( wrp.exp(1.0) >= 0.0);
+    BOOST_TEST( wrp.exp(static_cast<T>(1.0)) >= static_cast<T>(0.0));
 
     Kokkos::finalize();
 
     for(size_t i = 0; i < size; ++i){
-        BOOST_TEST( vals.h_view(i) >= 0.0);
+        BOOST_TEST( vals.h_view(i) >= static_cast<T>(0.0));
     }
 
 }
 
 
-//Test Kokkos rng_wrapper unf (single precision)
-BOOST_AUTO_TEST_CASE( rng_kokkos_unf_single_1 )
+//Test Kokkos rng_wrapper exp (double precision)
+BOOST_AUTO_TEST_CASE( rng_kokkos_exp_double_1 )
 {
-    //Initialize Kokkos passing argc and argv provided through Boost test suite
-    Kokkos::initialize(
-        boost::unit_test::framework::master_test_suite().argc,
-        boost::unit_test::framework::master_test_suite().argv);
-
-    //Creates a pointer to a pool of generators
-    auto pool = Kokkos::Random_XorShift1024_Pool<>{89139811};
-
-    //We want to fill a 1D array with numbers extracted from a uniform
-    //distribution between a and b
-    size_t size = 100000;
-    float a = -7.0;
-    float b = 11.0;
-
-    //A view is the way Kokkos manages multi-dimensional arrays
-    //A dual view manages mirroring between a view living in the device memory
-    //and a view living in the host memory.
-    Kokkos::DualView<float*> vals("A bunch of random numbers", size);
-
-    //I create my wrapper
-    kokkos_rng_wrapper<Kokkos::Random_XorShift1024_Pool<>> wrp{pool};
-
-    //I create a lambda, which should be passed to Kokkos::parallel_for
-    auto ffunc =
-    KOKKOS_LAMBDA (int i){
-        vals.d_view(i) = wrp.unf<float>(a,b);
-    };
-
-    Kokkos::parallel_for(size, ffunc);
-    Kokkos::fence();
-
-    //Copy from device to host
-    Kokkos::deep_copy(vals.h_view,vals.d_view);
-
-    //Single test
-    float val = wrp.unf(a,b);
-    BOOST_TEST( val >= a);
-    BOOST_TEST( val < b);
-
-
-    Kokkos::finalize();
-
-    for(size_t i = 0; i < size; ++i){
-        BOOST_TEST( vals.h_view(i) >= a);
-        BOOST_TEST( vals.h_view(i) < b);
-    }
-
+    rng_kokkos_exp<double>();
 }
 
 //Test Kokkos rng_wrapper exp (single precision)
 BOOST_AUTO_TEST_CASE( rng_kokkos_exp_single_1 )
 {
-    //Initialize Kokkos passing argc and argv provided through Boost test suite
-    Kokkos::initialize(
-        boost::unit_test::framework::master_test_suite().argc,
-        boost::unit_test::framework::master_test_suite().argv);
-
-    //Creates a pointer to a pool of generators
-    auto pool = Kokkos::Random_XorShift1024_Pool<>{89139811};
-
-    //We want to fill a 1D array with numbers extracted from an exp distribution
-    size_t size = 100000;
-
-    //A view is the way Kokkos manages multi-dimensional arrays
-    //A dual view manages mirroring between a view living in the device memory
-    //and a view living in the host memory.
-    Kokkos::DualView<double*> vals("A bunch of random numbers", size);
-
-    //I create my wrapper
-    kokkos_rng_wrapper<Kokkos::Random_XorShift1024_Pool<>> wrp{pool};
-
-    //I create a lambda, which should be passed to Kokkos::parallel_for
-    auto ffunc =
-    KOKKOS_LAMBDA (int i){
-        vals.d_view(i) = wrp.exp(1.0f);
-    };
-
-    Kokkos::parallel_for(size, ffunc);
-    Kokkos::fence();
-
-    //Copy from device to host
-    Kokkos::deep_copy(vals.h_view,vals.d_view);
-
-    //Single test
-    BOOST_TEST( wrp.exp(1.0f) >= 0.0f);
-
-    Kokkos::finalize();
-
-    for(size_t i = 0; i < size; ++i){
-        BOOST_TEST( vals.h_view(i) >= 0.0f);
-    }
-
+    rng_kokkos_exp<float>();
 }
 
 #endif
