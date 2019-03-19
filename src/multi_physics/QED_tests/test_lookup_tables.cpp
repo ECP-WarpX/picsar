@@ -54,12 +54,21 @@ void lookup1d_constructor()
 
     lookup_1d<T> l1d{coords, vals,
         lookup_1d<T>::linear_equispaced_interpolation};
-    lookup_1d<T> l2d{l1d};
+
+    lookup_1d<T> l1dbis{l1d};
+
+    lookup_1d<T> l1dnull;
+
+
 
     for(size_t i = 0; i < coords.size(); ++i){
         BOOST_CHECK_EQUAL(l1d.get_coords()[i], static_cast<T>(coords[i]));
-        BOOST_CHECK_EQUAL(l2d.get_coords()[i], static_cast<T>(coords[i]));
+        BOOST_CHECK_EQUAL(l1dbis.get_coords()[i], static_cast<T>(coords[i]));
     }
+
+    BOOST_CHECK_EQUAL(l1d.is_init(),true);
+    BOOST_CHECK_EQUAL(l1dbis.is_init(),true);
+    BOOST_CHECK_EQUAL(l1dnull.is_init(),false);
 }
 
 //Test lookup_1d constructor in double precision
@@ -170,20 +179,26 @@ void lookup2d_constructor()
         }
     }
 
-    lookup_2d<T> l2d{std::array<std::vector<T>,2>{c1,c2}, vals, 
+    lookup_2d<T> l2d{std::array<std::vector<T>,2>{c1,c2}, vals,
         lookup_2d<T>::linear_interpolation, lookup_2d<T>::row_major};
-        
+
     lookup_2d<T> l2dbis{l2d};
+
+    lookup_2d<T> l2dnull;
 
     for(size_t i = 0; i < c1.size(); ++i){
         BOOST_CHECK_EQUAL(l2d.get_coords()[0][i], static_cast<T>(c1[i]));
         BOOST_CHECK_EQUAL(l2dbis.get_coords()[0][i], static_cast<T>(c1[i]));
     }
-    
+
     for(size_t i = 0; i < c2.size(); ++i){
         BOOST_CHECK_EQUAL(l2d.get_coords()[1][i], static_cast<T>(c2[i]));
         BOOST_CHECK_EQUAL(l2dbis.get_coords()[1][i], static_cast<T>(c2[i]));
     }
+
+    BOOST_CHECK_EQUAL(l2d.is_init(),true);
+    BOOST_CHECK_EQUAL(l2dbis.is_init(),true);
+    BOOST_CHECK_EQUAL(l2dnull.is_init(),false);
 }
 
 //Test lookup_1d constructor in double precision
@@ -212,12 +227,12 @@ void lookup2d_linear_interpolator()
         }
     }
 
-    lookup_2d<T> l2d{std::array<std::vector<T>,2>{c1,c2}, vals, 
+    lookup_2d<T> l2d{std::array<std::vector<T>,2>{c1,c2}, vals,
         lookup_2d<T>::linear_interpolation, lookup_2d<T>::row_major};
-        
+
     std::vector<T> c1_test{-2.9, -2.1, 1.2, 0.0, 2.99};
     std::vector<T> c2_test{-1.9, -2.7, 2.1, 1.1, 0.7};
-    
+
     for(auto cc1: c1_test){
         for(auto cc2: c1_test){
             //T res = l2d.interp(cc1, cc2);

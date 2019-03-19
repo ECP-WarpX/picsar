@@ -101,6 +101,9 @@ namespace picsar{
         //Parameters which control how the engine works
         breit_wheeler_engine_ctrl<_REAL> bw_ctrl;
 
+        //lookup table for the TT function
+        lookup_1d<_REAL> TTfunc_table;
+
         //Some handy constants
         const _REAL zero = static_cast<_REAL>(0.0);
         const _REAL one = static_cast<_REAL>(1.0);

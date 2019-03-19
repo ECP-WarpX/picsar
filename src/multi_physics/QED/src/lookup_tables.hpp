@@ -40,6 +40,9 @@ namespace picsar{
         class lookup_1d
         {
             public:
+                //Default empty constructor
+                lookup_1d () = default;
+
                 //Constructor: requires coordinates, data and an interpolator
                 //interpolator should be a lambda
                 //f(_REAL val, const vector<_REAL>& coords, const vector<_REAL>& data)-> _REAL .
@@ -55,6 +58,9 @@ namespace picsar{
 
                 //Get a copy of the coordinates
                 std::vector<_REAL> get_coords();
+
+                //Check if the table is initialized
+                bool is_init();
 
                 //Performs the interpolation
                 PXRMP_FORCE_INLINE
@@ -81,6 +87,8 @@ namespace picsar{
                 std::vector<_REAL> coords;
                 std::vector<_REAL> data;
 
+                bool init_flag = false;
+
                 interpolator_1d<_REAL> interpolator;
         };
 
@@ -89,6 +97,9 @@ namespace picsar{
         class lookup_2d
         {
             public:
+                //Default empty constructor
+                lookup_2d () = default;
+
                 //Constructor: requires coordinates, data, an interpolator and an accessor
                 //interpolator should be a lambda
                 //f(array<REAL,2>, array<vector<_REAL>,2>& coords, vector<_REAL>& data)-> _REAL .
@@ -107,6 +118,9 @@ namespace picsar{
 
                 //Get a copy of the coordinates
                 std::array<std::vector<_REAL>,2> get_coords();
+
+                //Check if the table is initialized
+                bool is_init();
 
                 //Performs the interpolation
                 PXRMP_FORCE_INLINE
@@ -132,6 +146,8 @@ namespace picsar{
                 std::array<std::vector<_REAL>,2> coords;
                 std::vector<_REAL> data;
 
+                bool init_flag = false;
+
                 interpolator_2d<_REAL>  interpolator;
                 accessor_2d accessor;
         };
@@ -151,13 +167,16 @@ lookup_1d
 (std::vector<_REAL> coords, std::vector<_REAL> data,
 interpolator_1d<_REAL> interpolator):
     coords{coords}, data{data}, interpolator{interpolator}
-{}
+{
+    init_flag = true;
+}
 
 //Copy constructor
 template<typename _REAL>
 picsar::multi_physics::lookup_1d<_REAL>::
 lookup_1d(lookup_1d& other):
-    coords{other.coords}, data{other.data}, interpolator{other.interpolator}
+    coords{other.coords}, data{other.data}, interpolator{other.interpolator},
+    init_flag{other.init_flag}
 {}
 
 //Move constructor
@@ -165,7 +184,8 @@ template<typename _REAL>
 picsar::multi_physics::lookup_1d<_REAL>::
 lookup_1d(lookup_1d&& other):
     coords{std::move(other.coords)}, data{std::move(other.data)},
-    interpolator{std::move(other.interpolator)}
+    interpolator{std::move(other.interpolator)},
+    init_flag{other.init_flag}
 {}
 
 //Get a copy of the coordinates
@@ -175,6 +195,15 @@ picsar::multi_physics::lookup_1d<_REAL>::
 get_coords()
 {
     return coords;
+}
+
+//Checks if the table is initialized
+template<typename _REAL>
+bool
+picsar::multi_physics::lookup_1d<_REAL>::
+is_init()
+{
+    return init_flag;
 }
 
 //Performs the interpolation
@@ -241,14 +270,16 @@ std::vector<_REAL> data,
 interpolator_2d<_REAL> interpolator,
 accessor_2d accessor):
     coords{coords}, data{data}, interpolator{interpolator}, accessor{accessor}
-    {}
+{
+    init_flag = true;
+}
 
 //Copy constructor
 template<typename _REAL>
 picsar::multi_physics::lookup_2d<_REAL>::
 lookup_2d(lookup_2d& other):
     coords{other.coords}, data{other.data}, interpolator{other.interpolator},
-    accessor{other.accessor}
+    accessor{other.accessor}, init_flag{other.init_flag}
 {}
 
 //Move constructor
@@ -257,7 +288,7 @@ picsar::multi_physics::lookup_2d<_REAL>::
 lookup_2d(lookup_2d&& other):
     coords{std::move(other.coords)}, data{std::move(other.data)},
     interpolator{std::move(other.interpolator)},
-    accessor{std::move(other.accessor)}
+    accessor{std::move(other.accessor)}, init_flag{std::move(other.init_flag)}
 {}
 
 
@@ -268,6 +299,15 @@ picsar::multi_physics::lookup_2d<_REAL>::
 get_coords()
 {
     return coords;
+}
+
+//Checks if the table is initialized
+template<typename _REAL>
+bool
+picsar::multi_physics::lookup_2d<_REAL>::
+is_init()
+{
+    return init_flag;
 }
 
 //Performs the interpolation
