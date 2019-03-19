@@ -56,6 +56,9 @@ namespace picsar{
                 //Move constructor
                 lookup_1d(lookup_1d&& other);
 
+                //Copy operator
+                lookup_1d&  operator= (const lookup_1d& );
+
                 //Get a copy of the coordinates
                 std::vector<_REAL> get_coords();
 
@@ -187,6 +190,18 @@ lookup_1d(lookup_1d&& other):
     interpolator{std::move(other.interpolator)},
     init_flag{other.init_flag}
 {}
+
+//Copy operator
+template<typename _REAL>
+picsar::multi_physics::lookup_1d<_REAL>&
+picsar::multi_physics::lookup_1d<_REAL>::
+ operator= (const lookup_1d& other)
+{
+    coords = other.coords;
+    data = other.data;
+    interpolator = other.interpolator;
+    init_flag = other.init_flag;
+}
 
 //Get a copy of the coordinates
 template<typename _REAL>

@@ -88,7 +88,11 @@ namespace picsar{
 
          //Computes the lookup_table needed for dN/dt
          PXRMP_FORCE_INLINE
-         _REAL compute_dN_dt_lookup_table();
+         void compute_dN_dt_lookup_table();
+
+         //Interp the dN_dt from table
+         PXRMP_FORCE_INLINE
+         _REAL interp_dN_dt(_REAL energy_phot, _REAL chi_phot) const;
 
          //This function evolves the optical depth for a particle and
          //checks if it goes to zero. If it doesn't the output is false,0.
@@ -109,7 +113,7 @@ namespace picsar{
         _RNDWRAP rng;
 
         //Parameters which control how the engine works
-        breit_wheeler_engine_ctrl<_REAL> bw_ctrl;
+        const breit_wheeler_engine_ctrl<_REAL> bw_ctrl;
 
         //lookup table for the TT function
         lookup_1d<_REAL> TTfunc_table;
@@ -119,6 +123,14 @@ namespace picsar{
         const _REAL one = static_cast<_REAL>(1.0);
         const _REAL two = static_cast<_REAL>(2.0);
         const _REAL three = static_cast<_REAL>(3.0);
+
+        //Internal function to compute log_table
+        PXRMP_FORCE_INLINE
+        void compute_dN_dt_log_lookup_table();
+
+        //Internal function to interp the dN_dt from table
+        PXRMP_FORCE_INLINE
+        _REAL interp_dN_dt_log(_REAL energy_phot, _REAL chi_phot) const;
 
         //Internal functions to perform calculations
         PXRMP_FORCE_INLINE
@@ -216,11 +228,27 @@ compute_dN_dt(_REAL energy_phot, _REAL chi_phot) const
 //Computes the lookup_table needed for dN/dt
 template<typename _REAL, class _RNDWRAP>
 PXRMP_FORCE_INLINE
-_REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+void picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 compute_dN_dt_lookup_table()
 {
+    if(bw_ctrl.tdndt_style == log_table)
+        compute_dN_dt_log_lookup_table();
 
+    //Other table styles are not currently implemented
 }
+
+//Interp the dN_dt from table
+template<typename _REAL, class _RNDWRAP>
+PXRMP_FORCE_INLINE
+_REAL
+picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+interp_dN_dt(_REAL energy_phot, _REAL chi_phot) const
+{
+    if(bw_ctrl.tdndt_style == log_table)
+        interp_dN_dt_log();
+    //Other table styles are not currently implemented
+}
+
 
 //This function evolves the optical depth for a particle and
 //checks if it goes to zero. If it doesn't the output is false,0.
@@ -247,7 +275,8 @@ _REAL dt, _REAL& opt_depth) const
             return false_zero_pair;
 
     //***********TO REPLACE WITH LOOKUP TABLES****************************
-    _REAL dndt = compute_dN_dt(energy, chi);
+    //_REAL dndt = compute_dN_dt(energy, chi);
+    _REAL dndt = interp_dN_dt_log(energy, chi);
     //********************************************************************
 
     opt_depth -= dndt*dt;
@@ -260,6 +289,62 @@ _REAL dt, _REAL& opt_depth) const
         _REAL dt_prod = opt_depth/dndt + dt;
         return std::make_pair(true, dt_prod);
     }
+}
+
+
+//Internal function to compute log_table
+template<typename _REAL, class _RNDWRAP>
+PXRMP_FORCE_INLINE
+void
+picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+compute_dN_dt_log_lookup_table()
+{
+    //Prepare the TT_coords vector
+    std::vector<_REAL> TT_coords(zero, bw_ctrl.chi_phot_tdndt_how_many);
+
+    _REAL chi_phot = bw_ctrl.chi_phot_tdndt_min;
+    _REAL mul = pow(bw_ctrl.chi_phot_tdndt_max/bw_ctrl.chi_phot_tdndt_min,
+        one/(bw_ctrl.chi_phot_tdndt_how_many - 1.0));
+
+    std::generate(TT_coords.begin(), TT_coords.end(),
+        [&chi_phot, mul](){_REAL elem = chi_phot;
+            chi_phot*=mul; return elem;}
+    );
+
+    TT_coords.back() = bw_ctrl.chi_phot_tdndt_max; //Enforces this exactly
+
+    //Do the hard work
+    std::vector<_REAL> TT_vals{};
+    std::transform(TT_coords.begin(), TT_coords.end(),
+        std::back_inserter(TT_vals),
+        [this](_REAL chi){return compute_TT_function(chi);});
+
+
+    //The table will store the logarithms
+    auto logfun = [](_REAL val){return log(val);};
+    std::transform(TT_coords.begin(), TT_coords.end(), TT_coords.begin(), logfun);
+    std::transform(TT_vals.begin(), TT_vals.end(), TT_vals.begin(), logfun);
+
+    TTfunc_table = std::move(lookup_1d<_REAL>{TT_coords, TT_vals,
+        lookup_1d<_REAL>::linear_interpolation});
+}
+
+//Internal function to interp the dN_dt table
+template<typename _REAL, class _RNDWRAP>
+PXRMP_FORCE_INLINE
+_REAL
+picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+interp_dN_dt_log(_REAL energy_phot, _REAL chi_phot) const
+{
+    if(energy_phot == zero || chi_phot == zero)
+        return zero;
+
+    _REAL coeff = static_cast<_REAL>(__pair_prod_coeff)*
+        lambda*(one/( chi_phot * energy_phot));
+
+    _REAL TTval = exp(TTfunc_table.interp(chi_phot));
+
+    return coeff*TTval;
 }
 
 //Function to compute X (Warning: it doen't chek if chi_ele != 0 or

@@ -45,7 +45,7 @@ int main(){
     	double by =  670.933*bref;
     	double bz =  660.057*bref;
 	//***
-    
+
     //Timestep
 	double dt = 0.01*dtref;
 
@@ -63,6 +63,8 @@ int main(){
 		std::cout << "An event occured after: "  << dt_prod <<
 			"s ( " << 100.0* dt_prod/dt << " \% of dt)" << std::endl;
 	}
+
+	bw_engine.compute_dN_dt_lookup_table();
 
 	return 0;
 }
