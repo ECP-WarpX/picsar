@@ -24,7 +24,6 @@ int main(){
 		bw_ctrl //Optional argument (with reasonable default values)
 		};
 
-
 	//***SI units
 	double lambda = 800.0*pxrmp::si_nanometer;
 	const double me_c = pxrmp::electron_mass * pxrmp::light_speed;
@@ -46,8 +45,8 @@ int main(){
     	double by =  670.933*bref;
     	double bz =  660.057*bref;
 	//***
-
-	//Timestep
+    
+    //Timestep
 	double dt = 0.01*dtref;
 
 	//Initial optical depth

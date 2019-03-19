@@ -25,6 +25,9 @@
 //Uses chi functions
 #include "chi_functions.hpp"
 
+//Uses lookup tables
+#include "lookup_tables.hpp"
+
 //############################################### Declaration
 
 namespace picsar{
@@ -116,6 +119,7 @@ namespace picsar{
 
         PXRMP_FORCE_INLINE
         _REAL compute_TT_function(_REAL chi_phot) const;
+
      };
 
   }
