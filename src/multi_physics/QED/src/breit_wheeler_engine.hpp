@@ -33,12 +33,18 @@
 namespace picsar{
   namespace multi_physics{
 
+      //This enumerator contains all the possible table styles
+
       //This structure contains parameters which control how the BW engine
       //works
       template<typename _REAL>
       struct breit_wheeler_engine_ctrl{
            //Minimum chi_phot to consider
-          _REAL chi_phot_min = static_cast<_REAL>(__minimum_chi_photons);
+          _REAL chi_phot_min =static_cast<_REAL>(__bw_min_chi_phot);
+          _REAL chi_phot_tdndt_min =static_cast<_REAL>(__bw_min_tdndt_chi_phot);
+          _REAL chi_phot_tdndt_max =static_cast<_REAL>(__bw_max_tdndt_chi_phot);
+          size_t chi_phot_tdndt_how_many =__bw_how_many_tdndt_chi_phot;
+          lookup_table_style tdndt_style = __bw_lookup_table_style;
       };
 
       //Templates are used for the numerical type and for the
@@ -79,6 +85,10 @@ namespace picsar{
          //Calculates the pair production rate (Warning: no lookup tables)
          PXRMP_FORCE_INLINE
          _REAL compute_dN_dt(_REAL energy_phot, _REAL chi_phot) const;
+
+         //Computes the lookup_table needed for dN/dt
+         PXRMP_FORCE_INLINE
+         _REAL compute_dN_dt_lookup_table();
 
          //This function evolves the optical depth for a particle and
          //checks if it goes to zero. If it doesn't the output is false,0.
@@ -201,6 +211,15 @@ compute_dN_dt(_REAL energy_phot, _REAL chi_phot) const
     _REAL coeff = static_cast<_REAL>(__pair_prod_coeff)*
         lambda*(one/( chi_phot * energy_phot));
     return coeff*compute_TT_function(chi_phot);
+}
+
+//Computes the lookup_table needed for dN/dt
+template<typename _REAL, class _RNDWRAP>
+PXRMP_FORCE_INLINE
+_REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+compute_dN_dt_lookup_table()
+{
+
 }
 
 //This function evolves the optical depth for a particle and

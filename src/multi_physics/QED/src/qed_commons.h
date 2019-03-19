@@ -161,9 +161,21 @@ namespace picsar{
 
 //##############################################################################
 
+//######################## Enumerator of all the possible lookup table styles###
+    enum lookup_table_style {loglog_table}; //Unused feature
+//##############################################################################
+
 //######################## Default values for the parameters of BW engine ######
 
-    const double __minimum_chi_photons = 0.001;
+    //Minimum chi_phot to consider in all the functions
+    const double __bw_min_chi_phot = 0.001;
+
+    // dN/dt table:
+    const double __bw_min_tdndt_chi_phot = 0.001; //Min chi_phot
+    const double __bw_max_tdndt_chi_phot = 10.0;  //Max chi_phot
+    size_t __bw_how_many_tdndt_chi_phot = 1000;   //How many points
+    lookup_table_style __bw_lookup_table_style = loglog_table;
+    // -------
 
 //##############################################################################
 
