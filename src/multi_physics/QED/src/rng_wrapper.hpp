@@ -29,7 +29,7 @@ namespace picsar{
         {
         public:
             //The seed must be a 64 bit integer
-            stl_rng_wrapper(int64_t seed);
+            stl_rng_wrapper(uint64_t seed);
             //Alternatively, the constructor can take a generator (by move)
             stl_rng_wrapper(std::mt19937_64&& rng);
 
@@ -113,7 +113,7 @@ namespace picsar{
 //*** STL RNG Wrapper ***
 
 //Constructor with seed
-picsar::multi_physics::stl_rng_wrapper::stl_rng_wrapper(int64_t seed)
+picsar::multi_physics::stl_rng_wrapper::stl_rng_wrapper(uint64_t seed)
 {
     rng.seed(seed);
 }

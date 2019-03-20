@@ -89,14 +89,14 @@ namespace picsar{
         const float flt_light_speed =
             static_cast<float>(light_speed);
         const float flt_reduced_plank =
-            static_cast<float>(flt_reduced_plank);
+            static_cast<float>(reduced_plank);
         const float flt_vacuum_permittivity =
-            static_cast<float>(flt_vacuum_permittivity);
+            static_cast<float>(vacuum_permittivity);
         const float flt_fine_structure =
-            static_cast<float>(flt_fine_structure);
+            static_cast<float>(fine_structure);
 
         const float flt_classical_electron_radius =
-        static_cast<float>(flt_classical_electron_radius);
+        static_cast<float>(classical_electron_radius);
 
         const float flt_schwinger_field =
         static_cast<float>(schwinger_field);

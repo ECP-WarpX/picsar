@@ -67,7 +67,7 @@ namespace picsar{
 
                 //Performs the interpolation
                 PXRMP_FORCE_INLINE
-                _REAL interp(_REAL where);
+                _REAL interp(_REAL where) const;
 
                 //----Static pre-defined interpolator functions
 
@@ -191,16 +191,19 @@ lookup_1d(lookup_1d&& other):
     init_flag{other.init_flag}
 {}
 
-//Copy operator
+//Assignment operator
 template<typename _REAL>
 picsar::multi_physics::lookup_1d<_REAL>&
 picsar::multi_physics::lookup_1d<_REAL>::
  operator= (const lookup_1d& other)
 {
-    coords = other.coords;
-    data = other.data;
-    interpolator = other.interpolator;
-    init_flag = other.init_flag;
+    if (this != &other){
+        coords = other.coords;
+        data = other.data;
+        interpolator = other.interpolator;
+        init_flag = other.init_flag;
+    }
+    return *this;
 }
 
 //Get a copy of the coordinates
@@ -226,7 +229,7 @@ template<typename _REAL>
 PXRMP_FORCE_INLINE
 _REAL
 picsar::multi_physics::lookup_1d<_REAL>::
-interp(_REAL where)
+interp(_REAL where) const
 {
     return interpolator(where, coords, data);
 }

@@ -29,7 +29,7 @@ using namespace picsar::multi_physics;
 template<typename REAL>
 breit_wheeler_engine
 <REAL, kokkos_rng_wrapper<Kokkos::Random_XorShift1024_Pool<>>>
-get_bw_kokkos_set_lambda(int64_t seed,
+get_bw_kokkos_set_lambda(uint64_t seed,
 breit_wheeler_engine_ctrl<REAL> bw_ctrl = breit_wheeler_engine_ctrl<REAL>())
 {
     auto pool = Kokkos::Random_XorShift1024_Pool<>{seed};
@@ -43,7 +43,7 @@ breit_wheeler_engine_ctrl<REAL> bw_ctrl = breit_wheeler_engine_ctrl<REAL>())
 
 //No Kokkos version
 template<typename REAL>
-breit_wheeler_engine<REAL, stl_rng_wrapper> get_bw_stl_set_lambda(int64_t seed,
+breit_wheeler_engine<REAL, stl_rng_wrapper> get_bw_stl_set_lambda(uint64_t seed,
 breit_wheeler_engine_ctrl<REAL> bw_ctrl = breit_wheeler_engine_ctrl<REAL>())
 {
     stl_rng_wrapper wrap{seed};

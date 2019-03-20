@@ -342,7 +342,8 @@ interp_dN_dt_log(_REAL energy_phot, _REAL chi_phot) const
     _REAL coeff = static_cast<_REAL>(__pair_prod_coeff)*
         lambda*(one/( chi_phot * energy_phot));
 
-    _REAL TTval = exp(TTfunc_table.interp(chi_phot));
+    _REAL interp = TTfunc_table.interp(chi_phot);
+    _REAL TTval = exp(interp);
 
     return coeff*TTval;
 }

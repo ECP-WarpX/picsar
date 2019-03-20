@@ -33,7 +33,7 @@ using namespace picsar::multi_physics;
 
 //Test STL rng_wrapper constructors generic
 template<typename T>
-void  rng_stl_wrapper_constructors(int64_t seed)
+void  rng_stl_wrapper_constructors(uint64_t seed)
 {
     std::mt19937_64 rng{seed};
 
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE( rng_stl_wrapper_constructors_single )
 
 //Test STL rng_wrapper unf generic
 template<typename T>
-void  rng_stl_wrapper_unf(int64_t seed)
+void  rng_stl_wrapper_unf(uint64_t seed)
 {
     stl_rng_wrapper wrp{seed};
     size_t how_many = 10000;
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE( rng_stl_wrapper_unf_single )
 
 //Test STL rng_wrapper exp generic
 template<typename T>
-void  rng_stl_wrapper_exp(int64_t seed)
+void  rng_stl_wrapper_exp(uint64_t seed)
 {
     stl_rng_wrapper wrp{seed};
     size_t how_many = 10000;
