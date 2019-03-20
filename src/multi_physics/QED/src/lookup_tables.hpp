@@ -63,7 +63,7 @@ namespace picsar{
                 std::vector<_REAL> get_coords();
 
                 //Check if the table is initialized
-                bool is_init();
+                bool is_init() const;
 
                 //Performs the interpolation
                 PXRMP_FORCE_INLINE
@@ -123,7 +123,7 @@ namespace picsar{
                 std::array<std::vector<_REAL>,2> get_coords();
 
                 //Check if the table is initialized
-                bool is_init();
+                bool is_init() const;
 
                 //Performs the interpolation
                 PXRMP_FORCE_INLINE
@@ -219,7 +219,7 @@ get_coords()
 template<typename _REAL>
 bool
 picsar::multi_physics::lookup_1d<_REAL>::
-is_init()
+is_init() const
 {
     return init_flag;
 }
@@ -323,7 +323,7 @@ get_coords()
 template<typename _REAL>
 bool
 picsar::multi_physics::lookup_2d<_REAL>::
-is_init()
+is_init() const
 {
     return init_flag;
 }

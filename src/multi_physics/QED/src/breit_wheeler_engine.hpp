@@ -310,9 +310,17 @@ _REAL dt, _REAL& opt_depth) const
     if(chi <= bw_ctrl.chi_phot_min)
             return false_zero_pair;
 
-
     //**Compute dndt
-    _REAL dndt = interp_dN_dt(energy, chi);
+    _REAL dndt;
+    //Uses table if available
+    if(TTfunc_table.is_init()){
+        dndt = interp_dN_dt(energy, chi);
+    }
+    //If not it computes dndt
+    else{
+        err("dndt lookup table not initialized!");
+        dndt = compute_dN_dt(energy, chi);
+    }
 
     opt_depth -= dndt*dt;
 
