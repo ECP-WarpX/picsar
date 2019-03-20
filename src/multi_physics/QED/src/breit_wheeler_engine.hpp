@@ -178,7 +178,7 @@ template<typename _REAL, class _RNDWRAP>
 picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 breit_wheeler_engine(breit_wheeler_engine& other):
     lambda(other.lambda), rng(other.rng), bw_ctrl(other.bw_ctrl)
-    {};
+    {}
 
 //Move constructor
 template<typename _REAL, class _RNDWRAP>
@@ -186,7 +186,7 @@ picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 breit_wheeler_engine(breit_wheeler_engine&& other):
     lambda(std::move(other.lambda)), rng(std::move(other.rng)),
     bw_ctrl(std::move(other.bw_ctrl))
-    {};
+    {}
 
 
 //Getter for lambda
@@ -318,7 +318,7 @@ _REAL dt, _REAL& opt_depth) const
     }
     //If not it computes dndt
     else{
-        err("dndt lookup table not initialized!");
+        err("dndt lookup table not initialized!\n");
         dndt = compute_dN_dt(energy, chi);
     }
 

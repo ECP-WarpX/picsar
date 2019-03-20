@@ -392,6 +392,9 @@ void breit_wheeler_engine_detopt_1()
 
     bool has_event_happend;
     T dt_prod;
+
+    bw_engine.compute_dN_dt_lookup_table(nullptr);
+
     std::tie(has_event_happend, dt_prod) =
         bw_engine.evolve_opt_depth_and_determine_event
         (px, py, pz, ex, ey, ez, bx, by, bz, dt, optical_depth);
@@ -442,6 +445,9 @@ void breit_wheeler_engine_detopt_2()
 
     bool has_event_happend;
     T dt_prod;
+
+    bw_engine.compute_dN_dt_lookup_table(nullptr);
+
     std::tie(has_event_happend, dt_prod) =
         bw_engine.evolve_opt_depth_and_determine_event
         (px, py, pz, ex, ey, ez, bx, by, bz, dt, optical_depth);
@@ -495,6 +501,9 @@ void breit_wheeler_engine_detopt_3()
 
     bool has_event_happend;
     T dt_prod;
+
+    bw_engine.compute_dN_dt_lookup_table(nullptr);
+
     std::tie(has_event_happend, dt_prod) =
     bw_engine.evolve_opt_depth_and_determine_event
     (px, py, pz, ex, ey, ez, bx, by, bz, dt, optical_depth);
