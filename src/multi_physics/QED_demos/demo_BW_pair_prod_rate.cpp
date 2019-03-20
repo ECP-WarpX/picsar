@@ -66,5 +66,25 @@ int main(){
 			"s ( " << 100.0* dt_prod/dt << " %% of dt)" << std::endl;
 	}
 
+
+	std::cout << "Table vs direct calculation " << std::endl;
+	std::cout << "chi	interp	calc" << std::endl;
+
+	double Efield = 500.0 * eref;
+
+	double mom = 0.01*me_c;
+	double mul = 1.2;
+
+	while(mom < 1e7 * me_c){
+		double chi = pxrmp::chi_photon(mom,0.,0.,0.,Efield,0.,0.,0.,0.);
+		double ephot = mom*pxrmp::light_speed;
+		std::cout << chi << "   ";
+		std::cout <<  bw_engine.interp_dN_dt(ephot, chi) << "   ";
+		std::cout <<  bw_engine.compute_dN_dt(ephot, chi) << "\n";
+		mom*=mul;
+	}
+
+
+
 	return 0;
 }

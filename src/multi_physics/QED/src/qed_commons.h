@@ -10,9 +10,6 @@
 #ifndef __PICSAR_MULTIPHYSICS_QED_COMMONS__
 #define __PICSAR_MULTIPHYSICS_QED_COMMONS__
 
-//Needed to calculate a square root
-#include <cmath>
-
 //######################## Flag to enable kokkos support for thread-safe RNG####
 
     //Default is to build without Kokkos support
@@ -76,7 +73,7 @@ namespace picsar{
 
         const double pair_prod_rate_coeff =
         fine_structure * electron_mass * light_speed * light_speed /
-        (pi * reduced_plank * sqrt(3.0));
+        (reduced_plank);
 
 
         //Single precision
@@ -172,19 +169,15 @@ namespace picsar{
 
     // dN/dt table:
     const double __bw_min_tdndt_chi_phot = 0.1; //Min chi_phot
-    const double __bw_max_tdndt_chi_phot = 5.0;  //Max chi_phot
-    size_t __bw_how_many_tdndt_chi_phot = 30;   //How many points
+    const double __bw_max_tdndt_chi_phot = 200.0;  //Max chi_phot
+    size_t __bw_how_many_tdndt_chi_phot = 40;   //How many points
     lookup_table_style __bw_lookup_table_style = log_table;
     // -------
 
     //Coefficients for che asyntotic behaviour of the "TT function"
-    //obtained with numerical fit (a*chi^b)
-    const double __fit_Tfunc_asynt_large_chi_a = 1.8097;
-    const double __fit_Tfunc_asynt_large_chi_b = 1.6828;
-
-    //copied from the open source Smilei code
-    const double __fit_Tfunc_asynt_small_chi_a = 0.46;
-    const double __fit_Tfunc_asynt_small_chi_b = 8./3.;
+    //using Erber approximation
+    const double __erber_Tfunc_asynt_a = 0.16;
+    const double __erber_Tfunc_asynt_b = 4./3.;
 
 //##############################################################################
 

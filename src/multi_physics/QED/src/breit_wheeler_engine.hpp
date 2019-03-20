@@ -261,18 +261,14 @@ interp_dN_dt(_REAL energy_phot, _REAL chi_phot) const
 
         _REAL TT = zero;
     //Use approximate analytical expression if chi < chi_phot_tdndt_min
-    if(chi_phot <= bw_ctrl.chi_phot_tdndt_min){
-        _REAL a = static_cast<_REAL>(__fit_Tfunc_asynt_small_chi_a);
-        _REAL b = static_cast<_REAL>(__fit_Tfunc_asynt_small_chi_b);
-        TT = a*exp(-b/chi_phot)*chi_phot;
+    //or chi > chi_phot_tdndt_min
+    if(chi_phot <= bw_ctrl.chi_phot_tdndt_min ||
+        chi_phot >= bw_ctrl.chi_phot_tdndt_max){
+        _REAL a = static_cast<_REAL>(__erber_Tfunc_asynt_a);
+        _REAL b = static_cast<_REAL>(__erber_Tfunc_asynt_b);
+        TT = a*chi_phot*pow(k_v(one/three, b/chi_phot),two);
     }
-    //Use approximate analytical expression if chi > chi_phot_tdndt_min
-    else if(chi_phot >= bw_ctrl.chi_phot_tdndt_max){
-        _REAL a = static_cast<_REAL>(__fit_Tfunc_asynt_large_chi_a);
-        _REAL b = static_cast<_REAL>(__fit_Tfunc_asynt_large_chi_b);
-        TT = a*pow(chi_phot, b);
-    }
-    //Last case: use lookup tables
+    //otherwise use lookup tables
     else{
         //Other table styles are not currently implemented
         if(bw_ctrl.tdndt_style == log_table)
@@ -430,7 +426,9 @@ compute_TT_function(_REAL chi_phot) const
             return compute_TT_integrand(chi_phot, chi_ele);
     };
 
-    return quad_a_b<_REAL>(func, zero, chi_phot);
+    _REAL div = static_cast<_REAL>(pi)*sqrt(three);
+
+    return quad_a_b<_REAL>(func, zero, chi_phot)/div;
 }
 
 #endif //__PICSAR_MULTIPHYSICS_BREIT_WHEELER_ENGINE__
