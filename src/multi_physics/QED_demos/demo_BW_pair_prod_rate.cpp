@@ -31,7 +31,7 @@ int main(){
 		pxrmp::light_speed/(lambda*pxrmp::elementary_charge);
 	double bref = eref/pxrmp::light_speed;
 	double dtref = lambda/(2.0*pxrmp::pi*pxrmp::light_speed);
-	double rateref = 1.0/dtref;
+	//double rateref = 1.0/dtref;
 	//***
 
 	//***Initial properties of a particle
@@ -63,7 +63,7 @@ int main(){
 
 	if(has_event_happend){
 		std::cout << "An event occured after: "  << dt_prod <<
-			"s ( " << 100.0* dt_prod/dt << " \% of dt)" << std::endl;
+			"s ( " << 100.0* dt_prod/dt << " %% of dt)" << std::endl;
 	}
 
 	return 0;

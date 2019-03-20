@@ -140,7 +140,7 @@ void breit_wheeler_engine_prod_1()
     T by =  static_cast<T>(670.933*bref);
     T bz =  static_cast<T>(660.057*bref);
 
-    T exp = static_cast<T>(0.0*rateref);
+    //T exp = static_cast<T>(0.0*rateref);
     T res = bw_engine.compute_dN_dt(norm(vec3<T>{px,py,pz})*light_speed, chi_photon(px,py,pz,ex,ey,ez,bx,by,bz) );
 
     BOOST_CHECK_SMALL(res, tolerance<T>());
@@ -175,7 +175,7 @@ void breit_wheeler_engine_prod_2()
     T by =  static_cast<T>(0.0*bref);
     T bz =  static_cast<T>(0.0*bref);
 
-    T exp = static_cast<T>(0.0*rateref);
+    //T exp = static_cast<T>(0.0*rateref);
     T res = bw_engine.compute_dN_dt(norm(vec3<T>{px,py,pz})*light_speed, chi_photon(px,py,pz,ex,ey,ez,bx,by,bz) );
 
     BOOST_CHECK_SMALL(res, tolerance<T>());
@@ -208,7 +208,7 @@ void breit_wheeler_engine_prod_3()
     T by =  static_cast<T>(-5.46574*bref);
     T bz =  static_cast<T>(-6.75393*bref);
 
-    T exp = static_cast<T>(0.0*rateref);
+    //T exp = static_cast<T>(0.0*rateref);
     T res = bw_engine.compute_dN_dt(norm(vec3<T>{px,py,pz})*light_speed, chi_photon(px,py,pz,ex,ey,ez,bx,by,bz) );
 
     BOOST_CHECK_SMALL(res, tolerance<T>());

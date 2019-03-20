@@ -56,7 +56,7 @@ namespace picsar{
                 //Move constructor
                 lookup_1d(lookup_1d&& other);
 
-                //Copy operator
+                //Assignment operator
                 lookup_1d&  operator= (const lookup_1d& );
 
                 //Get a copy of the coordinates
@@ -119,6 +119,9 @@ namespace picsar{
                 //Move constructor
                 lookup_2d(lookup_2d&& other);
 
+                //Assignment operator
+                lookup_2d&  operator= (const lookup_2d& );
+
                 //Get a copy of the coordinates
                 std::array<std::vector<_REAL>,2> get_coords();
 
@@ -178,8 +181,8 @@ interpolator_1d<_REAL> interpolator):
 template<typename _REAL>
 picsar::multi_physics::lookup_1d<_REAL>::
 lookup_1d(lookup_1d& other):
-    coords{other.coords}, data{other.data}, interpolator{other.interpolator},
-    init_flag{other.init_flag}
+    coords{other.coords}, data{other.data}, init_flag{other.init_flag},
+    interpolator{other.interpolator}
 {}
 
 //Move constructor
@@ -296,8 +299,8 @@ accessor_2d accessor):
 template<typename _REAL>
 picsar::multi_physics::lookup_2d<_REAL>::
 lookup_2d(lookup_2d& other):
-    coords{other.coords}, data{other.data}, interpolator{other.interpolator},
-    accessor{other.accessor}, init_flag{other.init_flag}
+    coords{other.coords}, data{other.data}, init_flag{other.init_flag},
+    interpolator{other.interpolator}, accessor{other.accessor}
 {}
 
 //Move constructor
@@ -308,6 +311,23 @@ lookup_2d(lookup_2d&& other):
     interpolator{std::move(other.interpolator)},
     accessor{std::move(other.accessor)}, init_flag{std::move(other.init_flag)}
 {}
+
+//Assignment operator
+template<typename _REAL>
+picsar::multi_physics::lookup_2d<_REAL>&
+picsar::multi_physics::lookup_2d<_REAL>::
+ operator= (const lookup_2d& other)
+{
+    if (this != &other){
+        this->coords = other.coords;
+        this->data = other.data;
+        this->interpolator = other.interpolator;
+        this->accessor = other.accessor;
+        this->init_flag = other.init_flag;
+    }
+    return *this;
+}
+
 
 
 //Get a copy of the coordinates

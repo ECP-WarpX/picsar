@@ -206,7 +206,7 @@ PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::kokkos_rng_wrapper<generator_pool>::
 exp(_REAL l) const {
     return unf2exp<_REAL>
-        (unf(static_cast<_REAL>(0.0), static_cast<_REAL>(1.0)));
+        (unf(static_cast<_REAL>(0.0), static_cast<_REAL>(1.0)))/l;
 }
 
 

@@ -144,7 +144,7 @@ void breit_wheeler_engine_prod_1()
     T bz =  static_cast<T>(660.057);
     T lambda = static_cast<T>(800. * si_nanometer);
 
-    T exp = static_cast<T>(0.0);
+    //T exp = static_cast<T>(0.0);
     T res = bw_engine.compute_dN_dt(norm(vec3<T>{px,py,pz}), chi_photon(px,py,pz,ex,ey,ez,bx,by,bz,lambda) );
 
     BOOST_CHECK_SMALL(res, tolerance<T>());
@@ -181,7 +181,7 @@ void breit_wheeler_engine_prod_2()
     T bz =  static_cast<T>(0.0);
     T lambda = static_cast<T>(800. * si_nanometer);
 
-    T exp = static_cast<T>(0.0);
+    //T exp = static_cast<T>(0.0);
     T res = bw_engine.compute_dN_dt(norm(vec3<T>{px,py,pz}), chi_photon(px,py,pz,ex,ey,ez,bx,by,bz,lambda) );
 
     BOOST_CHECK_SMALL(res, tolerance<T>());
@@ -216,7 +216,7 @@ void breit_wheeler_engine_prod_3()
     T bz =  static_cast<T>(-6.75393);
     T lambda = static_cast<T>(800. * si_nanometer);
 
-    T exp = static_cast<T>(0.0);
+    //T exp = static_cast<T>(0.0);
     T res = bw_engine.compute_dN_dt(norm(vec3<T>{px,py,pz}), chi_photon(px,py,pz,ex,ey,ez,bx,by,bz,lambda) );
 
     BOOST_CHECK_SMALL(res, tolerance<T>());
@@ -399,7 +399,6 @@ void breit_wheeler_engine_detopt_1()
     T bx =  static_cast<T>(531.406);
     T by =  static_cast<T>(670.933);
     T bz =  static_cast<T>(660.057);
-    T lambda = static_cast<T>(800. * si_nanometer);
 
     T initial_optical_depth = static_cast<T>(1.0);
     T optical_depth = initial_optical_depth;
@@ -451,7 +450,6 @@ void breit_wheeler_engine_detopt_2()
     T bx =  static_cast<T>(531.406);
     T by =  static_cast<T>(670.933);
     T bz =  static_cast<T>(660.057);
-    T lambda = static_cast<T>(800. * si_nanometer);
 
     T initial_optical_depth = static_cast<T>(1.0e-3);
     T optical_depth = initial_optical_depth;
@@ -506,7 +504,6 @@ void breit_wheeler_engine_detopt_3()
     T bx =  static_cast<T>(531.406);
     T by =  static_cast<T>(670.933);
     T bz =  static_cast<T>(660.057);
-    T lambda = static_cast<T>(800. * si_nanometer);
 
     T initial_optical_depth = static_cast<T>(1.0e-3);
     T optical_depth = initial_optical_depth;

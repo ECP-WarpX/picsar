@@ -59,16 +59,20 @@ void lookup1d_constructor()
 
     lookup_1d<T> l1dnull;
 
+    lookup_1d<T> l1copy = l1d;
+
 
 
     for(size_t i = 0; i < coords.size(); ++i){
         BOOST_CHECK_EQUAL(l1d.get_coords()[i], static_cast<T>(coords[i]));
         BOOST_CHECK_EQUAL(l1dbis.get_coords()[i], static_cast<T>(coords[i]));
+        BOOST_CHECK_EQUAL(l1copy.get_coords()[i], static_cast<T>(coords[i]));
     }
 
     BOOST_CHECK_EQUAL(l1d.is_init(),true);
     BOOST_CHECK_EQUAL(l1dbis.is_init(),true);
     BOOST_CHECK_EQUAL(l1dnull.is_init(),false);
+    BOOST_CHECK_EQUAL(l1copy.is_init(),true);
 }
 
 //Test lookup_1d constructor in double precision
@@ -131,10 +135,6 @@ void lookup1d_linear_interp()
     std::transform(coords.begin(), coords.end(), std::back_inserter(vals),
         [](T val){return static_cast<T>(2.0*val);});
 
-    T xmin = coords.front();
-    T xmax = coords.back();
-    size_t size = coords.size();
-
     lookup_1d<T> l1d{coords, vals,
         lookup_1d<T>::linear_interpolation};
 
@@ -186,19 +186,24 @@ void lookup2d_constructor()
 
     lookup_2d<T> l2dnull;
 
+    lookup_2d<T> l2copy = l2d;
+
     for(size_t i = 0; i < c1.size(); ++i){
         BOOST_CHECK_EQUAL(l2d.get_coords()[0][i], static_cast<T>(c1[i]));
         BOOST_CHECK_EQUAL(l2dbis.get_coords()[0][i], static_cast<T>(c1[i]));
+        BOOST_CHECK_EQUAL(l2copy.get_coords()[0][i], static_cast<T>(c1[i]));
     }
 
     for(size_t i = 0; i < c2.size(); ++i){
         BOOST_CHECK_EQUAL(l2d.get_coords()[1][i], static_cast<T>(c2[i]));
         BOOST_CHECK_EQUAL(l2dbis.get_coords()[1][i], static_cast<T>(c2[i]));
+        BOOST_CHECK_EQUAL(l2copy.get_coords()[1][i], static_cast<T>(c2[i]));
     }
 
     BOOST_CHECK_EQUAL(l2d.is_init(),true);
     BOOST_CHECK_EQUAL(l2dbis.is_init(),true);
     BOOST_CHECK_EQUAL(l2dnull.is_init(),false);
+    BOOST_CHECK_EQUAL(l2copy.is_init(),true);
 }
 
 //Test lookup_1d constructor in double precision
@@ -235,9 +240,9 @@ void lookup2d_linear_interpolator()
 
     for(auto cc1: c1_test){
         for(auto cc2: c1_test){
-            //T res = l2d.interp(cc1, cc2);
+            T res = l2d.interp(cc1, cc2);
             T exp = static_cast<T>(cc1+cc2);
-            //BOOST_CHECK_SMALL((res-exp)/(exp), tolerance<T>());
+            BOOST_CHECK_SMALL((res-exp)/(exp), tolerance<T>());
         }
     }
     BOOST_CHECK_EQUAL(1,1);

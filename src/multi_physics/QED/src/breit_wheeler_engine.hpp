@@ -259,7 +259,7 @@ interp_dN_dt(_REAL energy_phot, _REAL chi_phot) const
         lambda*(one/( chi_phot * energy_phot));
 
 
-        _REAL TT;
+        _REAL TT = zero;
     //Use approximate analytical expression if chi < chi_phot_tdndt_min
     if(chi_phot <= bw_ctrl.chi_phot_tdndt_min){
         _REAL a = static_cast<_REAL>(__fit_Tfunc_asynt_small_chi_a);
