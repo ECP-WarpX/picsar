@@ -190,8 +190,8 @@ template<typename _REAL>
 picsar::multi_physics::lookup_1d<_REAL>::
 lookup_1d(lookup_1d&& other):
     coords{std::move(other.coords)}, data{std::move(other.data)},
-    interpolator{std::move(other.interpolator)},
-    init_flag{other.init_flag}
+    init_flag{other.init_flag},
+    interpolator{std::move(other.interpolator)}
 {}
 
 //Assignment operator
@@ -308,8 +308,9 @@ template<typename _REAL>
 picsar::multi_physics::lookup_2d<_REAL>::
 lookup_2d(lookup_2d&& other):
     coords{std::move(other.coords)}, data{std::move(other.data)},
+     init_flag{std::move(other.init_flag)},
     interpolator{std::move(other.interpolator)},
-    accessor{std::move(other.accessor)}, init_flag{std::move(other.init_flag)}
+    accessor{std::move(other.accessor)}
 {}
 
 //Assignment operator
@@ -321,9 +322,9 @@ picsar::multi_physics::lookup_2d<_REAL>::
     if (this != &other){
         this->coords = other.coords;
         this->data = other.data;
-        this->interpolator = other.interpolator;
-        this->accessor = other.accessor;
         this->init_flag = other.init_flag;
+        this->interpolator = other.interpolator;
+        this->accessor = other.accessor;        
     }
     return *this;
 }

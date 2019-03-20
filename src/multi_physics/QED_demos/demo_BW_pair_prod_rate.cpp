@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 
 //Import BW engine with SI units
 #define PXRMP_USE_SI_UNITS
@@ -84,6 +85,26 @@ int main(){
 		mom*=mul;
 	}
 
+	std::cout << "Saving cumulative pair production on disk..." << std::endl;
+
+	std::ofstream of;
+	of.open("cum_pair_prod.dat");
+
+	double chi = 0.1;
+	double mulc = 1.1;
+	while(chi < 1.0e3){
+		std::cout << "*" << chi << std::endl;
+		for(int t = 1; t < 100; t++){
+			double frac = t/100.0;
+			of << chi << " " << frac << " ";
+			of << bw_engine.compute_cumulative_pair(chi, chi*frac) << "\n";
+			chi *=mulc;
+		}
+	}
+
+
+
+	of.close();
 
 
 	return 0;

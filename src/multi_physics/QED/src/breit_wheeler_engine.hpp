@@ -110,8 +110,10 @@ namespace picsar{
          _REAL bx, _REAL by, _REAL bz,
          _REAL dt, _REAL& opt_depth) const;
 
+         //Computes the cumulative pair production rate given
+         //chi_phot and chi_ele
          PXRMP_FORCE_INLINE
-         _REAL compute_TT_function(_REAL chi_phot) const;
+         _REAL compute_cumulative_pair (_REAL chi_phot, _REAL chi_ele) const;
 
 
      private:
@@ -126,6 +128,9 @@ namespace picsar{
 
         //lookup table for the TT function
         lookup_1d<_REAL> TTfunc_table;
+
+        //lookup table for the cumulativie distribution table
+        lookup_2d<_REAL> cum_distrib_table;
 
         //Some handy constants
         const _REAL zero = static_cast<_REAL>(0.0);
@@ -152,6 +157,8 @@ namespace picsar{
         PXRMP_FORCE_INLINE
         _REAL compute_TT_integrand(_REAL chi_phot, _REAL chi_ele) const;
 
+        PXRMP_FORCE_INLINE
+        _REAL compute_TT_function(_REAL chi_phot) const;
 
      };
 
@@ -172,12 +179,12 @@ breit_wheeler_engine
 #endif
 }
 
-
 //Copy constructor
 template<typename _REAL, class _RNDWRAP>
 picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 breit_wheeler_engine(breit_wheeler_engine& other):
-    lambda(other.lambda), rng(other.rng), bw_ctrl(other.bw_ctrl)
+    lambda(other.lambda), rng(other.rng), bw_ctrl(other.bw_ctrl),
+    TTfunc_table(other.TTfunc_table), cum_distrib_table(other.cum_distrib_table)
     {}
 
 //Move constructor
@@ -185,7 +192,9 @@ template<typename _REAL, class _RNDWRAP>
 picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 breit_wheeler_engine(breit_wheeler_engine&& other):
     lambda(std::move(other.lambda)), rng(std::move(other.rng)),
-    bw_ctrl(std::move(other.bw_ctrl))
+    bw_ctrl(std::move(other.bw_ctrl)),
+    TTfunc_table(std::move(other.TTfunc_table)),
+    cum_distrib_table(std::move(other.cum_distrib_table))
     {}
 
 
@@ -406,6 +415,8 @@ PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 compute_TT_integrand(_REAL chi_phot, _REAL chi_ele) const
 {
+    if (chi_ele == zero)
+        return zero;
     _REAL xx = compute_x(chi_phot, chi_ele);
     _REAL xx_3_2 = pow(xx, three/two);
     return compute_inner_integral(xx)-(two-chi_phot*xx_3_2)
@@ -430,5 +441,20 @@ compute_TT_function(_REAL chi_phot) const
 
     return quad_a_b<_REAL>(func, zero, chi_phot)/div;
 }
+
+//Computes the cumulative pair production rate given
+//chi_phot and chi_ele
+template<typename _REAL, class _RNDWRAP>
+PXRMP_FORCE_INLINE
+_REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+compute_cumulative_pair(_REAL chi_phot, _REAL chi_ele) const
+{
+    auto func = [this, chi_phot](_REAL chi_ele){
+        return compute_TT_integrand(chi_phot, chi_ele);
+    };
+   _REAL num = quad_a_b<_REAL>(func, zero, chi_ele);
+   return num/compute_TT_function(chi_phot) ;
+}
+
 
 #endif //__PICSAR_MULTIPHYSICS_BREIT_WHEELER_ENGINE__
