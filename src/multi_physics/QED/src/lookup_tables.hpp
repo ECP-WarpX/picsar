@@ -198,10 +198,10 @@ picsar::multi_physics::lookup_1d<_REAL>::
  operator= (const lookup_1d& other)
 {
     if (this != &other){
-        coords = other.coords;
-        data = other.data;
-        interpolator = other.interpolator;
-        init_flag = other.init_flag;
+        this->coords = other.coords;
+        this->data = other.data;
+        this->interpolator = other.interpolator;
+        this->init_flag = other.init_flag;
     }
     return *this;
 }

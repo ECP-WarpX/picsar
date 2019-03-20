@@ -300,7 +300,7 @@ picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 compute_dN_dt_log_lookup_table()
 {
     //Prepare the TT_coords vector
-    std::vector<_REAL> TT_coords(zero, bw_ctrl.chi_phot_tdndt_how_many);
+    std::vector<_REAL> TT_coords(bw_ctrl.chi_phot_tdndt_how_many);
 
     _REAL chi_phot = bw_ctrl.chi_phot_tdndt_min;
     _REAL mul = pow(bw_ctrl.chi_phot_tdndt_max/bw_ctrl.chi_phot_tdndt_min,

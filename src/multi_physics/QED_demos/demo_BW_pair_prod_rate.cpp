@@ -52,6 +52,8 @@ int main(){
 	//Initial optical depth
 	double opt_depth = 0.001;
 
+	bw_engine.compute_dN_dt_lookup_table();
+
 	//Decrease optical depth & determine if an event has occured
 	bool has_event_happend;
     	double dt_prod;
@@ -63,8 +65,6 @@ int main(){
 		std::cout << "An event occured after: "  << dt_prod <<
 			"s ( " << 100.0* dt_prod/dt << " \% of dt)" << std::endl;
 	}
-
-	bw_engine.compute_dN_dt_lookup_table();
 
 	return 0;
 }
