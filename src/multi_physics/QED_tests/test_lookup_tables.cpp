@@ -235,7 +235,7 @@ void lookup2d_linear_interpolator()
     lookup_2d<T> l2d{std::array<std::vector<T>,2>{c1,c2}, vals,
         lookup_2d<T>::linear_interpolation, lookup_2d<T>::row_major};
 
-    std::vector<T> c1_test{-2.9, -2.1, 1.2, 0.0, 2.99};
+    std::vector<T> c1_test{-2.9, -2.1, 1.2, 0.001, 2.99};
     std::vector<T> c2_test{-1.9, -2.7, 2.1, 1.1, 0.7};
 
     for(auto cc1: c1_test){
