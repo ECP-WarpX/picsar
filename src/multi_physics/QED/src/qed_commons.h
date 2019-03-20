@@ -171,9 +171,9 @@ namespace picsar{
     const double __bw_min_chi_phot = 0.001;
 
     // dN/dt table:
-    const double __bw_min_tdndt_chi_phot = 0.01; //Min chi_phot
-    const double __bw_max_tdndt_chi_phot = 10.0;  //Max chi_phot
-    size_t __bw_how_many_tdndt_chi_phot = 50;   //How many points
+    const double __bw_min_tdndt_chi_phot = 0.1; //Min chi_phot
+    const double __bw_max_tdndt_chi_phot = 5.0;  //Max chi_phot
+    size_t __bw_how_many_tdndt_chi_phot = 30;   //How many points
     lookup_table_style __bw_lookup_table_style = log_table;
     // -------
 
