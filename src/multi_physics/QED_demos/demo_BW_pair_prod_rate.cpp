@@ -65,6 +65,6 @@ int main(){
 		std::cout << "An event occured after: "  << dt_prod <<
 			"s ( " << 100.0* dt_prod/dt << " \% of dt)" << std::endl;
 	}
-
+	
 	return 0;
 }

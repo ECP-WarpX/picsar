@@ -171,11 +171,20 @@ namespace picsar{
     const double __bw_min_chi_phot = 0.001;
 
     // dN/dt table:
-    const double __bw_min_tdndt_chi_phot = 0.001; //Min chi_phot
+    const double __bw_min_tdndt_chi_phot = 0.01; //Min chi_phot
     const double __bw_max_tdndt_chi_phot = 10.0;  //Max chi_phot
-    size_t __bw_how_many_tdndt_chi_phot = 1000;   //How many points
+    size_t __bw_how_many_tdndt_chi_phot = 50;   //How many points
     lookup_table_style __bw_lookup_table_style = log_table;
     // -------
+
+    //Coefficients for che asyntotic behaviour of the "TT function"
+    //obtained with numerical fit (a*chi^b)
+    const double __fit_Tfunc_asynt_large_chi_a = 1.8097;
+    const double __fit_Tfunc_asynt_large_chi_b = 1.6828;
+
+    //copied from the open source Smilei code
+    const double __fit_Tfunc_asynt_small_chi_a = 0.46;
+    const double __fit_Tfunc_asynt_small_chi_b = 8./3.;
 
 //##############################################################################
 

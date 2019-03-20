@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include<iostream>
 
 //Should be included by all the src files of the library
 #include "qed_commons.h"
@@ -27,6 +28,9 @@
 
 //Uses lookup tables
 #include "lookup_tables.hpp"
+
+//Uses messages
+#include "msg.hpp"
 
 //############################################### Declaration
 
@@ -87,8 +91,9 @@ namespace picsar{
          _REAL compute_dN_dt(_REAL energy_phot, _REAL chi_phot) const;
 
          //Computes the lookup_table needed for dN/dt
+         //(accepts pointer to ostream for diag)
          PXRMP_FORCE_INLINE
-         void compute_dN_dt_lookup_table();
+         void compute_dN_dt_lookup_table(std::ostream* stream = nullptr);
 
          //Interp the dN_dt from table
          PXRMP_FORCE_INLINE
@@ -104,6 +109,10 @@ namespace picsar{
          _REAL ex, _REAL ey, _REAL ez,
          _REAL bx, _REAL by, _REAL bz,
          _REAL dt, _REAL& opt_depth) const;
+
+         PXRMP_FORCE_INLINE
+         _REAL compute_TT_function(_REAL chi_phot) const;
+
 
      private:
         _REAL lambda;
@@ -125,12 +134,13 @@ namespace picsar{
         const _REAL three = static_cast<_REAL>(3.0);
 
         //Internal function to compute log_table
+         //(accepts pointer to ostream for diag)
         PXRMP_FORCE_INLINE
-        void compute_dN_dt_log_lookup_table();
+        void compute_TT_log_lookup_table(std::ostream* stream = nullptr);
 
         //Internal function to interp the dN_dt from table
         PXRMP_FORCE_INLINE
-        _REAL interp_dN_dt_log(_REAL energy_phot, _REAL chi_phot) const;
+        _REAL interp_TT_log(_REAL chi_phot) const;
 
         //Internal functions to perform calculations
         PXRMP_FORCE_INLINE
@@ -142,8 +152,6 @@ namespace picsar{
         PXRMP_FORCE_INLINE
         _REAL compute_TT_integrand(_REAL chi_phot, _REAL chi_ele) const;
 
-        PXRMP_FORCE_INLINE
-        _REAL compute_TT_function(_REAL chi_phot) const;
 
      };
 
@@ -229,10 +237,10 @@ compute_dN_dt(_REAL energy_phot, _REAL chi_phot) const
 template<typename _REAL, class _RNDWRAP>
 PXRMP_FORCE_INLINE
 void picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
-compute_dN_dt_lookup_table()
+compute_dN_dt_lookup_table(std::ostream* stream)
 {
     if(bw_ctrl.tdndt_style == log_table)
-        compute_dN_dt_log_lookup_table();
+        compute_TT_log_lookup_table(stream);
 
     //Other table styles are not currently implemented
 }
@@ -244,9 +252,37 @@ _REAL
 picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 interp_dN_dt(_REAL energy_phot, _REAL chi_phot) const
 {
-    if(bw_ctrl.tdndt_style == log_table)
-        interp_dN_dt_log();
-    //Other table styles are not currently implemented
+    if(energy_phot == zero || chi_phot == zero)
+        return zero;
+
+    _REAL coeff = static_cast<_REAL>(__pair_prod_coeff)*
+        lambda*(one/( chi_phot * energy_phot));
+
+
+        _REAL TT;
+    //Use approximate analytical expression if chi < chi_phot_tdndt_min
+    if(chi_phot <= bw_ctrl.chi_phot_tdndt_min){
+        _REAL a = static_cast<_REAL>(__fit_Tfunc_asynt_small_chi_a);
+        _REAL b = static_cast<_REAL>(__fit_Tfunc_asynt_small_chi_b);
+        TT = a*exp(-b/chi_phot)*chi_phot;
+    }
+    //Use approximate analytical expression if chi > chi_phot_tdndt_min
+    else if(chi_phot >= bw_ctrl.chi_phot_tdndt_max){
+        _REAL a = static_cast<_REAL>(__fit_Tfunc_asynt_large_chi_a);
+        _REAL b = static_cast<_REAL>(__fit_Tfunc_asynt_large_chi_b);
+        TT = a*pow(chi_phot, b);
+    }
+    //Last case: use lookup tables
+    else{
+        //Other table styles are not currently implemented
+        if(bw_ctrl.tdndt_style == log_table)
+            TT =  interp_TT_log(chi_phot);
+    }
+    //**end
+
+    _REAL dndt = coeff * TT;
+
+    return dndt;
 }
 
 
@@ -274,10 +310,9 @@ _REAL dt, _REAL& opt_depth) const
     if(chi <= bw_ctrl.chi_phot_min)
             return false_zero_pair;
 
-    //***********TO REPLACE WITH LOOKUP TABLES****************************
-    //_REAL dndt = compute_dN_dt(energy, chi);
-    _REAL dndt = interp_dN_dt_log(energy, chi);
-    //********************************************************************
+
+    //**Compute dndt
+    _REAL dndt = interp_dN_dt(energy, chi);
 
     opt_depth -= dndt*dt;
 
@@ -291,13 +326,12 @@ _REAL dt, _REAL& opt_depth) const
     }
 }
 
-
 //Internal function to compute log_table
 template<typename _REAL, class _RNDWRAP>
 PXRMP_FORCE_INLINE
 void
 picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
-compute_dN_dt_log_lookup_table()
+compute_TT_log_lookup_table(std::ostream* stream)
 {
     //Prepare the TT_coords vector
     std::vector<_REAL> TT_coords(bw_ctrl.chi_phot_tdndt_how_many);
@@ -313,20 +347,21 @@ compute_dN_dt_log_lookup_table()
 
     TT_coords.back() = bw_ctrl.chi_phot_tdndt_max; //Enforces this exactly
 
+    msg("Computing table for dNdt...\n", stream);
     //Do the hard work
     std::vector<_REAL> TT_vals{};
     std::transform(TT_coords.begin(), TT_coords.end(),
         std::back_inserter(TT_vals),
         [this](_REAL chi){return compute_TT_function(chi);});
-
+    msg("...done!\n", stream);
 
     //The table will store the logarithms
     auto logfun = [](_REAL val){return log(val);};
     std::transform(TT_coords.begin(), TT_coords.end(), TT_coords.begin(), logfun);
     std::transform(TT_vals.begin(), TT_vals.end(), TT_vals.begin(), logfun);
 
-    TTfunc_table = std::move(lookup_1d<_REAL>{TT_coords, TT_vals,
-        lookup_1d<_REAL>::linear_interpolation});
+    TTfunc_table = lookup_1d<_REAL>{TT_coords, TT_vals,
+        lookup_1d<_REAL>::linear_interpolation};
 }
 
 //Internal function to interp the dN_dt table
@@ -334,18 +369,9 @@ template<typename _REAL, class _RNDWRAP>
 PXRMP_FORCE_INLINE
 _REAL
 picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
-interp_dN_dt_log(_REAL energy_phot, _REAL chi_phot) const
+interp_TT_log(_REAL chi_phot) const
 {
-    if(energy_phot == zero || chi_phot == zero)
-        return zero;
-
-    _REAL coeff = static_cast<_REAL>(__pair_prod_coeff)*
-        lambda*(one/( chi_phot * energy_phot));
-
-    _REAL interp = TTfunc_table.interp(chi_phot);
-    _REAL TTval = exp(interp);
-
-    return coeff*TTval;
+    return exp(TTfunc_table.interp(log(chi_phot)));
 }
 
 //Function to compute X (Warning: it doen't chek if chi_ele != 0 or
