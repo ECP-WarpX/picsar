@@ -98,8 +98,9 @@ int main(){
 			double frac = t/100.0;
 			of << chi << " " << frac << " ";
 			of << bw_engine.compute_cumulative_pair(chi, chi*frac) << "\n";
-			chi *=mulc;
 		}
+		of <<  "\n";	
+		chi *=mulc;
 	}
 
 
