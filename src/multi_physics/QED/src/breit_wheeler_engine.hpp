@@ -419,8 +419,11 @@ compute_TT_integrand(_REAL chi_phot, _REAL chi_ele) const
         return zero;
     _REAL xx = compute_x(chi_phot, chi_ele);
     _REAL xx_3_2 = pow(xx, three/two);
+
+    _REAL div = static_cast<_REAL>(pi)*sqrt(three);
+
     return compute_inner_integral(xx)-(two-chi_phot*xx_3_2)
-        *k_v(two/three, (two/three)*xx_3_2);
+        *k_v(two/three, (two/three)*xx_3_2)/div;
 }
 
 //Calculations of other parts of the pair production rate [II]
@@ -435,11 +438,9 @@ compute_TT_function(_REAL chi_phot) const
             return zero;
         else
             return compute_TT_integrand(chi_phot, chi_ele);
-    };
+    };    
 
-    _REAL div = static_cast<_REAL>(pi)*sqrt(three);
-
-    return quad_a_b<_REAL>(func, zero, chi_phot)/div;
+    return quad_a_b<_REAL>(func, zero, chi_phot);
 }
 
 //Computes the cumulative pair production rate given
