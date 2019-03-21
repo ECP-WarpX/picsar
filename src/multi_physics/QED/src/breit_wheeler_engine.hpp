@@ -312,7 +312,9 @@ _REAL dt, _REAL& opt_depth) const
     auto false_zero_pair = std::make_pair(false, zero);
 
     //Do NOT evolve opt_depth if the chi parameter is less then threshold
-    if(chi <= bw_ctrl.chi_phot_min)
+    //or if the photon energy is not high enough to generate a pair
+    if(chi <= bw_ctrl.chi_phot_min ||
+       energy < two*static_cast<_REAL>(__emass*__c*__c))
             return false_zero_pair;
 
     //**Compute dndt
@@ -438,7 +440,7 @@ compute_TT_function(_REAL chi_phot) const
             return zero;
         else
             return compute_TT_integrand(chi_phot, chi_ele);
-    };    
+    };
 
     return quad_a_b<_REAL>(func, zero, chi_phot);
 }
