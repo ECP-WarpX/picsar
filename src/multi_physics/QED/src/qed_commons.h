@@ -159,7 +159,8 @@ namespace picsar{
 //##############################################################################
 
 //######################## Enumerator of all the possible lookup table styles###
-    enum lookup_table_style {log_table}; //Unused feature
+    enum tdndt_table_style {tdnt_style_default};
+    enum tpair_table_style {tpair_style_default};
 //##############################################################################
 
 //######################## Default values for the parameters of BW engine ######
@@ -171,13 +172,22 @@ namespace picsar{
     const double __bw_min_tdndt_chi_phot = 0.1; //Min chi_phot
     const double __bw_max_tdndt_chi_phot = 200.0;  //Max chi_phot
     size_t __bw_how_many_tdndt_chi_phot = 40;   //How many points
-    lookup_table_style __bw_lookup_table_style = log_table;
+    tdndt_table_style __bw_dndt_table_style = tdnt_style_default;
     // -------
 
     //Coefficients for che asyntotic behaviour of the "TT function"
     //using Erber approximation
     const double __erber_Tfunc_asynt_a = 0.16;
     const double __erber_Tfunc_asynt_b = 4./3.;
+
+    // Pair production table:
+    double __bw_min_tpair_chi_phot = 0.01; //Min chi_phot
+    double __bw_max_tpair_chi_phot = 200.0; //Max chi_phot
+    size_t __bw_how_many_tpair_chi_phot = 50; //How many points
+
+    size_t __chi_frac_tpair_how_many = 25;
+
+    tpair_table_style __bw_pair_table_style = tpair_style_default;
 
 //##############################################################################
 
