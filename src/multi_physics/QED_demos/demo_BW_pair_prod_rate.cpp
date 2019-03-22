@@ -90,16 +90,40 @@ int main(){
 	std::ofstream of;
 	of.open("cum_pair_prod.dat");
 
-	double chi = 0.1;
-	double mulc = 1.1;
-	while(chi < 1.0e3){
+	bw_engine.compute_cumulative_pair_table(&std::cout);
+
+	auto all =
+	bw_engine.generate_breit_wheeler_pairs(
+	px, py, pz, ex, ey, ez, bx, by, bz, 1.0, 30);
+
+	auto electrons = all[0];
+	auto positrons = all[1];
+
+	std::cout << "electrons !!" << std::endl;
+	for(auto part: electrons){
+		std::cout <<  part.first[0] << " " << part.first[1] <<  " " << part.first[2] << std::endl;
+	}
+	
+	std::cout << "positrons !!" << std::endl;
+	for(auto part: positrons){
+		std::cout <<  part.first[0] << " " << part.first[1] <<  " " << part.first[2] << std::endl;
+	}
+
+
+	//std::cout << electrons[0].first[0] << electrons[0].first[1] <<
+	//	electrons[0].first[2] << std::endl;
+
+/*
+	double chi = 0.01;
+	double mulc = 1.2;
+	while(chi < 1.0e2){
 		std::cout << "*" << chi << std::endl;
 		for(int t = 1; t < 100; t++){
 			double frac = t/100.0;
 			of << chi << " " << frac << " ";
 			of << bw_engine.compute_cumulative_pair(chi, chi*frac) << "\n";
 		}
-		of <<  "\n";	
+		of <<  "\n";
 		chi *=mulc;
 	}
 
@@ -107,6 +131,6 @@ int main(){
 
 	of.close();
 
-
+*/
 	return 0;
 }

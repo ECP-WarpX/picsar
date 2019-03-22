@@ -13,7 +13,6 @@
 //Should be included by all the src files of the library
 #include "qed_commons.h"
 
-
 //############################################### Declaration
 
 namespace picsar{
@@ -60,7 +59,13 @@ namespace picsar{
                 lookup_1d&  operator= (const lookup_1d& );
 
                 //Get a copy of the coordinates
-                std::vector<_REAL> get_coords();
+                std::vector<_REAL> get_coords() const;
+
+                //Get a reference to the coordinates
+                std::vector<_REAL>& ref_coords();
+
+                //Get a reference to the data
+                std::vector<_REAL>& ref_data();
 
                 //Check if the table is initialized
                 bool is_init() const;
@@ -85,6 +90,8 @@ namespace picsar{
                 const std::vector<_REAL>& coords,
                 const std::vector<_REAL>& data);
                 //______________________
+
+
 
             private:
                 std::vector<_REAL> coords;
@@ -213,9 +220,28 @@ picsar::multi_physics::lookup_1d<_REAL>::
 template<typename _REAL>
 std::vector<_REAL>
 picsar::multi_physics::lookup_1d<_REAL>::
-get_coords()
+get_coords() const
 {
     return coords;
+}
+
+template<typename _REAL>
+std::vector<_REAL>&
+picsar::multi_physics::lookup_1d<_REAL>::
+ref_coords()
+{
+    return coords;
+}
+
+
+
+//Get a reference to the data
+template<typename _REAL>
+std::vector<_REAL>&
+picsar::multi_physics::lookup_1d<_REAL>::
+ref_data()
+{
+    return data;
 }
 
 //Checks if the table is initialized
@@ -324,7 +350,7 @@ picsar::multi_physics::lookup_2d<_REAL>::
         this->data = other.data;
         this->init_flag = other.init_flag;
         this->interpolator = other.interpolator;
-        this->accessor = other.accessor;        
+        this->accessor = other.accessor;
     }
     return *this;
 }
@@ -407,9 +433,9 @@ PXRMP_FORCE_INLINE
 size_t
 picsar::multi_physics::lookup_2d<_REAL>::
 row_major(
-size_t i, size_t j, size_t c1_size, size_t )
+size_t i, size_t j, size_t, size_t c2_size)
 {
-    return i*c1_size + j;
+    return i*c2_size + j;
 }
 //______________________
 #endif// __PICSAR_MULTIPHYSICS_LOOKUP_TABLES__

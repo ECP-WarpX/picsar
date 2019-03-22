@@ -63,6 +63,13 @@ namespace picsar{
           tpair_table_style tpair_style = __bw_pair_table_style;
       };
 
+      //This struct is used for post-run check of the suitability of the
+      //pair table.
+      struct breit_wheeler_error_info{
+          size_t pair_prod_chi_too_big_how_many = 0;
+          size_t pair_prod_chi_too_small_how_many = 0;
+      };
+
       //Templates are used for the numerical type and for the
       //RNG wrapper
      template<typename _REAL, class _RNDWRAP>
@@ -139,6 +146,8 @@ namespace picsar{
          _REAL bx, _REAL by, _REAL bz,
          _REAL weight, size_t sampling) ;
 
+         //get a copy of the struct storing info on the out of table errors
+         breit_wheeler_error_info get_error_info();
 
      private:
         _REAL lambda;
@@ -155,8 +164,11 @@ namespace picsar{
 
         //lookup table for the cumulativie distribution table
         lookup_2d<_REAL> cum_distrib_table;
-        //Auxiliary vector for coordinate interpolation
-        std::vector<_REAL> aux_frac_coords;
+        //Auxiliary table for coordinate interpolation
+        lookup_1d<_REAL> aux_table;
+
+        //This struct stores information relevant for post-simultation checks
+        breit_wheeler_error_info err_info;
 
         //Some handy constants
         const _REAL zero = static_cast<_REAL>(0.0);
@@ -211,7 +223,8 @@ picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 breit_wheeler_engine(breit_wheeler_engine& other):
     lambda(other.lambda), rng(other.rng), bw_ctrl(other.bw_ctrl),
     TTfunc_table(other.TTfunc_table), cum_distrib_table(other.cum_distrib_table),
-    aux_frac_coords(other.aux_frac_coords)
+    aux_table(other.aux_table),
+    err_info(other.err_info)
     {}
 
 //Move constructor
@@ -222,7 +235,8 @@ breit_wheeler_engine(breit_wheeler_engine&& other):
     bw_ctrl(std::move(other.bw_ctrl)),
     TTfunc_table(std::move(other.TTfunc_table)),
     cum_distrib_table(std::move(other.cum_distrib_table)),
-    aux_frac_coords(std::move(other.aux_frac_coords))
+    aux_table(std::move(other.aux_table)),
+    err_info(other.err_info)
     {}
 
 
@@ -392,23 +406,29 @@ _REAL ex, _REAL ey, _REAL ez,
 _REAL bx, _REAL by, _REAL bz,
 _REAL weight, size_t sampling)
 {
-    std::vector<std::pair<vec3<_REAL>, _REAL>> electrons;
-    std::vector<std::pair<vec3<_REAL>, _REAL>> positrons;
+    std::vector<std::pair<vec3<_REAL>, _REAL>> electrons(sampling);
+    std::vector<std::pair<vec3<_REAL>, _REAL>> positrons(sampling);
 
     _REAL chi_phot = chi_photon(px, py, pz, ex, ey, ez, bx, by, bz, lambda);
 
-    std::vector<_REAL> temp(aux_frac_coords.size());
+    //TO DO : casi speciali al limite della tavola
 
     size_t i = 0;
-    for (auto frac: aux_frac_coords){
-        temp[i] = cum_distrib_table.interp(chi_phot, frac);
+    for (auto frac: aux_table.ref_coords()){
+        aux_table.ref_data()[i] = cum_distrib_table.interp(chi_phot, frac); //Definitely not the smartest thing to do....
         i++;
     }
 
-    lookup_1d<_REAL> temp_tab{aux_frac_coords, temp,
-        lookup_1d<_REAL>::linear_interpolation};
+    _REAL new_weight = weight/sampling;
 
-    for(size_t s; s < sampling; s++){
+    _REAL me_c = static_cast<_REAL>(__emass*__c);
+
+    vec3<_REAL> p_phot{px, py, pz};
+    _REAL norm_phot = norm(p_phot);
+    vec3<_REAL> n_phot = p_phot/norm_phot;
+    _REAL gamma_phot = norm_phot/me_c;
+
+    for(size_t s = 0; s < sampling; s++){
         _REAL prob = rng.unf(zero, one);
         bool invert = false;
         if(prob > one/two){
@@ -416,13 +436,33 @@ _REAL weight, size_t sampling)
             invert = true;
         }
 
-        _REAL chi_part = temp_tab.interp(prob);
+        _REAL chi_ele = aux_table.interp(prob);
+        _REAL chi_pos = chi_phot - chi_ele;
 
-        std::cout << chi_part << std::endl;
+        if(invert)
+            std::swap(chi_ele, chi_pos);
+
+        _REAL coeff =  (gamma_phot - two)/chi_phot;
+
+        _REAL cc_ele = sqrt((one+chi_ele*coeff)*(one+chi_ele*coeff)-one)*me_c;
+        _REAL cc_pos = sqrt((one+chi_pos*coeff)*(one+chi_pos*coeff)-one)*me_c;
 
 
+        vec3<_REAL> p_ele = cc_ele*n_phot;
+        vec3<_REAL> p_pos = cc_pos*n_phot;
 
+        electrons[s] = std::make_pair(p_ele, new_weight);
+        positrons[s] = std::make_pair(p_pos, new_weight);
+    }
     return {electrons, positrons};
+}
+
+//get a copy of the struct storing info on the out of table errors
+template<typename _REAL, class _RNDWRAP>
+picsar::multi_physics::breit_wheeler_error_info
+picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::get_error_info()
+{
+    return err_info;
 }
 
 //___________________PRIVATE FUNCTIONS_____________________________________
@@ -468,7 +508,6 @@ compute_pair_default_lookup_table(std::ostream* stream)
 
     std::vector<_REAL> frac_coords = generate_lin_spaced_vec(zero,one/two,
     bw_ctrl.chi_frac_tpair_how_many);
-    aux_frac_coords = frac_coords;
 
     std::vector<_REAL> pair_vals{};
 
@@ -490,6 +529,11 @@ compute_pair_default_lookup_table(std::ostream* stream)
         std::array<std::vector<_REAL>,2>{chi_coords, frac_coords}, pair_vals,
         lookup_2d<_REAL>::linear_interpolation, lookup_2d<_REAL>::row_major};
 
+
+    //Initialize the auxiliary table
+    aux_table = lookup_1d<_REAL>{cum_distrib_table.get_coords()[1],
+    std::vector<_REAL>(bw_ctrl.chi_frac_tpair_how_many),
+    lookup_1d<_REAL>::linear_interpolation};
 }
 
 

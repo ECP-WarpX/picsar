@@ -31,12 +31,12 @@ void species::add_simple_process(simple_process proc, int ID){
 
 void species::do_all_simple_processes(ttime dt){
     for(auto& proc : simple_processes){
-        proc.second(pos, mom,  fields, optical_depth, mass, charge, dt);
+        proc.second(pos, mom,  fields, optical_depth, flag, mass, charge, dt);
     }
 }
 
 void species::do_simple_process(int ID, ttime dt){
-    simple_processes[ID](pos, mom,  fields, optical_depth, mass, charge, dt);
+    simple_processes[ID](pos, mom,  fields, optical_depth, flag, mass, charge, dt);
 }
 
 void species::add_process_with_destruction(process_with_destruction proc, int ID){
@@ -53,7 +53,7 @@ void species::do_process_with_destruction(int ID, ttime dt){
             {mom[0][i], mom[1][i], mom[2][i]},
             {fields[0][i], fields[1][i], fields[2][i],
             fields[3][i], fields[4][i], fields[5][i]},
-            optical_depth[i], mass, charge, dt))
+            optical_depth[i], flag[i], mass, charge, dt))
                 to_be_destroyed.push_back(i);
     }
     remove_particles_given_sorted_indices(to_be_destroyed);
@@ -71,6 +71,7 @@ void species::add_particle(position part_pos, momentum part_mom){
         fields[i].push_back(0);
     }
     optical_depth.push_back(0.0);
+    flag.push_back(false);
 
 }
 
@@ -83,6 +84,7 @@ void species::swap_particles(size_t index1, size_t index2){
         std::swap(fields[index1], fields[index2]);
     }
     std::swap(optical_depth[index1], optical_depth[index2]);
+    std::swap(flag[index1], flag[index2]);
 }
 
 void species::remove_particle(size_t particle_index){
@@ -96,6 +98,7 @@ void species::remove_particle(size_t particle_index){
         f.erase(f.begin() + particle_index);
 
     optical_depth.erase(optical_depth.begin() + particle_index);
+    flag.erase(flag.begin() + particle_index);
 }
 
 void species::remove_particles_from_toend(size_t particle_index){
@@ -109,6 +112,7 @@ void species::remove_particles_from_toend(size_t particle_index){
         f.erase(f.begin() + particle_index, f.end());
 
     optical_depth.erase(optical_depth.begin() + particle_index, optical_depth.end());
+    flag.erase(flag.begin() + particle_index, flag.end());
 }
 
 void species::overwrite_particle(size_t isource, size_t idest){
@@ -120,6 +124,7 @@ void species::overwrite_particle(size_t isource, size_t idest){
          fields[i][idest] = fields[i][isource];
     }
      optical_depth[idest] = optical_depth[isource];
+     flag[idest] = flag[isource];
 }
 
 void species::remove_particles_given_sorted_indices(const std::vector<size_t>& kill_index){
@@ -165,16 +170,19 @@ void species::print_on_disk(std::string prefix, int step_num) const{
         out_file << mom[0][i] << " " << mom[1][i] << " " << mom[2][i] << " ";
         out_file << fields[0][i] << " " << fields[1][i] << " " << fields[2][i] << " ";
         out_file << fields[3][i] << " " << fields[4][i] << " " << fields[5][i] << " ";
-        out_file <<  optical_depth[i] << std::endl;
+        out_file <<  optical_depth[i] << " ";
+        out_file <<  flag[i] << std::endl;
     }
 
     out_file.close();
 }
 
 std::tuple<positions_list, momenta_list,
-em_field_list,  std::vector<double>> species::get_copy_of_all_data(){
+em_field_list,  std::vector<double>, std::vector<bool>>
+species::get_copy_of_all_data(){
     return std::tuple<positions_list, momenta_list,
-    em_field_list,  std::vector<double>>{pos, mom, fields, optical_depth};
+    em_field_list,  std::vector<double>, std::vector<bool> >
+        {pos, mom, fields, optical_depth, flag};
 }
 
 positions_list species::get_copy_of_positions(){
@@ -186,9 +194,11 @@ momenta_list species::get_copy_of_momenta(){
 }
 
 std::tuple<positions_list&, momenta_list&,
-em_field_list&,  std::vector<double>&> species::get_ref_of_all_data(){
+em_field_list&,  std::vector<double>&, std::vector<bool>&>
+species::get_ref_of_all_data(){
     return std::tuple<positions_list&, momenta_list&,
-    em_field_list&,  std::vector<double>&>{pos, mom, fields, optical_depth};
+    em_field_list&,  std::vector<double>&, std::vector<bool>&>
+        {pos, mom, fields, optical_depth, flag};
 }
 
 positions_list& species::get_ref_of_positions(){

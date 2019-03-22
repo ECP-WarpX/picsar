@@ -40,15 +40,16 @@ namespace testbed{
         void print_on_disk(std::string prefix, int step_num) const;
 
         std::tuple<positions_list, momenta_list,
-        em_field_list,  std::vector<double>> get_copy_of_all_data();
+        em_field_list,  std::vector<double>, std::vector<bool>> get_copy_of_all_data();
         positions_list get_copy_of_positions();
         momenta_list get_copy_of_momenta();
 
         std::tuple<positions_list&, momenta_list&,
-        em_field_list&,  std::vector<double>&> get_ref_of_all_data();
+        em_field_list&,  std::vector<double>&, std::vector<bool>& > get_ref_of_all_data();
         positions_list& get_ref_of_positions();
         momenta_list& get_ref_of_momenta();
         std::vector<double>& get_ref_of_optical_depth();
+        std::vector<double>& get_ref_of_flag();
 
     protected:
         std::string name;
@@ -59,6 +60,7 @@ namespace testbed{
         momenta_list mom;
         em_field_list fields;
         std::vector<double> optical_depth;
+        std::vector<bool> flag;
 
         std::map<int,simple_process> simple_processes;
         std::map<int,process_with_destruction> processes_with_destruction;
