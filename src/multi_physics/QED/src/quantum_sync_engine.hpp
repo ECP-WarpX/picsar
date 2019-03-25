@@ -116,7 +116,7 @@ quantum_synchrotron_engine(quantum_synchrotron_engine&& other):
 
 //Getter for lambda
 template<typename _REAL, class _RNDWRAP>
-_REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+_REAL picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
 get_lambda() const
 {
     return lambda;
@@ -124,7 +124,7 @@ get_lambda() const
 
 //Setter for lambda
 template<typename _REAL, class _RNDWRAP>
-void picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+void picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
 set_lambda
 #ifdef PXRMP_WITH_NORMALIZED_UNITS
 (_REAL lambda)
@@ -138,7 +138,7 @@ set_lambda
 //get a single optical depth (basically a single call to the internal RNG)
 template<typename _REAL, class _RNDWRAP>
 PXRMP_FORCE_INLINE
-_REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+_REAL picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
 get_optical_depth()
 {
     return rng.exp(static_cast<_REAL>(1.0));
