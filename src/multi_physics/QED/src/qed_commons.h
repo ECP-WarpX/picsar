@@ -171,7 +171,7 @@ namespace picsar{
     // dN/dt table:
     const double __bw_min_tdndt_chi_phot = 0.1; //Min chi_phot
     const double __bw_max_tdndt_chi_phot = 200.0;  //Max chi_phot
-    size_t __bw_how_many_tdndt_chi_phot = 50;   //How many points
+    size_t __bw_how_many_tdndt_chi_phot = 30;   //How many points
     tdndt_table_style __bw_dndt_table_style = tdnt_style_default;
     // -------
 
@@ -183,7 +183,7 @@ namespace picsar{
     // Pair production table:
     double __bw_min_tpair_chi_phot = 0.01; //Min chi_phot
     double __bw_max_tpair_chi_phot = 200.0; //Max chi_phot
-    size_t __bw_how_many_tpair_chi_phot = 50; //How many points
+    size_t __bw_how_many_tpair_chi_phot = 30; //How many points
 
     size_t __chi_frac_tpair_how_many = 25;
 
