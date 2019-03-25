@@ -1,7 +1,7 @@
 //####### Test module for Breit Wheeler engine (SI units) ######################
 
 //Define Module name
- #define BOOST_TEST_MODULE "Nonliner Breit Wheeler engine (SI)"
+ #define BOOST_TEST_MODULE "Nonliner Breit Wheeler engine (normalized units)"
 
 //Will automatically define a main for this test
  #define BOOST_TEST_DYN_LINK
