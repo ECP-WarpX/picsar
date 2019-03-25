@@ -191,6 +191,13 @@ namespace picsar{
 
 //##############################################################################
 
+//################## Default values for the parameters of QS engine ############
+
+//Minimum photon energy nu to consider
+const double __qs_min_nu = 0.001*__emass*__c*__c;
+
+//##############################################################################
+
     }
 }
 

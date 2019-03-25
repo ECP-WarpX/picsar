@@ -40,8 +40,6 @@
 namespace picsar{
   namespace multi_physics{
 
-      //This enumerator contains all the possible table styles
-
       //This structure contains parameters which control how the BW engine
       //works
       template<typename _REAL>
@@ -64,7 +62,7 @@ namespace picsar{
       };
 
       //This struct is used for post-run check of the suitability of the
-      //pair table.
+      //pair table. NOT IMPLEMENTED YET
       struct breit_wheeler_error_info{
           size_t pair_prod_chi_too_big_how_many = 0;
           size_t pair_prod_chi_too_small_how_many = 0;
@@ -194,6 +192,7 @@ namespace picsar{
         lookup_1d<_REAL> aux_table;
 
         //This struct stores information relevant for post-simultation checks
+        //NOT YET IMPLEMENTED
         breit_wheeler_error_info err_info;
 
         //Some handy constants
