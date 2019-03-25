@@ -6,7 +6,7 @@
 
 #include <memory>
 #include <utility>
-#include<iostream>
+#include <iostream>
 
 //Should be included by all the src files of the library
 #include "qed_commons.h"
@@ -137,7 +137,18 @@ namespace picsar{
          //Computes the cumulative pair production rate lookup table
          void compute_cumulative_pair_table (std::ostream* stream = nullptr);
 
-         //TO WRITE....
+         //This function computes the properties of the electron-positron pairs
+         //generated in a BW process.
+         //It is intended to be used as follows:
+         //auto all = bw_engine.generate_breit_wheeler_pairs
+         //   (mom[0], mom[1], mom[2],
+         //    field[0], field[1], field[2],
+         //    field[3], field[4], field[5], weight, sampling);
+         //auto all_electrons = all[0];
+         //auto all_positrons = all[1];
+         //At this point all_electrons would be a vector
+         //of pairs (momentum, new_weight), where new_weight
+         //is simply weight/sampling.
          PXRMP_FORCE_INLINE
          std::array<std::vector<std::pair<vec3<_REAL>, _REAL>>,2>
           generate_breit_wheeler_pairs(
@@ -147,7 +158,22 @@ namespace picsar{
          _REAL weight, size_t sampling) ;
 
          //get a copy of the struct storing info on the out of table errors
+         //Yet to implement
          breit_wheeler_error_info get_error_info();
+
+         //Write pair production table to disk
+         void write_dN_dt_table(std::string filename);
+
+         //Write cumulative_pair_table to disk
+         void write_cumulative_pair_table(std::string filename);
+
+         //Read pair production table from disk (Warning,
+         //breit_wheeler_engine_ctrl is not changed in current implementation)
+         void read_dN_dt_table(std::string filename);
+
+         //Read cumulative_pair_table table from disk (Warning,
+         //breit_wheeler_engine_ctrl is not changed in current implementation)
+         void read_cumulative_pair_table(std::string filename);
 
      private:
         _REAL lambda;
@@ -395,7 +421,18 @@ compute_cumulative_pair_table (std::ostream* stream)
     //Other table styles are not currently implemented
 }
 
-//TO WRITE ...
+//This function computes the properties of the electron-positron pairs
+//generated in a BW process.
+//It is intended to be used as follows:
+//auto all = bw_engine.generate_breit_wheeler_pairs
+//   (mom[0], mom[1], mom[2],
+//    field[0], field[1], field[2],
+//    field[3], field[4], field[5], weight, sampling);
+//auto all_electrons = all[0];
+//auto all_positrons = all[1];
+//At this point all_electrons would be a vector
+//of pairs (momentum, new_weight), where new_weight
+//is simply weight/sampling.
 template<typename _REAL, class _RNDWRAP>
 PXRMP_FORCE_INLINE
 std::array<std::vector<std::pair<picsar::multi_physics::vec3<_REAL>, _REAL>>,2>
@@ -411,12 +448,28 @@ _REAL weight, size_t sampling)
 
     _REAL chi_phot = chi_photon(px, py, pz, ex, ey, ez, bx, by, bz, lambda);
 
-    //TO DO : casi speciali al limite della tavola
+    auto frac = aux_table.ref_coords();
 
-    size_t i = 0;
-    for (auto frac: aux_table.ref_coords()){
-        aux_table.ref_data()[i] = cum_distrib_table.interp_linear(chi_phot, frac); //Definitely not the smartest thing to do....
-        i++;
+    //if chi < chi_min: chi = chi_min for cumulative distribution
+    if(chi_phot < bw_ctrl.chi_phot_tpair_min){
+        for(size_t i = 0; i < frac.size(); i++){
+            aux_table.ref_data()[i] =
+            cum_distrib_table.data_at_coords(0, i);
+        }
+    }
+
+    //if chi > chi_max: chi = chi_max for cumulative distribution
+    if(chi_phot < bw_ctrl.chi_phot_tpair_max){
+        for(size_t i = 0; i < frac.size(); i++){
+            aux_table.ref_data()[i] =
+            cum_distrib_table.data_at_coords(bw_ctrl.chi_phot_tpair_how_many, i);
+        }
+    }
+
+    //Interpolate 1D cumulative distribution
+    for(size_t i = 0; i < frac.size(); i++){
+        aux_table.ref_data()[i] =
+        cum_distrib_table.interp_linear_first(chi_phot, i);
     }
 
     _REAL new_weight = weight/sampling;
@@ -447,7 +500,6 @@ _REAL weight, size_t sampling)
         _REAL cc_ele = sqrt((one+chi_ele*coeff)*(one+chi_ele*coeff)-one)*me_c;
         _REAL cc_pos = sqrt((one+chi_pos*coeff)*(one+chi_pos*coeff)-one)*me_c;
 
-
         vec3<_REAL> p_ele = cc_ele*n_phot;
         vec3<_REAL> p_pos = cc_pos*n_phot;
 
@@ -463,6 +515,59 @@ picsar::multi_physics::breit_wheeler_error_info
 picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::get_error_info()
 {
     return err_info;
+}
+
+//Write pair production table to disk
+template<typename _REAL, class _RNDWRAP>
+void
+picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+write_dN_dt_table(std::string filename)
+{
+    std::ofstream of;
+    of.open(filename, std::ios::binary);
+    TTfunc_table.write_on_stream_bin(of);
+    of.close();
+}
+
+//Write cumulative_pair_table to disk
+template<typename _REAL, class _RNDWRAP>
+void
+picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+write_cumulative_pair_table(std::string filename)
+{
+    std::ofstream of;
+    of.open(filename, std::ios::binary);
+    cum_distrib_table.write_on_stream_bin(of);
+    of.close();
+}
+
+//Read pair production table from disk (Warning,
+//breit_wheeler_engine_ctrl is not changed in current implementation)
+template<typename _REAL, class _RNDWRAP>
+void
+picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+read_dN_dt_table(std::string filename)
+{
+    std::ifstream iif;
+    iif.open(filename, std::ios::binary);
+    TTfunc_table.read_from_stream_bin(iif);
+    iif.close();
+}
+
+//Read cumulative_pair_table table from disk (Warning,
+//breit_wheeler_engine_ctrl is not changed in current implementation)
+template<typename _REAL, class _RNDWRAP>
+void
+picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+read_cumulative_pair_table(std::string filename)
+{
+    std::ifstream iif;
+    iif.open(filename, std::ios::binary);
+    cum_distrib_table.read_from_stream_bin(iif);
+    iif.close();
+
+    aux_table = lookup_1d<_REAL>{cum_distrib_table.get_coords()[1],
+    std::vector<_REAL>(bw_ctrl.chi_frac_tpair_how_many)};
 }
 
 //___________________PRIVATE FUNCTIONS_____________________________________

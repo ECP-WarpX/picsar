@@ -7,6 +7,7 @@
 #include<array>
 #include<vector>
 #include<utility>
+#include <iostream>
 
 //Should be included by all the src files of the library
 #include "qed_commons.h"
@@ -57,6 +58,17 @@ namespace picsar{
                 PXRMP_FORCE_INLINE
                 _REAL interp_linear(_REAL where) const;
 
+
+                //_________READ&WRITE________________
+
+                //Read table from stream (simple binary fileformat)
+                void read_from_stream_bin(std::ifstream& in);
+
+                //Write table to stream (simple binary fileformat)
+                void write_on_stream_bin(std::ofstream& out);
+                //_________________________
+
+
             private:
                 std::vector<_REAL> coords;
                 std::vector<_REAL> data;
@@ -91,12 +103,29 @@ namespace picsar{
                 //Get a copy of the coordinates
                 std::array<std::vector<_REAL>,2> get_coords();
 
+                //Access data via coordinates indices
+                _REAL data_at_coords(size_t coord_x, size_t coord_y) const;
+
                 //Check if the table is initialized
                 bool is_init() const;
 
                 //Performs linear interpolation
                 PXRMP_FORCE_INLINE
-                _REAL interp_linear(_REAL where_x, _REAL where_y);
+                _REAL interp_linear(_REAL where_x, _REAL where_y) const;
+
+                //Performs linear interpolation on the FIRST coorinate
+                PXRMP_FORCE_INLINE
+                _REAL interp_linear_first(_REAL where_x, size_t coord_y) const;
+
+                //_________READ&WRITE________________
+
+                //Read table from stream (simple binary fileformat)
+                void read_from_stream_bin(std::ifstream& in);
+
+                //Write table to stream (simple binary fileformat)
+                void write_on_stream_bin(std::ofstream& out);
+                //_________________________
+
 
 
             private:
@@ -228,6 +257,48 @@ interp_linear(_REAL where) const
     return yleft + ((yright-yleft)/(xright-xleft))*(where-xleft);
 }
 
+//Read table from stream
+template<typename _REAL>
+void
+picsar::multi_physics::lookup_1d<_REAL>::
+read_from_stream_bin(std::ifstream& in)
+{
+    size_t size_coords;
+    in.read (
+        reinterpret_cast<char*>(&size_coords), sizeof(size_coords));
+    coords.resize(size_coords);
+    in.read (
+        reinterpret_cast<char*>(coords.data()), sizeof(_REAL)*size_coords);
+
+    size_t size_data;
+    in.read (
+        reinterpret_cast<char*>(&size_data), sizeof(size_data));
+    data.resize(size_data);
+    in.read (
+        reinterpret_cast<char*>(data.data()), sizeof(_REAL)*size_data);
+
+        init_flag = true;
+}
+
+
+//Write table to stream
+template<typename _REAL>
+void
+picsar::multi_physics::lookup_1d<_REAL>::
+write_on_stream_bin(std::ofstream& out)
+{
+    size_t size_coords = coords.size();
+    out.write(
+        reinterpret_cast<char*>(&size_coords), sizeof(size_coords));
+    out.write(
+        reinterpret_cast<char*>(coords.data()), sizeof(_REAL)*size_coords);
+    size_t size_data = data.size();
+    out.write(
+        reinterpret_cast<char*>(&size_data), sizeof(size_data));
+    out.write(
+        reinterpret_cast<char*>(data.data()), sizeof(_REAL)*size_data);
+}
+
 //_______________________2D table_______________________________
 
 //Constructor: requires coordinates and data
@@ -281,6 +352,16 @@ get_coords()
     return coords;
 }
 
+//Access data via coordinates indices
+template<typename _REAL>
+_REAL
+picsar::multi_physics::lookup_2d<_REAL>::
+data_at_coords(size_t coord_x, size_t coord_y) const
+{
+    return data[row_major(coord_x, coord_y, coords[0].size(), coords[1].size())];
+}
+
+
 //Checks if the table is initialized
 template<typename _REAL>
 bool
@@ -295,7 +376,7 @@ template<typename _REAL>
 PXRMP_FORCE_INLINE
 _REAL
 picsar::multi_physics::lookup_2d<_REAL>::
-interp_linear(_REAL where_x, _REAL where_y)
+interp_linear(_REAL where_x, _REAL where_y) const
 {
     auto it_x_right =
         std::upper_bound(coords[0].begin(), coords[0].end(),where_x);
@@ -328,6 +409,91 @@ interp_linear(_REAL where_x, _REAL where_y)
 
     return (wll*zll + wlr*zlr + wrl*zrl + wrr*zrr)/w_norm;
 }
+
+//Performs a linear interpolation on the FIRST coordinate
+template<typename _REAL>
+PXRMP_FORCE_INLINE
+_REAL
+picsar::multi_physics::lookup_2d<_REAL>::
+interp_linear_first(_REAL where_x, size_t coord_y) const
+{
+    auto it_x_right =
+        std::upper_bound(coords[0].begin(), coords[0].end(),where_x);
+    size_t idx_x_right = std::distance(coords[0].begin(), it_x_right);
+    size_t idx_x_left = idx_x_right - 1;
+
+    _REAL xleft = coords[0][idx_x_left];
+    _REAL xright = coords[0][idx_x_right];
+
+    size_t sx = coords[0].size();
+    size_t sy = coords[1].size();
+
+    _REAL zlc = data[row_major(idx_x_left,coord_y,sx,sy)];
+    _REAL zrc = data[row_major(idx_x_right,coord_y,sx,sy)];
+
+    _REAL wlc = (xright - where_x);
+    _REAL wrc = (where_x - xleft);
+
+    _REAL w_norm = (xright-xleft);
+
+    return (wlc*zlc + wrc*zrc)/w_norm;
+}
+
+//Read table from stream
+template<typename _REAL>
+void
+picsar::multi_physics::lookup_2d<_REAL>::
+read_from_stream_bin(std::ifstream& in)
+{
+    size_t size_coords_0;
+    in.read (
+        reinterpret_cast<char*>(&size_coords_0), sizeof(size_coords_0));
+    coords[0].resize(size_coords_0);
+    in.read (
+        reinterpret_cast<char*>(coords[0].data()), sizeof(_REAL)*size_coords_0);
+
+    size_t size_coords_1;
+    in.read (
+        reinterpret_cast<char*>(&size_coords_1), sizeof(size_coords_1));
+    coords[1].resize(size_coords_1);
+    in.read (
+        reinterpret_cast<char*>(coords[1].data()), sizeof(_REAL)*size_coords_1);
+
+    size_t size_data;
+    in.read (
+        reinterpret_cast<char*>(&size_data), sizeof(size_data));
+    data.resize(size_data);
+    in.read (
+        reinterpret_cast<char*>(data.data()), sizeof(_REAL)*size_data);
+
+        init_flag = true;
+}
+
+//Write table to stream
+template<typename _REAL>
+void
+picsar::multi_physics::lookup_2d<_REAL>::
+write_on_stream_bin(std::ofstream& out)
+{
+    size_t size_coords_0 = coords[0].size();
+    out.write(
+        reinterpret_cast<char*>(&size_coords_0), sizeof(size_coords_0));
+    out.write(
+        reinterpret_cast<char*>(coords[0].data()), sizeof(_REAL)*size_coords_0);
+
+    size_t size_coords_1 = coords[1].size();
+    out.write(
+        reinterpret_cast<char*>(&size_coords_1), sizeof(size_coords_1));
+    out.write(
+        reinterpret_cast<char*>(coords[1].data()), sizeof(_REAL)*size_coords_1);
+
+    size_t size_data = data.size();
+    out.write(
+        reinterpret_cast<char*>(&size_data), sizeof(size_data));
+    out.write(
+        reinterpret_cast<char*>(data.data()), sizeof(_REAL)*size_data);
+}
+
 
 //Row major access to underlying data
 template<typename _REAL>
