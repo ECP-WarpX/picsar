@@ -52,8 +52,7 @@ void lookup1d_constructor()
     std::transform(coords.begin(), coords.end(), std::back_inserter(vals),
         [](T val){return static_cast<T>(2.0*val);});
 
-    lookup_1d<T> l1d{coords, vals,
-        lookup_1d<T>::linear_equispaced_interpolation};
+    lookup_1d<T> l1d{coords, vals};
 
     lookup_1d<T> l1dbis{l1d};
 
@@ -97,18 +96,17 @@ void lookup1d_linear_equi_interp()
     std::transform(coords.begin(), coords.end(), std::back_inserter(vals),
         [](T val){return static_cast<T>(2.0*val);});
 
-    lookup_1d<T> l1d{coords, vals,
-        lookup_1d<T>::linear_equispaced_interpolation};
+    lookup_1d<T> l1d{coords, vals};
 
     std::vector<T> where{0.0001, 0.5, 1.0, 1.5, 2.0, 3.5, 3.999};
 
     for(auto ww: where){
-        T res = l1d.interp(ww);
+        T res = l1d.interp_linear_equispaced(ww);
         T exp = static_cast<T>(2.0*ww);
         BOOST_CHECK_SMALL((res-exp)/(exp), tolerance<T>());
     }
 
-    BOOST_CHECK_SMALL(l1d.interp(static_cast<T>(0.0)), tolerance<T>());
+    BOOST_CHECK_SMALL(l1d.interp_linear_equispaced(static_cast<T>(0.0)), tolerance<T>());
 
 }
 
@@ -135,18 +133,17 @@ void lookup1d_linear_interp()
     std::transform(coords.begin(), coords.end(), std::back_inserter(vals),
         [](T val){return static_cast<T>(2.0*val);});
 
-    lookup_1d<T> l1d{coords, vals,
-        lookup_1d<T>::linear_interpolation};
+    lookup_1d<T> l1d{coords, vals};
 
     std::vector<T> where{0.0001, 0.5, 1.0, 1.5, 2.0, 3.5, 3.999};
 
     for(auto ww: where){
-        T res = l1d.interp(ww);
+        T res = l1d.interp_linear(ww);
         T exp = static_cast<T>(2.0*ww);
         BOOST_CHECK_SMALL((res-exp)/(exp), tolerance<T>());
     }
 
-    BOOST_CHECK_SMALL(l1d.interp(static_cast<T>(0.0)), tolerance<T>());
+    BOOST_CHECK_SMALL(l1d.interp_linear(static_cast<T>(0.0)), tolerance<T>());
 
 }
 
@@ -179,8 +176,7 @@ void lookup2d_constructor()
         }
     }
 
-    lookup_2d<T> l2d{std::array<std::vector<T>,2>{c1,c2}, vals,
-        lookup_2d<T>::linear_interpolation, lookup_2d<T>::row_major};
+    lookup_2d<T> l2d{std::array<std::vector<T>,2>{c1,c2}, vals};
 
     lookup_2d<T> l2dbis{l2d};
 
@@ -232,15 +228,14 @@ void lookup2d_linear_interpolator()
         }
     }
 
-    lookup_2d<T> l2d{std::array<std::vector<T>,2>{c1,c2}, vals,
-        lookup_2d<T>::linear_interpolation, lookup_2d<T>::row_major};
+    lookup_2d<T> l2d{std::array<std::vector<T>,2>{c1,c2}, vals};
 
     std::vector<T> c1_test{-2.9, -2.1, 1.2, 0.001, 2.99};
     std::vector<T> c2_test{-1.9, -2.7, 2.1, 1.1, 0.7};
 
     for(auto cc1: c1_test){
         for(auto cc2: c1_test){
-            T res = l2d.interp(cc1, cc2);
+            T res = l2d.interp_linear(cc1, cc2);
             T exp = static_cast<T>(cc1+cc2);
             BOOST_CHECK_SMALL((res-exp)/(exp), tolerance<T>());
         }

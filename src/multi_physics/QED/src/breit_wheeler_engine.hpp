@@ -323,7 +323,7 @@ interp_dN_dt(_REAL energy_phot, _REAL chi_phot) const
     else{
         //Other table styles are not currently implemented
         if(bw_ctrl.tdndt_style == tdnt_style_default)
-            TT =  exp(TTfunc_table.interp(log(chi_phot)));
+            TT =  exp(TTfunc_table.interp_linear(log(chi_phot)));
     }
     //**end
 
@@ -415,7 +415,7 @@ _REAL weight, size_t sampling)
 
     size_t i = 0;
     for (auto frac: aux_table.ref_coords()){
-        aux_table.ref_data()[i] = cum_distrib_table.interp(chi_phot, frac); //Definitely not the smartest thing to do....
+        aux_table.ref_data()[i] = cum_distrib_table.interp_linear(chi_phot, frac); //Definitely not the smartest thing to do....
         i++;
     }
 
@@ -436,7 +436,7 @@ _REAL weight, size_t sampling)
             invert = true;
         }
 
-        _REAL chi_ele = aux_table.interp(prob);
+        _REAL chi_ele = aux_table.interp_linear(prob);
         _REAL chi_pos = chi_phot - chi_ele;
 
         if(invert)
@@ -491,8 +491,7 @@ compute_TT_default_lookup_table(std::ostream* stream)
     std::transform(TT_coords.begin(), TT_coords.end(), TT_coords.begin(), logfun);
     std::transform(TT_vals.begin(), TT_vals.end(), TT_vals.begin(), logfun);
 
-    TTfunc_table = lookup_1d<_REAL>{TT_coords, TT_vals,
-        lookup_1d<_REAL>::linear_interpolation};
+    TTfunc_table = lookup_1d<_REAL>{TT_coords, TT_vals};
 }
 
 //Internal function to compute pair production _default_ table
@@ -526,14 +525,12 @@ compute_pair_default_lookup_table(std::ostream* stream)
     msg("...done!\n", stream);
 
     cum_distrib_table = lookup_2d<_REAL>{
-        std::array<std::vector<_REAL>,2>{chi_coords, frac_coords}, pair_vals,
-        lookup_2d<_REAL>::linear_interpolation, lookup_2d<_REAL>::row_major};
+        std::array<std::vector<_REAL>,2>{chi_coords, frac_coords}, pair_vals};
 
 
     //Initialize the auxiliary table
     aux_table = lookup_1d<_REAL>{cum_distrib_table.get_coords()[1],
-    std::vector<_REAL>(bw_ctrl.chi_frac_tpair_how_many),
-    lookup_1d<_REAL>::linear_interpolation};
+    std::vector<_REAL>(bw_ctrl.chi_frac_tpair_how_many)};
 }
 
 

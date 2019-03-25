@@ -2,8 +2,6 @@
 #define __PICSAR_MULTIPHYSICS_LOOKUP_TABLES__
 
 //This .hpp file contais the implementation of 1D and 2D lookup tables.
-//The interpolator function should be provided when the lookup table
-//is initilialized.
 
 #include<functional>
 #include<array>
@@ -18,22 +16,6 @@
 namespace picsar{
     namespace multi_physics{
 
-        //Some useful aliases
-        template<typename _REAL>
-        using interpolator_1d =
-        std::function<_REAL(_REAL val,
-        const std::vector<_REAL>& coords,
-        const std::vector<_REAL>& data)>;
-
-        using accessor_2d =
-        std::function<size_t(size_t i, size_t j, size_t c1_size, size_t c2_size)>;
-
-        template<typename _REAL>
-        using interpolator_2d =
-        std::function<_REAL(_REAL valx, _REAL valy,
-        const std::array<std::vector<_REAL>,2>& coords,
-        const std::vector<_REAL>& data, accessor_2d accessor)>;
-
         //1D lookup table
         template<typename _REAL>
         class lookup_1d
@@ -42,12 +24,9 @@ namespace picsar{
                 //Default empty constructor
                 lookup_1d () = default;
 
-                //Constructor: requires coordinates, data and an interpolator
-                //interpolator should be a lambda
-                //f(_REAL val, const vector<_REAL>& coords, const vector<_REAL>& data)-> _REAL .
+                //Constructor: requires coordinates and data
                 //coordinates should be sorted!
-                lookup_1d (std::vector<_REAL> coords,
-                std::vector<_REAL> data, interpolator_1d<_REAL> inteporlator);
+                lookup_1d (std::vector<_REAL> coords, std::vector<_REAL> data);
 
                 //Copy constructor
                 lookup_1d(lookup_1d& other);
@@ -70,36 +49,19 @@ namespace picsar{
                 //Check if the table is initialized
                 bool is_init() const;
 
-                //Performs the interpolation
-                PXRMP_FORCE_INLINE
-                _REAL interp(_REAL where) const;
-
-                //----Static pre-defined interpolator functions
-
                 //Linear equispaced interpolation
                 PXRMP_FORCE_INLINE
-                static _REAL linear_equispaced_interpolation(
-                _REAL val,
-                const std::vector<_REAL>& coords,
-                const std::vector<_REAL>& data);
+                _REAL interp_linear_equispaced(_REAL where) const;
 
                 //Linear interpolation
                 PXRMP_FORCE_INLINE
-                static _REAL linear_interpolation(
-                _REAL val,
-                const std::vector<_REAL>& coords,
-                const std::vector<_REAL>& data);
-                //______________________
-
-
+                _REAL interp_linear(_REAL where) const;
 
             private:
                 std::vector<_REAL> coords;
                 std::vector<_REAL> data;
 
                 bool init_flag = false;
-
-                interpolator_1d<_REAL> interpolator;
         };
 
         //2D lookup table
@@ -110,15 +72,12 @@ namespace picsar{
                 //Default empty constructor
                 lookup_2d () = default;
 
-                //Constructor: requires coordinates, data, an interpolator and an accessor
-                //interpolator should be a lambda
-                //f(array<REAL,2>, array<vector<_REAL>,2>& coords, vector<_REAL>& data)-> _REAL .
+                //Constructor: requires coordinates and data
                 //coordinates should be sorted!
+                //Row major convention is used.
                 lookup_2d(
                     std::array<std::vector<_REAL>,2> coords,
-                    std::vector<_REAL> data,
-                    interpolator_2d<_REAL> inteporlator,
-                    accessor_2d accessor);
+                    std::vector<_REAL> data);
 
                 //Copy constructor
                 lookup_2d(lookup_2d& other);
@@ -135,34 +94,24 @@ namespace picsar{
                 //Check if the table is initialized
                 bool is_init() const;
 
-                //Performs the interpolation
+                //Performs linear interpolation
                 PXRMP_FORCE_INLINE
-                _REAL interp(_REAL where_x, _REAL where_y);
-
-                //----Static pre-defined interpolator&accessor functions
-
-                //Linear interpolation
-                PXRMP_FORCE_INLINE
-                static _REAL linear_interpolation(
-                _REAL valx, _REAL valy,
-                const std::array<std::vector<_REAL>,2>& coords,
-                const std::vector<_REAL>& data, accessor_2d accessor);
-
-                //Row major accessor
-                PXRMP_FORCE_INLINE
-                static size_t row_major(
-                size_t i, size_t j, size_t c1_size, size_t);
-                //______________________
+                _REAL interp_linear(_REAL where_x, _REAL where_y);
 
 
             private:
                 std::array<std::vector<_REAL>,2> coords;
+                //Underlying data is stored in a vector. Row major convention
+                //is used.
                 std::vector<_REAL> data;
 
                 bool init_flag = false;
 
-                interpolator_2d<_REAL>  interpolator;
-                accessor_2d accessor;
+                //Row major accessor: converts coordinates indices to
+                //the index
+                PXRMP_FORCE_INLINE
+                size_t row_major(
+                size_t i, size_t j, size_t c1_size, size_t c2_size) const;
         };
     }
 }
@@ -171,15 +120,12 @@ namespace picsar{
 
 //_______________________1D table_______________________________
 
-//Constructor: requires coordinates, data and an interpolator
-//interpolator should be a lambda
-//f(array<REAL,2>, array<vector<_REAL>,2>& coords, vector<_REAL>& data)-> _REAL .
+//Constructor: requires coordinates and data
 template<typename _REAL>
 picsar::multi_physics::lookup_1d<_REAL>::
 lookup_1d
-(std::vector<_REAL> coords, std::vector<_REAL> data,
-interpolator_1d<_REAL> interpolator):
-    coords{coords}, data{data}, interpolator{interpolator}
+(std::vector<_REAL> coords, std::vector<_REAL> data):
+    coords{coords}, data{data}
 {
     init_flag = true;
 }
@@ -188,8 +134,7 @@ interpolator_1d<_REAL> interpolator):
 template<typename _REAL>
 picsar::multi_physics::lookup_1d<_REAL>::
 lookup_1d(lookup_1d& other):
-    coords{other.coords}, data{other.data}, init_flag{other.init_flag},
-    interpolator{other.interpolator}
+    coords{other.coords}, data{other.data}, init_flag{other.init_flag}
 {}
 
 //Move constructor
@@ -197,8 +142,7 @@ template<typename _REAL>
 picsar::multi_physics::lookup_1d<_REAL>::
 lookup_1d(lookup_1d&& other):
     coords{std::move(other.coords)}, data{std::move(other.data)},
-    init_flag{other.init_flag},
-    interpolator{std::move(other.interpolator)}
+    init_flag{other.init_flag}
 {}
 
 //Assignment operator
@@ -210,7 +154,6 @@ picsar::multi_physics::lookup_1d<_REAL>::
     if (this != &other){
         this->coords = other.coords;
         this->data = other.data;
-        this->interpolator = other.interpolator;
         this->init_flag = other.init_flag;
     }
     return *this;
@@ -233,8 +176,6 @@ ref_coords()
     return coords;
 }
 
-
-
 //Get a reference to the data
 template<typename _REAL>
 std::vector<_REAL>&
@@ -253,47 +194,29 @@ is_init() const
     return init_flag;
 }
 
-//Performs the interpolation
+//Performs linear equispaced interpolation
 template<typename _REAL>
 PXRMP_FORCE_INLINE
 _REAL
 picsar::multi_physics::lookup_1d<_REAL>::
-interp(_REAL where) const
-{
-    return interpolator(where, coords, data);
-}
-
-//----Static pre-defined interpolator functions
-//Linear equispaced interpolation
-template<typename _REAL>
-PXRMP_FORCE_INLINE
-_REAL
-picsar::multi_physics::lookup_1d<_REAL>::
-linear_equispaced_interpolation(
-_REAL val,
-const std::vector<_REAL>& coords,
-const std::vector<_REAL>& data)
+interp_linear_equispaced(_REAL where) const
 {
     _REAL xmin = coords.front();
     _REAL xmax = coords.back();
     _REAL yleft = data.front();
     _REAL yright = data.back();
 
-    return yleft + ((val-xmin)/(xmax-xmin))*(yright-yleft);
+    return yleft + ((where-xmin)/(xmax-xmin))*(yright-yleft);
 }
 
-
-//Linear interpolation
+//Performs linear interpolation
 template<typename _REAL>
 PXRMP_FORCE_INLINE
 _REAL
 picsar::multi_physics::lookup_1d<_REAL>::
-linear_interpolation(
-_REAL val,
-const std::vector<_REAL>& coords,
-const std::vector<_REAL>& data)
+interp_linear(_REAL where) const
 {
-    auto iter_right = std::upper_bound(coords.begin(), coords.end(),val);
+    auto iter_right = std::upper_bound(coords.begin(), coords.end(),where);
     size_t idx_right = std::distance(coords.begin(), iter_right);
     size_t idx_left = idx_right-1;
 
@@ -302,21 +225,18 @@ const std::vector<_REAL>& data)
     _REAL yleft = data[idx_left];
     _REAL yright = data[idx_right];
 
-    return yleft + ((yright-yleft)/(xright-xleft))*(val-xleft);
+    return yleft + ((yright-yleft)/(xright-xleft))*(where-xleft);
 }
+
 //_______________________2D table_______________________________
 
-//Constructor: requires coordinates, data and an interpolator
-//interpolator should be a lambda
-//f(array<REAL,2>, array<vector<_REAL>,2>& coords, vector<_REAL>& data)-> _REAL.
+//Constructor: requires coordinates and data
 template<typename _REAL>
 picsar::multi_physics::lookup_2d<_REAL>::
 lookup_2d(
 std::array<std::vector<_REAL>,2> coords,
-std::vector<_REAL> data,
-interpolator_2d<_REAL> interpolator,
-accessor_2d accessor):
-    coords{coords}, data{data}, interpolator{interpolator}, accessor{accessor}
+std::vector<_REAL> data):
+    coords{coords}, data{data}
 {
     init_flag = true;
 }
@@ -325,8 +245,7 @@ accessor_2d accessor):
 template<typename _REAL>
 picsar::multi_physics::lookup_2d<_REAL>::
 lookup_2d(lookup_2d& other):
-    coords{other.coords}, data{other.data}, init_flag{other.init_flag},
-    interpolator{other.interpolator}, accessor{other.accessor}
+    coords{other.coords}, data{other.data}, init_flag{other.init_flag}
 {}
 
 //Move constructor
@@ -334,9 +253,7 @@ template<typename _REAL>
 picsar::multi_physics::lookup_2d<_REAL>::
 lookup_2d(lookup_2d&& other):
     coords{std::move(other.coords)}, data{std::move(other.data)},
-     init_flag{std::move(other.init_flag)},
-    interpolator{std::move(other.interpolator)},
-    accessor{std::move(other.accessor)}
+     init_flag{std::move(other.init_flag)}
 {}
 
 //Assignment operator
@@ -349,8 +266,6 @@ picsar::multi_physics::lookup_2d<_REAL>::
         this->coords = other.coords;
         this->data = other.data;
         this->init_flag = other.init_flag;
-        this->interpolator = other.interpolator;
-        this->accessor = other.accessor;
     }
     return *this;
 }
@@ -375,30 +290,17 @@ is_init() const
     return init_flag;
 }
 
-//Performs the interpolation
+//Performs a linear interpolation
 template<typename _REAL>
 PXRMP_FORCE_INLINE
 _REAL
 picsar::multi_physics::lookup_2d<_REAL>::
-interp(_REAL where_x, _REAL where_y)
+interp_linear(_REAL where_x, _REAL where_y)
 {
-    return interpolator(where_x, where_y, coords, data, accessor);
-}
-
-//----Static pre-defined interpolator functions
-//Linear interpolation in 2D
-template<typename _REAL>
-PXRMP_FORCE_INLINE
-_REAL
-picsar::multi_physics::lookup_2d<_REAL>::
-linear_interpolation(
-_REAL valx, _REAL valy,
-const std::array<std::vector<_REAL>,2>& coords,
-const std::vector<_REAL>& data,
-picsar::multi_physics::accessor_2d accessor)
-{
-    auto it_x_right = std::upper_bound(coords[0].begin(), coords[0].end(),valx);
-    auto it_y_right = std::upper_bound(coords[1].begin(), coords[1].end(),valy);
+    auto it_x_right =
+        std::upper_bound(coords[0].begin(), coords[0].end(),where_x);
+    auto it_y_right =
+        std::upper_bound(coords[1].begin(), coords[1].end(),where_y);
     size_t idx_x_right = std::distance(coords[0].begin(), it_x_right);
     size_t idx_y_right = std::distance(coords[1].begin(), it_y_right);
     size_t idx_x_left = idx_x_right - 1;
@@ -412,15 +314,15 @@ picsar::multi_physics::accessor_2d accessor)
     size_t sx = coords[0].size();
     size_t sy = coords[1].size();
 
-    _REAL zll = data[accessor(idx_x_left,idx_y_left,sx,sy)];
-    _REAL zlr = data[accessor(idx_x_left,idx_y_right,sx,sy)];
-    _REAL zrl = data[accessor(idx_x_right,idx_y_left,sx,sy)];
-    _REAL zrr = data[accessor(idx_x_right,idx_y_right,sx,sy)];
+    _REAL zll = data[row_major(idx_x_left,idx_y_left,sx,sy)];
+    _REAL zlr = data[row_major(idx_x_left,idx_y_right,sx,sy)];
+    _REAL zrl = data[row_major(idx_x_right,idx_y_left,sx,sy)];
+    _REAL zrr = data[row_major(idx_x_right,idx_y_right,sx,sy)];
 
-    _REAL wll = (xright - valx)*(yright -valy);
-    _REAL wlr = (xright - valx)*(valy - yleft);
-    _REAL wrl = (valx - xleft)*(yright -valy);
-    _REAL wrr = (valx - xleft)*(valy - yleft);
+    _REAL wll = (xright - where_x)*(yright -where_y);
+    _REAL wlr = (xright - where_x)*(where_y - yleft);
+    _REAL wrl = (where_x - xleft)*(yright -where_y);
+    _REAL wrr = (where_x - xleft)*(where_y - yleft);
 
     _REAL w_norm = (xright-xleft)*(yright-yleft);
 
@@ -433,7 +335,7 @@ PXRMP_FORCE_INLINE
 size_t
 picsar::multi_physics::lookup_2d<_REAL>::
 row_major(
-size_t i, size_t j, size_t, size_t c2_size)
+size_t i, size_t j, size_t, size_t c2_size) const
 {
     return i*c2_size + j;
 }
