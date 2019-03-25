@@ -7,7 +7,8 @@
 #include<array>
 #include<vector>
 #include<utility>
-#include <iostream>
+#include<iostream>
+#include<fstream>
 
 //Should be included by all the src files of the library
 #include "qed_commons.h"

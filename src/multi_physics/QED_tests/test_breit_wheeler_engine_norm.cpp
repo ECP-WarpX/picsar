@@ -256,6 +256,8 @@ void breit_wheeler_engine_prod_4()
     T exp = static_cast<T>(1.50648551484);
     T res = bw_engine.compute_dN_dt(norm(vec3<T>{px,py,pz}), chi_photon(px,py,pz,ex,ey,ez,bx,by,bz,lambda) );
 
+    std::cerr << chi_photon(px,py,pz,ex,ey,ez,bx,by,bz,lambda) <<" " << exp << " " << res << std::endl;
+
     BOOST_CHECK_SMALL((exp-res)/exp, tolerance<T>());
 }
 

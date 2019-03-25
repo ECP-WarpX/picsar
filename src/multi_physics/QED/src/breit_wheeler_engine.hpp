@@ -673,8 +673,8 @@ compute_TT_integrand(_REAL chi_phot, _REAL chi_ele) const
 
     _REAL div = static_cast<_REAL>(pi)*sqrt(three);
 
-    return compute_inner_integral(xx)-(two-chi_phot*xx_3_2)
-        *k_v(two/three, (two/three)*xx_3_2)/div;
+    return (compute_inner_integral(xx)-(two-chi_phot*xx_3_2)
+        *k_v(two/three, (two/three)*xx_3_2))/div;
 }
 
 //Calculations of other parts of the pair production rate [II]
