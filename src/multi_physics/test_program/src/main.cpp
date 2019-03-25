@@ -91,8 +91,7 @@ void test_BW(){
                   bw_engine.evolve_opt_depth_and_determine_event
                   (mom[0][i], mom[1][i], mom[2][i],
                   fields[0][i], fields[1][i], fields[2][i],
-                  fields[3][i], fields[4][i], fields[5][i], opt_depth[i],
-                  dt);
+                  fields[3][i], fields[4][i], fields[5][i], dt, opt_depth[i]);
               flag[i] = has_event_happend;
           }
     };
