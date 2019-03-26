@@ -30,6 +30,13 @@ int main(){
     test_BW();
 }
 
+//Helper function
+bool does_file_exist(const char *fileName)
+{
+    std::ifstream infile(fileName);
+    return infile.good();
+}
+
 
 void test_BW(){
     const double dt = 0.05;
@@ -47,11 +54,13 @@ void test_BW(){
     //This is a struct which contains parameters relevant for BW engine
     pxrmp::breit_wheeler_engine_ctrl<double> bw_ctrl;
 
+    bw_ctrl.chi_phot_tdndt_how_many = 200;
+
     bw_ctrl.chi_phot_tpair_min = 0.01;
     bw_ctrl.chi_phot_tpair_max = 50;
-    bw_ctrl.chi_phot_tpair_how_many = 15;
+    bw_ctrl.chi_phot_tpair_how_many = 200;
 
-    bw_ctrl.chi_frac_tpair_how_many = 20;
+    bw_ctrl.chi_frac_tpair_how_many = 100;
 
     //Creates the BW engine
     auto bw_engine =  pxrmp::breit_wheeler_engine<double, pxrmp::stl_rng_wrapper>{
@@ -59,8 +68,23 @@ void test_BW(){
         lambda, //Optional argument (default value is 1)
         bw_ctrl //Optional argument (with reasonable default values)
         };
-    bw_engine.compute_dN_dt_lookup_table(&std::cout);
-    bw_engine.compute_cumulative_pair_table(&std::cout);
+
+    //Generates tables if they do not exist
+    if(!does_file_exist("tdndt.bin")){
+        bw_engine.compute_dN_dt_lookup_table(&std::cout);
+        bw_engine.write_dN_dt_table("tdndt.bin");
+    }
+    else{
+            bw_engine.read_dN_dt_table("tdndt.bin");
+    }
+
+    if(!does_file_exist("tpair.bin")){
+        bw_engine.compute_cumulative_pair_table(&std::cout);
+        bw_engine.write_cumulative_pair_table("tpair.bin");
+    }
+    else{
+            bw_engine.read_cumulative_pair_table("tpair.bin");
+    }
 
     //Init some photons
     auto ptr_phot1 = make_shared<photons>("phot1");
@@ -93,7 +117,17 @@ void test_BW(){
                   fields[0][i], fields[1][i], fields[2][i],
                   fields[3][i], fields[4][i], fields[5][i], dt, opt_depth[i]);
               flag[i] = has_event_happend;
+              if(has_event_happend){
+                  double inv_ptotal =
+                    1.0/sqrt(mom[0][i]*mom[0][i]
+                    + mom[1][i]*mom[1][i] + mom[2][i]*mom[2][i]);
+                  double coeff = dt_prod*inv_ptotal;
+                  pos[0][i] += coeff*mom[0][i];
+                  pos[1][i] += coeff*mom[1][i];
+                  pos[2][i] += coeff*mom[2][i];
+              }
           }
+
     };
     ptr_phot1->add_simple_process(BW_opticaldepth, 0);
     //
@@ -144,7 +178,7 @@ void test_BW(){
     // Main loop
     for (int i = 0; i < num_steps; i++){
         for (auto& sp : specs)
-            sp->calc_fields([](position, double){return em_field{0.0, 0.0, 2000.0, 0.0, 0.0, 0.0};}, i*dt);
+            sp->calc_fields([](position, double){return em_field{0.0, 0.0, 0.0, 2000.0, 0.0, 0.0};}, i*dt);
 
         for (auto& sp : specs)
             sp->push_momenta(dt);
