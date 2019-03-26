@@ -6,3 +6,16 @@ cd build/
 cmake ../.
 make
 make test
+
+In order to test the integration of the PICSAR MULTIPHYSICS
+library with a test program, do the following:
+
+cd test_program/
+mkdir build
+cd build/
+cmake ../.
+make
+./bin_test_qed/testbed
+
+The first time the program will be VERY slow because
+it has to compute the lookup tables.
