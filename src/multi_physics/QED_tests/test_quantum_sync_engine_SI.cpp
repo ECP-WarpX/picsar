@@ -96,7 +96,7 @@ void quantum_sync_engine_gs()
 {
     auto qs_engine = get_qs_stl_set_lambda<T>
         (390109317, static_cast<T>(800.0*si_nanometer));
-    BOOST_CHECK_EQUAL( static_cast<T>(800.0*si_nanometer), qs_engine.get_lambda());
+    BOOST_CHECK_EQUAL( static_cast<T>(1.0), qs_engine.get_lambda());
 }
 
 //Test get/set lambda for quantum_synchrotron_engine (double precision)
