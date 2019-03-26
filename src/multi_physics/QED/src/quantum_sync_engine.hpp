@@ -4,6 +4,30 @@
 //This .hpp file contais the implementation of the
 //quantum synchrotron emission engine
 
+//Should be included by all the src files of the library
+#include "qed_commons.h"
+
+//Uses random numbers
+#include "rng_wrapper.hpp"
+
+//Uses special functions
+#include "special_functions.hpp"
+
+//Uses vec functions
+#include "vec_functions.hpp"
+
+//Uses quadrature
+#include "quadrature.hpp"
+
+//Uses chi functions
+#include "chi_functions.hpp"
+
+//Uses lookup tables
+#include "lookup_tables.hpp"
+
+//Uses messages
+#include "msg.hpp"
+
 //############################################### Declaration
 
 namespace picsar{
@@ -84,7 +108,7 @@ namespace picsar{
 template<typename _REAL, class _RNDWRAP>
 picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
 quantum_synchrotron_engine
-(_RNDWRAP&& rng, _REAL lambda, breit_wheeler_engine_ctrl<_REAL> qs_ctrl):
+(_RNDWRAP&& rng, _REAL lambda, quantum_synchrotron_engine_ctrl<_REAL> qs_ctrl):
     lambda{lambda}, rng{std::move(rng)}, qs_ctrl{qs_ctrl}
 {
     //This enforces lambda=1 if SI units are used.
@@ -98,8 +122,8 @@ template<typename _REAL, class _RNDWRAP>
 picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
 quantum_synchrotron_engine(quantum_synchrotron_engine& other):
     lambda(other.lambda), rng(other.rng), qs_ctrl(other.qs_ctrl),
-    TTfunc_table(other.KKfunc_table), cum_distrib_table(other.cum_distrib_table),
-    aux_table(other.aux_table))
+    KKfunc_table(other.KKfunc_table), cum_distrib_table(other.cum_distrib_table),
+    aux_table(other.aux_table)
     {}
 
 //Move constructor
@@ -110,7 +134,7 @@ quantum_synchrotron_engine(quantum_synchrotron_engine&& other):
     qs_ctrl(std::move(other.qs_ctrl)),
     KKfunc_table(std::move(other.KKfunc_table)),
     cum_distrib_table(std::move(other.cum_distrib_table)),
-    aux_table(std::move(other.aux_table)))
+    aux_table(std::move(other.aux_table))
     {}
 
 
