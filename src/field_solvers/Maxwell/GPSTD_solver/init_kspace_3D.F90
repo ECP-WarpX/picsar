@@ -1173,7 +1173,7 @@ MODULE gpstd_solver
 
     END IF
     switch = .FALSE.
-    write (0,*), "max of absolute value of k", MAXVAL(ABS(kspace(nmatrixes2)%block_vector(10)%block3dc))
+    !write (0,*), "max of absolute value of k", MAXVAL(ABS(kspace(nmatrixes2)%block_vector(10)%block3dc))
     ALLOCATE(temp(nfftxr, nffty, nfftz))
     ALLOCATE(temp2(nfftxr, nffty, nfftz))
 
@@ -1182,7 +1182,7 @@ MODULE gpstd_solver
 
     at_op(nmatrixes2)%block_vector(1)%block3dc = DCMPLX(temp2, 0._num)
 
-    write (0,*) "block_vector(1) ", MAXVAL(ABS(at_op(nmatrixes2)%block_vector(1)%block3dc))
+    !write (0,*) "block_vector(1) ", MAXVAL(ABS(at_op(nmatrixes2)%block_vector(1)%block3dc))
     at_op(nmatrixes2)%block_vector(1)%block3dc =                                      &
     clight*dt*at_op(nmatrixes2)%block_vector(1)%block3dc
     temp2=COS(temp)
@@ -1190,7 +1190,7 @@ MODULE gpstd_solver
     at_op(nmatrixes2)%block_vector(2)%block3dc = DCMPLX(temp2, 0._num)
     temp=0.5_num*temp
 
-    write (0,*) "block_vector(2) ", MAXVAL(ABS(at_op(nmatrixes2)%block_vector(2)%block3dc))
+    !write (0,*) "block_vector(2) ", MAXVAL(ABS(at_op(nmatrixes2)%block_vector(2)%block3dc))
     !at_op(nmatrixes2)%block_vector(3)%block3dc = 2._num*(clight*dt/2.0_num)**2        &
     !*sinc_block(nfftxr, nffty, nfftz, temp)*sinc_block(nfftxr, nffty, nfftz,    &
     !temp)
@@ -1249,8 +1249,8 @@ MODULE gpstd_solver
       END IF 
     END IF 
 
-    write (0,*) "block_vector(3) ", MAXVAL(ABS(at_op(nmatrixes2)%block_vector(3)%block3dc))
-    write (0,*) "block_vector(4) ", MAXVAL(abs(at_op(nmatrixes2)%block_vector(4)%block3dc))
+    !write (0,*) "block_vector(3) ", MAXVAL(ABS(at_op(nmatrixes2)%block_vector(3)%block3dc))
+    !write (0,*) "block_vector(4) ", MAXVAL(abs(at_op(nmatrixes2)%block_vector(4)%block3dc))
     DEALLOCATE(temp, temp2, switch_rz)
   END SUBROUTINE init_kspace
 
@@ -1367,10 +1367,10 @@ MODULE gpstd_solver
     ELSE IF (l_AM_rz) THEN
       CALL  compute_kr_1d(nfftx,krc,dx,nmodes) 
       CALL  compute_k_1d( nffty,kyc,kyf,kyb,nordery,dy,l_stg)
-      write (0,*) "dy = ", dy, "nordery= ", nordery
+      !write (0,*) "dy = ", dy, "nordery= ", nordery
     END IF
     
-    write (0,*), "===========================kr=============================="
+    !write (0,*), "===========================kr=============================="
      
     ! Selects only haf of  kx because r2c and c2r ffts
     ! the case not l_AM_rz is added to this one because we perform a complex to
@@ -1511,7 +1511,11 @@ MODULE gpstd_solver
        !> unstaggered grid
        CALL FD_weights_hvincenti(norder, FD, l_stg)
        DO i=1_idp, norder/2
-         kvec=kvec+2.0_num/d*FD(i)*SIN((i*2.0_num-1.0_num)*PI*ones/nfft)
+         IF(l_stg) THEN
+            kvec=kvec+2.0_num/d*FD(i)*SIN((i*2.0_num-1.0_num)*PI*ones/nfft)
+         ELSE
+             kvec=kvec+2.0_num/d*FD(i)*SIN(i*2.0_num*PI*ones/nfft)
+         ENDIF
        ENDDO
        DEALLOCATE(FD)
      ELSE
@@ -1640,7 +1644,7 @@ MODULE gpstd_solver
         kxx(i+1)=kxx(i)+(1.0_num, 0.0_num)
       END DO
     ENDIF
-    kxx=kxx/(dxx*nxx)/2.0_num*PI
+    kxx=kxx/(dxx*nxx)*2.0_num*PI
   END SUBROUTINE fftfreq
 
   ! ______________________________________________________________________________________
@@ -1789,7 +1793,7 @@ MODULE gpstd_solver
       !> When not using absorbing bcs, standard EM equations are solved in
       ! fourier space
       IF (l_AM_rz) THEN
-        write (0,*) " computing merged fields in RZ"
+        !write (0,*) " computing merged fields in RZ"
         CALL compute_cc_mat_merged_fields_AM_rz()
       ELSE
         CALL compute_cc_mat_merged_fields()

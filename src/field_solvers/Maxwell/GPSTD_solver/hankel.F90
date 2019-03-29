@@ -46,8 +46,8 @@ FUNCTION inv(A) RESULT(Ainv)
   ! Store A in Ainv to prevent it from being overwritten by LAPACK
   Ainv = A
   n = size(A,1)
-  write (*,*) "n =", n
-  write(*,*) "DGETRF"
+  !write (*,*) "n =", n
+  !write(*,*) "DGETRF"
   ! DGETRF computes an LU factorization of a general M-by-N matrix A
   ! using partial pivoting with row interchanges.
   call DGETRF(n, n, Ainv, n, ipiv, info)
@@ -56,7 +56,7 @@ FUNCTION inv(A) RESULT(Ainv)
      stop 'Matrix is numerically singular!'
   end if
 
-  write(*,*) "DGETRI"
+  !write(*,*) "DGETRI"
   ! DGETRI computes the inverse of a matrix using the LU factorization
   ! computed by DGETRF.
   call DGETRI(n, Ainv, n, ipiv, work, n, info)
@@ -562,7 +562,7 @@ SUBROUTINE Hankel_M_and_invM(imode)
           call pseudo_inverse ( INT((nfftr-1),isp), INT(nfftr,isp), u, s, v, a_pseudo )
           Ma(1:nfftr,2:nfftr)= a_pseudo(1:nfftr,1:nfftr-1)
           Ma(:,1)=0.0_num
-          write (*,*) "pseudo"
+          !write (*,*) "pseudo"
         ELSE
           Ma=inv(invM)
         END IF 
@@ -575,7 +575,7 @@ SUBROUTINE Hankel_M_and_invM(imode)
           call pseudo_inverse ( INT((nfftr-1),isp), INT(nfftr,isp), u1, s1, v1, a_pseudo1 )
           Ma1(1:nfftr,2:nfftr)= a_pseudo1(1:nfftr,1:nfftr-1)
           Ma1(:,1)=0.0_num
-          write (*,*) "pseudo"
+          !write (*,*) "pseudo"
         ELSE
           Ma1=inv(invM1)
         END IF
@@ -727,26 +727,26 @@ SUBROUTINE get_Hfields()
   !ep_f=(er_c-ii*et_c)/2.0_num
   !bm_f= (br_c+ii*bt_c)/2.0_num
   !bp_f=(br_c-ii*bt_c)/2.0_num  
-  write (*,*) "==========START GET H FIELD HERE AFTER GET F FIELD =============================="
-  DO i=1, nfftr
-   DO j=1, ny
-     write (0,*)"er_c", er_c(i,j,:)
-   end do
-  end do
+  !write (*,*) "==========START GET H FIELD HERE AFTER GET F FIELD =============================="
+  !DO i=1, nfftr
+  ! DO j=1, ny
+  !   write (0,*)"er_c", er_c(i,j,:)
+  ! end do
+  !end do
     
-  write (*,*) "get_Ffields_AM_rz  em_f" !, MAXVAL(abs(em_f))
-  DO i=1, nfftr
-   DO j=1, ny
-     write (0,*), em_f(i,j,:)
-   end do
-  end do
+  !write (*,*) "get_Ffields_AM_rz  em_f" !, MAXVAL(abs(em_f))
+  !DO i=1, nfftr
+  ! DO j=1, ny
+     !write (0,*), em_f(i,j,:)
+  ! end do
+  !end do
 
-  write (*,*) "get_Ffields_AM_rz  ep_f", MAXVAL(abs(ep_f))
-  DO i=1, nfftr
-   DO j=1, ny
-     write (0,*), ep_f(i,j,:)
-   end do
-  end do
+  !write (*,*) "get_Ffields_AM_rz  ep_f", MAXVAL(abs(ep_f))
+  !DO i=1, nfftr
+  ! DO j=1, ny
+  !   write (0,*), ep_f(i,j,:)
+  ! end do
+  !end do
   DO imode=1, nmodes
     !Ma = Ma_tot(:,:,imode)
     Call Hankel_M_and_invM(imode-1)
@@ -852,18 +852,18 @@ SUBROUTINE get_Hfields()
   ! end do
   !end do
 
-  write (0,*) "ep_h", MAXVAL(abs(ep_h))
-  write (0,*) "el_h", MAXVAL(abs(el_h))
-  write (0,*) "bp_h", MAXVAL(abs(bp_h))
-  write (0,*) "bm_h", MAXVAL(abs(bm_h))
-  write (0,*) "bl_h", MAXVAL(abs(bl_h))
+  !write (0,*) "ep_h", MAXVAL(abs(ep_h))
+  !write (0,*) "el_h", MAXVAL(abs(el_h))
+  !write (0,*) "bp_h", MAXVAL(abs(bp_h))
+  !write (0,*) "bm_h", MAXVAL(abs(bm_h))
+  !write (0,*) "bl_h", MAXVAL(abs(bl_h))
   !DO i=1, nfftr
   ! DO j=1, ny
   !   write (0,*), ep_h(i,j,:)
   ! end do
   !end do
 
-  write (0,*) "em_h", MAXVAL(abs(em_h))
+  !write (0,*) "em_h", MAXVAL(abs(em_h))
   !DO i=1, nfftr
   ! DO j=1, ny
   !   write (0,*), em_h(i,j,:)
@@ -885,7 +885,7 @@ SUBROUTINE get_Hfields()
   !    write(*,*) d(i,j)
   !  end do
   !end do
-  write (*,*) "====================== END OF  GET H FIELD  =============================="
+  !write (*,*) "====================== END OF  GET H FIELD  =============================="
 END SUBROUTINE get_Hfields
 
 
@@ -915,13 +915,13 @@ SUBROUTINE get_Hfields_inv()
     nffty=ny+2*nyguards
 #endif
   !ii = DCMPLX(0.0_NUM,1.0_NUM)
-  el_h_inv = DCMPLX(0.0_NUM, 0.0_NUM)
-  ep_h_inv = DCMPLX(0.0_NUM, 0.0_NUM)
-  em_h_inv = DCMPLX(0.0_NUM, 0.0_NUM)
-  bl_h_inv = DCMPLX(0.0_NUM, 0.0_NUM)
-  bm_h_inv = DCMPLX(0.0_NUM, 0.0_NUM)
-  bp_h_inv = DCMPLX(0.0_NUM, 0.0_NUM)
-  write (*,*) "====================== START OF  GET H FIELD INV   =============================="
+  !el_h_inv = DCMPLX(0.0_NUM, 0.0_NUM)
+  !ep_h_inv = DCMPLX(0.0_NUM, 0.0_NUM)
+  !em_h_inv = DCMPLX(0.0_NUM, 0.0_NUM)
+  !bl_h_inv = DCMPLX(0.0_NUM, 0.0_NUM)
+  !bm_h_inv = DCMPLX(0.0_NUM, 0.0_NUM)
+  !bp_h_inv = DCMPLX(0.0_NUM, 0.0_NUM)
+  !write (*,*) "====================== START OF  GET H FIELD INV   =============================="
   DO imode=1, nmodes
   ! ! Ma = Ma_tot(:,:,imode)
     Call Hankel_M_and_invM(imode-1)
@@ -1086,19 +1086,19 @@ END SUBROUTINE get_Hfields_inv
     br_h_inv = bm_h_inv+bp_h_inv
     bt_h_inv = bp_h_inv-bm_h_inv
     
-    write (*,*) "AFTER get_Hfields_inv et_h_inv"
-  DO i=1, nfftx
-   DO j=1, nffty
-     write (0,*), et_h_inv(i,j,:)
-   end do
-  end do    
-    write (*,*) "AFTER get_Hfields_inv er_h_inv"
+    !write (*,*) "AFTER get_Hfields_inv et_h_inv"
+  !DO i=1, nfftx
+  ! DO j=1, nffty
+  !   write (0,*), et_h_inv(i,j,:)
+  ! end do
+  !end do    
+  !  write (*,*) "AFTER get_Hfields_inv er_h_inv"
 
-  DO i=1, nfftx
-   DO j=1, nffty
-     write (0,*), er_h_inv(i,j,:)
-   end do
-  end do
+  !DO i=1, nfftx
+  ! DO j=1, nffty
+  !   write (0,*), er_h_inv(i,j,:)
+  ! end do
+  !end do
   !el_c = DCMPLX(0.0_NUM, 0.0_NUM)
   !er_c = DCMPLX(0.0_NUM, 0.0_NUM)
   !et_c = DCMPLX(0.0_NUM, 0.0_NUM)
@@ -1125,22 +1125,22 @@ END SUBROUTINE get_Hfields_inv
     !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, bp_f, br_c,plan_rz_f_inv)
     !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, bm_f, bt_c,plan_rz_f_inv)
 
-    write (*,*) "AFTER get_fields_inv  er_c", MAXVAL(ABS(er_c))
-    write (*,*) "AFTER get_fields_inv  el_c", MAXVAL(ABS(el_c))
-    write (*,*) "AFTER get_fields_inv  et_c", MAXVAL(ABS(et_c))
-    write (*,*) "AFTER get_fields_inv  br_c", MAXVAL(ABS(br_c))
-    write (*,*) "AFTER get_fields_inv  bl_c", MAXVAL(ABS(bl_c))
-    write (*,*) "AFTER get_fields_inv  bt_c", MAXVAL(ABS(bt_c))
-    DO i=1,nfftx
-      DO j=1,nffty
-        write (0,*) "i=", i, "j=", j, "er_c", er_c(i,j,:)
-        write (0,*) "i=", i, "j=", j, "el_c", el_c(i,j,:)
-        write (0,*) "i=", i, "j=", j, "et_c", et_c(i,j,:)
-        write (0,*) "i=", i, "j=", j, "br_c", br_c(i,j,:)
-        write (0,*) "i=", i, "j=", j, "bl_c", bl_c(i,j,:)
-        write (0,*) "i=", i, "j=", j, "bt_c", bt_c(i,j,:)
-      END DO
-    END DO 
+    !write (*,*) "AFTER get_fields_inv  er_c", MAXVAL(ABS(er_c))
+    !write (*,*) "AFTER get_fields_inv  el_c", MAXVAL(ABS(el_c))
+    !write (*,*) "AFTER get_fields_inv  et_c", MAXVAL(ABS(et_c))
+    !write (*,*) "AFTER get_fields_inv  br_c", MAXVAL(ABS(br_c))
+    !write (*,*) "AFTER get_fields_inv  bl_c", MAXVAL(ABS(bl_c))
+    !write (*,*) "AFTER get_fields_inv  bt_c", MAXVAL(ABS(bt_c))
+    !DO i=1,nfftx
+    !  DO j=1,nffty
+    !    write (0,*) "i=", i, "j=", j, "er_c", er_c(i,j,:)
+    !    write (0,*) "i=", i, "j=", j, "el_c", el_c(i,j,:)
+    !    write (0,*) "i=", i, "j=", j, "et_c", et_c(i,j,:)
+    !    write (0,*) "i=", i, "j=", j, "br_c", br_c(i,j,:)
+    !    write (0,*) "i=", i, "j=", j, "bl_c", bl_c(i,j,:)
+    !    write (0,*) "i=", i, "j=", j, "bt_c", bt_c(i,j,:)
+    !  END DO
+    !END DO 
 
     et_c = ii*et_c
     bt_c= ii*bt_c

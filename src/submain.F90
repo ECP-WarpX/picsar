@@ -105,7 +105,7 @@ USE shared_data , ONLY : dx, dy
       IF ((l_AM_rz).AND.(i .eq. 1)) THEN
         CALL init_rz_fields
         CALL laser_gaussian 
-        write (*,*) "Laser GAUSSIAN" 
+        !write (*,*) "Laser GAUSSIAN" 
       ENDIF
       do k=0,nx-1   
         do j=0,ny-1 
@@ -201,9 +201,9 @@ USE shared_data , ONLY : dx, dy
         !END IF
         IF (i .ge. 2) THEN 
           !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
-          write (*,*) " START push_psatd_ebfield"
+          !write (*,*) " START push_psatd_ebfield"
           CALL push_psatd_ebfield
-          write (*,*) "END push_psatd_ebfield"
+          !write (*,*) "END push_psatd_ebfield"
           !do k=0,nx-1
           !  write (*,*) "Max of ER" , abs(er_c(k,:,:))
           !end do
@@ -493,8 +493,8 @@ SUBROUTINE laser_gaussian
    END DO
   END DO
 
-  br_c= et_c/clight
-  bt_c= -er_c/clight
+  br_c= -et_c/clight
+  bt_c= er_c/clight
   !do k=0,nx-1
   !  Do i=0,ny-1
   !    write (0,*), "max value of erC" ,er_c(k,i,:)

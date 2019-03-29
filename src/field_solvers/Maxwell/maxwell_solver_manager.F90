@@ -595,7 +595,7 @@ END SUBROUTINE push_efield_2d
     tmptime = MPI_WTIME()
   ENDIF
 
-  write (*,*) "getHfield BEFORE" , MAXval( abs(er_c))
+  !write (*,*) "getHfield BEFORE" , MAXval( abs(er_c))
 #if defined(FFTW)
   ! - Fourier Transform R2C
   IF (fftw_with_mpi) THEN
@@ -620,7 +620,7 @@ END SUBROUTINE push_efield_2d
       tmptime_m = MPI_WTIME()
     ENDIF
     CALL multiply_mat_vector(nmatrixes)
-    write (*,*) "multiply mat vector"
+    !write (*,*) "multiply mat vector"
     IF (it.ge.timestat_itstart) THEN
       localtimes(23) = localtimes(23) + (MPI_WTIME() - tmptime_m)
     ENDIF
@@ -630,7 +630,7 @@ END SUBROUTINE push_efield_2d
         CALL push_psaotd_ebfielfs_3d! - PUSH PSATD
       ELSE IF (l_AM_rz) THEN 
         CALL push_psaotd_ebfielfs_AM_rz !- push psatd in azimuthal cylindrical
-        write (*,*) " without push_psaotd AM", MAXval( abs(er_c))
+        !write (*,*) " without push_psaotd AM", MAXval( abs(er_c))
       END IF 
     ELSE IF(c_dim == 2) THEN
       CALL push_psaotd_ebfielfs_2d
@@ -646,7 +646,7 @@ END SUBROUTINE push_efield_2d
   ELSE
     IF (l_AM_rz) THEN 
      CALL get_fields_AM_rz! local IFFT in RZ --PS: it's complex to complex
-     write (*,*) "getfield_AM ", MAXval( abs(er_c))
+     !write (*,*) "getfield_AM ", MAXval( abs(er_c))
     ELSE
       CALL get_fields! local IFFT
     ENDIF 
