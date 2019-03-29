@@ -33,9 +33,11 @@ namespace picsar{
             //Alternatively, the constructor can take a generator (by move)
             stl_rng_wrapper(std::mt19937_64&& rng);
 
-            //This line is just to make sure that copy and move constructor is generated
-            stl_rng_wrapper(stl_rng_wrapper& ) = default;
+            //This line is just to make sure that copy & move constructors
+            //are generated
+            stl_rng_wrapper(const stl_rng_wrapper& ) = default;
             stl_rng_wrapper(stl_rng_wrapper&& ) = default;
+
 
             //Get rnd number uniformly distributed in [a,b)
             template<typename _REAL>
@@ -71,7 +73,7 @@ namespace picsar{
                 //Copy constructor (this time explicitly defined to make Kokkos happy)
                 kokkos_rng_wrapper(const kokkos_rng_wrapper& other);
                 //Move constructor (this time explicitly defined to make Kokkos happy)
-                kokkos_rng_wrapper(const kokkos_rng_wrapper&& other);
+                kokkos_rng_wrapper(kokkos_rng_wrapper&& other);
 
                 //Get rnd number uniformly distributed in [a,b)
                 template<typename _REAL>
@@ -118,9 +120,9 @@ picsar::multi_physics::stl_rng_wrapper::stl_rng_wrapper(uint64_t seed)
     rng.seed(seed);
 }
 
-//Constructor with move of an existing RNGt
-picsar::multi_physics::stl_rng_wrapper::stl_rng_wrapper(std::mt19937_64&& rng):
-    rng(rng){}
+ //Constructor with move of an existing RNG
+ picsar::multi_physics::stl_rng_wrapper::stl_rng_wrapper(std::mt19937_64&& rng):
+    rng(std::move(rng)){}
 
 //Get rnd number uniformly distributed in [a,b)
 template<typename _REAL>
@@ -162,7 +164,7 @@ kokkos_rng_wrapper(const kokkos_rng_wrapper& other):
 //Move constructor (this time explicitly defined to make Kokkos happy)
 template<class generator_pool>
 picsar::multi_physics::kokkos_rng_wrapper<generator_pool>::
-kokkos_rng_wrapper(const kokkos_rng_wrapper&& other):
+kokkos_rng_wrapper(kokkos_rng_wrapper&& other):
     pool{std::move(other.pool)}
 {}
 

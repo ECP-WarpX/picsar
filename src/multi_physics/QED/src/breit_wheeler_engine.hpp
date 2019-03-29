@@ -45,20 +45,28 @@ namespace picsar{
       template<typename _REAL>
       struct breit_wheeler_engine_ctrl{
            //Minimum chi_phot to consider
-          _REAL chi_phot_min =static_cast<_REAL>(__bw_min_chi_phot);
+          _REAL chi_phot_min =
+            static_cast<_REAL>(__breit_wheeler_min_chi_phot);
 
-          _REAL chi_phot_tdndt_min =static_cast<_REAL>(__bw_min_tdndt_chi_phot);
-          _REAL chi_phot_tdndt_max =static_cast<_REAL>(__bw_max_tdndt_chi_phot);
-          size_t chi_phot_tdndt_how_many =__bw_how_many_tdndt_chi_phot;
-          tdndt_table_style tdndt_style = __bw_dndt_table_style;
+          _REAL chi_phot_tdndt_min =
+            static_cast<_REAL>(__breit_wheeler_min_tdndt_chi_phot);
+          _REAL chi_phot_tdndt_max =
+            static_cast<_REAL>(__breit_wheeler_max_tdndt_chi_phot);
+          size_t chi_phot_tdndt_how_many =
+            __breit_wheeler_how_many_tdndt_chi_phot;
+          tdndt_table_style tdndt_style =
+            __breit_wheeler_dndt_table_style;
 
-          _REAL chi_phot_tpair_min =static_cast<_REAL>(__bw_min_tpair_chi_phot);
-          _REAL chi_phot_tpair_max =static_cast<_REAL>(__bw_max_tpair_chi_phot);
-          size_t chi_phot_tpair_how_many =__bw_how_many_tpair_chi_phot;
-
-          size_t chi_frac_tpair_how_many = __chi_frac_tpair_how_many;
-
-          tpair_table_style tpair_style = __bw_pair_table_style;
+          _REAL chi_phot_tpair_min =
+            static_cast<_REAL>(__breit_wheeler_min_tpair_chi_phot);
+          _REAL chi_phot_tpair_max =
+            static_cast<_REAL>(__breit_wheeler_max_tpair_chi_phot);
+          size_t chi_phot_tpair_how_many =
+            __breit_wheeler_how_many_tpair_chi_phot;
+          size_t chi_frac_tpair_how_many =
+            __breit_wheeler_chi_frac_tpair_how_many;
+          tpair_table_style tpair_style =
+            __breit_wheeler_pair_table_style;
       };
 
       //This struct is used for post-run check of the suitability of the
@@ -74,7 +82,7 @@ namespace picsar{
      class breit_wheeler_engine
      {
      public:
-         //A random number generatator has to be passed by move.
+         //A random number generator has to be passed by move.
          //The RNG can be ANY object implementing the functions
          //_REAL unf (_REAL a, _REAL b)
          //and
@@ -90,7 +98,7 @@ namespace picsar{
          breit_wheeler_engine_ctrl<_REAL>());
 
          //Copy constructor
-         breit_wheeler_engine(breit_wheeler_engine& other);
+         breit_wheeler_engine(const breit_wheeler_engine& other);
 
          //Move constructor
          breit_wheeler_engine(breit_wheeler_engine&& other);
@@ -245,7 +253,7 @@ breit_wheeler_engine
 //Copy constructor
 template<typename _REAL, class _RNDWRAP>
 picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
-breit_wheeler_engine(breit_wheeler_engine& other):
+breit_wheeler_engine(const breit_wheeler_engine& other):
     lambda(other.lambda), rng(other.rng), bw_ctrl(other.bw_ctrl),
     TTfunc_table(other.TTfunc_table), cum_distrib_table(other.cum_distrib_table),
     aux_table(other.aux_table),
@@ -261,7 +269,7 @@ breit_wheeler_engine(breit_wheeler_engine&& other):
     TTfunc_table(std::move(other.TTfunc_table)),
     cum_distrib_table(std::move(other.cum_distrib_table)),
     aux_table(std::move(other.aux_table)),
-    err_info(other.err_info)
+    err_info(std::move(other.err_info))
     {}
 
 
@@ -292,7 +300,7 @@ PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 get_optical_depth()
 {
-    return rng.exp(static_cast<_REAL>(1.0));
+    return rng.exp(one);
 }
 
 //Calculates the pair production rate (Warning: no tables are used)

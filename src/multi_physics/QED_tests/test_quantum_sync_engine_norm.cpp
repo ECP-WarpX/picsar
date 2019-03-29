@@ -120,3 +120,44 @@ BOOST_AUTO_TEST_CASE( quantum_sync_engine_opt_single_1 )
 {
     quantum_sync_engine_opt<float>();
 }
+
+// ------------- photon emission rate --------------
+
+//Test photon emission (generic)
+template <typename T>
+void quantum_sync_engine_phtoem()
+{
+    T lambda = static_cast<T>(800. * si_nanometer);
+
+    auto qs_engine = get_qs_stl_set_lambda<T>(390109317,lambda);
+
+    T px =  static_cast<T>(149.825);
+    T py =  static_cast<T>(933.115);
+    T pz =  static_cast<T>(-538.195);
+    T ex =  static_cast<T>(931.686);
+    T ey =  static_cast<T>(-861.074);
+    T ez =  static_cast<T>(944.652);
+    T bx =  static_cast<T>(531.406);
+    T by =  static_cast<T>(670.933);
+    T bz =  static_cast<T>(660.057);
+
+    //T exp = static_cast<T>(xxx);
+    T res = qs_engine.compute_dN_dt
+        (chi_lepton(px,py,pz,ex,ey,ez,bx,by,bz,lambda) );
+
+
+    BOOST_CHECK_EQUAL(1,1);
+    //BOOST_CHECK_SMALL(res, tolerance<T>());
+}
+
+//Test photon emission (double precision)
+BOOST_AUTO_TEST_CASE( quantum_sync_engine_phtoem_double_1 )
+{
+    quantum_sync_engine_phtoem<double>();
+}
+
+//Test photon emission (single precision)
+BOOST_AUTO_TEST_CASE( quantum_sync_engine_phtoem_single_1 )
+{
+    quantum_sync_engine_phtoem<float>();
+}

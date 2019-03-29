@@ -94,11 +94,17 @@ void test_BW(){
     pxrmp::stl_rng_wrapper wrap_phot{seed_photons};
 
     for(size_t i = 0; i < how_many_phot; i++){
-        double mom = wrap_phot.unf<double>(8000,12000);
-        double theta = wrap_phot.unf<double>(0,2.0*M_PI);
-        double phi = acos(wrap_phot.unf<double>(-1.0,1.0));
+        // double mom = wrap_phot.unf<double>(8000,12000);
+        // double theta = wrap_phot.unf<double>(0,2.0*M_PI);
+        // double phi = acos(wrap_phot.unf<double>(-1.0,1.0));
+        //
+        // ptr_phot1->add_particle({0,0,0},{mom*sin(phi)*cos(theta), mom*sin(phi)*sin(theta) , mom*cos(phi)});
+        double momx = wrap_phot.unf<double>(-8000,8000);
+        double momy = wrap_phot.unf<double>(-8000,8000);
+        double momz = wrap_phot.unf<double>(-8000,8000);
 
-        ptr_phot1->add_particle({0,0,0},{mom*sin(phi)*cos(theta), mom*sin(phi)*sin(theta) , mom*cos(phi)});
+        ptr_phot1->add_particle({0,0,0},{momx, momy, momz});
+
     }
 
     for (auto& opt: ptr_phot1->get_ref_of_optical_depth())

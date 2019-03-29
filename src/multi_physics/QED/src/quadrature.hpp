@@ -65,6 +65,16 @@ _REAL picsar::multi_physics::quad_a_inf
     auto mod_func = [&f, &map_func, &deriv_map_func](_REAL x)
         { return f(map_func(x))*deriv_map_func(x);};
 
+    //Alternative
+    //
+    // //Mapping function [0,1] --> [a, inf), defined as a lambda
+    // auto map_func = [one, a](_REAL x)
+    //     { return a - one - x + one/(one - x);};
+    //
+    // //Analytical derivative of the mapping function
+    // auto deriv_map_func = [one](_REAL x)
+    //     { return one/((one - x)*(one - x)) - one;};
+
     //WARNING: sqrt(numeric_limits<_REAL>::epsilon()) is added here to avoid
     //infinities. However, I am not very happy with this solution.
     //Suggestions?

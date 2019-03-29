@@ -1,7 +1,7 @@
 #ifndef __PICSAR_MULTIPHYSICS_CHI_FUNCTIONS__
 #define __PICSAR_MULTIPHYSICS_CHI_FUNCTIONS__
 
-//This .hpp file contais the functions to calcuate the chi parameter for
+//This .hpp file contains the functions to calcuate the chi parameter for
 //photons and leptons
 
 #include <cmath>
@@ -71,7 +71,10 @@ _REAL picsar::multi_physics::chi_photon(
     vec3<_REAL> em_eperp = em_e - dot(p_unit,em_e)*p_unit;
     _REAL mod = norm(em_eperp + cross(p_unit*static_cast<_REAL>(__c), em_b));
 
-    return mod*norm_p/(static_cast<_REAL>(__emass*__c*__schwinger)*lambda);
+    _REAL coeff = static_cast<_REAL>(1.0)/
+        (static_cast<_REAL>(__emass*__c*__schwinger)*lambda);
+
+    return mod*norm_p*coeff;
 }
 
 //chi for leptons
@@ -118,8 +121,11 @@ _REAL picsar::multi_physics::chi_lepton(
     _REAL e_plus_v_cross_b_2 = norm2(em_e +
         cross(beta_vec * static_cast<_REAL>(__c), em_b));
 
-    return gamma*sqrt(fabs(beta_dot_e_2-e_plus_v_cross_b_2))
-        /(static_cast<_REAL>(__schwinger)*lambda);
+    _REAL coeff = static_cast<_REAL>(1.0)/
+        (static_cast<_REAL>(__schwinger)*lambda);
+
+    return gamma*sqrt(fabs(beta_dot_e_2-e_plus_v_cross_b_2))*coeff;
+
 }
 
 

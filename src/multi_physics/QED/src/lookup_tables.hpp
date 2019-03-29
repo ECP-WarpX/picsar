@@ -1,7 +1,7 @@
 #ifndef __PICSAR_MULTIPHYSICS_LOOKUP_TABLES__
 #define __PICSAR_MULTIPHYSICS_LOOKUP_TABLES__
 
-//This .hpp file contais the implementation of 1D and 2D lookup tables.
+//This .hpp file contains the implementation of 1D and 2D lookup tables.
 
 #include<functional>
 #include<array>
@@ -31,7 +31,7 @@ namespace picsar{
                 lookup_1d (std::vector<_REAL> coords, std::vector<_REAL> data);
 
                 //Copy constructor
-                lookup_1d(lookup_1d& other);
+                lookup_1d(const lookup_1d& other);
 
                 //Move constructor
                 lookup_1d(lookup_1d&& other);
@@ -93,7 +93,7 @@ namespace picsar{
                     std::vector<_REAL> data);
 
                 //Copy constructor
-                lookup_2d(lookup_2d& other);
+                lookup_2d(const  lookup_2d& other);
 
                 //Move constructor
                 lookup_2d(lookup_2d&& other);
@@ -114,7 +114,7 @@ namespace picsar{
                 PXRMP_FORCE_INLINE
                 _REAL interp_linear(_REAL where_x, _REAL where_y) const;
 
-                //Performs linear interpolation on the FIRST coorinate
+                //Performs linear interpolation on the FIRST coordinate
                 PXRMP_FORCE_INLINE
                 _REAL interp_linear_first(_REAL where_x, size_t coord_y) const;
 
@@ -163,7 +163,7 @@ lookup_1d
 //Copy constructor
 template<typename _REAL>
 picsar::multi_physics::lookup_1d<_REAL>::
-lookup_1d(lookup_1d& other):
+lookup_1d(const lookup_1d& other):
     coords{other.coords}, data{other.data}, init_flag{other.init_flag}
 {}
 
@@ -172,7 +172,7 @@ template<typename _REAL>
 picsar::multi_physics::lookup_1d<_REAL>::
 lookup_1d(lookup_1d&& other):
     coords{std::move(other.coords)}, data{std::move(other.data)},
-    init_flag{other.init_flag}
+    init_flag{std::move(other.init_flag)}
 {}
 
 //Assignment operator
@@ -316,7 +316,7 @@ std::vector<_REAL> data):
 //Copy constructor
 template<typename _REAL>
 picsar::multi_physics::lookup_2d<_REAL>::
-lookup_2d(lookup_2d& other):
+lookup_2d(const lookup_2d& other):
     coords{other.coords}, data{other.data}, init_flag{other.init_flag}
 {}
 

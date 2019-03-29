@@ -159,7 +159,7 @@ BOOST_AUTO_TEST_CASE( chi_photons_single_1 )
     float bx = -279.174f;
     float by = -158.849f;
     float bz = -93.826f;
-    float lambda = 800.0f * flt_si_nanometer;
+    float lambda = 800.0f * si_nanometer;
 
     float chi_exp = static_cast<float>(0.347111844317);
 
@@ -180,7 +180,7 @@ BOOST_AUTO_TEST_CASE( chi_photons_single_2 )
     float bx = 1.7439f;
     float by = 1.9778f;
     float bz = 17.8799f;
-    float lambda = 800.0f * flt_si_nanometer;
+    float lambda = 800.0f * si_nanometer;
 
     float chi_exp = static_cast<float>(0.00090414740533);
 
@@ -202,7 +202,7 @@ BOOST_AUTO_TEST_CASE( chi_photons_single_3 )
     float bx = -2203.66f;
     float by = 1243.79f;
     float bz = -2830.99f;
-    float lambda = 800.0f * flt_si_nanometer;
+    float lambda = 800.0f * si_nanometer;
 
     float chi_exp = static_cast<float>(57.2204397969);
 
@@ -223,7 +223,7 @@ BOOST_AUTO_TEST_CASE( chi_photons_float_4 )
     float bx = -2203.66f;
     float by = 1243.79f;
     float bz = -2830.99f;
-    float lambda = 800.0f * flt_si_nanometer;
+    float lambda = 800.0f * si_nanometer;
 
     float chi_res = chi_photon(px,py,pz,ex,ey,ez,bx,by,bz,lambda);
 
@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE( chi_photons_float_5 )
     float bx = 0.0f;
     float by = 0.0f;
     float bz = 0.0f;
-    float lambda = 800.0f * flt_si_nanometer;
+    float lambda = 800.0f * si_nanometer;
 
     float chi_res = chi_photon(px,py,pz,ex,ey,ez,bx,by,bz,lambda);
 
@@ -261,7 +261,7 @@ BOOST_AUTO_TEST_CASE( chi_photons_float_6 )
     float bx = 0.0f;
     float by = 0.0f;
     float bz = 0.0f;
-    float lambda = 800.0f * flt_si_nanometer;
+    float lambda = 800.0f * si_nanometer;
 
     float chi_res = chi_photon(px,py,pz,ex,ey,ez,bx,by,bz,lambda);
 
@@ -402,7 +402,7 @@ BOOST_AUTO_TEST_CASE( chi_leptons_single_1 )
     float bx = 6.6911f;
     float by = -23.8724f;
     float bz = 13.9934f;
-    float lambda = 800.0f * flt_si_nanometer;
+    float lambda = 800.0f * si_nanometer;
 
     float chi_exp = static_cast<float>(0.00216716627219670);
 
@@ -423,7 +423,7 @@ BOOST_AUTO_TEST_CASE( chi_leptons_single_2 )
     float bx = -190.161f;
     float by = -129.115f;
     float bz = -57.002f;
-    float lambda = 800.0f * flt_si_nanometer;
+    float lambda = 800.0f * si_nanometer;
 
     float chi_exp = static_cast<float>(0.166318112874468);
 
@@ -445,7 +445,7 @@ BOOST_AUTO_TEST_CASE( chi_leptons_single_3 )
     float bx = 1477.19f;
     float by = -1448.33f;
     float bz = 1953.68f;
-    float lambda = 800.0f * flt_si_nanometer;
+    float lambda = 800.0f * si_nanometer;
 
     float chi_exp = static_cast<float>(16.0114572646993);
 
@@ -466,7 +466,7 @@ BOOST_AUTO_TEST_CASE( chi_leptons_single_4 )
     float bx = 1477.19f;
     float by = -1448.33f;
     float bz = 1953.68f;
-    float lambda = 800.0f * flt_si_nanometer;
+    float lambda = 800.0f * si_nanometer;
 
     float chi_res = chi_lepton(px,py,pz,ex,ey,ez,bx,by,bz,lambda);
 
@@ -485,7 +485,7 @@ BOOST_AUTO_TEST_CASE( chi_leptons_single_5 )
     float bx = 0.0f;
     float by = 0.0f;
     float bz = 0.0f;
-    float lambda = 800.0f * flt_si_nanometer;
+    float lambda = 800.0f * si_nanometer;
 
     float chi_res = chi_lepton(px,py,pz,ex,ey,ez,bx,by,bz,lambda);
 
@@ -504,7 +504,7 @@ BOOST_AUTO_TEST_CASE( chi_leptons_single_6 )
     float bx = 1477.19f;
     float by = 0.0f;
     float bz = 0.0f;
-    float lambda = 800.0f * flt_si_nanometer;
+    float lambda = 800.0f * si_nanometer;
 
     float chi_res = chi_lepton(px,py,pz,ex,ey,ez,bx,by,bz,lambda);
 

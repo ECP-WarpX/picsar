@@ -26,7 +26,7 @@ const float float_tolerance = 1.0e-4;
 
 //SI units for momenta
 const double me_c = electron_mass * light_speed;
-const float flt_me_c = flt_electron_mass * flt_light_speed;
+const float flt_me_c = static_cast<float> (me_c);
 
 //SI units for fields
 double lambda = 800.0 * si_nanometer;
@@ -34,10 +34,9 @@ double eref = 2.0*pi*electron_mass*light_speed*light_speed/
             (lambda*elementary_charge);
 double bref = eref/light_speed;
 
-float flt_lambda = 800.0f * flt_si_nanometer;
-float flt_eref = 2.0f*flt_pi*flt_electron_mass*flt_light_speed*flt_light_speed/
-            (flt_lambda*flt_elementary_charge);
-float flt_bref = flt_eref/flt_light_speed;
+float flt_lambda = static_cast<float>(lambda);
+float flt_eref = static_cast<float>(eref);
+float flt_bref = static_cast<float>(bref);
 
 //#################### Photons
 

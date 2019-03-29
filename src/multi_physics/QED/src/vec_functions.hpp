@@ -1,7 +1,7 @@
 #ifndef __PICSAR_MULTIPHYSICS_VEC_FUNCTIONS__
 #define __PICSAR_MULTIPHYSICS_VEC_FUNCTIONS__
 
-//This .hpp file contais functions to perform operations on 3-vectors
+//This .hpp file contains functions to perform operations on 3-vectors
 // (norm, scalar multiplication, vector and cross product...)
 
 #include <cmath>
