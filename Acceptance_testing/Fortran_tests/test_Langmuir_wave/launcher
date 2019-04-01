@@ -5,4 +5,4 @@ cp ../../../example_decks_fortran/langmuir_wave.pixr input_file.pixr
 
 export OMP_NUM_THREADS=2
 rm RESULTS/*
-mpirun -n 2 ./picsar nprocx 1 nprocy 1 nprocz 2
+mpirun -n 1 ./picsar nprocx 1 nprocy 1 nprocz 1

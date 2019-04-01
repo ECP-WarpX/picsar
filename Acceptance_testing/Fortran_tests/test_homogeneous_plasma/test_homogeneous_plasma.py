@@ -107,7 +107,7 @@ def test_homogeneous_plasma(tpath,trun,ttest,tshow):
     os.putenv('OMP_NUM_THREADS','2')
     call(["rm","RESULTS/*"])
     call(["mkdir","-p","RESULTS"])
-    call(["mpirun","-n","2","./picsar"])
+    call(["mpirun","-n","1","./picsar"])
     #call(["sh","launcher"])
   
   # Parameters
