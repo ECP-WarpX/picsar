@@ -646,7 +646,7 @@ compute_pair_default_lookup_table(std::ostream* stream)
 }
 
 
-//Function to compute X (Warning: it doen't chek if chi_ele != 0 or
+//Function to compute X (Warning: it doesn't chek if chi_ele != 0 or
 //if chi_phot > chi_ele)
 template<typename _REAL, class _RNDWRAP>
 PXRMP_FORCE_INLINE

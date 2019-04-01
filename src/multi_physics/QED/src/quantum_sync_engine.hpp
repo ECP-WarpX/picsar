@@ -37,8 +37,12 @@ namespace picsar{
       //works
       template<typename _REAL>
       struct quantum_synchrotron_engine_ctrl{
-           //Minimum photon frequency to consider
-          _REAL nu_min =static_cast<_REAL>(__quantum_synchrotron_min_nu);
+          //Minimum chi for photons to be considered by the engine
+          _REAL chi_part_min =
+            static_cast<_REAL>(__quantum_synchrotron_min_chi_part);
+
+          _REAL chi_phot_min =
+            static_cast<_REAL>(__quantum_synchrotron_min_chi_phot);
 
           _REAL chi_part_tdndt_min =
             static_cast<_REAL>(__quantum_synchrotron_min_tdndt_chi_part);
@@ -87,7 +91,7 @@ namespace picsar{
 
          //Calculates the photon emission rate (Warning: no lookup tables)
          PXRMP_FORCE_INLINE
-         _REAL compute_dN_dt(_REAL chi_part) const;
+         _REAL compute_dN_dt(_REAL energy_part, _REAL chi_part) const;
 
          //Computes the lookup_table needed for dN/dt
          //(accepts pointer to ostream for diag)
@@ -113,11 +117,6 @@ namespace picsar{
          //Auxiliary table for coordinate interpolation
          lookup_1d<_REAL> aux_table;
 
-         //Numerical parameters which can be calculated when the class
-         //is instantiated (they are functions only of qs_ctrl.nu_min)
-         _REAL inner;
-         _REAL k_2_3_nu;
-
          //Some handy constants
          const _REAL zero = static_cast<_REAL>(0.0);
          const _REAL one = static_cast<_REAL>(1.0);
@@ -132,13 +131,17 @@ namespace picsar{
 
          //Internal functions to perform calculations
          PXRMP_FORCE_INLINE
-         _REAL compute_inner_integral() const;
+         _REAL compute_y(_REAL chi_phot, _REAL chi_ele) const;
 
          PXRMP_FORCE_INLINE
-         _REAL compute_SS_function(_REAL chi_part, _REAL chi_phot) const;
+         _REAL compute_inner_integral(_REAL y) const;
+
+         PXRMP_FORCE_INLINE
+         _REAL compute_KK_integrand(_REAL chi_part, _REAL chi_phot) const;
 
          PXRMP_FORCE_INLINE
          _REAL compute_KK_function(_REAL chi_part) const;
+
      };
   }
 }
@@ -156,9 +159,6 @@ quantum_synchrotron_engine
 #ifdef PXRMP_WITH_SI_UNITS
     lambda = static_cast<_REAL>(1.0);
 #endif
-
-    _REAL inner = compute_inner_integral();
-    _REAL k_2_3_nu = k_v(two/three, qs_ctrl.nu_min);
 }
 
 //Copy constructor
@@ -167,7 +167,7 @@ picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
 quantum_synchrotron_engine(const quantum_synchrotron_engine& other):
     lambda(other.lambda), rng(other.rng), qs_ctrl(other.qs_ctrl),
     KKfunc_table(other.KKfunc_table), cum_distrib_table(other.cum_distrib_table),
-    aux_table(other.aux_table), inner(other.inner), k_2_3_nu(other.k_2_3_nu)
+    aux_table(other.aux_table)
     {}
 
 //Move constructor
@@ -178,8 +178,7 @@ quantum_synchrotron_engine(quantum_synchrotron_engine&& other):
     qs_ctrl(std::move(other.qs_ctrl)),
     KKfunc_table(std::move(other.KKfunc_table)),
     cum_distrib_table(std::move(other.cum_distrib_table)),
-    aux_table(std::move(other.aux_table)),inner(std::move(other.inner)),
-    k_2_3_nu(std::move(other.k_2_3_nu))
+    aux_table(std::move(other.aux_table))
     {}
 
 
@@ -217,10 +216,15 @@ get_optical_depth()
 template<typename _REAL, class _RNDWRAP>
 PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
-compute_dN_dt(_REAL chi_part) const
+compute_dN_dt(_REAL energy_part, _REAL chi_part) const
 {
-    _REAL kk = compute_KK_function(chi_part);
-    return kk*static_cast<_REAL>(__quantum_synchrotron_rate_coeff)*lambda;
+    if(energy_part == zero || chi_part == zero)
+        return zero;
+
+    _REAL coeff = static_cast<_REAL>(__quantum_synchrotron_rate_coeff)*
+        lambda*one/(energy_part*chi_part);
+
+    return coeff*compute_KK_function(chi_part);
 }
 
 //Computes the lookup_table needed for dN/dt
@@ -265,27 +269,45 @@ compute_KK_default_lookup_table(std::ostream* stream)
     KKfunc_table = lookup_1d<_REAL>{KK_coords, KK_vals};
 }
 
+//Function to compute y (Warning: it doesn't chek if chi_ele != 0 or
+//if chi_phot < chi_ele)
+template<typename _REAL, class _RNDWRAP>
+PXRMP_FORCE_INLINE
+_REAL picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
+compute_y(_REAL chi_phot, _REAL chi_ele) const
+{
+    return chi_phot/(three*chi_ele*(chi_ele-chi_phot));
+}
+
 //Function to compute the inner integral of the QS photon emission rate
 template<typename _REAL, class _RNDWRAP>
 PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
-compute_inner_integral() const
+compute_inner_integral(_REAL y) const
 {
     auto func = [this](double y){
-        return k_v(five/three, y);
+        return k_v(one/three, y);
     };
-    return quad_a_inf<_REAL>(func, qs_ctrl.nu_min);
+    return quad_a_inf<_REAL>(func, two*y);
 }
 
 template<typename _REAL, class _RNDWRAP>
 PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
-compute_SS_function(_REAL chi_phot, _REAL chi_part) const
+compute_KK_integrand(_REAL chi_phot, _REAL chi_part) const
 {
-    _REAL res = (chi_phot/chi_part)*
-        (inner + (two*chi_phot*qs_ctrl.nu_min/two)*k_2_3_nu);
-    _REAL coeff =  sqrt(three)/(two*pi);
-    return res*coeff;
+    if (chi_part == zero)
+        return zero;
+
+    _REAL y = compute_y(chi_phot, chi_part);
+
+    _REAL inner = compute_inner_integral(y);
+
+    _REAL part_2 = (two + three*chi_phot*y)*k_v(two/three, y);
+
+    _REAL coeff = one/static_cast<_REAL>(pi*sqrt(three));
+
+    return (inner - part_2)*coeff;
 }
 
 template<typename _REAL, class _RNDWRAP>
@@ -293,10 +315,17 @@ PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
 compute_KK_function(_REAL chi_part) const
 {
-    auto func = [this, chi_part](_REAL chi_phot){
-        return compute_SS_function(chi_phot, chi_part);
+
+    auto func = [chi_part, this](_REAL chi_phot){
+        if(chi_part - chi_phot == zero || chi_phot == zero)
+            return zero;
+        else
+            return compute_KK_integrand(chi_phot, chi_part);
     };
-    return quad_a_inf<_REAL>(func, chi_part);
+
+    return quad_a_b<_REAL>(func, qs_ctrl.chi_phot_min, chi_part);
 }
+
+
 
 #endif //__PICSAR_MULTIPHYSICS_BREIT_WHEELER_ENGINE__

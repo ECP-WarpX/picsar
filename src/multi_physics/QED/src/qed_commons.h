@@ -78,7 +78,7 @@ namespace picsar{
         const double tau_e = classical_electron_radius/light_speed;
 
         const double quantum_synchrotron_rate_coeff =
-        (2.0/3.0)*fine_structure*fine_structure/tau_e;
+        fine_structure*fine_structure/tau_e;
 
         const double si_gigameter = 1.0e9;
         const double si_megameter = 1.0e6;
@@ -123,7 +123,7 @@ namespace picsar{
       const double __pair_prod_coeff = pair_prod_rate_coeff*electron_mass*
         light_speed*light_speed;
       const double __quantum_synchrotron_rate_coeff =
-        quantum_synchrotron_rate_coeff;
+        quantum_synchrotron_rate_coeff*electron_mass*light_speed*light_speed;
     #else
       const double __c = 1.0;
       const double __emass = 1.0;
@@ -187,8 +187,10 @@ namespace picsar{
 
 //# Default values for the parameters of Quantum synchrotron engine ############
 
-//Minimum normalized frequency to consider
-const double __quantum_synchrotron_min_nu = 0.001;
+//Minimum chi for photons and particles to be considered by the engine
+//__quantum_synchrotron_min_chi_part must be > __quantum_synchrotron_min_chi_phot
+const double __quantum_synchrotron_min_chi_part = 0.001;
+const double __quantum_synchrotron_min_chi_phot = 0.0001;
 
 // dN/dt table:
 

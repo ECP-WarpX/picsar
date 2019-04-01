@@ -142,8 +142,9 @@ void quantum_sync_engine_phtoem()
     T bz =  static_cast<T>(660.057);
 
     //T exp = static_cast<T>(xxx);
+    T energy = sqrt( static_cast<T>(1.0) + norm2(vec3<T>{px,py,pz}));
     T res = qs_engine.compute_dN_dt
-        (chi_lepton(px,py,pz,ex,ey,ez,bx,by,bz,lambda) );
+        (energy, chi_lepton(px,py,pz,ex,ey,ez,bx,by,bz,lambda) );
 
 
     BOOST_CHECK_EQUAL(1,1);
