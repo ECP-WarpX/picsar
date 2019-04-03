@@ -102,6 +102,17 @@ namespace picsar{
          PXRMP_FORCE_INLINE
          _REAL interp_dN_dt(_REAL energy_part, _REAL chi_part) const;
 
+         //This function evolves the optical depth for a particle and
+         //checks if it goes to zero. If it doesn't the output is false,0.
+         //On the contrary, if it goes to zero the output is true, dt_phot,
+         //where dt_phot (<= dt) is the time at which the event occurs.
+         PXRMP_FORCE_INLINE
+         std::pair<bool, _REAL> evolve_opt_depth_and_determine_event(
+         _REAL px, _REAL py, _REAL pz,
+         _REAL ex, _REAL ey, _REAL ez,
+         _REAL bx, _REAL by, _REAL bz,
+         _REAL dt, _REAL& opt_depth) const;
+
 
      private:
          _REAL lambda;
@@ -268,12 +279,61 @@ interp_dN_dt(_REAL energy_part, _REAL chi_part) const
     }
 
     //Other table styles are not currently implemented
-   if(qs_ctrl.tdndt_style == tdnt_style_default)
-    KK =  exp(KKfunc_table.interp_linear(log(chi_part)));
+    if(qs_ctrl.tdndt_style == tdnt_style_default)
+        KK =  exp(KKfunc_table.interp_linear(log(chi_part)));
 
     _REAL dndt = coeff * KK;
 
     return dndt;
+}
+
+
+//This function evolves the optical depth for a particle and
+//checks if it goes to zero. If it doesn't the output is false,0.
+//On the contrary, if it goes to zero the output is true, dt_phot,
+//where dt_phot (<= dt) is the time at which the event occurs.
+template<typename _REAL, class _RNDWRAP>
+PXRMP_FORCE_INLINE
+std::pair<bool, _REAL>
+picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
+evolve_opt_depth_and_determine_event(
+_REAL px, _REAL py, _REAL pz,
+_REAL ex, _REAL ey, _REAL ez,
+_REAL bx, _REAL by, _REAL bz,
+_REAL dt, _REAL& opt_depth) const
+{
+    _REAL energy = norm<_REAL>(vec3<_REAL> {px, py, pz})*__c;
+    _REAL chi = chi_lepton(px, py, pz, ex, ey, ez, bx, by, bz, lambda);
+
+    auto false_zero_pair = std::make_pair(false, zero);
+
+    //Do NOT evolve opt_depth if the chi parameter is less then threshold
+    if(chi <= qs_ctrl.chi_part_min)
+        return false_zero_pair;
+
+    //**Compute dndt
+    _REAL dndt;
+    //Uses table if available
+    if(KKfunc_table.is_init()){
+        dndt = interp_dN_dt(energy, chi);
+    }
+    //If not it computes dndt
+    else{
+        err("dndt lookup table not initialized!\n");
+        dndt = compute_dN_dt(energy, chi);
+    }
+
+    opt_depth -= dndt*dt;
+
+    if(opt_depth > zero){
+        return false_zero_pair;
+    }
+    else{
+        //Calculates the time at which photon emission takes place
+        _REAL dt_phot = opt_depth/dndt + dt;
+        return std::make_pair(true, dt_phot);
+    }
+
 }
 
 
