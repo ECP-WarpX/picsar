@@ -98,6 +98,10 @@ namespace picsar{
          PXRMP_FORCE_INLINE
          void compute_dN_dt_lookup_table(std::ostream* stream = nullptr);
 
+         //Interp the dN_dt from table
+         PXRMP_FORCE_INLINE
+         _REAL interp_dN_dt(_REAL energy_part, _REAL chi_part) const;
+
 
      private:
          _REAL lambda;
@@ -237,6 +241,39 @@ compute_dN_dt_lookup_table(std::ostream* stream)
         compute_KK_default_lookup_table(stream);
 
     //Other table styles are not currently implemented
+}
+
+//Interp the dN_dt from table
+template<typename _REAL, class _RNDWRAP>
+PXRMP_FORCE_INLINE
+_REAL picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
+interp_dN_dt(_REAL energy_part, _REAL chi_part) const
+{
+    if(energy_part == zero || chi_part == zero)
+        return zero;
+
+    _REAL coeff = static_cast<_REAL>(__quantum_synchrotron_rate_coeff)*
+        lambda*one/(energy_part*chi_part);
+
+
+    _REAL KK = zero;
+
+    //If chi is out of table, use the first (or the last) value
+    //in the table
+    if(chi_part <= qs_ctrl.chi_part_tdndt_min){
+        chi_part = qs_ctrl.chi_part_tdndt_min;
+    }
+    else if(chi_part >= qs_ctrl.chi_part_tdndt_max){
+        chi_part = qs_ctrl.chi_part_tdndt_max ;
+    }
+
+    //Other table styles are not currently implemented
+   if(qs_ctrl.tdndt_style == tdnt_style_default)
+    KK =  exp(KKfunc_table.interp_linear(log(chi_part)));
+
+    _REAL dndt = coeff * KK;
+
+    return dndt;
 }
 
 
