@@ -37,12 +37,9 @@ namespace picsar{
       //works
       template<typename _REAL>
       struct quantum_synchrotron_engine_ctrl{
-          //Minimum chi for photons to be considered by the engine
+          //Minimum chi for particles to be considered by the engine
           _REAL chi_part_min =
             static_cast<_REAL>(__quantum_synchrotron_min_chi_part);
-
-          _REAL chi_phot_min =
-            static_cast<_REAL>(__quantum_synchrotron_min_chi_phot);
 
           _REAL chi_part_tdndt_min =
             static_cast<_REAL>(__quantum_synchrotron_min_tdndt_chi_part);
@@ -52,6 +49,20 @@ namespace picsar{
             __quantum_synchrotron_how_many_tdndt_chi_part;
           tdndt_table_style tdndt_style =
             __quantum_synchrotron_dndt_table_style;
+
+          _REAL chi_part_tem_min =
+            static_cast<_REAL>(__quantum_synchrotron_min_tem_chi_part);
+          _REAL chi_part_tem_max =
+            static_cast<_REAL>(__quantum_synchrotron_max_tem_chi_part);
+          size_t chi_part_tem_how_many =
+            __quantum_synchrotron_how_many_tem_chi_part;
+          size_t chi_frac_tem_how_many =
+            __quantum_synchrotron_chi_frac_tem_how_many;
+
+          tem_table_style tem_style =
+          __quantum_synchrotron_tem_table_style;
+
+
       };
 
       //Templates are used for the numerical type and for the
@@ -118,19 +129,41 @@ namespace picsar{
          PXRMP_FORCE_INLINE
          _REAL compute_cumulative_phot_em(_REAL chi_phot, _REAL chi_part) const;
 
+         //Computes the cumulative photon emission rate lookup table
+         void compute_cumulative_phot_em_table (std::ostream* stream = nullptr);
+
+         //This function computes the properties of the photons
+         //generated in a quantum synchrotron-like process.
+         //It is intended to be used as follows:
+         //auto all_photons = qs_engine.generate_photons
+         //   (mom[0], mom[1], mom[2],
+         //    field[0], field[1], field[2],
+         //    field[3], field[4], field[5], weight, sampling);
+         //At this point all_photons would be a vector
+         //of pairs (momentum, new_weight), where new_weight
+         //is simply weight/sampling.
+         //The function updates also the momentum of the particle
+         PXRMP_FORCE_INLINE
+         std::vector<std::pair<vec3<_REAL>, _REAL>>
+         generate_photons_and_update_momentum(
+         _REAL& px, _REAL& py, _REAL& pz,
+         _REAL ex, _REAL ey, _REAL ez,
+         _REAL bx, _REAL by, _REAL bz,
+         _REAL weight, size_t sampling);
+
          //Write total cross section table to disk
          void write_dN_dt_table(std::string filename);
 
-         //Write cumulative_pair_table to disk
-         //void write_cumulative_pair_table(std::string filename);
+         //Write cumulative photon emission rate to disk
+         void write_cumulative_phot_em_table(std::string filename);
 
          //Read total cross section table from disk (Warning,
          //qs_ctrl is not changed in current implementation)
          void read_dN_dt_table(std::string filename);
 
-         //Read cumulative_pair_table table from disk (Warning,
-         //breit_wheeler_engine_ctrl is not changed in current implementation)
-         //void read_cumulative_pair_table(std::string filename);
+         //Read cumulative photon emission rate to disk (Warning,
+         //qs_ctrl is not changed in current implementation)
+         void read_cumulative_phot_em_table(std::string filename);
 
 
      private:
@@ -162,6 +195,11 @@ namespace picsar{
          //Internal function to compute KK function default
           //(accepts pointer to ostream for diag)
          void compute_KK_default_lookup_table(std::ostream* stream = nullptr);
+
+         //Internal function to compute photon emission table
+         //(accepts pointer to ostream for diag)
+         void
+         compute_phot_em_default_lookup_table(std::ostream* stream = nullptr);
 
          //Internal functions to perform calculations
          PXRMP_FORCE_INLINE
@@ -366,9 +404,102 @@ compute_cumulative_phot_em(_REAL chi_phot, _REAL chi_part) const
     auto func = [this, chi_part](_REAL chi_phot){
         return compute_KK_integrand(chi_phot, chi_part);
     };
-   _REAL num = quad_a_b<_REAL>(func, qs_ctrl.chi_phot_min, chi_phot);
+   _REAL num = quad_a_b<_REAL>(func, zero, chi_phot);
    return num/compute_KK_function(chi_part) ;
 }
+
+//Computes the cumulative photon emission rate lookup table
+template<typename _REAL, class _RNDWRAP>
+PXRMP_FORCE_INLINE
+void
+picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
+compute_cumulative_phot_em_table (std::ostream* stream)
+{
+    if(qs_ctrl.tem_style == tem_style_default)
+        compute_phot_em_default_lookup_table(stream);
+    //Other table styles are not currently implemented
+}
+
+
+//This function computes the properties of the photons
+//generated in a quantum synchrotron-like process.
+//It is intended to be used as follows:
+//auto all_photons = qs_engine.generate_photons
+//   (mom[0], mom[1], mom[2],
+//    field[0], field[1], field[2],
+//    field[3], field[4], field[5], weight, sampling);
+//At this point all_photons would be a vector
+//of pairs (momentum, new_weight), where new_weight
+//is simply weight/sampling.
+template<typename _REAL, class _RNDWRAP>
+PXRMP_FORCE_INLINE
+std::vector<std::pair<picsar::multi_physics::vec3<_REAL>, _REAL>>
+picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
+ generate_photons_and_update_momentum(
+_REAL& px, _REAL& py, _REAL& pz,
+_REAL ex, _REAL ey, _REAL ez,
+_REAL bx, _REAL by, _REAL bz,
+_REAL weight, size_t sampling)
+{
+    std::vector<std::pair<vec3<_REAL>, _REAL>> photons(sampling);
+
+    _REAL chi_part = chi_lepton(px, py, pz, ex, ey, ez, bx, by, bz, lambda);
+
+    auto frac = aux_table.ref_coords();
+
+    //if chi < chi_min: chi = chi_min for cumulative distribution
+    if(chi_part < qs_ctrl.chi_part_tem_min){
+        for(size_t i = 0; i < frac.size(); i++){
+            aux_table.ref_data()[i] =
+            cum_distrib_table.data_at_coords(0, i);
+        }
+    }
+    //if chi > chi_max: chi = chi_max for cumulative distribution
+    else if(chi_part < qs_ctrl.chi_part_tem_max){
+        for(size_t i = 0; i < frac.size(); i++){
+            aux_table.ref_data()[i] =
+            cum_distrib_table.data_at_coords(qs_ctrl.chi_part_tem_how_many, i);
+        }
+    }
+    //Interpolate 1D cumulative distribution
+    else{
+        for(size_t i = 0; i < frac.size(); i++){
+            aux_table.ref_data()[i] =
+            cum_distrib_table.interp_linear_first(chi_part, i);
+        }
+    }
+
+    _REAL new_weight = weight/sampling;
+
+    _REAL me_c = static_cast<_REAL>(__emass*__c);
+
+    vec3<_REAL> p_part{px, py, pz};
+    _REAL norm_part = norm(p_part);
+    vec3<_REAL> n_part = p_part/norm_part;
+    _REAL gamma_part = norm_part/me_c;
+
+    _REAL one_over_sampling = one/sampling;
+
+    for(size_t s = 0; s < sampling; s++){
+        _REAL prob = rng.unf(zero, one);
+
+        _REAL chi_phot = aux_table.interp_linear(prob);
+
+        _REAL gamma_phot = chi_phot/chi_part*(gamma_part-one);
+
+        vec3<_REAL>  p_phot = gamma_phot * n_part * me_c;
+
+        photons[s] = std::make_pair(p_phot, new_weight);
+
+        //Update particle momentum
+        px -= p_phot[0]*one_over_sampling;
+        py -= p_phot[1]*one_over_sampling;
+        pz -= p_phot[2]*one_over_sampling;
+    }
+
+    return photons;
+}
+
 
 
 //Write total cross section table to disk
@@ -383,8 +514,17 @@ write_dN_dt_table(std::string filename)
     of.close();
 }
 
-//Write cumulative_pair_table to disk
-//void write_cumulative_pair_table(std::string filename);
+//Write cumulative photon emission rate to disk
+template<typename _REAL, class _RNDWRAP>
+void
+picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
+write_cumulative_phot_em_table(std::string filename)
+{
+    std::ofstream of;
+    of.open(filename, std::ios::binary);
+    cum_distrib_table.write_on_stream_bin(of);
+    of.close();
+}
 
 //Read total cross section table from disk (Warning,
 //qs_ctrl is not changed in current implementation)
@@ -397,6 +537,22 @@ read_dN_dt_table(std::string filename)
     iif.open(filename, std::ios::binary);
     KKfunc_table.read_from_stream_bin(iif);
     iif.close();
+}
+
+//Read cumulative photon emission rate to disk (Warning,
+//qs_ctrl is not changed in current implementation)
+template<typename _REAL, class _RNDWRAP>
+void
+picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
+read_cumulative_phot_em_table(std::string filename)
+{
+    std::ifstream iif;
+    iif.open(filename, std::ios::binary);
+    cum_distrib_table.read_from_stream_bin(iif);
+    iif.close();
+
+    aux_table = lookup_1d<_REAL>{cum_distrib_table.get_coords()[1],
+    std::vector<_REAL>(qs_ctrl.chi_frac_tem_how_many)};
 }
 
 
@@ -427,6 +583,45 @@ compute_KK_default_lookup_table(std::ostream* stream)
     std::transform(KK_vals.begin(), KK_vals.end(), KK_vals.begin(), logfun);
 
     KKfunc_table = lookup_1d<_REAL>{KK_coords, KK_vals};
+}
+
+//Internal function to compute photon emission table
+//(accepts pointer to ostream for diag)
+template<typename _REAL, class _RNDWRAP>
+void picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
+compute_phot_em_default_lookup_table(std::ostream* stream)
+{
+    //Prepare the chi_coords vector
+    std::vector<_REAL> chi_coords = generate_log_spaced_vec(
+     qs_ctrl.chi_part_tem_min, qs_ctrl.chi_part_tem_max,
+    qs_ctrl.chi_part_tem_how_many);
+
+    std::vector<_REAL> frac_coords = generate_lin_spaced_vec(zero, one,
+    qs_ctrl.chi_frac_tem_how_many);
+
+    std::vector<_REAL> pair_vals{};
+
+    msg("Computing table for photon emission...\n", stream);
+
+    for(auto chi_part: chi_coords){
+        pair_vals.push_back(zero);
+        msg("chi_part: " + std::to_string(chi_part) + " \n", stream);
+        for(size_t i = 1; i < frac_coords.size() - 1; i++){
+            _REAL temp = compute_cumulative_phot_em(
+                chi_part, chi_part*frac_coords[i]);
+            pair_vals.push_back(temp);
+        }
+        pair_vals.push_back(one); //The function is symmetric
+    }
+    msg("...done!\n", stream);
+
+    cum_distrib_table = lookup_2d<_REAL>{
+        std::array<std::vector<_REAL>,2>{chi_coords, frac_coords}, pair_vals};
+
+
+    //Initialize the auxiliary table
+    aux_table = lookup_1d<_REAL>{cum_distrib_table.get_coords()[1],
+    std::vector<_REAL>(qs_ctrl.chi_frac_tem_how_many)};
 }
 
 //Function to compute y (Warning: it doesn't chek if chi_ele != 0 or
@@ -483,7 +678,7 @@ compute_KK_function(_REAL chi_part) const
             return compute_KK_integrand(chi_phot, chi_part);
     };
 
-    return quad_a_b<_REAL>(func, qs_ctrl.chi_phot_min, chi_part);
+    return quad_a_b<_REAL>(func, zero, chi_part);
 }
 
 

@@ -479,19 +479,19 @@ _REAL weight, size_t sampling)
             cum_distrib_table.data_at_coords(0, i);
         }
     }
-
     //if chi > chi_max: chi = chi_max for cumulative distribution
-    if(chi_phot < bw_ctrl.chi_phot_tpair_max){
+    else if(chi_phot > bw_ctrl.chi_phot_tpair_max){
         for(size_t i = 0; i < frac.size(); i++){
             aux_table.ref_data()[i] =
             cum_distrib_table.data_at_coords(bw_ctrl.chi_phot_tpair_how_many, i);
         }
     }
-
     //Interpolate 1D cumulative distribution
-    for(size_t i = 0; i < frac.size(); i++){
-        aux_table.ref_data()[i] =
-        cum_distrib_table.interp_linear_first(chi_phot, i);
+    else{
+        for(size_t i = 0; i < frac.size(); i++){
+            aux_table.ref_data()[i] =
+            cum_distrib_table.interp_linear_first(chi_phot, i);
+        }
     }
 
     _REAL new_weight = weight/sampling;

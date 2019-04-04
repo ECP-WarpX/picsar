@@ -139,6 +139,7 @@ namespace picsar{
 //######################## Enumerator of all the possible lookup table styles###
     enum tdndt_table_style {tdnt_style_default};
     enum tpair_table_style {tpair_style_default};
+    enum tem_table_style {tem_style_default};
 //##############################################################################
 
 
@@ -187,30 +188,30 @@ namespace picsar{
 
 //# Default values for the parameters of Quantum synchrotron engine ############
 
-    //Minimum chi for photons and particles to be considered by the engine
-    //__quantum_synchrotron_min_chi_part must be >
-    //__quantum_synchrotron_min_chi_phot
+    //Minimum chi for particles to be considered by the engine
 
-    const double __quantum_synchrotron_min_chi_part = 0.001;
-    const double __quantum_synchrotron_min_chi_phot = 0.0001;
+    const double __quantum_synchrotron_min_chi_part = 0.0001;
 
     // dN/dt table:
 
     // TO_WRITE
-    const double __quantum_synchrotron_min_tdndt_chi_part = 0.1;//Min chi_part
+    const double __quantum_synchrotron_min_tdndt_chi_part = 0.0001;//Min chi_part
     const double __quantum_synchrotron_max_tdndt_chi_part = 200.0;//Max chi_part
     //How many points
-    const size_t __quantum_synchrotron_how_many_tdndt_chi_part = 30;
+    const size_t __quantum_synchrotron_how_many_tdndt_chi_part = 50;
     //Table syle for photon emission rate
     const tdndt_table_style __quantum_synchrotron_dndt_table_style =
     tdnt_style_default;
 
     // Photon emission table:
-    const double __quantum_synchrotron_min_tem_chi_part = 0.01; //Min chi_part
+    const double __quantum_synchrotron_min_tem_chi_part = 0.0001; //Min chi_part
     const double __quantum_synchrotron_max_tem_chi_part = 200.0; //Max chi_part
-    const size_t __quantum_synchrotron_how_many_tpair_chi_part = 30; //How many points
+    const size_t __quantum_synchrotron_how_many_tem_chi_part = 50; //How many points
 
+    const size_t __quantum_synchrotron_chi_frac_tem_how_many = 50;
 
+    const tem_table_style __quantum_synchrotron_tem_table_style =
+      tem_style_default;
 // -------
 
 
