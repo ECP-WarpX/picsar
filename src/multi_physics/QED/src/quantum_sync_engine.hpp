@@ -113,6 +113,25 @@ namespace picsar{
          _REAL bx, _REAL by, _REAL bz,
          _REAL dt, _REAL& opt_depth) const;
 
+         //Computes the cumulative photon emission rate given
+         //chi_phot and chi_part
+         PXRMP_FORCE_INLINE
+         _REAL compute_cumulative_phot_em(_REAL chi_phot, _REAL chi_part) const;
+
+         //Write total cross section table to disk
+         void write_dN_dt_table(std::string filename);
+
+         //Write cumulative_pair_table to disk
+         //void write_cumulative_pair_table(std::string filename);
+
+         //Read total cross section table from disk (Warning,
+         //qs_ctrl is not changed in current implementation)
+         void read_dN_dt_table(std::string filename);
+
+         //Read cumulative_pair_table table from disk (Warning,
+         //breit_wheeler_engine_ctrl is not changed in current implementation)
+         //void read_cumulative_pair_table(std::string filename);
+
 
      private:
          _REAL lambda;
@@ -334,6 +353,50 @@ _REAL dt, _REAL& opt_depth) const
         return std::make_pair(true, dt_phot);
     }
 
+}
+
+//Computes the cumulative photon emission rate given
+//chi_phot and chi_part
+template<typename _REAL, class _RNDWRAP>
+PXRMP_FORCE_INLINE
+_REAL
+picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
+compute_cumulative_phot_em(_REAL chi_phot, _REAL chi_part) const
+{
+    auto func = [this, chi_part](_REAL chi_phot){
+        return compute_KK_integrand(chi_phot, chi_part);
+    };
+   _REAL num = quad_a_b<_REAL>(func, qs_ctrl.chi_phot_min, chi_phot);
+   return num/compute_KK_function(chi_part) ;
+}
+
+
+//Write total cross section table to disk
+template<typename _REAL, class _RNDWRAP>
+void
+picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
+write_dN_dt_table(std::string filename)
+{
+    std::ofstream of;
+    of.open(filename, std::ios::binary);
+    KKfunc_table.write_on_stream_bin(of);
+    of.close();
+}
+
+//Write cumulative_pair_table to disk
+//void write_cumulative_pair_table(std::string filename);
+
+//Read total cross section table from disk (Warning,
+//qs_ctrl is not changed in current implementation)
+template<typename _REAL, class _RNDWRAP>
+void
+picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
+read_dN_dt_table(std::string filename)
+{
+    std::ifstream iif;
+    iif.open(filename, std::ios::binary);
+    KKfunc_table.read_from_stream_bin(iif);
+    iif.close();
 }
 
 

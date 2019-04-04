@@ -136,9 +136,9 @@ namespace picsar{
          _REAL dt, _REAL& opt_depth) const;
 
          //Computes the cumulative pair production rate given
-         //chi_phot and chi_ele
+         //chi_phot and chi_part
          PXRMP_FORCE_INLINE
-         _REAL compute_cumulative_pair (_REAL chi_phot, _REAL chi_ele) const;
+         _REAL compute_cumulative_pair (_REAL chi_phot, _REAL chi_part) const;
 
          //Computes the cumulative pair production rate lookup table
          void compute_cumulative_pair_table (std::ostream* stream = nullptr);
@@ -415,6 +415,21 @@ _REAL dt, _REAL& opt_depth) const
         return std::make_pair(true, dt_prod);
     }
 }
+
+//Computes the cumulative pair production rate given
+//chi_phot and chi_part
+template<typename _REAL, class _RNDWRAP>
+PXRMP_FORCE_INLINE
+_REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+compute_cumulative_pair(_REAL chi_phot, _REAL chi_part) const
+{
+    auto func = [this, chi_phot](_REAL chi_part){
+        return compute_TT_integrand(chi_phot, chi_part);
+    };
+   _REAL num = quad_a_b<_REAL>(func, zero, chi_part);
+   return num/compute_TT_function(chi_phot) ;
+}
+
 
 
 template<typename _REAL, class _RNDWRAP>
@@ -702,19 +717,6 @@ compute_TT_function(_REAL chi_phot) const
     return quad_a_b<_REAL>(func, zero, chi_phot);
 }
 
-//Computes the cumulative pair production rate given
-//chi_phot and chi_ele
-template<typename _REAL, class _RNDWRAP>
-PXRMP_FORCE_INLINE
-_REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
-compute_cumulative_pair(_REAL chi_phot, _REAL chi_ele) const
-{
-    auto func = [this, chi_phot](_REAL chi_ele){
-        return compute_TT_integrand(chi_phot, chi_ele);
-    };
-   _REAL num = quad_a_b<_REAL>(func, zero, chi_ele);
-   return num/compute_TT_function(chi_phot) ;
-}
 
 
 #endif //__PICSAR_MULTIPHYSICS_BREIT_WHEELER_ENGINE__

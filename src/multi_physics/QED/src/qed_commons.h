@@ -187,21 +187,30 @@ namespace picsar{
 
 //# Default values for the parameters of Quantum synchrotron engine ############
 
-//Minimum chi for photons and particles to be considered by the engine
-//__quantum_synchrotron_min_chi_part must be > __quantum_synchrotron_min_chi_phot
-const double __quantum_synchrotron_min_chi_part = 0.001;
-const double __quantum_synchrotron_min_chi_phot = 0.0001;
+    //Minimum chi for photons and particles to be considered by the engine
+    //__quantum_synchrotron_min_chi_part must be >
+    //__quantum_synchrotron_min_chi_phot
 
-// dN/dt table:
+    const double __quantum_synchrotron_min_chi_part = 0.001;
+    const double __quantum_synchrotron_min_chi_phot = 0.0001;
 
-// TO_WRITE
-const double __quantum_synchrotron_min_tdndt_chi_part = 0.1;//Min chi_part
-const double __quantum_synchrotron_max_tdndt_chi_part = 200.0;//Max chi_part
-//How many points
-const size_t __quantum_synchrotron_how_many_tdndt_chi_part = 30;
-//Table syle for photon emission rate
-const tdndt_table_style __quantum_synchrotron_dndt_table_style =
-  tdnt_style_default;
+    // dN/dt table:
+
+    // TO_WRITE
+    const double __quantum_synchrotron_min_tdndt_chi_part = 0.1;//Min chi_part
+    const double __quantum_synchrotron_max_tdndt_chi_part = 200.0;//Max chi_part
+    //How many points
+    const size_t __quantum_synchrotron_how_many_tdndt_chi_part = 30;
+    //Table syle for photon emission rate
+    const tdndt_table_style __quantum_synchrotron_dndt_table_style =
+    tdnt_style_default;
+
+    // Photon emission table:
+    const double __quantum_synchrotron_min_tem_chi_part = 0.01; //Min chi_part
+    const double __quantum_synchrotron_max_tem_chi_part = 200.0; //Max chi_part
+    const size_t __quantum_synchrotron_how_many_tpair_chi_part = 30; //How many points
+
+
 // -------
 
 
