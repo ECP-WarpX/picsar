@@ -324,6 +324,8 @@ interp_dN_dt(_REAL energy_part, _REAL chi_part) const
         lambda*one/(energy_part*chi_part);
 
 
+
+
     _REAL KK = zero;
 
     //If chi is out of table, use the first (or the last) value
@@ -334,6 +336,7 @@ interp_dN_dt(_REAL energy_part, _REAL chi_part) const
     else if(chi_part >= qs_ctrl.chi_part_tdndt_max){
         chi_part = qs_ctrl.chi_part_tdndt_max ;
     }
+
 
     //Other table styles are not currently implemented
     if(qs_ctrl.tdndt_style == tdnt_style_default)
@@ -379,6 +382,8 @@ _REAL dt, _REAL& opt_depth) const
         err("dndt lookup table not initialized!\n");
         dndt = compute_dN_dt(energy, chi);
     }
+
+
 
     opt_depth -= dndt*dt;
 
@@ -608,8 +613,9 @@ compute_phot_em_default_lookup_table(std::ostream* stream)
         msg("chi_part: " + std::to_string(chi_part) + " \n", stream);
         for(size_t i = 1; i < frac_coords.size() - 1; i++){
             _REAL temp = compute_cumulative_phot_em(
-                chi_part, chi_part*frac_coords[i]);
+                chi_part*frac_coords[i], chi_part);
             pair_vals.push_back(temp);
+
         }
         pair_vals.push_back(one); //The function is symmetric
     }
@@ -651,7 +657,7 @@ PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
 compute_KK_integrand(_REAL chi_phot, _REAL chi_part) const
 {
-    if (chi_part == zero)
+    if (chi_part == zero || chi_phot == zero)
         return zero;
 
     _REAL y = compute_y(chi_phot, chi_part);
@@ -662,7 +668,7 @@ compute_KK_integrand(_REAL chi_phot, _REAL chi_part) const
 
     _REAL coeff = one/static_cast<_REAL>(pi*sqrt(three));
 
-    return (inner - part_2)*coeff;
+    return -(inner - part_2)*coeff;
 }
 
 template<typename _REAL, class _RNDWRAP>
