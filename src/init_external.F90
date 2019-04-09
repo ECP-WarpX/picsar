@@ -131,6 +131,121 @@ MODULE link_external_tools
     IF(rank==0) PRINT*, 'END INIT EXTERNAL'
   END SUBROUTINE init_params_external
 
+
+  SUBROUTINE init_params_external_RZ(n1,n2,n3,d2,d3,dtt,ng2,ng3,nor2,nor3,is_spec,&
+      field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11, cdim) &
+      BIND(C,name='init_params_picsar_RZ')
+    USE fastfft
+    USE fields, ONLY: bl_c, br_c,bt_c, bl_f, bp_f, bm_f, bl_h, bm_h, bp_h, bl_h_inv, bm_h_inv, bp_h_inv,  &
+      el_c, er_c,et_c, el_f, ep_f, em_f, el_h, em_h, ep_h, el_h_inv, em_h_inv, ep_h_inv,  &
+      jl_c, jr_c,jt_c, jl_f, jp_f, jm_f, jl_h, jm_h, jp_h,  &
+      l_spectral, l_staggered, l_AM_RZ, norderx, nordery, nxguards, nyguards,        &
+      rho_r, rhof, rhoold_r, rhooldf, xcoeffs, ycoeffs, zcoeffs
+#if defined(FFTW)
+    USE fourier_psaotd
+    USE hankel 
+#endif
+    USE iso_c_binding
+    USE params, ONLY: dt
+    USE picsar_precision, ONLY: idp, isp, lp
+    USE shared_data, ONLY: c_dim, dx, dy, fftw_hybrid, fftw_mpi_transpose,       &
+      fftw_threads_ok, fftw_with_mpi, nkx, nky, nx, ny, nmodes, p3dfft_flag,        &
+      p3dfft_stride, rank
+    IMPLICIT NONE
+    INTEGER(C_INT) , INTENT(IN) :: n1,n2,n3,ng2,ng3,nor2,nor3,cdim
+    REAL(C_DOUBLE) , INTENT(INOUT), TARGET , DIMENSION(-ng3:n3+ng3,-ng2:n2+ng2,0:n1-1) :: &
+        field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11
+    REAL(C_DOUBLE) , INTENT(IN) ::d1,d2,dtt
+    INTEGER(idp) :: imn, imx, jmn, jmx, kmn, kmx
+    LOGICAL(C_BOOL)   , INTENT(IN)   :: is_spec
+    LOGICAL(lp)                      :: l_stg
+    INTEGER(isp)                     :: iret
+
+    IF(rank==0) PRINT*, 'BEGIN INIT EXTERNAL'
+    l_spectral  = LOGICAL(is_spec,lp)
+    fftw_with_mpi = .FALSE.
+    fftw_hybrid = .FALSE.
+    fftw_mpi_transpose = .FALSE.
+    l_staggered = .FALSE.
+    fftw_threads_ok = .FALSE.
+    l_AM_RZ= .TRUE.
+    CALL DFFTW_INIT_THREADS(iret)
+    fftw_threads_ok = .TRUE.
+    p3dfft_flag = .FALSE.
+    p3dfft_stride = .FALSE.
+    c_dim = INT(cdim,idp)
+    nx = INT(n3,idp)
+    ny = INT(n2,idp)
+    nmodes = INT(n1,idp)
+    nxguards = INT(ng3,idp)
+    nyguards = INT(ng2,idp)
+    dx = d3
+    dy = d2
+    dt = dtt
+    norderx = INT(nor3,idp)
+    nordery = INT(nor2,idp)
+
+      
+   IF ((l_spectral) .AND. (l_AM_RZ)) THEN 
+      el_c => field3
+      er_c => field2
+      et_c => field1
+      bl_c => field6
+      br_c => field5
+      bt_c => field4
+
+      jl_c => field9
+      jr_c => field8
+      jt_c => field7
+      rho_c =>field10
+      rhoold_c =>field11
+
+      nkx=(2*nxguards+nx+1)! Real To Complex Transform
+      nky=(2*nyguards+ny+1)
+      nkz=nmodes
+
+      IF(.NOT. ASSOCIATED(el_f)) ALLOCATE(el_f(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(em_f)) ALLOCATE(em_f(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(ep_f)) ALLOCATE(ep_f(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(bl_f)) ALLOCATE(bl_f(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(bm_f)) ALLOCATE(bm_f(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(bp_f)) ALLOCATE(bp_f(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(jl_f)) ALLOCATE(jl_f(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(jm_f)) ALLOCATE(jm_f(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(jp_f)) ALLOCATE(jp_f(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(rho_f)) ALLOCATE(rho_f(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(rhoold_f)) ALLOCATE(rhoold_f(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(el_h)) ALLOCATE(el_h(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(em_h)) ALLOCATE(em_h(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(ep_h)) ALLOCATE(ep_h(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(bl_h)) ALLOCATE(bl_h(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(bm_h)) ALLOCATE(bm_h(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(bp_h)) ALLOCATE(bp_h(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(jl_h)) ALLOCATE(jl_h(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(jm_h)) ALLOCATE(jm_h(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(jp_h)) ALLOCATE(jp_h(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(rho_h)) ALLOCATE(rho_h(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(rhoold_h)) ALLOCATE(rhoold_h(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(el_h_inv)) ALLOCATE(el_h_inv(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(em_h_inv)) ALLOCATE(em_h_inv(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(ep_h_inv)) ALLOCATE(ep_h_inv(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(bl_h_inv)) ALLOCATE(bl_h_inv(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(bm_h_inv)) ALLOCATE(bm_h_inv(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(bp_h_inv)) ALLOCATE(bp_h_inv(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(jl_h_inv)) ALLOCATE(jl_h_inv(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(jm_h_inv)) ALLOCATE(jm_h_inv(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(jp_h_inv)) ALLOCATE(jp_h_inv(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(rho_h_inv)) ALLOCATE(rho_h_inv(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(rhoold_h_inv)) ALLOCATE(rhoold_h_inv(nkx, nky, nkz))
+    ENDIF
+
+   IF((l_spectral) .AND. (l_AM_RZ)) THEN CALL init_plans_blocks
+    IF(rank==0) PRINT*, 'END INIT EXTERNAL'
+  END SUBROUTINE init_params_external_RZ
+
+
+
+
   SUBROUTINE evec3d_push_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, dt, dtsdx,  &
   dtsdy, dtsdz, nx, ny, nz, norderx, nordery, norderz, nxguard, nyguard,nzguard)
   USE omp_lib
