@@ -311,6 +311,143 @@ END SUBROUTINE pxrpush_em2d_evec
 
 ! ________________________________________________________________________________________
 !> @brief
+!> Push electric field Yee RZ order 2
+!> This subroutine is general enough to be called by AMReX.
+!> OMP pragmas are ignored when compiled for WarpX.
+!
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
+!> Weiqun Zhang
+!> Jean-Luc Vay
+!> Maxence Thevenet
+!> David Grote
+
+!> @date
+!> Creation 2019
+! ________________________________________________________________________________________
+subroutine pxrpush_emrz_evec( &
+     xlo, xhi, ylo, yhi, zlo, zhi, &
+     Er, erlo, erhi, &
+     Et, etlo, ethi, &
+     Ez, ezlo, ezhi, &
+     Br, brlo, brhi, &
+     Bt, btlo, bthi, &
+     Bz, bzlo, bzhi, &
+     Jr, jrlo, jrhi, &
+     Jt, jtlo, jthi, &
+     Jz, jzlo, jzhi, &
+     mudt, dtsdx, dtsdy, dtsdz, rmin, dr)
+     USE picsar_precision, ONLY: idp, isp, num
+
+
+#ifdef WARPX
+  integer(isp), intent(in) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
+       erlo(2),erhi(2),etlo(2),ethi(2),ezlo(2),ezhi(2),&
+       brlo(2),brhi(2),btlo(2),bthi(2),bzlo(2),bzhi(2),&
+       jrlo(2),jrhi(2),jtlo(2),jthi(2),jzlo(2),jzhi(2)
+#else
+  integer(idp), intent(in) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
+       erlo(2),erhi(2),etlo(2),ethi(2),ezlo(2),ezhi(2),&
+       brlo(2),brhi(2),btlo(2),bthi(2),bzlo(2),bzhi(2),&
+       jrlo(2),jrhi(2),jtlo(2),jthi(2),jzlo(2),jzhi(2)
+#endif
+  real(num), intent(IN OUT):: Er(erlo(1):erhi(1),erlo(2):erhi(2))
+  real(num), intent(IN OUT):: Et(etlo(1):ethi(1),etlo(2):ethi(2))
+  real(num), intent(IN OUT):: Ez(ezlo(1):ezhi(1),ezlo(2):ezhi(2))
+
+  real(num), intent(IN):: Br(brlo(1):brhi(1),brlo(2):brhi(2))
+  real(num), intent(IN):: Bt(btlo(1):bthi(1),btlo(2):bthi(2))
+  real(num), intent(IN):: Bz(bzlo(1):bzhi(1),bzlo(2):bzhi(2))
+
+  real(num), intent(IN):: Jr(jrlo(1):jrhi(1),jrlo(2):jrhi(2))
+  real(num), intent(IN):: Jt(jtlo(1):jthi(1),jtlo(2):jthi(2))
+  real(num), intent(IN):: Jz(jzlo(1):jzhi(1),jzlo(2):jzhi(2))
+
+  real(num), intent(IN) :: mudt,dtsdx,dtsdy,dtsdz,rmin,dr
+
+  integer :: j,k
+
+  real(num) :: ru, rd
+
+  ! dtsdy should not be used.
+
+#ifndef WARPX
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j, ru, rd), &
+  !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, mudt, dtsdx, dtsdz, rmin, dr), &
+  !$OMP SHARED(Er, Et, Ez, Br, Bt, Bz, Jr, Jt, Jz)
+  !$OMP DO COLLAPSE(2)
+#endif
+!$acc parallel deviceptr(Er,Bt,Jr)
+!$acc loop gang vector collapse(2)
+  do k   = xlo(2), xhi(2)
+    do j = xlo(1), xhi(1)
+      Er(j,k) = Er(j,k) - dtsdz * (Bt(j,k) - Bt(j,k-1)) &
+                        - mudt  * Jr(j,k)
+    end do
+  end do
+!$acc end loop
+!$acc end parallel
+#ifndef WARPX
+  !$OMP END DO
+  !$OMP DO COLLAPSE(2)
+#endif
+!$acc parallel deviceptr(Et,Bz,Br,Jt)
+!$acc loop gang vector collapse(2)
+  do k   = ylo(2), yhi(2)
+    do j = ylo(1), yhi(1)
+      if (j /= 0) &
+      Et(j,k) = Et(j,k) - dtsdx * (Bz(j,k) - Bz(j-1,k)) &
+                        + dtsdz * (Br(j,k) - Br(j,k-1)) &
+                        - mudt  * Jt(j,k)
+    end do
+    if (rmin /= 0. .and. ylo(1) <= 0 .and. 0 <= yhi(1)) then
+      j = 0
+      Et(j,k) = Et(j,k) - dtsdx * (Bz(j,k) - Bz(j-1,k)) &
+                        + dtsdz * (Br(j,k) - Br(j,k-1)) &
+                        - mudt  * Jt(j,k)
+    end if
+  end do
+!$acc end loop
+!$acc end parallel
+#ifndef WARPX
+  !$OMP END DO
+  !$OMP DO COLLAPSE(2)
+#endif
+!$acc parallel deviceptr(Ez,Bt,Jz)
+!$acc loop gang vector collapse(2)
+  do k   = zlo(2), zhi(2)
+    do j = zlo(1), zhi(1)
+      if (j /= 0) then
+        ru = 1. + 0.5/(rmin/dr + j)
+        rd = 1. - 0.5/(rmin/dr + j)
+        Ez(j,k) = Ez(j,k) + dtsdx * (ru*Bt(j,k) - rd*Bt(j-1,k)) &
+                          - mudt  * Jz(j,k)
+      end if
+    end do
+    if (zlo(1) <= 0 .and. 0 <= zhi(1)) then
+      j = 0
+      if (rmin == 0.) then
+        Ez(j,k) = Ez(j,k) + 4.*dtsdx * Bt(j,k) &
+                          - mudt  * Jz(j,k)
+      else
+        ru = 1. + 0.5/(rmin/dr)
+        rd = 1. - 0.5/(rmin/dr)
+        Ez(j,k) = Ez(j,k) + dtsdx * (ru*Bt(j,k) - rd*Bt(j-1,k)) &
+                          - mudt  * Jz(j,k)
+      end if
+    end if
+  end do
+!$acc end loop
+!$acc end parallel
+#ifndef WARPX
+  !$OMP END DO
+  !$OMP END PARALLEL
+#endif
+end subroutine pxrpush_emrz_evec
+
+! ________________________________________________________________________________________
+!> @brief
 !> Push electric field Yee 3D order 2
 !> This SUBROUTINE is general enough to be called by AMReX.
 !> OMP pragmas are ignored when compiled for WarpX.
@@ -683,6 +820,113 @@ USE picsar_precision, ONLY: idp, isp, num
   !$OMP END PARALLEL
 #endif
 END SUBROUTINE pxrpush_em2d_bvec
+
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine pushes the magnetic field with the RZ Yee FDTD
+!> scheme (order 2).
+!> This subroutine is general enough to be called by AMReX.
+!> OMP pragmas are ignored when compiled for WarpX.
+!> regions.
+!
+!> @author
+!> Henri Vincenti
+!> Mathieu Lobet
+!> Weiqun Zhang
+!> Jean-Luc Vay
+!> Maxence Thevenet
+!> David Grote
+!
+!> @date
+!> Creation 2019
+! ________________________________________________________________________________________
+subroutine pxrpush_emrz_bvec( &
+     xlo, xhi, ylo, yhi, zlo, zhi, &
+     Er, erlo, erhi,&
+     Et, etlo, ethi, &
+     Ez, ezlo, ezhi, &
+     Br, brlo, brhi, &
+     Bt, btlo, bthi, &
+     Bz, bzlo, bzhi, &
+     dtsdr,dtsdt,dtsdz,rmin,dr)
+USE picsar_precision, ONLY: idp, isp, num
+! ______________________________________________________________________________
+
+
+#ifdef WARPX
+  integer(isp) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
+       erlo(2),erhi(2),etlo(2),ethi(2),ezlo(2),ezhi(2),&
+       brlo(2),brhi(2),btlo(2),bthi(2),bzlo(2),bzhi(2)
+#else
+  integer(idp) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
+       erlo(2),erhi(2),etlo(2),ethi(2),ezlo(2),ezhi(2),&
+       brlo(2),brhi(2),btlo(2),bthi(2),bzlo(2),bzhi(2)
+#endif
+  real(num), intent(IN):: Er(erlo(1):erhi(1),erlo(2):erhi(2))
+  real(num), intent(IN):: Et(etlo(1):ethi(1),etlo(2):ethi(2))
+  real(num), intent(IN):: Ez(ezlo(1):ezhi(1),ezlo(2):ezhi(2))
+
+  real(num), intent(INOUT):: Br(brlo(1):brhi(1),brlo(2):brhi(2))
+  real(num), intent(INOUT):: Bt(btlo(1):bthi(1),btlo(2):bthi(2))
+  real(num), intent(INOUT):: Bz(bzlo(1):bzhi(1),bzlo(2):bzhi(2))
+
+  real(num), intent(IN) :: dtsdr,dtsdt,dtsdz,rmin,dr
+
+  integer :: j,k
+
+  real(num) :: ru, rd
+
+  ! dtsdt should not be used.
+
+#ifndef WARPX
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j, ru, rd), &
+  !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdr, dtsdz, rmin, dr), &
+  !$OMP SHARED(Er, Et, Ez, Br, Bt, Bz)
+  !$OMP DO COLLAPSE(2)
+#endif
+!$acc parallel deviceptr(Br,Et)
+!$acc loop gang vector collapse(2)
+  do k   = xlo(2), xhi(2)
+    do j = xlo(1), xhi(1)
+        Br(j,k) = Br(j,k) + dtsdz * (Et(j  ,k+1) - Et(j,k))
+    end do
+  end do
+!$acc end loop
+!$acc end parallel
+#ifndef WARPX
+  !$OMP END DO
+  !$OMP DO COLLAPSE(2)
+#endif
+!$acc parallel deviceptr(Bt,Ez,Er)
+!$acc loop gang vector collapse(2)
+  do k   = ylo(2), yhi(2)
+    do j = ylo(1), yhi(1)
+        Bt(j,k) = Bt(j,k) + dtsdr * (Ez(j+1,k  ) - Ez(j,k)) &
+                          - dtsdz * (Er(j  ,k+1) - Er(j,k))
+    end do
+  end do
+!$acc end loop
+!$acc end parallel
+#ifndef WARPX
+  !$OMP END DO
+  !$OMP DO COLLAPSE(2)
+#endif
+!$acc parallel deviceptr(Bz,Et)
+!$acc loop gang vector collapse(2)
+  do k   = zlo(2), zhi(2)
+    do j = zlo(1), zhi(1)
+      ru = 1. + 0.5/(rmin/dr + j + 0.5)
+      rd = 1. - 0.5/(rmin/dr + j + 0.5)
+      Bz(j,k) = Bz(j,k) - dtsdr * (ru*Et(j+1,k  ) - rd*Et(j,k))
+    end do
+  end do
+!$acc end loop
+!$acc end parallel
+#ifndef WARPX
+  !$OMP END DO
+  !$OMP END PARALLEL
+#endif
+end subroutine pxrpush_emrz_bvec
 
 ! ________________________________________________________________________________________
 !> @brief
