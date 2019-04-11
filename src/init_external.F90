@@ -132,8 +132,8 @@ MODULE link_external_tools
   END SUBROUTINE init_params_external
 
 
-  SUBROUTINE init_params_external_RZ(n1,n2,n3,d2,d3,dtt,ng2,ng3,nor2,nor3,is_spec,&
-      field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11, cdim) &
+  SUBROUTINE init_params_external_RZ(nr, nl,nmdoes, imode,dr,dl,dtt,ngr,ngl,norr,norl,&
+      field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11) &
       BIND(C,name='init_params_picsar_RZ')
     USE fastfft
     USE fields, ONLY: bl_c, br_c,bt_c, bl_f, bp_f, bm_f, bl_h, bm_h, bp_h, bl_h_inv, bm_h_inv, bp_h_inv,  &
@@ -153,7 +153,7 @@ MODULE link_external_tools
       p3dfft_stride, rank
     IMPLICIT NONE
     INTEGER(C_INT) , INTENT(IN) :: n1,n2,n3,ng2,ng3,nor2,nor3,cdim
-    REAL(C_DOUBLE) , INTENT(INOUT), TARGET , DIMENSION(-ng3:n3+ng3,-ng2:n2+ng2,0:n1-1) :: &
+    COMPLEX(C_DOUBLE) , INTENT(INOUT), TARGET , DIMENSION(-ng3:n3+ng3,-ng2:n2+ng2) :: &
         field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11
     REAL(C_DOUBLE) , INTENT(IN) ::d1,d2,dtt
     INTEGER(idp) :: imn, imx, jmn, jmx, kmn, kmx
@@ -169,36 +169,38 @@ MODULE link_external_tools
     l_staggered = .FALSE.
     fftw_threads_ok = .FALSE.
     l_AM_RZ= .TRUE.
+    l_spectral= .TRUE.
+    C_DIM= 3
     CALL DFFTW_INIT_THREADS(iret)
     fftw_threads_ok = .TRUE.
     p3dfft_flag = .FALSE.
     p3dfft_stride = .FALSE.
     c_dim = INT(cdim,idp)
-    nx = INT(n3,idp)
-    ny = INT(n2,idp)
-    nmodes = INT(n1,idp)
-    nxguards = INT(ng3,idp)
-    nyguards = INT(ng2,idp)
-    dx = d3
-    dy = d2
+    nx = INT(nr,idp)
+    ny = INT(nl,idp)
+    nmodes = INT(nmodes,idp)
+    nxguards = INT(ngr,idp)
+    nyguards = INT(ngl,idp)
+    dx = dr
+    dy = dl
     dt = dtt
-    norderx = INT(nor3,idp)
-    nordery = INT(nor2,idp)
+    norderx = INT(norr,idp)
+    nordery = INT(norl,idp)
 
       
    IF ((l_spectral) .AND. (l_AM_RZ)) THEN 
-      el_c => field3
-      er_c => field2
-      et_c => field1
-      bl_c => field6
-      br_c => field5
-      bt_c => field4
+      el_c[:,:,imode] => field3
+      er_c[:,:,imode] => field2
+      et_c[:,:,imode] => field1
+      bl_c[:,:,imode] => field6
+      br_c[:,:,imode] => field5
+      bt_c[:,:,imode] => field4
 
-      jl_c => field9
-      jr_c => field8
-      jt_c => field7
-      rho_c =>field10
-      rhoold_c =>field11
+      jl_c[:,:,imode] => field9
+      jr_c[:,:,imode] => field8
+      jt_c[:,:,imode] => field7
+      rho_c[:,:,imode] =>field10
+      rhoold_c[:,:,imode] =>field11
 
       nkx=(2*nxguards+nx+1)! Real To Complex Transform
       nky=(2*nyguards+ny+1)
@@ -239,7 +241,7 @@ MODULE link_external_tools
       IF(.NOT. ASSOCIATED(rhoold_h_inv)) ALLOCATE(rhoold_h_inv(nkx, nky, nkz))
     ENDIF
 
-   IF((l_spectral) .AND. (l_AM_RZ)) THEN CALL init_plans_blocks
+   IF((l_spectral) .AND. (l_AM_RZ)) THEN CALL init_plans_blocks_RZ
     IF(rank==0) PRINT*, 'END INIT EXTERNAL'
   END SUBROUTINE init_params_external_RZ
 

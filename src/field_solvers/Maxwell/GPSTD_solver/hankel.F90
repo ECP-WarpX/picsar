@@ -244,14 +244,14 @@ SUBROUTINE hankel_matrix_init(nfftr,imode,p,rmax,invM)
     r(k)= dr*((k-1)+0.5_num)
     !write (*,*), "r", r(k)
   End do
-  Do i =1,nfftr
-    Do j=1, nfftr
+  Do j =1,nfftr
+    Do i=1, nfftr
       y(i,j)= alphas(i)*r(j)/rmax
       !write(*,*), "alphas", alphas(i), "r", r(j), "yij", y(i,j)
     end do
   end do
-  Do i=1, nfftr
-    Do j=1, nfftr
+  Do j=1, nfftr
+    Do i=1, nfftr
       !if (y(i,j) .eq. 0.) then
       !  numer(i,j)=0.
       !else
