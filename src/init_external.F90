@@ -134,7 +134,7 @@ MODULE link_external_tools
 
   SUBROUTINE init_params_external_RZ(nr, nl,nmdoes, imode,dr,dl,dtt,ngr,ngl,norr,norl,&
       field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11) &
-      BIND(C,name='init_params_picsar_RZ')
+      BIND(C,name='init_params_picsar_AM')
     USE fastfft
     USE fields, ONLY: bl_c, br_c,bt_c, bl_f, bp_f, bm_f, bl_h, bm_h, bp_h, bl_h_inv, bm_h_inv, bp_h_inv,  &
       el_c, er_c,et_c, el_f, ep_f, em_f, el_h, em_h, ep_h, el_h_inv, em_h_inv, ep_h_inv,  &
