@@ -391,7 +391,7 @@ SUBROUTINE laser_gaussian
   USE laser_util , ONLY : E0, waist, ctau, z0, zf, lambda0, theta_pol, cep_phase, Er_laser, Et_laser
   USE constants, ONLY: clight, emass, pi
   USE fields !, ONLY: er_c, et_c, el_c
-  USE shared_data , ONLY : nx, ny, dx, dy, ymin
+  USE shared_data , ONLY : nx, ny, dx, dy, y_min_local
   IMPLICIT NONE
   REAL (num)::   zr, w0, phi2_chirp, propagation_dir, k0 ,t0, inv_ctau2,t,  &
                  inv_zr, prop_dir 
@@ -400,22 +400,22 @@ SUBROUTINE laser_gaussian
   INTEGER (idp) ::i, k
   REAL (num) , DIMENSION (:), ALLOCATABLE :: r,z  
  
-  ALLOCATE(r(0:nx-1))
-  ALLOCATE (z(0:ny-1))
-  ALLOCATE (exp_argument(0:nx-1,0:ny-1))
-  ALLOCATE (profile (0:nx-1,0:ny-1))
+  ALLOCATE(r(0:nx))
+  ALLOCATE (z(0:ny))
+  ALLOCATE (exp_argument(0:nx,0:ny))
+  ALLOCATE (profile (0:nx,0:ny))
   Er_laser= DCMPLX(0.0_num, 0.0_num)
   Et_laser= DCMPLX(0.0_num,0.0_num)
   r= 0.0_num
   z=0.0_num
   exp_argument=DCMPLX(0.0_num, 0.0_num)
   profile=DCMPLX(0.0_num, 0.0_num)
-  Do k=0, nx-1
+  Do k=0, nx
     r(k)= dx*(k+0.5_num)
     !write (*,*), "rk =", r(k)
   End do
-  Do k=0, ny-1
-    z(k)=ymin+ k*dy
+  Do k=0, ny
+    z(k)=y_min_local+ k*dy
     !write (*,*), "zk =", z(k)
   End do
   t=0.
@@ -462,11 +462,11 @@ SUBROUTINE laser_gaussian
   bl=0.0_num
   br=0.0_num
   bt=0.0_num
-  DO k=0, ny-1
+  DO k=0, ny
     diffract_factor = 1._num + ii * prop_dir*(z(k) - zf) * inv_zr
      !write (0,*) "entered k loop ", k
      !write (0,*) "diffract_factor", diffract_factor
-   DO i=0, nx-1
+   DO i=0, nx
      !write (0,*) "entered i loop ", i
      !exp_argument(i,k) =  prop_dir*z(k)   
      exp_argument(i,k) = - ii*cep_phase+ ii*k0*( prop_dir*(z(k) - z0)-clight*t )  &
@@ -479,7 +479,7 @@ SUBROUTINE laser_gaussian
      !write (*,*) "Er_laser(i,k) ", Er_laser(i,k)
      Et_laser(i,k) = -ii* E0 * profile(i,k)* exp(ii* theta_pol)
      !write (*,*) "Et_laser(i,k) ", Et_laser(i,k) 
-     er_c(i,k,1) =er_c(i,k,1)+  Er_laser(i,k)
+     er(i,k,1) =er(i,k,1)+  Er_laser(i,k)
      !er_c(i,k,0) = CMPLX(i,0.0_NUM)
      !et_c(i,k,0)= CMPLX(0.,0.0_NUM)
      !el_c(i,k,0)= CMPLX(0.,0.0_NUM)
@@ -487,14 +487,14 @@ SUBROUTINE laser_gaussian
      !et_c(i,k,1)= CMPLX(0.,0.0_NUM)
      !el_c(i,k,1)= CMPLX(0.,0.0_NUM)     
      !write (*,*) "er_c(i,k,1) ", er_c(i,k,1)
-     et_c(i,k,1) =et_c(i,k,1)+  Et_laser(i,k)
+     et(i,k,1) =et(i,k,1)+  Et_laser(i,k)
      !et_c(i,k,1) = DCMPLX(i,0_NUM)
      !write (*,*) "et_c(i,k,1) " , et_c(i,k,1)
    END DO
   END DO
 
-  br_c(:,:,1)= -et_c(:,:,1)/clight
-  bt_c(:,:,1)= er_c(:,:,1)/clight
+  br(:,:,1)= -et(:,:,1)/clight
+  bt(:,:,1)= er(:,:,1)/clight
   !do k=0,nx-1
   !  Do i=0,ny-1
   !    write (0,*), "max value of erC" ,er_c(k,i,:)

@@ -365,7 +365,7 @@ MODULE fourier_psaotd
     ! Init fourier fields fields
     !write (*,*) "BEFORE COPYING" , MAXVAL(abs(er_c))
 #if !defined(LIBRARY)
-     !CALL copy_field_forward_AM_rz()
+     CALL copy_field_forward_AM_rz()
 #endif
     !write (*,*) "AFTER COPYING" , MAXVAL(abs(er_c))
     IF (it.ge.timestat_itstart) THEN

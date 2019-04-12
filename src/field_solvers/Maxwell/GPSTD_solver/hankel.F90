@@ -514,7 +514,6 @@ SUBROUTINE Hankel_M_and_invM(imode)
 #else
    !> When using picsar
    nfftr = nx+2*nxguards
-   write (*,*) "using picsar"
 #endif
   
 
@@ -621,42 +620,6 @@ SUBROUTINE Hankel_M_and_invM(imode)
  ! END DO
 
 
-       ! write (0,*), "Ma =================="
-       ! DO k=1,nx
-       !   DO m=1, nx
-       !     write (0,*) , "k= ", k, "m= ", m, "Ma", Ma(k,m)
-       !   END DO
-       ! END DO
-       ! write (0,*), "Ma_1 =================="
-       ! DO k=1,nx
-       !   DO m=1,nx
-       !     write (0,*) , "k= ", k, "m= ", m, "Ma_1", Ma_1(k,m)
-       !   END DO
-       ! END DO
-       ! write (0,*), "Ma1 =================="
-       ! DO k=1,nx
-       !   DO m=1,nx
-       !     write (0,*) , "k= ", k, "m= ", m, "Ma1", Ma1(k,m)
-       !   END DO
-       ! END DO
-       ! write (0,*), "invM =================="
-       ! DO k=1,nx
-       !   DO m=1,nx
-       !     write (0,*) , "k= ", k, "m= ", m, "invM", invM(k,m)
-       !   END DO
-       ! END DO
-       ! write (0,*), "invM_1 =================="
-       ! DO k=1,nx
-       !   DO m=1, nx
-       !     write (0,*) , "k= ", k, "m= ", m, "invM_1", invM_1(k,m)
-       !   END DO
-       ! END DO
-       ! write (0,*), "invM1 =================="
-       ! DO k=1,nx
-       !   DO m=1,nx
-       !     write (0,*) , "k= ", k, "m= ", m, "invM1", invM1(k,m)
-       !   END DO
-       ! END DO
 
 END SUBROUTINE Hankel_M_and_invM
 
@@ -1038,7 +1001,7 @@ SUBROUTINE get_Hfields_inv()
   !end do
 
 
-write (*,*) "====================== END OF  GET H FIELD INV =============================="
+!write (*,*) "====================== END OF  GET H FIELD INV =============================="
 END SUBROUTINE get_Hfields_inv
 
 
@@ -1195,7 +1158,7 @@ END SUBROUTINE get_Hfields_inv
       tmptime = MPI_WTIME()
     ENDIF
 #if !defined(LIBRARY)
-     !CALL copy_field_backward_AM_rz
+     CALL copy_field_backward_AM_rz
 #endif
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
