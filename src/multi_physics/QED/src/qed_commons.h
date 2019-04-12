@@ -17,6 +17,19 @@
 
 //##############################################################################
 
+
+//###################### Decorator to compile some functions for CPU and GPU####
+
+    //This flag should be set by the user
+    //e.g. #define PXRMP_GPU __host__ __device__
+
+    #ifndef PXRMP_GPU
+      #define PXRMP_GPU
+    #endif
+
+//##############################################################################
+
+
 //############################################## Compiler specific macros ######
 
         //Restrict qualifier (compiler specific!)
@@ -27,24 +40,20 @@
         #endif
 
         //Force inline pragmas (compiler specific!)
-        #ifndef PXRMP_BUILD_WITH_KOKKOS_SUPPORT
-          #if defined(__CUDA_ARCH__)
-            #define PXRMP_FORCE_INLINE __forceinline__
-          #elif defined(__INTEL_COMPILER)
-            #define PXRMP_FORCE_INLINE inline __attribute__((always_inline))
-          #elif defined(__clang__)
-            #define PXRMP_FORCE_INLINE inline __attribute__((always_inline))
-          #elif defined(__GNUC__)
-            #define PXRMP_FORCE_INLINE inline __attribute__((always_inline))
-          #elif defined(__ibmxl__)
-            #define PXRMP_FORCE_INLINE inline __attribute__((always_inline))
-          #else
-            #define PXRMP_FORCE_INLINE inline
-          #endif
-        #else //Redefinition of PXRMP_FORCE_INLINE if Kokkos is enabled
-          #include <Kokkos_Macros.hpp>
-          #define PXRMP_FORCE_INLINE KOKKOS_INLINE_FUNCTION
+        #if defined(__CUDA_ARCH__)
+          #define PXRMP_FORCE_INLINE __forceinline__
+        #elif defined(__INTEL_COMPILER)
+          #define PXRMP_FORCE_INLINE inline __attribute__((always_inline))
+        #elif defined(__clang__)
+          #define PXRMP_FORCE_INLINE inline __attribute__((always_inline))
+        #elif defined(__GNUC__)
+          #define PXRMP_FORCE_INLINE inline __attribute__((always_inline))
+        #elif defined(__ibmxl__)
+          #define PXRMP_FORCE_INLINE inline __attribute__((always_inline))
+        #else
+          #define PXRMP_FORCE_INLINE inline
         #endif
+
 
 //##############################################################################
 
