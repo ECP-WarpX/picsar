@@ -205,7 +205,7 @@ END SUBROUTINE
 
 ! ______________________________________________________________________________
 !> @brief
-!> Applies the inverse cell volume scaling.
+!> Applies the inverse cell volume scaling to current density.
 !>
 !> @details
 !> Applies the inverse cell volume scaling. It is more efficient to apply
@@ -244,7 +244,7 @@ SUBROUTINE apply_rz_volume_scaling( jr, jr_nguard, jr_nvalid, jt, jt_nguard,    
 
   ! Since Jr is not cell centered in r, no need for distinction
   ! between on axis and off-axis factors
-  do j=-jr_nguard(1),jr_nvalid(1)+jr_nguard(1)
+  do j=-jr_nguard(1),jr_nvalid(1)+jr_nguard(1)-1
     r = abs(rmin + (float(j) + 0.5)*dr)
     jr(j,:) = jr(j,:)/(2.*pi*r)
   end do
@@ -279,7 +279,7 @@ SUBROUTINE apply_rz_volume_scaling( jr, jr_nguard, jr_nvalid, jt, jt_nguard,    
 
   ! In the rest of the grid
   ! Assumes jt_nguard == jz_nguard
-  do j=1,jt_nvalid(1)+jt_nguard(1)
+  do j=1,jt_nvalid(1)+jt_nguard(1)-1
     r = abs(rmin + j*dr)
     jt(j,:) = jt(j,:)/(2.*pi*r)
     jz(j,:) = jz(j,:)/(2.*pi*r)
