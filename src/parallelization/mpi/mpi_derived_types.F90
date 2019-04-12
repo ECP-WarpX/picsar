@@ -66,6 +66,7 @@ MODULE mpi_derived_types!#do not parse
     !write (*,*) "ny_global_grid_min", ny_global_grid_min , "nz_global_grid_min", nz_global_grid_min
   END FUNCTION create_current_grid_derived_type
 
+
   ! ______________________________________________________________________________________
   !> @brief
   !> Create a subarray from the current grid according to the given parameters.
@@ -89,6 +90,7 @@ MODULE mpi_derived_types!#do not parse
     create_current_grid_subarray = create_grid_subarray(mpidbl, ngx, ngy, ngz, nxloc, &
     nyloc, nzloc)
   END FUNCTION create_current_grid_subarray
+
 
   ! ______________________________________________________________________________________
   !> @brief
@@ -123,6 +125,8 @@ MODULE mpi_derived_types!#do not parse
     CALL MPI_TYPE_COMMIT(create_grid_derived_type, errcode)
 
   END FUNCTION create_grid_derived_type
+
+
 
   ! ______________________________________________________________________________________
   !> @brief
@@ -235,5 +239,7 @@ MODULE mpi_derived_types!#do not parse
     CALL MPI_TYPE_COMMIT(create_grid_subarray, errcode)
 
   END FUNCTION create_grid_subarray
+
+
 
 END MODULE mpi_derived_types

@@ -92,7 +92,7 @@ MODULE simple_io
     !write (0,*) "er out put3", output_frequency
     IF (output_frequency .GE. 1) THEN
       tmptime2 = MPI_WTIME()
-      write (0,*) "er out put2"
+     ! write (0,*) "er out put2"
       IF ((it .GE. output_step_min) .AND. (it .LE. output_step_max) .AND.             &
       (MOD(it-output_step_min, output_frequency) .EQ. 0)) THEN
       !!! --- Write output to disk
@@ -103,8 +103,8 @@ MODULE simple_io
         ! - Write current density er
         IF (rank.eq.0) WRITE(0, *) "Write electric field er"
         CALL write_3d_field_array_to_file('./RESULTS/'//TRIM(ADJUSTL(fileer))//       &
-        TRIM(ADJUSTL(strtemp))//'.pxr', REAL(er_c,num), xmin, xmax, ymin, ymax, zmin, zmax,       &
-        nxguards, nyguards, nzguards, (nx+1), (ny+1), (nmodes+1), (nx_global+1), (ny_global+1), (nmodes+1))
+        TRIM(ADJUSTL(strtemp))//'.pxr', REAL(er,num), xmin, xmax, ymin, ymax, zmin, zmax,       &
+        nxguards, nyguards,nzguards, nx,ny,nmodes, nx_global, ny_global, nmodes)
       ENDIF
       !IF (c_output_el .EQ. 1) THEN
         ! - Write current density er
@@ -291,13 +291,13 @@ MODULE simple_io
   ENDIF
 
   !!! --- Write particle diags
-  CALL write_particles_to_file
+  !CALL write_particles_to_file
 
   !!! --- Output temporal diagnostics
-  CALL output_temporal_diagnostics
+  !CALL output_temporal_diagnostics
 
   !!! --- Output time statistics
-  CALL output_time_statistics
+  !CALL output_time_statistics
 
 #if defined(DEBUG)
   WRITE(0, *) "Output_routines: stop"
@@ -575,16 +575,16 @@ END SUBROUTINE output_temporal_diagnostics
 ! ________________________________________________________________________________________
 
 SUBROUTINE write_3d_field_array_to_file(filename, array, xmin2, xmax2, ymin2, ymax2,  &
-  zmin2, zmax2, nxg, nyg, nzg, nx_local, ny_local, nz_local, nx_global2, ny_global2,    &
+  zmin2, zmax2, nxg2, nyg2, nzg2, nx_local2, ny_local2, nz_local2, nx_global2, ny_global2,    &
   nz_global2)
   IMPLICIT NONE
   CHARACTER(LEN=*), INTENT(IN)              :: filename
-  INTEGER(idp), INTENT(IN)                  :: nxg, nyg, nzg
-  INTEGER(idp), INTENT(IN)                  :: nx_local, ny_local, nz_local
+  INTEGER(idp), INTENT(IN)                  :: nxg2, nyg2, nzg2
+  INTEGER(idp), INTENT(IN)                  :: nx_local2, ny_local2, nz_local2
   INTEGER(idp), INTENT(IN)                  :: nx_global2, ny_global2, nz_global2
   REAL(num), INTENT(IN)                     :: xmin2, xmax2, ymin2, ymax2, zmin2,     &
   zmax2
-  REAL(num), DIMENSION(-nxg:nx_local+nxg, -nyg:ny_local+nyg, -nzg:nz_local+nzg),      &
+  REAL(num), DIMENSION(-nxg2:nx_local2+nxg2, -nyg2:ny_local2+nyg2, -nzg2:nz_local2+nzg2),      &
   INTENT(IN) :: array
   INTEGER(KIND=MPI_OFFSET_KIND)             :: offset
   INTEGER(isp)                              :: err
@@ -592,10 +592,10 @@ SUBROUTINE write_3d_field_array_to_file(filename, array, xmin2, xmax2, ymin2, ym
   ! Creation of the header by the processor 0
   IF (rank.eq.0) THEN
     open(unit=42, file=filename, FORM="unformatted", ACCESS='stream')
-    write(42) xmin, xmax, INT(nx_global, isp)
-    write(42) ymin, ymax, INT(ny_global, isp)
+    write(42) xmin2, xmax2, INT(nx_global2, isp)
+    write(42) ymin2, ymax2, INT(ny_global2, isp)
     !IF (.NOT. l_AM_rz) THEN
-    write(42) zmin, zmax, INT(nz_global, isp)
+    write(42) zmin2, zmax2, INT(nz_global2, isp)
     !ELSE
     !  write(42) zmin, zmax,  INT(nmodes, isp)
     !END IF
@@ -608,8 +608,8 @@ SUBROUTINE write_3d_field_array_to_file(filename, array, xmin2, xmax2, ymin2, ym
   CALL MPI_BARRIER(comm, errcode)
 
   ! Core of the file
-  CALL write_single_array_to_file(filename, array, nxg, nyg, nzg, nx_local, ny_local, &
-  nz_local, offset, err)
+  CALL write_single_array_to_file(filename, array, nxg2, nyg2, nzg2, nx_local2, ny_local2, &
+  nz_local2, offset, err)
 
 END SUBROUTINE write_3d_field_array_to_file
 
@@ -674,8 +674,6 @@ SUBROUTINE write_single_array_to_file(filename, array, nxg, nyg, nzg, nx_local, 
   CALL MPI_TYPE_FREE(subt, errcode)
 
 END SUBROUTINE write_single_array_to_file
-
-
 
 SUBROUTINE write_RZ_field(filename, array, nx_loc,ny_loc,nmode,nxg,nyg)
   CHARACTER(LEN=*), INTENT(IN) :: filename
