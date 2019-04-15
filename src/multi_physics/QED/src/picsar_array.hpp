@@ -4,6 +4,8 @@
 //This .hpp file contains the definition of a GPU-friendly STL-like array
 //(thanks to Weiqun Zhang)
 
+#include <cstddef>
+
 //Should be included by all the src files of the library
 #include "qed_commons.h"
 
