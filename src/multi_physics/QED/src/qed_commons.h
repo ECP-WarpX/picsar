@@ -145,13 +145,6 @@ namespace picsar{
 //##############################################################################
 
 
-//######################## Enumerator of all the possible lookup table styles###
-    enum tdndt_table_style {tdnt_style_default};
-    enum tpair_table_style {tpair_style_default};
-    enum tem_table_style {tem_style_default};
-//##############################################################################
-
-
 //######################## Default values for the parameters of BW engine ######
 
     //Minimum chi_phot to consider in all the functions
@@ -172,8 +165,6 @@ namespace picsar{
     const double __breit_wheeler_min_tdndt_chi_phot = 0.1; //Min chi_phot
     const double __breit_wheeler_max_tdndt_chi_phot = 200.0;  //Max chi_phot
     const size_t __breit_wheeler_how_many_tdndt_chi_phot = 30;   //How many points
-    const tdndt_table_style __breit_wheeler_dndt_table_style
-      = tdnt_style_default;
     // -------
 
     //Coefficients for che asymptotic behaviour of the "TT function"
@@ -188,9 +179,6 @@ namespace picsar{
     const size_t __breit_wheeler_how_many_tpair_chi_phot = 30; //How many points
 
     const size_t __breit_wheeler_chi_frac_tpair_how_many = 25;
-
-    const tpair_table_style __breit_wheeler_pair_table_style =
-      tpair_style_default;
 
 //##############################################################################
 
@@ -208,9 +196,6 @@ namespace picsar{
     const double __quantum_synchrotron_max_tdndt_chi_part = 200.0;//Max chi_part
     //How many points
     const size_t __quantum_synchrotron_how_many_tdndt_chi_part = 50;
-    //Table syle for photon emission rate
-    const tdndt_table_style __quantum_synchrotron_dndt_table_style =
-    tdnt_style_default;
 
     // Photon emission table:
     const double __quantum_synchrotron_min_tem_chi_part = 0.0001; //Min chi_part
@@ -219,8 +204,6 @@ namespace picsar{
 
     const size_t __quantum_synchrotron_chi_frac_tem_how_many = 50;
 
-    const tem_table_style __quantum_synchrotron_tem_table_style =
-      tem_style_default;
 // -------
 
 

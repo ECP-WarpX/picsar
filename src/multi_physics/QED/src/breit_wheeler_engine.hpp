@@ -54,8 +54,6 @@ namespace picsar{
             static_cast<_REAL>(__breit_wheeler_max_tdndt_chi_phot);
           size_t chi_phot_tdndt_how_many =
             __breit_wheeler_how_many_tdndt_chi_phot;
-          tdndt_table_style tdndt_style =
-            __breit_wheeler_dndt_table_style;
 
           _REAL chi_phot_tpair_min =
             static_cast<_REAL>(__breit_wheeler_min_tpair_chi_phot);
@@ -65,8 +63,6 @@ namespace picsar{
             __breit_wheeler_how_many_tpair_chi_phot;
           size_t chi_frac_tpair_how_many =
             __breit_wheeler_chi_frac_tpair_how_many;
-          tpair_table_style tpair_style =
-            __breit_wheeler_pair_table_style;
       };
 
       //This struct is used for post-run check of the suitability of the
@@ -209,15 +205,6 @@ namespace picsar{
         const _REAL two = static_cast<_REAL>(2.0);
         const _REAL three = static_cast<_REAL>(3.0);
 
-        //Internal function to compute TT function default
-         //(accepts pointer to ostream for diag)
-        void compute_TT_default_lookup_table(std::ostream* stream = nullptr);
-
-        //Internal function to compute pair production table
-        //(accepts pointer to ostream for diag)
-        void compute_pair_default_lookup_table(std::ostream* stream = nullptr);
-
-
         //Internal functions to perform calculations
         PXRMP_FORCE_INLINE
         _REAL compute_x(_REAL chi_phot, _REAL chi_ele) const;
@@ -323,10 +310,25 @@ PXRMP_FORCE_INLINE
 void picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 compute_dN_dt_lookup_table(std::ostream* stream)
 {
-    if(bw_ctrl.tdndt_style == tdnt_style_default)
-        compute_TT_default_lookup_table(stream);
+    //Prepare the TT_coords vector
+    std::vector<_REAL> TT_coords = generate_log_spaced_vec(
+     bw_ctrl.chi_phot_tdndt_min, bw_ctrl.chi_phot_tdndt_max,
+    bw_ctrl.chi_phot_tdndt_how_many);
 
-    //Other table styles are not currently implemented
+    msg("Computing table for dNdt...\n", stream);
+    //Do the hard work
+    std::vector<_REAL> TT_vals{};
+    std::transform(TT_coords.begin(), TT_coords.end(),
+        std::back_inserter(TT_vals),
+        [this](_REAL chi){return compute_TT_function(chi);});
+    msg("...done!\n", stream);
+
+    //The table will store the logarithms
+    auto logfun = [](_REAL val){return log(val);};
+    std::transform(TT_coords.begin(), TT_coords.end(), TT_coords.begin(), logfun);
+    std::transform(TT_vals.begin(), TT_vals.end(), TT_vals.begin(), logfun);
+
+    TTfunc_table = lookup_1d<_REAL>{TT_coords, TT_vals};
 }
 
 //Interp the dN_dt from table
@@ -354,8 +356,6 @@ interp_dN_dt(_REAL energy_phot, _REAL chi_phot) const
     }
     //otherwise use lookup tables
     else{
-        //Other table styles are not currently implemented
-        if(bw_ctrl.tdndt_style == tdnt_style_default)
             TT =  exp(TTfunc_table.interp_linear(log(chi_phot)));
     }
     //**end
@@ -437,10 +437,37 @@ void
 picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 compute_cumulative_pair_table (std::ostream* stream)
 {
-    if(bw_ctrl.tpair_style == tpair_style_default)
-        compute_pair_default_lookup_table(stream);
+    //Prepare the chi_coords vector
+    std::vector<_REAL> chi_coords = generate_log_spaced_vec(
+     bw_ctrl.chi_phot_tpair_min, bw_ctrl.chi_phot_tpair_max,
+    bw_ctrl.chi_phot_tpair_how_many);
 
-    //Other table styles are not currently implemented
+    std::vector<_REAL> frac_coords = generate_lin_spaced_vec(zero,one/two,
+    bw_ctrl.chi_frac_tpair_how_many);
+
+    std::vector<_REAL> pair_vals{};
+
+    msg("Computing table for pair production...\n", stream);
+
+    for(auto chi_phot: chi_coords){
+        pair_vals.push_back(zero);
+        msg("chi_phot: " + std::to_string(chi_phot) + " \n", stream);
+        for(size_t i = 1; i < frac_coords.size() - 1; i++){
+            _REAL temp = compute_cumulative_pair(
+                chi_phot, chi_phot*frac_coords[i]);
+            pair_vals.push_back(temp);
+        }
+        pair_vals.push_back(one/two); //The function is symmetric
+    }
+    msg("...done!\n", stream);
+
+    cum_distrib_table = lookup_2d<_REAL>{
+        std::array<std::vector<_REAL>,2>{chi_coords, frac_coords}, pair_vals};
+
+
+    //Initialize the auxiliary table
+    aux_table = lookup_1d<_REAL>{cum_distrib_table.get_coords()[1],
+    std::vector<_REAL>(bw_ctrl.chi_frac_tpair_how_many)};
 }
 
 //This function computes the properties of the electron-positron pairs
@@ -594,73 +621,6 @@ read_cumulative_pair_table(std::string filename)
 
 //___________________PRIVATE FUNCTIONS_____________________________________
 
-//Internal function to compute T function _default_
-template<typename _REAL, class _RNDWRAP>
-void
-picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
-compute_TT_default_lookup_table(std::ostream* stream)
-{
-    //Prepare the TT_coords vector
-    std::vector<_REAL> TT_coords = generate_log_spaced_vec(
-     bw_ctrl.chi_phot_tdndt_min, bw_ctrl.chi_phot_tdndt_max,
-    bw_ctrl.chi_phot_tdndt_how_many);
-
-    msg("Computing table for dNdt...\n", stream);
-    //Do the hard work
-    std::vector<_REAL> TT_vals{};
-    std::transform(TT_coords.begin(), TT_coords.end(),
-        std::back_inserter(TT_vals),
-        [this](_REAL chi){return compute_TT_function(chi);});
-    msg("...done!\n", stream);
-
-    //The table will store the logarithms
-    auto logfun = [](_REAL val){return log(val);};
-    std::transform(TT_coords.begin(), TT_coords.end(), TT_coords.begin(), logfun);
-    std::transform(TT_vals.begin(), TT_vals.end(), TT_vals.begin(), logfun);
-
-    TTfunc_table = lookup_1d<_REAL>{TT_coords, TT_vals};
-}
-
-//Internal function to compute pair production _default_ table
-template<typename _REAL, class _RNDWRAP>
-void
-picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
-compute_pair_default_lookup_table(std::ostream* stream)
-{
-    //Prepare the chi_coords vector
-    std::vector<_REAL> chi_coords = generate_log_spaced_vec(
-     bw_ctrl.chi_phot_tpair_min, bw_ctrl.chi_phot_tpair_max,
-    bw_ctrl.chi_phot_tpair_how_many);
-
-    std::vector<_REAL> frac_coords = generate_lin_spaced_vec(zero,one/two,
-    bw_ctrl.chi_frac_tpair_how_many);
-
-    std::vector<_REAL> pair_vals{};
-
-    msg("Computing table for pair production...\n", stream);
-
-    for(auto chi_phot: chi_coords){
-        pair_vals.push_back(zero);
-        msg("chi_phot: " + std::to_string(chi_phot) + " \n", stream);
-        for(size_t i = 1; i < frac_coords.size() - 1; i++){
-            _REAL temp = compute_cumulative_pair(
-                chi_phot, chi_phot*frac_coords[i]);
-            pair_vals.push_back(temp);
-        }
-        pair_vals.push_back(one/two); //The function is symmetric
-    }
-    msg("...done!\n", stream);
-
-    cum_distrib_table = lookup_2d<_REAL>{
-        std::array<std::vector<_REAL>,2>{chi_coords, frac_coords}, pair_vals};
-
-
-    //Initialize the auxiliary table
-    aux_table = lookup_1d<_REAL>{cum_distrib_table.get_coords()[1],
-    std::vector<_REAL>(bw_ctrl.chi_frac_tpair_how_many)};
-}
-
-
 //Function to compute X (Warning: it doesn't chek if chi_ele != 0 or
 //if chi_phot > chi_ele)
 template<typename _REAL, class _RNDWRAP>
@@ -716,7 +676,6 @@ compute_TT_function(_REAL chi_phot) const
 
     return quad_a_b<_REAL>(func, zero, chi_phot);
 }
-
 
 
 #endif //__PICSAR_MULTIPHYSICS_BREIT_WHEELER_ENGINE__

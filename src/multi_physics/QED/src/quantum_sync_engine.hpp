@@ -47,8 +47,6 @@ namespace picsar{
             static_cast<_REAL>(__quantum_synchrotron_max_tdndt_chi_part);
           size_t chi_part_tdndt_how_many =
             __quantum_synchrotron_how_many_tdndt_chi_part;
-          tdndt_table_style tdndt_style =
-            __quantum_synchrotron_dndt_table_style;
 
           _REAL chi_part_tem_min =
             static_cast<_REAL>(__quantum_synchrotron_min_tem_chi_part);
@@ -58,11 +56,6 @@ namespace picsar{
             __quantum_synchrotron_how_many_tem_chi_part;
           size_t chi_frac_tem_how_many =
             __quantum_synchrotron_chi_frac_tem_how_many;
-
-          tem_table_style tem_style =
-          __quantum_synchrotron_tem_table_style;
-
-
       };
 
       //Templates are used for the numerical type and for the
@@ -192,15 +185,6 @@ namespace picsar{
          const _REAL four = static_cast<_REAL>(4.0);
          const _REAL five = static_cast<_REAL>(5.0);
 
-         //Internal function to compute KK function default
-          //(accepts pointer to ostream for diag)
-         void compute_KK_default_lookup_table(std::ostream* stream = nullptr);
-
-         //Internal function to compute photon emission table
-         //(accepts pointer to ostream for diag)
-         void
-         compute_phot_em_default_lookup_table(std::ostream* stream = nullptr);
-
          //Internal functions to perform calculations
          PXRMP_FORCE_INLINE
          _REAL compute_y(_REAL chi_phot, _REAL chi_ele) const;
@@ -305,10 +289,25 @@ PXRMP_FORCE_INLINE
 void picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
 compute_dN_dt_lookup_table(std::ostream* stream)
 {
-    if(qs_ctrl.tdndt_style == tdnt_style_default)
-        compute_KK_default_lookup_table(stream);
+    //Prepare the KK_coords vector
+    std::vector<_REAL> KK_coords = generate_log_spaced_vec(
+     qs_ctrl.chi_part_tdndt_min, qs_ctrl.chi_part_tdndt_max,
+    qs_ctrl.chi_part_tdndt_how_many);
 
-    //Other table styles are not currently implemented
+    msg("Computing table for dNdt...\n", stream);
+    //Do the hard work
+    std::vector<_REAL> KK_vals{};
+    std::transform(KK_coords.begin(), KK_coords.end(),
+        std::back_inserter(KK_vals),
+        [this](_REAL chi){return compute_KK_function(chi);});
+    msg("...done!\n", stream);
+
+    //The table will store the logarithms
+    auto logfun = [](_REAL val){return log(val);};
+    std::transform(KK_coords.begin(), KK_coords.end(), KK_coords.begin(), logfun);
+    std::transform(KK_vals.begin(), KK_vals.end(), KK_vals.begin(), logfun);
+
+    KKfunc_table = lookup_1d<_REAL>{KK_coords, KK_vals};
 }
 
 //Interp the dN_dt from table
@@ -323,9 +322,6 @@ interp_dN_dt(_REAL energy_part, _REAL chi_part) const
     _REAL coeff = static_cast<_REAL>(__quantum_synchrotron_rate_coeff)*
         lambda*one/(energy_part*chi_part);
 
-
-
-
     _REAL KK = zero;
 
     //If chi is out of table, use the first (or the last) value
@@ -337,10 +333,7 @@ interp_dN_dt(_REAL energy_part, _REAL chi_part) const
         chi_part = qs_ctrl.chi_part_tdndt_max ;
     }
 
-
-    //Other table styles are not currently implemented
-    if(qs_ctrl.tdndt_style == tdnt_style_default)
-        KK =  exp(KKfunc_table.interp_linear(log(chi_part)));
+    KK =  exp(KKfunc_table.interp_linear(log(chi_part)));
 
     _REAL dndt = coeff * KK;
 
@@ -383,8 +376,6 @@ _REAL dt, _REAL& opt_depth) const
         dndt = compute_dN_dt(energy, chi);
     }
 
-
-
     opt_depth -= dndt*dt;
 
     if(opt_depth > zero){
@@ -420,9 +411,38 @@ void
 picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
 compute_cumulative_phot_em_table (std::ostream* stream)
 {
-    if(qs_ctrl.tem_style == tem_style_default)
-        compute_phot_em_default_lookup_table(stream);
-    //Other table styles are not currently implemented
+    //Prepare the chi_coords vector
+    std::vector<_REAL> chi_coords = generate_log_spaced_vec(
+     qs_ctrl.chi_part_tem_min, qs_ctrl.chi_part_tem_max,
+    qs_ctrl.chi_part_tem_how_many);
+
+    std::vector<_REAL> frac_coords = generate_lin_spaced_vec(zero, one,
+    qs_ctrl.chi_frac_tem_how_many);
+
+    std::vector<_REAL> pair_vals{};
+
+    msg("Computing table for photon emission...\n", stream);
+
+    for(auto chi_part: chi_coords){
+        pair_vals.push_back(zero);
+        msg("chi_part: " + std::to_string(chi_part) + " \n", stream);
+        for(size_t i = 1; i < frac_coords.size() - 1; i++){
+            _REAL temp = compute_cumulative_phot_em(
+                chi_part*frac_coords[i], chi_part);
+            pair_vals.push_back(temp);
+
+        }
+        pair_vals.push_back(one); //The function is symmetric
+    }
+    msg("...done!\n", stream);
+
+    cum_distrib_table = lookup_2d<_REAL>{
+        std::array<std::vector<_REAL>,2>{chi_coords, frac_coords}, pair_vals};
+
+
+    //Initialize the auxiliary table
+    aux_table = lookup_1d<_REAL>{cum_distrib_table.get_coords()[1],
+    std::vector<_REAL>(qs_ctrl.chi_frac_tem_how_many)};
 }
 
 
@@ -562,73 +582,6 @@ read_cumulative_phot_em_table(std::string filename)
 
 
 //___________________PRIVATE FUNCTIONS_____________________________________
-
-//Internal function to compute KK function default
- //(accepts pointer to ostream for diag)
-template<typename _REAL, class _RNDWRAP>
-void picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
-compute_KK_default_lookup_table(std::ostream* stream)
-{
-    //Prepare the KK_coords vector
-    std::vector<_REAL> KK_coords = generate_log_spaced_vec(
-     qs_ctrl.chi_part_tdndt_min, qs_ctrl.chi_part_tdndt_max,
-    qs_ctrl.chi_part_tdndt_how_many);
-
-    msg("Computing table for dNdt...\n", stream);
-    //Do the hard work
-    std::vector<_REAL> KK_vals{};
-    std::transform(KK_coords.begin(), KK_coords.end(),
-        std::back_inserter(KK_vals),
-        [this](_REAL chi){return compute_KK_function(chi);});
-    msg("...done!\n", stream);
-
-    //The table will store the logarithms
-    auto logfun = [](_REAL val){return log(val);};
-    std::transform(KK_coords.begin(), KK_coords.end(), KK_coords.begin(), logfun);
-    std::transform(KK_vals.begin(), KK_vals.end(), KK_vals.begin(), logfun);
-
-    KKfunc_table = lookup_1d<_REAL>{KK_coords, KK_vals};
-}
-
-//Internal function to compute photon emission table
-//(accepts pointer to ostream for diag)
-template<typename _REAL, class _RNDWRAP>
-void picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
-compute_phot_em_default_lookup_table(std::ostream* stream)
-{
-    //Prepare the chi_coords vector
-    std::vector<_REAL> chi_coords = generate_log_spaced_vec(
-     qs_ctrl.chi_part_tem_min, qs_ctrl.chi_part_tem_max,
-    qs_ctrl.chi_part_tem_how_many);
-
-    std::vector<_REAL> frac_coords = generate_lin_spaced_vec(zero, one,
-    qs_ctrl.chi_frac_tem_how_many);
-
-    std::vector<_REAL> pair_vals{};
-
-    msg("Computing table for photon emission...\n", stream);
-
-    for(auto chi_part: chi_coords){
-        pair_vals.push_back(zero);
-        msg("chi_part: " + std::to_string(chi_part) + " \n", stream);
-        for(size_t i = 1; i < frac_coords.size() - 1; i++){
-            _REAL temp = compute_cumulative_phot_em(
-                chi_part*frac_coords[i], chi_part);
-            pair_vals.push_back(temp);
-
-        }
-        pair_vals.push_back(one); //The function is symmetric
-    }
-    msg("...done!\n", stream);
-
-    cum_distrib_table = lookup_2d<_REAL>{
-        std::array<std::vector<_REAL>,2>{chi_coords, frac_coords}, pair_vals};
-
-
-    //Initialize the auxiliary table
-    aux_table = lookup_1d<_REAL>{cum_distrib_table.get_coords()[1],
-    std::vector<_REAL>(qs_ctrl.chi_frac_tem_how_many)};
-}
 
 //Function to compute y (Warning: it doesn't chek if chi_ele != 0 or
 //if chi_phot < chi_ele)
