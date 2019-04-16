@@ -1,50 +1,64 @@
 build:
 
   pre_ci_boot:
-    image_name: rlehe/warp
+    image_name: lf88/picsar_test
     image_tag: latest
     pull: true
 
   ci:
     #QED LIBRARY
     #Install dependencies
-    - sudo apt-get update && sudo apt-get install -y libboost-math-dev libboost-test-dev cmake3
-    - cmake --version
-    - cd ..
-    - git clone https://github.com/kokkos/kokkos
-    - cd kokkos
-    - kokkos_dir=$(pwd)
-    - cd ../picsar
-    - cd src/multi_physics
-    - mkdir build
-    - cd build
+    #- sudo apt-get update && sudo apt-get install -y libboost-math-dev libboost-test-dev cmake3
+    #- cmake --version
+    #- cd ..
+    #- git clone https://github.com/kokkos/kokkos
+    #- cd kokkos
+    #- kokkos_dir=$(pwd)
+    #- cd ../picsar
+    #- cd src/multi_physics
+    #- mkdir build
+    #- cd build
     #The following instruction is not required on my pc:
     #First test without Kokkos support
-    - export BOOST_LIBRARYDIR=/usr/lib/x86_64-linux-gnu/
-    - cmake ../. -DWITH_KOKKOS=OFF
-    - make
-    - make test
+    #- export BOOST_LIBRARYDIR=/usr/lib/x86_64-linux-gnu/
+    #- cmake ../. -DWITH_KOKKOS=OFF
+    #- make
+    #- make test
     #Second test with Kokkos support
-    - cmake ../. -DWITH_KOKKOS=ON -DKOKKOS_DIRECTORY=${kokkos_dir} -DKOKKOS_ENABLE_OPENMP=ON
-    - make
-    - make test
-    - cd ../../..
+    #- cmake ../. -DWITH_KOKKOS=ON -DKOKKOS_DIRECTORY=${kokkos_dir} -DKOKKOS_ENABLE_OPENMP=ON
+    #- make
+    #- make test
+    #- cd ../../..
     #-----------
 
     # Install dependencies
-    - pip install matplotlib pytest
+    #- pip install matplotlib pytest
     # Install FFTW3
-    - sudo apt-get update && sudo apt-get install -y libfftw3-dev libfftw3-mpi-dev
-    # Get the latest version of warp
-    - cd /home/warp_user/warp/pywarp90 && git pull && make install && make pinstall
-    - cd /home/warp_user/src/bitbucket.org/berkeleylab/picsar/
+    #- sudo apt-get update && sudo apt-get install -y libfftw3-dev libfftw3-mpi-dev
 
+    # Change user and prepare environment
+    - su hal
+    - cd
+    - scl enable rh-python36 bash
+    - source mypy/bin/activate
 
+    # Get the latest version of warp & compile
+    - cd /home/hal/warp/pywarp90 && git pull && make install && make pinstall
+
+    - cd /home/hal/picsar && git pull
 
     # Compile the unit tests
     - make build_test
     # Run tests on particle routines
     - make test_gcov
+    # Compile Picsar with fftw
+    - make clean
+    - sed -i 's/MODE=prod/MODE=prod_spectral/g' Makefile
+    - make
+
+    #fix issue with MPI tasks number > number of cores
+    - sed -i 's/mpirun -np/mpirun -host 127.0.0.1:8 -np/g' Makefile
+
     # Compile Picsar with fftw
     - make clean
     - sed -i 's/MODE=prod/MODE=prod_spectral/g' Makefile
@@ -67,7 +81,7 @@ build:
     - make clean
     - make
     # Add path to pythonpath
-    - export PYTHONPATH="/home/warp_user/src/bitbucket.org/berkeleylab/picsar/utils/postprocessing:$PYTHONPATH"
+    - export PYTHONPATH="/home/hal/picsar/utils/postprocessing:$PYTHONPATH"
     # Run the tests for Picsar Fortran
     - cd Acceptance_testing/Fortran_tests/test_plasma_drift
     - py.test -s --ttest=1 --trun=1 --tshow=0
