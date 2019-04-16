@@ -37,12 +37,9 @@ build:
     #- sudo apt-get update && sudo apt-get install -y libfftw3-dev libfftw3-mpi-dev
 
     # Change user and prepare environment
-    - whoami
-    - pwd
     - su hal
-    - cd
-    - whoami
-    - pwd
+    - cd /home/hal
+    - ls
     - scl enable rh-python36 bash
     - python --version
     - ls
