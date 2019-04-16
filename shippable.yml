@@ -40,7 +40,7 @@ build:
     - adduser hal
     - su hal
     - cd
-    - scl enable rh-python36 bash
+    - source scl_source enable rh-python36
     - virtualenv -p python3 mypy
     - source mypy/bin/activate
     - pip install --upgrade pip
