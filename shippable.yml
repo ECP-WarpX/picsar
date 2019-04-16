@@ -1,9 +1,10 @@
 build:
 
-  pre_ci_boot: --user hal -e HOME=/home/hal -e USER=hal
+  pre_ci_boot:
     image_name: lf88/picsar_test
     image_tag: latest
     pull: true
+    options: --user hal -e HOME=/home/hal -e USER=hal
 
   ci:
     #QED LIBRARY
