@@ -37,6 +37,8 @@ build:
     #- sudo apt-get update && sudo apt-get install -y libfftw3-dev libfftw3-mpi-dev
 
     # Change user and prepare environment
+    - adduser hal
+    - su hal
     - cd /home/hal
     - scl enable rh-python36 bash
     - source mypy/bin/activate
