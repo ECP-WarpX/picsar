@@ -4,7 +4,6 @@ build:
     image_name: lf88/picsar_test
     image_tag: latest
     pull: true
-    options: --user hal -e HOME=/home/hal -e USER=hal
 
   ci:
     #QED LIBRARY
@@ -37,10 +36,17 @@ build:
     # Install FFTW3
     #- sudo apt-get update && sudo apt-get install -y libfftw3-dev libfftw3-mpi-dev
 
-    # prepare environment
+    # create user & prepare environment
+    - adduser hal
+    - su hal
     - cd
     - scl enable rh-python36 bash
+    - virtualenv -p python3 mypy
     - source mypy/bin/activate
+    - pip install --upgrade pip
+    - pip3 install matplotlib mpi4py numpy pytest Forthon
+    - git clone https://bitbucket.org/berkeleylab/picsar/src picsar
+    - git clone https://bitbucket.org/berkeleylab/warp/src warp
 
     # Get the latest version of warp & compile
     - cd /home/hal/warp/pywarp90 && git pull && make install && make pinstall
