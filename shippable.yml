@@ -12,7 +12,6 @@ build:
     - export LC_ALL=C
     # Get the latest version of warp
     - cd /home/warp_user/warp/pywarp90 && git pull && make install && make pinstall
-    -
 
     #QED LIBRARY
     - cd /home/warp_user/src/bitbucket.org/berkeleylab/picsar/src/multi_physics
