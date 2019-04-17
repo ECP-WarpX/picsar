@@ -7,9 +7,9 @@ build:
     pull: true
 
   ci:
-
-    # Install dependencies
+    # Intial setup
     - export LC_ALL=C
+    - source /home/warp_user/mypy/bin/activate
     # Get the latest version of warp
     - cd /home/warp_user/warp/pywarp90 && git pull && make install && make pinstall
 
@@ -37,7 +37,7 @@ build:
     - make test_maxwell_solver_3d
     - make clean
     #fix issue with MPI tasks number > number of cores & run as root
-    - sed -i 's/mpirun -np/mpirun -host 127.0.0.1:8 -np/g' Makefile
+    - sed -i 's/mpirun -np/mpirun -host localhost:8 -np/g' Makefile
     - make build_test_spectral_2d
     - make test_maxwell_solver_2d
     # Compile Picsar as library
