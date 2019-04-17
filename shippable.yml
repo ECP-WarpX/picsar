@@ -1,5 +1,6 @@
 build:
 
+  #Now based on Ubuntu
   pre_ci_boot:
     image_name: lf88/picsar_test
     image_tag: latest
@@ -7,18 +8,6 @@ build:
 
   ci:
     #QED LIBRARY
-    #Install dependencies
-    #- sudo apt-get update && sudo apt-get install -y libboost-math-dev libboost-test-dev cmake3
-    #- cmake --version
-    #- cd ..
-    #- git clone https://github.com/kokkos/kokkos
-    #- cd kokkos
-    #- kokkos_dir=$(pwd)
-    #- cd ../picsar
-    #- cd src/multi_physics
-    #- mkdir build
-    #- cd build
-    #The following instruction is not required on my pc:
     #First test without Kokkos support
     #- export BOOST_LIBRARYDIR=/usr/lib/x86_64-linux-gnu/
     #- cmake ../. -DWITH_KOKKOS=OFF
@@ -30,36 +19,27 @@ build:
     #- make test
     #- cd ../../..
     #-----------
-
+        
     # Install dependencies
-    #- pip install matplotlib pytest
-    # Install FFTW3
-    #- sudo apt-get update && sudo apt-get install -y libfftw3-dev libfftw3-mpi-dev
-
-    # prepare environment
-    - cd /home/warp_user/
-    - source mypy/bin/activate
-
-    # Get the latest version of warp & compile
-    - cd warp/pywarp90
-    - git pull
+    - export LC_ALL=C
+    # Get the latest version of warp
     - cd /home/warp_user/warp/pywarp90 && git pull && make install && make pinstall
+    -
 
-    #go to PICSAR dir
-    - cd /home/warp_user/picsar
+    #QED LIBRARY
+    - cd /home/warp_user/src/bitbucket.org/berkeleylab/picsar/src/multi_physics
+    - mkdir build
+    - cd build
+    - cmake ../. -DWITH_KOKKOS=OFF
+    - make
+    - make test
+    #END QED LIBRARY
 
     # Compile the unit tests
+    - cd /home/warp_user/src/bitbucket.org/berkeleylab/picsar/
     - make build_test
     # Run tests on particle routines
     - make test_gcov
-    # Compile Picsar with fftw
-    - make clean
-    - sed -i 's/MODE=prod/MODE=prod_spectral/g' Makefile
-    - make
-
-    #fix issue with MPI tasks number > number of cores & run as root
-    - sed -i 's/mpirun -np/mpirun -host 127.0.0.1:8 -np/g' Makefile
-
     # Compile Picsar with fftw
     - make clean
     - sed -i 's/MODE=prod/MODE=prod_spectral/g' Makefile
@@ -69,6 +49,8 @@ build:
     - make build_test_spectral_3d
     - make test_maxwell_solver_3d
     - make clean
+    #fix issue with MPI tasks number > number of cores & run as root
+    - sed -i 's/mpirun -np/mpirun -host 127.0.0.1:8 -np/g' Makefile
     - make build_test_spectral_2d
     - make test_maxwell_solver_2d
     # Compile Picsar as library
@@ -77,14 +59,12 @@ build:
     - make lib
     # Add Picsar Dynamic library to LD_LIBRARY_PATH
     - export LD_LIBRARY_PATH=/path_to_libpxr.iso:$LD_LIBRARY_PATH
-    - echo $LD_LIBRARY_PATH
-    - echo $path_to_libpxr.iso
     # Compile the Fortran kernel of Picsar
     - sed -i 's/MODE=library/MODE=prod/g' Makefile
     - make clean
     - make
     # Add path to pythonpath
-    - export PYTHONPATH="/home/warp_user/picsar/utils/postprocessing:$PYTHONPATH"
+    - export PYTHONPATH="/home/warp_user/src/bitbucket.org/berkeleylab/picsar/utils/postprocessing:$PYTHONPATH"
     # Run the tests for Picsar Fortran
     - cd Acceptance_testing/Fortran_tests/test_plasma_drift
     - py.test -s --ttest=1 --trun=1 --tshow=0
