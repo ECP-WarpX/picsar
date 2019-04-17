@@ -36,13 +36,9 @@ build:
     # Install FFTW3
     #- sudo apt-get update && sudo apt-get install -y libfftw3-dev libfftw3-mpi-dev
 
-    # create user & prepare environment
+    # prepare environment
     - cd /home/warp_user/
-    - source scl_source enable rh-python36
-    - virtualenv -p python3 mypy
     - source mypy/bin/activate
-    - pip install --upgrade pip
-    - pip3 install matplotlib mpi4py numpy pytest Forthon
 
     # Get the latest version of warp & compile
     - cd warp/pywarp90
@@ -62,7 +58,7 @@ build:
     - make
 
     #fix issue with MPI tasks number > number of cores & run as root
-    - sed -i 's/mpirun -np/mpirun --allow-run-as-root -host 127.0.0.1:8 -np/g' Makefile
+    - sed -i 's/mpirun -np/mpirun -host 127.0.0.1:8 -np/g' Makefile
 
     # Compile Picsar with fftw
     - make clean
