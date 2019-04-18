@@ -81,8 +81,8 @@ class Field:
 	       self.dy = self.y[1] - self.y[0]
     else:
 	#2d case
-	self.dy = 1
-    self.dz = self.z[1] - self.z[0]
+        self.dy = 1
+        self.dz = self.z[1] - self.z[0]
 
     self.f = np.zeros([self.nz,self.ny,self.nx])
 
