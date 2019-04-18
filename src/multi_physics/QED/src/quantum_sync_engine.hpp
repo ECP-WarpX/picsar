@@ -28,6 +28,12 @@
 //Uses messages
 #include "msg.hpp"
 
+//Uses picsar vectors
+#include "picsar_vector.hpp"
+
+//Uses picsar arrays
+#include "picsar_array.hpp"
+
 //############################################### Declaration
 
 namespace picsar{
@@ -137,7 +143,7 @@ namespace picsar{
          //is simply weight/sampling.
          //The function updates also the momentum of the particle
          PXRMP_FORCE_INLINE
-         std::vector<std::pair<vec3<_REAL>, _REAL>>
+         picsar_vector<std::pair<vec3<_REAL>, _REAL>>
          generate_photons_and_update_momentum(
          _REAL& px, _REAL& py, _REAL& pz,
          _REAL ex, _REAL ey, _REAL ez,
@@ -290,13 +296,13 @@ void picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
 compute_dN_dt_lookup_table(std::ostream* stream)
 {
     //Prepare the KK_coords vector
-    std::vector<_REAL> KK_coords = generate_log_spaced_vec(
+    picsar_vector<_REAL> KK_coords = generate_log_spaced_vec(
      qs_ctrl.chi_part_tdndt_min, qs_ctrl.chi_part_tdndt_max,
     qs_ctrl.chi_part_tdndt_how_many);
 
     msg("Computing table for dNdt...\n", stream);
     //Do the hard work
-    std::vector<_REAL> KK_vals{};
+    picsar_vector<_REAL> KK_vals{};
     std::transform(KK_coords.begin(), KK_coords.end(),
         std::back_inserter(KK_vals),
         [this](_REAL chi){return compute_KK_function(chi);});
@@ -412,14 +418,14 @@ picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
 compute_cumulative_phot_em_table (std::ostream* stream)
 {
     //Prepare the chi_coords vector
-    std::vector<_REAL> chi_coords = generate_log_spaced_vec(
+    picsar_vector<_REAL> chi_coords = generate_log_spaced_vec(
      qs_ctrl.chi_part_tem_min, qs_ctrl.chi_part_tem_max,
     qs_ctrl.chi_part_tem_how_many);
 
-    std::vector<_REAL> frac_coords = generate_lin_spaced_vec(zero, one,
+    picsar_vector<_REAL> frac_coords = generate_lin_spaced_vec(zero, one,
     qs_ctrl.chi_frac_tem_how_many);
 
-    std::vector<_REAL> pair_vals{};
+    picsar_vector<_REAL> pair_vals{};
 
     msg("Computing table for photon emission...\n", stream);
 
@@ -437,12 +443,12 @@ compute_cumulative_phot_em_table (std::ostream* stream)
     msg("...done!\n", stream);
 
     cum_distrib_table = lookup_2d<_REAL>{
-        std::array<std::vector<_REAL>,2>{chi_coords, frac_coords}, pair_vals};
+        picsar_array<picsar_vector<_REAL>,2>{chi_coords, frac_coords}, pair_vals};
 
 
     //Initialize the auxiliary table
     aux_table = lookup_1d<_REAL>{cum_distrib_table.get_coords()[1],
-    std::vector<_REAL>(qs_ctrl.chi_frac_tem_how_many)};
+    picsar_vector<_REAL>(qs_ctrl.chi_frac_tem_how_many)};
 }
 
 
@@ -458,7 +464,8 @@ compute_cumulative_phot_em_table (std::ostream* stream)
 //is simply weight/sampling.
 template<typename _REAL, class _RNDWRAP>
 PXRMP_FORCE_INLINE
-std::vector<std::pair<picsar::multi_physics::vec3<_REAL>, _REAL>>
+picsar::multi_physics::
+    picsar_vector<std::pair<picsar::multi_physics::vec3<_REAL>, _REAL>>
 picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
  generate_photons_and_update_momentum(
 _REAL& px, _REAL& py, _REAL& pz,
@@ -466,7 +473,7 @@ _REAL ex, _REAL ey, _REAL ez,
 _REAL bx, _REAL by, _REAL bz,
 _REAL weight, size_t sampling)
 {
-    std::vector<std::pair<vec3<_REAL>, _REAL>> photons(sampling);
+    picsar_vector<std::pair<vec3<_REAL>, _REAL>> photons(sampling);
 
     _REAL chi_part = chi_lepton(px, py, pz, ex, ey, ez, bx, by, bz, lambda);
 
@@ -577,7 +584,7 @@ read_cumulative_phot_em_table(std::string filename)
     iif.close();
 
     aux_table = lookup_1d<_REAL>{cum_distrib_table.get_coords()[1],
-    std::vector<_REAL>(qs_ctrl.chi_frac_tem_how_many)};
+    picsar_vector<_REAL>(qs_ctrl.chi_frac_tem_how_many)};
 }
 
 

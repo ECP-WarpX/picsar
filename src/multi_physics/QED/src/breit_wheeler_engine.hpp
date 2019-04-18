@@ -35,6 +35,12 @@
 //Uses utilities
 #include "utilities.hpp"
 
+//Uses picsar vectors
+#include "picsar_vector.hpp"
+
+//Uses picsar arrays
+#include "picsar_array.hpp"
+
 //############################################### Declaration
 
 namespace picsar{
@@ -152,7 +158,7 @@ namespace picsar{
          //of pairs (momentum, new_weight), where new_weight
          //is simply weight/sampling.
          PXRMP_FORCE_INLINE
-         std::array<std::vector<std::pair<vec3<_REAL>, _REAL>>,2>
+         picsar_array<picsar_vector<std::pair<vec3<_REAL>, _REAL>>,2>
           generate_breit_wheeler_pairs(
          _REAL px, _REAL py, _REAL pz,
          _REAL ex, _REAL ey, _REAL ez,
@@ -311,15 +317,15 @@ void picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 compute_dN_dt_lookup_table(std::ostream* stream)
 {
     //Prepare the TT_coords vector
-    std::vector<_REAL> TT_coords = generate_log_spaced_vec(
+    picsar_vector<_REAL> TT_coords = generate_log_spaced_vec(
      bw_ctrl.chi_phot_tdndt_min, bw_ctrl.chi_phot_tdndt_max,
     bw_ctrl.chi_phot_tdndt_how_many);
 
     msg("Computing table for dNdt...\n", stream);
     //Do the hard work
-    std::vector<_REAL> TT_vals{};
+    picsar_vector<_REAL> TT_vals{TT_coords.size()};
     std::transform(TT_coords.begin(), TT_coords.end(),
-        std::back_inserter(TT_vals),
+        TT_vals.begin(),
         [this](_REAL chi){return compute_TT_function(chi);});
     msg("...done!\n", stream);
 
@@ -438,36 +444,37 @@ picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 compute_cumulative_pair_table (std::ostream* stream)
 {
     //Prepare the chi_coords vector
-    std::vector<_REAL> chi_coords = generate_log_spaced_vec(
+    picsar_vector<_REAL> chi_coords = generate_log_spaced_vec(
      bw_ctrl.chi_phot_tpair_min, bw_ctrl.chi_phot_tpair_max,
     bw_ctrl.chi_phot_tpair_how_many);
 
-    std::vector<_REAL> frac_coords = generate_lin_spaced_vec(zero,one/two,
+    picsar_vector<_REAL> frac_coords = generate_lin_spaced_vec(zero,one/two,
     bw_ctrl.chi_frac_tpair_how_many);
 
-    std::vector<_REAL> pair_vals{};
+    picsar_vector<_REAL> pair_vals{chi_coords.size()*frac_coords.size()};
 
     msg("Computing table for pair production...\n", stream);
 
+    size_t cc = 0;
     for(auto chi_phot: chi_coords){
-        pair_vals.push_back(zero);
+        pair_vals[cc++] = zero;
         msg("chi_phot: " + std::to_string(chi_phot) + " \n", stream);
         for(size_t i = 1; i < frac_coords.size() - 1; i++){
             _REAL temp = compute_cumulative_pair(
                 chi_phot, chi_phot*frac_coords[i]);
-            pair_vals.push_back(temp);
+            pair_vals[cc++] = temp;
         }
-        pair_vals.push_back(one/two); //The function is symmetric
+        pair_vals[cc++] = (one/two); //The function is symmetric
     }
     msg("...done!\n", stream);
 
     cum_distrib_table = lookup_2d<_REAL>{
-        std::array<std::vector<_REAL>,2>{chi_coords, frac_coords}, pair_vals};
+        picsar_array<picsar_vector<_REAL>,2>{chi_coords, frac_coords}, pair_vals};
 
 
     //Initialize the auxiliary table
     aux_table = lookup_1d<_REAL>{cum_distrib_table.get_coords()[1],
-    std::vector<_REAL>(bw_ctrl.chi_frac_tpair_how_many)};
+    picsar_vector<_REAL>(bw_ctrl.chi_frac_tpair_how_many)};
 }
 
 //This function computes the properties of the electron-positron pairs
@@ -484,7 +491,9 @@ compute_cumulative_pair_table (std::ostream* stream)
 //is simply weight/sampling.
 template<typename _REAL, class _RNDWRAP>
 PXRMP_FORCE_INLINE
-std::array<std::vector<std::pair<picsar::multi_physics::vec3<_REAL>, _REAL>>,2>
+picsar::multi_physics::picsar_array<
+picsar::multi_physics::picsar_vector<
+std::pair<picsar::multi_physics::vec3<_REAL>, _REAL>>,2>
 picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 generate_breit_wheeler_pairs(
 _REAL px, _REAL py, _REAL pz,
@@ -492,8 +501,8 @@ _REAL ex, _REAL ey, _REAL ez,
 _REAL bx, _REAL by, _REAL bz,
 _REAL weight, size_t sampling)
 {
-    std::vector<std::pair<vec3<_REAL>, _REAL>> electrons(sampling);
-    std::vector<std::pair<vec3<_REAL>, _REAL>> positrons(sampling);
+    picsar_vector<std::pair<vec3<_REAL>, _REAL>> electrons(sampling);
+    picsar_vector<std::pair<vec3<_REAL>, _REAL>> positrons(sampling);
 
     _REAL chi_phot = chi_photon(px, py, pz, ex, ey, ez, bx, by, bz, lambda);
 
@@ -616,7 +625,7 @@ read_cumulative_pair_table(std::string filename)
     iif.close();
 
     aux_table = lookup_1d<_REAL>{cum_distrib_table.get_coords()[1],
-    std::vector<_REAL>(bw_ctrl.chi_frac_tpair_how_many)};
+    picsar_vector<_REAL>(bw_ctrl.chi_frac_tpair_how_many)};
 }
 
 //___________________PRIVATE FUNCTIONS_____________________________________

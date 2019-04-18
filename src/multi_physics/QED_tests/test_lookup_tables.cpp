@@ -7,8 +7,6 @@
  #define BOOST_TEST_DYN_LINK
 
 #include <cmath>
-#include <array>
-#include <vector>
 #include <functional>
 
 //Include Boost unit tests library & library for floating point comparison
@@ -46,10 +44,14 @@ T tolerance()
 template<typename T>
 void lookup1d_constructor()
 {
-    std::vector<T> coords{0,1,2,3,4};
-    std::vector<T> vals;
+    picsar_vector<T> coords{static_cast<T>(0.),
+                            static_cast<T>(1.),
+                            static_cast<T>(2.),
+                            static_cast<T>(3.),
+                            static_cast<T>(4.)};
+    picsar_vector<T> vals{coords.size()};
 
-    std::transform(coords.begin(), coords.end(), std::back_inserter(vals),
+    std::transform(coords.begin(), coords.end(), vals.begin(),
         [](T val){return static_cast<T>(2.0*val);});
 
     lookup_1d<T> l1d{coords, vals};
@@ -90,15 +92,25 @@ BOOST_AUTO_TEST_CASE( lookup1d_constructor_single_1 )
 template<typename T>
 void lookup1d_linear_equi_interp()
 {
-    std::vector<T> coords{0,1,2,3,4};
-    std::vector<T> vals;
+    picsar_vector<T> coords{static_cast<T>(0.),
+                            static_cast<T>(1.),
+                            static_cast<T>(2.),
+                            static_cast<T>(3.),
+                            static_cast<T>(4.)};
+    picsar_vector<T> vals{coords.size()};
 
-    std::transform(coords.begin(), coords.end(), std::back_inserter(vals),
+    std::transform(coords.begin(), coords.end(), vals.begin(),
         [](T val){return static_cast<T>(2.0*val);});
 
     lookup_1d<T> l1d{coords, vals};
 
-    std::vector<T> where{0.0001, 0.5, 1.0, 1.5, 2.0, 3.5, 3.999};
+    picsar_vector<T> where{static_cast<T>(0.001),
+                            static_cast<T>(0.5),
+                            static_cast<T>(1.0),
+                            static_cast<T>(1.5),
+                            static_cast<T>(2.0),
+                            static_cast<T>(3.5),
+                            static_cast<T>(3.999)};
 
     for(auto ww: where){
         T res = l1d.interp_linear_equispaced(ww);
@@ -127,15 +139,25 @@ BOOST_AUTO_TEST_CASE( lookup1d_linear_interp_equi_single_1 )
 template<typename T>
 void lookup1d_linear_interp()
 {
-    std::vector<T> coords{0,1,2,3,4};
-    std::vector<T> vals;
+    picsar_vector<T> coords{static_cast<T>(0.),
+                            static_cast<T>(1.),
+                            static_cast<T>(2.),
+                            static_cast<T>(3.),
+                            static_cast<T>(4.)};
+    picsar_vector<T> vals{coords.size()};
 
-    std::transform(coords.begin(), coords.end(), std::back_inserter(vals),
+    std::transform(coords.begin(), coords.end(), vals.begin(),
         [](T val){return static_cast<T>(2.0*val);});
 
     lookup_1d<T> l1d{coords, vals};
 
-    std::vector<T> where{0.0001, 0.5, 1.0, 1.5, 2.0, 3.5, 3.999};
+    picsar_vector<T> where{static_cast<T>(0.0001),
+                            static_cast<T>(0.5),
+                            static_cast<T>(1.0),
+                            static_cast<T>(1.5),
+                            static_cast<T>(2.0),
+                            static_cast<T>(3.5),
+                            static_cast<T>(3.999)};
 
     for(auto ww: where){
         T res = l1d.interp_linear(ww);
@@ -166,17 +188,33 @@ BOOST_AUTO_TEST_CASE( lookup1d_linear_interp_single_1 )
 template<typename T>
 void lookup2d_constructor()
 {
-    std::vector<T> c1{-3,-2,-1,0,1,2,3};
-    std::vector<T> c2{-3,-2,-1,0,1,2,3};
-    std::vector<T> vals{};
+    picsar_vector<T> c1{static_cast<T>(-3),
+                        static_cast<T>(-2),
+                        static_cast<T>(-1),
+                        static_cast<T>(0),
+                        static_cast<T>(1),
+                        static_cast<T>(2),
+                        static_cast<T>(3)};
+
+    picsar_vector<T> c2{static_cast<T>(-3),
+                        static_cast<T>(-2),
+                        static_cast<T>(-1),
+                        static_cast<T>(0),
+                        static_cast<T>(1),
+                        static_cast<T>(2),
+                        static_cast<T>(3)};
+
+    picsar_vector<T> vals(c1.size()*c2.size());
+
+    size_t pos = 0;
 
     for (auto cc1: c1){
         for(auto cc2: c2){
-            vals.push_back(cc1+cc2);
+            vals[pos++]=(cc1+cc2);
         }
     }
 
-    lookup_2d<T> l2d{std::array<std::vector<T>,2>{c1,c2}, vals};
+    lookup_2d<T> l2d{picsar_array<picsar_vector<T>,2>{c1,c2}, vals};
 
     lookup_2d<T> l2dbis{l2d};
 
@@ -218,20 +256,44 @@ BOOST_AUTO_TEST_CASE( lookup2d_constructor_single_1 )
 template<typename T>
 void lookup2d_linear_interpolator()
 {
-    std::vector<T> c1{-3,-2,-1,0,1,2,3};
-    std::vector<T> c2{-3,-2,-1,0,1,2,3};
-    std::vector<T> vals{};
+    picsar_vector<T> c1{static_cast<T>(-3),
+                        static_cast<T>(-2),
+                        static_cast<T>(-1),
+                        static_cast<T>(0),
+                        static_cast<T>(1),
+                        static_cast<T>(2),
+                        static_cast<T>(3)};
+
+    picsar_vector<T> c2{static_cast<T>(-3),
+                        static_cast<T>(-2),
+                        static_cast<T>(-1),
+                        static_cast<T>(0),
+                        static_cast<T>(1),
+                        static_cast<T>(2),
+                        static_cast<T>(3)};
+    picsar_vector<T> vals(c1.size()*c2.size());
+
+    size_t pos = 0;
 
     for (auto cc1: c1){
         for(auto cc2: c2){
-            vals.push_back(cc1+cc2);
+            vals[pos++]=(cc1+cc2);
         }
     }
 
-    lookup_2d<T> l2d{std::array<std::vector<T>,2>{c1,c2}, vals};
+    lookup_2d<T> l2d{picsar_array<picsar_vector<T>,2>{c1,c2}, vals};
 
-    std::vector<T> c1_test{-2.9, -2.1, 1.2, 0.001, 2.99};
-    std::vector<T> c2_test{-1.9, -2.7, 2.1, 1.1, 0.7};
+    picsar_vector<T> c1_test{static_cast<T>(-2.9),
+                             static_cast<T>(-2.1),
+                             static_cast<T>(1.2),
+                             static_cast<T>(0.001),
+                             static_cast<T>(2.99)};
+
+    picsar_vector<T> c2_test{static_cast<T>(-1.9),
+                             static_cast<T>(-2.7),
+                             static_cast<T>(2.1),
+                             static_cast<T>(1.1),
+                             static_cast<T>(0.7)};
 
     for(auto cc1: c1_test){
         for(auto cc2: c1_test){

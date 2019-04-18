@@ -13,6 +13,12 @@
 //Should be included by all the src files of the library
 #include "qed_commons.h"
 
+//Uses picsar_vector.hpp
+#include "picsar_vector.hpp"
+
+//Uses picsar array
+#include "picsar_array.hpp"
+
 //############################################### Declaration
 
 namespace picsar{
@@ -28,7 +34,7 @@ namespace picsar{
 
                 //Constructor: requires coordinates and data
                 //coordinates should be sorted!
-                lookup_1d (std::vector<_REAL> coords, std::vector<_REAL> data);
+                lookup_1d (picsar_vector<_REAL> coords, picsar_vector<_REAL> data);
 
                 //Copy constructor
                 lookup_1d(const lookup_1d& other);
@@ -40,13 +46,13 @@ namespace picsar{
                 lookup_1d&  operator= (const lookup_1d& );
 
                 //Get a copy of the coordinates
-                std::vector<_REAL> get_coords() const;
+                picsar_vector<_REAL> get_coords() const;
 
                 //Get a reference to the coordinates
-                std::vector<_REAL>& ref_coords();
+                picsar_vector<_REAL>& ref_coords();
 
                 //Get a reference to the data
-                std::vector<_REAL>& ref_data();
+                picsar_vector<_REAL>& ref_data();
 
                 //Check if the table is initialized
                 bool is_init() const;
@@ -71,8 +77,8 @@ namespace picsar{
 
 
             private:
-                std::vector<_REAL> coords;
-                std::vector<_REAL> data;
+                picsar_vector<_REAL> coords;
+                picsar_vector<_REAL> data;
 
                 bool init_flag = false;
         };
@@ -89,8 +95,8 @@ namespace picsar{
                 //coordinates should be sorted!
                 //Row major convention is used.
                 lookup_2d(
-                    std::array<std::vector<_REAL>,2> coords,
-                    std::vector<_REAL> data);
+                    picsar_array<picsar_vector<_REAL>,2> coords,
+                    picsar_vector<_REAL> data);
 
                 //Copy constructor
                 lookup_2d(const  lookup_2d& other);
@@ -102,7 +108,7 @@ namespace picsar{
                 lookup_2d&  operator= (const lookup_2d& );
 
                 //Get a copy of the coordinates
-                std::array<std::vector<_REAL>,2> get_coords();
+                picsar_array<picsar_vector<_REAL>,2> get_coords();
 
                 //Access data via coordinates indices
                 _REAL data_at_coords(size_t coord_x, size_t coord_y) const;
@@ -130,10 +136,10 @@ namespace picsar{
 
 
             private:
-                std::array<std::vector<_REAL>,2> coords;
+                picsar_array<picsar_vector<_REAL>,2> coords;
                 //Underlying data is stored in a vector. Row major convention
                 //is used.
-                std::vector<_REAL> data;
+                picsar_vector<_REAL> data;
 
                 bool init_flag = false;
 
@@ -154,7 +160,7 @@ namespace picsar{
 template<typename _REAL>
 picsar::multi_physics::lookup_1d<_REAL>::
 lookup_1d
-(std::vector<_REAL> coords, std::vector<_REAL> data):
+(picsar_vector<_REAL> coords, picsar_vector<_REAL> data):
     coords{coords}, data{data}
 {
     init_flag = true;
@@ -191,7 +197,7 @@ picsar::multi_physics::lookup_1d<_REAL>::
 
 //Get a copy of the coordinates
 template<typename _REAL>
-std::vector<_REAL>
+picsar::multi_physics::picsar_vector<_REAL>
 picsar::multi_physics::lookup_1d<_REAL>::
 get_coords() const
 {
@@ -199,7 +205,7 @@ get_coords() const
 }
 
 template<typename _REAL>
-std::vector<_REAL>&
+picsar::multi_physics::picsar_vector<_REAL>&
 picsar::multi_physics::lookup_1d<_REAL>::
 ref_coords()
 {
@@ -208,7 +214,7 @@ ref_coords()
 
 //Get a reference to the data
 template<typename _REAL>
-std::vector<_REAL>&
+picsar::multi_physics::picsar_vector<_REAL>&
 picsar::multi_physics::lookup_1d<_REAL>::
 ref_data()
 {
@@ -306,8 +312,8 @@ write_on_stream_bin(std::ofstream& out)
 template<typename _REAL>
 picsar::multi_physics::lookup_2d<_REAL>::
 lookup_2d(
-std::array<std::vector<_REAL>,2> coords,
-std::vector<_REAL> data):
+picsar_array<picsar_vector<_REAL>,2> coords,
+picsar_vector<_REAL> data):
     coords{coords}, data{data}
 {
     init_flag = true;
@@ -346,7 +352,7 @@ picsar::multi_physics::lookup_2d<_REAL>::
 
 //Get a copy of the coordinates
 template<typename _REAL>
-std::array<std::vector<_REAL>,2>
+picsar::multi_physics::picsar_array<picsar::multi_physics::picsar_vector<_REAL>,2>
 picsar::multi_physics::lookup_2d<_REAL>::
 get_coords()
 {
