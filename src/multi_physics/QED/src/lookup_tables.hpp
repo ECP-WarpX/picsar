@@ -42,6 +42,9 @@ namespace picsar{
                 //Move constructor
                 lookup_1d(lookup_1d&& other);
 
+                //Constructor from raw data pointers
+                lookup_1d(size_t how_many, _REAL* _coords, _REAL* _data);
+
                 //Assignment operator
                 lookup_1d&  operator= (const lookup_1d& );
 
@@ -104,11 +107,24 @@ namespace picsar{
                 //Move constructor
                 lookup_2d(lookup_2d&& other);
 
+                //Constructor from raw data pointers
+                lookup_2d(size_t how_many_1,
+                          _REAL* _coords_1,
+                          size_t how_many_2,
+                          _REAL* _coords_2,
+                          _REAL* _data);
+
                 //Assignment operator
                 lookup_2d&  operator= (const lookup_2d& );
 
                 //Get a copy of the coordinates
                 picsar_array<picsar_vector<_REAL>,2> get_coords();
+
+                //Get a reference to the coordinates
+                picsar_array<picsar_vector<_REAL>,2>& ref_coords();
+
+                //Get a reference to the data
+                picsar_vector<_REAL>& ref_data();
 
                 //Access data via coordinates indices
                 _REAL data_at_coords(size_t coord_x, size_t coord_y) const;
@@ -189,6 +205,15 @@ picsar::multi_physics::lookup_1d<_REAL>::
 lookup_1d(lookup_1d&& other):
     coords{std::move(other.coords)}, data{std::move(other.data)},
     init_flag{std::move(other.init_flag)}
+{}
+
+//Constructor from raw data pointers
+template<typename _REAL>
+picsar::multi_physics::lookup_1d<_REAL>::
+lookup_1d(size_t how_many, _REAL* _coords, _REAL* _data):
+coords{how_many, _coords},
+data{how_many, _data},
+init_flag{true}
 {}
 
 //Assignment operator
@@ -353,6 +378,21 @@ lookup_2d(lookup_2d&& other):
      init_flag{std::move(other.init_flag)}
 {}
 
+
+//Constructor from raw data pointers
+template<typename _REAL>
+picsar::multi_physics::lookup_2d<_REAL>::
+lookup_2d(size_t how_many_1,
+          _REAL* _coords_1,
+          size_t how_many_2,
+          _REAL* _coords_2,
+          _REAL* _data):
+coords{how_many_1, _coords_1, how_many_2, _coords_2},
+data{how_many_1*how_many_2, _data},
+init_flag{true}
+{}
+
+
 //Assignment operator
 template<typename _REAL>
 picsar::multi_physics::lookup_2d<_REAL>&
@@ -376,6 +416,25 @@ picsar::multi_physics::lookup_2d<_REAL>::
 get_coords()
 {
     return coords;
+}
+
+//Get a copy of the coordinates
+template<typename _REAL>
+picsar::multi_physics::picsar_array<picsar::multi_physics::picsar_vector<_REAL>,2>&
+picsar::multi_physics::lookup_2d<_REAL>::
+ref_coords()
+{
+    return coords;
+}
+
+
+//Get a copy of the coordinates
+template<typename _REAL>
+picsar::multi_physics::picsar_vector<_REAL>&
+picsar::multi_physics::lookup_2d<_REAL>::
+ref_data()
+{
+    return data;
 }
 
 //Access data via coordinates indices

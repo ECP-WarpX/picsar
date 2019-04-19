@@ -71,12 +71,29 @@ namespace picsar{
             __breit_wheeler_chi_frac_tpair_how_many;
       };
 
-      //This struct is used for post-run check of the suitability of the
-      //pair table. NOT IMPLEMENTED YET
-      struct breit_wheeler_error_info{
-          size_t pair_prod_chi_too_big_how_many = 0;
-          size_t pair_prod_chi_too_small_how_many = 0;
-      };
+
+        //This struct holds all the data required to re-generate
+        //the breit_wheeler_engine object
+        template<typename _REAL, class _RNDWRAP>
+        struct breit_wheeler_innards{
+                breit_wheeler_engine_ctrl<_REAL> bw_ctrl;
+                _REAL lambda;
+                _RNDWRAP* rng_ptr;
+                size_t TTfunc_table_coords_how_many;
+                _REAL* TTfunc_table_coords_ptr;
+                size_t TTfunc_table_data_how_many;
+                _REAL* TTfunc_table_data_ptr;
+                size_t cum_distrib_table_coords_1_how_many;
+                _REAL* cum_distrib_table_coords_1_ptr;
+                size_t cum_distrib_table_coords_2_how_many;
+                _REAL* cum_distrib_table_coords_2_ptr;
+                size_t cum_distrib_table_data_how_many;
+                _REAL* cum_distrib_table_data_ptr;
+                size_t aux_table_coords_how_many;
+                _REAL* aux_table_coords_ptr;
+                size_t aux_table_data_how_many;
+                _REAL* aux_table_data_ptr;
+        };
 
       //Templates are used for the numerical type and for the
       //RNG wrapper
@@ -165,10 +182,6 @@ namespace picsar{
          _REAL bx, _REAL by, _REAL bz,
          _REAL weight, size_t sampling) ;
 
-         //get a copy of the struct storing info on the out of table errors
-         //Yet to implement
-         breit_wheeler_error_info get_error_info();
-
          //Write pair production table to disk
          void write_dN_dt_table(std::string filename);
 
@@ -182,6 +195,13 @@ namespace picsar{
          //Read cumulative_pair_table table from disk (Warning,
          //breit_wheeler_engine_ctrl is not changed in current implementation)
          void read_cumulative_pair_table(std::string filename);
+
+         //Export innards
+         breit_wheeler_innards<_REAL, _RNDWRAP> export_innards();
+
+         //Constructor using innards
+         breit_wheeler_engine
+         (breit_wheeler_innards<_REAL, _RNDWRAP> innards);
 
      private:
         _REAL lambda;
@@ -200,10 +220,6 @@ namespace picsar{
         lookup_2d<_REAL> cum_distrib_table;
         //Auxiliary table for coordinate interpolation
         lookup_1d<_REAL> aux_table;
-
-        //This struct stores information relevant for post-simultation checks
-        //NOT YET IMPLEMENTED
-        breit_wheeler_error_info err_info;
 
         //Some handy constants
         const _REAL zero = static_cast<_REAL>(0.0);
@@ -249,8 +265,7 @@ picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 breit_wheeler_engine(const breit_wheeler_engine& other):
     lambda(other.lambda), rng(other.rng), bw_ctrl(other.bw_ctrl),
     TTfunc_table(other.TTfunc_table), cum_distrib_table(other.cum_distrib_table),
-    aux_table(other.aux_table),
-    err_info(other.err_info)
+    aux_table(other.aux_table)
     {}
 
 //Move constructor
@@ -261,8 +276,7 @@ breit_wheeler_engine(breit_wheeler_engine&& other):
     bw_ctrl(std::move(other.bw_ctrl)),
     TTfunc_table(std::move(other.TTfunc_table)),
     cum_distrib_table(std::move(other.cum_distrib_table)),
-    aux_table(std::move(other.aux_table)),
-    err_info(std::move(other.err_info))
+    aux_table(std::move(other.aux_table))
     {}
 
 
@@ -567,14 +581,6 @@ _REAL weight, size_t sampling)
     return {electrons, positrons};
 }
 
-//get a copy of the struct storing info on the out of table errors
-template<typename _REAL, class _RNDWRAP>
-picsar::multi_physics::breit_wheeler_error_info
-picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::get_error_info()
-{
-    return err_info;
-}
-
 //Write pair production table to disk
 template<typename _REAL, class _RNDWRAP>
 void
@@ -684,6 +690,63 @@ compute_TT_function(_REAL chi_phot) const
     };
 
     return quad_a_b<_REAL>(func, zero, chi_phot);
+}
+
+
+//Export innards
+template<typename _REAL, class _RNDWRAP>
+picsar::multi_physics::breit_wheeler_innards<_REAL, _RNDWRAP>
+picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::export_innards()
+{
+    breit_wheeler_innards<_REAL, _RNDWRAP> innards;
+
+    //Filling innards
+    innards.bw_ctrl                         = bw_ctrl;
+    innards.lambda                          = lambda;
+    innards.rng_ptr                         = &rng;
+    innards.TTfunc_table_coords_how_many    = TTfunc_table.ref_coords().size();
+    innards.TTfunc_table_coords_ptr         = TTfunc_table.ref_coords().data();
+    innards.TTfunc_table_data_how_many      = TTfunc_table.ref_data().size();
+    innards.TTfunc_table_data_ptr           = TTfunc_table.ref_data().data();
+    innards.cum_distrib_table_coords_1_how_many
+        = cum_distrib_table.ref_coords()[0].size();
+    innards.cum_distrib_table_coords_1_ptr
+        = cum_distrib_table.ref_coords()[0].data();
+    innards.cum_distrib_table_coords_2_how_many
+        = cum_distrib_table.ref_coords()[1].size();
+    innards.cum_distrib_table_coords_2_ptr
+            = cum_distrib_table.ref_coords()[1].data();
+    innards.cum_distrib_table_data_how_many
+        = cum_distrib_table.ref_data().size();
+    innards.cum_distrib_table_data_ptr
+        = cum_distrib_table.ref_data().data();
+    innards.aux_table_coords_how_many       = aux_table.ref_coords().size();
+    innards.aux_table_coords_ptr            = aux_table.ref_coords().data();
+    innards.aux_table_data_how_many         = aux_table.ref_data().size();
+    innards.aux_table_data_ptr              = aux_table.ref_data().data();
+
+    return innards;
+}
+
+//Constructor using innards
+template<typename _REAL, class _RNDWRAP>
+picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::breit_wheeler_engine
+(picsar::multi_physics::breit_wheeler_innards<_REAL, _RNDWRAP> innards):
+    bw_ctrl{innards.bw_ctrl},
+    lambda{innards.lambda},
+    TTfunc_table{innards.TTfunc_table_coords_how_many,
+                 innards.TTfunc_table_coords_ptr,
+                 innards.TTfunc_table_data_ptr},
+    cum_distrib_table{innards.cum_distrib_table_coords_1_how_many,
+                      innards.cum_distrib_table_coords_1_ptr,
+                      innards.cum_distrib_table_coords_2_how_many,
+                      innards.cum_distrib_table_coords_2_ptr,
+                      innards.cum_distrib_table_data_ptr},
+    aux_table{innards.aux_table_coords_how_many,
+              innards.aux_table_coords_ptr,
+              innards.aux_table_data_ptr}
+{
+    rng = *innards.rng_ptr;
 }
 
 

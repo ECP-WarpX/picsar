@@ -264,9 +264,9 @@ void picsar::multi_physics::picsar_vector<T>::resize(size_t new_size)
 
     T* temp_data = new T[new_size];
 
-    size_t how_many_copy = size;
+    size_t how_many_copy = v_size;
 
-    if(size > new_size)
+    if(v_size > new_size)
         how_many_copy = new_size;
 
     std::copy(v_data, v_data+how_many_copy, temp_data);
@@ -274,7 +274,7 @@ void picsar::multi_physics::picsar_vector<T>::resize(size_t new_size)
 
     delete[] temp_data;
 
-    size = new_size;
+    v_size = new_size;
 }
 
 
