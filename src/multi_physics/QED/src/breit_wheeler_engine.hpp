@@ -526,7 +526,7 @@ _REAL weight, size_t sampling)
     else{
         for(size_t i = 0; i < frac.size(); i++){
             aux_table.ref_data()[i] =
-            cum_distrib_table.interp_linear_first(chi_phot, i);
+            cum_distrib_table.interp_linear_first_equispaced(chi_phot, i);
         }
     }
 

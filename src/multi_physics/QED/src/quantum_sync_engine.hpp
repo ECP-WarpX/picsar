@@ -339,7 +339,7 @@ interp_dN_dt(_REAL energy_part, _REAL chi_part) const
         chi_part = qs_ctrl.chi_part_tdndt_max ;
     }
 
-    KK =  exp(KKfunc_table.interp_linear(log(chi_part)));
+    KK =  exp(KKfunc_table.interp_linear_equispaced(log(chi_part)));
 
     _REAL dndt = coeff * KK;
 
@@ -497,7 +497,7 @@ _REAL weight, size_t sampling)
     else{
         for(size_t i = 0; i < frac.size(); i++){
             aux_table.ref_data()[i] =
-            cum_distrib_table.interp_linear_first(chi_part, i);
+            cum_distrib_table.interp_linear_first_equispaced(chi_part, i);
         }
     }
 
@@ -515,7 +515,7 @@ _REAL weight, size_t sampling)
     for(size_t s = 0; s < sampling; s++){
         _REAL prob = rng.unf(zero, one);
 
-        _REAL chi_phot = aux_table.interp_linear(prob);
+        _REAL chi_phot = aux_table.interp_linear_equispaced(prob);
 
         _REAL gamma_phot = chi_phot/chi_part*(gamma_part-one);
 

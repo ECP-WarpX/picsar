@@ -120,9 +120,19 @@ namespace picsar{
                 PXRMP_FORCE_INLINE
                 _REAL interp_linear(_REAL where_x, _REAL where_y) const;
 
+                //Linear equispaced interpolation
+                PXRMP_FORCE_INLINE
+                _REAL interp_linear_equispaced(_REAL where_x, _REAL where_y) const;
+
                 //Performs linear interpolation on the FIRST coordinate
                 PXRMP_FORCE_INLINE
                 _REAL interp_linear_first(_REAL where_x, size_t coord_y) const;
+
+                //Performs linear interpolation on the FIRST coordinate
+                //(equispaced version)
+                PXRMP_FORCE_INLINE
+                _REAL interp_linear_first_equispaced
+                (_REAL where_x, size_t coord_y) const;
 
                 //_________READ&WRITE________________
 
@@ -245,7 +255,7 @@ interp_linear_equispaced(_REAL where) const
     size_t idx_left = static_cast<size_t>(
         floor((coords.size()-1)*(where-xmin)/xsize));
     size_t idx_right = idx_left + 1;
-    
+
     _REAL xleft = coords[idx_left];
     _REAL xright = coords[idx_right];
     _REAL yleft = data[idx_left];
@@ -426,12 +436,93 @@ interp_linear(_REAL where_x, _REAL where_y) const
     return (wll*zll + wlr*zlr + wrl*zrl + wrr*zrr)/w_norm;
 }
 
+//Performs an equispaced linear interpolation
+template<typename _REAL>
+PXRMP_FORCE_INLINE
+_REAL
+picsar::multi_physics::lookup_2d<_REAL>::
+interp_linear_equispaced(_REAL where_x, _REAL where_y) const
+{
+
+    _REAL xmin = coords[0].back();
+    _REAL xmax = coords[0].front();
+    _REAL xsize = xmax - xmin;
+
+    _REAL ymin = coords[1].back();
+    _REAL ymax = coords[1].front();
+    _REAL ysize = ymax - ymin;
+
+    size_t idx_x_left = static_cast<size_t>(
+        floor((coords[0].size()-1)*(where_x-xmin)/xsize));
+    size_t idx_x_right = idx_x_left + 1;
+
+    size_t idx_y_left = static_cast<size_t>(
+        floor((coords[1].size()-1)*(where_y-ymin)/ysize));
+    size_t idx_y_right = idx_y_left + 1;
+
+    _REAL xleft = coords[0][idx_x_left];
+    _REAL xright = coords[0][idx_x_right];
+    _REAL yleft = coords[1][idx_y_left];
+    _REAL yright = coords[1][idx_y_right];
+
+    size_t sx = coords[0].size();
+    size_t sy = coords[1].size();
+
+    _REAL zll = data[row_major(idx_x_left,idx_y_left,sx,sy)];
+    _REAL zlr = data[row_major(idx_x_left,idx_y_right,sx,sy)];
+    _REAL zrl = data[row_major(idx_x_right,idx_y_left,sx,sy)];
+    _REAL zrr = data[row_major(idx_x_right,idx_y_right,sx,sy)];
+
+    _REAL wll = (xright - where_x)*(yright -where_y);
+    _REAL wlr = (xright - where_x)*(where_y - yleft);
+    _REAL wrl = (where_x - xleft)*(yright -where_y);
+    _REAL wrr = (where_x - xleft)*(where_y - yleft);
+
+    _REAL w_norm = (xright-xleft)*(yright-yleft);
+
+    return (wll*zll + wlr*zlr + wrl*zrl + wrr*zrr)/w_norm;
+}
+
+
 //Performs a linear interpolation on the FIRST coordinate
 template<typename _REAL>
 PXRMP_FORCE_INLINE
 _REAL
 picsar::multi_physics::lookup_2d<_REAL>::
 interp_linear_first(_REAL where_x, size_t coord_y) const
+{
+    _REAL xmin = coords[0].back();
+    _REAL xmax = coords[0].front();
+    _REAL xsize = xmax - xmin;
+
+    size_t idx_x_left = static_cast<size_t>(
+        floor((coords[0].size()-1)*(where_x-xmin)/xsize));
+    size_t idx_x_right = idx_x_left + 1;
+
+    _REAL xleft = coords[0][idx_x_left];
+    _REAL xright = coords[0][idx_x_right];
+
+    size_t sx = coords[0].size();
+    size_t sy = coords[1].size();
+
+    _REAL zlc = data[row_major(idx_x_left,coord_y,sx,sy)];
+    _REAL zrc = data[row_major(idx_x_right,coord_y,sx,sy)];
+
+    _REAL wlc = (xright - where_x);
+    _REAL wrc = (where_x - xleft);
+
+    _REAL w_norm = (xright-xleft);
+
+    return (wlc*zlc + wrc*zrc)/w_norm;
+}
+
+//Performs linear interpolation on the FIRST coordinate
+//(equispaced version)
+template<typename _REAL>
+PXRMP_FORCE_INLINE
+_REAL
+picsar::multi_physics::lookup_2d<_REAL>::
+interp_linear_first_equispaced(_REAL where_x, size_t coord_y) const
 {
     auto it_x_right =
         std::upper_bound(coords[0].begin(), coords[0].end(),where_x);
