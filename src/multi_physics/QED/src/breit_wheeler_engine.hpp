@@ -362,7 +362,7 @@ interp_dN_dt(_REAL energy_phot, _REAL chi_phot) const
     }
     //otherwise use lookup tables
     else{
-            TT =  exp(TTfunc_table.interp_linear(log(chi_phot)));
+            TT =  exp(TTfunc_table.interp_linear_equispaced(log(chi_phot)));
     }
     //**end
 
@@ -547,7 +547,7 @@ _REAL weight, size_t sampling)
             invert = true;
         }
 
-        _REAL chi_ele = aux_table.interp_linear(prob);
+        _REAL chi_ele = aux_table.interp_linear_equispaced(prob);
         _REAL chi_pos = chi_phot - chi_ele;
 
         if(invert)

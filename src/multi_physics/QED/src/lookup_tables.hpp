@@ -237,12 +237,21 @@ _REAL
 picsar::multi_physics::lookup_1d<_REAL>::
 interp_linear_equispaced(_REAL where) const
 {
-    _REAL xmin = coords.front();
-    _REAL xmax = coords.back();
-    _REAL yleft = data.front();
-    _REAL yright = data.back();
+    _REAL xmin = coords.back();
+    _REAL xmax = coords.front();
 
-    return yleft + ((where-xmin)/(xmax-xmin))*(yright-yleft);
+    _REAL xsize = xmax - xmin;
+
+    size_t idx_left = static_cast<size_t>(
+        floor((coords.size()-1)*(where-xmin)/xsize));
+    size_t idx_right = idx_left + 1;
+    
+    _REAL xleft = coords[idx_left];
+    _REAL xright = coords[idx_right];
+    _REAL yleft = data[idx_left];
+    _REAL yright = data[idx_right];
+
+    return yleft + ((yright-yleft)/(xright-xleft))*(where-xleft);
 }
 
 //Performs linear interpolation
