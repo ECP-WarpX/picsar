@@ -90,21 +90,21 @@ ifeq ($(USE_PSATD),TRUE)
   F90EXE_sources += mpi_derived_types.F90
 
   F90EXE_sources += maxwell_solver_manager.F90
-    VPATH_LOCATIONS   += $(PICSAR_HOME)/src/field_solvers/Maxwell/
-      INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/field_solvers/Maxwell/
+  VPATH_LOCATIONS   += $(PICSAR_HOME)/src/field_solvers/Maxwell/
+  INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/field_solvers/Maxwell/
 
   F90EXE_sources += fastfft.F90 fourier_psaotd.F90 GPSTD.F90 init_kspace_3D.F90
-    VPATH_LOCATIONS   += $(PICSAR_HOME)/src/field_solvers/Maxwell/GPSTD_solver
-      INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/field_solvers/Maxwell/GPSTD_solver
+  VPATH_LOCATIONS   += $(PICSAR_HOME)/src/field_solvers/Maxwell/GPSTD_solver
+  INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/field_solvers/Maxwell/GPSTD_solver
 
   F90EXE_sources += yee.F90
 
   F90EXE_sources += load_balancing.F90
-    VPATH_LOCATIONS   += $(PICSAR_HOME)/src/housekeeping
-      INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/housekeeping
+  VPATH_LOCATIONS   += $(PICSAR_HOME)/src/housekeeping
+  INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/housekeeping
 
   F90EXE_sources += field_boundaries.F90
-    VPATH_LOCATIONS   += $(PICSAR_HOME)/src/boundary_conditions
-      INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/boundary_conditions
-      endif
+  VPATH_LOCATIONS   += $(PICSAR_HOME)/src/boundary_conditions
+  INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/boundary_conditions
+endif
       
