@@ -28,17 +28,26 @@ F90EXE_sources += charge_deposition_$(DIM)d.F90
 VPATH_LOCATIONS   += $(PICSAR_HOME)/src/particle_deposition/charge_deposition/
 INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/particle_deposition/charge_deposition/
 
-F90EXE_sources += current_deposition_manager_$(DIM)d.F90
+F90EXE_sources += current_deposition_manager_3d.F90
+ifeq ($(DIM),2)
+  F90EXE_sources += current_deposition_manager_2d.F90
+endif
 
 VPATH_LOCATIONS   += $(PICSAR_HOME)/src/particle_deposition/current_deposition/
 INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/particle_deposition/current_deposition/
 
-F90EXE_sources += direct_current_deposition_$(DIM)d.F90
+F90EXE_sources += direct_current_deposition_3d.F90
+ifeq ($(DIM),2)
+  F90EXE_sources += direct_current_deposition_2d.F90
+endif
 
 VPATH_LOCATIONS   += $(PICSAR_HOME)/src/particle_deposition/current_deposition/direct
 INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/particle_deposition/current_deposition/direct
 
-F90EXE_sources += esirkepov_$(DIM)d.F90
+F90EXE_sources += esirkepov_3d.F90
+ifeq ($(DIM),2)
+  F90EXE_sources += esirkepov_2d.F90
+endif
 
 VPATH_LOCATIONS   += $(PICSAR_HOME)/src/particle_deposition/current_deposition/esirkepov
 INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/particle_deposition/current_deposition/esirkepov
@@ -56,7 +65,10 @@ F90EXE_sources += field_gathering_o3_$(DIM)d.F90
 VPATH_LOCATIONS   += $(PICSAR_HOME)/src/field_gathering/energy_conserving
 INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/field_gathering/energy_conserving
 
-F90EXE_sources += boris_$(DIM)d.F90
+F90EXE_sources += boris_3d.F90
+ifeq ($(DIM),2)
+  F90EXE_sources += boris_2d.F90
+endif
 
 VPATH_LOCATIONS   += $(PICSAR_HOME)/src/particle_pushers/boris_pusher/
 INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/particle_pushers/boris_pusher/

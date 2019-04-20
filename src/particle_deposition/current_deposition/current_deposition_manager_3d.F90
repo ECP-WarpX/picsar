@@ -1895,13 +1895,23 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_sub_openmp(jxg, jyg, jzg, nxx, nyy,
             isdeposited=.TRUE.
           ENDIF
           ! Depose current in jtile
-          CALL depose_jxjyjz_esirkepov( currg%arr1, currg%arr2, currg%arr3,   &
-               count, curr_tile%part_x, curr_tile%part_y, curr_tile%part_z,              &
-               curr_tile%part_ux, curr_tile%part_uy, curr_tile%part_uz,                  &
-               curr_tile%part_gaminv, curr_tile%pid(1, wpid), curr%charge,               &
-               curr_tile%x_grid_tile_min, curr_tile%y_grid_tile_min,                     &
-               curr_tile%z_grid_tile_min, dtt, dxx, dyy, dzz, nxc, nyc, nzc, nxjg, nyjg, &
-               nzjg, noxx, noyy, nozz)
+          SELECT CASE (c_dim)
+          CASE (2)
+            CALL depose_jxjyjz_esirkepov_2d( currg%arr1(:, 0, :), currg%arr2(:,   &
+            0, :), currg%arr3(:, 0, :), count, curr_tile%part_x, curr_tile%part_y,  &
+            curr_tile%part_z, curr_tile%part_ux, curr_tile%part_uy,                   &
+            curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%pid(1, wpid),         &
+            curr%charge, curr_tile%x_grid_tile_min, curr_tile%z_grid_tile_min, dtt,   &
+            dxx, dzz, nxc, nzc, nxjg, nzjg, noxx, nozz)
+          CASE DEFAULT
+            CALL depose_jxjyjz_esirkepov( currg%arr1, currg%arr2, currg%arr3,   &
+            count, curr_tile%part_x, curr_tile%part_y, curr_tile%part_z,              &
+            curr_tile%part_ux, curr_tile%part_uy, curr_tile%part_uz,                  &
+            curr_tile%part_gaminv, curr_tile%pid(1, wpid), curr%charge,               &
+            curr_tile%x_grid_tile_min, curr_tile%y_grid_tile_min,                     &
+            curr_tile%z_grid_tile_min, dtt, dxx, dyy, dzz, nxc, nyc, nzc, nxjg, nyjg, &
+            nzjg, noxx, noyy, nozz)
+          END SELECT
         END DO! END LOOP ON SPECIES
         IF (isdeposited) THEN
           jxg(jmin:jmax, kmin:kmax, lmin:lmax)=jxg(jmin:jmax, kmin:kmax,              &
