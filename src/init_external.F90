@@ -139,6 +139,7 @@ MODULE link_external_tools
     USE fields, ONLY: bl_c, br_c,bt_c, bl_f, bp_f, bm_f, bl_h, bm_h, bp_h, bl_h_inv, bm_h_inv, bp_h_inv,  &
       el_c, er_c,et_c, el_f, ep_f, em_f, el_h, em_h, ep_h, el_h_inv, em_h_inv, ep_h_inv,  &
       jl_c, jr_c,jt_c, jl_f, jp_f, jm_f, jl_h, jm_h, jp_h,  &
+      rho_f, rhoold_f, rho_h, rhoold_h, &
       l_spectral, l_staggered, l_AM_RZ, norderx, nordery, nxguards, nyguards,        &
       rho_r, rhof, rhoold_c, rhooldf, xcoeffs, ycoeffs, zcoeffs
 #if defined(FFTW)
@@ -203,41 +204,41 @@ MODULE link_external_tools
 
       nkx=(2*nxguards+nx+1)! Real To Complex Transform
       nky=(2*nyguards+ny+1)
-      nkz=nmodes
+      nmodes= nmodes_in
 
-      IF(.NOT. ASSOCIATED(el_f)) ALLOCATE(el_f(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(em_f)) ALLOCATE(em_f(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(ep_f)) ALLOCATE(ep_f(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(bl_f)) ALLOCATE(bl_f(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(bm_f)) ALLOCATE(bm_f(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(bp_f)) ALLOCATE(bp_f(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(jl_f)) ALLOCATE(jl_f(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(jm_f)) ALLOCATE(jm_f(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(jp_f)) ALLOCATE(jp_f(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(rho_f)) ALLOCATE(rho_f(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(rhoold_f)) ALLOCATE(rhoold_f(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(el_h)) ALLOCATE(el_h(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(em_h)) ALLOCATE(em_h(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(ep_h)) ALLOCATE(ep_h(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(bl_h)) ALLOCATE(bl_h(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(bm_h)) ALLOCATE(bm_h(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(bp_h)) ALLOCATE(bp_h(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(jl_h)) ALLOCATE(jl_h(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(jm_h)) ALLOCATE(jm_h(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(jp_h)) ALLOCATE(jp_h(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(rho_h)) ALLOCATE(rho_h(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(rhoold_h)) ALLOCATE(rhoold_h(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(el_h_inv)) ALLOCATE(el_h_inv(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(em_h_inv)) ALLOCATE(em_h_inv(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(ep_h_inv)) ALLOCATE(ep_h_inv(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(bl_h_inv)) ALLOCATE(bl_h_inv(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(bm_h_inv)) ALLOCATE(bm_h_inv(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(bp_h_inv)) ALLOCATE(bp_h_inv(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(jl_h_inv)) ALLOCATE(jl_h_inv(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(jm_h_inv)) ALLOCATE(jm_h_inv(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(jp_h_inv)) ALLOCATE(jp_h_inv(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(rho_h_inv)) ALLOCATE(rho_h_inv(nkx, nky, nkz))
-      IF(.NOT. ASSOCIATED(rhoold_h_inv)) ALLOCATE(rhoold_h_inv(nkx, nky, nkz))
+      IF(.NOT. ASSOCIATED(el_f)) ALLOCATE(el_f(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(em_f)) ALLOCATE(em_f(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(ep_f)) ALLOCATE(ep_f(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(bl_f)) ALLOCATE(bl_f(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(bm_f)) ALLOCATE(bm_f(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(bp_f)) ALLOCATE(bp_f(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(jl_f)) ALLOCATE(jl_f(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(jm_f)) ALLOCATE(jm_f(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(jp_f)) ALLOCATE(jp_f(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(rho_f)) ALLOCATE(rho_f(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(rhoold_f)) ALLOCATE(rhoold_f(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(el_h)) ALLOCATE(el_h(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(em_h)) ALLOCATE(em_h(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(ep_h)) ALLOCATE(ep_h(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(bl_h)) ALLOCATE(bl_h(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(bm_h)) ALLOCATE(bm_h(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(bp_h)) ALLOCATE(bp_h(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(jl_h)) ALLOCATE(jl_h(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(jm_h)) ALLOCATE(jm_h(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(jp_h)) ALLOCATE(jp_h(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(rho_h)) ALLOCATE(rho_h(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(rhoold_h)) ALLOCATE(rhoold_h(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(el_h_inv)) ALLOCATE(el_h_inv(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(em_h_inv)) ALLOCATE(em_h_inv(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(ep_h_inv)) ALLOCATE(ep_h_inv(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(bl_h_inv)) ALLOCATE(bl_h_inv(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(bm_h_inv)) ALLOCATE(bm_h_inv(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(bp_h_inv)) ALLOCATE(bp_h_inv(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(jl_h_inv)) ALLOCATE(jl_h_inv(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(jm_h_inv)) ALLOCATE(jm_h_inv(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(jp_h_inv)) ALLOCATE(jp_h_inv(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(rho_h_inv)) ALLOCATE(rho_h_inv(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(rhoold_h_inv)) ALLOCATE(rhoold_h_inv(nkx, nky, nmodes))
     ENDIF
 
    IF((l_spectral) .AND. (l_AM_RZ)) CALL init_plans_blocks_RZ
