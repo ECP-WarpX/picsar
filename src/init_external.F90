@@ -132,7 +132,7 @@ MODULE link_external_tools
   END SUBROUTINE init_params_external
 
 
-  SUBROUTINE init_params_external_RZ(nr, nl,nmdoes, imode,dr,dl,dtt,ngr,ngl,norr,norl,&
+  SUBROUTINE init_params_external_RZ(nr, nl,nmodes_in, imode,dr,dl,dtt,ngr,ngl,norr,norl,&
       field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11) &
       BIND(C,name='init_params_picsar_AM')
     USE fastfft
@@ -140,7 +140,7 @@ MODULE link_external_tools
       el_c, er_c,et_c, el_f, ep_f, em_f, el_h, em_h, ep_h, el_h_inv, em_h_inv, ep_h_inv,  &
       jl_c, jr_c,jt_c, jl_f, jp_f, jm_f, jl_h, jm_h, jp_h,  &
       l_spectral, l_staggered, l_AM_RZ, norderx, nordery, nxguards, nyguards,        &
-      rho_r, rhof, rhoold_r, rhooldf, xcoeffs, ycoeffs, zcoeffs
+      rho_r, rhof, rhoold_c, rhooldf, xcoeffs, ycoeffs, zcoeffs
 #if defined(FFTW)
     USE fourier_psaotd
     USE hankel 
@@ -152,17 +152,16 @@ MODULE link_external_tools
       fftw_threads_ok, fftw_with_mpi, nkx, nky, nx, ny, nmodes, p3dfft_flag,        &
       p3dfft_stride, rank
     IMPLICIT NONE
-    INTEGER(C_INT) , INTENT(IN) :: n1,n2,n3,ng2,ng3,nor2,nor3,cdim
-    COMPLEX(C_DOUBLE) , INTENT(INOUT), TARGET , DIMENSION(-ng3:n3+ng3,-ng2:n2+ng2) :: &
-        field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11
-    REAL(C_DOUBLE) , INTENT(IN) ::d1,d2,dtt
+    INTEGER(C_INT) , INTENT(IN) :: nr,nl,nmodes_in,imode,ngr,ngl,norr,norl
+    COMPLEX(C_DOUBLE) , INTENT(INOUT), TARGET , DIMENSION(-ngr:nr+ngr,-ngl:nl+ngl) :: &
+         field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11
+    REAL(C_DOUBLE) , INTENT(IN) ::dr,dl,dtt
     INTEGER(idp) :: imn, imx, jmn, jmx, kmn, kmx
-    LOGICAL(C_BOOL)   , INTENT(IN)   :: is_spec
     LOGICAL(lp)                      :: l_stg
     INTEGER(isp)                     :: iret
 
     IF(rank==0) PRINT*, 'BEGIN INIT EXTERNAL'
-    l_spectral  = LOGICAL(is_spec,lp)
+    l_spectral  = .TRUE.
     fftw_with_mpi = .FALSE.
     fftw_hybrid = .FALSE.
     fftw_mpi_transpose = .FALSE.
@@ -175,7 +174,7 @@ MODULE link_external_tools
     fftw_threads_ok = .TRUE.
     p3dfft_flag = .FALSE.
     p3dfft_stride = .FALSE.
-    c_dim = INT(cdim,idp)
+    c_dim = INT(3,idp)
     nx = INT(nr,idp)
     ny = INT(nl,idp)
     nmodes = INT(nmodes,idp)
@@ -189,18 +188,18 @@ MODULE link_external_tools
 
       
    IF ((l_spectral) .AND. (l_AM_RZ)) THEN 
-      el_c[:,:,imode] => field3
-      er_c[:,:,imode] => field2
-      et_c[:,:,imode] => field1
-      bl_c[:,:,imode] => field6
-      br_c[:,:,imode] => field5
-      bt_c[:,:,imode] => field4
+      el_c(-ngr:nr+ngr,-ngl:nl+ngl,imode:imode) => field3
+      er_c(-ngr:nr+ngr,-ngl:nl+ngl,imode:imode) => field2
+      et_c(-ngr:nr+ngr,-ngl:nl+ngl,imode:imode) => field1
+      bl_c(-ngr:nr+ngr,-ngl:nl+ngl,imode:imode) => field6
+      br_c(-ngr:nr+ngr,-ngl:nl+ngl,imode:imode) => field5
+      bt_c(-ngr:nr+ngr,-ngl:nl+ngl,imode:imode) => field4
 
-      jl_c[:,:,imode] => field9
-      jr_c[:,:,imode] => field8
-      jt_c[:,:,imode] => field7
-      rho_c[:,:,imode] =>field10
-      rhoold_c[:,:,imode] =>field11
+      jl_c(-ngr:nr+ngr,-ngl:nl+ngl,imode:imode) => field9
+      jr_c(-ngr:nr+ngr,-ngl:nl+ngl,imode:imode) => field8
+      jt_c(-ngr:nr+ngr,-ngl:nl+ngl,imode:imode) => field7
+      rho_c(-ngr:nr+ngr,-ngl:nl+ngl,imode:imode) =>field10
+      rhoold_c(-ngr:nr+ngr,-ngl:nl+ngl,imode:imode) =>field11
 
       nkx=(2*nxguards+nx+1)! Real To Complex Transform
       nky=(2*nyguards+ny+1)
@@ -241,7 +240,7 @@ MODULE link_external_tools
       IF(.NOT. ASSOCIATED(rhoold_h_inv)) ALLOCATE(rhoold_h_inv(nkx, nky, nkz))
     ENDIF
 
-   IF((l_spectral) .AND. (l_AM_RZ)) THEN CALL init_plans_blocks_RZ
+   IF((l_spectral) .AND. (l_AM_RZ)) CALL init_plans_blocks_RZ
     IF(rank==0) PRINT*, 'END INIT EXTERNAL'
   END SUBROUTINE init_params_external_RZ
 
