@@ -802,6 +802,9 @@ class MiniAppParser( object ):
 
         direct_routines_generic_openmp = [
                         "pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp",\
+                        ]
+
+        direct_routines_generic_openmp_vect = [
                         "pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2",\
                         ]
 
@@ -1163,6 +1166,8 @@ class MiniAppParser( object ):
                         self.list_available_routines += direct_routines_vector_o2
                     if self.include_order_3:
                         self.list_available_routines += direct_routines_vector_o3
+                    if self.include_order_n:
+                        self.list_available_routines += direct_routines_generic_openmp_vect
 
         elif self.flag_optimization == 'off':
             if self.flag_charge == 'on':

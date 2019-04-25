@@ -610,7 +610,9 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1( jx, jx_nguard, jx_nvalid, jy,     
             !$acc atomic update
           jz(ic, kc) = jz(ic, kc) + sdzk(i) ! Deposition on the current
         END IF
+        sdxim1 = sdxi
       END DO
+      sdzkm1 = sdzk
     END DO
 
   END DO

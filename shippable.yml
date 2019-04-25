@@ -7,6 +7,7 @@ build:
 
   ci:
     # Install dependencies
+    - export LC_ALL=C
     - pip install matplotlib pytest
     # Install FFTW3
     - sudo apt-get update && sudo apt-get install -y libfftw3-dev libfftw3-mpi-dev

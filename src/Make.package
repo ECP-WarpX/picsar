@@ -23,8 +23,7 @@ F90EXE_sources += karkkainen.F90
 VPATH_LOCATIONS   += $(PICSAR_HOME)/src/field_solvers/Maxwell/karkkainen_solver
 INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/field_solvers/Maxwell/karkkainen_solver
 
-F90EXE_sources += charge_deposition_3d.F90
-F90EXE_sources += charge_deposition_2d.F90
+F90EXE_sources += charge_deposition_$(DIM)d.F90
 
 VPATH_LOCATIONS   += $(PICSAR_HOME)/src/particle_deposition/charge_deposition/
 INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/particle_deposition/charge_deposition/
@@ -41,32 +40,29 @@ F90EXE_sources += direct_current_deposition_2d.F90
 VPATH_LOCATIONS   += $(PICSAR_HOME)/src/particle_deposition/current_deposition/direct
 INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/particle_deposition/current_deposition/direct
 
-F90EXE_sources += esirkepov_2d.F90
 F90EXE_sources += esirkepov_3d.F90
+F90EXE_sources += esirkepov_2d.F90
 
 VPATH_LOCATIONS   += $(PICSAR_HOME)/src/particle_deposition/current_deposition/esirkepov
 INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/particle_deposition/current_deposition/esirkepov
 
-F90EXE_sources += field_gathering_manager_3d.F90
-F90EXE_sources += field_gathering_manager_2d.F90
+F90EXE_sources += field_gathering_manager_$(DIM)d.F90
 
 VPATH_LOCATIONS   += $(PICSAR_HOME)/src/field_gathering
 INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/field_gathering
 
-F90EXE_sources += field_gathering_on_3d.F90
-F90EXE_sources += field_gathering_o1_3d.F90
-F90EXE_sources += field_gathering_o2_3d.F90
-F90EXE_sources += field_gathering_o3_3d.F90
-F90EXE_sources += field_gathering_on_2d.F90
-F90EXE_sources += field_gathering_o1_2d.F90
-F90EXE_sources += field_gathering_o2_2d.F90
-F90EXE_sources += field_gathering_o3_2d.F90
+F90EXE_sources += field_gathering_on_$(DIM)d.F90
+F90EXE_sources += field_gathering_o1_$(DIM)d.F90
+F90EXE_sources += field_gathering_o2_$(DIM)d.F90
+F90EXE_sources += field_gathering_o3_$(DIM)d.F90
 
 VPATH_LOCATIONS   += $(PICSAR_HOME)/src/field_gathering/energy_conserving
 INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/field_gathering/energy_conserving
 
-F90EXE_sources += boris_2d.F90
 F90EXE_sources += boris_3d.F90
+ifeq ($(DIM),2)
+  F90EXE_sources += boris_2d.F90
+endif
 
 VPATH_LOCATIONS   += $(PICSAR_HOME)/src/particle_pushers/boris_pusher/
 INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/particle_pushers/boris_pusher/
@@ -105,3 +101,4 @@ ifeq ($(USE_PSATD),TRUE)
   VPATH_LOCATIONS   += $(PICSAR_HOME)/src/boundary_conditions
   INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/boundary_conditions
 endif
+      
