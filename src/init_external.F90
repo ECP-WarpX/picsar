@@ -141,7 +141,7 @@ MODULE link_external_tools
       jl_c, jr_c,jt_c, jl_f, jp_f, jm_f, jl_h, jm_h, jp_h,  &
       rho_f, rhoold_f, rho_h, rhoold_h, &
       l_spectral, l_staggered, l_AM_RZ, norderx, nordery, nxguards, nyguards,        &
-      rho_r, rhof, rhoold_c, rhooldf, xcoeffs, ycoeffs, zcoeffs
+      rho_r, rhof, rho_c,rhoold_c, rhooldf, xcoeffs, ycoeffs, zcoeffs
 #if defined(FFTW)
     USE fourier_psaotd
     USE hankel 
@@ -234,11 +234,6 @@ MODULE link_external_tools
       IF(.NOT. ASSOCIATED(bl_h_inv)) ALLOCATE(bl_h_inv(nkx, nky, nmodes))
       IF(.NOT. ASSOCIATED(bm_h_inv)) ALLOCATE(bm_h_inv(nkx, nky, nmodes))
       IF(.NOT. ASSOCIATED(bp_h_inv)) ALLOCATE(bp_h_inv(nkx, nky, nmodes))
-      IF(.NOT. ASSOCIATED(jl_h_inv)) ALLOCATE(jl_h_inv(nkx, nky, nmodes))
-      IF(.NOT. ASSOCIATED(jm_h_inv)) ALLOCATE(jm_h_inv(nkx, nky, nmodes))
-      IF(.NOT. ASSOCIATED(jp_h_inv)) ALLOCATE(jp_h_inv(nkx, nky, nmodes))
-      IF(.NOT. ASSOCIATED(rho_h_inv)) ALLOCATE(rho_h_inv(nkx, nky, nmodes))
-      IF(.NOT. ASSOCIATED(rhoold_h_inv)) ALLOCATE(rhoold_h_inv(nkx, nky, nmodes))
     ENDIF
 
    IF((l_spectral) .AND. (l_AM_RZ)) CALL init_plans_blocks_RZ
