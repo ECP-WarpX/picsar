@@ -381,3 +381,61 @@ SUBROUTINE pxr_depose_rhoold_n_2dxz(rhoold, np, xp, zp, ux, uy, uz, gaminv, w, q
 
   return
 END SUBROUTINE pxr_depose_rhoold_n_2dxz
+
+
+! ______________________________________________________________________________
+!> @brief
+!> Applies the inverse cell volume scaling to charge density.
+!>
+!> @details
+!> Applies the inverse cell volume scaling. It is more efficient to apply
+!> the scaling afterward rather than with the particles.
+! ________________________________________________________________________________________
+SUBROUTINE apply_rz_volume_scaling_rho( rho, rho_nguard, rho_nvalid, rmin, dr, type_rz_depose)     !#do not wrap
+  USE picsar_precision, ONLY: idp, lp, num
+  USE constants, ONLY: pi
+  implicit none
+  INTEGER(idp), intent(in) :: rho_nguard(2), rho_nvalid(2)
+  REAL(num), intent(IN OUT):: rho(-rho_nguard(1):rho_nvalid(1)+rho_nguard(1)-1,  &
+                                  -rho_nguard(2):rho_nvalid(2)+rho_nguard(2)-1 )
+  real(num), intent(in)    :: dr, rmin
+  INTEGER(idp), intent(in) :: type_rz_depose
+
+  INTEGER(idp) :: j
+  real(num):: r
+
+  if (rmin == 0.) then
+     rho(1:rho_nguard(1),:) = rho(1:rho_nguard(1),:) + rho(-1:-rho_nguard(1):-1,:)
+  end if
+
+  ! In rz geometry, divide the current by the cell volume
+
+  ! In the lower guard cells in x
+  do j=-rho_nguard(1),-1
+     r = abs(rmin + j*dr)
+     rho(j,:) = rho(j,:)/(2.*pi*r)
+  end do
+
+  ! On the lower boundary
+  j = 0
+  if (rmin == 0.) then
+     ! On axis
+     if (type_rz_depose == 1) then ! Verboncoeur JCP 164, 421-427 (2001) : corrected volumes
+        rho(j,:) = rho(j,:)/(pi*dr/3.)
+     else                          ! Standard volume
+        rho(j,:) = rho(j,:)/(pi*dr/4.)
+     endif
+  else
+     ! Not the axis
+     r = abs(rmin + j*dr)
+     rho(j,:) = rho(j,:)/(2.*pi*r)
+  end if
+
+  ! In the rest of the grid
+  do j=1,rho_nvalid(1) + rho_nguard(1)-1
+     r = abs(rmin + j*dr)
+     rho(j,:) = rho(j,:)/(2.*pi*r)
+  end do
+
+  return
+END SUBROUTINE apply_rz_volume_scaling_rho
