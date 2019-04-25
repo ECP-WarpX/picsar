@@ -25,7 +25,7 @@ COMP=gnu
 # - sde: sde profiling
 # - map: Allinea Map profiling
 # - library: create static and dynamic library
-MODE=debug_spectral
+MODE= library
 
 # System (SYS)
 # - cori2
@@ -50,7 +50,7 @@ CC=mpicc
 # Fortran compiler arguments
 FARGS= -g -fbounds-check -O3 -fopenmp -JModules
 
-# External libs 
+# External libs
 FFTW3_LIB=/Users/imen/PICSAR_SOFTWARE_AND_DEPENDENCIES/FFTW_INSTALL_DIR/lib     #/home/llr/galop/izemzemi/soft/picsar_and_dep/FFTW_INSTALL_DIR/lib
 FFTW3_INCLUDE= /Users/imen/PICSAR_SOFTWARE_AND_DEPENDENCIES/FFTW_INSTALL_DIR/include   #/home/llr/galop/izemzemi/soft/picsar_and_dep/FFTW_INSTALL_DIR/include
 LAPACK_BLAS_LIB=/Users/imen/PICSAR_SOFTWARE_AND_DEPENDENCIES/OpenBLAS_DIR/lib
@@ -321,7 +321,7 @@ else ifeq ($(COMP),intel)
   endif
 
 endif
-FARGS= -g -fbounds-check -fopenmp -JModules -Wunused-variable -ftree-vectorize
+FARGS= -O3 -fopenmp -JModules -ftree-vectorize 
 FARGS+= $(LARCH)
 
 # ________________________________________________________
@@ -342,12 +342,12 @@ ifeq ($(IS_P3DFFT),true)
 endif
 
 ifeq ($(MODE),library)
-        FARGS += -fPIC -I$(FFTW3_INCLUDE) -D LIBRARY=1  -D  FFTW=1
+        FARGS += -fPIC -I$(FFTW3_INCLUDE)  -D  FFTW=1
         LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_threads
 endif
 
 ifeq ($(IS_HANKEL),true)
-        FARGS += -I$(LAPACK_BLAS_INCLUDE) 
+        FARGS += -I$(LAPACK_BLAS_INCLUDE) -D LIBRARY=1
         LDFLAGS += -L$(LAPACK_BLAS_LIB) -lopenblas
         HANKEL_FILE = $(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/hankel.o
 endif
@@ -360,21 +360,22 @@ all: echo createdir build
 test: test1 test2 test3
 lib: echo createdir build_lib
 build_lib:$(SRCDIR)/modules/modules.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fastfft.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/GPSTD.o \
 	$(SRCDIR)/field_solvers/Maxwell/yee_solver/yee.o \
 	$(SRCDIR)/field_solvers/Maxwell/karkkainen_solver/karkkainen.o \
-	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fastfft.o \
-	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/init_kspace_3D.o \
-	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/parallelization/tiling/tiling.o \
+	$(SRCDIR)/parallelization/mpi/mpi_derived_types.o \
 	$(SRCDIR)/housekeeping/load_balancing.o \
 	$(SRCDIR)/boundary_conditions/field_boundaries.o \
+	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/init_kspace_3D.o \
 	$(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/fourier_psaotd.o \
+	$(HANKEL_FILE) \
 	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/init_external.o
 	ar rcs libpxr.a $(SRCDIR)/*.o $(SRCDIR)/*/*.o  $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o
-	$(FC) $(FARGS) -shared -o libpxr.so $(SRCDIR)/*.o  $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o  $(SRCDIR)/*/*/*/*.o
+	$(FC) $(FARGS)  $(LDFLAGS)  -shared -o libpxr.so $(SRCDIR)/*.o  $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o  $(SRCDIR)/*/*/*/*.o
 	mv libpxr.a $(LIBDIR)
 	mv libpxr.so $(LIBDIR)
 
@@ -397,8 +398,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_circ.o \
-
-$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_circ.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
@@ -448,8 +448,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_circ.o \
-
-$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
+	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_circ.o \
 	$(SRCDIR)/particle_deposition/current_deposition/esirkepov/esirkepov_2d.o \
@@ -553,7 +552,6 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/current_deposition_manager_circ.o \
-	
 $(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_2d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_3d.o \
 	$(SRCDIR)/particle_deposition/current_deposition/direct/direct_current_deposition_circ.o \
