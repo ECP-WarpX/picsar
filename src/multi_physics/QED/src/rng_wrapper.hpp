@@ -38,6 +38,8 @@ namespace picsar{
             stl_rng_wrapper(const stl_rng_wrapper& ) = default;
             stl_rng_wrapper(stl_rng_wrapper&& ) = default;
 
+            //Assignment operator
+            stl_rng_wrapper& operator= (const stl_rng_wrapper& other);
 
             //Get rnd number uniformly distributed in [a,b)
             template<typename _REAL>
@@ -123,6 +125,14 @@ picsar::multi_physics::stl_rng_wrapper::stl_rng_wrapper(uint64_t seed)
  //Constructor with move of an existing RNG
  picsar::multi_physics::stl_rng_wrapper::stl_rng_wrapper(std::mt19937_64&& rng):
     rng(std::move(rng)){}
+
+//Assignment operator
+picsar::multi_physics::stl_rng_wrapper&
+picsar::multi_physics::stl_rng_wrapper::operator= (const stl_rng_wrapper& other)
+{
+    rng = other.rng;
+    return *this;
+}
 
 //Get rnd number uniformly distributed in [a,b)
 template<typename _REAL>

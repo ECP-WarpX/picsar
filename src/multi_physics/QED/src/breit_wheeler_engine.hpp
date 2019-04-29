@@ -744,10 +744,9 @@ picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::breit_wheeler_engi
                       innards.cum_distrib_table_data_ptr},
     aux_table{innards.aux_table_coords_how_many,
               innards.aux_table_coords_ptr,
-              innards.aux_table_data_ptr}
-{
-    rng = *innards.rng_ptr;
-}
+              innards.aux_table_data_ptr},
+    rng{*innards.rng_ptr}
+{}
 
 
 #endif //__PICSAR_MULTIPHYSICS_BREIT_WHEELER_ENGINE__

@@ -86,6 +86,11 @@ void test_BW(){
             bw_engine.read_cumulative_pair_table("tpair.bin");
     }
 
+    //Test
+    auto innards = bw_engine.export_innards();
+    auto bw_clone = pxrmp::breit_wheeler_engine<double, pxrmp::stl_rng_wrapper>
+                    (innards);
+
     //Init some photons
     auto ptr_phot1 = make_shared<photons>("phot1");
     const size_t how_many_phot = 20000;
@@ -167,8 +172,8 @@ void test_BW(){
        	auto elec = all[0][0];
        	auto post = all[1][0];
 
-        momentum mom_ele{elec.first};
-        momentum mom_pos{post.first};
+        momentum mom_ele{elec.first[0], elec.first[1], elec.first[2]};
+        momentum mom_pos{post.first[0], post.first[1], post.first[2]};
         ptr_ele1->add_particle(pos, mom_ele);
         ptr_pos1->add_particle(pos, mom_pos);
 

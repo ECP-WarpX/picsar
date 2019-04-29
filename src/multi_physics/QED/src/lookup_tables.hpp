@@ -387,7 +387,8 @@ lookup_2d(size_t how_many_1,
           size_t how_many_2,
           _REAL* _coords_2,
           _REAL* _data):
-coords{how_many_1, _coords_1, how_many_2, _coords_2},
+coords{picsar_vector<_REAL>{how_many_1, _coords_1},
+       picsar_vector<_REAL>{how_many_2, _coords_2}},
 data{how_many_1*how_many_2, _data},
 init_flag{true}
 {}
