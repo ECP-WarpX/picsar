@@ -23,25 +23,6 @@
 using namespace picsar::multi_physics;
 
 //Helper function
-#ifdef PXRMP_BUILD_WITH_KOKKOS_SUPPORT
-
-//Kokkos version
-template<typename REAL>
-breit_wheeler_engine
-<REAL, kokkos_rng_wrapper<Kokkos::Random_XorShift1024_Pool<>>>
-get_bw_kokkos_set_lambda(uint64_t seed,
-breit_wheeler_engine_ctrl<REAL> bw_ctrl = breit_wheeler_engine_ctrl<REAL>())
-{
-    auto pool = Kokkos::Random_XorShift1024_Pool<>{seed};
-    kokkos_rng_wrapper<Kokkos::Random_XorShift1024_Pool<>> wrap{pool};
-    auto bw_engine =  breit_wheeler_engine
-        <REAL, kokkos_rng_wrapper<Kokkos::Random_XorShift1024_Pool<>>>{std::move(wrap), 1.0, bw_ctrl};
-    return bw_engine;
-}
-
-#endif
-
-//No Kokkos version
 template<typename REAL>
 breit_wheeler_engine<REAL, stl_rng_wrapper> get_bw_stl_set_lambda(uint64_t seed,
 breit_wheeler_engine_ctrl<REAL> bw_ctrl = breit_wheeler_engine_ctrl<REAL>())

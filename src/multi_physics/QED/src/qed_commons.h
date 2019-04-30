@@ -10,14 +10,6 @@
 #ifndef __PICSAR_MULTIPHYSICS_QED_COMMONS__
 #define __PICSAR_MULTIPHYSICS_QED_COMMONS__
 
-//######################## Flag to enable kokkos support for thread-safe RNG####
-
-    //Default is to build without Kokkos support
-    //#define PXRMP_BUILD_WITH_KOKKOS_SUPPORT
-
-//##############################################################################
-
-
 //###################### Decorator to compile some functions for CPU and GPU####
 
     //This flag should be set by the user

@@ -16,39 +16,11 @@
 #define PXRMP_USE_SI_UNITS
 #include "quantum_sync_engine.hpp"
 
-
-//Only include Kokkos if it is supported
-#ifdef PXRMP_BUILD_WITH_KOKKOS_SUPPORT
-    #include <Kokkos_Core.hpp>
-    #include <Kokkos_Random.hpp>
-    #include <Kokkos_DualView.hpp>
-#endif
-
 using namespace picsar::multi_physics;
 
 //________________________________
 
 //Helper function
-#ifdef PXRMP_BUILD_WITH_KOKKOS_SUPPORT
-
-//Kokkos version
-template<typename REAL>
-quantum_synchrotron_engine
-<REAL, kokkos_rng_wrapper<Kokkos::Random_XorShift1024_Pool<>>>
-get_qs_kokkos_set_lambda(uint64_t seed, REAL lambda,
-quantum_synchrotron_engine_ctrl<REAL> qs_ctrl = quantum_synchrotron_engine_ctrl<REAL>())
-{
-    auto pool = Kokkos::Random_XorShift1024_Pool<>{seed};
-    kokkos_rng_wrapper<Kokkos::Random_XorShift1024_Pool<>> wrap{pool};
-    auto qs_engine =  quantum_synchrotron_engine
-        <REAL, kokkos_rng_wrapper<Kokkos::Random_XorShift1024_Pool<>>>{std::move(wrap), 1.0, qs_ctrl};
-    qs_engine.set_lambda(static_cast<REAL>(lambda));
-    return qs_engine;
-}
-
-#endif
-
-//No Kokkos version
 template<typename REAL>
 quantum_synchrotron_engine<REAL, stl_rng_wrapper> get_qs_stl_set_lambda(uint64_t seed, REAL lambda,
 quantum_synchrotron_engine_ctrl<REAL> qs_ctrl = quantum_synchrotron_engine_ctrl<REAL>())
