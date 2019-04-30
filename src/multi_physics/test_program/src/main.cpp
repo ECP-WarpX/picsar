@@ -117,13 +117,13 @@ void test_BW(){
 
     //Add BW decrease of optical depth to photons
     auto BW_opticaldepth =
-    [&bw_engine](positions_list& pos, momenta_list& mom,
+    [&bw_clone](positions_list& pos, momenta_list& mom,
       const em_field_list& fields, std::vector<double>& opt_depth, std::vector<bool>& flag, double, double, ttime dt)->void{
           for(size_t i = 0; i < pos[0].size(); i++){
               bool has_event_happend;
               double dt_prod;
               std::tie(has_event_happend, dt_prod) =
-                  bw_engine.evolve_opt_depth_and_determine_event
+                  bw_clone.evolve_opt_depth_and_determine_event
                   (mom[0][i], mom[1][i], mom[2][i],
                   fields[0][i], fields[1][i], fields[2][i],
                   fields[3][i], fields[4][i], fields[5][i], dt, opt_depth[i]);
@@ -145,7 +145,7 @@ void test_BW(){
     //
         //Add simple process to print on disk how many photons are left
         auto BW_howmanyphotons =
-        [&bw_engine, lambda](positions_list& pos, momenta_list& ,
+        [&bw_clone, lambda](positions_list& pos, momenta_list& ,
           const em_field_list& , std::vector<double>&, std::vector<bool>& , double, double, ttime dt)->void{
               std::cout << "There are " << pos[0].size() << " photons left!" << std::endl;
         };
@@ -158,13 +158,13 @@ void test_BW(){
     //
     //add_process_with_destruction
     auto BW_pair_prod=
-    [&bw_engine, lambda, ptr_ele1, ptr_pos1](const position& pos, const momentum& mom,
+    [&bw_clone, lambda, ptr_ele1, ptr_pos1](const position& pos, const momentum& mom,
     const em_field& field, const ooptical_depth& opt, const bool& flag, double mass, double charge, ttime dt)->bool{
         if(!flag)
             return false;
 
         size_t sampling = 1;
-        auto all = bw_engine.generate_breit_wheeler_pairs
+        auto all = bw_clone.generate_breit_wheeler_pairs
             (mom[0], mom[1], mom[2],
             field[0], field[1], field[2],
             field[3], field[4], field[5], 1.0, sampling);
