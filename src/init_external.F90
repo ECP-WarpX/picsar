@@ -139,9 +139,9 @@ MODULE link_external_tools
     USE fields, ONLY: bl_c, br_c,bt_c, bl_f, bp_f, bm_f, bl_h, bm_h, bp_h, bl_h_inv, bm_h_inv, bp_h_inv,  &
       el_c, er_c,et_c, el_f, ep_f, em_f, el_h, em_h, ep_h, el_h_inv, em_h_inv, ep_h_inv,  &
       jl_c, jr_c,jt_c, jl_f, jp_f, jm_f, jl_h, jm_h, jp_h,  &
-      rho_f, rhoold_f, rho_h, rhoold_h, &
+      rho_f, rhoold_f, rho_h, rhoold_h, invM, invM1, invM_1, Ma, Ma1, Ma_1,&
       l_spectral, l_staggered, l_AM_RZ, norderx, nordery, nxguards, nyguards,        &
-      rho_r, rhof, rho_c,rhoold_c, rhooldf, xcoeffs, ycoeffs, zcoeffs
+      rhof, rho_c,rhoold_c, rhooldf, xcoeffs, ycoeffs, zcoeffs
 #if defined(FFTW)
     USE fourier_psaotd
     USE hankel 
@@ -154,7 +154,7 @@ MODULE link_external_tools
       p3dfft_stride, rank
     IMPLICIT NONE
     INTEGER(C_INT) , INTENT(IN) :: nr,nl,nmodes_in,imode,ngr,ngl,norr,norl
-    COMPLEX(C_DOUBLE) , INTENT(INOUT), TARGET , DIMENSION(-ngr:nr+ngr,-ngl:nl+ngl) :: &
+    COMPLEX(C_DOUBLE) , INTENT(INOUT), TARGET , DIMENSION(-ngr:nr+ngr,-ngl:nl+ngl,0:nmodes_in-1) :: &
          field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11
     REAL(C_DOUBLE) , INTENT(IN) ::dr,dl,dtt
     INTEGER(idp) :: imn, imx, jmn, jmx, kmn, kmx
@@ -189,24 +189,28 @@ MODULE link_external_tools
 
       
    IF ((l_spectral) .AND. (l_AM_RZ)) THEN 
-      el_c(-ngr:nr+ngr,-ngl:nl+ngl,imode:imode) => field3
-      er_c(-ngr:nr+ngr,-ngl:nl+ngl,imode:imode) => field2
-      et_c(-ngr:nr+ngr,-ngl:nl+ngl,imode:imode) => field1
-      bl_c(-ngr:nr+ngr,-ngl:nl+ngl,imode:imode) => field6
-      br_c(-ngr:nr+ngr,-ngl:nl+ngl,imode:imode) => field5
-      bt_c(-ngr:nr+ngr,-ngl:nl+ngl,imode:imode) => field4
+      el_c => field3
+      er_c => field2
+      et_c => field1
+      bl_c=> field6
+      br_c => field5
+      bt_c => field4
 
-      jl_c(-ngr:nr+ngr,-ngl:nl+ngl,imode:imode) => field9
-      jr_c(-ngr:nr+ngr,-ngl:nl+ngl,imode:imode) => field8
-      jt_c(-ngr:nr+ngr,-ngl:nl+ngl,imode:imode) => field7
-      rho_c(-ngr:nr+ngr,-ngl:nl+ngl,imode:imode) =>field10
-      rhoold_c(-ngr:nr+ngr,-ngl:nl+ngl,imode:imode) =>field11
+      jl_c => field9
+      jr_c=> field8
+      jt_c => field7
+      rho_c =>field10
+      rhoold_c =>field11
 
       nkx=(2*nxguards+nx+1)! Real To Complex Transform
       nky=(2*nyguards+ny+1)
       nmodes= nmodes_in
 
-      IF(.NOT. ASSOCIATED(el_f)) ALLOCATE(el_f(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(el_f)) THEN
+         write(0,*) "before allocation"
+         ALLOCATE(el_f(nkx, nky, nmodes))
+         write(0,*) "After allocation"
+      ENDIF
       IF(.NOT. ASSOCIATED(em_f)) ALLOCATE(em_f(nkx, nky, nmodes))
       IF(.NOT. ASSOCIATED(ep_f)) ALLOCATE(ep_f(nkx, nky, nmodes))
       IF(.NOT. ASSOCIATED(bl_f)) ALLOCATE(bl_f(nkx, nky, nmodes))
@@ -234,9 +238,18 @@ MODULE link_external_tools
       IF(.NOT. ASSOCIATED(bl_h_inv)) ALLOCATE(bl_h_inv(nkx, nky, nmodes))
       IF(.NOT. ASSOCIATED(bm_h_inv)) ALLOCATE(bm_h_inv(nkx, nky, nmodes))
       IF(.NOT. ASSOCIATED(bp_h_inv)) ALLOCATE(bp_h_inv(nkx, nky, nmodes))
+      IF(.NOT. ASSOCIATED(invM)) ALLOCATE(invM(nkx, nkx))
+      IF(.NOT. ASSOCIATED(invM_1)) ALLOCATE(invM_1(nkx, nkx))
+      IF(.NOT. ASSOCIATED(invM1)) ALLOCATE(invM1(nkx, nkx))
+      IF(.NOT. ASSOCIATED(Ma)) ALLOCATE(Ma(nkx, nkx))
+      IF(.NOT. ASSOCIATED(Ma1)) ALLOCATE(Ma1(nkx, nkx))
+      IF(.NOT. ASSOCIATED(Ma_1)) THEN
+        ALLOCATE(Ma_1(nkx, nkx))
+        CALL init_plans_blocks_rz       
+      ENDIF
     ENDIF
 
-   IF((l_spectral) .AND. (l_AM_RZ)) CALL init_plans_blocks_RZ
+    !CALL init_plans_blocks_RZ
     IF(rank==0) PRINT*, 'END INIT EXTERNAL'
   END SUBROUTINE init_params_external_RZ
 
