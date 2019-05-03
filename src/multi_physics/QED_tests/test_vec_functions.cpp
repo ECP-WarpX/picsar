@@ -39,7 +39,7 @@ T tolerance()
 template<typename T>
 void vec_functions_norm2()
 {
-    vec3<T> vv{1.0,-2.0,3.0};
+    vec3<T> vv{static_cast<T>(1.0),static_cast<T>(-2.0),static_cast<T>(3.0)};
     T exp = static_cast<T>(1.0 + 4.0 + 9.0);
     BOOST_CHECK_SMALL((norm2(vv)-exp)/exp, tolerance<T>());
 }
@@ -60,8 +60,8 @@ BOOST_AUTO_TEST_CASE( vec_functions_norm2_single_1 )
 template<typename T>
 void vec_functions_norm()
 {
-    vec3<T> vv{1.0,-2.0,3.0};
-    T exp = sqrt(1.0 + 4.0 + 9.0);
+    vec3<T> vv{static_cast<T>(1.0),static_cast<T>(-2.0),static_cast<T>(3.0)};
+    T exp =  static_cast<T>(sqrt(1.0 + 4.0 + 9.0));
     BOOST_CHECK_SMALL((norm(vv)-exp)/exp,  tolerance<T>());
 }
 
@@ -81,9 +81,9 @@ BOOST_AUTO_TEST_CASE( vec_functions_norm_single_1 )
 template<typename T>
 void vec_functions_dot()
 {
-    vec3<T> vv1{1.0,-2.0,3.0};
-    vec3<T> vv2{-1.0, 0.0,5.0};
-    T exp = 14.0;
+    vec3<T> vv1{static_cast<T>(1.0),static_cast<T>(-2.0),static_cast<T>(3.0)};
+    vec3<T> vv2{static_cast<T>(-1.0),static_cast<T>(0.0),static_cast<T>(5.0)};
+    T exp = static_cast<T>(14.0);
     BOOST_CHECK_SMALL((dot(vv1, vv2)-exp)/exp, tolerance<T>());
 }
 
@@ -103,9 +103,9 @@ BOOST_AUTO_TEST_CASE( vec_functions_dot_single_1 )
 template<typename T>
 void vec_functions_cross()
 {
-    vec3<T> vv1{1./3., -1./4., 1./5.};
-    vec3<T> vv2{-2./3., -3./4., 4./5.};
-    vec3<T> exp{-1./20., -2./5., -5./12.};
+    vec3<T> vv1{static_cast<T>(1./3.),static_cast<T>(-1./4.),static_cast<T>(1./5.)};
+    vec3<T> vv2{static_cast<T>(-2./3.),static_cast<T>(-3./4.),static_cast<T>(4./5.)};
+    vec3<T> exp{static_cast<T>(-1./20.),static_cast<T>(-2./5.),static_cast<T>(-5./12.)};
 
     vec3<T> res = cross(vv1,vv2);
     BOOST_CHECK_SMALL((res[0]-exp[0])/exp[0], tolerance<T>());
@@ -129,9 +129,9 @@ BOOST_AUTO_TEST_CASE( vec_functions_cross_single_1 )
 template<typename T>
 void vec_functions_vsprod()
 {
-    vec3<T> vv{1.0,2.0,-3.0};
-    T s = -2.0;
-    vec3<T> exp{-2.0,-4.0,6.0};
+    vec3<T> vv{static_cast<T>(1.0),static_cast<T>(2.0),static_cast<T>(-3.0)};
+    T s = static_cast<T>(-2.0);
+    vec3<T> exp{static_cast<T>(-2.0),static_cast<T>(-4.0),static_cast<T>(6.0)};
 
     vec3<T> r1 = s * vv;
     vec3<T> r2 = vv * s;
@@ -160,9 +160,9 @@ BOOST_AUTO_TEST_CASE( vec_functions_vsprod_float_1 )
 template<typename T>
 void vec_functions_vsdiv()
 {
-    vec3<T> vv{2.0,4.0,-6.0};
-    T s = -2.0;
-    vec3<T> exp{-1.0,-2.0,3.0};
+    vec3<T> vv{static_cast<T>(2.0),static_cast<T>(4.0),static_cast<T>(-6.0)};
+    T s = static_cast<T>(-2.0);
+    vec3<T> exp{static_cast<T>(-1.0),static_cast<T>(-2.0),static_cast<T>(3.0)};
 
     vec3<T> r = vv / s;
 
@@ -187,10 +187,10 @@ BOOST_AUTO_TEST_CASE( vec_functions_vsdiv_float_1 )
 template<typename T>
 void vec_functions_vadd()
 {
-    vec3<T> vv1{1.0,2.0,3.0};
-    vec3<T> vv2{1.0,-1.0,-2.0};
+    vec3<T> vv1{static_cast<T>(1.0),static_cast<T>(2.0),static_cast<T>(3.0)};
+    vec3<T> vv2{static_cast<T>(1.0),static_cast<T>(-1.0),static_cast<T>(-2.0)};
 
-    vec3<T> exp{2.0,1.0,1.0};
+    vec3<T> exp{static_cast<T>(2.0),static_cast<T>(1.0),static_cast<T>(1.0)};
 
     vec3<T> r = vv1 + vv2;
 
@@ -215,10 +215,10 @@ BOOST_AUTO_TEST_CASE( vec_functions_vadd_single_1 )
 template<typename T>
 void vec_functions_vdiff()
 {
-    vec3<T> vv1{1.0f,2.0f,3.0f};
-    vec3<T> vv2{2.0f,-1.0f,-2.0f};
+    vec3<T> vv1{static_cast<T>(1.0),static_cast<T>(2.0),static_cast<T>(3.0)};
+    vec3<T> vv2{static_cast<T>(2.0),static_cast<T>(-1.0),static_cast<T>(-2.0)};
 
-    vec3<T> exp{-1.0f,3.0f,5.0f};
+    vec3<T> exp{static_cast<T>(-1.0),static_cast<T>(3.0),static_cast<T>(5.0)};
 
     vec3<T> r = vv1 - vv2;
 
