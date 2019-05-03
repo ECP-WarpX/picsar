@@ -211,7 +211,7 @@ END SUBROUTINE
 !> Applies the inverse cell volume scaling. It is more efficient to apply
 !> the scaling afterward rather than with the particles.
 ! ________________________________________________________________________________________
-SUBROUTINE apply_rz_volume_scaling( jr, jr_nguard, jr_nvalid, jt, jt_nguard,         &
+SUBROUTINE apply_rz_volume_scaling_j( jr, jr_nguard, jr_nvalid, jt, jt_nguard,         &
   jt_nvalid, jz, jz_nguard, jz_nvalid, rmin, dr, type_rz_depose)     !#do not wrap
   USE picsar_precision, ONLY: idp, lp, num
   USE constants, ONLY: pi
@@ -286,7 +286,7 @@ SUBROUTINE apply_rz_volume_scaling( jr, jr_nguard, jr_nvalid, jt, jt_nguard,    
   end do
 
   return
-end subroutine apply_rz_volume_scaling
+end subroutine apply_rz_volume_scaling_j
 
 ! ________________________________________________________________________________________
 !> @brief
