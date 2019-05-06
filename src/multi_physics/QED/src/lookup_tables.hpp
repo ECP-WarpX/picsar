@@ -43,6 +43,7 @@ namespace picsar{
                 lookup_1d(lookup_1d&& other);
 
                 //Constructor from raw data pointers
+                PXRMP_GPU
                 lookup_1d(size_t how_many, _REAL* _coords, _REAL* _data);
 
                 //Assignment operator
@@ -61,6 +62,7 @@ namespace picsar{
                 bool is_init() const;
 
                 //Linear equispaced interpolation
+                PXRMP_GPU
                 PXRMP_FORCE_INLINE
                 _REAL interp_linear_equispaced(_REAL where) const;
 
@@ -209,6 +211,7 @@ lookup_1d(lookup_1d&& other):
 
 //Constructor from raw data pointers
 template<typename _REAL>
+PXRMP_GPU
 picsar::multi_physics::lookup_1d<_REAL>::
 lookup_1d(size_t how_many, _REAL* _coords, _REAL* _data):
 coords{how_many, _coords},
@@ -267,6 +270,7 @@ is_init() const
 
 //Performs linear equispaced interpolation
 template<typename _REAL>
+PXRMP_GPU
 PXRMP_FORCE_INLINE
 _REAL
 picsar::multi_physics::lookup_1d<_REAL>::
