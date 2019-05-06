@@ -19,7 +19,7 @@
     #ifndef PXRMP_GPU
       //set it to the empty string
       #define PXRMP_GPU
-    #elif
+    #else
       //otherwise, set this flag to inform the code that GPU code has to be
       //generated (this disables error messages...)
       #define PXRMP_WITH_GPU
