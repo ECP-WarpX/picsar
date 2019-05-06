@@ -130,6 +130,14 @@ namespace picsar{
          PXRMP_FORCE_INLINE
          _REAL get_optical_depth();
 
+         //______________________GPU
+         //get a single optical depth
+         //same as above but conceived for GPU usage
+         PXRMP_GPU
+         PXRMP_FORCE_INLINE
+         static _REAL internal_get_optical_depth(_REAL unf_zero_one_minus_epsi);
+         //______________________
+
          //Calculates the pair production rate (Warning: no lookup tables)
          PXRMP_FORCE_INLINE
          _REAL compute_dN_dt(_REAL energy_phot, _REAL chi_phot) const;
@@ -143,6 +151,18 @@ namespace picsar{
          PXRMP_FORCE_INLINE
          _REAL interp_dN_dt(_REAL energy_phot, _REAL chi_phot) const;
 
+         //______________________GPU
+         //Interp the dN_dt from table (with GPU use directly this one!)
+         PXRMP_GPU
+         PXRMP_FORCE_INLINE
+         static _REAL
+         internal_interp_dN_dt
+         (_REAL energy_phot, _REAL chi_phot,
+         const lookup_1d<_REAL>& ref_TTfunc_table,
+         const breit_wheeler_engine_ctrl<_REAL>& ref_bw_ctrl,
+         _REAL _lambda);
+         //______________________
+
          //This function evolves the optical depth for a particle and
          //checks if it goes to zero. If it doesn't the output is false,0.
          //On the contrary, if it goes to zero the output is true, dt_prod,
@@ -153,6 +173,23 @@ namespace picsar{
          _REAL ex, _REAL ey, _REAL ez,
          _REAL bx, _REAL by, _REAL bz,
          _REAL dt, _REAL& opt_depth) const;
+
+         //______________________GPU
+         //Same as above, but with GPU use directly this one!
+         //returs false if errors occur
+         PXRMP_GPU
+         PXRMP_FORCE_INLINE
+         static bool
+         internal_evolve_opt_depth_and_determine_event(
+         _REAL px, _REAL py, _REAL pz,
+         _REAL ex, _REAL ey, _REAL ez,
+         _REAL bx, _REAL by, _REAL bz,
+         _REAL dt, _REAL& opt_depth,
+         bool& has_event_happend,  _REAL& event_dt,
+         _REAL _lambda ,
+         const lookup_1d<_REAL>& ref_TTfunc_table,
+         const breit_wheeler_engine_ctrl<_REAL>& ref_bw_ctrl);
+         //______________________
 
          //Computes the cumulative pair production rate given
          //chi_phot and chi_part
@@ -181,6 +218,28 @@ namespace picsar{
          _REAL ex, _REAL ey, _REAL ez,
          _REAL bx, _REAL by, _REAL bz,
          _REAL weight, size_t sampling) ;
+
+         //______________________GPU
+         //Same as above, but with GPU use directly this one!
+         //Returns false if errors occur
+         PXRMP_GPU
+         PXRMP_FORCE_INLINE
+         static
+         bool
+         internal_generate_breit_wheeler_pairs(
+        _REAL px, _REAL py, _REAL pz,
+        _REAL ex, _REAL ey, _REAL ez,
+        _REAL bx, _REAL by, _REAL bz,
+        _REAL weight, size_t sampling,
+        _REAL* e_px, _REAL* e_py, _REAL* e_pz,
+        _REAL* p_px, _REAL* p_py, _REAL* p_pz,
+        _REAL* e_weight, _REAL* p_weight,
+        _REAL lambda ,
+        picsar::multi_physics::lookup_1d<_REAL>& ref_aux_table,
+        const picsar::multi_physics::lookup_2d<_REAL>& ref_cum_distrib_table,
+        const picsar::multi_physics::breit_wheeler_engine_ctrl<_REAL>& ref_bw_ctrl,
+        _REAL* unf_zero_one_minus_epsi);
+         //______________________
 
          //Write pair production table to disk
          void write_dN_dt_table(std::string filename);
@@ -222,10 +281,10 @@ namespace picsar{
         lookup_1d<_REAL> aux_table;
 
         //Some handy constants
-        const _REAL zero = static_cast<_REAL>(0.0);
-        const _REAL one = static_cast<_REAL>(1.0);
-        const _REAL two = static_cast<_REAL>(2.0);
-        const _REAL three = static_cast<_REAL>(3.0);
+        static constexpr _REAL zero = static_cast<_REAL>(0.0);
+        static constexpr _REAL one = static_cast<_REAL>(1.0);
+        static constexpr _REAL two = static_cast<_REAL>(2.0);
+        static constexpr _REAL three = static_cast<_REAL>(3.0);
 
         //Internal functions to perform calculations
         PXRMP_FORCE_INLINE
@@ -310,6 +369,19 @@ get_optical_depth()
     return rng.exp(one);
 }
 
+//______________________GPU
+//get a single optical depth
+//same as above but conceived for GPU usage
+template<typename _REAL, class _RNDWRAP>
+PXRMP_GPU
+PXRMP_FORCE_INLINE
+_REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+internal_get_optical_depth(_REAL unf_zero_one_minus_epsi)
+{
+    return -log(one - unf_zero_one_minus_epsi);
+}
+//______________________
+
 //Calculates the pair production rate (Warning: no tables are used)
 template<typename _REAL, class _RNDWRAP>
 PXRMP_FORCE_INLINE
@@ -358,25 +430,40 @@ _REAL
 picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 interp_dN_dt(_REAL energy_phot, _REAL chi_phot) const
 {
+    return internal_interp_dN_dt(energy_phot, chi_phot, TTfunc_table, bw_ctrl, lambda);
+}
+
+
+//Interp the dN_dt from table (with GPU use directly this one!)
+template<typename _REAL, class _RNDWRAP>
+PXRMP_GPU
+PXRMP_FORCE_INLINE
+_REAL
+picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+internal_interp_dN_dt
+(_REAL energy_phot, _REAL chi_phot,
+const picsar::multi_physics::lookup_1d<_REAL>& ref_TTfunc_table,
+const picsar::multi_physics::breit_wheeler_engine_ctrl<_REAL>& ref_bw_ctrl,
+_REAL lambda)
+{
     if(energy_phot == zero || chi_phot == zero)
         return zero;
 
     _REAL coeff = static_cast<_REAL>(__pair_prod_coeff)*
         lambda*(one/( chi_phot * energy_phot));
 
-
         _REAL TT = zero;
     //Use approximate analytical expression if chi < chi_phot_tdndt_min
     //or chi > chi_phot_tdndt_min
-    if(chi_phot <= bw_ctrl.chi_phot_tdndt_min ||
-        chi_phot >= bw_ctrl.chi_phot_tdndt_max){
+    if(chi_phot <= ref_bw_ctrl.chi_phot_tdndt_min ||
+        chi_phot >= ref_bw_ctrl.chi_phot_tdndt_max){
         _REAL a = static_cast<_REAL>(__erber_Tfunc_asynt_a);
         _REAL b = static_cast<_REAL>(__erber_Tfunc_asynt_b);
         TT = a*chi_phot*pow(k_v(one/three, b/chi_phot),two);
     }
     //otherwise use lookup tables
     else{
-            TT =  exp(TTfunc_table.interp_linear_equispaced(log(chi_phot)));
+            TT =  exp(ref_TTfunc_table.interp_linear_equispaced(log(chi_phot)));
     }
     //**end
 
@@ -401,40 +488,89 @@ _REAL ex, _REAL ey, _REAL ez,
 _REAL bx, _REAL by, _REAL bz,
 _REAL dt, _REAL& opt_depth) const
 {
-    _REAL energy = norm<_REAL>(vec3<_REAL> {px, py, pz})*__c;
-    _REAL chi = chi_photon(px, py, pz, ex, ey, ez, bx, by, bz, lambda);
+    bool has_event_happend = false;
+    _REAL event_dt = zero;
 
-    auto false_zero_pair = std::make_pair(false, zero);
+    if(!internal_evolve_opt_depth_and_determine_event(px, py, pz, ex, ey, ez,
+        bx, by, bz, dt, opt_depth, has_event_happend, event_dt, lambda,
+        TTfunc_table, bw_ctrl)){
+
+        _REAL energy = norm<_REAL>(vec3<_REAL> {px, py, pz})*__c;
+        _REAL chi = chi_photon(px, py, pz, ex, ey, ez, bx, by, bz, lambda);
+        _REAL dndt = compute_dN_dt(energy, chi);
+        opt_depth -= dndt*dt;
+        if(opt_depth < zero){
+            //Calculates the time at which pair prod takes place
+            _REAL dt_prod = opt_depth/dndt + dt;
+            has_event_happend = true;
+            event_dt = dt_prod;
+        }
+    }
+
+    return std::make_pair(has_event_happend, event_dt);
+}
+
+//Same as above but tailored for direct use with GPU
+//returns false if errors occur
+template<typename _REAL, class _RNDWRAP>
+PXRMP_GPU
+PXRMP_FORCE_INLINE
+bool
+picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+internal_evolve_opt_depth_and_determine_event(
+_REAL px, _REAL py, _REAL pz,
+_REAL ex, _REAL ey, _REAL ez,
+_REAL bx, _REAL by, _REAL bz,
+_REAL dt, _REAL& opt_depth,
+bool& has_event_happend, _REAL& event_dt,
+_REAL _lambda,
+const picsar::multi_physics::lookup_1d<_REAL>& ref_TTfunc_table,
+const picsar::multi_physics::breit_wheeler_engine_ctrl<_REAL>& ref_bw_ctrl
+)
+{
+
+    _REAL energy = norm<_REAL>(vec3<_REAL> {px, py, pz})*__c;
+    _REAL chi = chi_photon(px, py, pz, ex, ey, ez, bx, by, bz, _lambda);
+
+    has_event_happend = false;
+    event_dt = zero;
 
     //Do NOT evolve opt_depth if the chi parameter is less then threshold
     //or if the photon energy is not high enough to generate a pair
-    if(chi <= bw_ctrl.chi_phot_min ||
+    if(chi <= ref_bw_ctrl.chi_phot_min ||
        energy < two*static_cast<_REAL>(__emass*__c*__c))
-            return false_zero_pair;
+           return true;
+
 
     //**Compute dndt
     _REAL dndt;
     //Uses table if available
-    if(TTfunc_table.is_init()){
-        dndt = interp_dN_dt(energy, chi);
+    if(ref_TTfunc_table.is_init()){
+            dndt =
+            internal_interp_dN_dt(energy, chi, ref_TTfunc_table, ref_bw_ctrl, _lambda);
     }
-    //If not it computes dndt
+    //If not..
     else{
-        err("dndt lookup table not initialized!\n");
-        dndt = compute_dN_dt(energy, chi);
+        //... on CPU only writes that an error has occured on sterr
+        #if !defined(PXRMP_WITH_GPU)
+            err("dndt lookup table not initialized!\n");
+        #endif
+        return false;
+
     }
 
     opt_depth -= dndt*dt;
 
-    if(opt_depth > zero){
-        return false_zero_pair;
-    }
-    else{
-        //Calculates the time at which pair prod takes place
+    if(opt_depth < zero){
+            //Calculates the time at which pair prod takes place
         _REAL dt_prod = opt_depth/dndt + dt;
-        return std::make_pair(true, dt_prod);
+        has_event_happend = true;
+        event_dt = dt_prod;
     }
+
+    return true;
 }
+
 
 //Computes the cumulative pair production rate given
 //chi_phot and chi_part
@@ -515,32 +651,86 @@ _REAL ex, _REAL ey, _REAL ez,
 _REAL bx, _REAL by, _REAL bz,
 _REAL weight, size_t sampling)
 {
+    picsar_vector<_REAL> e_px{sampling};
+    picsar_vector<_REAL> e_py{sampling};
+    picsar_vector<_REAL> e_pz{sampling};
+    picsar_vector<_REAL> p_px{sampling};
+    picsar_vector<_REAL> p_py{sampling};
+    picsar_vector<_REAL> p_pz{sampling};
+    picsar_vector<_REAL> e_weight{sampling};
+    picsar_vector<_REAL> p_weight{sampling};
+
+    picsar_vector<_REAL> unf_zero_one_minus_epsi{sampling};
+    for(size_t s = 0; s < sampling; s++)
+        unf_zero_one_minus_epsi[s] = rng.unf(zero, one);
+
+    internal_generate_breit_wheeler_pairs(
+    px, py, pz, ex, ey, ez, bx, by, bz, weight, sampling,
+    e_px.data(), e_py.data(), e_pz.data(),
+    p_px.data(), p_py.data(), p_pz.data(),
+    e_weight.data(), p_weight.data(),
+    lambda, aux_table, cum_distrib_table, bw_ctrl,
+    unf_zero_one_minus_epsi.data()
+    );
+
     picsar_vector<std::pair<vec3<_REAL>, _REAL>> electrons(sampling);
     picsar_vector<std::pair<vec3<_REAL>, _REAL>> positrons(sampling);
 
-    _REAL chi_phot = chi_photon(px, py, pz, ex, ey, ez, bx, by, bz, lambda);
+    for(size_t s = 0; s < sampling; s++){
+        electrons[s] =
+        std::make_pair(vec3<_REAL>{e_px[s], e_py[s], e_pz[s]}, e_weight[s]);
+        positrons[s] =
+        std::make_pair(vec3<_REAL>{p_px[s], p_py[s], p_pz[s]}, p_weight[s]);
+    }
 
-    auto frac = aux_table.ref_coords();
+    return {electrons, positrons};
+}
+
+//______________________GPU
+//Same as above, but with GPU use directly this one!
+//Returns false if errors occur
+template<typename _REAL, class _RNDWRAP>
+PXRMP_GPU
+PXRMP_FORCE_INLINE
+bool
+picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+internal_generate_breit_wheeler_pairs(
+_REAL px, _REAL py, _REAL pz,
+_REAL ex, _REAL ey, _REAL ez,
+_REAL bx, _REAL by, _REAL bz,
+_REAL weight, size_t sampling,
+_REAL* e_px, _REAL* e_py, _REAL* e_pz,
+_REAL* p_px, _REAL* p_py, _REAL* p_pz,
+_REAL* e_weight, _REAL* p_weight,
+_REAL _lambda ,
+picsar::multi_physics::lookup_1d<_REAL>& ref_aux_table,
+const picsar::multi_physics::lookup_2d<_REAL>& ref_cum_distrib_table,
+const picsar::multi_physics::breit_wheeler_engine_ctrl<_REAL>& ref_bw_ctrl,
+_REAL* unf_zero_one_minus_epsi)
+{
+    _REAL chi_phot = chi_photon(px, py, pz, ex, ey, ez, bx, by, bz, _lambda);
+
+    auto frac = ref_aux_table.ref_coords();
 
     //if chi < chi_min: chi = chi_min for cumulative distribution
-    if(chi_phot < bw_ctrl.chi_phot_tpair_min){
+    if(chi_phot < ref_bw_ctrl.chi_phot_tpair_min){
         for(size_t i = 0; i < frac.size(); i++){
-            aux_table.ref_data()[i] =
-            cum_distrib_table.data_at_coords(0, i);
+            ref_aux_table.ref_data()[i] =
+            ref_cum_distrib_table.data_at_coords(0, i);
         }
     }
     //if chi > chi_max: chi = chi_max for cumulative distribution
-    else if(chi_phot > bw_ctrl.chi_phot_tpair_max){
+    else if(chi_phot > ref_bw_ctrl.chi_phot_tpair_max){
         for(size_t i = 0; i < frac.size(); i++){
-            aux_table.ref_data()[i] =
-            cum_distrib_table.data_at_coords(bw_ctrl.chi_phot_tpair_max, i);
+            ref_aux_table.ref_data()[i] =
+            ref_cum_distrib_table.data_at_coords(ref_bw_ctrl.chi_phot_tpair_max, i);
         }
     }
     //Interpolate 1D cumulative distribution
     else{
         for(size_t i = 0; i < frac.size(); i++){
-            aux_table.ref_data()[i] =
-            cum_distrib_table.interp_linear_first_equispaced(chi_phot, i);
+            ref_aux_table.ref_data()[i] =
+            ref_cum_distrib_table.interp_linear_first_equispaced(chi_phot, i);
         }
     }
 
@@ -554,18 +744,21 @@ _REAL weight, size_t sampling)
     _REAL gamma_phot = norm_phot/me_c;
 
     for(size_t s = 0; s < sampling; s++){
-        _REAL prob = rng.unf(zero, one);
+        _REAL prob = unf_zero_one_minus_epsi[s];
         bool invert = false;
         if(prob > one/two){
             prob = one - prob;
             invert = true;
         }
 
-        _REAL chi_ele = aux_table.interp_linear_equispaced(prob);
+        _REAL chi_ele = ref_aux_table.interp_linear_equispaced(prob);
         _REAL chi_pos = chi_phot - chi_ele;
 
-        if(invert)
-            std::swap(chi_ele, chi_pos);
+        if(invert){
+            _REAL tt = chi_ele;
+            chi_ele = chi_pos;
+            chi_pos = tt;
+        }
 
         _REAL coeff =  (gamma_phot - two)/chi_phot;
 
@@ -575,10 +768,20 @@ _REAL weight, size_t sampling)
         vec3<_REAL> p_ele = cc_ele*n_phot;
         vec3<_REAL> p_pos = cc_pos*n_phot;
 
-        electrons[s] = std::make_pair(p_ele, new_weight);
-        positrons[s] = std::make_pair(p_pos, new_weight);
+
+        e_px[s] =  p_ele[0];
+        e_py[s] =  p_ele[1];
+        e_pz[s] =  p_ele[2];
+
+        p_px[s] =  p_pos[0];
+        p_py[s] =  p_pos[1];
+        p_pz[s] =  p_pos[2];
+
+        e_weight[s] = new_weight;
+        p_weight[s] = new_weight;
     }
-    return {electrons, positrons};
+
+    return true;
 }
 
 //Write pair production table to disk
@@ -634,65 +837,6 @@ read_cumulative_pair_table(std::string filename)
     picsar_vector<_REAL>(bw_ctrl.chi_frac_tpair_how_many)};
 }
 
-//___________________PRIVATE FUNCTIONS_____________________________________
-
-//Function to compute X (Warning: it doesn't chek if chi_ele != 0 or
-//if chi_phot > chi_ele)
-template<typename _REAL, class _RNDWRAP>
-PXRMP_FORCE_INLINE
-_REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
-compute_x(_REAL chi_phot, _REAL chi_ele) const
-{
-    return pow(chi_phot/(chi_ele*(chi_phot-chi_ele)), two/three);
-}
-
-//Function to compute the inner integral of the pair production rate
-template<typename _REAL, class _RNDWRAP>
-PXRMP_FORCE_INLINE
-_REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
-compute_inner_integral(_REAL x) const
-{
-    auto func = [this](double s){
-        return sqrt(s)*k_v(one/three, two*pow(s, three/two)/three);
-    };
-    return quad_a_inf<_REAL>(func, x);
-}
-
-//Calculations of other parts of the pair production rate [I]
-template<typename _REAL, class _RNDWRAP>
-PXRMP_FORCE_INLINE
-_REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
-compute_TT_integrand(_REAL chi_phot, _REAL chi_ele) const
-{
-    if (chi_ele == zero)
-        return zero;
-    _REAL xx = compute_x(chi_phot, chi_ele);
-    _REAL xx_3_2 = pow(xx, three/two);
-
-    _REAL div = static_cast<_REAL>(pi)*sqrt(three);
-
-    return (compute_inner_integral(xx)-(two-chi_phot*xx_3_2)
-        *k_v(two/three, (two/three)*xx_3_2))/div;
-}
-
-//Calculations of other parts of the pair production rate [II]
-template<typename _REAL, class _RNDWRAP>
-PXRMP_FORCE_INLINE
-_REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
-compute_TT_function(_REAL chi_phot) const
-{
-
-    auto func = [chi_phot, this](_REAL chi_ele){
-        if(chi_ele - chi_phot == zero || chi_ele == zero)
-            return zero;
-        else
-            return compute_TT_integrand(chi_phot, chi_ele);
-    };
-
-    return quad_a_b<_REAL>(func, zero, chi_phot);
-}
-
-
 //Export innards
 template<typename _REAL, class _RNDWRAP>
 picsar::multi_physics::breit_wheeler_innards<_REAL, _RNDWRAP>
@@ -747,6 +891,66 @@ picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::breit_wheeler_engi
               innards.aux_table_data_ptr},
     rng{*innards.rng_ptr}
 {}
+
+//___________________PRIVATE FUNCTIONS_____________________________________
+
+//Function to compute X (Warning: it doesn't chek if chi_ele != 0 or
+//if chi_phot > chi_ele)
+template<typename _REAL, class _RNDWRAP>
+PXRMP_FORCE_INLINE
+_REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+compute_x(_REAL chi_phot, _REAL chi_ele) const
+{
+    return pow(chi_phot/(chi_ele*(chi_phot-chi_ele)), two/three);
+}
+
+//Function to compute the inner integral of the pair production rate
+template<typename _REAL, class _RNDWRAP>
+PXRMP_FORCE_INLINE
+_REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+compute_inner_integral(_REAL x) const
+{
+    auto func = [=](_REAL s){
+        return sqrt(s)*k_v(one/three, two*pow(s, three/two)/three);
+    };
+    return quad_a_inf<_REAL>(func, x);
+}
+
+//Calculations of other parts of the pair production rate [I]
+template<typename _REAL, class _RNDWRAP>
+PXRMP_FORCE_INLINE
+_REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+compute_TT_integrand(_REAL chi_phot, _REAL chi_ele) const
+{
+    if (chi_ele == zero)
+        return zero;
+    _REAL xx = compute_x(chi_phot, chi_ele);
+    _REAL xx_3_2 = pow(xx, three/two);
+
+    _REAL div = static_cast<_REAL>(pi)*sqrt(three);
+
+    return (compute_inner_integral(xx)-(two-chi_phot*xx_3_2)
+        *k_v(two/three, (two/three)*xx_3_2))/div;
+}
+
+//Calculations of other parts of the pair production rate [II]
+template<typename _REAL, class _RNDWRAP>
+PXRMP_FORCE_INLINE
+_REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+compute_TT_function(_REAL chi_phot) const
+{
+
+    auto func = [chi_phot, this](_REAL chi_ele){
+        if(chi_ele - chi_phot == zero || chi_ele == zero)
+            return zero;
+        else
+            return compute_TT_integrand(chi_phot, chi_ele);
+    };
+
+    return quad_a_b<_REAL>(func, zero, chi_phot);
+}
+
+
 
 
 #endif //__PICSAR_MULTIPHYSICS_BREIT_WHEELER_ENGINE__

@@ -20,6 +20,7 @@ namespace picsar{
         //chi for photons
         //lambda will be ignored if compiled with SI units
         template<typename _REAL>
+        PXRMP_GPU
         PXRMP_FORCE_INLINE
         _REAL chi_photon(
             _REAL px, _REAL py, _REAL pz,
@@ -31,6 +32,7 @@ namespace picsar{
         //chi for leptons
         //lambda will be ignored if compiled with SI units
         template<typename _REAL>
+        PXRMP_GPU
         PXRMP_FORCE_INLINE
         _REAL chi_lepton(
             _REAL px, _REAL py, _REAL pz,
@@ -47,6 +49,7 @@ namespace picsar{
 //NB: constants used in this function (e.g. __c instead of light_speed)
 //take into account the unit convention
 template<typename _REAL>
+PXRMP_GPU
 PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::chi_photon(
     _REAL px, _REAL py, _REAL pz,
@@ -81,6 +84,7 @@ _REAL picsar::multi_physics::chi_photon(
 //NB: constants used in this function (e.g. __c instead of light_speed)
 //take into account the unit convention
 template<typename _REAL>
+PXRMP_GPU
 PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::chi_lepton(
     _REAL px, _REAL py, _REAL pz,

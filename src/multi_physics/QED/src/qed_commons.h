@@ -15,8 +15,14 @@
     //This flag should be set by the user
     //e.g. #define PXRMP_GPU __host__ __device__
 
+    //If the user has not set the GPU flag
     #ifndef PXRMP_GPU
+      //set it to the empty string
       #define PXRMP_GPU
+    #elif
+      //otherwise, set this flag to inform the code that GPU code has to be
+      //generated (this disables error messages...)
+      #define PXRMP_WITH_GPU
     #endif
 
 //##############################################################################
