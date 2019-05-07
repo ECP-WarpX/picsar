@@ -448,6 +448,192 @@ end subroutine pxrpush_emrz_evec
 
 ! ________________________________________________________________________________________
 !> @brief
+!> Push electric field Yee RZ multimode order 2
+!> This subroutine is general enough to be called by AMReX.
+!> OMP pragmas are ignored when compiled for WarpX.
+!
+!> @author
+!> Jean-Luc Vay
+!> Henri Vincenti
+!> Remi Lehe
+!> David Grote
+
+!> @date
+!> Creation 2019
+! ________________________________________________________________________________________
+subroutine pxrpush_emrz_evec_multimode( &
+     rlo, rhi, tlo, thi, zlo, zhi, &
+     nmodes, &
+     Er, erlo, erhi, &
+     Et, etlo, ethi, &
+     Ez, ezlo, ezhi, &
+     Br, brlo, brhi, &
+     Bt, btlo, bthi, &
+     Bz, bzlo, bzhi, &
+     Jr, jrlo, jrhi, &
+     Jt, jtlo, jthi, &
+     Jz, jzlo, jzhi, &
+     mudt, dtsdx, dtsdy, dtsdz, rmin, dr)
+     USE picsar_precision, ONLY: idp, isp, num
+
+  integer(idp) :: nmodes
+#ifdef WARPX
+  integer(isp), intent(in) :: rlo(2), rhi(2), tlo(2), thi(2), zlo(2), zhi(2), &
+       erlo(2),erhi(2),etlo(2),ethi(2),ezlo(2),ezhi(2),&
+       brlo(2),brhi(2),btlo(2),bthi(2),bzlo(2),bzhi(2),&
+       jrlo(2),jrhi(2),jtlo(2),jthi(2),jzlo(2),jzhi(2)
+#else
+  integer(idp), intent(in) :: rlo(2), rhi(2), tlo(2), thi(2), zlo(2), zhi(2), &
+       erlo(2),erhi(2),etlo(2),ethi(2),ezlo(2),ezhi(2),&
+       brlo(2),brhi(2),btlo(2),bthi(2),bzlo(2),bzhi(2),&
+       jrlo(2),jrhi(2),jtlo(2),jthi(2),jzlo(2),jzhi(2)
+#endif
+  complex(num), intent(IN OUT):: Er(erlo(1):erhi(1),erlo(2):erhi(2),0:nmodes-1)
+  complex(num), intent(IN OUT):: Et(etlo(1):ethi(1),etlo(2):ethi(2),0:nmodes-1)
+  complex(num), intent(IN OUT):: Ez(ezlo(1):ezhi(1),ezlo(2):ezhi(2),0:nmodes-1)
+
+  complex(num), intent(IN):: Br(brlo(1):brhi(1),brlo(2):brhi(2),0:nmodes-1)
+  complex(num), intent(IN):: Bt(btlo(1):bthi(1),btlo(2):bthi(2),0:nmodes-1)
+  complex(num), intent(IN):: Bz(bzlo(1):bzhi(1),bzlo(2):bzhi(2),0:nmodes-1)
+
+  complex(num), intent(IN):: Jr(jrlo(1):jrhi(1),jrlo(2):jrhi(2),0:nmodes-1)
+  complex(num), intent(IN):: Jt(jtlo(1):jthi(1),jtlo(2):jthi(2),0:nmodes-1)
+  complex(num), intent(IN):: Jz(jzlo(1):jzhi(1),jzlo(2):jzhi(2),0:nmodes-1)
+
+  real(num), intent(IN) :: mudt, dtsdx, dtsdy, dtsdz, rmin, dr
+
+  integer(idp) :: j, k, m
+  real(kind=8) :: w, r, rd, ru, dt
+  complex(kind=8) :: i=(0., 1.)
+
+  ! ===============================
+  !             2-D RZ multipole
+  ! ===============================
+
+  dt = dtsdx*dr
+
+  do m = 0, nmodes-1
+
+     ! advance Er
+#ifndef WARPX
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j, ru, rd, r), &
+  !$OMP SHARED(rlo, rhi, tlo, thi, zlo, zhi, mudt, dtsdx, dtsdz, rmin, dr), &
+  !$OMP SHARED(Er, Et, Ez, Br, Bt, Bz, Jr, Jt, Jz)
+  !$OMP DO COLLAPSE(2)
+#endif
+!$acc parallel deviceptr(Er,Bt,Bz,Jr)
+!$acc loop gang vector collapse(2)
+     do k   = rlo(2), rhi(2)
+       do j = rlo(1), rhi(1)
+           r = rmin+j*dr+0.5*dr
+           Er(j,k,m) = Er(j,k,m) - i*m*dt*Bz(j,k,m)/r &
+                - dtsdz * (Bt(j,k,m)   - Bt(j  ,k-1,m)) &
+                - mudt  * Jr(j,k,m)
+        end do
+     end do
+!$acc end loop
+!$acc end parallel
+#ifndef WARPX
+  !$OMP END DO
+#endif
+
+     ! advance Etheta
+#ifndef WARPX
+  !$OMP DO COLLAPSE(2)
+#endif
+!$acc parallel deviceptr(Et,Bz,Br,Jt)
+!$acc loop gang vector collapse(2)
+     do k   = tlo(2), thi(2)
+       do j = tlo(1), thi(1)
+         if (j /= 0) then
+           ! Equation used in the bulk of the grid
+           Et(j,k,m) = Et(j,k,m) - dtsdx * (Bz(j,k,m) - Bz(j-1,k,m)) &
+                + dtsdz * (Br(j,k,m) - Br(j,k-1,m)) &
+                - mudt * Jt(j,k,m)
+         endif
+       end do
+       if (tlo(1) <= 0 .and. 0 <= thi(1)) then
+          j = 0
+          if (rmin /= 0.) then
+             Et(j,k,m) = Et(j,k,m) - dtsdx * (Bz(j,k,m) - Bz(j-1,k,m)) &
+                               + dtsdz * (Br(j,k,m) - Br(j,k-1,m)) &
+                               - mudt  * Jt(j,k,m)
+          else
+             if (m == 1) then
+                ! The bulk equation could in principle be used here since it does not diverge
+                ! on axis. However, it typically gives poore results e.g. for the propagation
+                ! of a laser pulse (The field is spuriously reduced on axis.) For this reason
+                ! a modified on-axis condition is used here : we use the fact that
+                ! Etheta(r=0,m=1) should equal -iEr(r=0,m=1), for the fields Er and Et to be
+                ! independent of theta at r=0. Now with linear interpolation :
+                ! Er(r=0,m=1) = 0.5*[Er(r=dr/2,m=1)+Er(r=-dr/2,m=1)]
+                ! And using the rule applying for the guards cells (see em3d_applybc_e)
+                ! Er(r=-dr/2,m=1) = Er(r=dr/2,m=1). Thus :
+                Et(j,k,m) = -i*Er(j,k,m)
+             else
+                ! Etheta should remain 0 on axis, for modes different than m=1
+                Et(j,k,m) = 0
+             endif
+          endif
+       end if
+     end do
+!$acc end loop
+!$acc end parallel
+#ifndef WARPX
+  !$OMP END DO
+#endif
+
+     ! advance Ez
+#ifndef WARPX
+  !$OMP DO COLLAPSE(2)
+#endif
+!$acc parallel deviceptr(Ez,Br,Bt,Jz)
+!$acc loop gang vector collapse(2)
+     do k   = zlo(2), zhi(2)
+       do j = zlo(1), zhi(1)
+         if (j /= 0) then
+           ru = 1. + 0.5/(rmin/dr + j)
+           rd = 1. - 0.5/(rmin/dr + j)
+           r = rmin + j*dr
+           Ez(j,k,m) = Ez(j,k,m) + dtsdx * (ru*Bt(j,k,m) - rd*Bt(j-1  ,k,m)) &
+                + i*m*dt*Br(j,k,m)/r &
+                - mudt  * Jz(j,k,m)
+         end if
+       end do
+       if (zlo(1) <= 0 .and. 0 <= zhi(1)) then
+         j = 0
+         if (rmin == 0.) then
+           if (m == 0) then
+              Ez(j,k,m) = Ez(j,k,m) + 4.*dtsdx * Bt(j,k,m) &
+                             - mudt  * Jz(j,k,m)
+           else
+              ! Ez should remain 0 on axis, for modes with m>0,
+              ! but the bulk equation does not necessarily ensure this.
+              Ez(j,k,m) = 0.
+           endif
+         else
+           ru = 1. + 0.5/(rmin/dr)
+           rd = 1. - 0.5/(rmin/dr)
+           r = rmin + j*dr
+           Ez(j,k,m) = Ez(j,k,m) + dtsdx * (ru*Bt(j,k,m) - rd*Bt(j-1  ,k,m)) &
+                + i*m*dt*Br(j,k,m)/r &
+                - mudt  * Jz(j,k,m)
+         end if
+       end if
+     end do
+!$acc end loop
+!$acc end parallel
+#ifndef WARPX
+  !$OMP END DO
+  !$OMP END PARALLEL
+#endif
+
+  end do ! nmodes
+return
+end subroutine pxrpush_emrz_evec_multimode
+
+! ________________________________________________________________________________________
+!> @brief
 !> Push electric field Yee 3D order 2
 !> This SUBROUTINE is general enough to be called by AMReX.
 !> OMP pragmas are ignored when compiled for WarpX.
@@ -927,6 +1113,145 @@ USE picsar_precision, ONLY: idp, isp, num
   !$OMP END PARALLEL
 #endif
 end subroutine pxrpush_emrz_bvec
+
+! ________________________________________________________________________________________
+!> @brief
+!> This subroutine pushes the magnetic field with the RZ Yee FDTD multimode
+!> scheme (order 2).
+!> This subroutine is general enough to be called by AMReX.
+!> OMP pragmas are ignored when compiled for WarpX.
+!> regions.
+!
+!> @author
+!> Jean-Luc Vay
+!> Henri Vincenti
+!> Remi Lehe
+!> David Grote
+!
+!> @date
+!> Creation 2019
+! ________________________________________________________________________________________
+subroutine pxrpush_emrz_bvec_multimode( &
+     rlo, rhi, tlo, thi, zlo, zhi, &
+     nmodes, &
+     Er, erlo, erhi, &
+     Et, etlo, ethi, &
+     Ez, ezlo, ezhi, &
+     Br, brlo, brhi, &
+     Bt, btlo, bthi, &
+     Bz, bzlo, bzhi, &
+     mudt, dtsdx, dtsdy, dtsdz, rmin, dr)
+     USE picsar_precision, ONLY: idp, isp, num
+
+  integer(idp) :: nmodes
+#ifdef WARPX
+  integer(isp), intent(in) :: rlo(2), rhi(2), tlo(2), thi(2), zlo(2), zhi(2), &
+       erlo(2),erhi(2),etlo(2),ethi(2),ezlo(2),ezhi(2),&
+       brlo(2),brhi(2),btlo(2),bthi(2),bzlo(2),bzhi(2)
+#else
+  integer(idp), intent(in) :: rlo(2), rhi(2), tlo(2), thi(2), zlo(2), zhi(2), &
+       erlo(2),erhi(2),etlo(2),ethi(2),ezlo(2),ezhi(2),&
+       brlo(2),brhi(2),btlo(2),bthi(2),bzlo(2),bzhi(2)
+#endif
+  complex(num), intent(IN):: Er(erlo(1):erhi(1),erlo(2):erhi(2),0:nmodes-1)
+  complex(num), intent(IN):: Et(etlo(1):ethi(1),etlo(2):ethi(2),0:nmodes-1)
+  complex(num), intent(IN):: Ez(ezlo(1):ezhi(1),ezlo(2):ezhi(2),0:nmodes-1)
+
+  complex(num), intent(IN OUT):: Br(brlo(1):brhi(1),brlo(2):brhi(2),0:nmodes-1)
+  complex(num), intent(IN OUT):: Bt(btlo(1):bthi(1),btlo(2):bthi(2),0:nmodes-1)
+  complex(num), intent(IN OUT):: Bz(bzlo(1):bzhi(1),bzlo(2):bzhi(2),0:nmodes-1)
+
+  real(num), intent(IN) :: mudt, dtsdx, dtsdy, dtsdz, rmin, dr
+
+  integer(idp) :: j, k, m
+  real(kind=8) :: w, r, rd, ru, dt
+  complex(kind=8) :: i=(0., 1.)
+
+  dt = dtsdx*dr
+  do m = 0, nmodes-1
+
+     ! advance Br
+#ifndef WARPX
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j, ru, rd), &
+  !$OMP SHARED(rlo, rhi, tlo, thi, zlo, zhi, dtsdr, dtsdz, rmin, dr), &
+  !$OMP SHARED(Er, Et, Ez, Br, Bt, Bz)
+  !$OMP DO COLLAPSE(2)
+#endif
+!$acc parallel deviceptr(Br,Et,Ez)
+!$acc loop gang vector collapse(2)
+     do k   = rlo(2), rhi(2)
+       do j = rlo(1), rhi(1)
+           if (j==0 .and. rmin==0) then
+              ! On axis
+              if (.not. m == 1) then
+                 ! Br should remain 0 on axis, for modes different than m=1,
+                 ! but the bulk equation does not necessarily ensure this.
+                 Br(j,k,m) = 0.
+              else
+                 ! For the mode m = 1, the bulk equation diverges on axis
+                 ! (due to the 1/r terms). The following expressions regularize
+                 ! these divergences by assuming, on axis :
+                 ! Ez/r = 0/r + dEz/dr
+                 Br(j,k,m) = Br(j,k,m) + i*m*dt*Ez(j+1,k,m)/dr &
+                      + dtsdz * (Et(j,  k+1,m) - Et(j,k,m))
+              endif
+           else
+              ! Equations in the bulk of the grid
+              r = rmin + j*dr
+              Br(j,k,m) = Br(j,k,m) + i*m*dt*Ez(j,k,m)/r &
+                   + dtsdz * (Et(j,  k+1,m) - Et(j,k,m))
+           endif
+        end do
+     end do
+!$acc end loop
+!$acc end parallel
+#ifndef WARPX
+  !$OMP END DO
+#endif
+
+     ! advance Btheta
+#ifndef WARPX
+  !$OMP DO COLLAPSE(2)
+#endif
+!$acc parallel deviceptr(Bt,Ez,Er)
+!$acc loop gang vector collapse(2)
+     do k   = tlo(2), thi(2)
+       do j = tlo(1), thi(1)
+           Bt(j,k,m) = Bt(j,k,m) + dtsdx * (Ez(j+1,k  ,m) - Ez(j,k,m)) &
+                - dtsdz * (Er(j,k+1,m) - Er(j,k,m))
+        end do
+     end do
+!$acc end loop
+!$acc end parallel
+#ifndef WARPX
+  !$OMP END DO
+#endif
+
+     ! advance Bz
+#ifndef WARPX
+  !$OMP DO COLLAPSE(2)
+#endif
+!$acc parallel deviceptr(Bz,Er,Et)
+!$acc loop gang vector collapse(2)
+     do k   = zlo(2), zhi(2)
+       do j = zlo(1), zhi(1)
+           r  = rmin + j*dr + 0.5*dr
+           ru = 1. + 0.5/(rmin/dr + j + 0.5)
+           rd = 1. - 0.5/(rmin/dr + j + 0.5)
+           Bz(j,k,m) = Bz(j,k,m) - dtsdx * (ru*Et(j+1,k,m) - rd*Et(j,k,m)) &
+                - i*m*dt*Er(j,k,m)/r
+        end do
+     end do
+!$acc end loop
+!$acc end parallel
+#ifndef WARPX
+  !$OMP END DO
+  !$OMP END PARALLEL
+#endif
+
+  end do ! nmodes
+return
+end subroutine pxrpush_emrz_bvec_multimode
 
 ! ________________________________________________________________________________________
 !> @brief
