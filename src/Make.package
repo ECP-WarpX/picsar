@@ -81,6 +81,11 @@ INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/filtering/
 VPATH_LOCATIONS   += $(PICSAR_HOME)/src
 INCLUDE_LOCATIONS += $(PICSAR_HOME)/src
 
+ifeq ($(DIM),2)
+  F90EXE_sources += field_gathering_manager_circ.F90
+  F90EXE_sources += field_gathering_on_circ.F90
+endif
+
 ifeq ($(USE_PSATD),TRUE)
   F90EXE_sources += mpi_derived_types.F90
 
@@ -98,9 +103,6 @@ ifeq ($(USE_PSATD),TRUE)
 
   F90EXE_sources += current_deposition_manager_circ.F90
   F90EXE_sources += direct_current_deposition_circ.F90
-
-  F90EXE_sources += field_gathering_manager_circ.F90
-  F90EXE_sources += field_gathering_on_circ.F90
 
   F90EXE_sources += load_balancing.F90
   VPATH_LOCATIONS   += $(PICSAR_HOME)/src/housekeeping
