@@ -42,6 +42,7 @@ INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/particle_deposition/current_deposition/d
 
 F90EXE_sources += esirkepov_3d.F90
 F90EXE_sources += esirkepov_2d.F90
+F90EXE_sources += esirkepov_circ.F90
 
 VPATH_LOCATIONS   += $(PICSAR_HOME)/src/particle_deposition/current_deposition/esirkepov
 INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/particle_deposition/current_deposition/esirkepov
