@@ -59,6 +59,8 @@ namespace picsar{
                 picsar_vector<_REAL>& ref_data();
 
                 //Check if the table is initialized
+                PXRMP_GPU
+                PXRMP_FORCE_INLINE
                 bool is_init() const;
 
                 //Linear equispaced interpolation
@@ -132,6 +134,8 @@ namespace picsar{
                 _REAL data_at_coords(size_t coord_x, size_t coord_y) const;
 
                 //Check if the table is initialized
+                PXRMP_GPU
+                PXRMP_FORCE_INLINE
                 bool is_init() const;
 
                 //Performs linear interpolation
@@ -261,6 +265,8 @@ ref_data()
 
 //Checks if the table is initialized
 template<typename _REAL>
+PXRMP_GPU
+PXRMP_FORCE_INLINE
 bool
 picsar::multi_physics::lookup_1d<_REAL>::
 is_init() const
@@ -454,6 +460,8 @@ data_at_coords(size_t coord_x, size_t coord_y) const
 
 //Checks if the table is initialized
 template<typename _REAL>
+PXRMP_GPU
+PXRMP_FORCE_INLINE
 bool
 picsar::multi_physics::lookup_2d<_REAL>::
 is_init() const

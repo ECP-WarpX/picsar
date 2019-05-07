@@ -455,11 +455,20 @@ _REAL lambda)
         _REAL TT = zero;
     //Use approximate analytical expression if chi < chi_phot_tdndt_min
     //or chi > chi_phot_tdndt_min
-    if(chi_phot <= ref_bw_ctrl.chi_phot_tdndt_min ||
-        chi_phot >= ref_bw_ctrl.chi_phot_tdndt_max){
-        _REAL a = static_cast<_REAL>(__erber_Tfunc_asynt_a);
-        _REAL b = static_cast<_REAL>(__erber_Tfunc_asynt_b);
-        TT = a*chi_phot*pow(k_v(one/three, b/chi_phot),two);
+
+    _REAL a = static_cast<_REAL>(__erber_Tfunc_asynt_a);
+    _REAL b = static_cast<_REAL>(__erber_Tfunc_asynt_b);
+    if(chi_phot <= ref_bw_ctrl.chi_phot_tdndt_min){
+        //Not suitable for GPU! Replaced with asymptotic expansion.
+        //TT = a*chi_phot*pow(k_v(one/three, b/chi_phot),two);
+        TT = (static_cast<_REAL>(pi)*a/(two*b))*chi_phot*chi_phot*exp(-two*b/chi_phot);
+    }
+    else if(chi_phot >= ref_bw_ctrl.chi_phot_tdndt_max){
+        //Not suitable for GPU! Replaced with asymptotic expansion.
+        //TT = a*chi_phot*pow(k_v(one/three, b/chi_phot),two);
+        _REAL ccoeff = static_cast<_REAL>(tgamma(one/three)/two);
+        TT = a*chi_phot*ccoeff*coeff*pow(chi_phot*two/b , two/three);
+
     }
     //otherwise use lookup tables
     else{
@@ -532,8 +541,11 @@ const picsar::multi_physics::breit_wheeler_engine_ctrl<_REAL>& ref_bw_ctrl
     _REAL energy = norm<_REAL>(vec3<_REAL> {px, py, pz})*__c;
     _REAL chi = chi_photon(px, py, pz, ex, ey, ez, bx, by, bz, _lambda);
 
+
     has_event_happend = false;
     event_dt = zero;
+
+
 
     //Do NOT evolve opt_depth if the chi parameter is less then threshold
     //or if the photon energy is not high enough to generate a pair
@@ -558,6 +570,7 @@ const picsar::multi_physics::breit_wheeler_engine_ctrl<_REAL>& ref_bw_ctrl
         return false;
 
     }
+
 
     opt_depth -= dndt*dt;
 
