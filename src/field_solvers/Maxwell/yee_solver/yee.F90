@@ -327,7 +327,7 @@ END SUBROUTINE pxrpush_em2d_evec
 !> Creation 2019
 ! ________________________________________________________________________________________
 subroutine pxrpush_emrz_evec( &
-     xlo, xhi, ylo, yhi, zlo, zhi, &
+     rlo, rhi, tlo, thi, zlo, zhi, &
      Er, erlo, erhi, &
      Et, etlo, ethi, &
      Ez, ezlo, ezhi, &
@@ -342,12 +342,12 @@ subroutine pxrpush_emrz_evec( &
 
 
 #ifdef WARPX
-  integer(isp), intent(in) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
+  integer(isp), intent(in) :: rlo(2), rhi(2), tlo(2), thi(2), zlo(2), zhi(2), &
        erlo(2),erhi(2),etlo(2),ethi(2),ezlo(2),ezhi(2),&
        brlo(2),brhi(2),btlo(2),bthi(2),bzlo(2),bzhi(2),&
        jrlo(2),jrhi(2),jtlo(2),jthi(2),jzlo(2),jzhi(2)
 #else
-  integer(idp), intent(in) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
+  integer(idp), intent(in) :: rlo(2), rhi(2), tlo(2), thi(2), zlo(2), zhi(2), &
        erlo(2),erhi(2),etlo(2),ethi(2),ezlo(2),ezhi(2),&
        brlo(2),brhi(2),btlo(2),bthi(2),bzlo(2),bzhi(2),&
        jrlo(2),jrhi(2),jtlo(2),jthi(2),jzlo(2),jzhi(2)
@@ -374,14 +374,14 @@ subroutine pxrpush_emrz_evec( &
 
 #ifndef WARPX
   !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j, ru, rd), &
-  !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, mudt, dtsdx, dtsdz, rmin, dr), &
+  !$OMP SHARED(rlo, rhi, tlo, thi, zlo, zhi, mudt, dtsdx, dtsdz, rmin, dr), &
   !$OMP SHARED(Er, Et, Ez, Br, Bt, Bz, Jr, Jt, Jz)
   !$OMP DO COLLAPSE(2)
 #endif
 !$acc parallel deviceptr(Er,Bt,Jr)
 !$acc loop gang vector collapse(2)
-  do k   = xlo(2), xhi(2)
-    do j = xlo(1), xhi(1)
+  do k   = rlo(2), rhi(2)
+    do j = rlo(1), rhi(1)
       Er(j,k) = Er(j,k) - dtsdz * (Bt(j,k) - Bt(j,k-1)) &
                         - mudt  * Jr(j,k)
     end do
@@ -394,14 +394,14 @@ subroutine pxrpush_emrz_evec( &
 #endif
 !$acc parallel deviceptr(Et,Bz,Br,Jt)
 !$acc loop gang vector collapse(2)
-  do k   = ylo(2), yhi(2)
-    do j = ylo(1), yhi(1)
+  do k   = tlo(2), thi(2)
+    do j = tlo(1), thi(1)
       if (j /= 0) &
       Et(j,k) = Et(j,k) - dtsdx * (Bz(j,k) - Bz(j-1,k)) &
                         + dtsdz * (Br(j,k) - Br(j,k-1)) &
                         - mudt  * Jt(j,k)
     end do
-    if (rmin /= 0. .and. ylo(1) <= 0 .and. 0 <= yhi(1)) then
+    if (rmin /= 0. .and. tlo(1) <= 0 .and. 0 <= thi(1)) then
       j = 0
       Et(j,k) = Et(j,k) - dtsdx * (Bz(j,k) - Bz(j-1,k)) &
                         + dtsdz * (Br(j,k) - Br(j,k-1)) &
@@ -841,7 +841,7 @@ END SUBROUTINE pxrpush_em2d_bvec
 !> Creation 2019
 ! ________________________________________________________________________________________
 subroutine pxrpush_emrz_bvec( &
-     xlo, xhi, ylo, yhi, zlo, zhi, &
+     rlo, rhi, tlo, thi, zlo, zhi, &
      Er, erlo, erhi,&
      Et, etlo, ethi, &
      Ez, ezlo, ezhi, &
@@ -854,11 +854,11 @@ USE picsar_precision, ONLY: idp, isp, num
 
 
 #ifdef WARPX
-  integer(isp) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
+  integer(isp) :: rlo(2), rhi(2), tlo(2), thi(2), zlo(2), zhi(2), &
        erlo(2),erhi(2),etlo(2),ethi(2),ezlo(2),ezhi(2),&
        brlo(2),brhi(2),btlo(2),bthi(2),bzlo(2),bzhi(2)
 #else
-  integer(idp) :: xlo(2), xhi(2), ylo(2), yhi(2), zlo(2), zhi(2), &
+  integer(idp) :: rlo(2), rhi(2), tlo(2), thi(2), zlo(2), zhi(2), &
        erlo(2),erhi(2),etlo(2),ethi(2),ezlo(2),ezhi(2),&
        brlo(2),brhi(2),btlo(2),bthi(2),bzlo(2),bzhi(2)
 #endif
@@ -880,14 +880,14 @@ USE picsar_precision, ONLY: idp, isp, num
 
 #ifndef WARPX
   !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j, ru, rd), &
-  !$OMP SHARED(xlo, xhi, ylo, yhi, zlo, zhi, dtsdr, dtsdz, rmin, dr), &
+  !$OMP SHARED(rlo, rhi, tlo, thi, zlo, zhi, dtsdr, dtsdz, rmin, dr), &
   !$OMP SHARED(Er, Et, Ez, Br, Bt, Bz)
   !$OMP DO COLLAPSE(2)
 #endif
 !$acc parallel deviceptr(Br,Et)
 !$acc loop gang vector collapse(2)
-  do k   = xlo(2), xhi(2)
-    do j = xlo(1), xhi(1)
+  do k   = rlo(2), rhi(2)
+    do j = rlo(1), rhi(1)
         Br(j,k) = Br(j,k) + dtsdz * (Et(j  ,k+1) - Et(j,k))
     end do
   end do
@@ -899,8 +899,8 @@ USE picsar_precision, ONLY: idp, isp, num
 #endif
 !$acc parallel deviceptr(Bt,Ez,Er)
 !$acc loop gang vector collapse(2)
-  do k   = ylo(2), yhi(2)
-    do j = ylo(1), yhi(1)
+  do k   = tlo(2), thi(2)
+    do j = tlo(1), thi(1)
         Bt(j,k) = Bt(j,k) + dtsdr * (Ez(j+1,k  ) - Ez(j,k)) &
                           - dtsdz * (Er(j  ,k+1) - Er(j,k))
     end do
