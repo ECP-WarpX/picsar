@@ -209,8 +209,8 @@ USE shared_data , ONLY : dx, dy
           !end do
           !IF (rank .EQ. 0) PRINT *, "#0"
           !!! --- Boundary conditions for E AND B
-          !CALL efield_bcs
-          !CALL bfield_bcs
+          CALL efield_bcs
+          CALL bfield_bcs
           IF(absorbing_bcs) THEN
             CALL field_damping_bcs()
             CALL merge_fields()

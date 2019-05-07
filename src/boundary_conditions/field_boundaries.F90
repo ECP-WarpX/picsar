@@ -83,6 +83,7 @@ MODULE field_boundary
     INTEGER(idp), INTENT(IN) :: nx_local, ny_local, nz_local
     REAL(num), DIMENSION(-nxg:nx_local+nxg, -nyg:ny_local+nyg, -nzg:nz_local+nzg),    &
     INTENT(INOUT) :: field
+  
     IF (mpicom_curr.EQ.1) THEN
       CALL exchange_mpi_3d_grid_array_with_guards(field, nxg, nyg, nzg, nx, ny, nz)
     ELSE
@@ -91,7 +92,67 @@ MODULE field_boundary
     ENDIF
 
   END SUBROUTINE field_bc
+  
 
+  SUBROUTINE field_bc_rz(field, nxg, nyg, nx_local, ny_local, nmodes)
+    INTEGER(idp) , INTENT(IN)  ::  nxg, nyg, nx_local, ny_local, nmodes
+    COMPLEX(cpx) , DIMENSION(-nxg:nx_local+nxg, -nyg:ny_local+nyg,0:nmodes-1),        &
+    INTENT(INOUT) ::field
+    
+    CALL exchange_mpi_rz_grid_array_with_guards_nonblocking(field, nxg, nyg, nx_local,&
+      ny_local, nmodes) 
+
+  END SUBROUTINE field_bc_rz
+ 
+  SUBROUTINE exchange_mpi_rz_grid_array_with_guards_nonblocking                       &
+             (field, nxg, nyg, nx_local, ny_local,nmodes)
+
+    INTEGER(idp) , INTENT(IN) :: nxg, nyg, nx_local, ny_local,nmodes
+    COMPLEX(cpx) , DIMENSION(-nxg:nx_local+nxg, -nyg:ny_local+nyg,0:nmodes-1),        &
+    INTENT(INOUT) ::field  
+    INTEGER(idp), DIMENSION(c_ndims) :: sizes, subsizes, starts
+    INTEGER(isp) :: basetype, sz, szmax, i, j, k, n
+    INTEGER(isp):: requests(2)
+
+    
+    basetype = mpicpx
+    sizes(1) = nx_local + 1 + 2 * nxg
+    sizes(2) = ny_local + 1 + 2 * nyg
+    sizes(3) = nmodes
+    starts = 1
+
+    ! MOVE EDGES ALONG X
+    subsizes(1) = sizes(1)
+    subsizes(2) =  nyg+1
+    subsizes(3) = sizes(3)
+
+      ! MOVE EDGES ALONG Y
+
+    IF (is_dtype_init(5)) THEN
+      mpi_dtypes(5) = create_3d_array_derived_type(basetype, subsizes, sizes, starts)
+      is_dtype_init(5) = .FALSE.
+    ENDIF
+
+    ! --- +Y
+    CALL MPI_ISEND(field(-nxg, 0, 0), 1_isp, mpi_dtypes(5), INT(proc_y_min, isp),  &
+    tag, comm, requests(1), errcode)
+    CALL MPI_IRECV(field(-nxg, ny_local, 0), 1_isp, mpi_dtypes(5), INT(proc_y_max, &
+    isp), tag, comm, requests(2), errcode)
+
+    ! --- Need to wait here to avoid modifying buffer at field(nx_local) and field(0)
+    CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
+
+      ! --- -Y
+    CALL MPI_ISEND(field(-nxg, ny_local-nyg, 0), 1_isp, mpi_dtypes(5),             &
+    INT(proc_y_max, isp), tag, comm, requests(1), errcode)
+    CALL MPI_IRECV(field(-nxg, -nyg, 0), 1_isp, mpi_dtypes(5), INT(proc_y_min,     &
+    isp), tag, comm, requests(2), errcode)
+
+      ! NEED TO WAIT BEFORE EXCHANGING ALONG Z (DIAGONAL TERMS)
+    CALL MPI_WAITALL(2_isp, requests, MPI_STATUSES_IGNORE, errcode)
+   
+  
+  END SUBROUTINE exchange_mpi_rz_grid_array_with_guards_nonblocking
   ! ______________________________________________________________________________________
   !> @brief
   !> Routine exchanging guard regions between subdomains
@@ -1765,26 +1826,29 @@ USE picsar_precision, ONLY: idp, isp, num
       tmptime = MPI_WTIME()
     ENDIF
     ! Electric field MPI exchange between subdomains
-    IF(.NOT. absorbing_bcs) THEN
-    
-      !> When using periodic bcs, exchange standard EM fields
+    IF (l_am_rz) THEN
+      CALL field_bc_rz(er, nxguards, nyguards, nx, ny, nmodes)
+      CALL field_bc_rz(et, nxguards, nyguards, nx, ny, nmodes)
+      CALL field_bc_rz(el, nxguards, nyguards, nx, ny, nmodes)
+    ELSE IF (.NOT. l_am_rz) THEN
+      IF(.NOT. absorbing_bcs) THEN
+        !> When using periodic bcs, exchange standard EM fields
+        CALL field_bc(ex, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(ey, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(ez, nxguards, nyguards, nzguards, nx, ny, nz)
+      ELSE IF(absorbing_bcs) THEN
 
-      CALL field_bc(ex, nxguards, nyguards, nzguards, nx, ny, nz)
-      CALL field_bc(ey, nxguards, nyguards, nzguards, nx, ny, nz)
-      CALL field_bc(ez, nxguards, nyguards, nzguards, nx, ny, nz)
-    ELSE IF(absorbing_bcs) THEN
-
-      !> When using absorbing bcs, exchange splitted EM fields
-      CALL field_bc(exy, nxguards, nyguards, nzguards, nx, ny, nz)
-      CALL field_bc(exz, nxguards, nyguards, nzguards, nx, ny, nz)
-      CALL field_bc(eyx, nxguards, nyguards, nzguards, nx, ny, nz)
-      CALL field_bc(eyz, nxguards, nyguards, nzguards, nx, ny, nz)
-      CALL field_bc(ezx, nxguards, nyguards, nzguards, nx, ny, nz)
-      CALL field_bc(ezy, nxguards, nyguards, nzguards, nx, ny, nz)
-      !> When using absorbing bcs, the electric field is merged here
-      !> This is done here in order not to call merge_fields from warp 
-      CALL merge_e_fields()
-
+        !> When using absorbing bcs, exchange splitted EM fields
+        CALL field_bc(exy, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(exz, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(eyx, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(eyz, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(ezx, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(ezy, nxguards, nyguards, nzguards, nx, ny, nz)
+        !> When using absorbing bcs, the electric field is merged here
+        !> This is done here in order not to call merge_fields from warp 
+        CALL merge_e_fields()
+      ENDIF
     ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(8) = localtimes(8) + (MPI_WTIME() - tmptime)
@@ -1816,28 +1880,29 @@ USE mpi
       tmptime = MPI_WTIME()
     ENDIF
     ! Magnetic field MPI exchange between subdomains
-    IF(.NOT. absorbing_bcs) THEN 
+    IF(l_am_rz) THEN
+        CALL field_bc_rz(br, nxguards, nyguards, nx, ny, nmodes)
+        CALL field_bc_rz(bt, nxguards, nyguards, nx, ny, nmodes)
+        CALL field_bc_rz(bl, nxguards, nyguards, nx, ny, nmodes)
+      ELSE IF (.NOT. l_am_rz) THEN
+      IF(.NOT. absorbing_bcs) THEN 
+        !> When using periodic bcs, exchange standard EM fields
+        CALL field_bc(bx, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(by, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(bz, nxguards, nyguards, nzguards, nx, ny, nz)
+      ELSE IF(absorbing_bcs) THEN
+        !> When using absorbing bcs, exchange splitted EM fields
+        CALL field_bc(bxy, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(bxz, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(byx, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(byz, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(bzx, nxguards, nyguards, nzguards, nx, ny, nz)
+        CALL field_bc(bzy, nxguards, nyguards, nzguards, nx, ny, nz)
+        !> When using absorbing bcs, the magnetic field is merged here
+        !> This is done here in order not to call merge_fields from warp 
 
-      !> When using periodic bcs, exchange standard EM fields
-
-      CALL field_bc(bx, nxguards, nyguards, nzguards, nx, ny, nz)
-      CALL field_bc(by, nxguards, nyguards, nzguards, nx, ny, nz)
-      CALL field_bc(bz, nxguards, nyguards, nzguards, nx, ny, nz)
-    ELSE IF(absorbing_bcs) THEN
-
-      !> When using absorbing bcs, exchange splitted EM fields
-
-      CALL field_bc(bxy, nxguards, nyguards, nzguards, nx, ny, nz)
-      CALL field_bc(bxz, nxguards, nyguards, nzguards, nx, ny, nz)
-      CALL field_bc(byx, nxguards, nyguards, nzguards, nx, ny, nz)
-      CALL field_bc(byz, nxguards, nyguards, nzguards, nx, ny, nz)
-      CALL field_bc(bzx, nxguards, nyguards, nzguards, nx, ny, nz)
-      CALL field_bc(bzy, nxguards, nyguards, nzguards, nx, ny, nz)
-
-      !> When using absorbing bcs, the magnetic field is merged here
-      !> This is done here in order not to call merge_fields from warp 
-
-      CALL merge_b_fields()
+        CALL merge_b_fields()
+      ENDIF
     ENDIF
     IF (it.ge.timestat_itstart) THEN
       localtimes(6) = localtimes(6) + (MPI_WTIME() - tmptime)

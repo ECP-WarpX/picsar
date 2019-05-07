@@ -955,6 +955,8 @@ MODULE mpi_type_constants!#do not parse
   !> Variable with a short name that contains the double size
   !> parameter MPI_DOUBLE_PRECISION
   INTEGER(isp)  :: mpidbl = MPI_DOUBLE_PRECISION
+  !> parameter mpi_double_complex
+  INTEGER(isp)  :: mpicpx = MPI_DOUBLE_COMPLEX
   !> Status parameter for MPI
   INTEGER(isp) :: status(MPI_STATUS_SIZE)
   ! Derived types (MPI exchange)
