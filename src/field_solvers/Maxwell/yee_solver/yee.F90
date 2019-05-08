@@ -396,17 +396,12 @@ subroutine pxrpush_emrz_evec( &
 !$acc loop gang vector collapse(2)
   do k   = ylo(2), yhi(2)
     do j = ylo(1), yhi(1)
-      if (j /= 0) &
-      Et(j,k) = Et(j,k) - dtsdx * (Bz(j,k) - Bz(j-1,k)) &
-                        + dtsdz * (Br(j,k) - Br(j,k-1)) &
-                        - mudt  * Jt(j,k)
+      if (j /= 0 .or. rmin /= 0.) then
+        Et(j,k) = Et(j,k) - dtsdx * (Bz(j,k) - Bz(j-1,k)) &
+                          + dtsdz * (Br(j,k) - Br(j,k-1)) &
+                          - mudt  * Jt(j,k)
+      endif
     end do
-    if (rmin /= 0. .and. ylo(1) <= 0 .and. 0 <= yhi(1)) then
-      j = 0
-      Et(j,k) = Et(j,k) - dtsdx * (Bz(j,k) - Bz(j-1,k)) &
-                        + dtsdz * (Br(j,k) - Br(j,k-1)) &
-                        - mudt  * Jt(j,k)
-    end if
   end do
 !$acc end loop
 !$acc end parallel
@@ -418,25 +413,16 @@ subroutine pxrpush_emrz_evec( &
 !$acc loop gang vector collapse(2)
   do k   = zlo(2), zhi(2)
     do j = zlo(1), zhi(1)
-      if (j /= 0) then
+      if (j /= 0 .or. rmin /= 0.) then
         ru = 1. + 0.5/(rmin/dr + j)
         rd = 1. - 0.5/(rmin/dr + j)
         Ez(j,k) = Ez(j,k) + dtsdx * (ru*Bt(j,k) - rd*Bt(j-1,k)) &
                           - mudt  * Jz(j,k)
-      end if
-    end do
-    if (zlo(1) <= 0 .and. 0 <= zhi(1)) then
-      j = 0
-      if (rmin == 0.) then
+      else
         Ez(j,k) = Ez(j,k) + 4.*dtsdx * Bt(j,k) &
                           - mudt  * Jz(j,k)
-      else
-        ru = 1. + 0.5/(rmin/dr)
-        rd = 1. - 0.5/(rmin/dr)
-        Ez(j,k) = Ez(j,k) + dtsdx * (ru*Bt(j,k) - rd*Bt(j-1,k)) &
-                          - mudt  * Jz(j,k)
       end if
-    end if
+    end do
   end do
 !$acc end loop
 !$acc end parallel
