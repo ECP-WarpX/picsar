@@ -25,7 +25,7 @@ COMP=gnu
 # - sde: sde profiling
 # - map: Allinea Map profiling
 # - library: create static and dynamic library
-MODE= library
+MODE= debug_spectral
 
 # System (SYS)
 # - cori2
@@ -321,7 +321,7 @@ else ifeq ($(COMP),intel)
   endif
 
 endif
-FARGS= -O3 -fopenmp -JModules -ftree-vectorize 
+FARGS= -g -fopenmp -JModules -Wunused-variable -fcheck=bound -ftree-vectorize
 FARGS+= $(LARCH)
 
 # ________________________________________________________
@@ -342,12 +342,12 @@ ifeq ($(IS_P3DFFT),true)
 endif
 
 ifeq ($(MODE),library)
-        FARGS += -fPIC -I$(FFTW3_INCLUDE)  -D  FFTW=1
+        FARGS += -fPIC -I$(FFTW3_INCLUDE) -D LIBRARY=1 -D  FFTW=1
         LDFLAGS += -L$(FFTW3_LIB) -lfftw3_mpi -lfftw3  -lfftw3_threads
 endif
 
 ifeq ($(IS_HANKEL),true)
-        FARGS += -I$(LAPACK_BLAS_INCLUDE) -D LIBRARY=1
+        FARGS += -I$(LAPACK_BLAS_INCLUDE)
         LDFLAGS += -L$(LAPACK_BLAS_LIB) -lopenblas
         HANKEL_FILE = $(SRCDIR)/field_solvers/Maxwell/GPSTD_solver/hankel.o
 endif
