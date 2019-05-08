@@ -15,7 +15,7 @@
 # - gnu
 # - intel
 # - user
-COMP=gnu
+COMP=intel
 
 # Mode (MODE)
 # - prod: production mode (without FFTW)
@@ -51,10 +51,10 @@ CC=mpicc
 FARGS= -g -fbounds-check -O3 -fopenmp -JModules
 
 # External libs
-FFTW3_LIB=/Users/imen/PICSAR_SOFTWARE_AND_DEPENDENCIES/FFTW_INSTALL_DIR/lib     #/home/llr/galop/izemzemi/soft/picsar_and_dep/FFTW_INSTALL_DIR/lib
-FFTW3_INCLUDE= /Users/imen/PICSAR_SOFTWARE_AND_DEPENDENCIES/FFTW_INSTALL_DIR/include   #/home/llr/galop/izemzemi/soft/picsar_and_dep/FFTW_INSTALL_DIR/include
-LAPACK_BLAS_LIB=/Users/imen/PICSAR_SOFTWARE_AND_DEPENDENCIES/OpenBLAS_DIR/lib
-LAPACK_BLAS_INCLUDE=/Users/imen/PICSAR_SOFTWARE_AND_DEPENDENCIES/OpenBLAS_DIR/include
+FFTW3_LIB=/home/llr/galop/izemzemi/soft/picsar_and_dep/FFTW_INSTALL_DIR/lib
+FFTW3_INCLUDE= /home/llr/galop/izemzemi/soft/picsar_and_dep/FFTW_INSTALL_DIR/include
+LAPACK_BLAS_LIB=/home/llr/galop/izemzemi/soft/picsar_and_dep/OPEN_BLAS_INSTALL_DIR/lib
+LAPACK_BLAS_INCLUDE=/home/llr/galop/izemzemi/soft/picsar_and_dep/OPEN_BLAS_INSTALL_DIR/include
 VTUNEDIR=/opt/intel/vtune_amplifier_xe_2017.2.0.499904
 
 P3DFFT_INCLUDE=
@@ -322,6 +322,8 @@ else ifeq ($(COMP),intel)
 
 endif
 FARGS= -g -fopenmp -JModules -Wunused-variable -fcheck=bound -ftree-vectorize
+#FARGS for intel compiler
+#FARGS= -g -qopenmp -JModules -check bounds -D DEBUG=1 
 FARGS+= $(LARCH)
 
 # ________________________________________________________

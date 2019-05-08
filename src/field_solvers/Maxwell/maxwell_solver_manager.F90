@@ -606,11 +606,17 @@ END SUBROUTINE push_efield_2d
     ENDIF
   ELSE
     IF (l_AM_rz) THEN
+      !#if defined(DEBUG)
+      !WRITE(0, *) "get_Hfield: start"
+      !#endif
       CALL get_Hfields ! - local FFT in RZ --PS: it's complex to complex
       !Call get_Ffields_AM_rz()
       !write (*,*) "only get_Ffields_AM_rz" , ( abs(er_c))
       !er_c=er_c/399.
       !write (*,*) "only get_Ffields_AM_rz after division" , MAXval( abs(er_c)) 
+      !#if defined(DEBUG)
+      !WRITE(0, *) "get_Hfield: end"
+      !#endif 
     ELSE 
       CALL get_Ffields! - local FFT
     ENDIF
@@ -629,8 +635,14 @@ END SUBROUTINE push_efield_2d
       IF (.NOT. l_AM_rz) THEN
         CALL push_psaotd_ebfielfs_3d! - PUSH PSATD
       ELSE IF (l_AM_rz) THEN 
+        !#if defined(DEBUG)
+        !WRITE(0, *) "push ebfield RZ"
+        !#endif
         CALL push_psaotd_ebfielfs_AM_rz !- push psatd in azimuthal cylindrical
         !write (*,*) " without push_psaotd AM", MAXval( abs(er_c))
+        !#if defined(DEBUG)
+        !WRITE(0, *) "push ebfield RZ has ended"
+        !#endif
       END IF 
     ELSE IF(c_dim == 2) THEN
       CALL push_psaotd_ebfielfs_2d
@@ -645,6 +657,9 @@ END SUBROUTINE push_efield_2d
     ENDIF
   ELSE
     IF (l_AM_rz) THEN 
+     !#if defined(DEBUG)
+     !WRITE(0, *) "push psatd ebfield : start"
+     !#endif
      CALL get_fields_AM_rz! local IFFT in RZ --PS: it's complex to complex
      !write (*,*) "getfield_AM ", MAXval( abs(er_c))
     ELSE

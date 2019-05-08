@@ -371,10 +371,14 @@ MODULE fourier_psaotd
     IF (it.ge.timestat_itstart) THEN
       localtimes(21) = localtimes(21) + (MPI_WTIME() - tmptime)
     ENDIF
-
+!#if defined(DEBUG)
+!    WRITE (0,*) "BUG BEFORE FFT FORWARD"
+!#endif
     ! Perform local forward FFTs C2C of all grid arrays 
     CALL fft_forward_c2c_local_AM_rz(nfftx,nffty,nfftz)
-
+!#if defined(DEBUG)
+!    WRITE (0,*) "BUG after FFT FORWARD"
+!#endif
   END SUBROUTINE get_Ffields_AM_rz
  
   ! ______________________________________________________________________________________
@@ -1100,7 +1104,7 @@ MODULE fourier_psaotd
     brt_m = (br_c-ii*bt_c)/2.0_num   
     jrt_p = (jr_c+ii*jt_c)/2.0_num
     jrt_m = (jr_c-ii*jt_c)/2.0_num
-    !write (*,*) "fft_forward_c2c_local_AM_rz ert_p" , MAXVAL(abs(ert_p))
+    !write (*,*) "fft_forward_c2c_local_AM_rz ert_p" , MAXVAL(abs(ert_p)), nfftx,nffty, nfftz, size(er_c,1), size(er_c,2), size(er_c,3)
     !write (*,*) "fft_forward_c2c_local_AM_rz ert_m" , MAXVAL(abs(ert_m))
     !write (*,*) "fft_forward_c2c_local_AM_rz  brt_p" , MAXVAL(abs(brt_p))
     !write (*,*) "fft_forward_c2c_local_AM_rz brt_m" , MAXVAL(abs(brt_m))
@@ -1121,7 +1125,7 @@ MODULE fourier_psaotd
     !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, bl_c, bl_f, plan_rz_f)
     !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, br_c, bp_f, plan_rz_f)
     !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, bt_c, bm_f, plan_rz_f)
-    !write (*,*) "et_f =" , MAXVAL(abs(em_f))
+    write (*,*) "et_f =" , MAXVAL(abs(em_f))
     !write (*,*) "er_f =" , abs(ep_f)
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
@@ -1139,7 +1143,7 @@ MODULE fourier_psaotd
     DEALLOCATE (brt_m)
     DEALLOCATE (jrt_p)
     DEALLOCATE (jrt_m)
-    !write (*,*) "em_f =" , MAXVAL(abs(em_f))
+    write (*,*) "em_f =" , MAXVAL(abs(em_f))
     !write (*,*) "ep_f =" , MAXVAL(abs(ep_f))
     !write (*,*) "fft_forward_c2c_local_AM_rz er_c" , MAXVAL(abs(er_c))
     !write (*,*) "fft_forward_c2c_local_AM_rz et_c" , MAXVAL(abs(ii*et_c))

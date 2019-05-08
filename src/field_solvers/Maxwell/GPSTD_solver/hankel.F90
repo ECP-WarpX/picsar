@@ -284,12 +284,15 @@ SUBROUTINE hankel_matrix_init(nfftr,imode,p,rmax,invM)
     end do
 
   end if
-
-!  Do i= 1, nfftr
-!    Do j=1,nfftr
-!      WRITE(*,*) invM(i,j)
-!    end do
-!  end do
+  !#if defined (DEBUG=1)
+  !Do i= 1, nfftr
+  !  Do j=1,nfftr
+  !    if  (invM(i,j) .eq. 0.) then 
+  !    write (0,*) "i,j=", i, j
+  !    endif
+  !  end do
+  !end do
+  !#endif
   DEALLOCATE (x,r, nu,nu1, alphas, bjn, djn, fjn, byn, dyn, fyn, denom, denom1)
   DEALLOCATE (y,numer,jn_d,jn_f,yn,yn_d,yn_f)
   DEALLOCATE (rj1,ry0, ry1)
@@ -551,8 +554,10 @@ SUBROUTINE Hankel_M_and_invM(imode)
   DO p=imode-1, imode+1
     SELECT CASE(p-imode)
       CASE(-1)
+        !write(0,*), "nfftr=", nfftr, "imode=", imode, "p=", p, "rmax=", rmax
         CALL hankel_matrix_init(nfftr,imode,p,rmax,invM_1)
         Ma_1 =inv(invM_1)
+        !write(*,*) "case -1"
       CASE(0)
         CALL hankel_matrix_init(nfftr,imode,p,rmax,invM)
         IF (imode .NE. 0) THEN
@@ -565,6 +570,7 @@ SUBROUTINE Hankel_M_and_invM(imode)
         ELSE
           Ma=inv(invM)
         END IF 
+        !write (*,*) "case 0"
       CASE(1)
         CALL hankel_matrix_init(nfftr,imode,p,rmax,invM1)
         IF (imode .NE. 0) THEN
@@ -578,6 +584,7 @@ SUBROUTINE Hankel_M_and_invM(imode)
         ELSE
           Ma1=inv(invM1)
         END IF
+        !write (*,*) "case 1"
     END SELECT
   END DO
 
@@ -684,7 +691,13 @@ SUBROUTINE get_Hfields()
   !jp_h = DCMPLX(0.0_NUM, 0.0_NUM)
   !rho_h = DCMPLX(0.0_NUM, 0.0_NUM)
   !rhoold_h = DCMPLX(0.0_NUM, 0.0_NUM)
+  !#if defined(DEBUG) 
+  !WRITE(0, *) "before fourier transform"
+  !#endif 
   Call get_Ffields_AM_rz()
+  !#if defined(DEBUG) 
+  !WRITE(0, *) "after fourier transform"
+  !#endif 
   !el_f=el_c
   !em_f= (er_c+ii*et_c)/2.0_num
   !ep_f=(er_c-ii*et_c)/2.0_num
@@ -712,7 +725,14 @@ SUBROUTINE get_Hfields()
   !end do
   DO imode=1, nmodes
     !Ma = Ma_tot(:,:,imode)
+      !#if defined(DEBUG)
+      !WRITE(0, *) "Hankel matrix not through yet"
+      !#endif 
     Call Hankel_M_and_invM(imode-1)
+      !#if defined(DEBUG)
+      !WRITE(0, *) "Hankel matrix through"
+      ! #endif 
+
   !  !write (0,*), "Ma ======" , Ma
   !  !write (0,*), "Ma_1 ======" , Ma_1
   !  !write (0,*), "Ma1 ======" , Ma1
