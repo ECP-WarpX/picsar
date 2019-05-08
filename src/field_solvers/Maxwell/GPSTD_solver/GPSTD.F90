@@ -77,6 +77,15 @@ MODULE matrix_coefficients!#do not parse
     INTEGER(idp) :: nx, ny, nz
     LOGICAL(lp)  :: is_source_variable = .FALSE.
   END TYPE block3d
+  TYPE block2d
+    REAL(idp), POINTER, DIMENSION(:, :) :: block2dc
+    INTEGER(idp) :: nx
+    LOGICAL(lp)  :: is_source_variable = .FALSE.
+  END TYPE block2d
+  TYPE hankel_matrix_blocks
+    TYPE(block2d), POINTER, DIMENSION(:, :) :: mode_block_matrix2d
+    INTEGER(idp) :: nblocks
+  END TYPE hankel_matrix_blocks
   TYPE matrix_blocks
     TYPE(block3d), POINTER, DIMENSION(:, :) :: block_matrix2d
     INTEGER(idp) :: nblocks
@@ -89,6 +98,8 @@ MODULE matrix_coefficients!#do not parse
   ! Array of 2D block matrixes
   ! (contaning 3d blocks coefficients for GPSTD_Maxwell, GPSTD_Maxwell_PML etc.)
   TYPE(matrix_blocks), POINTER, DIMENSION(:) :: cc_mat
+  ! (contaning 3d blocks coefficients for GPSTD_Maxwell, GPSTD_Maxwell_PML etc.)
+  TYPE(hankel_matrix_blocks), POINTER, DIMENSION(:) :: hankel_mat
   ! Arrays of 1D block vectors  (containing 3d blocks Ex, Ey, Ez etc.)
   TYPE(vector_blocks), POINTER, DIMENSION(:) :: vnew, vold, KSPACE, AT_OP
 END MODULE matrix_coefficients
