@@ -25,6 +25,13 @@ namespace picsar{
         template<typename _REAL>
         std::vector<_REAL> generate_log_spaced_vec
         (_REAL min, _REAL max, size_t size);
+
+        //GPU-friendly replacement of "std::upper_bound"
+        template<typename T>
+        PXRMP_GPU
+        PXRMP_FORCE_INLINE
+        T* picsar_upper_bound(T* first, T* last, const T& val);
+
     }
 }
 
@@ -71,6 +78,32 @@ picsar::multi_physics::generate_lin_spaced_vec
     }
     vec.back() = max; //Enforces this exactly
     return vec;
+}
+
+
+template<typename T>
+PXRMP_GPU
+PXRMP_FORCE_INLINE
+const T*
+picsar::multi_physics::picsar_upper_bound
+(const T* first, const T* last, const T& val)
+{
+    const T* it;
+    size_t count, step;
+    count = last-first;
+    while(count>0){
+        it = first;
+        step = count/2;
+        it += step;
+         if (!(val<*it)){
+             first = ++it;
+             count -= step + 1;
+         }
+         else{
+             count = step;
+         }
+    }
+    return first;
 }
 
 

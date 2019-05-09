@@ -19,6 +19,9 @@
 //Uses picsar array
 #include "picsar_array.hpp"
 
+//Uses utilities.hpp
+#include "utilities.hpp"
+
 //############################################### Declaration
 
 namespace picsar{
@@ -112,6 +115,7 @@ namespace picsar{
                 lookup_2d(lookup_2d&& other);
 
                 //Constructor from raw data pointers
+                PXRMP_GPU
                 lookup_2d(size_t how_many_1,
                           _REAL* _coords_1,
                           size_t how_many_2,
@@ -128,6 +132,8 @@ namespace picsar{
                 picsar_array<picsar_vector<_REAL>,2>& ref_coords();
 
                 //Get a const reference to the coordinates
+                PXRMP_GPU
+                PXRMP_FORCE_INLINE
                 const picsar_array<picsar_vector<_REAL>,2>& ref_coords() const;
 
                 //Get a reference to the data
@@ -155,6 +161,7 @@ namespace picsar{
 
                 //Performs linear interpolation on the FIRST coordinate
                 //(equispaced version)
+                PXRMP_GPU
                 PXRMP_FORCE_INLINE
                 _REAL interp_linear_first_equispaced
                 (_REAL where_x, size_t coord_y) const;
@@ -180,6 +187,7 @@ namespace picsar{
 
                 //Row major accessor: converts coordinates indices to
                 //the index
+                PXRMP_GPU
                 PXRMP_FORCE_INLINE
                 size_t row_major(
                 size_t i, size_t j, size_t c1_size, size_t c2_size) const;
@@ -309,7 +317,7 @@ _REAL
 picsar::multi_physics::lookup_1d<_REAL>::
 interp_linear(_REAL where) const
 {
-    auto iter_right = std::upper_bound(coords.begin(), coords.end(),where);
+    auto iter_right = picsar_upper_bound(coords.begin(), coords.end(),where);
     size_t idx_right = std::distance(coords.begin(), iter_right);
     size_t idx_left = idx_right-1;
 
@@ -443,6 +451,8 @@ ref_coords()
 
 //Get a const reference of the coordinates
 template<typename _REAL>
+PXRMP_GPU
+PXRMP_FORCE_INLINE
 const
 picsar::multi_physics::picsar_array<picsar::multi_physics::picsar_vector<_REAL>,2>&
 picsar::multi_physics::lookup_2d<_REAL>::
@@ -453,7 +463,7 @@ ref_coords() const
 
 
 
-//Get a reference of the coordinates
+//Get a reference of the data
 template<typename _REAL>
 picsar::multi_physics::picsar_vector<_REAL>&
 picsar::multi_physics::lookup_2d<_REAL>::
@@ -491,9 +501,9 @@ picsar::multi_physics::lookup_2d<_REAL>::
 interp_linear(_REAL where_x, _REAL where_y) const
 {
     auto it_x_right =
-        std::upper_bound(coords[0].begin(), coords[0].end(),where_x);
+        picsar_upper_bound(coords[0].begin(), coords[0].end(),where_x);
     auto it_y_right =
-        std::upper_bound(coords[1].begin(), coords[1].end(),where_y);
+        picsar_upper_bound(coords[1].begin(), coords[1].end(),where_y);
     size_t idx_x_right = std::distance(coords[0].begin(), it_x_right);
     size_t idx_y_right = std::distance(coords[1].begin(), it_y_right);
     size_t idx_x_left = idx_x_right - 1;
@@ -581,9 +591,10 @@ interp_linear_first(_REAL where_x, size_t coord_y) const
     _REAL xmax = coords[0].front();
     _REAL xsize = xmax - xmin;
 
-    size_t idx_x_left = static_cast<size_t>(
-        floor((coords[0].size()-1)*(where_x-xmin)/xsize));
-    size_t idx_x_right = idx_x_left + 1;
+    auto it_x_right =
+        picsar_upper_bound(coords[0].begin(), coords[0].end(),where_x);
+    size_t idx_x_right = std::distance(coords[0].begin(), it_x_right);
+    size_t idx_x_left = idx_x_right - 1;
 
     _REAL xleft = coords[0][idx_x_left];
     _REAL xright = coords[0][idx_x_right];
@@ -605,6 +616,7 @@ interp_linear_first(_REAL where_x, size_t coord_y) const
 //Performs linear interpolation on the FIRST coordinate
 //(equispaced version)
 template<typename _REAL>
+PXRMP_GPU
 PXRMP_FORCE_INLINE
 _REAL
 picsar::multi_physics::lookup_2d<_REAL>::
@@ -619,10 +631,14 @@ interp_linear_first_equispaced(_REAL where_x, size_t coord_y) const
     if(where_x == coords[0].back())
         return data[row_major(sx-1,coord_y,sx,sy)];
 
-    auto it_x_right =
-        std::upper_bound(coords[0].begin(), coords[0].end(),where_x);
-    size_t idx_x_right = std::distance(coords[0].begin(), it_x_right);
-    size_t idx_x_left = idx_x_right - 1;
+    _REAL xmin = coords[0].back();
+    _REAL xmax = coords[0].front();
+    _REAL xsize = xmax - xmin;
+
+    size_t idx_x_left = static_cast<size_t>(
+            floor((coords[0].size()-1)*(where_x-xmin)/xsize));
+    size_t idx_x_right = idx_x_left + 1;
+
 
     _REAL xleft = coords[0][idx_x_left];
     _REAL xright = coords[0][idx_x_right];
@@ -696,6 +712,7 @@ write_on_stream_bin(std::ofstream& out)
 
 //Row major access to underlying data
 template<typename _REAL>
+PXRMP_GPU
 PXRMP_FORCE_INLINE
 size_t
 picsar::multi_physics::lookup_2d<_REAL>::
