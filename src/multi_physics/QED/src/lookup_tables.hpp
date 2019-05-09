@@ -610,6 +610,15 @@ _REAL
 picsar::multi_physics::lookup_2d<_REAL>::
 interp_linear_first_equispaced(_REAL where_x, size_t coord_y) const
 {
+    size_t sx = coords[0].size();
+    size_t sy = coords[1].size();
+
+    if(where_x == coords[0].front())
+        return data[row_major(0,coord_y,sx,sy)];
+
+    if(where_x == coords[0].back())
+        return data[row_major(sx-1,coord_y,sx,sy)];
+
     auto it_x_right =
         std::upper_bound(coords[0].begin(), coords[0].end(),where_x);
     size_t idx_x_right = std::distance(coords[0].begin(), it_x_right);
@@ -617,9 +626,6 @@ interp_linear_first_equispaced(_REAL where_x, size_t coord_y) const
 
     _REAL xleft = coords[0][idx_x_left];
     _REAL xright = coords[0][idx_x_right];
-
-    size_t sx = coords[0].size();
-    size_t sy = coords[1].size();
 
     _REAL zlc = data[row_major(idx_x_left,coord_y,sx,sy)];
     _REAL zrc = data[row_major(idx_x_right,coord_y,sx,sy)];
