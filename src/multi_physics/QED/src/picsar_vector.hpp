@@ -139,7 +139,7 @@ picsar::multi_physics::picsar_vector<T>::picsar_vector(const std::vector<T>& vec
     should_manage_memory = true;
 }
 
-//Empty initialization (not for GPU)
+//Empty initialization
 template <typename T>
 picsar::multi_physics::picsar_vector<T>::picsar_vector()
 {
