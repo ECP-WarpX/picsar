@@ -19,6 +19,10 @@
 #define PXRMP_USE_NORMALIZED_UNITS
 #include "../QED/src/breit_wheeler_engine.hpp"
 
+
+#include <fenv.h>
+
+
 using namespace std;
 using namespace testbed;
 namespace pxrmp =  picsar::multi_physics;
@@ -27,6 +31,7 @@ namespace pxrmp =  picsar::multi_physics;
 void test_BW();
 
 int main(){
+    feenableexcept(FE_INVALID | FE_OVERFLOW);
     test_BW();
 }
 
