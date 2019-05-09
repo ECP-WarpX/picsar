@@ -171,10 +171,10 @@ int main()
 	double useless_lambda = 1.0;
 
 	//Change default table parameters in order to speed up the calculations
-	pxrmp::breit_wheeler_engine_ctrl<double> bw_ctrl;
-	bw_ctrl.chi_phot_tdndt_how_many = 200;
-	bw_ctrl.chi_phot_tpair_how_many = 3;
-	bw_ctrl.chi_frac_tpair_how_many = 3;
+	//pxrmp::breit_wheeler_engine_ctrl<double> bw_ctrl;
+	//bw_ctrl.chi_phot_tdndt_how_many = 200;
+	//bw_ctrl.chi_phot_tpair_how_many = 3;
+	//bw_ctrl.chi_frac_tpair_how_many = 3;
 
 	//Initialize the BW engine
 	auto bw_engine =
