@@ -89,10 +89,6 @@ namespace picsar{
                 _REAL* cum_distrib_table_coords_2_ptr;
                 size_t cum_distrib_table_data_how_many;
                 _REAL* cum_distrib_table_data_ptr;
-                size_t aux_table_coords_how_many;
-                _REAL* aux_table_coords_ptr;
-                size_t aux_table_data_how_many;
-                _REAL* aux_table_data_ptr;
         };
 
       //Templates are used for the numerical type and for the
@@ -235,7 +231,6 @@ namespace picsar{
         _REAL* p_px, _REAL* p_py, _REAL* p_pz,
         _REAL* e_weight, _REAL* p_weight,
         _REAL lambda ,
-        picsar::multi_physics::lookup_1d<_REAL>& ref_aux_table,
         const picsar::multi_physics::lookup_2d<_REAL>& ref_cum_distrib_table,
         const picsar::multi_physics::breit_wheeler_engine_ctrl<_REAL>& ref_bw_ctrl,
         _REAL* unf_zero_one_minus_epsi);
@@ -277,8 +272,6 @@ namespace picsar{
 
         //lookup table for the cumulativie distribution table
         lookup_2d<_REAL> cum_distrib_table;
-        //Auxiliary table for coordinate interpolation
-        lookup_1d<_REAL> aux_table;
 
         //Some handy constants
         static constexpr _REAL zero = static_cast<_REAL>(0.0);
@@ -323,8 +316,7 @@ template<typename _REAL, class _RNDWRAP>
 picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 breit_wheeler_engine(const breit_wheeler_engine& other):
     lambda(other.lambda), rng(other.rng), bw_ctrl(other.bw_ctrl),
-    TTfunc_table(other.TTfunc_table), cum_distrib_table(other.cum_distrib_table),
-    aux_table(other.aux_table)
+    TTfunc_table(other.TTfunc_table), cum_distrib_table(other.cum_distrib_table)
     {}
 
 //Move constructor
@@ -334,8 +326,7 @@ breit_wheeler_engine(breit_wheeler_engine&& other):
     lambda(std::move(other.lambda)), rng(std::move(other.rng)),
     bw_ctrl(std::move(other.bw_ctrl)),
     TTfunc_table(std::move(other.TTfunc_table)),
-    cum_distrib_table(std::move(other.cum_distrib_table)),
-    aux_table(std::move(other.aux_table))
+    cum_distrib_table(std::move(other.cum_distrib_table))
     {}
 
 
@@ -634,10 +625,6 @@ compute_cumulative_pair_table (std::ostream* stream)
     cum_distrib_table = lookup_2d<_REAL>{
         picsar_array<picsar_vector<_REAL>,2>{chi_coords, frac_coords}, pair_vals};
 
-
-    //Initialize the auxiliary table
-    aux_table = lookup_1d<_REAL>{cum_distrib_table.get_coords()[1],
-    picsar_vector<_REAL>(bw_ctrl.chi_frac_tpair_how_many)};
 }
 
 //This function computes the properties of the electron-positron pairs
@@ -682,7 +669,7 @@ _REAL weight, size_t sampling)
     e_px.data(), e_py.data(), e_pz.data(),
     p_px.data(), p_py.data(), p_pz.data(),
     e_weight.data(), p_weight.data(),
-    lambda, aux_table, cum_distrib_table, bw_ctrl,
+    lambda, cum_distrib_table, bw_ctrl,
     unf_zero_one_minus_epsi.data()
     );
 
@@ -716,36 +703,11 @@ _REAL* e_px, _REAL* e_py, _REAL* e_pz,
 _REAL* p_px, _REAL* p_py, _REAL* p_pz,
 _REAL* e_weight, _REAL* p_weight,
 _REAL _lambda ,
-picsar::multi_physics::lookup_1d<_REAL>& ref_aux_table,
 const picsar::multi_physics::lookup_2d<_REAL>& ref_cum_distrib_table,
 const picsar::multi_physics::breit_wheeler_engine_ctrl<_REAL>& ref_bw_ctrl,
 _REAL* unf_zero_one_minus_epsi)
 {
     _REAL chi_phot = chi_photon(px, py, pz, ex, ey, ez, bx, by, bz, _lambda);
-
-    auto frac = ref_aux_table.ref_coords();
-
-    //if chi < chi_min: chi = chi_min for cumulative distribution
-    if(chi_phot < ref_bw_ctrl.chi_phot_tpair_min){
-        for(size_t i = 0; i < frac.size(); i++){
-            ref_aux_table.ref_data()[i] =
-            ref_cum_distrib_table.data_at_coords(0, i);
-        }
-    }
-    //if chi > chi_max: chi = chi_max for cumulative distribution
-    else if(chi_phot > ref_bw_ctrl.chi_phot_tpair_max){
-        for(size_t i = 0; i < frac.size(); i++){
-            ref_aux_table.ref_data()[i] =
-            ref_cum_distrib_table.data_at_coords(ref_bw_ctrl.chi_phot_tpair_max, i);
-        }
-    }
-    //Interpolate 1D cumulative distribution
-    else{
-        for(size_t i = 0; i < frac.size(); i++){
-            ref_aux_table.ref_data()[i] =
-            ref_cum_distrib_table.interp_linear_first_equispaced(chi_phot, i);
-        }
-    }
 
     _REAL new_weight = weight/sampling;
 
@@ -756,15 +718,55 @@ _REAL* unf_zero_one_minus_epsi)
     vec3<_REAL> n_phot = p_phot/norm_phot;
     _REAL gamma_phot = norm_phot/me_c;
 
+    const size_t how_many_frac = ref_cum_distrib_table.ref_coords[1].size();
+
+    _REAL tab_chi_phot = chi_phot;
+    if(chi_phot < ref_bw_ctrl.chi_phot_tpair_min)
+        tab_chi_phot = ref_bw_ctrl.chi_phot_tpair_min;
+    else if(chi_phot > ref_bw_ctrl.chi_phot_tpair_max)
+        tab_chi_phot = ref_bw_ctrl.chi_phot_tpair_max;
+
     for(size_t s = 0; s < sampling; s++){
         _REAL prob = unf_zero_one_minus_epsi[s];
         bool invert = false;
-        if(prob > one/two){
-            prob = one - prob;
+        if(prob >= one/two){
+            prob -= one/two;
             invert = true;
         }
 
-        _REAL chi_ele = ref_aux_table.interp_linear_equispaced(prob);
+        size_t upper = 0;
+        _REAL val;
+        size_t count = how_many_frac;
+        while(count > 0){
+            size_t step = count/2;
+            val =
+                ref_cum_distrib_table.interp_linear_first_equispaced
+                    (tab_chi_phot, upper+step);
+            if(!(prob < val)){
+                upper += step+1;
+                count -= step+1;
+            }
+            else{
+                count = step;
+            }
+        }
+
+        size_t lower = upper-1;
+
+        _REAL upper_frac = ref_cum_distrib_table.ref_coords[1][upper];
+        _REAL lower_frac = ref_cum_distrib_table.ref_coords[1][lower];
+
+        _REAL upper_prob =
+            ref_cum_distrib_table.interp_linear_first_equispaced
+            (tab_chi_phot, upper);
+        _REAL lower_prob =
+            ref_cum_distrib_table.interp_linear_first_equispaced
+            (tab_chi_phot, lower);
+
+        _REAL chi_ele_frac = lower_frac +
+            (prob-lower_prob)*(upper_frac-lower_frac)/(upper_prob-lower_prob);
+
+        _REAL chi_ele = chi_ele_frac*chi_phot;
         _REAL chi_pos = chi_phot - chi_ele;
 
         if(invert){
@@ -845,9 +847,6 @@ read_cumulative_pair_table(std::string filename)
     iif.open(filename, std::ios::binary);
     cum_distrib_table.read_from_stream_bin(iif);
     iif.close();
-
-    aux_table = lookup_1d<_REAL>{cum_distrib_table.get_coords()[1],
-    picsar_vector<_REAL>(bw_ctrl.chi_frac_tpair_how_many)};
 }
 
 //Export innards
@@ -877,10 +876,6 @@ picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::export_innards()
         = cum_distrib_table.ref_data().size();
     innards.cum_distrib_table_data_ptr
         = cum_distrib_table.ref_data().data();
-    innards.aux_table_coords_how_many       = aux_table.ref_coords().size();
-    innards.aux_table_coords_ptr            = aux_table.ref_coords().data();
-    innards.aux_table_data_how_many         = aux_table.ref_data().size();
-    innards.aux_table_data_ptr              = aux_table.ref_data().data();
 
     return innards;
 }
@@ -899,9 +894,6 @@ picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::breit_wheeler_engi
                       innards.cum_distrib_table_coords_2_how_many,
                       innards.cum_distrib_table_coords_2_ptr,
                       innards.cum_distrib_table_data_ptr},
-    aux_table{innards.aux_table_coords_how_many,
-              innards.aux_table_coords_ptr,
-              innards.aux_table_data_ptr},
     rng{*innards.rng_ptr}
 {}
 
@@ -962,8 +954,5 @@ compute_TT_function(_REAL chi_phot) const
 
     return quad_a_b<_REAL>(func, zero, chi_phot);
 }
-
-
-
 
 #endif //__PICSAR_MULTIPHYSICS_BREIT_WHEELER_ENGINE__
