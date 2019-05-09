@@ -718,7 +718,7 @@ _REAL* unf_zero_one_minus_epsi)
     vec3<_REAL> n_phot = p_phot/norm_phot;
     _REAL gamma_phot = norm_phot/me_c;
 
-    const size_t how_many_frac = ref_cum_distrib_table.ref_coords[1].size();
+    const size_t how_many_frac = ref_cum_distrib_table.ref_coords()[1].size();
 
     _REAL tab_chi_phot = chi_phot;
     if(chi_phot < ref_bw_ctrl.chi_phot_tpair_min)
@@ -753,8 +753,8 @@ _REAL* unf_zero_one_minus_epsi)
 
         size_t lower = upper-1;
 
-        _REAL upper_frac = ref_cum_distrib_table.ref_coords[1][upper];
-        _REAL lower_frac = ref_cum_distrib_table.ref_coords[1][lower];
+        const _REAL upper_frac = ref_cum_distrib_table.ref_coords()[1][upper];
+        const _REAL lower_frac = ref_cum_distrib_table.ref_coords()[1][lower];
 
         _REAL upper_prob =
             ref_cum_distrib_table.interp_linear_first_equispaced

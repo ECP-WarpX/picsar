@@ -127,6 +127,9 @@ namespace picsar{
                 //Get a reference to the coordinates
                 picsar_array<picsar_vector<_REAL>,2>& ref_coords();
 
+                //Get a const reference to the coordinates
+                const picsar_array<picsar_vector<_REAL>,2>& ref_coords() const;
+
                 //Get a reference to the data
                 picsar_vector<_REAL>& ref_data();
 
@@ -429,7 +432,7 @@ get_coords()
     return coords;
 }
 
-//Get a copy of the coordinates
+//Get a reference of the coordinates
 template<typename _REAL>
 picsar::multi_physics::picsar_array<picsar::multi_physics::picsar_vector<_REAL>,2>&
 picsar::multi_physics::lookup_2d<_REAL>::
@@ -438,8 +441,19 @@ ref_coords()
     return coords;
 }
 
+//Get a const reference of the coordinates
+template<typename _REAL>
+const
+picsar::multi_physics::picsar_array<picsar::multi_physics::picsar_vector<_REAL>,2>&
+picsar::multi_physics::lookup_2d<_REAL>::
+ref_coords() const
+{
+    return coords;
+}
 
-//Get a copy of the coordinates
+
+
+//Get a reference of the coordinates
 template<typename _REAL>
 picsar::multi_physics::picsar_vector<_REAL>&
 picsar::multi_physics::lookup_2d<_REAL>::
