@@ -1,0 +1,3 @@
+In order to compile, adapt the following command to your needs:
+
+nvcc -lcurand -std=c++11 -v main.cu -arch=sm_70 -ccbin g++ -Xptxas -v
