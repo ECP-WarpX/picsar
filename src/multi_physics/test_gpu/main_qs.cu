@@ -284,10 +284,11 @@ int main()
 		sizeof(double)*innards.KKfunc_table_coords_how_many, cudaMemcpyHostToDevice);
 	cudaMemcpy(d_KKfunc_table_data, innards.KKfunc_table_data_ptr,
 		sizeof(double)*innards.KKfunc_table_coords_how_many, cudaMemcpyHostToDevice);
-	/*pxrmp::breit_wheeler_engine_ctrl<double>* d_bw_ctrl;
-	cudaMalloc(&d_bw_ctrl, sizeof(pxrmp::breit_wheeler_engine_ctrl<double>));
-	cudaMemcpy(d_bw_ctrl, &innards.bw_ctrl, sizeof(pxrmp::breit_wheeler_engine_ctrl<double>), cudaMemcpyHostToDevice);
+	pxrmp::quantum_synchrotron_engine_ctrl<double>* d_qs_ctrl;
+	cudaMalloc(&d_qs_ctrl, sizeof(pxrmp::quantum_synchrotron_engine_ctrl<double>));
+	cudaMemcpy(d_qs_ctrl, &innards.qs_ctrl, sizeof(pxrmp::quantum_synchrotron_engine_ctrl<double>), cudaMemcpyHostToDevice);
 
+    /*
 	//Allocate space for has_event_happened and event_dt on GPU
 	bool* d_has_event_happened;
 	double* d_event_dt;
