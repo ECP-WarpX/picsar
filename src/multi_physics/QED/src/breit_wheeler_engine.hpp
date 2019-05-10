@@ -500,9 +500,8 @@ _REAL dt, _REAL& opt_depth) const
         opt_depth -= dndt*dt;
         if(opt_depth < zero){
             //Calculates the time at which pair prod takes place
-            _REAL dt_prod = opt_depth/dndt + dt;
+            event_dt = opt_depth/dndt + dt;
             has_event_happend = true;
-            event_dt = dt_prod;
         }
     }
 
@@ -524,8 +523,7 @@ _REAL dt, _REAL& opt_depth,
 bool& has_event_happend, _REAL& event_dt,
 _REAL _lambda,
 const picsar::multi_physics::lookup_1d<_REAL>& ref_TTfunc_table,
-const picsar::multi_physics::breit_wheeler_engine_ctrl<_REAL>& ref_bw_ctrl
-)
+const picsar::multi_physics::breit_wheeler_engine_ctrl<_REAL>& ref_bw_ctrl)
 {
     _REAL energy = norm<_REAL>(vec3<_REAL> {px, py, pz})*__c;
     _REAL chi = chi_photon(px, py, pz, ex, ey, ez, bx, by, bz, _lambda);
@@ -555,9 +553,8 @@ const picsar::multi_physics::breit_wheeler_engine_ctrl<_REAL>& ref_bw_ctrl
 
     if(opt_depth < zero){
             //Calculates the time at which pair prod takes place
-        _REAL dt_prod = opt_depth/dndt + dt;
+        event_dt = opt_depth/dndt + dt;
         has_event_happend = true;
-        event_dt = dt_prod;
     }
 
     return true;
@@ -649,17 +646,17 @@ _REAL weight, size_t sampling)
     picsar_vector<_REAL> p_weight{sampling};
 
     picsar_vector<_REAL> unf_zero_one_minus_epsi{sampling};
-    for(size_t s = 0; s < sampling; s++)
-        unf_zero_one_minus_epsi[s] = rng.unf(zero, one);
+    for(auto& el: unf_zero_one_minus_epsi)
+        el = rng.unf(zero, one);
 
+    //Call to the static GPU-friendly function
     internal_generate_breit_wheeler_pairs(
     px, py, pz, ex, ey, ez, bx, by, bz, weight, sampling,
     e_px.data(), e_py.data(), e_pz.data(),
     p_px.data(), p_py.data(), p_pz.data(),
     e_weight.data(), p_weight.data(),
     lambda, cum_distrib_table, bw_ctrl,
-    unf_zero_one_minus_epsi.data()
-    );
+    unf_zero_one_minus_epsi.data());
 
     picsar_vector<std::pair<vec3<_REAL>, _REAL>> electrons(sampling);
     picsar_vector<std::pair<vec3<_REAL>, _REAL>> positrons(sampling);
@@ -743,14 +740,12 @@ _REAL* unf_zero_one_minus_epsi)
 
         const _REAL upper_frac = ref_cum_distrib_table.ref_coords()[1][upper];
         const _REAL lower_frac = ref_cum_distrib_table.ref_coords()[1][lower];
-
         _REAL upper_prob =
             ref_cum_distrib_table.interp_linear_first_equispaced
             (tab_chi_phot, upper);
         _REAL lower_prob =
             ref_cum_distrib_table.interp_linear_first_equispaced
             (tab_chi_phot, lower);
-
         _REAL chi_ele_frac = lower_frac +
             (prob-lower_prob)*(upper_frac-lower_frac)/(upper_prob-lower_prob);
 

@@ -211,6 +211,27 @@ namespace picsar{
          _REAL bx, _REAL by, _REAL bz,
          _REAL weight, size_t sampling);
 
+         //______________________GPU
+         //Same as above, but with GPU use directly this one!
+         //Returns false if errors occur
+         PXRMP_GPU
+         PXRMP_FORCE_INLINE
+         static
+         bool
+         internal_generate_photons_and_update_momentum(
+         _REAL& px, _REAL& py, _REAL& pz,
+         _REAL ex, _REAL ey, _REAL ez,
+         _REAL bx, _REAL by, _REAL bz,
+         _REAL weight, size_t sampling,
+         _REAL* g_px, _REAL* g_py, _REAL* g_pz,
+         _REAL* g_weight,
+         _REAL lambda ,
+         const picsar::multi_physics::lookup_2d<_REAL>& ref_cum_distrib_table,
+         const picsar::multi_physics::quantum_synchrotron_engine_ctrl<_REAL>& ref_qs_ctrl,
+         _REAL* unf_zero_one_minus_epsi
+         );
+         //______________________
+
          //Write total cross section table to disk
          void write_dN_dt_table(std::string filename);
 
@@ -224,6 +245,14 @@ namespace picsar{
          //Read cumulative photon emission rate to disk (Warning,
          //qs_ctrl is not changed in current implementation)
          void read_cumulative_phot_em_table(std::string filename);
+
+         //Export innards
+         quantum_synchrotron_engine<_REAL, _RNDWRAP> export_innards();
+
+         //Constructor using innards
+         quantum_synchrotron_engine
+         (quantum_synchrotron_innards<_REAL, _RNDWRAP> innards);
+
 
 
      private:
@@ -241,8 +270,6 @@ namespace picsar{
 
          //lookup table for the cumulativie distribution table
          lookup_2d<_REAL> cum_distrib_table;
-         //Auxiliary table for coordinate interpolation
-         lookup_1d<_REAL> aux_table;
 
          //Some handy constants
          static constexpr _REAL zero = static_cast<_REAL>(0.0);
@@ -289,8 +316,7 @@ template<typename _REAL, class _RNDWRAP>
 picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
 quantum_synchrotron_engine(const quantum_synchrotron_engine& other):
     lambda(other.lambda), rng(other.rng), qs_ctrl(other.qs_ctrl),
-    KKfunc_table(other.KKfunc_table), cum_distrib_table(other.cum_distrib_table),
-    aux_table(other.aux_table)
+    KKfunc_table(other.KKfunc_table), cum_distrib_table(other.cum_distrib_table)
     {}
 
 //Move constructor
@@ -300,8 +326,7 @@ quantum_synchrotron_engine(quantum_synchrotron_engine&& other):
     lambda(std::move(other.lambda)), rng(std::move(other.rng)),
     qs_ctrl(std::move(other.qs_ctrl)),
     KKfunc_table(std::move(other.KKfunc_table)),
-    cum_distrib_table(std::move(other.cum_distrib_table)),
-    aux_table(std::move(other.aux_table))
+    cum_distrib_table(std::move(other.cum_distrib_table))
     {}
 
 
@@ -578,11 +603,6 @@ compute_cumulative_phot_em_table (std::ostream* stream)
 
     cum_distrib_table = lookup_2d<_REAL>{
         picsar_array<picsar_vector<_REAL>,2>{chi_coords, frac_coords}, pair_vals};
-
-
-    //Initialize the auxiliary table
-    aux_table = lookup_1d<_REAL>{cum_distrib_table.get_coords()[1],
-    picsar_vector<_REAL>(qs_ctrl.chi_frac_tem_how_many)};
 }
 
 
@@ -607,33 +627,54 @@ _REAL ex, _REAL ey, _REAL ez,
 _REAL bx, _REAL by, _REAL bz,
 _REAL weight, size_t sampling)
 {
+    picsar_vector<_REAL> g_px{sampling};
+    picsar_vector<_REAL> g_py{sampling};
+    picsar_vector<_REAL> g_pz{sampling};
+    picsar_vector<_REAL> g_weight{sampling};
+
+    picsar_vector<_REAL> unf_zero_one_minus_epsi{sampling};
+    for(auto& el: unf_zero_one_minus_epsi)
+        el = rng.unf(zero, one);
+
+    //Call to the static GPU-friendly function
+    internal_generate_photons_and_update_momentum(
+        px, py, pz, ex, ey, ez, bx, by, bz, weight, sampling,
+        g_px.data(), g_py.data(), g_pz.data(),
+        g_weight.data(),
+        lambda, cum_distrib_table, qs_ctrl,
+        unf_zero_one_minus_epsi.data());
+
     picsar_vector<std::pair<vec3<_REAL>, _REAL>> photons(sampling);
 
-    _REAL chi_part = chi_lepton(px, py, pz, ex, ey, ez, bx, by, bz, lambda);
+    for(size_t s = 0; s < sampling; s++){
+        photons[s] =
+        std::make_pair(vec3<_REAL>{g_px[s], g_py[s], g_pz[s]}, g_weight[s]);
+    }
 
-    auto frac = aux_table.ref_coords();
+    return photons;
+}
 
-    //if chi < chi_min: chi = chi_min for cumulative distribution
-    if(chi_part < qs_ctrl.chi_part_tem_min){
-        for(size_t i = 0; i < frac.size(); i++){
-            aux_table.ref_data()[i] =
-            cum_distrib_table.data_at_coords(0, i);
-        }
-    }
-    //if chi > chi_max: chi = chi_max for cumulative distribution
-    else if(chi_part < qs_ctrl.chi_part_tem_max){
-        for(size_t i = 0; i < frac.size(); i++){
-            aux_table.ref_data()[i] =
-            cum_distrib_table.data_at_coords(qs_ctrl.chi_part_tem_how_many, i);
-        }
-    }
-    //Interpolate 1D cumulative distribution
-    else{
-        for(size_t i = 0; i < frac.size(); i++){
-            aux_table.ref_data()[i] =
-            cum_distrib_table.interp_linear_first_equispaced(chi_part, i);
-        }
-    }
+//Same as above but tailored for direct use with GPU
+//returns false if errors occur
+template<typename _REAL, class _RNDWRAP>
+PXRMP_GPU
+PXRMP_FORCE_INLINE
+bool
+picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
+internal_generate_photons_and_update_momentum(
+_REAL& px, _REAL& py, _REAL& pz,
+_REAL ex, _REAL ey, _REAL ez,
+_REAL bx, _REAL by, _REAL bz,
+_REAL weight, size_t sampling,
+_REAL* g_px, _REAL* g_py, _REAL* g_pz,
+_REAL* g_weight,
+_REAL _lambda ,
+const picsar::multi_physics::lookup_2d<_REAL>& ref_cum_distrib_table,
+const picsar::multi_physics::quantum_synchrotron_engine_ctrl<_REAL>& ref_qs_ctrl,
+_REAL* unf_zero_one_minus_epsi)
+{
+
+    _REAL chi_part = chi_lepton(px, py, pz, ex, ey, ez, bx, by, bz, _lambda);
 
     _REAL new_weight = weight/sampling;
 
@@ -644,26 +685,69 @@ _REAL weight, size_t sampling)
     vec3<_REAL> n_part = p_part/norm_part;
     _REAL gamma_part = norm_part/me_c;
 
+    const size_t how_many_frac = ref_cum_distrib_table.ref_coords()[1].size();
+
+    _REAL tab_chi_part = chi_part;
+    if(chi_part < ref_qs_ctrl.chi_part_tem_min)
+        tab_chi_part = ref_qs_ctrl.chi_part_tem_min;
+    else if(chi_part > ref_qs_ctrl.chi_part_tem_max)
+        tab_chi_part = ref_qs_ctrl.chi_part_tem_max;
+
     _REAL one_over_sampling = one/sampling;
 
     for(size_t s = 0; s < sampling; s++){
-        _REAL prob = rng.unf(zero, one);
+        _REAL prob = unf_zero_one_minus_epsi[s];
 
-        _REAL chi_phot = aux_table.interp_linear_equispaced(prob);
+        size_t upper = 0;
+        _REAL val;
+        size_t count = how_many_frac;
+        while(count > 0){
+            size_t step = count/2;
+            val =
+                ref_cum_distrib_table.interp_linear_first_equispaced
+                    (tab_chi_part, upper+step);
+            if(!(prob < val)){
+                upper += step+1;
+                count -= step+1;
+            }
+            else{
+                count = step;
+            }
+        }
+
+        size_t lower = upper-1;
+
+        const _REAL upper_frac = ref_cum_distrib_table.ref_coords()[1][upper];
+        const _REAL lower_frac = ref_cum_distrib_table.ref_coords()[1][lower];
+        _REAL upper_prob =
+            ref_cum_distrib_table.interp_linear_first_equispaced
+            (tab_chi_part, upper);
+        _REAL lower_prob =
+            ref_cum_distrib_table.interp_linear_first_equispaced
+            (tab_chi_part, lower);
+        _REAL chi_phot_frac = lower_frac +
+            (prob-lower_prob)*(upper_frac-lower_frac)/(upper_prob-lower_prob);
+
+        _REAL chi_phot = chi_part*chi_phot_frac;
 
         _REAL gamma_phot = chi_phot/chi_part*(gamma_part-one);
 
         vec3<_REAL>  p_phot = gamma_phot * n_part * me_c;
 
-        photons[s] = std::make_pair(p_phot, new_weight);
+        g_px[s] = p_phot[0];
+        g_py[s] = p_phot[1];
+        g_pz[s] = p_phot[2];
+
+        g_weight[s] = new_weight;
 
         //Update particle momentum
         px -= p_phot[0]*one_over_sampling;
         py -= p_phot[1]*one_over_sampling;
         pz -= p_phot[2]*one_over_sampling;
+
     }
 
-    return photons;
+    return true;
 }
 
 
@@ -716,11 +800,56 @@ read_cumulative_phot_em_table(std::string filename)
     iif.open(filename, std::ios::binary);
     cum_distrib_table.read_from_stream_bin(iif);
     iif.close();
-
-    aux_table = lookup_1d<_REAL>{cum_distrib_table.get_coords()[1],
-    picsar_vector<_REAL>(qs_ctrl.chi_frac_tem_how_many)};
 }
 
+
+//Export innards
+template<typename _REAL, class _RNDWRAP>
+picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>
+picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::export_innards()
+{
+    quantum_synchrotron_engine<_REAL, _RNDWRAP> innards;
+
+    //Filling innards
+    innards.qs_ctrl                         = qs_ctrl;
+    innards.lambda                          = lambda;
+    innards.rng_ptr                         = &rng;
+    innards.KKfunc_table_coords_how_many    = KKfunc_table.ref_coords().size();
+    innards.KKfunc_table_coords_ptr         = KKfunc_table.ref_coords().data();
+    innards.KKfunc_table_data_how_many      = KKfunc_table.ref_data().size();
+    innards.KKfunc_table_data_ptr           = KKfunc_table.ref_data().data();
+    innards.cum_distrib_table_coords_1_how_many
+        = cum_distrib_table.ref_coords()[0].size();
+    innards.cum_distrib_table_coords_1_ptr
+        = cum_distrib_table.ref_coords()[0].data();
+    innards.cum_distrib_table_coords_2_how_many
+        = cum_distrib_table.ref_coords()[1].size();
+    innards.cum_distrib_table_coords_2_ptr
+            = cum_distrib_table.ref_coords()[1].data();
+    innards.cum_distrib_table_data_how_many
+        = cum_distrib_table.ref_data().size();
+    innards.cum_distrib_table_data_ptr
+        = cum_distrib_table.ref_data().data();
+
+    return innards;
+}
+
+//Constructor using innards
+template<typename _REAL, class _RNDWRAP>
+picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::quantum_synchrotron_engine
+(picsar::multi_physics::quantum_synchrotron_innards<_REAL, _RNDWRAP> innards):
+    qs_ctrl{innards.qs_ctrl},
+    lambda{innards.lambda},
+    KKfunc_table{innards.KKfunc_table_coords_how_many,
+                 innards.KKfunc_table_coords_ptr,
+                 innards.KKfunc_table_data_ptr},
+    cum_distrib_table{innards.cum_distrib_table_coords_1_how_many,
+                      innards.cum_distrib_table_coords_1_ptr,
+                      innards.cum_distrib_table_coords_2_how_many,
+                      innards.cum_distrib_table_coords_2_ptr,
+                      innards.cum_distrib_table_data_ptr},
+    rng{*innards.rng_ptr}
+{}
 
 //___________________PRIVATE FUNCTIONS_____________________________________
 
