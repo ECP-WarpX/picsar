@@ -475,6 +475,7 @@ _REAL lambda)
 //checks if it goes to zero. If it doesn't the output is false,0.
 //On the contrary, if it goes to zero the output is true, dt_em,
 //where dt_em (<= dt) is the time at which the event occurs.
+//Warning! For now it does not use tables!
 template<typename _REAL, class _RNDWRAP>
 PXRMP_FORCE_INLINE
 std::pair<bool, _REAL>
@@ -492,6 +493,8 @@ _REAL dt, _REAL& opt_depth) const
         bx, by, bz, dt, opt_depth, has_event_happend, event_dt, lambda,
         TTfunc_table, bw_ctrl)){
 
+        err("dndt lookup table not initialized!\n");
+
         _REAL energy = norm<_REAL>(vec3<_REAL> {px, py, pz})*__c;
         _REAL chi = chi_photon(px, py, pz, ex, ey, ez, bx, by, bz, lambda);
         _REAL dndt = compute_dN_dt(energy, chi);
@@ -502,9 +505,6 @@ _REAL dt, _REAL& opt_depth) const
             has_event_happend = true;
             event_dt = dt_prod;
         }
-    }
-    else{
-        err("dndt lookup table not initialized!\n");
     }
 
     return std::make_pair(has_event_happend, event_dt);
@@ -535,6 +535,7 @@ const picsar::multi_physics::breit_wheeler_engine_ctrl<_REAL>& ref_bw_ctrl
 
     has_event_happend = false;
     event_dt = zero;
+
 
 
     //Do NOT evolve opt_depth if the chi parameter is less then threshold
