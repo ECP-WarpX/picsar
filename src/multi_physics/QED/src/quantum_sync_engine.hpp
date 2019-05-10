@@ -34,6 +34,9 @@
 //Uses picsar arrays
 #include "picsar_array.hpp"
 
+//Uses utilities
+#include "utilities.hpp"
+
 //############################################### Declaration
 
 namespace picsar{
@@ -64,6 +67,25 @@ namespace picsar{
             __quantum_synchrotron_chi_frac_tem_how_many;
       };
 
+      //This struct holds all the data required to re-generate
+      //the quantum_synchrotron_engine object
+      template<typename _REAL, class _RNDWRAP>
+      struct quantum_synchrotron_innards{
+              quantum_synchrotron_engine_ctrl<_REAL> qs_ctrl;
+              _REAL lambda;
+              _RNDWRAP* rng_ptr;
+              size_t KKfunc_table_coords_how_many;
+              _REAL* KKfunc_table_coords_ptr;
+              size_t KKfunc_table_data_how_many;
+              _REAL* KKfunc_table_data_ptr;
+              size_t cum_distrib_table_coords_1_how_many;
+              _REAL* cum_distrib_table_coords_1_ptr;
+              size_t cum_distrib_table_coords_2_how_many;
+              _REAL* cum_distrib_table_coords_2_ptr;
+              size_t cum_distrib_table_data_how_many;
+              _REAL* cum_distrib_table_data_ptr;
+      };
+
       //Templates are used for the numerical type and for the
       //RNG wrapper
      template<typename _REAL, class _RNDWRAP>
@@ -82,7 +104,7 @@ namespace picsar{
          quantum_synchrotron_engine
          (_RNDWRAP&& rng,
          _REAL lambda = static_cast<_REAL>(1.0),
-         quantum_synchrotron_engine_ctrl<_REAL> bw_ctrl =
+         quantum_synchrotron_engine_ctrl<_REAL> qs_ctrl =
          quantum_synchrotron_engine_ctrl<_REAL>());
 
          //Copy constructor
@@ -99,6 +121,14 @@ namespace picsar{
          PXRMP_FORCE_INLINE
          _REAL get_optical_depth();
 
+         //______________________GPU
+         //get a single optical depth
+         //same as above but conceived for GPU usage
+         PXRMP_GPU
+         PXRMP_FORCE_INLINE
+         static _REAL internal_get_optical_depth(_REAL unf_zero_one_minus_epsi);
+
+
          //Calculates the photon emission rate (Warning: no lookup tables)
          PXRMP_FORCE_INLINE
          _REAL compute_dN_dt(_REAL energy_part, _REAL chi_part) const;
@@ -111,6 +141,19 @@ namespace picsar{
          //Interp the dN_dt from table
          PXRMP_FORCE_INLINE
          _REAL interp_dN_dt(_REAL energy_part, _REAL chi_part) const;
+
+         //______________________GPU
+         //Interp the dN_dt from table (with GPU use directly this one!)
+         PXRMP_GPU
+         PXRMP_FORCE_INLINE
+         static _REAL
+         internal_interp_dN_dt
+         (_REAL energy_part, _REAL chi_part,
+         const lookup_1d<_REAL>& ref_KKfunc_table,
+         const quantum_synchrotron_engine_ctrl<_REAL>& ref_qs_ctrl,
+         _REAL _lambda);
+         //______________________
+
 
          //This function evolves the optical depth for a particle and
          //checks if it goes to zero. If it doesn't the output is false,0.
@@ -184,12 +227,12 @@ namespace picsar{
          lookup_1d<_REAL> aux_table;
 
          //Some handy constants
-         const _REAL zero = static_cast<_REAL>(0.0);
-         const _REAL one = static_cast<_REAL>(1.0);
-         const _REAL two = static_cast<_REAL>(2.0);
-         const _REAL three = static_cast<_REAL>(3.0);
-         const _REAL four = static_cast<_REAL>(4.0);
-         const _REAL five = static_cast<_REAL>(5.0);
+         static constexpr _REAL zero = static_cast<_REAL>(0.0);
+         static constexpr _REAL one = static_cast<_REAL>(1.0);
+         static constexpr _REAL two = static_cast<_REAL>(2.0);
+         static constexpr _REAL three = static_cast<_REAL>(3.0);
+         static constexpr _REAL four = static_cast<_REAL>(4.0);
+         static constexpr _REAL five = static_cast<_REAL>(5.0);
 
          //Internal functions to perform calculations
          PXRMP_FORCE_INLINE
@@ -274,6 +317,20 @@ get_optical_depth()
     return rng.exp(one);
 }
 
+//______________________GPU
+//get a single optical depth
+//same as above but conceived for GPU usage
+template<typename _REAL, class _RNDWRAP>
+PXRMP_GPU
+PXRMP_FORCE_INLINE
+_REAL picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
+internal_get_optical_depth(_REAL unf_zero_one_minus_epsi)
+{
+    return -log(one - unf_zero_one_minus_epsi);
+}
+//______________________
+
+
 //Calculates the photon emission rate (Warning: no lookup tables)
 template<typename _REAL, class _RNDWRAP>
 PXRMP_FORCE_INLINE
@@ -322,30 +379,45 @@ PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
 interp_dN_dt(_REAL energy_part, _REAL chi_part) const
 {
+    return internal_interp_dN_dt
+        (energy_part, chi_part, KKfunc_table, qs_ctrl, lambda);
+}
+
+//Interp the dN_dt from table (with GPU use directly this one!)
+template<typename _REAL, class _RNDWRAP>
+PXRMP_GPU
+PXRMP_FORCE_INLINE
+_REAL
+picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
+internal_interp_dN_dt
+(_REAL energy_part, _REAL chi_part,
+const lookup_1d<_REAL>& ref_KKfunc_table,
+const quantum_synchrotron_engine_ctrl<_REAL>& ref_qs_ctrl,
+_REAL _lambda)
+{
     if(energy_part == zero || chi_part == zero)
         return zero;
 
     _REAL coeff = static_cast<_REAL>(__quantum_synchrotron_rate_coeff)*
-        lambda*one/(energy_part*chi_part);
+        _lambda*one/(energy_part*chi_part);
 
     _REAL KK = zero;
 
     //If chi is out of table, use the first (or the last) value
     //in the table
-    if(chi_part <= qs_ctrl.chi_part_tdndt_min){
-        chi_part = qs_ctrl.chi_part_tdndt_min;
+    if(chi_part <= ref_qs_ctrl.chi_part_tdndt_min){
+        chi_part = ref_qs_ctrl.chi_part_tdndt_min;
     }
-    else if(chi_part >= qs_ctrl.chi_part_tdndt_max){
-        chi_part = qs_ctrl.chi_part_tdndt_max ;
+    else if(chi_part >= ref_qs_ctrl.chi_part_tdndt_max){
+        chi_part = ref_qs_ctrl.chi_part_tdndt_max ;
     }
 
-    KK =  exp(KKfunc_table.interp_linear_equispaced(log(chi_part)));
+    KK =  exp(ref_KKfunc_table.interp_linear_equispaced(log(chi_part)));
 
     _REAL dndt = coeff * KK;
 
     return dndt;
 }
-
 
 //This function evolves the optical depth for a particle and
 //checks if it goes to zero. If it doesn't the output is false,0.
