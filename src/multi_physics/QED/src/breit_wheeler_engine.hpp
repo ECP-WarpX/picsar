@@ -527,22 +527,17 @@ const picsar::multi_physics::lookup_1d<_REAL>& ref_TTfunc_table,
 const picsar::multi_physics::breit_wheeler_engine_ctrl<_REAL>& ref_bw_ctrl
 )
 {
-
     _REAL energy = norm<_REAL>(vec3<_REAL> {px, py, pz})*__c;
     _REAL chi = chi_photon(px, py, pz, ex, ey, ez, bx, by, bz, _lambda);
 
-
     has_event_happend = false;
     event_dt = zero;
-
-
 
     //Do NOT evolve opt_depth if the chi parameter is less then threshold
     //or if the photon energy is not high enough to generate a pair
     if(chi <= ref_bw_ctrl.chi_phot_min ||
        energy < two*static_cast<_REAL>(__emass*__c*__c))
            return true;
-
 
     //**Compute dndt
     _REAL dndt;
@@ -555,7 +550,6 @@ const picsar::multi_physics::breit_wheeler_engine_ctrl<_REAL>& ref_bw_ctrl
     else{
         return false;
     }
-
 
     opt_depth -= dndt*dt;
 

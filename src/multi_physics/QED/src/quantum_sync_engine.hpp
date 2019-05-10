@@ -166,6 +166,24 @@ namespace picsar{
          _REAL bx, _REAL by, _REAL bz,
          _REAL dt, _REAL& opt_depth) const;
 
+         //______________________GPU
+         //Same as above, but with GPU use directly this one!
+         //returs false if errors occur
+         PXRMP_GPU
+         PXRMP_FORCE_INLINE
+         static bool
+         internal_evolve_opt_depth_and_determine_event(
+         _REAL px, _REAL py, _REAL pz,
+         _REAL ex, _REAL ey, _REAL ez,
+         _REAL bx, _REAL by, _REAL bz,
+         _REAL dt, _REAL& opt_depth,
+         bool& has_event_happend,  _REAL& event_dt,
+         _REAL _lambda ,
+         const lookup_1d<_REAL>& ref_KKfunc_table,
+         const quantum_synchrotron_engine_ctrl<_REAL>& ref_qs_ctrl);
+         //______________________
+
+
          //Computes the cumulative photon emission rate given
          //chi_phot and chi_part
          PXRMP_FORCE_INLINE
@@ -433,39 +451,83 @@ _REAL ex, _REAL ey, _REAL ez,
 _REAL bx, _REAL by, _REAL bz,
 _REAL dt, _REAL& opt_depth) const
 {
-    _REAL energy = norm<_REAL>(vec3<_REAL> {px, py, pz})*__c;
-    _REAL chi = chi_lepton(px, py, pz, ex, ey, ez, bx, by, bz, lambda);
+    bool has_event_happend = false;
+    _REAL event_dt = zero;
 
-    auto false_zero_pair = std::make_pair(false, zero);
+    if(!internal_evolve_opt_depth_and_determine_event(px, py, pz, ex, ey, ez,
+        bx, by, bz, dt, opt_depth, has_event_happend, event_dt, lambda,
+        KKfunc_table, qs_ctrl)){
+
+        err("dndt lookup table not initialized!\n");
+
+        _REAL energy = norm<_REAL>(vec3<_REAL> {px, py, pz})*__c;
+        _REAL chi = chi_lepton(px, py, pz, ex, ey, ez, bx, by, bz, lambda);
+        _REAL dndt = compute_dN_dt(energy, chi);
+        opt_depth -= dndt*dt;
+        if(opt_depth < zero){
+            //Calculates the time at which photon emission takes place
+            event_dt = opt_depth/dndt + dt;
+            has_event_happend = true;
+        }
+    }
+
+    return std::make_pair(has_event_happend, event_dt);
+}
+
+
+//______________________GPU
+//Same as above, but with GPU use directly this one!
+//returs false if errors occur
+template<typename _REAL, class _RNDWRAP>
+PXRMP_GPU
+PXRMP_FORCE_INLINE
+bool
+picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
+internal_evolve_opt_depth_and_determine_event(
+_REAL px, _REAL py, _REAL pz,
+_REAL ex, _REAL ey, _REAL ez,
+_REAL bx, _REAL by, _REAL bz,
+_REAL dt, _REAL& opt_depth,
+bool& has_event_happend,  _REAL& event_dt,
+_REAL _lambda ,
+const lookup_1d<_REAL>& ref_KKfunc_table,
+const quantum_synchrotron_engine_ctrl<_REAL>& ref_qs_ctrl)
+{
+    _REAL energy = norm<_REAL>(vec3<_REAL> {px, py, pz})*__c;
+    _REAL chi = chi_lepton(px, py, pz, ex, ey, ez, bx, by, bz, _lambda);
+
+    has_event_happend = false;
+    event_dt = zero;
 
     //Do NOT evolve opt_depth if the chi parameter is less then threshold
-    if(chi <= qs_ctrl.chi_part_min)
-        return false_zero_pair;
+    if(chi <= ref_qs_ctrl.chi_part_min)
+        return true;
 
     //**Compute dndt
     _REAL dndt;
     //Uses table if available
-    if(KKfunc_table.is_init()){
-        dndt = interp_dN_dt(energy, chi);
+    if(ref_KKfunc_table.is_init()){
+            dndt =
+                internal_interp_dN_dt
+                (energy, chi, ref_KKfunc_table, ref_qs_ctrl, _lambda);
     }
-    //If not it computes dndt
+    //If not..
     else{
-        err("dndt lookup table not initialized!\n");
-        dndt = compute_dN_dt(energy, chi);
+            return false;
     }
 
     opt_depth -= dndt*dt;
 
-    if(opt_depth > zero){
-        return false_zero_pair;
-    }
-    else{
+    if(opt_depth < zero){
         //Calculates the time at which photon emission takes place
-        _REAL dt_phot = opt_depth/dndt + dt;
-        return std::make_pair(true, dt_phot);
+        event_dt = opt_depth/dndt + dt;
+        has_event_happend = true;
     }
 
+    return true;
 }
+//______________________
+
 
 //Computes the cumulative photon emission rate given
 //chi_phot and chi_part
