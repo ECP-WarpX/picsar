@@ -417,7 +417,8 @@ _REAL
 picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 interp_dN_dt(_REAL energy_phot, _REAL chi_phot) const
 {
-    return internal_interp_dN_dt(energy_phot, chi_phot, TTfunc_table, bw_ctrl, lambda);
+    return internal_interp_dN_dt
+        (energy_phot, chi_phot, TTfunc_table, bw_ctrl, lambda);
 }
 
 
@@ -448,7 +449,8 @@ _REAL lambda)
     if(chi_phot <= ref_bw_ctrl.chi_phot_tdndt_min){
         //Not suitable for GPU! Replaced with asymptotic expansion.
         //TT = a*chi_phot*pow(k_v(one/three, b/chi_phot),two);
-        TT = (static_cast<_REAL>(pi)*a/(two*b))*chi_phot*chi_phot*exp(-two*b/chi_phot);
+        TT = (static_cast<_REAL>(pi)*a/(two*b))*chi_phot*chi_phot*
+            exp(-two*b/chi_phot);
     }
     else if(chi_phot >= ref_bw_ctrl.chi_phot_tdndt_max){
         //Not suitable for GPU! Replaced with asymptotic expansion.
