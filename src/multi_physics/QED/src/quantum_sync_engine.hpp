@@ -402,9 +402,9 @@ compute_dN_dt_lookup_table(std::ostream* stream)
 
     msg("Computing table for dNdt...\n", stream);
     //Do the hard work
-    picsar_vector<_REAL> KK_vals{};
+    picsar_vector<_REAL> KK_vals{KK_coords.size()};
     std::transform(KK_coords.begin(), KK_coords.end(),
-        std::back_inserter(KK_vals),
+        KK_vals.begin(),
         [this](_REAL chi){return compute_KK_function(chi);});
     msg("...done!\n", stream);
 
@@ -584,20 +584,20 @@ compute_cumulative_phot_em_table (std::ostream* stream)
     picsar_vector<_REAL> frac_coords = generate_lin_spaced_vec(zero, one,
     qs_ctrl.chi_frac_tem_how_many);
 
-    picsar_vector<_REAL> pair_vals{};
+    picsar_vector<_REAL> pair_vals{frac_coords.size()};
 
     msg("Computing table for photon emission...\n", stream);
 
     for(auto chi_part: chi_coords){
-        pair_vals.push_back(zero);
+        pair_vals.front() = zero;
         msg("chi_part: " + std::to_string(chi_part) + " \n", stream);
         for(size_t i = 1; i < frac_coords.size() - 1; i++){
             _REAL temp = compute_cumulative_phot_em(
                 chi_part*frac_coords[i], chi_part);
-            pair_vals.push_back(temp);
+            pair_vals[i] = temp;
 
         }
-        pair_vals.push_back(one); //The function is symmetric
+        pair_vals.back() = one; //The function is symmetric
     }
     msg("...done!\n", stream);
 
