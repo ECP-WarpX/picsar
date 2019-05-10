@@ -475,7 +475,6 @@ _REAL lambda)
 //checks if it goes to zero. If it doesn't the output is false,0.
 //On the contrary, if it goes to zero the output is true, dt_em,
 //where dt_em (<= dt) is the time at which the event occurs.
-//Warning! For now it does not use tables!
 template<typename _REAL, class _RNDWRAP>
 PXRMP_FORCE_INLINE
 std::pair<bool, _REAL>
@@ -503,6 +502,9 @@ _REAL dt, _REAL& opt_depth) const
             has_event_happend = true;
             event_dt = dt_prod;
         }
+    }
+    else{
+        err("dndt lookup table not initialized!\n");
     }
 
     return std::make_pair(has_event_happend, event_dt);
@@ -535,7 +537,6 @@ const picsar::multi_physics::breit_wheeler_engine_ctrl<_REAL>& ref_bw_ctrl
     event_dt = zero;
 
 
-
     //Do NOT evolve opt_depth if the chi parameter is less then threshold
     //or if the photon energy is not high enough to generate a pair
     if(chi <= ref_bw_ctrl.chi_phot_min ||
@@ -552,12 +553,7 @@ const picsar::multi_physics::breit_wheeler_engine_ctrl<_REAL>& ref_bw_ctrl
     }
     //If not..
     else{
-        //... on CPU only writes that an error has occured on sterr
-        #if !defined(PXRMP_WITH_GPU)
-            err("dndt lookup table not initialized!\n");
-        #endif
         return false;
-
     }
 
 
