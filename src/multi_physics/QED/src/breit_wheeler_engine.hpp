@@ -475,7 +475,6 @@ _REAL lambda)
 //checks if it goes to zero. If it doesn't the output is false,0.
 //On the contrary, if it goes to zero the output is true, dt_em,
 //where dt_em (<= dt) is the time at which the event occurs.
-//Warning! For now it does not use tables!
 template<typename _REAL, class _RNDWRAP>
 PXRMP_FORCE_INLINE
 std::pair<bool, _REAL>
