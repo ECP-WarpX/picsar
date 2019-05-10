@@ -247,7 +247,7 @@ namespace picsar{
          void read_cumulative_phot_em_table(std::string filename);
 
          //Export innards
-         quantum_synchrotron_engine<_REAL, _RNDWRAP> export_innards();
+         quantum_synchrotron_innards<_REAL, _RNDWRAP> export_innards();
 
          //Constructor using innards
          quantum_synchrotron_engine
@@ -805,10 +805,10 @@ read_cumulative_phot_em_table(std::string filename)
 
 //Export innards
 template<typename _REAL, class _RNDWRAP>
-picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>
+picsar::multi_physics::quantum_synchrotron_innards<_REAL, _RNDWRAP>
 picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::export_innards()
 {
-    quantum_synchrotron_engine<_REAL, _RNDWRAP> innards;
+    quantum_synchrotron_innards<_REAL, _RNDWRAP> innards;
 
     //Filling innards
     innards.qs_ctrl                         = qs_ctrl;

@@ -270,21 +270,21 @@ int main()
 	std::cout << std::endl;
 	std::cout << "_________" << std::endl << std::endl;
 
-    /*
-
 	//Export innards (in order to copy BW engin data to the GPU)
-	auto innards = bw_engine.export_innards();
+	auto innards = qs_engine.export_innards();
 
-	//Copy TTfunc_table & bw_ctrl to GPU
-	double* d_TTfunc_table_coords;
-	double* d_TTfunc_table_data;
-	cudaMalloc(&d_TTfunc_table_coords, sizeof(double)*innards.TTfunc_table_coords_how_many);
-	cudaMalloc(&d_TTfunc_table_data, sizeof(double)*innards.TTfunc_table_coords_how_many);
-	cudaMemcpy(d_TTfunc_table_coords, innards.TTfunc_table_coords_ptr,
-		sizeof(double)*innards.TTfunc_table_coords_how_many, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_TTfunc_table_data, innards.TTfunc_table_data_ptr,
-		sizeof(double)*innards.TTfunc_table_coords_how_many, cudaMemcpyHostToDevice);
-	pxrmp::breit_wheeler_engine_ctrl<double>* d_bw_ctrl;
+
+
+	//Copy KKfunc_table & qs_ctrl to GPU
+	double* d_KKfunc_table_coords;
+	double* d_KKfunc_table_data;
+	cudaMalloc(&d_KKfunc_table_coords, sizeof(double)*innards.KKfunc_table_coords_how_many);
+	cudaMalloc(&d_KKfunc_table_data, sizeof(double)*innards.KKfunc_table_coords_how_many);
+	cudaMemcpy(d_KKfunc_table_coords, innards.KKfunc_table_coords_ptr,
+		sizeof(double)*innards.KKfunc_table_coords_how_many, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_KKfunc_table_data, innards.KKfunc_table_data_ptr,
+		sizeof(double)*innards.KKfunc_table_coords_how_many, cudaMemcpyHostToDevice);
+	/*pxrmp::breit_wheeler_engine_ctrl<double>* d_bw_ctrl;
 	cudaMalloc(&d_bw_ctrl, sizeof(pxrmp::breit_wheeler_engine_ctrl<double>));
 	cudaMemcpy(d_bw_ctrl, &innards.bw_ctrl, sizeof(pxrmp::breit_wheeler_engine_ctrl<double>), cudaMemcpyHostToDevice);
 
