@@ -73,7 +73,7 @@ void init_opt_depth(int n, double* opt, double* rand_nums)
 //********************************************************************************************
 
 
-/*
+
 //GPU kernel to initialize fields & momenta randomly
 __global__
 void init_mom_fields(int n, double* px, double* py, double* pz,
@@ -94,7 +94,7 @@ void init_mom_fields(int n, double* px, double* py, double* pz,
 	}
 }
 
-
+/*
 
 
 //*********************** BW ENGINE: evolve_opt_depth_and_determine_event ******************************
@@ -221,7 +221,7 @@ int main()
 	std::cout << optical[0] << " " << optical[1] << " " << optical[N/2] << " " << optical[N-2] << " " << optical[N-1] << std::endl;
 	std::cout << "_________" << std::endl << std::endl;
 
-    /*
+
 	//Allocate space for momenta & fields & weigths.
 	double* d_px;
 	double* d_py;
@@ -243,6 +243,8 @@ int main()
 	cudaMalloc(&d_by, N*sizeof(double));
 	cudaMalloc(&d_bz, N*sizeof(double));
 	cudaMalloc(&d_w, N*sizeof(double));
+
+
 
 	//Initialize momenta&fields randomly and print a test
 	double* d_rand2;
@@ -267,6 +269,8 @@ int main()
 		std::cout << el << " ";
 	std::cout << std::endl;
 	std::cout << "_________" << std::endl << std::endl;
+
+    /*
 
 	//Export innards (in order to copy BW engin data to the GPU)
 	auto innards = bw_engine.export_innards();
