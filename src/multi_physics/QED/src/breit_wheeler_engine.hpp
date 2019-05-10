@@ -4,10 +4,6 @@
 //This .hpp file contais the implementation of the
 //nonlinear Breit Wheeler engine
 
-#include <memory>
-#include <utility>
-#include <iostream>
-
 //Should be included by all the src files of the library
 #include "qed_commons.h"
 

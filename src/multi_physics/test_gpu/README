@@ -1,5 +1,5 @@
 In order to compile, adapt the following command to your needs:
 
-nvcc -lcurand -std=c++11 -O3 main.cu -arch=sm_70 -ccbin g++ -Xptxas -warn-lmem-usage -Xptxas -warn-spills
+nvcc -lcurand -std=c++11 -O3 main_bw.cu -arch=sm_70 -ccbin g++ -Xptxas -warn-lmem-usage -Xptxas -warn-spills
 
-The first run will be VERY slow because the library has to generate the lookup tables. 
+The first run will be VERY slow because the library has to generate the lookup tables.
