@@ -18,7 +18,8 @@ namespace pxrmp =  picsar::multi_physics;
 const size_t seed = 83871734;
 
 //A lot of particles!
-const size_t N = 4000000;
+//const size_t N = 4000000;
+const size_t N = 1;
 
 //Sampling parameter for QS photon generation
 const size_t sampling = 4;
@@ -170,15 +171,15 @@ int main()
 	double useless_lambda = 1.0;
 
 	//Change default table parameters in order to speed up the calculations
-	//pxrmp::quantum_synchrotron_engine_ctrl<double> qs_ctrl;
-	//qs_ctrl.chi_part_tdndt_how_many = 200;
-	//qs_ctrl.chi_part_tem_how_many = 3;
-	//qs_ctrl.chi_frac_tem_how_many = 3;
+	pxrmp::quantum_synchrotron_engine_ctrl<double> qs_ctrl;
+	qs_ctrl.chi_part_tdndt_how_many = 200;
+	qs_ctrl.chi_part_tem_how_many = 3;
+	qs_ctrl.chi_frac_tem_how_many = 3;
 
 	//Initialize the BW engine
 	auto qs_engine =
 		pxrmp::quantum_synchrotron_engine<double, pxrmp::stl_rng_wrapper>
-		{std::move(pxrmp::stl_rng_wrapper{useless_seed}), useless_lambda};//, bw_ctrl};
+		{std::move(pxrmp::stl_rng_wrapper{useless_seed}), useless_lambda, qs_ctrl};
 
 	//Initialize the lookup tables
    	//Generates tables if they do not exist
@@ -352,6 +353,10 @@ int main()
 
 
 	//Test internal_generate_photons_and_update_momentum on the GPU
+    double old_px, old_py, old_pz;
+    cudaMemcpy(&old_px, &d_px[0], sizeof(double), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&old_py, &d_py[0], sizeof(double), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&old_pz, &d_pz[0], sizeof(double), cudaMemcpyDeviceToHost);
 	test_internal_generate_photons_and_update_momentum<<<(N+255)/256, 256>>>
 	(N, d_has_event_happened,
 	d_px, d_py, d_pz, d_ex, d_ey, d_ez, d_bx, d_by, d_bz,
@@ -361,15 +366,25 @@ int main()
 	innards.cum_distrib_table_coords_2_how_many, d_cum_distrib_table_coords_2, d_cum_distrib_table_data,
 	d_qs_ctrl,
 	d_rand3);
+    double new_px, new_py, new_pz;
+    cudaMemcpy(&new_px, &d_px[0], sizeof(double), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&new_py, &d_py[0], sizeof(double), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&new_pz, &d_pz[0], sizeof(double), cudaMemcpyDeviceToHost);
 
 	//Copy some photon properties back to CPU for debug purposes
-	double g_px, g_py, g_pz, g_w;
-	cudaMemcpy(&g_px, d_g_px, sizeof(double), cudaMemcpyDeviceToHost);
-	cudaMemcpy(&g_py, d_g_py, sizeof(double), cudaMemcpyDeviceToHost);
-	cudaMemcpy(&g_pz, d_g_pz, sizeof(double), cudaMemcpyDeviceToHost);
-	cudaMemcpy(&g_w, d_g_w, sizeof(double), cudaMemcpyDeviceToHost);
+	double g_px[sampling], g_py[sampling], g_pz[sampling], g_w[sampling];
+	cudaMemcpy(&g_px, d_g_px, sizeof(double)*sampling, cudaMemcpyDeviceToHost);
+	cudaMemcpy(&g_py, d_g_py, sizeof(double)*sampling, cudaMemcpyDeviceToHost);
+	cudaMemcpy(&g_pz, d_g_pz, sizeof(double)*sampling, cudaMemcpyDeviceToHost);
+	cudaMemcpy(&g_w, d_g_w, sizeof(double)*sampling, cudaMemcpyDeviceToHost);
 	std::cout << "Test pairs: " << std::endl;
-	std::cout << "gamma : " << g_px << " " << g_py << " " << g_pz << " " << g_w << std::endl;
+    for(size_t i = 0; i < 4; i++)
+	   std::cout << "gamma : " << g_px[i] << " " << g_py[i] << " " << g_pz[i] << " " << g_w[i] << std::endl;
+
+    std::cout << "px: " << old_px << " --> " << new_px << std::endl;
+    std::cout << "px: " << old_py << " --> " << new_py << std::endl;
+    std::cout << "px: " << old_pz << " --> " << new_pz << std::endl;
+
 	std::cout << "_________" << std::endl << std::endl;
 
 	//Clean-up

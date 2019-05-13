@@ -584,7 +584,7 @@ compute_cumulative_phot_em_table (std::ostream* stream)
     picsar_vector<_REAL> frac_coords = generate_lin_spaced_vec(zero, one,
     qs_ctrl.chi_frac_tem_how_many);
 
-    picsar_vector<_REAL> pair_vals{frac_coords.size()};
+    picsar_vector<_REAL> pair_vals{chi_coords.size()*frac_coords.size()};
 
     msg("Computing table for photon emission...\n", stream);
 
@@ -680,9 +680,11 @@ _REAL* unf_zero_one_minus_epsi)
     _REAL me_c = static_cast<_REAL>(__emass*__c);
 
     vec3<_REAL> p_part{px, py, pz};
-    _REAL norm_part = norm(p_part);
+    _REAL p2 = norm2(p_part);
+    _REAL norm_part = sqrt(p2);
     vec3<_REAL> n_part = p_part/norm_part;
-    _REAL gamma_part = norm_part/me_c;
+    _REAL gamma_part = sqrt(one + p2/me_c/me_c);
+
 
     const size_t how_many_frac = ref_cum_distrib_table.ref_coords()[1].size();
 
