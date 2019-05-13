@@ -18,8 +18,7 @@ namespace pxrmp =  picsar::multi_physics;
 const size_t seed = 83871734;
 
 //A lot of particles!
-//const size_t N = 4000000;
-const size_t N = 1;
+const size_t N = 4000000;
 
 //Sampling parameter for QS photon generation
 const size_t sampling = 4;
