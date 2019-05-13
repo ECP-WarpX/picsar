@@ -588,16 +588,15 @@ compute_cumulative_phot_em_table (std::ostream* stream)
 
     msg("Computing table for photon emission...\n", stream);
 
+    size_t cc = 0;
     for(auto chi_part: chi_coords){
-        pair_vals.front() = zero;
+        pair_vals[cc++] = zero;
         msg("chi_part: " + std::to_string(chi_part) + " \n", stream);
         for(size_t i = 1; i < frac_coords.size() - 1; i++){
-            _REAL temp = compute_cumulative_phot_em(
+            pair_vals[cc++] = compute_cumulative_phot_em(
                 chi_part*frac_coords[i], chi_part);
-            pair_vals[i] = temp;
-
         }
-        pair_vals.back() = one; //The function is symmetric
+        pair_vals[cc++] = one; //The function is symmetric
     }
     msg("...done!\n", stream);
 
@@ -703,9 +702,11 @@ _REAL* unf_zero_one_minus_epsi)
         size_t count = how_many_frac;
         while(count > 0){
             size_t step = count/2;
+
             val =
                 ref_cum_distrib_table.interp_linear_first_equispaced
                     (tab_chi_part, upper+step);
+
             if(!(prob < val)){
                 upper += step+1;
                 count -= step+1;

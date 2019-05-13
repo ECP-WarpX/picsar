@@ -599,9 +599,8 @@ compute_cumulative_pair_table (std::ostream* stream)
         pair_vals[cc++] = zero;
         msg("chi_phot: " + std::to_string(chi_phot) + " \n", stream);
         for(size_t i = 1; i < frac_coords.size() - 1; i++){
-            _REAL temp = compute_cumulative_pair(
+            pair_vals[cc++] = compute_cumulative_pair(
                 chi_phot, chi_phot*frac_coords[i]);
-            pair_vals[cc++] = temp;
         }
         pair_vals[cc++] = (one/two); //The function is symmetric
     }
