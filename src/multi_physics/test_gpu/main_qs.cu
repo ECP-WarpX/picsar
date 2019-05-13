@@ -94,30 +94,30 @@ void init_mom_fields(int n, double* px, double* py, double* pz,
 	}
 }
 
-/*
 
 
-//*********************** BW ENGINE: evolve_opt_depth_and_determine_event ******************************
+
+//*********************** QS ENGINE: evolve_opt_depth_and_determine_event ******************************
 //GPU kernel to test internal_evolve_opt_depth_and_determine_event
 __global__
 void test_internal_evolve_opt_depth_and_determine_event(
 	int n, double* px, double* py, double* pz, double* ex, double* ey, double* ez, double* bx, double* by, double* bz,
 	double dt, double* opt, bool* has_event_happened, double* event_dt,
-	size_t tab_how_many, double* coords, double* data, pxrmp::breit_wheeler_engine_ctrl<double>* bw_ctrl
+	size_t tab_how_many, double* coords, double* data, pxrmp::quantum_synchrotron_engine_ctrl<double>* qs_ctrl
 )
 {
 	//Regenerate the lookuptable on GPU
 	//This constructor does NOT allocate new memory: it manages existing pointers.
-	pxrmp::lookup_1d<double> TTfunctab{tab_how_many, coords, data};
+	pxrmp::lookup_1d<double> KKfunctab{tab_how_many, coords, data};
 
 	int i = blockIdx.x*blockDim.x + threadIdx.x;
 
 	if (i < n){
-		pxrmp::breit_wheeler_engine<double, dummy>::
+		pxrmp::quantum_synchrotron_engine<double, dummy>::
 		internal_evolve_opt_depth_and_determine_event(
          		px[i], py[i], pz[i], ex[i], ey[i], ez[i], bx[i], by[i], bz[i],
          		dt, opt[i], has_event_happened[i], event_dt[i],
-         		default_lambda, TTfunctab, *bw_ctrl);
+         		default_lambda, KKfunctab, *qs_ctrl);
 
 	}
 }
@@ -133,15 +133,16 @@ void set_all_events_true(int n, bool* has_event_happened)
 		has_event_happened[i] = true;
 }
 
-//*********************** BW ENGINE: generate_breit_wheeler_pairs ******************************
-//GPU kernel to test internal_generate_breit_wheeler_pairs
+
+//*********************** QS ENGINE: internal_generate_photons_and_update_momentum ******************************
+//GPU kernel to test internal_generate_photons_and_update_momentum
 __global__
-void test_internal_generate_breit_wheeler_pairs(int n, bool* has_event_happened,
+void test_internal_generate_photons_and_update_momentum(int n, bool* has_event_happened,
 	double* px, double* py, double* pz, double* ex, double* ey, double* ez, double* bx, double* by, double* bz,
 	double* weight, size_t sampling,
-	double* e_px, double* e_py, double* e_pz, double* p_px, double* p_py, double* p_pz, double* e_weight, double* p_weight,
+	double* g_px, double* g_py, double* g_pz, double* g_weight,
 	size_t tab_how_many_1, double* coords_1, size_t tab_how_many_2, double* coords_2, double* data,
-	pxrmp::breit_wheeler_engine_ctrl<double>* bw_ctrl, double* rand_num)
+	pxrmp::quantum_synchrotron_engine_ctrl<double>* qs_ctrl, double* rand_num)
 {
 	pxrmp::lookup_2d<double> cum_prob_tab{tab_how_many_1, coords_1, tab_how_many_2, coords_2, data};
 
@@ -149,18 +150,17 @@ void test_internal_generate_breit_wheeler_pairs(int n, bool* has_event_happened,
 	int si = sampling*i;
 
 	if (i < n && has_event_happened[i]){
-		pxrmp::breit_wheeler_engine<double, dummy>::
-		internal_generate_breit_wheeler_pairs(
+		pxrmp::quantum_synchrotron_engine<double, dummy>::
+		internal_generate_photons_and_update_momentum(
 			px[i], py[i], pz[i], ex[i], ey[i], ez[i], bx[i], by[i], bz[i], weight[i], sampling,
-			&e_px[si], &e_py[si], &e_pz[si],
-			&p_px[si], &p_py[si], &p_pz[si],
-			&e_weight[si], &p_weight[si],
-			default_lambda, cum_prob_tab, *bw_ctrl, &rand_num[si]);
+			&g_px[si], &g_py[si], &g_pz[si],
+			&g_weight[si],
+			default_lambda, cum_prob_tab, *qs_ctrl, &rand_num[si]);
 	}
 }
 
 //********************************************************************************************
-*/
+
 int main()
 {
 	//Seed will be used only with cuRand
@@ -170,10 +170,10 @@ int main()
 	double useless_lambda = 1.0;
 
 	//Change default table parameters in order to speed up the calculations
-	pxrmp::quantum_synchrotron_engine_ctrl<double> qs_ctrl;
-	qs_ctrl.chi_part_tdndt_how_many = 200;
-	qs_ctrl.chi_part_tem_how_many = 3;
-	qs_ctrl.chi_frac_tem_how_many = 3;
+	//pxrmp::quantum_synchrotron_engine_ctrl<double> qs_ctrl;
+	//qs_ctrl.chi_part_tdndt_how_many = 200;
+	//qs_ctrl.chi_part_tem_how_many = 3;
+	//qs_ctrl.chi_frac_tem_how_many = 3;
 
 	//Initialize the BW engine
 	auto qs_engine =
@@ -288,19 +288,20 @@ int main()
 	cudaMalloc(&d_qs_ctrl, sizeof(pxrmp::quantum_synchrotron_engine_ctrl<double>));
 	cudaMemcpy(d_qs_ctrl, &innards.qs_ctrl, sizeof(pxrmp::quantum_synchrotron_engine_ctrl<double>), cudaMemcpyHostToDevice);
 
-    /*
+
 	//Allocate space for has_event_happened and event_dt on GPU
 	bool* d_has_event_happened;
 	double* d_event_dt;
 	cudaMalloc(&d_has_event_happened, sizeof(bool)*N);
 	cudaMalloc(&d_event_dt, sizeof(double)*N);
 
+
 	//Test internal_evolve_opt_depth_and_determine_event on GPU (multiple times!)
 	for(int i = 0; i < repeat; i++){
 		test_internal_evolve_opt_depth_and_determine_event<<<(N+255)/256, 256>>>
 		(N, d_px, d_py, d_pz, d_ex, d_ey, d_ez, d_bx, d_by, d_bz, timestep, d_optical,
-		d_has_event_happened, d_event_dt, innards.TTfunc_table_coords_how_many, d_TTfunc_table_coords,
-		d_TTfunc_table_data, d_bw_ctrl);
+		d_has_event_happened, d_event_dt, innards.KKfunc_table_coords_how_many, d_KKfunc_table_coords,
+		d_KKfunc_table_data, d_qs_ctrl);
 		cudaDeviceSynchronize();
 	}
 
@@ -338,53 +339,38 @@ int main()
 	cudaMalloc(&d_rand3, sizeof(double)*N*sampling);
 	curandGenerateUniformDouble(gen, d_rand3, N*sampling);
 
-	//Allocate space for momenta & weigths of the generated pairs
-	double* d_e_px;
-	double* d_e_py;
-	double* d_e_pz;
-	double* d_p_px;
-	double* d_p_py;
-	double* d_p_pz;
-	double* d_e_w;
-	double* d_p_w;
-	cudaMalloc(&d_e_px, sizeof(double)*N*sampling);
-	cudaMalloc(&d_e_py, sizeof(double)*N*sampling);
-	cudaMalloc(&d_e_pz, sizeof(double)*N*sampling);
-	cudaMalloc(&d_p_px, sizeof(double)*N*sampling);
-	cudaMalloc(&d_p_py, sizeof(double)*N*sampling);
-	cudaMalloc(&d_p_pz, sizeof(double)*N*sampling);
-	cudaMalloc(&d_e_w, sizeof(double)*N*sampling);
-	cudaMalloc(&d_p_w, sizeof(double)*N*sampling);
 
-	//Test internal_generate_breit_wheeler_pairs on the GPU
-	test_internal_generate_breit_wheeler_pairs<<<(N+255)/256, 256>>>
+	//Allocate space for momenta & weigths of the generated photons
+	double* d_g_px;
+	double* d_g_py;
+	double* d_g_pz;
+	double* d_g_w;
+	cudaMalloc(&d_g_px, sizeof(double)*N*sampling);
+	cudaMalloc(&d_g_py, sizeof(double)*N*sampling);
+	cudaMalloc(&d_g_pz, sizeof(double)*N*sampling);
+	cudaMalloc(&d_g_w, sizeof(double)*N*sampling);
+
+
+	//Test internal_generate_photons_and_update_momentum on the GPU
+	test_internal_generate_photons_and_update_momentum<<<(N+255)/256, 256>>>
 	(N, d_has_event_happened,
 	d_px, d_py, d_pz, d_ex, d_ey, d_ez, d_bx, d_by, d_bz,
 	d_w, sampling,
-	d_e_px, d_e_py, d_e_pz, d_p_px, d_p_py, d_p_pz, d_e_w, d_p_w,
+	d_g_px, d_g_py, d_g_pz, d_g_w,
 	innards.cum_distrib_table_coords_1_how_many, d_cum_distrib_table_coords_1,
 	innards.cum_distrib_table_coords_2_how_many, d_cum_distrib_table_coords_2, d_cum_distrib_table_data,
-	d_bw_ctrl,
+	d_qs_ctrl,
 	d_rand3);
 
-
-	//Copy some pair properties back to CPU for debug purposes
-	double e_px, e_py, e_pz, e_w;
-	double p_px, p_py, p_pz, p_w;
-	cudaMemcpy(&e_px, d_e_px, sizeof(double), cudaMemcpyDeviceToHost);
-	cudaMemcpy(&e_py, d_e_py, sizeof(double), cudaMemcpyDeviceToHost);
-	cudaMemcpy(&e_pz, d_e_pz, sizeof(double), cudaMemcpyDeviceToHost);
-	cudaMemcpy(&e_w, d_e_w, sizeof(double), cudaMemcpyDeviceToHost);
-	cudaMemcpy(&p_px, d_p_px, sizeof(double), cudaMemcpyDeviceToHost);
-	cudaMemcpy(&p_py, d_p_py, sizeof(double), cudaMemcpyDeviceToHost);
-	cudaMemcpy(&p_pz, d_p_pz, sizeof(double), cudaMemcpyDeviceToHost);
-	cudaMemcpy(&p_w, d_p_w, sizeof(double), cudaMemcpyDeviceToHost);
+	//Copy some photon properties back to CPU for debug purposes
+	double g_px, g_py, g_pz, g_w;
+	cudaMemcpy(&g_px, d_g_px, sizeof(double), cudaMemcpyDeviceToHost);
+	cudaMemcpy(&g_py, d_g_py, sizeof(double), cudaMemcpyDeviceToHost);
+	cudaMemcpy(&g_pz, d_g_pz, sizeof(double), cudaMemcpyDeviceToHost);
+	cudaMemcpy(&g_w, d_g_w, sizeof(double), cudaMemcpyDeviceToHost);
 	std::cout << "Test pairs: " << std::endl;
-	std::cout << "e- : " << e_px << " " << e_py << " " << e_pz << " " << e_w << std::endl;
-	std::cout << "e+ : " << p_px << " " << p_py << " " << p_pz << " " << p_w << std::endl;
+	std::cout << "gamma : " << g_px << " " << g_py << " " << g_pz << " " << g_w << std::endl;
 	std::cout << "_________" << std::endl << std::endl;
-
-
 
 	//Clean-up
 	cudaFree(d_optical);
@@ -400,22 +386,18 @@ int main()
 	cudaFree(d_bz);
 	cudaFree(d_w);
 	cudaFree(d_rand2);
-	cudaFree(d_TTfunc_table_coords);
-	cudaFree(d_TTfunc_table_data);
-	cudaFree(d_bw_ctrl);
+	cudaFree(d_KKfunc_table_coords);
+	cudaFree(d_KKfunc_table_data);
+	cudaFree(d_qs_ctrl);
 	cudaFree(d_has_event_happened);
 	cudaFree(d_event_dt);
 	cudaFree(d_rand3);
-	cudaFree(d_e_px);
-	cudaFree(d_e_py);
-	cudaFree(d_e_pz);
-	cudaFree(d_p_px);
-	cudaFree(d_p_py);
-	cudaFree(d_p_pz);
-	cudaFree(d_e_w);
-	cudaFree(d_p_w);
+	cudaFree(d_g_px);
+	cudaFree(d_g_py);
+	cudaFree(d_g_pz);
+	cudaFree(d_g_w);
 	delete[] optical;
 	delete[] optical2;
-*/
+
 	return 0;
 }
