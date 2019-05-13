@@ -171,15 +171,15 @@ int main()
 	double useless_lambda = 1.0;
 
 	//Change default table parameters in order to speed up the calculations
-	pxrmp::quantum_synchrotron_engine_ctrl<double> qs_ctrl;
-	qs_ctrl.chi_part_tdndt_how_many = 200;
-	qs_ctrl.chi_part_tem_how_many = 3;
-	qs_ctrl.chi_frac_tem_how_many = 3;
+	//pxrmp::quantum_synchrotron_engine_ctrl<double> qs_ctrl;
+	//qs_ctrl.chi_part_tdndt_how_many = 200;
+	//qs_ctrl.chi_part_tem_how_many = 3;
+	//qs_ctrl.chi_frac_tem_how_many = 3;
 
 	//Initialize the BW engine
 	auto qs_engine =
 		pxrmp::quantum_synchrotron_engine<double, pxrmp::stl_rng_wrapper>
-		{std::move(pxrmp::stl_rng_wrapper{useless_seed}), useless_lambda, qs_ctrl};
+		{std::move(pxrmp::stl_rng_wrapper{useless_seed}), useless_lambda};//, qs_ctrl};
 
 	//Initialize the lookup tables
    	//Generates tables if they do not exist
@@ -378,8 +378,11 @@ int main()
 	cudaMemcpy(&g_pz, d_g_pz, sizeof(double)*sampling, cudaMemcpyDeviceToHost);
 	cudaMemcpy(&g_w, d_g_w, sizeof(double)*sampling, cudaMemcpyDeviceToHost);
 	std::cout << "Test pairs: " << std::endl;
-    for(size_t i = 0; i < 4; i++)
-	   std::cout << "gamma : " << g_px[i] << " " << g_py[i] << " " << g_pz[i] << " " << g_w[i] << std::endl;
+    for(size_t i = 0; i < 4; i++){
+        double norm = sqrt(g_px[i]*g_px[i]+g_py[i]*g_py[i]+g_pz[i]*g_pz[i]);
+        std::cout << "gamma : " << g_px[i] << " " << g_py[i] << " " << g_pz[i] << " " << g_w[i]
+        << " ( " << g_px[i]/norm << ", " << g_py[i]/norm << ", " << g_pz[i]/norm << " )" << std::endl;
+     }
 
     std::cout << "px: " << old_px << " --> " << new_px << std::endl;
     std::cout << "px: " << old_py << " --> " << new_py << std::endl;
