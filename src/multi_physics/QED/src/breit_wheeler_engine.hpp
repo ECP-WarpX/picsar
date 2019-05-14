@@ -718,16 +718,21 @@ _REAL* unf_zero_one_minus_epsi)
             invert = true;
         }
 
-        size_t upper = 0;
+
+
+        size_t first = 0;
+        size_t it;
         _REAL val;
         size_t count = how_many_frac;
         while(count > 0){
+            it = first;
             size_t step = count/2;
+            it += step;
             val =
                 ref_cum_distrib_table.interp_linear_first_equispaced
-                    (tab_chi_phot, upper+step);
+                    (tab_chi_phot, it);
             if(!(prob < val)){
-                upper++;
+                first = ++it;
                 count -= step+1;
             }
             else{
@@ -735,6 +740,7 @@ _REAL* unf_zero_one_minus_epsi)
             }
         }
 
+        size_t upper = first;
         size_t lower = upper-1;
 
         const _REAL upper_frac = ref_cum_distrib_table.ref_coords()[1][upper];
