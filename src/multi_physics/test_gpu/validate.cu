@@ -324,7 +324,8 @@ void do_bw()
 
         double* ele_frac = new double[N];
         double* pos_frac = new double[N];
-
+        cudaMemcpy(ele_frac, d_ele_frac, N*sizeof(double), cudaMemcpyDeviceToHost);
+        cudaMemcpy(pos_frac, d_pos_frac, N*sizeof(double), cudaMemcpyDeviceToHost);
         std::ofstream of2{"bw_pairs.dat"};
         for(size_t i = 0; i < N ; i++)
                     of2 << chi[i] << " " << ele_frac[i] << " " << pos_frac[i] << std::endl;
