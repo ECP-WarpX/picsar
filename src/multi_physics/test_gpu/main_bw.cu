@@ -396,6 +396,9 @@ int main()
 	cudaFree(d_TTfunc_table_coords);
 	cudaFree(d_TTfunc_table_data);
 	cudaFree(d_bw_ctrl);
+    cudaFree(d_cum_distrib_table_coords_1);
+    cudaFree(d_cum_distrib_table_coords_2);
+    cudaFree(d_cum_distrib_table_data);
 	cudaFree(d_has_event_happened);
 	cudaFree(d_event_dt);
 	cudaFree(d_rand3);
