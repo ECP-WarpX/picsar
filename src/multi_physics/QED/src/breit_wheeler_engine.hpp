@@ -727,7 +727,7 @@ _REAL* unf_zero_one_minus_epsi)
                 ref_cum_distrib_table.interp_linear_first_equispaced
                     (tab_chi_phot, upper+step);
             if(!(prob < val)){
-                upper += step+1;
+                upper++;
                 count -= step+1;
             }
             else{
