@@ -127,15 +127,15 @@ void test_bw_prod(
 void do_bw()
 {
     //Change default table parameters in order to speed up the calculations
-    pxrmp::breit_wheeler_engine_ctrl<double> bw_ctrl;
-    bw_ctrl.chi_phot_tdndt_how_many = 200;
-    bw_ctrl.chi_phot_tpair_how_many = 3;
-    bw_ctrl.chi_frac_tpair_how_many = 3;
+    //pxrmp::breit_wheeler_engine_ctrl<double> bw_ctrl;
+    //bw_ctrl.chi_phot_tdndt_how_many = 200;
+    //bw_ctrl.chi_phot_tpair_how_many = 3;
+    //bw_ctrl.chi_frac_tpair_how_many = 3;
 
     //Initialize the BW engine
     auto bw_engine =
         pxrmp::breit_wheeler_engine<double, pxrmp::stl_rng_wrapper>
-        {std::move(pxrmp::stl_rng_wrapper{useless_seed}), default_lambda, bw_ctrl};
+        {std::move(pxrmp::stl_rng_wrapper{useless_seed}), default_lambda};//, bw_ctrl};
 
         //Initialize the lookup tables
        	//Generates tables if they do not exist
