@@ -456,7 +456,7 @@ _REAL lambda)
         //Not suitable for GPU! Replaced with asymptotic expansion.
         //TT = a*chi_phot*pow(k_v(one/three, b/chi_phot),two);
         _REAL ccoeff = static_cast<_REAL>(tgamma(one/three)/two);
-        TT = a*chi_phot*ccoeff*coeff*pow(chi_phot*two/b , two/three);
+        TT = a*chi_phot*ccoeff*pow(chi_phot*two/b , two/three);
 
     }
     //otherwise use lookup tables

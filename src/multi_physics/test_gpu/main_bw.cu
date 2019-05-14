@@ -1,8 +1,6 @@
 #include <iostream>
 #include <vector>
-
 #include <cstdio>
-
 #include <cuda.h>
 #include <curand.h>
 
