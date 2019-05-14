@@ -122,6 +122,42 @@ void test_bw_prod(
 }
 //********************************************************************************************
 
+//*********************** BW ENGINE: test pair generation ******************************
+//GPU kernel to test internal_generate_breit_wheeler_pairs
+__global__
+void test_pairs(int n,
+	double* px, double* py, double* pz, double* ex, double* ey, double* ez, double* bx, double* by, double* bz, double* weight,
+	size_t tab_how_many_1, double* coords_1, size_t tab_how_many_2, double* coords_2, double* data,
+	pxrmp::breit_wheeler_engine_ctrl<double>* bw_ctrl, double* rand_num,
+    double* chi_phot, double* chi_ele_frac, double* chi_pos_frac)
+{
+	pxrmp::lookup_2d<double> cum_prob_tab{tab_how_many_1, coords_1, tab_how_many_2, coords_2, data};
+
+	int i = blockIdx.x*blockDim.x + threadIdx.x;
+
+	if (i < n){
+        double e_px, e_py, e_pz, e_w;
+        double p_px, p_py, p_pz, p_w;
+
+		pxrmp::breit_wheeler_engine<double, dummy>::
+		internal_generate_breit_wheeler_pairs(
+			px[i], py[i], pz[i], ex[i], ey[i], ez[i], bx[i], by[i], bz[i], weight[i], 1,
+			&e_px, &e_py, &e_pz,
+			&p_px, &p_py, &p_pz,
+			&e_w, &p_w,
+			default_lambda, cum_prob_tab, *bw_ctrl, &rand_num[i]);
+
+            chi_phot[i] = pxrmp::chi_photon<double>(px[i], py[i], pz[i],
+                ex[i], ey[i], ez[i], bx[i], by[i], bz[i], default_lambda);
+            chi_ele_frac[i] =  pxrmp::chi_lepton<double>(e_px, e_py, e_pz,
+                ex[i], ey[i], ez[i], bx[i], by[i], bz[i], default_lambda)/chi_phot[i];
+            chi_pos_frac[i] =  pxrmp::chi_lepton<double>(p_px, p_py, p_pz,
+                ex[i], ey[i], ez[i], bx[i], by[i], bz[i], default_lambda)/chi_phot[i];
+
+	}
+}
+
+//********************************************************************************************
 
 
 void do_bw()
@@ -253,6 +289,48 @@ void do_bw()
 
         of.close();
 
+        //Copy cum_distrib_table from the CPU to the GPU
+    	double* d_cum_distrib_table_coords_1;
+    	double* d_cum_distrib_table_coords_2;
+    	double* d_cum_distrib_table_data;
+    	cudaMalloc(&d_cum_distrib_table_coords_1, sizeof(double)*innards.cum_distrib_table_coords_1_how_many);
+    	cudaMalloc(&d_cum_distrib_table_coords_2, sizeof(double)*innards.cum_distrib_table_coords_2_how_many);
+    	cudaMalloc(&d_cum_distrib_table_data, sizeof(double)*innards.cum_distrib_table_coords_1_how_many*innards.cum_distrib_table_coords_2_how_many);
+    	cudaMemcpy(d_cum_distrib_table_coords_1, innards.cum_distrib_table_coords_1_ptr,
+    		sizeof(double)*innards.cum_distrib_table_coords_1_how_many,cudaMemcpyHostToDevice);
+    	cudaMemcpy(d_cum_distrib_table_coords_2, innards.cum_distrib_table_coords_2_ptr,
+    		sizeof(double)*innards.cum_distrib_table_coords_2_how_many,cudaMemcpyHostToDevice);
+    	cudaMemcpy(d_cum_distrib_table_data, innards.cum_distrib_table_data_ptr,
+    		sizeof(double)*innards.cum_distrib_table_coords_1_how_many*innards.cum_distrib_table_coords_2_how_many,cudaMemcpyHostToDevice);
+
+    	//Generate enough random numbers on the GPU
+    	double* d_rand2;
+    	cudaMalloc(&d_rand2, sizeof(double)*N);
+    	curandGenerateUniformDouble(gen, d_rand2, N);
+
+
+        //test BW pair properties & print on disk
+        double* d_ele_frac;
+        double* d_pos_frac;
+        cudaMalloc(&d_ele_frac, N*sizeof(double));
+        cudaMalloc(&d_pos_frac, N*sizeof(double));
+        test_pairs<<<(N+255)/256, 256>>> (
+        N, d_px, d_py, d_pz, d_ex, d_ey, d_ez, d_bx, d_by, d_bz, d_w,
+        	innards.cum_distrib_table_coords_1_how_many, d_cum_distrib_table_coords_1,
+            innards.cum_distrib_table_coords_2_how_many, d_cum_distrib_table_coords_2,
+            d_cum_distrib_table_data,
+        	d_bw_ctrl, d_rand2,
+            d_chi, d_ele_frac, d_pos_frac);
+
+        double* ele_frac = new double[N];
+        double* pos_frac = new double[N];
+
+        std::ofstream of2{"bw_pairs.dat"};
+        for(size_t i = 0; i < N ; i++)
+                    of2 << chi[i] << " " << ele_frac[i] << " " << pos_frac[i] << std::endl;
+
+        of2.close();
+
 
 
         cudaFree(d_px);
@@ -266,10 +344,21 @@ void do_bw()
         cudaFree(d_bz);
         cudaFree(d_w);
         cudaFree(d_rand);
+        cudaFree(d_TTfunc_table_coords);
+        cudaFree(d_TTfunc_table_data);
+        cudaFree(d_bw_ctrl);
+        cudaFree(d_cum_distrib_table_coords_1);
+        cudaFree(d_cum_distrib_table_coords_2);
+        cudaFree(d_cum_distrib_table_data);
         cudaFree(d_chi);
         cudaFree(d_rate);
+        cudaFree(d_ele_frac);
+        cudaFree(d_pos_frac);
+        cudaFree(d_rand2);
         delete[] chi;
         delete[] rate;
+        delete[] ele_frac;
+        delete[] pos_frac;
 }
 
 void do_qs()
