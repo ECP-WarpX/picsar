@@ -161,8 +161,8 @@ namespace picsar{
     //BW process is taken into account, but the Erber approximation
     //rather than the lookup table is used.
     const double __breit_wheeler_min_tdndt_chi_phot = 0.1; //Min chi_phot
-    const double __breit_wheeler_max_tdndt_chi_phot = 200.0;  //Max chi_phot
-    const size_t __breit_wheeler_how_many_tdndt_chi_phot = 30;   //How many points
+    const double __breit_wheeler_max_tdndt_chi_phot = 500.0;  //Max chi_phot
+    const size_t __breit_wheeler_how_many_tdndt_chi_phot = 50;   //How many points
     // -------
 
     //Coefficients for che asymptotic behaviour of the "TT function"
@@ -173,10 +173,10 @@ namespace picsar{
 
     // Pair production table:
     const double __breit_wheeler_min_tpair_chi_phot = 0.01; //Min chi_phot
-    const double __breit_wheeler_max_tpair_chi_phot = 200.0; //Max chi_phot
-    const size_t __breit_wheeler_how_many_tpair_chi_phot = 30; //How many points
+    const double __breit_wheeler_max_tpair_chi_phot = 500.0; //Max chi_phot
+    const size_t __breit_wheeler_how_many_tpair_chi_phot = 50; //How many points
 
-    const size_t __breit_wheeler_chi_frac_tpair_how_many = 25;
+    const size_t __breit_wheeler_chi_frac_tpair_how_many = 50;
 
 //##############################################################################
 
