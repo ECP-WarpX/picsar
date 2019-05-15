@@ -626,10 +626,10 @@ interp_linear_first_equispaced(_REAL where_x, size_t coord_y) const
     size_t sx = coords[0].size();
     size_t sy = coords[1].size();
 
-    if(where_x == coords[0].front())
+    if(where_x <= coords[0].front())
         return data[row_major(0,coord_y,sx,sy)];
 
-    if(where_x == coords[0].back())
+    if(where_x >= coords[0].back())
         return data[row_major(sx-1,coord_y,sx,sy)];
 
     _REAL xmin = coords[0].back();
@@ -637,7 +637,7 @@ interp_linear_first_equispaced(_REAL where_x, size_t coord_y) const
     _REAL xsize = xmax - xmin;
 
     size_t idx_x_left = static_cast<size_t>(
-            floor((coords[0].size()-1)*(where_x-xmin)/xsize));
+            floor((sx-1)*(where_x-xmin)/xsize));
     size_t idx_x_right = idx_x_left + 1;
 
 
