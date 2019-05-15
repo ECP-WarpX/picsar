@@ -411,11 +411,12 @@ lookup_2d(size_t how_many_1,
           size_t how_many_2,
           _REAL* _coords_2,
           _REAL* _data):
-coords{std::move(picsar_vector<_REAL>{how_many_1, _coords_1}),
-    std::move(picsar_vector<_REAL>{how_many_2, _coords_2})},
 data{how_many_1*how_many_2, _data},
 init_flag{true}
-{}
+{
+    coords[0] = std::move(picsar_vector<_REAL>{how_many_1, _coords_1});
+    coords[1] = std::move(picsar_vector<_REAL>{how_many_2, _coords_2});
+}
 
 
 //Assignment operator
