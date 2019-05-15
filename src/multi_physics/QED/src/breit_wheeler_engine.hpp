@@ -606,6 +606,11 @@ compute_cumulative_pair_table (std::ostream* stream)
     }
     msg("...done!\n", stream);
 
+    //The table will store the logarithms
+    auto logfun = [](_REAL val){return log(val);};
+    std::transform(chi_coords.begin(), chi_coords.end(), chi_coords.begin(), logfun);
+    std::transform(pair_vals.begin(), pair_vals.end(), pair_vals.begin(), logfun);
+
     cum_distrib_table = lookup_2d<_REAL>{
         picsar_array<picsar_vector<_REAL>,2>{chi_coords, frac_coords}, pair_vals};
 
@@ -727,8 +732,8 @@ _REAL* unf_zero_one_minus_epsi)
             size_t step = count/2;
             it += step;
             val =
-                ref_cum_distrib_table.interp_linear_first_equispaced
-                    (tab_chi_phot, it);
+                exp(ref_cum_distrib_table.interp_linear_first_equispaced
+                    (log(tab_chi_phot), it));
             if(!(prob < val)){
                 first = ++it;
                 count -= step+1;
@@ -744,11 +749,11 @@ _REAL* unf_zero_one_minus_epsi)
         const _REAL upper_frac = ref_cum_distrib_table.ref_coords()[1][upper];
         const _REAL lower_frac = ref_cum_distrib_table.ref_coords()[1][lower];
         _REAL upper_prob =
-            ref_cum_distrib_table.interp_linear_first_equispaced
-            (tab_chi_phot, upper);
+            exp(ref_cum_distrib_table.interp_linear_first_equispaced
+            (tab_chi_phot, upper));
         _REAL lower_prob =
-            ref_cum_distrib_table.interp_linear_first_equispaced
-            (tab_chi_phot, lower);
+            exp(ref_cum_distrib_table.interp_linear_first_equispaced
+            (tab_chi_phot, lower));
         _REAL chi_ele_frac = lower_frac +
             (prob-lower_prob)*(upper_frac-lower_frac)/(upper_prob-lower_prob);
 
