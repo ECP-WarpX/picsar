@@ -116,6 +116,7 @@ namespace picsar{
 
                 //Constructor from raw data pointers
                 PXRMP_GPU
+                PXRMP_FORCE_INLINE
                 lookup_2d(size_t how_many_1,
                           _REAL* _coords_1,
                           size_t how_many_2,
@@ -402,18 +403,18 @@ lookup_2d(lookup_2d&& other):
 
 //Constructor from raw data pointers
 template<typename _REAL>
+PXRMP_GPU
+PXRMP_FORCE_INLINE
 picsar::multi_physics::lookup_2d<_REAL>::
 lookup_2d(size_t how_many_1,
           _REAL* _coords_1,
           size_t how_many_2,
           _REAL* _coords_2,
           _REAL* _data):
+coords{picsar_vector<_REAL>{how_many_1, _coords_1}, picsar_vector<_REAL>{how_many_2, _coords_2}},
 data{how_many_1*how_many_2, _data},
 init_flag{true}
-{
-    coords[0] = picsar_vector<_REAL>{how_many_1, _coords_1};
-    coords[1] = picsar_vector<_REAL>{how_many_2, _coords_2};
-}
+{}
 
 
 //Assignment operator
