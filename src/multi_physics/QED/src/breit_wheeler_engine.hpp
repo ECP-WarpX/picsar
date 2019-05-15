@@ -718,8 +718,6 @@ _REAL* unf_zero_one_minus_epsi)
             invert = true;
         }
 
-
-
         size_t first = 0;
         size_t it;
         _REAL val;

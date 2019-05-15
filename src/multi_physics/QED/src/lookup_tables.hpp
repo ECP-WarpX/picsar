@@ -293,8 +293,8 @@ _REAL
 picsar::multi_physics::lookup_1d<_REAL>::
 interp_linear_equispaced(_REAL where) const
 {
-    _REAL xmin = coords.back();
-    _REAL xmax = coords.front();
+    _REAL xmin = coords.front();
+    _REAL xmax = coords.back();
 
     _REAL xsize = xmax - xmin;
 
@@ -541,12 +541,12 @@ picsar::multi_physics::lookup_2d<_REAL>::
 interp_linear_equispaced(_REAL where_x, _REAL where_y) const
 {
 
-    _REAL xmin = coords[0].back();
-    _REAL xmax = coords[0].front();
+    _REAL xmin = coords[0].front();
+    _REAL xmax = coords[0].back();
     _REAL xsize = xmax - xmin;
 
-    _REAL ymin = coords[1].back();
-    _REAL ymax = coords[1].front();
+    _REAL ymin = coords[1].front();
+    _REAL ymax = coords[1].back();
     _REAL ysize = ymax - ymin;
 
     size_t idx_x_left = static_cast<size_t>(
@@ -588,8 +588,8 @@ _REAL
 picsar::multi_physics::lookup_2d<_REAL>::
 interp_linear_first(_REAL where_x, size_t coord_y) const
 {
-    _REAL xmin = coords[0].back();
-    _REAL xmax = coords[0].front();
+    _REAL xmin = coords[0].front();
+    _REAL xmax = coords[0].back();
     _REAL xsize = xmax - xmin;
 
     auto it_x_right =
@@ -632,14 +632,13 @@ interp_linear_first_equispaced(_REAL where_x, size_t coord_y) const
     if(where_x >= coords[0].back())
         return data[row_major(sx-1,coord_y,sx,sy)];
 
-    _REAL xmin = coords[0].back();
-    _REAL xmax = coords[0].front();
+    _REAL xmin = coords[0].front();
+    _REAL xmax = coords[0].back();
     _REAL xsize = xmax - xmin;
 
     size_t idx_x_left = static_cast<size_t>(
             floor((sx-1)*(where_x-xmin)/xsize));
     size_t idx_x_right = idx_x_left + 1;
-
 
     _REAL xleft = coords[0][idx_x_left];
     _REAL xright = coords[0][idx_x_right];

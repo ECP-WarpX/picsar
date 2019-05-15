@@ -357,7 +357,7 @@ PXRMP_GPU PXRMP_FORCE_INLINE
 T&
 picsar::multi_physics::picsar_vector<T>::front()
 {
-    return v_data[v_size-1];
+    return v_data[0];
 }
 
 
@@ -366,7 +366,7 @@ PXRMP_GPU PXRMP_FORCE_INLINE
 const T&
 picsar::multi_physics::picsar_vector<T>::back() const
 {
-    return v_data[0];
+    return v_data[v_size-1];
 }
 
 template <typename T>
@@ -374,7 +374,7 @@ PXRMP_GPU PXRMP_FORCE_INLINE
 const T&
 picsar::multi_physics::picsar_vector<T>::front() const
 {
-    return v_data[v_size-1];
+    return v_data[0];
 }
 
 #endif //__PICSAR_MULTIPHYSICS_ARRAY__
