@@ -100,13 +100,15 @@ void test_bw_prod(
     double* chi, double* rate
 )
 {
-	//Regenerate the lookuptable on GPU
-	//This constructor does NOT allocate new memory: it manages existing pointers.
-	pxrmp::lookup_1d<double> TTfunctab{tab_how_many, coords, data};
+
 
 	int i = blockIdx.x*blockDim.x + threadIdx.x;
 
 	if (i < n){
+        //Regenerate the lookuptable on GPU
+        //This constructor does NOT allocate new memory: it manages existing pointers.
+        pxrmp::lookup_1d<double> TTfunctab{tab_how_many, coords, data};
+
         double opt = 0.0;
         bool bdummy;
         double ddummy;
@@ -131,11 +133,12 @@ void test_pairs(int n,
 	pxrmp::breit_wheeler_engine_ctrl<double>* bw_ctrl, double* rand_num,
     double* chi_phot, double* chi_ele_frac, double* chi_pos_frac)
 {
-	pxrmp::lookup_2d<double> cum_prob_tab{tab_how_many_1, coords_1, tab_how_many_2, coords_2, data};
 
 	int i = blockIdx.x*blockDim.x + threadIdx.x;
 
 	if (i < n){
+        pxrmp::lookup_2d<double> cum_prob_tab{tab_how_many_1, coords_1, tab_how_many_2, coords_2, data};
+
         double e_px, e_py, e_pz, e_w;
         double p_px, p_py, p_pz, p_w;
 
