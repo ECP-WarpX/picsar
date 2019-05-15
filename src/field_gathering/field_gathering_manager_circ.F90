@@ -56,15 +56,18 @@
 !> @param[in] brg, btg, blg field arrays
 !
 ! ________________________________________________________________________________________
-SUBROUTINE geteb2dcirc_energy_conserving(np, xp, yp, zp, ex, ey, ez, bx, by, bz, xmin,  &
-  zmin, dx, dz, nx, nz, nmodes, nxguard, nzguard, nox, noz, erg, etg, elg, brg, btg, blg)
+SUBROUTINE geteb2dcirc_energy_conserving(np, xp, yp, zp, ex, ey, ez, bx, by, bz, &
+                                         xmin, zmin, dx, dz, nx, nz, nmodes, nxguard, nzguard, nox, noz, &
+                                         l_lower_order_in_v, l_nodal, &
+                                         erg, etg, elg, brg, btg, blg)
   USE picsar_precision, ONLY: idp, lp, num
   implicit none
 
   integer(idp)                  :: np, nx, nz, nmodes, nox, noz, nxguard, nzguard
   real(num), dimension(np)      :: xp, yp, zp, ex, ey, ez, bx, by, bz
-  real(num), dimension(-nxguard:nx+nxguard, -nzguard:nz+nzguard, 0:nmodes-1) :: erg, etg, elg
-  real(num), dimension(-nxguard:nx+nxguard, -nzguard:nz+nzguard, 0:nmodes-1) :: brg, btg, blg
+  logical(lp)                   :: l_lower_order_in_v, l_nodal
+  complex(num), dimension(-nxguard:nx+nxguard, -nzguard:nz+nzguard, 0:nmodes-1) :: erg, etg, elg
+  complex(num), dimension(-nxguard:nx+nxguard, -nzguard:nz+nzguard, 0:nmodes-1) :: brg, btg, blg
   real(num)                     :: xmin, zmin, dx, dz
 
   ! Build array of guard cells and valid cells, to pass them to the generic routine
@@ -73,9 +76,13 @@ SUBROUTINE geteb2dcirc_energy_conserving(np, xp, yp, zp, ex, ey, ez, bx, by, bz,
   nvalid = (/ nx+1, nz+1 /)
 
   call geteb2dcirc_energy_conserving_generic(np, xp, yp, zp, ex, ey, ez, bx, by, bz,    &
-  xmin, zmin, dx, dz, nmodes, nox, noz, erg, nguard, nvalid, etg, nguard,      &
-  nvalid, elg, nguard, nvalid, brg, nguard, nvalid, btg, nguard, nvalid, blg, nguard, &
-  nvalid)
+                     xmin, zmin, dx, dz, nmodes, nox, noz, l_lower_order_in_v, l_nodal, &
+                     erg, nguard, nvalid, &
+                     etg, nguard, nvalid, &
+                     elg, nguard, nvalid, &
+                     brg, nguard, nvalid, &
+                     btg, nguard, nvalid, &
+                     blg, nguard, nvalid)
 END SUBROUTINE
 
 ! ________________________________________________________________________________________
@@ -101,42 +108,70 @@ END SUBROUTINE
 !> @param[in] erg, etg, elg electric field grid
 !>
 ! ________________________________________________________________________________________
-SUBROUTINE geteb2dcirc_energy_conserving_generic(np, xp, yp, zp, ex, ey, ez, bx, by,    &
-  bz, xmin, zmin, dx, dz, nmodes, nox, noz, erg, erg_nguard, erg_nvalid, &
-  etg, etg_nguard, etg_nvalid, elg, elg_nguard, elg_nvalid, brg, brg_nguard, brg_nvalid,&
-  btg, btg_nguard, btg_nvalid, blg, blg_nguard, blg_nvalid)            !#do not wrap
+SUBROUTINE geteb2dcirc_energy_conserving_generic(np, xp, yp, zp, ex, ey, ez, bx, by, bz, &
+                     xmin, zmin, dx, dz, nmodes, nox, noz, l_lower_order_in_v, l_nodal, &
+                     erg, erg_nguard, erg_nvalid, etg, etg_nguard, etg_nvalid, elg, elg_nguard, elg_nvalid, &
+                     brg, brg_nguard, brg_nvalid, btg, btg_nguard, btg_nvalid, blg, blg_nguard, blg_nvalid) !#do not wrap
   USE picsar_precision, ONLY: idp, lp, num
   implicit none
 
-  integer(idp)                  :: np, nmodes, nox, noz
-  integer(idp), intent(IN)      :: erg_nguard(2), erg_nvalid(2), etg_nguard(2),       &
-  etg_nvalid(2), elg_nguard(2), elg_nvalid(2), brg_nguard(2), brg_nvalid(2),          &
-  btg_nguard(2), btg_nvalid(2), blg_nguard(2), blg_nvalid(2)
+  integer(idp), intent(IN)      :: np, nmodes, nox, noz
+  logical(lp), intent(IN)       :: l_lower_order_in_v, l_nodal
+  integer(idp), intent(IN)      :: erg_nguard(2), erg_nvalid(2), etg_nguard(2)
+  integer(idp), intent(IN)      :: etg_nvalid(2), elg_nguard(2), elg_nvalid(2)
+  integer(idp), intent(IN)      :: brg_nguard(2), brg_nvalid(2), btg_nguard(2)
+  integer(idp), intent(IN)      :: btg_nvalid(2), blg_nguard(2), blg_nvalid(2)
   real(num), dimension(np)      :: xp, yp, zp, ex, ey, ez, bx, by, bz
-  real(num)                     :: xmin, zmin, dx, dz
-  REAL(num), intent(IN):: erg(-erg_nguard(1):erg_nvalid(1)+erg_nguard(1)-1,           &
-  -erg_nguard(2):erg_nvalid(2)+erg_nguard(2)-1, 0:nmodes-1)
-  REAL(num), intent(IN):: etg(-etg_nguard(1):etg_nvalid(1)+etg_nguard(1)-1,           &
-  -etg_nguard(2):etg_nvalid(2)+etg_nguard(2)-1, 0:nmodes-1)
-  REAL(num), intent(IN):: elg(-elg_nguard(1):elg_nvalid(1)+elg_nguard(1)-1,           &
-  -elg_nguard(2):elg_nvalid(2)+elg_nguard(2)-1, 0:nmodes-1)
-  REAL(num), intent(IN):: brg(-brg_nguard(1):brg_nvalid(1)+brg_nguard(1)-1,           &
-  -brg_nguard(2):brg_nvalid(2)+brg_nguard(2)-1, 0:nmodes-1)
-  REAL(num), intent(IN):: btg(-btg_nguard(1):btg_nvalid(1)+btg_nguard(1)-1,           &
-  -btg_nguard(2):btg_nvalid(2)+btg_nguard(2)-1, 0:nmodes-1)
-  REAL(num), intent(IN):: blg(-blg_nguard(1):blg_nvalid(1)+blg_nguard(1)-1,           &
-  -blg_nguard(2):blg_nvalid(2)+blg_nguard(2)-1, 0:nmodes-1)
+  real(num), intent(IN)         :: xmin, zmin, dx, dz
+  complex(num), intent(IN):: erg(-erg_nguard(1):erg_nvalid(1)+erg_nguard(1)-1,           &
+                                 -erg_nguard(2):erg_nvalid(2)+erg_nguard(2)-1, 0:nmodes-1)
+  complex(num), intent(IN):: etg(-etg_nguard(1):etg_nvalid(1)+etg_nguard(1)-1,           &
+                                 -etg_nguard(2):etg_nvalid(2)+etg_nguard(2)-1, 0:nmodes-1)
+  complex(num), intent(IN):: elg(-elg_nguard(1):elg_nvalid(1)+elg_nguard(1)-1,           &
+                                 -elg_nguard(2):elg_nvalid(2)+elg_nguard(2)-1, 0:nmodes-1)
+  complex(num), intent(IN):: brg(-brg_nguard(1):brg_nvalid(1)+brg_nguard(1)-1,           &
+                                 -brg_nguard(2):brg_nvalid(2)+brg_nguard(2)-1, 0:nmodes-1)
+  complex(num), intent(IN):: btg(-btg_nguard(1):btg_nvalid(1)+btg_nguard(1)-1,           &
+                                 -btg_nguard(2):btg_nvalid(2)+btg_nguard(2)-1, 0:nmodes-1)
+  complex(num), intent(IN):: blg(-blg_nguard(1):blg_nvalid(1)+blg_nguard(1)-1,           &
+                                 -blg_nguard(2):blg_nvalid(2)+blg_nguard(2)-1, 0:nmodes-1)
 
   ! ______________________________________________
   ! Arbitrary order, non-optimized subroutines
 
-  !!! --- Gather electric field on particles
-  CALL pxr_getf2drz_n_energy_conserving( np, xp, yp, zp, ex, ey, ez, xmin, zmin,    &
-  dx, dz, nmodes, nox, noz, erg, erg_nguard, erg_nvalid, etg, etg_nguard, etg_nvalid, elg,  &
-  elg_nguard, elg_nvalid)
-  !!! --- Gather magnetic fields on particles
-  CALL pxr_getf2drz_n_energy_conserving( np, xp, yp, zp, bx, by, bz, xmin, zmin,    &
-  dx, dz, nmodes, nox, noz, brg, brg_nguard, brg_nvalid, btg, btg_nguard, btg_nvalid, blg,  &
-  blg_nguard, blg_nvalid)
+  if (l_nodal .and. .not. l_lower_order_in_v) then
+
+    ! These are more efficient when l_nodal is true.
+    !!! --- Gather electric field on particles
+    CALL pxr_getf2drz_n_energy_conserving(np, xp, yp, zp, ex, ey, ez, &
+                                          xmin, zmin, dx, dz, nmodes, nox, noz, &
+                                          erg, erg_nguard, erg_nvalid, &
+                                          etg, etg_nguard, etg_nvalid, &
+                                          elg, elg_nguard, elg_nvalid)
+    !!! --- Gather magnetic fields on particles
+    CALL pxr_getf2drz_n_energy_conserving(np, xp, yp, zp, bx, by, bz, &
+                                          xmin, zmin, dx, dz, nmodes, nox, noz, &
+                                          brg, brg_nguard, brg_nvalid, &
+                                          btg, btg_nguard, btg_nvalid, &
+                                          blg, blg_nguard, blg_nvalid)
+
+  else
+
+    !!! --- Gather electric field on particles
+    CALL pxr_gete2drz_n_energy_conserving(np, xp, yp, zp, ex, ey, ez, &
+                                          xmin, zmin, dx, dz, nmodes, nox, noz, &
+                                          erg, erg_nguard, erg_nvalid, &
+                                          etg, etg_nguard, etg_nvalid, &
+                                          elg, elg_nguard, elg_nvalid, &
+                                          l_lower_order_in_v, l_nodal)
+    !!! --- Gather magnetic fields on particles
+    CALL pxr_getb2drz_n_energy_conserving(np, xp, yp, zp, bx, by, bz, &
+                                          xmin, zmin, dx, dz, nmodes, nox, noz, &
+                                          brg, brg_nguard, brg_nvalid, &
+                                          btg, btg_nguard, btg_nvalid, &
+                                          blg, blg_nguard, blg_nvalid, &
+                                          l_lower_order_in_v, l_nodal)
+
+  endif
 
 END SUBROUTINE

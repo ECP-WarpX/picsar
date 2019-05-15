@@ -1126,7 +1126,7 @@ subroutine pxrpush_emrz_bvec_multimode( &
      Br, brlo, brhi, &
      Bt, btlo, bthi, &
      Bz, bzlo, bzhi, &
-     mudt, dtsdx, dtsdy, dtsdz, rmin, dr)
+     dtsdx, dtsdy, dtsdz, rmin, dr)
      USE picsar_precision, ONLY: idp, isp, num
 
   integer(idp) :: nmodes
@@ -1147,7 +1147,7 @@ subroutine pxrpush_emrz_bvec_multimode( &
   complex(num), intent(IN OUT):: Bt(btlo(1):bthi(1),btlo(2):bthi(2),0:nmodes-1)
   complex(num), intent(IN OUT):: Bz(bzlo(1):bzhi(1),bzlo(2):bzhi(2),0:nmodes-1)
 
-  real(num), intent(IN) :: mudt, dtsdx, dtsdy, dtsdz, rmin, dr
+  real(num), intent(IN) :: dtsdx, dtsdy, dtsdz, rmin, dr
 
   integer(idp) :: j, k, m
   real(kind=8) :: w, r, rd, ru, dt
