@@ -750,10 +750,10 @@ _REAL* unf_zero_one_minus_epsi)
         const _REAL lower_frac = ref_cum_distrib_table.ref_coords()[1][lower];
         _REAL upper_prob =
             exp(ref_cum_distrib_table.interp_linear_first_equispaced
-            (tab_chi_phot, upper));
+            (log(tab_chi_phot), upper));
         _REAL lower_prob =
             exp(ref_cum_distrib_table.interp_linear_first_equispaced
-            (tab_chi_phot, lower));
+            (log(tab_chi_phot), lower));
         _REAL chi_ele_frac = lower_frac +
             (prob-lower_prob)*(upper_frac-lower_frac)/(upper_prob-lower_prob);
 
