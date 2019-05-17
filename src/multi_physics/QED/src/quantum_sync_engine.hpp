@@ -286,6 +286,9 @@ namespace picsar{
          PXRMP_FORCE_INLINE
          _REAL compute_inner_integral(_REAL y) const;
 
+         //DEBUG
+     public:
+
          PXRMP_FORCE_INLINE
          _REAL compute_KK_integrand(_REAL chi_part, _REAL chi_phot) const;
 
@@ -562,10 +565,16 @@ _REAL
 picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
 compute_cumulative_phot_em(_REAL chi_phot, _REAL chi_part) const
 {
-    auto func = [this, chi_part](_REAL chi_phot){
-        return compute_KK_integrand(chi_phot, chi_part);
+    auto func = [chi_part, this](_REAL __chi_phot){
+        if(chi_part - __chi_phot == zero || __chi_phot == zero)
+            return zero;
+        else
+            return compute_KK_integrand(__chi_phot, chi_part);
     };
+
    _REAL num = quad_a_b<_REAL>(func, zero, chi_phot);
+   std::cout << chi_phot/chi_part  << std::endl;
+   std::cout << num << " / " << compute_KK_function(chi_part) << std::endl;
    return num/compute_KK_function(chi_part) ;
 }
 
@@ -592,13 +601,21 @@ compute_cumulative_phot_em_table (std::ostream* stream)
     for(auto chi_part: chi_coords){
         pair_vals[cc++] = zero;
         msg("chi_part: " + std::to_string(chi_part) + " \n", stream);
+        std::cout << "CUM( " << chi_part << ", " << 0 << ") : " << zero << std::endl;
         for(size_t i = 1; i < frac_coords.size() - 1; i++){
             pair_vals[cc++] = compute_cumulative_phot_em(
                 chi_part*frac_coords[i], chi_part);
+            std::cout << "CUM( " << chi_part << ", " << frac_coords[i] << ") : " << pair_vals[cc-1] << std::endl;
         }
         pair_vals[cc++] = one; //The function is symmetric
+        std::cout << "CUM( " << chi_part << ", " << one << ") : " << one << std::endl;
     }
     msg("...done!\n", stream);
+
+    //The table will store the logarithms
+    auto logfun = [](_REAL val){return log(val);};
+    std::transform(chi_coords.begin(), chi_coords.end(), chi_coords.begin(), logfun);
+    std::transform(pair_vals.begin(), pair_vals.end(), pair_vals.begin(), logfun);
 
     cum_distrib_table = lookup_2d<_REAL>{
         picsar_array<picsar_vector<_REAL>,2>{chi_coords, frac_coords}, pair_vals};
@@ -699,18 +716,21 @@ _REAL* unf_zero_one_minus_epsi)
     for(size_t s = 0; s < sampling; s++){
         _REAL prob = unf_zero_one_minus_epsi[s];
 
-        size_t upper = 0;
+        size_t first = 0;
+        size_t it;
         _REAL val;
         size_t count = how_many_frac;
         while(count > 0){
+            it = first;
             size_t step = count/2;
+            it += step;
 
             val =
-                ref_cum_distrib_table.interp_linear_first_equispaced
-                    (tab_chi_part, upper+step);
+                exp(ref_cum_distrib_table.interp_linear_first_equispaced
+                    (log(tab_chi_part), it));
 
             if(!(prob < val)){
-                upper += step+1;
+                first = ++it;
                 count -= step+1;
             }
             else{
@@ -718,6 +738,7 @@ _REAL* unf_zero_one_minus_epsi)
             }
         }
 
+        size_t upper = first;
         size_t lower = upper-1;
 
         const _REAL upper_frac = ref_cum_distrib_table.ref_coords()[1][upper];
@@ -872,8 +893,8 @@ PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
 compute_inner_integral(_REAL y) const
 {
-    auto func = [this](double y){
-        return k_v(one/three, y);
+    auto func = [this](double s){
+        return k_v(one/three, s);
     };
     return quad_a_inf<_REAL>(func, two*y);
 }
@@ -890,7 +911,7 @@ compute_KK_integrand(_REAL chi_phot, _REAL chi_part) const
 
     _REAL inner = compute_inner_integral(y);
 
-    _REAL part_2 = (two + three*chi_phot*y)*k_v(two/three, y);
+    _REAL part_2 = (two + three*chi_phot*y)*k_v(two/three, two*y);
 
     _REAL coeff = one/static_cast<_REAL>(pi*sqrt(three));
 

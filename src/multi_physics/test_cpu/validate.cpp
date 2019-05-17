@@ -15,7 +15,7 @@ const size_t seed_qs = 93012221;
 const size_t seed = 22051988;
 
 //A lot of particles!
-const size_t N = 2000000;
+const size_t N = 100000;
 
 //Physical constants
 const double las_wavlngth = 1000.0 * pxrmp::si_nanometer;
@@ -24,6 +24,7 @@ const double eref = 2.0*pxrmp::pi*pxrmp::electron_mass*pxrmp::light_speed*pxrmp:
             (las_wavlngth*pxrmp::elementary_charge);
 const double bref = eref/pxrmp::light_speed;
 const double one_femto = 1.0e-15;
+const double me_c2 = pxrmp::electron_mass * pxrmp::light_speed * pxrmp::light_speed;
 //____________________________
 
 
@@ -46,7 +47,7 @@ void do_qs();
 int main()
 {
 
-    do_bw();
+    //do_bw();
     do_qs();
 
 }
@@ -197,9 +198,210 @@ void do_bw()
 
         of2.close();
 
+    auto innards = bw_engine.export_innards();
+    auto c1 = innards.cum_distrib_table_coords_1_ptr;
+    auto c2 = innards.cum_distrib_table_coords_2_ptr;
+    auto dd = innards.cum_distrib_table_data_ptr;
+    int cc = 0;
+    std::vector<std::vector<double>> tab{
+        innards.cum_distrib_table_coords_1_how_many,
+        std::vector<double>(innards.cum_distrib_table_coords_2_how_many)};
+    std::ofstream otab{"cum_prob_tab.dat"};
+    for (int i = 0; i < innards.cum_distrib_table_coords_1_how_many; i++){
+        for(int j = 0; j < innards.cum_distrib_table_coords_2_how_many; j++){
+            tab[i][j] = exp(dd[cc]);
+            otab << c1[i] << " " << c2[j] << " "  << exp(dd[cc++]) << std::endl;
+        }
+    }
+    otab.close();
+    std::ofstream otab2{"prob_tab.dat"};
+    for (int i = 0; i < innards.cum_distrib_table_coords_1_how_many; i++){
+        for(int j = 1; j < innards.cum_distrib_table_coords_2_how_many; j++){
+            otab2 << exp(c1[i]) << " " << c2[j] << " "  << (tab[i][j]-tab[i][j-1]) << std::endl;
+        }
+    }
+    otab2.close();
+
+    //Initialize momenta&fields
+    pxmin = 1500;
+    pymin = 0;
+    pzmin = 0;
+    exmin = 0;
+    eymin = 0;
+    ezmin = 0;
+    bxmin = 0;
+    bymin = 0;
+    bzmin = 270;
+    pxmax = 1500;
+    pymax = 0;
+    pzmax = 0;
+    exmax = 0;
+    eymax = 0;
+    ezmax = 0;
+    bxmax = 0;
+    bymax = 0;
+    bzmax = 270;
+    init_mom_fields
+    (px, py, pz, ex,
+    ey, ez, bx, by, bz,
+    w, std::default_random_engine(seed),
+    pxmin, pxmax,
+    pymin, pymax,
+    pzmin, pzmax,
+    exmin, exmax,
+    eymin, eymax,
+    ezmin, ezmax,
+    bxmin, bxmax,
+    bymin, bymax,
+    bzmin, bzmax);
+
+    //test BW pair properties & print on disk
+    std::vector<double> gamma_ele(N);
+    std::vector<double> gamma_pos(N);
+    for(size_t i = 0; i < N; i++){
+        auto all = bw_engine.generate_breit_wheeler_pairs(
+            px[i], py[i], pz[i], ex[i], ey[i], ez[i], bx[i], by[i], bz[i], w[i], 1);
+        auto e_mom = all[0][0].first;
+        auto p_mom = all[1][0].first;
+
+        double norm_pe2 = pxrmp::norm2(e_mom);
+        double norm_pp2 = pxrmp::norm2(p_mom);
+        gamma_ele[i] = sqrt(1.0 + norm_pe2/me_c/me_c);
+        gamma_pos[i] = sqrt(1.0 + norm_pp2/me_c/me_c);
+    }
+
+    std::ofstream offf{"smicheck.dat"};
+    for(size_t i = 0; i < N; i++)
+        offf << gamma_ele[i] << " " << gamma_pos[i] << std::endl;
+    offf.close();
 
 
 }
 
 void do_qs()
-{}
+{
+    //Initialize the BW engine
+    auto qs_engine =
+        pxrmp::quantum_synchrotron_engine<double, pxrmp::stl_rng_wrapper>
+        {std::move(pxrmp::stl_rng_wrapper{seed_qs}), default_lambda};//, bw_ctrl};
+
+    std::cout << qs_engine.compute_KK_function(0.0001) << std::endl;
+    std::cout << qs_engine.compute_KK_function(0.001) << std::endl;
+    std::cout << qs_engine.compute_KK_function(0.01) << std::endl;
+    std::cout << qs_engine.compute_KK_function(0.1) << std::endl;
+    std::cout << qs_engine.compute_KK_function(1.0) << std::endl;
+    std::cout << qs_engine.compute_KK_function(10.0) << std::endl;
+    std::cout << qs_engine.compute_KK_function(100.0) << std::endl;
+    std::cout << qs_engine.compute_KK_function(1000.0) << std::endl;
+    std::cout << qs_engine.compute_KK_function(10000.0) << std::endl;    
+
+    return;
+
+        //Initialize the lookup tables
+        //Generates tables if they do not exist
+    if(!does_file_exist("em_tdndt.bin")){
+        qs_engine.compute_dN_dt_lookup_table(&std::cout);
+        qs_engine.write_dN_dt_table("em_tdndt.bin");
+    }
+    else{
+        qs_engine.read_dN_dt_table("em_tdndt.bin");
+    }
+    if(!does_file_exist("em_tphot.bin")){
+        qs_engine.compute_cumulative_phot_em_table(&std::cout);
+        qs_engine.write_cumulative_phot_em_table("em_tphot.bin");
+    }
+    else{
+        qs_engine.read_cumulative_phot_em_table("em_tphot.bin");
+    }
+
+        //Allocate space for momenta & fields & weigths.
+    std::vector<double> px(N);
+    std::vector<double> py(N);
+    std::vector<double> pz(N);
+    std::vector<double> ex(N);
+    std::vector<double> ey(N);
+    std::vector<double> ez(N);
+    std::vector<double> bx(N);
+    std::vector<double> by(N);
+    std::vector<double> bz(N);
+    std::vector<double> w(N);
+
+
+        //Initialize momenta&fields
+    double pxmin = 0;
+    double pymin = 0;
+    double pzmin = 1000;
+    double exmin = 0;
+    double eymin = 0;
+    double ezmin = 0;
+    double bxmin = 0;
+    double bymin = 0;
+    double bzmin = 1000;
+    double pxmax = 0;
+    double pymax = 0;
+    double pzmax = 1000;
+    double exmax = 0;
+    double eymax = 0;
+    double ezmax = 0;
+    double bxmax = 0;
+    double bymax = 0;
+    double bzmax = 1000;
+    init_mom_fields
+    (px, py, pz, ex,
+    ey, ez, bx, by, bz,
+    w, std::default_random_engine(seed),
+    pxmin, pxmax,
+    pymin, pymax,
+    pzmin, pzmax,
+    exmin, exmax,
+    eymin, eymax,
+    ezmin, ezmax,
+    bxmin, bxmax,
+    bymin, bymax,
+    bzmin, bzmax);
+
+    //test QS photon properties & print on disk
+    std::vector<double> gamma_phot(N);
+    for(size_t i = 0; i < N; i++){
+        auto phot = qs_engine.generate_photons_and_update_momentum(
+    			px[i], py[i], pz[i], ex[i], ey[i], ez[i], bx[i], by[i], bz[i], w[i], 1);
+
+        auto p_phot = phot[0].first;
+
+        gamma_phot[i] = pxrmp::norm(p_phot)/me_c;
+    }
+
+
+
+    std::ofstream of_photen{"qs_photen.dat"};
+    for(size_t i = 0; i < N ; i++)
+            of_photen << gamma_phot[i] << std::endl;
+    of_photen.close();
+
+
+    auto innards = qs_engine.export_innards();
+    auto cc = innards.KKfunc_table_coords_ptr;
+    auto dd = innards.KKfunc_table_data_ptr;
+    std::ofstream emtab1{"em_dndt_tab.dat"};
+    for (int i = 0; i < innards.KKfunc_table_coords_how_many; i++){
+            emtab1 << cc[i] << " " << exp(dd[i]) <<  std::endl;
+    }
+    emtab1.close();
+
+    auto cc1 = innards.cum_distrib_table_coords_1_ptr;
+    auto cc2 = innards.cum_distrib_table_coords_2_ptr;
+    auto dd2 = innards.cum_distrib_table_data_ptr;
+
+    std::ofstream emtab2{"em_photem.dat"};
+    int count = 0;
+    for (int i = 0; i < innards.cum_distrib_table_coords_1_how_many; i++){
+        for (int j = 0; j < innards.cum_distrib_table_coords_2_how_many; j++){
+            emtab2 << exp(cc1[i]) << " " << cc2[j] <<  " " << exp(dd2[count++]) <<  std::endl;
+        }
+    }
+    emtab2.close();
+
+
+
+
+}
