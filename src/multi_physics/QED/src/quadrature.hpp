@@ -1,7 +1,7 @@
 #ifndef __PICSAR_MULTIPHYSICS_QUADRATURE__
 #define __PICSAR_MULTIPHYSICS_QUADRATURE__
 
-//This .hpp file is a wrapper aroud the tanh_sinh  method
+//This .hpp file is a wrapper aroud the trapezoidal / exp_sinh method
 //provided by the Boost library
 
 #include <cmath>
@@ -40,8 +40,6 @@ PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::quad_a_b
 (const std::function<_REAL(_REAL)>& f, _REAL a, _REAL b)
 {
-    //    boost::math::quadrature::tanh_sinh<_REAL> integrator;
-    //    return integrator.integrate(f, a, b);
     return boost::math::quadrature::trapezoidal(f, a, b);
 }
 
@@ -53,7 +51,7 @@ _REAL picsar::multi_physics::quad_a_inf
 (const std::function<_REAL(_REAL)>& f, _REAL a)
 {
     boost::math::quadrature::exp_sinh<_REAL> integrator;
-    return integrator.integrate(f, a, std::numeric_limits<_REAL>::infinity());
+    return integrator.integrate(f, a);
 }
 
 #endif //__PICSAR_MULTIPHYSICS_QUADRATURE__

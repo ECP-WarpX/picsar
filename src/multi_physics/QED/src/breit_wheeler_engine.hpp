@@ -922,7 +922,7 @@ PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 compute_TT_integrand(_REAL chi_phot, _REAL chi_ele) const
 {
-    if (chi_phot == zero || chi_ele >= chi_phot)
+    if (chi_phot == zero || chi_ele >= chi_phot || chi_ele == zero)
         return zero;
     _REAL xx = compute_x(chi_phot, chi_ele);
     _REAL xx_3_2 = pow(xx, three/two);
