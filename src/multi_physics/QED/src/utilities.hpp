@@ -30,7 +30,7 @@ namespace picsar{
         template<typename T>
         PXRMP_GPU
         PXRMP_FORCE_INLINE
-        T* picsar_upper_bound(T* first, T* last, const T& val);
+        const T* picsar_upper_bound(const T* first, const T* last, const T& val);
 
     }
 }
@@ -79,7 +79,6 @@ picsar::multi_physics::generate_lin_spaced_vec
     vec.back() = max; //Enforces this exactly
     return vec;
 }
-
 
 template<typename T>
 PXRMP_GPU

@@ -130,7 +130,7 @@ namespace picsar{
       const double __pair_prod_coeff = pair_prod_rate_coeff*electron_mass*
         light_speed*light_speed;
       const double __quantum_synchrotron_rate_coeff =
-        quantum_synchrotron_rate_coeff*electron_mass*light_speed*light_speed;
+        quantum_synchrotron_rate_coeff;
     #else
       const double __c = 1.0;
       const double __emass = 1.0;
@@ -178,6 +178,9 @@ namespace picsar{
 
     const size_t __breit_wheeler_chi_frac_tpair_how_many = 50;
 
+    //Sets the limits for the semi-infinite integrals in the library
+    const double __breit_wheeler_special_func_big_arg = 1.0e20;
+
 //##############################################################################
 
 
@@ -201,6 +204,9 @@ namespace picsar{
     const size_t __quantum_synchrotron_how_many_tem_chi_part = 50; //How many points
 
     const size_t __quantum_synchrotron_chi_frac_tem_how_many = 50;
+
+    //Sets the limits for the semi-infinite integrals in the library
+    const double __quantum_synchrotron_special_func_big_arg = 1.0e20;
 
 // -------
 

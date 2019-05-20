@@ -4,6 +4,8 @@
 //This .hpp file contais the implementation of the
 //nonlinear Breit Wheeler engine
 
+#include<limits>
+
 //Should be included by all the src files of the library
 #include "qed_commons.h"
 
@@ -907,6 +909,8 @@ _REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 compute_inner_integral(_REAL x) const
 {
     auto func = [=](_REAL s){
+        if (s >= static_cast<_REAL>(__breit_wheeler_special_func_big_arg))
+            return zero;
         return sqrt(s)*k_v(one/three, two*pow(s, three/two)/three);
     };
     return quad_a_inf<_REAL>(func, x);
@@ -918,7 +922,7 @@ PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 compute_TT_integrand(_REAL chi_phot, _REAL chi_ele) const
 {
-    if (chi_ele == zero)
+    if (chi_phot == zero || chi_ele >= chi_phot)
         return zero;
     _REAL xx = compute_x(chi_phot, chi_ele);
     _REAL xx_3_2 = pow(xx, three/two);

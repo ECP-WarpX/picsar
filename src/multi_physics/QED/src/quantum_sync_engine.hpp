@@ -279,15 +279,15 @@ namespace picsar{
          static constexpr _REAL four = static_cast<_REAL>(4.0);
          static constexpr _REAL five = static_cast<_REAL>(5.0);
 
+         //DEBUG
+     public:
+
          //Internal functions to perform calculations
          PXRMP_FORCE_INLINE
          _REAL compute_y(_REAL chi_phot, _REAL chi_ele) const;
 
          PXRMP_FORCE_INLINE
          _REAL compute_inner_integral(_REAL y) const;
-
-         //DEBUG
-     public:
 
          PXRMP_FORCE_INLINE
          _REAL compute_KK_integrand(_REAL chi_part, _REAL chi_phot) const;
@@ -569,7 +569,7 @@ compute_cumulative_phot_em(_REAL chi_phot, _REAL chi_part) const
         if(chi_part - __chi_phot == zero || __chi_phot == zero)
             return zero;
         else
-            return compute_KK_integrand(__chi_phot, chi_part);
+            return compute_KK_integrand(chi_part, __chi_phot);
     };
 
    _REAL num = quad_a_b<_REAL>(func, zero, chi_phot);
@@ -884,7 +884,7 @@ PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
 compute_y(_REAL chi_phot, _REAL chi_ele) const
 {
-    return chi_phot/(three*chi_ele*(chi_ele-chi_phot));
+    return two*chi_phot/(three*chi_ele*(chi_ele-chi_phot));
 }
 
 //Function to compute the inner integral of the QS photon emission rate
@@ -893,29 +893,31 @@ PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
 compute_inner_integral(_REAL y) const
 {
-    auto func = [this](double s){
-        return k_v(one/three, s);
+    auto func = [this](_REAL s){
+        if( s > static_cast<_REAL>(__quantum_synchrotron_special_func_big_arg))
+            return zero;
+        return k_v(five/three, s);
     };
-    return quad_a_inf<_REAL>(func, two*y);
+    return quad_a_inf<_REAL>(func, y);
 }
 
 template<typename _REAL, class _RNDWRAP>
 PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
-compute_KK_integrand(_REAL chi_phot, _REAL chi_part) const
+compute_KK_integrand(_REAL chi_part, _REAL chi_phot) const
 {
-    if (chi_part == zero || chi_phot == zero)
+    if (chi_part == zero || chi_phot >=  chi_part)
         return zero;
 
     _REAL y = compute_y(chi_phot, chi_part);
 
     _REAL inner = compute_inner_integral(y);
 
-    _REAL part_2 = (two + three*chi_phot*y)*k_v(two/three, two*y);
+    _REAL part_2 = (three*chi_phot*y/two)*k_v(two/three, y);
 
-    _REAL coeff = one/static_cast<_REAL>(pi*sqrt(three));
+    _REAL coeff = (one/chi_part)/static_cast<_REAL>(pi*sqrt(three));
 
-    return -(inner - part_2)*coeff;
+    return (inner + part_2)*coeff;
 }
 
 template<typename _REAL, class _RNDWRAP>
@@ -928,7 +930,7 @@ compute_KK_function(_REAL chi_part) const
         if(chi_part - chi_phot == zero || chi_phot == zero)
             return zero;
         else
-            return compute_KK_integrand(chi_phot, chi_part);
+            return compute_KK_integrand(chi_part, chi_phot);
     };
 
     return quad_a_b<_REAL>(func, zero, chi_part);

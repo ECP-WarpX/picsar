@@ -285,18 +285,12 @@ void do_qs()
         pxrmp::quantum_synchrotron_engine<double, pxrmp::stl_rng_wrapper>
         {std::move(pxrmp::stl_rng_wrapper{seed_qs}), default_lambda};//, bw_ctrl};
 
-    std::cout << qs_engine.compute_KK_function(0.0001) << std::endl;
-    std::cout << qs_engine.compute_KK_function(0.001) << std::endl;
-    std::cout << qs_engine.compute_KK_function(0.01) << std::endl;
-    std::cout << qs_engine.compute_KK_function(0.1) << std::endl;
-    std::cout << qs_engine.compute_KK_function(1.0) << std::endl;
-    std::cout << qs_engine.compute_KK_function(10.0) << std::endl;
-    std::cout << qs_engine.compute_KK_function(100.0) << std::endl;
-    std::cout << qs_engine.compute_KK_function(1000.0) << std::endl;
-    std::cout << qs_engine.compute_KK_function(10000.0) << std::endl;    
+        auto ff = [&qs_engine](double x, double y){return qs_engine.compute_inner_integral(qs_engine.compute_y(y, x));};
 
-    return;
+        std::cout << qs_engine.compute_inner_integral(std::numeric_limits<double>::infinity()) << std::endl;    
+        std::cout << std::endl;
 
+        return;
         //Initialize the lookup tables
         //Generates tables if they do not exist
     if(!does_file_exist("em_tdndt.bin")){

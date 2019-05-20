@@ -10,6 +10,9 @@
 //Set build option for the Bessel functions.
 // 1) from STL (if C++ version > 14)
 // 2) from Boost library
+
+#include <limits>
+
 #if __cplusplus > 201402L
     #define PXRMP_SPECFUNC_WITH_CXX17
     #include <cmath>
@@ -37,7 +40,6 @@ namespace picsar{
         template<typename _REAL_ARG1, typename _REAL_ARG2>
         constexpr auto k_v(_REAL_ARG1 v, _REAL_ARG2 x)
         -> decltype(boost::math::cyl_bessel_k(v, x));
-        //Ugly, ugly syntax. But unavoidable with C++11
     #endif
 
     }
@@ -61,7 +63,7 @@ template<typename _REAL_ARG1, typename _REAL_ARG2>
 constexpr auto picsar::multi_physics::k_v(_REAL_ARG1 v, _REAL_ARG2 x)
 ->decltype(boost::math::cyl_bessel_k(v, x))
 {
-    return boost::math::cyl_bessel_k(v, x);
+    return boost::math::cyl_bessel_k(v, x);;
 }
 
 #endif
