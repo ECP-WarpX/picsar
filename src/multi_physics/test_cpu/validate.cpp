@@ -285,12 +285,35 @@ void do_qs()
         pxrmp::quantum_synchrotron_engine<double, pxrmp::stl_rng_wrapper>
         {std::move(pxrmp::stl_rng_wrapper{seed_qs}), default_lambda};//, bw_ctrl};
 
-        auto ff = [&qs_engine](double x, double y){return qs_engine.compute_inner_integral(qs_engine.compute_y(y, x));};
+    std::cout << qs_engine.compute_KK_integrand(0.001, 0.00001) << std::endl;
+    std::cout << qs_engine.compute_KK_integrand(0.001, 0.0001) << std::endl;
+    std::cout << qs_engine.compute_KK_integrand(0.001, 0.0009) << std::endl;
+    std::cout << std::endl;
 
-        std::cout << qs_engine.compute_inner_integral(std::numeric_limits<double>::infinity()) << std::endl;    
-        std::cout << std::endl;
+    std::cout << qs_engine.compute_KK_integrand(0.01, 0.0001) << std::endl;
+    std::cout << qs_engine.compute_KK_integrand(0.01, 0.001) << std::endl;
+    std::cout << qs_engine.compute_KK_integrand(0.01, 0.009) << std::endl;
+    std::cout << std::endl;
+    std::cout << qs_engine.compute_KK_integrand(0.1, 0.001) << std::endl;
+    std::cout << qs_engine.compute_KK_integrand(0.1, 0.01) << std::endl;
+    std::cout << qs_engine.compute_KK_integrand(0.1, 0.09) << std::endl;
+    std::cout << std::endl;
+    std::cout << qs_engine.compute_KK_integrand(1., 0.01) << std::endl;
+    std::cout << qs_engine.compute_KK_integrand(1., 0.1) << std::endl;
+    std::cout << qs_engine.compute_KK_integrand(1., 0.9) << std::endl;
+    std::cout << std::endl;
+    std::cout << qs_engine.compute_KK_integrand(10., 0.1) << std::endl;
+    std::cout << qs_engine.compute_KK_integrand(10., 1) << std::endl;
+    std::cout << qs_engine.compute_KK_integrand(10., 9) << std::endl;
+    std::cout << std::endl;
+    std::cout << qs_engine.compute_KK_integrand(100., 1.) << std::endl;
+    std::cout << qs_engine.compute_KK_integrand(100., 10.) << std::endl;
+    std::cout << qs_engine.compute_KK_integrand(100., 90.) << std::endl;
+    std::cout << std::endl;
+    std::cout << qs_engine.compute_KK_integrand(1000., 10.) << std::endl;
+    std::cout << qs_engine.compute_KK_integrand(1000., 100.) << std::endl;
+    std::cout << qs_engine.compute_KK_integrand(1000., 900.) << std::endl;
 
-        return;
         //Initialize the lookup tables
         //Generates tables if they do not exist
     if(!does_file_exist("em_tdndt.bin")){

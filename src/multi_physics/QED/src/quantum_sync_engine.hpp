@@ -573,8 +573,8 @@ compute_cumulative_phot_em(_REAL chi_phot, _REAL chi_part) const
     };
 
    _REAL num = quad_a_b<_REAL>(func, zero, chi_phot);
-   std::cout << chi_phot/chi_part  << std::endl;
-   std::cout << num << " / " << compute_KK_function(chi_part) << std::endl;
+   //std::cout << chi_phot/chi_part  << std::endl;
+   //std::cout << num << " / " << compute_KK_function(chi_part) << std::endl;
    return num/compute_KK_function(chi_part) ;
 }
 
@@ -601,14 +601,14 @@ compute_cumulative_phot_em_table (std::ostream* stream)
     for(auto chi_part: chi_coords){
         pair_vals[cc++] = zero;
         msg("chi_part: " + std::to_string(chi_part) + " \n", stream);
-        std::cout << "CUM( " << chi_part << ", " << 0 << ") : " << zero << std::endl;
+        //std::cout << "CUM( " << chi_part << ", " << 0 << ") : " << zero << std::endl;
         for(size_t i = 1; i < frac_coords.size() - 1; i++){
             pair_vals[cc++] = compute_cumulative_phot_em(
                 chi_part*frac_coords[i], chi_part);
-            std::cout << "CUM( " << chi_part << ", " << frac_coords[i] << ") : " << pair_vals[cc-1] << std::endl;
+            //std::cout << "CUM( " << chi_part << ", " << frac_coords[i] << ") : " << pair_vals[cc-1] << std::endl;
         }
         pair_vals[cc++] = one; //The function is symmetric
-        std::cout << "CUM( " << chi_part << ", " << one << ") : " << one << std::endl;
+        //std::cout << "CUM( " << chi_part << ", " << one << ") : " << one << std::endl;
     }
     msg("...done!\n", stream);
 
@@ -906,7 +906,7 @@ PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
 compute_KK_integrand(_REAL chi_part, _REAL chi_phot) const
 {
-    if (chi_part == zero || chi_phot >=  chi_part)
+    if (chi_part == zero || chi_phot >=  chi_part || chi_phot == zero)
         return zero;
 
     _REAL y = compute_y(chi_phot, chi_part);
