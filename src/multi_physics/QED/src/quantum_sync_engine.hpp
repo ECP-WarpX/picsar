@@ -386,8 +386,7 @@ compute_dN_dt(_REAL energy_part, _REAL chi_part) const
     if(energy_part == zero || chi_part == zero)
         return zero;
 
-    _REAL coeff = static_cast<_REAL>(__quantum_synchrotron_rate_coeff)*
-        lambda*one/(energy_part*chi_part);
+    _REAL coeff = static_cast<_REAL>(__quantum_synchrotron_rate_coeff)*lambda;
 
     return coeff*compute_KK_function(chi_part);
 }
