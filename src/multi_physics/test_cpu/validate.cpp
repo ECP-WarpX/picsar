@@ -323,13 +323,13 @@ void do_qs()
     else{
         qs_engine.read_dN_dt_table("em_tdndt.bin");
     }
-    if(!does_file_exist("em_tphot.bin")){
+    /*if(!does_file_exist("em_tphot.bin")){
         qs_engine.compute_cumulative_phot_em_table(&std::cout);
         qs_engine.write_cumulative_phot_em_table("em_tphot.bin");
     }
     else{
         qs_engine.read_cumulative_phot_em_table("em_tphot.bin");
-    }
+    }*/
 
         //Allocate space for momenta & fields & weigths.
     std::vector<double> px(N);
@@ -345,24 +345,24 @@ void do_qs()
 
 
         //Initialize momenta&fields
-    double pxmin = 0;
+    double pxmin = -1000;
     double pymin = 0;
-    double pzmin = 1000;
+    double pzmin = 0;
     double exmin = 0;
     double eymin = 0;
     double ezmin = 0;
     double bxmin = 0;
     double bymin = 0;
     double bzmin = 1000;
-    double pxmax = 0;
+    double pxmax = 50000;
     double pymax = 0;
-    double pzmax = 1000;
+    double pzmax = 0;
     double exmax = 0;
     double eymax = 0;
     double ezmax = 0;
     double bxmax = 0;
     double bymax = 0;
-    double bzmax = 1000;
+    double bzmax = 500;
     init_mom_fields
     (px, py, pz, ex,
     ey, ez, bx, by, bz,
@@ -377,6 +377,23 @@ void do_qs()
     bymin, bymax,
     bzmin, bzmax);
 
+        //test QS production rate & print on disk
+    std::vector<double> chi(N);
+    std::vector<double> rate(N);
+    for(size_t i = 0; i < N; i++){
+            double opt = 0.0;
+        qs_engine.evolve_opt_depth_and_determine_event(
+                px[i], py[i], pz[i], ex[i], ey[i], ez[i], bx[i], by[i], bz[i],
+                one_femto, opt);
+            chi[i] = pxrmp::chi_lepton<double>(px[i], py[i], pz[i],
+                    ex[i], ey[i], ez[i], bx[i], by[i], bz[i], default_lambda);
+            rate[i] = -opt;
+    }
+    std::ofstream of{"qs_rate.dat"};
+        for(size_t i = 0; i < N ; i++)
+                of << chi[i] << " " << rate[i] << std::endl;
+    of.close();
+
     //test QS photon properties & print on disk
     std::vector<double> gamma_phot(N);
     for(size_t i = 0; i < N; i++){
@@ -387,6 +404,7 @@ void do_qs()
 
         gamma_phot[i] = pxrmp::norm(p_phot)/me_c;
     }
+
 
 
 

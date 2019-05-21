@@ -386,7 +386,8 @@ compute_dN_dt(_REAL energy_part, _REAL chi_part) const
     if(energy_part == zero || chi_part == zero)
         return zero;
 
-    _REAL coeff = static_cast<_REAL>(__quantum_synchrotron_rate_coeff)*lambda;
+    _REAL coeff = static_cast<_REAL>(__quantum_synchrotron_rate_coeff)*
+    lambda*(one/energy_part);
 
     return coeff*compute_KK_function(chi_part);
 }
@@ -444,7 +445,7 @@ _REAL _lambda)
         return zero;
 
     _REAL coeff = static_cast<_REAL>(__quantum_synchrotron_rate_coeff)*
-        _lambda*one/(energy_part*chi_part);
+        _lambda*one/energy_part;
 
     _REAL KK = zero;
 
@@ -572,8 +573,9 @@ compute_cumulative_phot_em(_REAL chi_phot, _REAL chi_part) const
     };
 
    _REAL num = quad_a_b<_REAL>(func, zero, chi_phot);
-   //std::cout << chi_phot/chi_part  << std::endl;
-   //std::cout << num << " / " << compute_KK_function(chi_part) << std::endl;
+   std::cout << chi_phot/chi_part  << std::endl;
+   std::cout << num << " / " << compute_KK_function(chi_part) << std::endl;
+   std::cout << num/compute_KK_function(chi_part) << std::endl;
    return num/compute_KK_function(chi_part) ;
 }
 
@@ -926,9 +928,6 @@ compute_KK_function(_REAL chi_part) const
 {
 
     auto func = [chi_part, this](_REAL chi_phot){
-        if(chi_part - chi_phot == zero || chi_phot == zero)
-            return zero;
-        else
             return compute_KK_integrand(chi_part, chi_phot);
     };
 
