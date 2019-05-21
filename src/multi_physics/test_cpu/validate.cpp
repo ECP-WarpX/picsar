@@ -345,7 +345,7 @@ void do_qs()
 
 
         //Initialize momenta&fields
-    double pxmin = -1000;
+    double pxmin = -50000;
     double pymin = 0;
     double pzmin = 0;
     double exmin = 0;
@@ -362,7 +362,7 @@ void do_qs()
     double ezmax = 0;
     double bxmax = 0;
     double bymax = 0;
-    double bzmax = 500;
+    double bzmax = 1000;
     init_mom_fields
     (px, py, pz, ex,
     ey, ez, bx, by, bz,
