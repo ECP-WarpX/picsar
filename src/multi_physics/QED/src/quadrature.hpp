@@ -1,13 +1,15 @@
 #ifndef __PICSAR_MULTIPHYSICS_QUADRATURE__
 #define __PICSAR_MULTIPHYSICS_QUADRATURE__
 
-//This .hpp file is a wrapper aroud the gauss_kronrod method
+//This .hpp file is a wrapper aroud the trapezoidal, gauss_kronrod & tanh_sinh methods
 //provided by the Boost library
 
 #include <cmath>
 #include <functional>
 #include <limits>
 
+#include <boost/math/quadrature/trapezoidal.hpp>
+#include <boost/math/quadrature/tanh_sinh.hpp>
 #include <boost/math/quadrature/gauss_kronrod.hpp>
 
 //Should be included by all the src files of the library
@@ -22,6 +24,12 @@ namespace picsar{
         template<typename _REAL>
         PXRMP_FORCE_INLINE
         _REAL quad_a_b(const std::function<_REAL(_REAL)>& f, _REAL a, _REAL b);
+
+        //Provides integration in a finite interval [a,b] (more suitable for
+        //singularities at boundaries )
+        template<typename _REAL>
+        PXRMP_FORCE_INLINE
+        _REAL quad_a_b_s(const std::function<_REAL(_REAL)>& f, _REAL a, _REAL b);
 
         //Provides integration in a semi-infinite interval [a,inf)
         template<typename _REAL>
@@ -39,8 +47,19 @@ PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::quad_a_b
 (const std::function<_REAL(_REAL)>& f, _REAL a, _REAL b)
 {
-    return boost::math::quadrature::gauss_kronrod<_REAL, 15>
-        ::integrate(f, a, b);
+    return boost::math::quadrature::trapezoidal(f, a, b);
+}
+
+
+//This is really just a wrapper around the function provided by
+//the Boost libray
+template<typename _REAL>
+PXRMP_FORCE_INLINE
+_REAL picsar::multi_physics::quad_a_b_s
+(const std::function<_REAL(_REAL)>& f, _REAL a, _REAL b)
+{
+        boost::math::quadrature::tanh_sinh<_REAL> integrator;
+        return integrator.integrate(f, a, b);
 }
 
 //This is really just a wrapper around the function provided by

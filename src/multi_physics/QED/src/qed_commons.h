@@ -193,17 +193,19 @@ namespace picsar{
     // dN/dt table:
 
     // TO_WRITE
-    const double __quantum_synchrotron_min_tdndt_chi_part = 0.0001;//Min chi_part
+    const double __quantum_synchrotron_min_tdndt_chi_part = 0.001;//Min chi_part
     const double __quantum_synchrotron_max_tdndt_chi_part = 200.0;//Max chi_part
     //How many points
     const size_t __quantum_synchrotron_how_many_tdndt_chi_part = 50;
 
     // Photon emission table:
-    const double __quantum_synchrotron_min_tem_chi_part = 0.0001; //Min chi_part
+    const double __quantum_synchrotron_min_tem_chi_part = 0.001; //Min chi_part
     const double __quantum_synchrotron_max_tem_chi_part = 200.0; //Max chi_part
-    const size_t __quantum_synchrotron_how_many_tem_chi_part = 50; //How many points
+    const size_t __quantum_synchrotron_how_many_tem_chi_part = 40; //How many points
 
-    const size_t __quantum_synchrotron_chi_frac_tem_how_many = 50;
+    //For QS tables fractions are in log scale too
+    const double __quantum_synchrotron_chi_frac_tem_min_frac = 1.0e-8;
+    const size_t __quantum_synchrotron_chi_frac_tem_how_many = 100;
 
     //Sets the limits for the semi-infinite integrals in the library
     const double __quantum_synchrotron_special_func_big_arg = 1.0e20;

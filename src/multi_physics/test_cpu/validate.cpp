@@ -15,7 +15,7 @@ const size_t seed_qs = 93012221;
 const size_t seed = 22051988;
 
 //A lot of particles!
-const size_t N = 100000;
+const size_t N = 1000000;
 
 //Physical constants
 const double las_wavlngth = 1000.0 * pxrmp::si_nanometer;
@@ -285,35 +285,6 @@ void do_qs()
         pxrmp::quantum_synchrotron_engine<double, pxrmp::stl_rng_wrapper>
         {std::move(pxrmp::stl_rng_wrapper{seed_qs}), default_lambda};//, bw_ctrl};
 
-    std::cout << qs_engine.compute_KK_integrand(0.001, 0.00001) << std::endl;
-    std::cout << qs_engine.compute_KK_integrand(0.001, 0.0001) << std::endl;
-    std::cout << qs_engine.compute_KK_integrand(0.001, 0.0009) << std::endl;
-    std::cout << std::endl;
-
-    std::cout << qs_engine.compute_KK_integrand(0.01, 0.0001) << std::endl;
-    std::cout << qs_engine.compute_KK_integrand(0.01, 0.001) << std::endl;
-    std::cout << qs_engine.compute_KK_integrand(0.01, 0.009) << std::endl;
-    std::cout << std::endl;
-    std::cout << qs_engine.compute_KK_integrand(0.1, 0.001) << std::endl;
-    std::cout << qs_engine.compute_KK_integrand(0.1, 0.01) << std::endl;
-    std::cout << qs_engine.compute_KK_integrand(0.1, 0.09) << std::endl;
-    std::cout << std::endl;
-    std::cout << qs_engine.compute_KK_integrand(1., 0.01) << std::endl;
-    std::cout << qs_engine.compute_KK_integrand(1., 0.1) << std::endl;
-    std::cout << qs_engine.compute_KK_integrand(1., 0.9) << std::endl;
-    std::cout << std::endl;
-    std::cout << qs_engine.compute_KK_integrand(10., 0.1) << std::endl;
-    std::cout << qs_engine.compute_KK_integrand(10., 1) << std::endl;
-    std::cout << qs_engine.compute_KK_integrand(10., 9) << std::endl;
-    std::cout << std::endl;
-    std::cout << qs_engine.compute_KK_integrand(100., 1.) << std::endl;
-    std::cout << qs_engine.compute_KK_integrand(100., 10.) << std::endl;
-    std::cout << qs_engine.compute_KK_integrand(100., 90.) << std::endl;
-    std::cout << std::endl;
-    std::cout << qs_engine.compute_KK_integrand(1000., 10.) << std::endl;
-    std::cout << qs_engine.compute_KK_integrand(1000., 100.) << std::endl;
-    std::cout << qs_engine.compute_KK_integrand(1000., 900.) << std::endl;
-
         //Initialize the lookup tables
         //Generates tables if they do not exist
     if(!does_file_exist("em_tdndt.bin")){
@@ -323,13 +294,13 @@ void do_qs()
     else{
         qs_engine.read_dN_dt_table("em_tdndt.bin");
     }
-    /*if(!does_file_exist("em_tphot.bin")){
+    if(!does_file_exist("em_tphot.bin")){
         qs_engine.compute_cumulative_phot_em_table(&std::cout);
         qs_engine.write_cumulative_phot_em_table("em_tphot.bin");
     }
     else{
         qs_engine.read_cumulative_phot_em_table("em_tphot.bin");
-    }*/
+    }
 
         //Allocate space for momenta & fields & weigths.
     std::vector<double> px(N);
@@ -394,9 +365,46 @@ void do_qs()
                 of << chi[i] << " " << rate[i] << std::endl;
     of.close();
 
+
+    //Initialize momenta&fields
+ pxmin = 1000;
+ pymin = 0;
+ pzmin = 0;
+ exmin = 0;
+ eymin = 0;
+ ezmin = 0;
+ bxmin = 0;
+ bymin = 0;
+ bzmin = 1000;
+ pxmax = 1000;
+ pymax = 0;
+ pzmax = 0;
+ exmax = 0;
+ eymax = 0;
+ ezmax = 0;
+ bxmax = 0;
+ bymax = 0;
+ bzmax = 1000;
+init_mom_fields
+(px, py, pz, ex,
+ey, ez, bx, by, bz,
+w, std::default_random_engine(seed),
+pxmin, pxmax,
+pymin, pymax,
+pzmin, pzmax,
+exmin, exmax,
+eymin, eymax,
+ezmin, ezmax,
+bxmin, bxmax,
+bymin, bymax,
+bzmin, bzmax);
+
+
     //test QS photon properties & print on disk
     std::vector<double> gamma_phot(N);
     for(size_t i = 0; i < N; i++){
+        chi[i] = pxrmp::chi_lepton<double>(px[i], py[i], pz[i],
+                ex[i], ey[i], ez[i], bx[i], by[i], bz[i], default_lambda);
         auto phot = qs_engine.generate_photons_and_update_momentum(
     			px[i], py[i], pz[i], ex[i], ey[i], ez[i], bx[i], by[i], bz[i], w[i], 1);
 
