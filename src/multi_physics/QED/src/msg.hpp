@@ -16,15 +16,18 @@ namespace picsar{
     namespace multi_physics{
         //A message function which writes to a stream (provided that the
         //pointer is not NULL)
+        PXRMP_FORCE_INLINE
         void msg(const std::string& msg, std::ostream* stream);
 
         //An error message function which writes to stderr
+        PXRMP_FORCE_INLINE
         void err(const std::string& msg);
     }
 }
 
 //############################################### Implementation
 
+PXRMP_FORCE_INLINE
 void picsar::multi_physics::msg(const std::string& msg,
     std::ostream* stream)
     {
@@ -32,6 +35,7 @@ void picsar::multi_physics::msg(const std::string& msg,
             *stream << msg;
     }
 
+PXRMP_FORCE_INLINE
 void picsar::multi_physics::err(const std::string& msg)
     {
         std::cerr << msg;
