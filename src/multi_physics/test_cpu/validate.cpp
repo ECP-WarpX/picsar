@@ -367,7 +367,7 @@ void do_qs()
 
 
     //Initialize momenta&fields
- pxmin = 1000;
+ pxmin = 10;
  pymin = 0;
  pzmin = 0;
  exmin = 0;
@@ -375,8 +375,8 @@ void do_qs()
  ezmin = 0;
  bxmin = 0;
  bymin = 0;
- bzmin = 1000;
- pxmax = 1000;
+ bzmin = 80;
+ pxmax = 10;
  pymax = 0;
  pzmax = 0;
  exmax = 0;
@@ -384,7 +384,7 @@ void do_qs()
  ezmax = 0;
  bxmax = 0;
  bymax = 0;
- bzmax = 1000;
+ bzmax = 80;
 init_mom_fields
 (px, py, pz, ex,
 ey, ez, bx, by, bz,
@@ -413,10 +413,10 @@ bzmin, bzmax);
         gamma_phot[i] = pxrmp::norm(p_phot)/me_c;
     }
 
+    std::cout << chi[0] << std::endl;
 
 
-
-    std::ofstream of_photen{"qs_photen.dat"};
+    std::ofstream of_photen{"qs_photen_px10_bz80.dat"};
     for(size_t i = 0; i < N ; i++)
             of_photen << gamma_phot[i] << std::endl;
     of_photen.close();

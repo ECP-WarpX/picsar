@@ -7,6 +7,7 @@
 #include <vector>
 #include <cmath>
 #include <functional>
+#include <algorithm>
 
 //Should be included by all the src files of the library
 #include "qed_commons.h"
@@ -24,6 +25,11 @@ namespace picsar{
         //Generates a logarithmically spaced vector
         template<typename _REAL>
         std::vector<_REAL> generate_log_spaced_vec
+        (_REAL min, _REAL max, size_t size);
+
+        //Generates log_lin_log spaced vector
+        template<typename _REAL>
+        std::vector<_REAL> generate_log_lin_log_spaced_vec
         (_REAL min, _REAL max, size_t size);
 
         //GPU-friendly replacement of "std::upper_bound"
@@ -77,6 +83,35 @@ picsar::multi_physics::generate_lin_spaced_vec
         vec[i] = static_cast<_REAL>(i*(max-min)/(size-1.0)) + min;
     }
     vec.back() = max; //Enforces this exactly
+    return vec;
+}
+
+//Generates log_lin_log spaced vector
+template<typename _REAL>
+std::vector<_REAL>
+picsar::multi_physics::generate_log_lin_log_spaced_vec
+(_REAL min, _REAL max, size_t size)
+{
+    std::vector<_REAL> vec(size);
+    size_t size_first = size/3;
+    size_t size_second = size/3;
+    size_t size_third = size/3;
+
+    _REAL first_val = max*static_cast<_REAL>(1.0/10.0);
+    _REAL second_val = max*static_cast<_REAL>(9.0/10.0);
+
+    std::generate(vec.begin(), vec.begin()+size_first,
+    [=, n = 0] () mutable { return min*exp((n++)*log(first_val/min)/(size_first)); });
+
+    std::generate(vec.begin()+size_first, vec.begin()+size_first+size_second,
+    [=, n = 0] () mutable { return first_val + (second_val-first_val)*(n++)/(size_second); });
+
+    std::generate(vec.begin()+size_first+size_second, vec.end(),
+    [=, n = 0] () mutable { return max*exp((size_third-1-(n++))*log(second_val/max)/(size_third-1)); });
+
+    vec.front() = min;
+    vec.back() = max;
+
     return vec;
 }
 

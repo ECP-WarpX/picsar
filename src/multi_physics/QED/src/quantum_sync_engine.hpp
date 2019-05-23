@@ -595,7 +595,7 @@ compute_cumulative_phot_em_table (std::ostream* stream)
      qs_ctrl.chi_part_tem_min, qs_ctrl.chi_part_tem_max,
     qs_ctrl.chi_part_tem_how_many);
 
-    picsar_vector<_REAL> frac_coords = generate_log_spaced_vec(qs_ctrl.chi_frac_tem_min, one,
+    picsar_vector<_REAL> frac_coords = generate_log_lin_log_spaced_vec(qs_ctrl.chi_frac_tem_min, one,
     qs_ctrl.chi_frac_tem_how_many);
 
     picsar_vector<_REAL> phot_vals{chi_coords.size()*frac_coords.size()};
@@ -605,11 +605,22 @@ compute_cumulative_phot_em_table (std::ostream* stream)
     size_t cc = 0;
     for(auto chi_part: chi_coords){
         msg("chi_part: " + std::to_string(chi_part) + " \n", stream);
+        bool is_already_one = false;
         for(size_t i = 0; i < frac_coords.size() - 1; i++){
-            msg("   log10 frac: " + std::to_string(log10(frac_coords[i])) + " --> ", stream);
-            phot_vals[cc++] = compute_cumulative_phot_em(
-                chi_part*frac_coords[i], chi_part);
-            msg(std::to_string(phot_vals[cc-1]*100) + " % \n", stream);
+            msg("   log10frac: " + std::to_string(log10(frac_coords[i])) + " --> ", stream);
+            if(!is_already_one){
+                phot_vals[cc] = compute_cumulative_phot_em(
+                    chi_part*frac_coords[i], chi_part);
+                if(one-phot_vals[cc] < sqrt(std::numeric_limits<_REAL>::epsilon())){
+                    is_already_one = true;
+                }
+            }
+            else{
+                phot_vals[cc] = one;
+            }
+
+            msg(std::to_string(phot_vals[cc]*100) + " % \n", stream);
+            cc++;
         }
         phot_vals[cc++] = one;
     }
