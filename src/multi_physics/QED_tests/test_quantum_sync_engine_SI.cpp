@@ -22,11 +22,11 @@ using namespace picsar::multi_physics;
 
 //Helper function
 template<typename REAL>
-quantum_synchrotron_engine<REAL, stl_rng_wrapper> get_qs_stl_set_lambda(uint64_t seed, REAL lambda,
+quantum_synchrotron_engine<REAL, stl_rng_wrapper<REAL>> get_qs_stl_set_lambda(uint64_t seed, REAL lambda,
 quantum_synchrotron_engine_ctrl<REAL> qs_ctrl = quantum_synchrotron_engine_ctrl<REAL>())
 {
-    stl_rng_wrapper wrap{seed};
-    auto qs_engine =  quantum_synchrotron_engine<REAL, stl_rng_wrapper>{std::move(wrap), 1.0, qs_ctrl};
+    stl_rng_wrapper<REAL> wrap{seed};
+    auto qs_engine =  quantum_synchrotron_engine<REAL, stl_rng_wrapper<REAL>>{std::move(wrap), 1.0, qs_ctrl};
     qs_engine.set_lambda(static_cast<REAL>(lambda));
     return qs_engine;
 }

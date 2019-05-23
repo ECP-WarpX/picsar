@@ -173,8 +173,8 @@ void do_bw()
 
     //Initialize the BW engine
     auto bw_engine =
-        pxrmp::breit_wheeler_engine<double, pxrmp::stl_rng_wrapper>
-        {std::move(pxrmp::stl_rng_wrapper{useless_seed}), default_lambda};//, bw_ctrl};
+        pxrmp::breit_wheeler_engine<double, pxrmp::stl_rng_wrapper<double>>
+        {std::move(pxrmp::stl_rng_wrapper<double>{useless_seed}), default_lambda};//, bw_ctrl};
 
         //Initialize the lookup tables
        	//Generates tables if they do not exist
@@ -376,8 +376,8 @@ void do_qs()
 
     //Initialize the QS engine
     auto qs_engine =
-        pxrmp::quantum_synchrotron_engine<double, pxrmp::stl_rng_wrapper>
-    	{std::move(pxrmp::stl_rng_wrapper{useless_seed}), default_lambda};//, qs_ctrl};
+        pxrmp::quantum_synchrotron_engine<double, pxrmp::stl_rng_wrapper<double>>
+    	{std::move(pxrmp::stl_rng_wrapper<double>{useless_seed}), default_lambda};//, qs_ctrl};
 
     if(!does_file_exist("qs_tdndt.bin")){
         qs_engine.compute_dN_dt_lookup_table(&std::cout);

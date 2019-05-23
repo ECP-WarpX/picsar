@@ -100,14 +100,15 @@ picsar::multi_physics::generate_log_lin_log_spaced_vec
     _REAL first_val = max*static_cast<_REAL>(1.0/10.0);
     _REAL second_val = max*static_cast<_REAL>(9.0/10.0);
 
+    size_t n = 0;
     std::generate(vec.begin(), vec.begin()+size_first,
-    [=, n = 0] () mutable { return min*exp((n++)*log(first_val/min)/(size_first)); });
+    [=] () mutable { return min*exp((n++)*log(first_val/min)/(size_first)); });
 
     std::generate(vec.begin()+size_first, vec.begin()+size_first+size_second,
-    [=, n = 0] () mutable { return first_val + (second_val-first_val)*(n++)/(size_second); });
+    [=] () mutable { return first_val + (second_val-first_val)*(n++)/(size_second); });
 
     std::generate(vec.begin()+size_first+size_second, vec.end(),
-    [=, n = 0] () mutable { return max*exp((size_third-1-(n++))*log(second_val/max)/(size_third-1)); });
+    [=] () mutable { return max*exp((size_third-1-(n++))*log(second_val/max)/(size_third-1)); });
 
     vec.front() = min;
     vec.back() = max;

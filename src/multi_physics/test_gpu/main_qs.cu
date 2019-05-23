@@ -177,8 +177,8 @@ int main()
 
 	//Initialize the BW engine
 	auto qs_engine =
-		pxrmp::quantum_synchrotron_engine<double, pxrmp::stl_rng_wrapper>
-		{std::move(pxrmp::stl_rng_wrapper{useless_seed}), useless_lambda};//, qs_ctrl};
+		pxrmp::quantum_synchrotron_engine<double, pxrmp::stl_rng_wrapper<double>>
+		{std::move(pxrmp::stl_rng_wrapper<double>{useless_seed}), useless_lambda};//, qs_ctrl};
 
 	//Initialize the lookup tables
    	//Generates tables if they do not exist

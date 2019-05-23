@@ -30,10 +30,10 @@ void  rng_stl_wrapper_constructors(uint64_t seed)
 {
     std::mt19937_64 rng{seed};
 
-    stl_rng_wrapper wrp1{seed};
-    stl_rng_wrapper wrp2(move(rng));
+    stl_rng_wrapper<T> wrp1{seed};
+    stl_rng_wrapper<T> wrp2(move(rng));
 
-    BOOST_CHECK_EQUAL( wrp1.unf<T>(0.0,1.0), wrp2.unf<T>(0.0,1.0));
+    BOOST_CHECK_EQUAL( wrp1.unf(0.0,1.0), wrp2.unf(0.0,1.0));
 }
 
 //Test STL rng_wrapper constructors(double precision)
@@ -54,13 +54,13 @@ BOOST_AUTO_TEST_CASE( rng_stl_wrapper_constructors_single )
 template<typename T>
 void  rng_stl_wrapper_unf(uint64_t seed)
 {
-    stl_rng_wrapper wrp{seed};
+    stl_rng_wrapper<T> wrp{seed};
     size_t how_many = 10000;
     T a = static_cast<T>(-7.0);
     T b = static_cast<T>(11.1);
 
     for (size_t d = 0; d <= how_many; ++d){
-        T qq = wrp.unf<T> (a,b);
+        T qq = wrp.unf(a,b);
         BOOST_TEST( qq >= a);
         BOOST_TEST( qq < b);
     }
@@ -83,12 +83,12 @@ BOOST_AUTO_TEST_CASE( rng_stl_wrapper_unf_single )
 template<typename T>
 void  rng_stl_wrapper_exp(uint64_t seed)
 {
-    stl_rng_wrapper wrp{seed};
+    stl_rng_wrapper<T> wrp{seed};
     size_t how_many = 10000;
     T l = static_cast<T>(1.0);
 
     for (size_t d = 0; d <= how_many; ++d){
-        T qq = wrp.exp<T>(l);
+        T qq = wrp.exp(l);
         BOOST_TEST( qq >= 0.0);
     }
 }

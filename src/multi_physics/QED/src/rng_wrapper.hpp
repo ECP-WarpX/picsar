@@ -12,11 +12,11 @@
 #include "qed_commons.h"
 
 //############################################### Declaration
-
 namespace picsar{
     namespace multi_physics{
 
         //*** STL RNG Wrapper ***
+        template<typename _REAL>
         class stl_rng_wrapper
         {
         public:
@@ -34,12 +34,10 @@ namespace picsar{
             stl_rng_wrapper& operator= (const stl_rng_wrapper& other);
 
             //Get rnd number uniformly distributed in [a,b)
-            template<typename _REAL>
             PXRMP_FORCE_INLINE
             _REAL unf(_REAL a, _REAL b);
 
             //Get rnd number with exponential distribution
-            template<typename _REAL>
             PXRMP_FORCE_INLINE
             _REAL exp(_REAL l);
 
@@ -56,18 +54,23 @@ namespace picsar{
 //*** STL RNG Wrapper ***
 
 //Constructor with seed
-picsar::multi_physics::stl_rng_wrapper::stl_rng_wrapper(uint64_t seed)
+template<typename _REAL>
+picsar::multi_physics::stl_rng_wrapper<_REAL>::stl_rng_wrapper(uint64_t seed)
 {
     rng.seed(seed);
 }
 
  //Constructor with move of an existing RNG
- picsar::multi_physics::stl_rng_wrapper::stl_rng_wrapper(std::mt19937_64&& rng):
+ template<typename _REAL>
+ picsar::multi_physics::stl_rng_wrapper<_REAL>::stl_rng_wrapper
+ (std::mt19937_64&& rng):
     rng(std::move(rng)){}
 
 //Assignment operator
-picsar::multi_physics::stl_rng_wrapper&
-picsar::multi_physics::stl_rng_wrapper::operator= (const stl_rng_wrapper& other)
+template<typename _REAL>
+picsar::multi_physics::stl_rng_wrapper<_REAL>&
+picsar::multi_physics::stl_rng_wrapper<_REAL>::operator=
+(const stl_rng_wrapper<_REAL>& other)
 {
     rng = other.rng;
     return *this;
@@ -76,7 +79,7 @@ picsar::multi_physics::stl_rng_wrapper::operator= (const stl_rng_wrapper& other)
 //Get rnd number uniformly distributed in [a,b)
 template<typename _REAL>
 PXRMP_FORCE_INLINE
-_REAL picsar::multi_physics::stl_rng_wrapper::unf(_REAL a, _REAL b)
+_REAL picsar::multi_physics::stl_rng_wrapper<_REAL>::unf(_REAL a, _REAL b)
 {
     auto unf_dist_a_b = std::uniform_real_distribution<_REAL>(a, b);
     return unf_dist_a_b(rng);
@@ -85,7 +88,7 @@ _REAL picsar::multi_physics::stl_rng_wrapper::unf(_REAL a, _REAL b)
 //Get rnd number with exponential distribution (l is the lambda param.)
 template<typename _REAL>
 PXRMP_FORCE_INLINE
-_REAL picsar::multi_physics::stl_rng_wrapper::exp(_REAL l)
+_REAL picsar::multi_physics::stl_rng_wrapper<_REAL>::exp(_REAL l)
 {
     auto exp_dist_l = std::exponential_distribution<_REAL>(l);
     return exp_dist_l(rng);

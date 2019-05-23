@@ -24,11 +24,12 @@ using namespace picsar::multi_physics;
 
 //Helper function
 template<typename REAL>
-breit_wheeler_engine<REAL, stl_rng_wrapper> get_bw_stl_set_lambda(uint64_t seed,
+breit_wheeler_engine<REAL, stl_rng_wrapper<REAL>> get_bw_stl_set_lambda(uint64_t seed,
 breit_wheeler_engine_ctrl<REAL> bw_ctrl = breit_wheeler_engine_ctrl<REAL>())
 {
-    stl_rng_wrapper wrap{seed};
-    auto bw_engine =  breit_wheeler_engine<REAL, stl_rng_wrapper>{std::move(wrap), 1.0, bw_ctrl};
+    stl_rng_wrapper<REAL> wrap{seed};
+    auto bw_engine =  breit_wheeler_engine<REAL, stl_rng_wrapper<REAL>>
+        {std::move(wrap), 1.0, bw_ctrl};
     return bw_engine;
 }
 

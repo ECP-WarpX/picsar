@@ -54,7 +54,7 @@ void test_BW(){
     //Fix lambda to 800 nm
     double lambda = 0.8 * pxrmp::si_micrometer;
 
-    pxrmp::stl_rng_wrapper wrap{seed_BW};
+    pxrmp::stl_rng_wrapper<double> wrap{seed_BW};
 
     //This is a struct which contains parameters relevant for BW engine
     pxrmp::breit_wheeler_engine_ctrl<double> bw_ctrl;
@@ -68,7 +68,7 @@ void test_BW(){
     bw_ctrl.chi_frac_tpair_how_many = 100;
 
     //Creates the BW engine
-    auto bw_engine =  pxrmp::breit_wheeler_engine<double, pxrmp::stl_rng_wrapper>{
+    auto bw_engine =  pxrmp::breit_wheeler_engine<double, pxrmp::stl_rng_wrapper<double>>{
         std::move(wrap),
         lambda, //Optional argument (default value is 1)
         bw_ctrl //Optional argument (with reasonable default values)
@@ -93,7 +93,7 @@ void test_BW(){
 
     //Test
     auto innards = bw_engine.export_innards();
-    auto bw_clone = pxrmp::breit_wheeler_engine<double, pxrmp::stl_rng_wrapper>
+    auto bw_clone = pxrmp::breit_wheeler_engine<double, pxrmp::stl_rng_wrapper<double>>
                     (innards);
 
     //Init some photons
@@ -101,7 +101,7 @@ void test_BW(){
     const size_t how_many_phot = 20000;
     const int64_t seed_photons = 123043949938;
 
-    pxrmp::stl_rng_wrapper wrap_phot{seed_photons};
+    pxrmp::stl_rng_wrapper<double> wrap_phot{seed_photons};
 
     for(size_t i = 0; i < how_many_phot; i++){
         // double mom = wrap_phot.unf<double>(8000,12000);
@@ -109,9 +109,9 @@ void test_BW(){
         // double phi = acos(wrap_phot.unf<double>(-1.0,1.0));
         //
         // ptr_phot1->add_particle({0,0,0},{mom*sin(phi)*cos(theta), mom*sin(phi)*sin(theta) , mom*cos(phi)});
-        double momx = wrap_phot.unf<double>(-8000,8000);
-        double momy = wrap_phot.unf<double>(-8000,8000);
-        double momz = wrap_phot.unf<double>(-8000,8000);
+        double momx = wrap_phot.unf(-8000,8000);
+        double momy = wrap_phot.unf(-8000,8000);
+        double momz = wrap_phot.unf(-8000,8000);
 
         ptr_phot1->add_particle({0,0,0},{momx, momy, momz});
 

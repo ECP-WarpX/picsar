@@ -176,8 +176,8 @@ int main()
 
 	//Initialize the BW engine
 	auto bw_engine =
-		pxrmp::breit_wheeler_engine<double, pxrmp::stl_rng_wrapper>
-		{std::move(pxrmp::stl_rng_wrapper{useless_seed}), useless_lambda};//, bw_ctrl};
+		pxrmp::breit_wheeler_engine<double, pxrmp::stl_rng_wrapper<double>>
+		{std::move(pxrmp::stl_rng_wrapper<double>{useless_seed}), useless_lambda};//, bw_ctrl};
 
 	//Initialize the lookup tables
    	//Generates tables if they do not exist
