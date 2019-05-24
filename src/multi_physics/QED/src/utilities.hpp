@@ -8,6 +8,12 @@
 #include <cmath>
 #include <functional>
 #include <algorithm>
+#include <limits>
+#include <utility>
+
+
+//Uses the root finding algorithms provided by boost
+#include <boost/math/tools/roots.hpp>
 
 //Should be included by all the src files of the library
 #include "qed_commons.h"
@@ -37,6 +43,11 @@ namespace picsar{
         PXRMP_GPU
         PXRMP_FORCE_INLINE
         const T* picsar_upper_bound(const T* first, const T* last, const T& val);
+
+        //A wrapper around the function provided by Boost library
+        template<typename _REAL>
+        _REAL bracket_and_solve_root
+        (const std::function<_REAL(_REAL)>& f, _REAL guess, bool rising);
 
     }
 }
@@ -139,6 +150,26 @@ picsar::multi_physics::picsar_upper_bound
          }
     }
     return first;
+}
+
+//A wrapper around the function provided by Boost library
+template<typename _REAL>
+_REAL picsar::multi_physics::bracket_and_solve_root
+(const std::function<_REAL(_REAL)>& f, _REAL guess, bool rising)
+{
+    size_t digits = std::numeric_limits<_REAL>::digits;
+    size_t precision_digits = digits - 2;
+    boost::math::tools::eps_tolerance<_REAL> tol(precision_digits);
+
+    _REAL factor = static_cast<_REAL>(2.0);
+
+    size_t max_iter = 32;
+
+    std::pair<_REAL, _REAL> r =
+        boost::math::tools::bracket_and_solve_root
+        (f, guess, factor, rising, tol, max_iter);
+
+    return r.first + (r.second - r.first)/static_cast<_REAL>(2.0);
 }
 
 
