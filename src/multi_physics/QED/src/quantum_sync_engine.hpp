@@ -63,13 +63,8 @@ namespace picsar{
             static_cast<_REAL>(__quantum_synchrotron_max_tem_chi_part);
           size_t chi_part_tem_how_many =
             __quantum_synchrotron_how_many_tem_chi_part;
-          _REAL chi_frac_tem_min =
-            static_cast<_REAL>(__quantum_synchrotron_chi_frac_tem_min_frac);
-          size_t chi_frac_tem_how_many =
-            __quantum_synchrotron_chi_frac_tem_how_many;
-
-         //Minimum chi_phot to consider in integrations:
-         _REAL chi_min = chi_frac_tem_min*chi_part_tem_min;
+          size_t prob_tem_how_many =
+            __quantum_synchrotron_prob_tem_how_many;
       };
 
       //This struct holds all the data required to re-generate
@@ -283,6 +278,7 @@ namespace picsar{
          static constexpr _REAL three = static_cast<_REAL>(3.0);
          static constexpr _REAL four = static_cast<_REAL>(4.0);
          static constexpr _REAL five = static_cast<_REAL>(5.0);
+         static constexpr _REAL ten = static_cast<_REAL>(10.0);
 
          //Internal functions to perform calculations
          PXRMP_FORCE_INLINE
@@ -595,45 +591,54 @@ compute_cumulative_phot_em_table (std::ostream* stream)
      qs_ctrl.chi_part_tem_min, qs_ctrl.chi_part_tem_max,
     qs_ctrl.chi_part_tem_how_many);
 
-    picsar_vector<_REAL> frac_coords = generate_log_lin_log_spaced_vec(qs_ctrl.chi_frac_tem_min, one,
-    qs_ctrl.chi_frac_tem_how_many);
+    picsar_vector<_REAL> prob_coords = generate_lin_spaced_vec
+        (zero, one, qs_ctrl.prob_tem_how_many);
 
-    picsar_vector<_REAL> phot_vals{chi_coords.size()*frac_coords.size()};
+    picsar_vector<_REAL> chi_phot_frac_vals{chi_coords.size()*prob_coords.size()};
 
     msg("Computing table for photon emission...\n", stream);
 
     size_t cc = 0;
     for(auto chi_part: chi_coords){
         msg("chi_part: " + std::to_string(chi_part) + " \n", stream);
-        bool is_already_one = false;
-        for(size_t i = 0; i < frac_coords.size() - 1; i++){
-            msg("   log10frac: " + std::to_string(log10(frac_coords[i])) + " --> ", stream);
-            if(!is_already_one){
-                phot_vals[cc] = compute_cumulative_phot_em(
-                    chi_part*frac_coords[i], chi_part);
-                if(one-phot_vals[cc] < sqrt(std::numeric_limits<_REAL>::epsilon())){
-                    is_already_one = true;
-                }
-            }
-            else{
-                phot_vals[cc] = one;
-            }
 
-            msg(std::to_string(phot_vals[cc]*100) + " % \n", stream);
-            cc++;
+        _REAL guess = -ten;
+        for(size_t i = 0; i < prob_coords.size(); i++){
+            _REAL prob = prob_coords[i];
+
+            if(i == 0)
+                prob = prob_coords[1]/ten;
+            if(i == prob_coords.size()-1)
+                prob = one - (one - prob_coords[prob_coords.size()-2])/ten;
+
+            msg("   prob: " + std::to_string(prob*100) + " % --> ", stream);
+
+            auto func = [=](_REAL log_chi_photon_frac){
+                    if(log_chi_photon_frac >= zero)
+                        return one;
+                    return compute_cumulative_phot_em
+                        (exp(log_chi_photon_frac)*chi_part, chi_part) - prob;
+            };
+            bool rising = true;
+            _REAL log_chi_phot_frac = bracket_and_solve_root<_REAL>(func, guess, rising);
+            guess = log_chi_phot_frac;
+            chi_phot_frac_vals[cc++] = exp(log_chi_phot_frac);
+
+            msg(std::to_string(log_chi_phot_frac) + " \n", stream);            
         }
-        phot_vals[cc++] = one;
     }
     msg("...done!\n", stream);
 
     //The table will store the logarithms
     auto logfun = [](_REAL val){return log(val);};
-    std::transform(chi_coords.begin(), chi_coords.end(), chi_coords.begin(), logfun);
-    std::transform(frac_coords.begin(), frac_coords.end(), frac_coords.begin(), logfun);
-    std::transform(phot_vals.begin(), phot_vals.end(), phot_vals.begin(), logfun);
+    std::transform(chi_coords.begin(),
+        chi_coords.end(), chi_coords.begin(), logfun);
+    std::transform(chi_phot_frac_vals.begin(),
+        chi_phot_frac_vals.end(), chi_phot_frac_vals.begin(), logfun);
 
     cum_distrib_table = lookup_2d<_REAL>{
-        picsar_array<picsar_vector<_REAL>,2>{chi_coords, frac_coords}, phot_vals};
+        picsar_array<picsar_vector<_REAL>,2>
+        {chi_coords, prob_coords}, chi_phot_frac_vals};
 }
 
 
@@ -717,8 +722,7 @@ _REAL* unf_zero_one_minus_epsi)
     vec3<_REAL> n_part = p_part/norm_part;
     _REAL gamma_part = sqrt(one + p2/me_c/me_c);
 
-
-    const size_t how_many_frac = ref_cum_distrib_table.ref_coords()[1].size();
+    const size_t how_many_prob = ref_cum_distrib_table.ref_coords()[1].size();
 
     _REAL tab_chi_part = chi_part;
     if(chi_part < ref_qs_ctrl.chi_part_tem_min)
@@ -728,80 +732,24 @@ _REAL* unf_zero_one_minus_epsi)
 
     _REAL one_over_sampling = one/sampling;
 
-    _REAL min = exp(ref_cum_distrib_table.interp_linear_first_equispaced
-            (log(tab_chi_part), 0));
-
     for(size_t s = 0; s < sampling; s++){
         _REAL prob = unf_zero_one_minus_epsi[s];
 
-        _REAL chi_phot_frac;
+        size_t idx_prob_left = static_cast<size_t>(
+            floor((how_many_prob-1)*prob));
+        size_t idx_prob_right = idx_prob_left + 1;
+        _REAL prob_left = ref_cum_distrib_table.ref_coords()[1][idx_prob_left];
+        _REAL prob_right = ref_cum_distrib_table.ref_coords()[1][idx_prob_right];
 
-        if(prob < min){
-            chi_phot_frac = exp(ref_cum_distrib_table.ref_coords()[1][0]);
-        }
-        else{
-            _REAL log_prob = log(prob);
+        _REAL left = exp(ref_cum_distrib_table.interp_linear_first_equispaced
+                (log(tab_chi_part), idx_prob_left));
+        _REAL right = exp(ref_cum_distrib_table.interp_linear_first_equispaced
+                (log(tab_chi_part), idx_prob_right));
 
-            size_t first = 0;
-            size_t it;
-            size_t count = how_many_frac;
-            while(count > 0){
-                it = first;
-                size_t step = count/2;
-                it += step;
+        _REAL chi_phot_frac = left +
+                (prob-prob_left)*(right-left)/(prob_left-prob_right);
 
-                _REAL val = (ref_cum_distrib_table.interp_linear_first_equispaced
-                        (log(tab_chi_part), it));
-
-                if(!(log_prob < val)){
-                    first = ++it;
-                    count -= step+1;
-                }
-                else{
-                    count = step;
-                }
-            }
-
-            size_t upper = first;
-            size_t lower = upper-1;
-
-
-            /*
-            const _REAL upper_frac =
-                exp(ref_cum_distrib_table.ref_coords()[1][upper]);
-            const _REAL lower_frac =
-                exp(ref_cum_distrib_table.ref_coords()[1][lower]);
-            _REAL upper_prob =
-                exp(ref_cum_distrib_table.interp_linear_first_equispaced
-                (log(tab_chi_part), upper));
-            _REAL lower_prob =
-                exp(ref_cum_distrib_table.interp_linear_first_equispaced
-                (log(tab_chi_part), lower));
-            chi_phot_frac = lower_frac +
-                (prob-lower_prob)*(upper_frac-lower_frac)
-                /(upper_prob-lower_prob);
-                */
-
-            const _REAL upper_log_frac =
-                ref_cum_distrib_table.ref_coords()[1][upper];
-            const _REAL lower_log_frac =
-                ref_cum_distrib_table.ref_coords()[1][lower];
-            _REAL upper_log_prob =
-                ref_cum_distrib_table.interp_linear_first_equispaced
-                (log(tab_chi_part), upper);
-            _REAL lower_log_prob =
-                ref_cum_distrib_table.interp_linear_first_equispaced
-                (log(tab_chi_part), lower);
-            _REAL chi_phot_log_frac = lower_log_frac +
-                (log_prob-lower_log_prob)*(upper_log_frac-lower_log_frac)
-                /(upper_log_prob-lower_log_prob);
-            chi_phot_frac = exp(chi_phot_log_frac);
-
-        }
-
-
-        _REAL chi_phot = chi_part*chi_phot_frac;
-
+        _REAL chi_phot = chi_phot_frac*chi_part;
         _REAL gamma_phot = chi_phot/chi_part*(gamma_part-one);
 
         vec3<_REAL>  p_phot = gamma_phot * n_part * me_c;
