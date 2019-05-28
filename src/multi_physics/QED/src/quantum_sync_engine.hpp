@@ -753,7 +753,7 @@ _REAL* unf_zero_one_minus_epsi)
                 (log(tab_chi_part), idx_prob_right));
 
         _REAL chi_phot_frac = left +
-                (prob-prob_left)*(right-left)/(prob_left-prob_right);
+                (prob-prob_left)*(right-left)/(prob_right-prob_left);
 
         _REAL chi_phot = chi_phot_frac*chi_part;
         _REAL gamma_phot = chi_phot/chi_part*(gamma_part-one);
