@@ -4,6 +4,9 @@
 //This .hpp file contais the implementation of the
 //quantum synchrotron emission engine
 
+//Uses openMP to speed up the generation of the lookup table
+#include <omp.h>
+
 //Should be included by all the src files of the library
 #include "qed_commons.h"
 
@@ -598,20 +601,18 @@ compute_cumulative_phot_em_table (std::ostream* stream)
 
     msg("Computing table for photon emission...\n", stream);
 
-    size_t cc = 0;
-    for(auto chi_part: chi_coords){
-        msg("chi_part: " + std::to_string(chi_part) + " \n", stream);
-
+    #pragma omp parallel for
+    for(size_t ii = 0; ii < chi_coords.size(); ii++){
+        auto chi_part = chi_coords[ii];
+        size_t cc = ii*prob_coords.size();
         _REAL guess = -ten;
-        for(size_t i = 0; i < prob_coords.size(); i++){
-            _REAL prob = prob_coords[i];
+        for(size_t jj = 0; jj < prob_coords.size(); jj++){
+            _REAL prob = prob_coords[jj];
 
-            if(i == 0)
+            if(jj == 0)
                 prob = prob_coords[1]/ten;
-            if(i == prob_coords.size()-1)
+            if(jj == prob_coords.size()-1)
                 prob = one - (one - prob_coords[prob_coords.size()-2])/ten;
-
-            msg("   prob: " + std::to_string(prob*100) + " % --> ", stream);
 
             auto func = [=](_REAL log_chi_photon_frac){
                     if(log_chi_photon_frac >= zero)
@@ -624,7 +625,6 @@ compute_cumulative_phot_em_table (std::ostream* stream)
             guess = log_chi_phot_frac;
             chi_phot_frac_vals[cc++] = exp(log_chi_phot_frac);
 
-            msg(std::to_string(log_chi_phot_frac) + " \n", stream);            
         }
     }
     msg("...done!\n", stream);

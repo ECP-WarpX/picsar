@@ -6,6 +6,9 @@
 
 #include<limits>
 
+//Uses openMP to speed up the generation of the lookup table
+#include <omp.h>
+
 //Should be included by all the src files of the library
 #include "qed_commons.h"
 
@@ -596,13 +599,16 @@ compute_cumulative_pair_table (std::ostream* stream)
 
     msg("Computing table for pair production...\n", stream);
 
-    size_t cc = 0;
-    for(auto chi_phot: chi_coords){
+
+
+    #pragma omp parallel for
+    for(size_t ii = 0; ii < chi_coords.size(); ii++){
+        auto chi_phot = chi_coords[ii];
+        size_t cc = ii*frac_coords.size();
         pair_vals[cc++] = zero;
-        msg("chi_phot: " + std::to_string(chi_phot) + " \n", stream);
-        for(size_t i = 1; i < frac_coords.size() - 1; i++){
+        for(size_t jj = 1; jj < frac_coords.size() - 1; jj++){
             pair_vals[cc++] = compute_cumulative_pair(
-                chi_phot, chi_phot*frac_coords[i]);
+                chi_phot, chi_phot*frac_coords[jj]);
         }
         pair_vals[cc++] = (one/two); //The function is symmetric
     }
