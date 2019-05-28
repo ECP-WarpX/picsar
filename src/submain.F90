@@ -511,6 +511,95 @@ SUBROUTINE laser_gaussian
 END SUBROUTINE laser_gaussian
 
 
+SUBROUTINE laser_field_correction
+  USE PICSAR_precision
+  USE shared_data , ONLY : nx, ny, dy, nmodes
+  USE constants, ONLY: clight
+  USE fields, ONLY: l_staggered, em_h, ep_h, el_h, bm_h, bp_h, bl_h, nxguards, nyguards
+  USE gpstd_solver
+  USE hankel
+  IMPLICIT NONE
+  COMPLEX (cpx) :: ii
+  INTEGER (idp) :: i,j,k, nfftx, nffty
+  COMPLEX(cpx) , dimension (:) , allocatable :: filter_array
+  COMPLEX(cpx), dimension (:) , allocatable :: kyc_inv
+  COMPLEX (cpx), dimension(:,:,:), allocatable :: w, inv_w
+  REAL (num) :: prop_dir
+
+#if defined(LIBRARY)
+   nfftx = nx+2*nxguards+1
+   nffty = ny+2*nyguards+1
+#else
+   !> When using picsar
+   nfftx = nx+2*nxguards
+   nffty = ny+2* nyguards
+#endif
+
+  ALLOCATE (kyc_inv(nffty))
+  ALLOCATE (w (nfftx, nffty, nmodes))
+  ALLOCATE (inv_w (nfftx, nffty, nmodes))
+  ALLOCATE (filter_array (nffty))
+  ii= DCMPLX(1.0_num, 0.0_num)
+  prop_dir= 1._num
+
+CALL get_Hfields
+!CALL compute_k_vec(l_staggered)
+
+filter_array= (1._num- sin(0.5_num*kyc*dy**2))*(1._num+sin(0.5_num*kyc*dy**2))
+
+DO j= 1, nffty
+  DO i= 1, nfftx
+    em_h(i,j,:)= em_h(i,j,:)*filter_array(j)
+    ep_h(i,j,:)= ep_h(i,j,:)* filter_array(j)
+   END DO
+END DO
+
+DO i=1, nffty
+  IF (kyc(i) .eq. 0.) THEN
+   kyc_inv=0._num
+  ELSE
+   kyc_inv(i)=1./kyc(i)
+  END IF
+END DO
+
+
+!DO j=1, nffty
+!  DO i=1, nfftx
+!    el_h(i,j,:)=ii* krc(i,:)*(ep_h(i,j,:)-em_h(i,j,:))*kyc_inv(i)
+!  END DO
+!END DO  
+!w = clight* sqrt(kyc**2+krc**2)
+!w *= sign(kyc)* prop_dir
+
+DO k=1 , nmodes
+  DO j=1, nffty
+    DO i= 1, nfftx
+      el_h(i,j,k)=ii* krc(i,k)*(ep_h(i,j,k)-em_h(i,j,k))*kyc_inv(i)
+      w(i,j,k) =  prop_dir *clight* sqrt(kyc(j)**2+krc(i,k)**2)
+      w(i,j,k)= dsign (REAL(w(i,j,k), KIND=8), REAL(kyc(j), KIND=8))
+      IF (w(i,j,k) .eq. 0.) THEN     
+        inv_w(i,j,k)= 0._num
+      ELSE
+        inv_w(i,j,k)= 1./w(i,j,k)
+      END IF
+      bp_h(i,j,k) = -ii*inv_w(i,j,k)*(kyc(j)*ep_h(i,j,k)-0.5_num*krc(i,k)*el_h(i,j,k))
+      bm_h(i,j,k) = -ii*inv_w(i,j,k)*(-kyc(j)*em_h(i,j,k) -0.5_num*krc(i,k)*el_h(i,j,k))
+      bl_h(i,j,k) = inv_w(i,j,k)* krc(i,k) *(ep_h(i,j,k)+em_h(i,j,k))
+    END DO
+  END DO 
+END DO
+
+!bp_h = -ii*inv_w*(kyc*ep_h-0.5_num*krc*el_h)
+!bm_h = -ii*inv_w*(-kyc*em_h -0.5_num*krc*el_h)
+!bl_h = inv_w* krc *(ep_h+em_h)
+
+
+CALL get_Hfields_inv
+
+
+END SUBROUTINE laser_field_correction
+
+
 SUBROUTINE init_rz_fields
   USE PICSAR_precision
   USE fields
