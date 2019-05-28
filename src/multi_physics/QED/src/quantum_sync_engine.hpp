@@ -606,6 +606,8 @@ compute_cumulative_phot_em_table (std::ostream* stream)
         auto chi_part = chi_coords[ii];
         size_t cc = ii*prob_coords.size();
         _REAL guess = -ten;
+        _REAL previous = zero;
+        bool first_one = true;
         for(size_t jj = 0; jj < prob_coords.size(); jj++){
             _REAL prob = prob_coords[jj];
 
@@ -617,14 +619,18 @@ compute_cumulative_phot_em_table (std::ostream* stream)
             auto func = [=](_REAL log_chi_photon_frac){
                     if(log_chi_photon_frac >= zero)
                         return one;
+                    if(!first_one && log_chi_photon_frac < previous)
+                        return one;
                     return compute_cumulative_phot_em
                         (exp(log_chi_photon_frac)*chi_part, chi_part) - prob;
             };
             bool rising = true;
             _REAL log_chi_phot_frac = bracket_and_solve_root<_REAL>(func, guess, rising);
             guess = log_chi_phot_frac;
+            previous = guess;
             chi_phot_frac_vals[cc++] = exp(log_chi_phot_frac);
-
+            first_one = false;
+            msg(std::to_string(ii) + " " + std::to_string(jj) + "\n", stream);
         }
     }
     msg("...done!\n", stream);

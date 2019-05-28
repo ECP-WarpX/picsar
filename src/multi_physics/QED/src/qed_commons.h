@@ -196,15 +196,15 @@ namespace picsar{
     const double __quantum_synchrotron_min_tdndt_chi_part = 0.001;//Min chi_part
     const double __quantum_synchrotron_max_tdndt_chi_part = 200.0;//Max chi_part
     //How many points
-    const size_t __quantum_synchrotron_how_many_tdndt_chi_part = 48;
+    const size_t __quantum_synchrotron_how_many_tdndt_chi_part = 64;
 
     // Photon emission table:
     const double __quantum_synchrotron_min_tem_chi_part = 0.001; //Min chi_part
     const double __quantum_synchrotron_max_tem_chi_part = 200.0; //Max chi_part
-    const size_t __quantum_synchrotron_how_many_tem_chi_part = 48; //How many points
+    const size_t __quantum_synchrotron_how_many_tem_chi_part = 64; //How many points
 
     //Probability is used as a second coordinate
-    const size_t __quantum_synchrotron_prob_tem_how_many = 64;
+    const size_t __quantum_synchrotron_prob_tem_how_many = 256;
 
     //Sets the limits for the semi-infinite integrals in the library
     const double __quantum_synchrotron_special_func_big_arg = 1.0e20;
