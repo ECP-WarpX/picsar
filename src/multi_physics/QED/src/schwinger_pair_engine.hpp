@@ -6,7 +6,7 @@
 // and Banerjee et al. PRA 98, 032121 2018)
 
 //Uses pairs
-#include <tuple>
+#include <utility>
 
 //Should be included by all the src files of the library
 #include "qed_commons.h"
@@ -14,6 +14,11 @@
 //Uses picsar arrays
 #include "picsar_array.hpp"
 
+//Uses vector functions
+#include "vec_functions.hpp"
+
+//Uses utilities (for Poisson distribution)
+#include "utilities.hpp"
 //############################################### Declaration
 
 namespace picsar{
@@ -107,6 +112,26 @@ namespace picsar{
             picsar_array<_REAL, 3>
             get_new_pair_position();
 
+            //Computes the pair production rate per unit time per unit volume
+            PXRMP_FORCE_INLINE
+            _REAL
+            compute_schwinger_pair_production_rate(
+            _REAL ex, _REAL ey, _REAL ez,
+            _REAL bx, _REAL by, _REAL bz
+            );
+
+            //______________________GPU
+            //Same as above, but with GPU use directly this one!
+            PXRMP_GPU
+            PXRMP_FORCE_INLINE
+            static
+            _REAL
+            internal_compute_schwinger_pair_production_rate(
+            _REAL ex, _REAL ey, _REAL ez,
+            _REAL bx, _REAL by, _REAL bz,
+            _REAL lambda
+            );
+
         private:
 
             _REAL lambda;
@@ -117,7 +142,7 @@ namespace picsar{
             //Some handy constants
             static constexpr _REAL zero = static_cast<_REAL>(0.0);
             static constexpr _REAL one = static_cast<_REAL>(1.0);
-
+            static constexpr _REAL two = static_cast<_REAL>(2.0);
 
         };
     }
@@ -214,10 +239,22 @@ _REAL bx, _REAL by, _REAL bz,
 _REAL dx, _REAL dy, _REAL dz,
 _REAL dt,
 bool* has_event_happend, _REAL* weight,
-_REAL lambda, _REAL unf_zero_one_minus_epsi
+_REAL _lambda, _REAL unf_zero_one_minus_epsi
 )
 {
-    //All the magic happens here!
+#ifdef PXRMP_WITH_SI_UNITS
+    _lambda = static_cast<_REAL>(1.0);
+#endif
+
+    _REAL rate = internal_compute_schwinger_pair_production_rate
+        (ex, ey, ez, bx, by, bz, _lambda);
+
+    _REAL volume = dx*dy*dz;
+    _REAL probability = rate*volume*dt;
+
+    weight = one/volume;
+
+    has_event_happend = (unf_zero_one_minus_epsi < probability);
 }
 
 //This function determines how many pairs have been generated in a given
@@ -259,10 +296,22 @@ _REAL bx, _REAL by, _REAL bz,
 _REAL dx, _REAL dy, _REAL dz,
 _REAL dt,
 size_t* how_many, _REAL* weight,
-_REAL lambda, _REAL unf_zero_one_minus_epsi
+_REAL _lambda, _REAL unf_zero_one_minus_epsi
 )
 {
-    //All the magic happens here!
+#ifdef PXRMP_WITH_SI_UNITS
+    _lambda = static_cast<_REAL>(1.0);
+#endif
+
+    _REAL rate = internal_compute_schwinger_pair_production_rate
+        (ex, ey, ez, bx, by, bz, _lambda);
+
+    _REAL volume = dx*dy*dz;
+    _REAL probability = rate*volume*dt;
+
+    weight = one / volume;
+
+    how_many = poisson_distrib(probability, unf_zero_one_minus_epsi);
 }
 
 
@@ -280,5 +329,67 @@ get_new_pair_position()
     return res;
 }
 
+
+//Computes the pair production rate per unit time per unit volume
+template<typename _REAL, class _RNDWRAP>
+PXRMP_FORCE_INLINE
+_REAL
+picsar::multi_physics::schwinger_pair_engine<_REAL, _RNDWRAP>::
+compute_schwinger_pair_production_rate(
+_REAL ex, _REAL ey, _REAL ez,
+_REAL bx, _REAL by, _REAL bz
+)
+{
+    return internal_compute_schwinger_pair_production_rate
+        (ex, ey, ez, bx, by, bz, lambda);
+}
+
+//______________________GPU
+//Same as above, but with GPU use directly this one!
+template<typename _REAL, class _RNDWRAP>
+PXRMP_GPU
+PXRMP_FORCE_INLINE
+_REAL
+picsar::multi_physics::schwinger_pair_engine<_REAL, _RNDWRAP>::
+internal_compute_schwinger_pair_production_rate(
+_REAL ex, _REAL ey, _REAL ez,
+_REAL bx, _REAL by, _REAL bz,
+_REAL _lambda
+)
+{
+#ifdef PXRMP_WITH_SI_UNITS
+    _lambda = static_cast<_REAL>(1.0);
+#endif
+
+    vec3<_REAL> ee{ex,ey,ez};
+    vec3<_REAL> bb{bx,by,bz};
+
+    const _REAL c_ff = static_cast<_REAL>(one/(two*__schwinger*__schwinger));
+    const _REAL c_gg = static_cast<_REAL>(__c/__schwinger/__schwinger);
+
+    _REAL ff = (norm2(ee) - static_cast<_REAL>(__c*__c)*norm2(bb))*c_ff;
+    _REAL gg = dot(ee, bb)*c_gg;
+
+    _REAL inner = sqrt(ff*ff+ gg*gg);
+
+    _REAL epsi = sqrt(inner + ff);
+    _REAL eta = sqrt(inner - ff);
+
+    _REAL res;
+
+    std::cout << epsi << " " << eta << std::endl;
+
+    if(epsi != zero && eta != zero)
+        res = epsi*eta*exp(-pi/epsi)/tanh(pi*eta/epsi);
+    else if(epsi == zero)
+        return zero;
+    else
+        res = epsi*epsi*exp(-pi/epsi)/pi;
+
+    _REAL schwinger_coeff =
+        static_cast<_REAL>(__schwinger_coeff)*_lambda*_lambda*_lambda*_lambda;
+
+    return schwinger_coeff*res;
+}
 
 #endif //__PICSAR_MULTIPHYSICS_SCHWINGER_PAIR_ENGINE__

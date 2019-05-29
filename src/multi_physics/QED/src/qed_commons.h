@@ -87,6 +87,11 @@ namespace picsar{
         const double quantum_synchrotron_rate_coeff =
         fine_structure*fine_structure/tau_e;
 
+        const double schwinger_pair_prod_coeff =
+          elementary_charge*elementary_charge*
+          schwinger_field*schwinger_field/
+          (4.0*pi*pi*reduced_plank*reduced_plank*light_speed);
+
         const double si_gigameter = 1.0e9;
         const double si_megameter = 1.0e6;
         const double si_kilometer = 1.0e3;
@@ -131,6 +136,7 @@ namespace picsar{
         light_speed*light_speed;
       const double __quantum_synchrotron_rate_coeff =
         quantum_synchrotron_rate_coeff*electron_mass*light_speed*light_speed;
+      const double __schwinger_coeff = schwinger_pair_prod_coeff;
     #else
       const double __c = 1.0;
       const double __emass = 1.0;
@@ -138,6 +144,8 @@ namespace picsar{
       const double __pair_prod_coeff = pair_prod_rate_coeff/(2.0*pi*light_speed);
       const double __quantum_synchrotron_rate_coeff =
         quantum_synchrotron_rate_coeff/(2.0*pi*light_speed);
+      const double __schwinger_coeff = schwinger_pair_prod_coeff/
+        (16.0*pi*pi*pi*pi*light_speed);
     #endif
 
 //##############################################################################

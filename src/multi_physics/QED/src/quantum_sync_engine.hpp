@@ -522,6 +522,12 @@ _REAL _lambda ,
 const lookup_1d<_REAL>& ref_KKfunc_table,
 const quantum_synchrotron_engine_ctrl<_REAL>& ref_qs_ctrl)
 {
+
+#ifdef PXRMP_WITH_SI_UNITS
+    _lambda = static_cast<_REAL>(1.0);
+#endif
+
+
     _REAL energy = norm<_REAL>(vec3<_REAL> {px, py, pz})*__c;
     _REAL chi = chi_lepton(px, py, pz, ex, ey, ez, bx, by, bz, _lambda);
 
@@ -715,6 +721,11 @@ const picsar::multi_physics::lookup_2d<_REAL>& ref_cum_distrib_table,
 const picsar::multi_physics::quantum_synchrotron_engine_ctrl<_REAL>& ref_qs_ctrl,
 _REAL* unf_zero_one_minus_epsi)
 {
+
+#ifdef PXRMP_WITH_SI_UNITS
+    _lambda = static_cast<_REAL>(1.0);
+#endif
+
 
     _REAL chi_part = chi_lepton(px, py, pz, ex, ey, ez, bx, by, bz, _lambda);
 

@@ -49,6 +49,12 @@ namespace picsar{
         _REAL bracket_and_solve_root
         (const std::function<_REAL(_REAL)>& f, _REAL guess, bool rising);
 
+        //A function providing values extracted from a poisson distribution,
+        //given lambda and a number in the interval [0,1)
+        template<typename T>
+        PXRMP_GPU
+        PXRMP_FORCE_INLINE
+        size_t poisson_distrib(T lambda, T unf_zero_one_minus_epsi);
     }
 }
 
@@ -172,5 +178,28 @@ _REAL picsar::multi_physics::bracket_and_solve_root
     return r.first + (r.second - r.first)/static_cast<_REAL>(2.0);
 }
 
+//A function providing values extracted from a poisson distribution,
+//given lambda and a number in the interval [0,1)
+template<typename T>
+PXRMP_GPU
+PXRMP_FORCE_INLINE
+size_t picsar::multi_physics::poisson_distrib
+(T lambda, T unf_zero_one_minus_epsi)
+{
+    size_t k = 0;
+    T p = exp(-lambda);
+    T s = p;
+    T old_s;
+    while (unf_zero_one_minus_epsi > s){
+        old_s = s;
+        p = p*lambda/(++k);
+        s += p;
+        //If this is true we have reached the limit of the floating
+        //point number that we are using
+        if(s <= old_s)
+            break;     
+    }
+    return k;
+}
 
 #endif // __PICSAR_MULTIPHYSICS_UTILITIES__

@@ -437,13 +437,18 @@ internal_interp_dN_dt
 (_REAL energy_phot, _REAL chi_phot,
 const picsar::multi_physics::lookup_1d<_REAL>& ref_TTfunc_table,
 const picsar::multi_physics::breit_wheeler_engine_ctrl<_REAL>& ref_bw_ctrl,
-_REAL lambda)
+_REAL _lambda)
 {
+#ifdef PXRMP_WITH_SI_UNITS
+    _lambda = static_cast<_REAL>(1.0);
+#endif
+
+
     if(energy_phot == zero || chi_phot == zero)
         return zero;
 
     _REAL coeff = static_cast<_REAL>(__pair_prod_coeff)*
-        lambda*(one/( chi_phot * energy_phot));
+        _lambda*(one/( chi_phot * energy_phot));
 
         _REAL TT = zero;
     //Use approximate analytical expression if chi < chi_phot_tdndt_min
@@ -530,6 +535,11 @@ _REAL _lambda,
 const picsar::multi_physics::lookup_1d<_REAL>& ref_TTfunc_table,
 const picsar::multi_physics::breit_wheeler_engine_ctrl<_REAL>& ref_bw_ctrl)
 {
+
+#ifdef PXRMP_WITH_SI_UNITS
+    _lambda = static_cast<_REAL>(1.0);
+#endif
+
     _REAL energy = norm<_REAL>(vec3<_REAL> {px, py, pz})*__c;
     _REAL chi = chi_photon(px, py, pz, ex, ey, ez, bx, by, bz, _lambda);
 
