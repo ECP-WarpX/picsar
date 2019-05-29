@@ -2,7 +2,8 @@
 #define __PICSAR_MULTIPHYSICS_SCHWINGER_PAIR_ENGINE__
 
 //This .hpp file contais the implementation of the
-//Schwinger pair engine (as described in Gonoskov et al. PRE 92, 023305 2015)
+//Schwinger pair engine (as described in Gonoskov et al. PRE 92, 023305 2015
+// and Banerjee et al. PRA 98, 032121 2018)
 
 //Uses pairs
 #include <tuple>
@@ -41,13 +42,14 @@ namespace picsar{
             _REAL get_lambda() const;
             void set_lambda(_REAL lambda);
 
-            //This function determines if a pair has been generated and
-            //its statistical weight
+            //This function determines if a pair has been generated in a given
+            //cell and its statistical weight.
             //It returns a bool (true if a pair has been generated)
             //and a _REAL (the statistical weight of the new pair)
             //It requires to provide the fields, the cell size and dt
+            //Use this function if the probability to generate a pair is << 1
             PXRMP_FORCE_INLINE
-            std::pair<bool, _REAL> generate_pairs(
+            std::pair<bool, _REAL> generate_pairs_single(
             _REAL ex, _REAL ey, _REAL ez,
             _REAL bx, _REAL by, _REAL bz,
             _REAL dx, _REAL dy, _REAL dz,
@@ -60,12 +62,42 @@ namespace picsar{
             PXRMP_FORCE_INLINE
             static
             void
-            internal_generate_pairs(
+            internal_generate_pairs_single(
             _REAL ex, _REAL ey, _REAL ez,
             _REAL bx, _REAL by, _REAL bz,
             _REAL dx, _REAL dy, _REAL dz,
             _REAL dt,
             bool* has_event_happend, _REAL* weight,
+            _REAL lambda, _REAL unf_zero_one_minus_epsi
+            );
+
+
+            //This function determines how many pairs have been generated in a given
+            //cell and their statistical weight.
+            //It returns a size_t (the number of the generated particles)
+            //and a _REAL (the statistical weight of the new pair)
+            //It requires to provide the fields, the cell size and dt
+            //Use this function if the probability to generate a pair is large
+            PXRMP_FORCE_INLINE
+            std::pair<size_t, _REAL> generate_pairs_multiple(
+            _REAL ex, _REAL ey, _REAL ez,
+            _REAL bx, _REAL by, _REAL bz,
+            _REAL dx, _REAL dy, _REAL dz,
+            _REAL dt
+            );
+
+            //______________________GPU
+            //Same as above, but with GPU use directly this one!
+            PXRMP_GPU
+            PXRMP_FORCE_INLINE
+            static
+            void
+            internal_generate_pairs_multiple(
+            _REAL ex, _REAL ey, _REAL ez,
+            _REAL bx, _REAL by, _REAL bz,
+            _REAL dx, _REAL dy, _REAL dz,
+            _REAL dt,
+            size_t* how_many, _REAL* weight,
             _REAL lambda, _REAL unf_zero_one_minus_epsi
             );
 
@@ -142,16 +174,17 @@ set_lambda
 #endif
 
 
-//This function determines if a pair has been generated and
-//its statistical weight
+//This function determines if a pair has been generated in a given
+//cell and its statistical weight.
 //It returns a bool (true if a pair has been generated)
 //and a _REAL (the statistical weight of the new pair)
 //It requires to provide the fields, the cell size and dt
+//Use this function if the probability to generate a pair is << 1
 template<typename _REAL, class _RNDWRAP>
 PXRMP_FORCE_INLINE
 std::pair<bool, _REAL>
 picsar::multi_physics::schwinger_pair_engine<_REAL, _RNDWRAP>::
-generate_pairs(
+generate_pairs_single(
 _REAL ex, _REAL ey, _REAL ez,
 _REAL bx, _REAL by, _REAL bz,
 _REAL dx, _REAL dy, _REAL dz,
@@ -160,7 +193,7 @@ _REAL dt
 {
     std::pair<bool, _REAL> res{false, zero};
 
-    internal_generate_pairs(ex, ey, ez, bx, by, bz, dt,
+    internal_generate_pairs_single(ex, ey, ez, bx, by, bz, dt,
         &res.first, &res.second, lambda, rng.unf(zero, one));
 
     return res;
@@ -175,12 +208,57 @@ PXRMP_GPU
 PXRMP_FORCE_INLINE
 void
 picsar::multi_physics::schwinger_pair_engine<_REAL, _RNDWRAP>::
-internal_generate_pairs(
+internal_generate_pairs_single(
 _REAL ex, _REAL ey, _REAL ez,
 _REAL bx, _REAL by, _REAL bz,
 _REAL dx, _REAL dy, _REAL dz,
 _REAL dt,
 bool* has_event_happend, _REAL* weight,
+_REAL lambda, _REAL unf_zero_one_minus_epsi
+)
+{
+    //All the magic happens here!
+}
+
+//This function determines how many pairs have been generated in a given
+//cell and their statistical weight.
+//It returns a size_t (the number of the generated particles)
+//and a _REAL (the statistical weight of the new pair)
+//It requires to provide the fields, the cell size and dt
+//Use this function if the probability to generate a pair is large
+template<typename _REAL, class _RNDWRAP>
+PXRMP_FORCE_INLINE
+std::pair<size_t, _REAL>
+picsar::multi_physics::schwinger_pair_engine<_REAL, _RNDWRAP>::
+generate_pairs_multiple(
+_REAL ex, _REAL ey, _REAL ez,
+_REAL bx, _REAL by, _REAL bz,
+_REAL dx, _REAL dy, _REAL dz,
+_REAL dt
+)
+{
+    std::pair<size_t, _REAL> res{0, zero};
+
+    internal_generate_pairs_multiple(ex, ey, ez, bx, by, bz, dt,
+        &res.first, &res.second, lambda, rng.unf(zero, one));
+
+    return res;
+}
+
+//______________________GPU
+//Same as above, but with GPU use directly this one!
+//Returns false if errors occur
+template<typename _REAL, class _RNDWRAP>
+PXRMP_GPU
+PXRMP_FORCE_INLINE
+void
+picsar::multi_physics::schwinger_pair_engine<_REAL, _RNDWRAP>::
+internal_generate_pairs_multiple(
+_REAL ex, _REAL ey, _REAL ez,
+_REAL bx, _REAL by, _REAL bz,
+_REAL dx, _REAL dy, _REAL dz,
+_REAL dt,
+size_t* how_many, _REAL* weight,
 _REAL lambda, _REAL unf_zero_one_minus_epsi
 )
 {
