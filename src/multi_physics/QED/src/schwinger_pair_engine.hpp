@@ -115,7 +115,7 @@ schwinger_pair_engine(const schwinger_pair_engine& other):
 //Move constructor
 template<typename _REAL, class _RNDWRAP>
 picsar::multi_physics::schwinger_pair_engine<_REAL, _RNDWRAP>::
-quantum_synchrotron_engine(quantum_synchrotron_engine&& other):
+schwinger_pair_engine(schwinger_pair_engine&& other):
     lambda(std::move(other.lambda)), rng(std::move(other.rng))
     {}
 
@@ -192,14 +192,15 @@ _REAL lambda, _REAL unf_zero_one_minus_epsi
 //They should be used to initialize the position of the pair.
 template<typename _REAL, class _RNDWRAP>
 PXRMP_FORCE_INLINE
-picsar_array<_REAL, 3>
+picsar::multi_physics::picsar_array<_REAL, 3>
 picsar::multi_physics::schwinger_pair_engine<_REAL, _RNDWRAP>::
 get_new_pair_position()
 {
     picsar_array<_REAL, 3> res;
     for(auto& val: res)
         val = rng.unf(zero, one);
+    return res;
 }
 
 
-#endif __PICSAR_MULTIPHYSICS_SCHWINGER_PAIR_ENGINE__
+#endif //__PICSAR_MULTIPHYSICS_SCHWINGER_PAIR_ENGINE__

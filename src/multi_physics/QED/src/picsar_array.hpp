@@ -39,6 +39,19 @@ namespace picsar{
             PXRMP_GPU PXRMP_FORCE_INLINE
             size_t size() const noexcept;
 
+            PXRMP_GPU PXRMP_FORCE_INLINE
+            const T* begin() const noexcept;
+
+            PXRMP_GPU PXRMP_FORCE_INLINE
+            const T* end() const noexcept;
+
+            PXRMP_GPU PXRMP_FORCE_INLINE
+            T* begin() noexcept;
+
+            PXRMP_GPU PXRMP_FORCE_INLINE
+            T* end() noexcept;
+
+
         private:
             T arr[N];
 
@@ -97,6 +110,38 @@ size_t
 picsar::multi_physics::picsar_array<T, N>::size() const noexcept
 {
     return N;
+}
+
+template <typename T, size_t N>
+PXRMP_GPU PXRMP_FORCE_INLINE
+const T*
+picsar::multi_physics::picsar_array<T, N>:: begin() const noexcept
+{
+    return arr;
+}
+
+template <typename T, size_t N>
+PXRMP_GPU PXRMP_FORCE_INLINE
+T*
+picsar::multi_physics::picsar_array<T, N>:: begin() noexcept
+{
+    return arr;
+}
+
+template <typename T, size_t N>
+PXRMP_GPU PXRMP_FORCE_INLINE
+const T*
+picsar::multi_physics::picsar_array<T, N>:: end() const noexcept
+{
+    return arr+N;
+}
+
+template <typename T, size_t N>
+PXRMP_GPU PXRMP_FORCE_INLINE
+T*
+picsar::multi_physics::picsar_array<T, N>:: end() noexcept
+{
+    return arr+N;
 }
 
 #endif //__PICSAR_MULTIPHYSICS_ARRAY__
