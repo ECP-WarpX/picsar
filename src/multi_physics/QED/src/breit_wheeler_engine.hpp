@@ -119,6 +119,9 @@ namespace picsar{
          //Move constructor
          breit_wheeler_engine(breit_wheeler_engine&& other);
 
+         //Assignment operator
+         breit_wheeler_engine&  operator= (const breit_wheeler_engine& other);
+
          //Getter & setter for lambda
          _REAL get_lambda() const;
          void set_lambda(_REAL lambda);
@@ -330,6 +333,21 @@ breit_wheeler_engine(breit_wheeler_engine&& other):
     cum_distrib_table(std::move(other.cum_distrib_table))
     {}
 
+//Assignment operator
+template<typename _REAL, class _RNDWRAP>
+breit_wheeler_engine&
+picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
+ operator= (const breit_wheeler_engine& other)
+{
+    if (this != &other){
+        this->lambda = other.lambda;
+        this->rng = other.rng;
+        this->bw_ctrl = other.bw_ctrl;
+        this->TTfunc_table = other.TTfunc_table;
+        this->cum_distrib_table = other.cum_distrib_table;
+    }
+    return *this;
+}
 
 //Getter for lambda
 template<typename _REAL, class _RNDWRAP>
