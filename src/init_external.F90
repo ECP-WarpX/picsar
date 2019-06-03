@@ -283,6 +283,13 @@ SUBROUTINE init_rz_fields_coupling
   bp_f= DCMPLX(0.0_num, 0.0_num)
 
 END SUBROUTINE init_rz_fields_coupling
+
+  SUBROUTINE divergence_cleaning() &
+       BIND(C,name='divergence_cleaning')
+    USE fields, ONLY: bl_c, br_c,bt_c, bl_f, bp_f, bm_f
+    IMPLICIT NONE
+  END SUBROUTINE divergence_cleaning
+
   SUBROUTINE evec3d_push_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, dt, dtsdx,  &
   dtsdy, dtsdz, nx, ny, nz, norderx, nordery, norderz, nxguard, nyguard,nzguard)
   USE omp_lib
