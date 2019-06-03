@@ -269,7 +269,7 @@ namespace picsar{
         _RNDWRAP rng;
 
         //Parameters which control how the engine works
-        const breit_wheeler_engine_ctrl<_REAL> bw_ctrl;
+        breit_wheeler_engine_ctrl<_REAL> bw_ctrl;
 
         //lookup table for the TT function
         lookup_1d<_REAL> TTfunc_table;
