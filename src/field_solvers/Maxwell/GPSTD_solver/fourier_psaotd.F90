@@ -1125,7 +1125,7 @@ MODULE fourier_psaotd
     !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, bl_c, bl_f, plan_rz_f)
     !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, br_c, bp_f, plan_rz_f)
     !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, bt_c, bm_f, plan_rz_f)
-    write (*,*) "et_f =" , MAXVAL(abs(em_f))
+    !write (*,*) "et_f =" , MAXVAL(abs(em_f))
     !write (*,*) "er_f =" , abs(ep_f)
     IF (it.ge.timestat_itstart) THEN
       localtimes(22) = localtimes(22) + (MPI_WTIME() - tmptime)
@@ -1143,7 +1143,7 @@ MODULE fourier_psaotd
     DEALLOCATE (brt_m)
     DEALLOCATE (jrt_p)
     DEALLOCATE (jrt_m)
-    write (*,*) "em_f =" , MAXVAL(abs(em_f))
+    !write (*,*) "em_f =" , MAXVAL(abs(em_f))
     !write (*,*) "ep_f =" , MAXVAL(abs(ep_f))
     !write (*,*) "fft_forward_c2c_local_AM_rz er_c" , MAXVAL(abs(er_c))
     !write (*,*) "fft_forward_c2c_local_AM_rz et_c" , MAXVAL(abs(ii*et_c))
