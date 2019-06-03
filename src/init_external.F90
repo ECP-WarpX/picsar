@@ -245,7 +245,8 @@ MODULE link_external_tools
       IF(.NOT. ASSOCIATED(Ma1)) ALLOCATE(Ma1(nkx, nkx))
       IF(.NOT. ASSOCIATED(Ma_1)) THEN
         ALLOCATE(Ma_1(nkx, nkx))
-        CALL init_plans_blocks_rz       
+        CALL init_plans_blocks_rz    
+        CALL init_rz_fields_coupling   
       ENDIF
     ENDIF
 
@@ -253,9 +254,35 @@ MODULE link_external_tools
     IF(rank==0) PRINT*, 'END INIT EXTERNAL'
   END SUBROUTINE init_params_external_RZ
 
+SUBROUTINE init_rz_fields_coupling
+  USE PICSAR_precision
+  USE fields
 
+  el_h= DCMPLX(0.0_num, 0.0_num)
+  em_h= DCMPLX(0.0_num, 0.0_num)
+  ep_h= DCMPLX(0.0_num, 0.0_num)
+  bl_h= DCMPLX(0.0_num, 0.0_num)
+  bm_h= DCMPLX(0.0_num, 0.0_num)
+  bp_h= DCMPLX(0.0_num, 0.0_num)
+  jl_h= DCMPLX(0.0_num, 0.0_num)
+  jm_h= DCMPLX(0.0_num, 0.0_num)
+  jp_h= DCMPLX(0.0_num, 0.0_num)
+  rho_h= DCMPLX(0.0_num, 0.0_num)
+  rhoold_h= DCMPLX(0.0_num, 0.0_num)
+  el_h_inv= DCMPLX(0.0_num, 0.0_num)
+  em_h_inv= DCMPLX(0.0_num, 0.0_num)
+  ep_h_inv= DCMPLX(0.0_num, 0.0_num)
+  bl_h_inv= DCMPLX(0.0_num, 0.0_num)
+  bm_h_inv= DCMPLX(0.0_num, 0.0_num)
+  bp_h_inv= DCMPLX(0.0_num, 0.0_num)
+  el_f= DCMPLX(0.0_num, 0.0_num)
+  em_f= DCMPLX(0.0_num, 0.0_num)
+  ep_f=  DCMPLX(0.0_num, 0.0_num)
+  bl_f= DCMPLX(0.0_num, 0.0_num)
+  bm_f= DCMPLX(0.0_num, 0.0_num)
+  bp_f= DCMPLX(0.0_num, 0.0_num)
 
-
+END SUBROUTINE init_rz_fields_coupling
   SUBROUTINE evec3d_push_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, dt, dtsdx,  &
   dtsdy, dtsdz, nx, ny, nz, norderx, nordery, norderz, nxguard, nyguard,nzguard)
   USE omp_lib
