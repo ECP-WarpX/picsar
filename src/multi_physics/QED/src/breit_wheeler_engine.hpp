@@ -335,7 +335,7 @@ breit_wheeler_engine(breit_wheeler_engine&& other):
 
 //Assignment operator
 template<typename _REAL, class _RNDWRAP>
-breit_wheeler_engine&
+picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>&
 picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
  operator= (const breit_wheeler_engine& other)
 {
