@@ -199,7 +199,9 @@ USE shared_data , ONLY : dx, dy
         !  END DO
         !END DO
         !END IF
-        Call laser_field_correction
+        !Call laser_field_correction
+        CALL efield_bcs
+        CALL bfield_bcs
         IF (i .ge. 2) THEN 
           !!! --- FFTW FORWARD - FIELD PUSH - FFTW BACKWARD
           !write (*,*) " START push_psatd_ebfield"
