@@ -377,8 +377,6 @@ _REAL _lambda
 
     _REAL res;
 
-    std::cout << epsi << " " << eta << std::endl;
-
     if(epsi != zero && eta != zero)
         res = epsi*eta*exp(-pi/epsi)/tanh(pi*eta/epsi);
     else if(epsi == zero)
