@@ -10,6 +10,9 @@
 #ifndef __PICSAR_MULTIPHYSICS_QED_COMMONS__
 #define __PICSAR_MULTIPHYSICS_QED_COMMONS__
 
+//size_t is defined here
+#include <cstddef>
+
 //###################### Decorator to compile some functions for CPU and GPU####
 
     //This flag should be set by the user
