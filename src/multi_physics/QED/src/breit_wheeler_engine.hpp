@@ -306,8 +306,8 @@ namespace picsar{
 template<typename _REAL, class _RNDWRAP>
 picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 breit_wheeler_engine
-(_RNDWRAP&& rng, _REAL lambda, breit_wheeler_engine_ctrl<_REAL> bw_ctrl):
-    lambda{lambda}, rng{std::move(rng)}, bw_ctrl{bw_ctrl}
+(_RNDWRAP&& _rng, _REAL _lambda, breit_wheeler_engine_ctrl<_REAL> _bw_ctrl):
+    lambda{_lambda}, rng{std::move(_rng)}, bw_ctrl{_bw_ctrl}
 {
     //This enforces lambda=1 if SI units are used.
 #ifdef PXRMP_WITH_SI_UNITS
@@ -362,9 +362,9 @@ template<typename _REAL, class _RNDWRAP>
 void picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 set_lambda
 #ifdef PXRMP_WITH_NORMALIZED_UNITS
-(_REAL lambda)
+(_REAL _lambda)
 {
-    this->lambda = lambda;
+    this->lambda = _lambda;
 }
 #else
 (_REAL){} //Do nothing
@@ -601,8 +601,8 @@ PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::breit_wheeler_engine<_REAL, _RNDWRAP>::
 compute_cumulative_pair(_REAL chi_phot, _REAL chi_part) const
 {
-    auto func = [this, chi_phot](_REAL chi_part){
-        return compute_TT_integrand(chi_phot, chi_part);
+    auto func = [this, chi_phot](_REAL _chi_part){
+        return compute_TT_integrand(chi_phot, _chi_part);
     };
    _REAL num = quad_a_b<_REAL>(func, zero, chi_part);
    return num/compute_TT_function(chi_phot) ;

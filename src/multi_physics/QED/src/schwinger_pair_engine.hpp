@@ -153,8 +153,8 @@ namespace picsar{
 template<typename _REAL, class _RNDWRAP>
 picsar::multi_physics::schwinger_pair_engine<_REAL, _RNDWRAP>::
 schwinger_pair_engine
-(_RNDWRAP&& rng, _REAL lambda):
-    lambda{lambda}, rng{std::move(rng)}
+(_RNDWRAP&& _rng, _REAL _lambda):
+    lambda{_lambda}, rng{std::move(_rng)}
 {
     //This enforces lambda=1 if SI units are used.
 #ifdef PXRMP_WITH_SI_UNITS

@@ -63,8 +63,8 @@ picsar::multi_physics::stl_rng_wrapper<_REAL>::stl_rng_wrapper(uint64_t seed)
  //Constructor with move of an existing RNG
  template<typename _REAL>
  picsar::multi_physics::stl_rng_wrapper<_REAL>::stl_rng_wrapper
- (std::mt19937_64&& rng):
-    rng(std::move(rng)){}
+ (std::mt19937_64&& _rng):
+    rng(std::move(_rng)){}
 
 //Assignment operator
 template<typename _REAL>

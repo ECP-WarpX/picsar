@@ -306,8 +306,8 @@ namespace picsar{
 template<typename _REAL, class _RNDWRAP>
 picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
 quantum_synchrotron_engine
-(_RNDWRAP&& rng, _REAL lambda, quantum_synchrotron_engine_ctrl<_REAL> qs_ctrl):
-    lambda{lambda}, rng{std::move(rng)}, qs_ctrl{qs_ctrl}
+(_RNDWRAP&& _rng, _REAL _lambda, quantum_synchrotron_engine_ctrl<_REAL> _qs_ctrl):
+    lambda{_lambda}, rng{std::move(_rng)}, qs_ctrl{_qs_ctrl}
 {
     //This enforces lambda=1 if SI units are used.
 #ifdef PXRMP_WITH_SI_UNITS
@@ -347,9 +347,9 @@ template<typename _REAL, class _RNDWRAP>
 void picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
 set_lambda
 #ifdef PXRMP_WITH_NORMALIZED_UNITS
-(_REAL lambda)
+(_REAL _lambda)
 {
-    this->lambda = lambda;
+    this->lambda = _lambda;
 }
 #else
 (_REAL){} //Do nothing

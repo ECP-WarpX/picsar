@@ -204,8 +204,8 @@ namespace picsar{
 template<typename _REAL>
 picsar::multi_physics::lookup_1d<_REAL>::
 lookup_1d
-(picsar_vector<_REAL> coords, picsar_vector<_REAL> data):
-    coords{coords}, data{data}
+(picsar_vector<_REAL> _coords, picsar_vector<_REAL> _data):
+    coords{_coords}, data{_data}
 {
     init_flag = true;
 }
@@ -378,9 +378,9 @@ write_on_stream_bin(std::ofstream& out)
 template<typename _REAL>
 picsar::multi_physics::lookup_2d<_REAL>::
 lookup_2d(
-picsar_array<picsar_vector<_REAL>,2> coords,
-picsar_vector<_REAL> data):
-    coords{coords}, data{data}
+picsar_array<picsar_vector<_REAL>,2> _coords,
+picsar_vector<_REAL> _data):
+    coords{_coords}, data{_data}
 {
     init_flag = true;
 }
