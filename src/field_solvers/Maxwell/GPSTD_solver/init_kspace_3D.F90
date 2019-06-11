@@ -754,6 +754,7 @@ MODULE gpstd_solver
      REAL(num) , INTENT(IN)  :: d
      INTEGER(idp) , INTENT(IN) :: norder,nfft
      COMPLEX(cpx) , DIMENSION(:) , ALLOCATABLE , INTENT(INOUT) :: kvec,kvecf,kvecb
+     COMPLEX(cpx) , DIMENSION(:) , ALLOCATABLE :: k_true
      LOGICAL(lp)  , INTENT(IN)             :: l_stg
      COMPLEX(cpx), ALLOCATABLE, DIMENSION(:)     ::  ones, onesp
      REAL(num), ALLOCATABLE, DIMENSION(:)        :: FD
@@ -763,7 +764,7 @@ MODULE gpstd_solver
      ii = (0.0_num,1.0_num)
 
      ALLOCATE(ones(nfft), onesp(nfft))
-     ALLOCATE(kvec(nfft),kvecf(nfft),kvecb(nfft))
+     ALLOCATE(kvec(nfft),kvecf(nfft),kvecb(nfft),k_true(nfft))
      kvec=(0._num, 0._num)
      kvecb=(0._num, 0._num)
      kvecf=(0._num, 0._num)
@@ -787,7 +788,8 @@ MODULE gpstd_solver
            IF(l_stg) THEN
               kvec=kvec+2.0_num/d*FD(i)*SIN((i*2.0_num-1.0_num)*PI*ones/nfft)
            ELSE
-              kvec=kvec+2.0_num/d*FD(i)*SIN(i*2.0_num*PI*ones/nfft)
+              CALL fftfreq(nfft, k_true,  d)
+              kvec=kvec+2.0_num/d*FD(i)*SIN(i*k_true*d)
            ENDIF
        ENDDO
        DEALLOCATE(FD)
