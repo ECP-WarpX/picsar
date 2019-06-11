@@ -89,8 +89,6 @@ endif
 ifeq ($(USE_PSATD),TRUE)
   F90EXE_sources += mpi_derived_types.F90
 
-  F90EXE_sources += hankel.F90
-
   F90EXE_sources += maxwell_solver_manager.F90
   VPATH_LOCATIONS   += $(PICSAR_HOME)/src/field_solvers/Maxwell/
   INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/field_solvers/Maxwell/
