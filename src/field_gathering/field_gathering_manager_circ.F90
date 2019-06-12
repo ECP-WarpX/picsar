@@ -139,39 +139,20 @@ SUBROUTINE geteb2dcirc_energy_conserving_generic(np, xp, yp, zp, ex, ey, ez, bx,
   ! ______________________________________________
   ! Arbitrary order, non-optimized subroutines
 
-  if (l_nodal .and. .not. l_lower_order_in_v) then
+  !!! --- Gather electric field on particles
+  CALL pxr_gete2drz_n_energy_conserving(np, xp, yp, zp, ex, ey, ez, &
+                                        xmin, zmin, dx, dz, nmodes, nox, noz, &
+                                        erg, erg_nguard, erg_nvalid, &
+                                        etg, etg_nguard, etg_nvalid, &
+                                        elg, elg_nguard, elg_nvalid, &
+                                        l_lower_order_in_v, l_nodal)
 
-    ! These are more efficient when l_nodal is true.
-    !!! --- Gather electric field on particles
-    CALL pxr_getf2drz_n_energy_conserving(np, xp, yp, zp, ex, ey, ez, &
-                                          xmin, zmin, dx, dz, nmodes, nox, noz, &
-                                          erg, erg_nguard, erg_nvalid, &
-                                          etg, etg_nguard, etg_nvalid, &
-                                          elg, elg_nguard, elg_nvalid)
-    !!! --- Gather magnetic fields on particles
-    CALL pxr_getf2drz_n_energy_conserving(np, xp, yp, zp, bx, by, bz, &
-                                          xmin, zmin, dx, dz, nmodes, nox, noz, &
-                                          brg, brg_nguard, brg_nvalid, &
-                                          btg, btg_nguard, btg_nvalid, &
-                                          blg, blg_nguard, blg_nvalid)
-
-  else
-
-    !!! --- Gather electric field on particles
-    CALL pxr_gete2drz_n_energy_conserving(np, xp, yp, zp, ex, ey, ez, &
-                                          xmin, zmin, dx, dz, nmodes, nox, noz, &
-                                          erg, erg_nguard, erg_nvalid, &
-                                          etg, etg_nguard, etg_nvalid, &
-                                          elg, elg_nguard, elg_nvalid, &
-                                          l_lower_order_in_v, l_nodal)
-    !!! --- Gather magnetic fields on particles
-    CALL pxr_getb2drz_n_energy_conserving(np, xp, yp, zp, bx, by, bz, &
-                                          xmin, zmin, dx, dz, nmodes, nox, noz, &
-                                          brg, brg_nguard, brg_nvalid, &
-                                          btg, btg_nguard, btg_nvalid, &
-                                          blg, blg_nguard, blg_nvalid, &
-                                          l_lower_order_in_v, l_nodal)
-
-  endif
+  !!! --- Gather magnetic fields on particles
+  CALL pxr_getb2drz_n_energy_conserving(np, xp, yp, zp, bx, by, bz, &
+                                        xmin, zmin, dx, dz, nmodes, nox, noz, &
+                                        brg, brg_nguard, brg_nvalid, &
+                                        btg, btg_nguard, btg_nvalid, &
+                                        blg, blg_nguard, blg_nvalid, &
+                                        l_lower_order_in_v, l_nodal)
 
 END SUBROUTINE
