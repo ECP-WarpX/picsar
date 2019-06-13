@@ -667,7 +667,7 @@ END SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells, jycells, jzcells, np, ncells, xp,   &
   yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz,    &
-  nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
+  nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)  !#do not wrap
   USE constants, ONLY: lvec
   USE picsar_precision, ONLY: idp, isp, num
   IMPLICIT NONE
@@ -1636,7 +1636,7 @@ END SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells, jycells, jzcells, np, ncells, xp,   &
   yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz,    &
-  nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
+  nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)  !#do not wrap
   USE constants, ONLY: lvec
   USE picsar_precision, ONLY: idp, isp, num
   IMPLICIT NONE
@@ -2483,7 +2483,7 @@ END SUBROUTINE depose_jxjyjz_scalar_3_3_3
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp,     &
   gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard,         &
-  nzguard)
+  nzguard)  !#do not wrap
   USE constants, ONLY: clight, lvec
   USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
@@ -3375,7 +3375,7 @@ END SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells, jycells, jzcells, np, ncells, xp,   &
   yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz,    &
-  nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
+  nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)  !#do not wrap
   USE constants, ONLY: lvec
   USE picsar_precision, ONLY: idp, isp, num
   IMPLICIT NONE
