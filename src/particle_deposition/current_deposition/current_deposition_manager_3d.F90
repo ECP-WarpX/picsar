@@ -106,7 +106,7 @@ END SUBROUTINE depose_jxjyjz_esirkepov
 SUBROUTINE depose_jxjyjz_generic( jx, jx_nguard, jx_nvalid, jy, jy_nguard, jy_nvalid, &
   jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin,    &
   zmin, dt, dx, dy, dz, nox, noy, noz, l_nodal, current_depo_algo)     !#do not wrap
-  USE picsar_precision, ONLY: idp, num
+  USE picsar_precision, ONLY: idp, num, lp
   IMPLICIT NONE
   INTEGER(idp) :: np, nox, noy, noz, current_depo_algo
   INTEGER(idp), intent(in)                :: jx_nguard(3), jx_nvalid(3),              &
@@ -263,6 +263,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
       REAL(num), DIMENSION(8, ncells), INTENT(INOUT) :: jxcells, jycells, jzcells
       REAL(num), DIMENSION(np), INTENT(IN) :: xp, yp, zp, uxp, uyp, uzp, gaminv, w
       REAL(num), INTENT(IN) :: q, dt, dx, dy, dz, xmin, ymin, zmin
+      LOGICAL(lp), INTENT(IN) :: l_nodal
       INTEGER(idp) :: ncx, ncy, ncz
       INTEGER(idp) :: lvect
     END SUBROUTINE
@@ -279,6 +280,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
       REAL(num), DIMENSION(8, ncells), INTENT(INOUT) :: jxcells, jycells, jzcells
       REAL(num), DIMENSION(np), INTENT(IN) :: xp, yp, zp, uxp, uyp, uzp, gaminv, w
       REAL(num), INTENT(IN) :: q, dt, dx, dy, dz, xmin, ymin, zmin
+      LOGICAL(lp), INTENT(IN) :: l_nodal
       INTEGER(idp) :: ncx, ncy, ncz
       INTEGER(idp) :: lvect
     END SUBROUTINE
@@ -295,6 +297,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
       REAL(num), DIMENSION(8, ncells), INTENT(INOUT) :: jxcells, jycells, jzcells
       REAL(num), DIMENSION(np), INTENT(IN) :: xp, yp, zp, uxp, uyp, uzp, gaminv, w
       REAL(num), INTENT(IN) :: q, dt, dx, dy, dz, xmin, ymin, zmin
+      LOGICAL(lp), INTENT(IN) :: l_nodal
       INTEGER(idp) :: ncx, ncy, ncz
       INTEGER(idp) :: lvect
     END SUBROUTINE
@@ -816,6 +819,7 @@ END SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp
 SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( curr_depo_sub,  &
   curr_reduc_sub, jxg, jyg, jzg, nxx, nyy, nzz, nxjguard, nyjguard, nzjguard, noxx,     &
   noyy, nozz, dxx, dyy, dzz, dtt, lvect)
+  USE fields, ONLY: l_nodalgrid
   USE grid_tilemodule, ONLY: aofgrid_tiles, grid_tile
   USE particle_properties, ONLY: nspecies, wpid
   USE particle_speciesmodule, ONLY: particle_species
@@ -830,7 +834,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( curr_depo_
   INTERFACE
     SUBROUTINE curr_depo_sub(jxcells, jycells, jzcells, np, ncells, xp, yp, zp, uxp,  &
       uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard,    &
-      nyguard, nzguard, ncx, ncy, ncz, lvect)  !#do not parse
+      nyguard, nzguard, ncx, ncy, ncz, lvect, l_nodal)  !#do not parse
       USE PICSAR_precision
       USE constants
       IMPLICIT NONE
@@ -842,7 +846,8 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( curr_depo_
       zmin
       INTEGER(idp)                                  :: ncx, ncy, ncz
       INTEGER(idp)                                  :: lvect
-    END SUBROUTINE 
+      LOGICAL(lp), INTENT(IN)                       :: l_nodal
+    END SUBROUTINE
 
     SUBROUTINE curr_reduc_sub(jx, jy, jz, jxcells, jycells, jzcells, ncells, nx, ny,  &
       nz, nxguard, nyguard, nzguard, ncx, ncy, ncz) !#do not parse
@@ -859,7 +864,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( curr_depo_
       REAL(num), INTENT(IN OUT) ::                                                    &
       jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
       REAL(num), INTENT(IN), DIMENSION(8, ncells):: jxcells, jycells, jzcells
-    END SUBROUTINE 
+    END SUBROUTINE
 
   END INTERFACE
 
@@ -891,7 +896,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( curr_depo_
   ! _______________________________________________________________________
   !$OMP PARALLEL DEFAULT(NONE) SHARED(ntilex, ntiley, ntilez, nspecies,               &
   !$OMP species_parray, nxjguard, nyjguard, nzjguard, dxx, dyy, dzz, dtt, jxg, jyg,   &
-  !$OMP jzg, noxx, noyy, nozz, aofgrid_tiles) FIRSTPRIVATE(lvect) PRIVATE(ix, iy, iz, &
+  !$OMP jzg, noxx, noyy, nozz, aofgrid_tiles) FIRSTPRIVATE(lvect, l_nodalgrid) PRIVATE(ix, iy, iz, &
   !$OMP ispecies, ncells, curr, currg, curr_tile, np, jmin, jmax, kmin, kmax, lmin,   &
   !$OMP lmax, jminc, jmaxc, kminc, kmaxc, lminc, lmaxc, nxc, nyc, nzc, nxjg, nyjg,    &
   !$OMP nzjg, isdeposited, jxcells, jycells, jzcells, ncx, ncy, ncz)
@@ -954,7 +959,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v2( curr_depo_
           curr_tile%part_uz, curr_tile%part_gaminv, curr_tile%pid(1, wpid),           &
           curr%charge, curr_tile%x_grid_tile_min, curr_tile%y_grid_tile_min,          &
           curr_tile%z_grid_tile_min, dtt, dxx, dyy, dzz, nxc, nyc, nzc, nxjg, nyjg,   &
-          nzjg, ncx, ncy, ncz, lvect)
+          nzjg, ncx, ncy, ncz, lvect, l_nodalgrid)
 
           !print*, sum(jxcells), sum(jycells), sum(jzcells)
 
@@ -1205,7 +1210,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3( curr_depo_
       zmin
       INTEGER(idp)                                  :: ncx, ncy, ncz
       INTEGER(idp)                                  :: lvect
-    END SUBROUTINE 
+    END SUBROUTINE
 
     SUBROUTINE curr_reduc_sub(jx, jy, jz, jxcells, jycells, jzcells, ncells, nx, ny,  &
       nz, nxguard, nyguard, nzguard, ncx, ncy, ncz) !#do not parse
@@ -1222,7 +1227,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz_classical_sub_openmp_v3( curr_depo_
       REAL(num), INTENT(IN OUT) ::                                                    &
       jz(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
       REAL(num), INTENT(IN), DIMENSION(8, ncells):: jxcells, jycells, jzcells
-    END SUBROUTINE 
+    END SUBROUTINE
 
   END INTERFACE
 
