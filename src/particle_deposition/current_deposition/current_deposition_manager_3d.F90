@@ -48,6 +48,7 @@ SUBROUTINE depose_jxjyjz(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q
   xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard, nzguard, nox, noy,    &
   noz, current_depo_algo)
   USE picsar_precision, ONLY: idp, num
+  USE fields, ONLY: l_nodalgrid
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nox, noy, noz, nxguard, nyguard, nzguard,           &
   current_depo_algo
@@ -62,7 +63,7 @@ SUBROUTINE depose_jxjyjz(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q
 
   call depose_jxjyjz_generic( jx, nguard, nvalid, jy, nguard, nvalid, jz, nguard,     &
   nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy,  &
-  dz, nox, noy, noz, current_depo_algo)
+  dz, nox, noy, noz, l_nodalgrid, current_depo_algo)
 END SUBROUTINE depose_jxjyjz
 
 ! ________________________________________________________________________________________
@@ -104,7 +105,7 @@ END SUBROUTINE depose_jxjyjz_esirkepov
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_generic( jx, jx_nguard, jx_nvalid, jy, jy_nguard, jy_nvalid, &
   jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin,    &
-  zmin, dt, dx, dy, dz, nox, noy, noz, current_depo_algo)     !#do not wrap
+  zmin, dt, dx, dy, dz, nox, noy, noz, l_nodal, current_depo_algo)     !#do not wrap
   USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   INTEGER(idp) :: np, nox, noy, noz, current_depo_algo
@@ -119,6 +120,7 @@ SUBROUTINE depose_jxjyjz_generic( jx, jx_nguard, jx_nvalid, jy, jy_nguard, jy_nv
   REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1,           &
   -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1,                                          &
   -jz_nguard(3):jz_nvalid(3)+jz_nguard(3)-1 )
+  LOGICAL(lp), intent(in)  :: l_nodal
   REAL(num), DIMENSION(np) :: xp, yp, zp, uxp, uyp, uzp, w, gaminv
   REAL(num) :: q, dt, dx, dy, dz, xmin, ymin, zmin
 
@@ -140,15 +142,15 @@ SUBROUTINE depose_jxjyjz_generic( jx, jx_nguard, jx_nvalid, jy, jy_nguard, jy_nv
     IF ((nox.eq.1).and.(noy.eq.1).and.(noz.eq.1)) THEN
       CALL depose_jxjyjz_scalar_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
       jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w,  &
-      q, xmin, ymin, zmin, dt, dx, dy, dz)
+      q, xmin, ymin, zmin, dt, dx, dy, dz, l_nodal)
     ELSE IF ((nox.eq.2).and.(noy.eq.2).and.(noz.eq.2)) THEN
       CALL depose_jxjyjz_scalar_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
       jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w,  &
-      q, xmin, ymin, zmin, dt, dx, dy, dz)
+      q, xmin, ymin, zmin, dt, dx, dy, dz, l_nodal)
     ELSE IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
       CALL depose_jxjyjz_scalar_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
       jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w,  &
-      q, xmin, ymin, zmin, dt, dx, dy, dz)
+      q, xmin, ymin, zmin, dt, dx, dy, dz, l_nodal)
     ELSE
       CALL pxr_depose_jxjyjz_esirkepov_n( jx, jx_nguard, jx_nvalid, jy, jy_nguard,    &
       jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w,  &
@@ -160,15 +162,15 @@ SUBROUTINE depose_jxjyjz_generic( jx, jx_nguard, jx_nvalid, jy, jy_nguard, jy_nv
     IF ((nox.eq.1).and.(noy.eq.1).and.(noz.eq.1)) THEN
       CALL depose_jxjyjz_vecHVv2_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,      &
       jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w,  &
-      q, xmin, ymin, zmin, dt, dx, dy, dz)
+      q, xmin, ymin, zmin, dt, dx, dy, dz, l_nodal)
     ELSE IF ((nox.eq.2).and.(noy.eq.2).and.(noz.eq.2)) THEN
       CALL depose_jxjyjz_vecHVv2_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard,      &
       jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w,  &
-      q, xmin, ymin, zmin, dt, dx, dy, dz)
+      q, xmin, ymin, zmin, dt, dx, dy, dz, l_nodal)
     ELSE IF ((nox.eq.3).and.(noy.eq.3).and.(noz.eq.3)) THEN
       CALL depose_jxjyjz_vecHVv3_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard,      &
       jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w,  &
-      q, xmin, ymin, zmin, dt, dx, dy, dz)
+      q, xmin, ymin, zmin, dt, dx, dy, dz, l_nodal)
     ELSE
       CALL pxr_depose_jxjyjz_esirkepov_n( jx, jx_nguard, jx_nvalid, jy, jy_nguard,    &
       jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w,  &
@@ -252,7 +254,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
     ! Interface for subroutine with no reduction - classical deposition order 1
     SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells, jycells, jzcells, np, ncells,   &
       xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx,    &
-      ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)  !#do not parse
+      ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect, l_nodal)  !#do not parse
       USE PICSAR_precision
       USE constants
       IMPLICIT NONE
@@ -268,7 +270,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
     ! Interface for subroutine with no reduction - classical deposition order 2
     SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells, jycells, jzcells, np, ncells,   &
       xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx,    &
-      ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)  !#do not parse
+      ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect, l_nodal)  !#do not parse
       USE PICSAR_precision
       USE constants
       IMPLICIT NONE
@@ -284,7 +286,7 @@ SUBROUTINE pxrdepose_currents_on_grid_jxjyjz
     ! Interface for subroutine with no reduction - classical deposition order 3
     SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells, jycells, jzcells, np, ncells,   &
       xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx,    &
-      ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)  !#do not parse
+      ny, nz, nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect, l_nodal)  !#do not parse
       USE PICSAR_precision
       USE constants
       IMPLICIT NONE
