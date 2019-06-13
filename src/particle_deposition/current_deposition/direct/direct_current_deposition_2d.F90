@@ -80,11 +80,13 @@
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_scalar2d_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
   jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w, q,     &
-  xmin, zmin, dt, dx, dz)     !#do not wrap
+  xmin, zmin, dt, dx, dz, l_nodal)     !#do not wrap
   USE constants, ONLY: clight
   USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   INTEGER(idp)             :: np
+  LOGICAL(idp)             :: l_nodal
+  REAL(num)                :: stagger_shift
   INTEGER(idp), intent(in) :: jx_nguard(2), jx_nvalid(2), jy_nguard(2), jy_nvalid(2), &
   jz_nguard(2), jz_nvalid(2)
   REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1,           &
@@ -101,6 +103,12 @@ SUBROUTINE depose_jxjyjz_scalar2d_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard
   REAL(num), DIMENSION(2)  :: sx(0:1), sz(0:1), sx0(0:1), sz0(0:1)
   REAL(num), PARAMETER     :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
   INTEGER(idp)             :: j, l, j0, l0, ip
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dzi = 1.0_num/dz
@@ -140,8 +148,8 @@ SUBROUTINE depose_jxjyjz_scalar2d_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard
     ! --- finds node of cell containing particles for current positions
     j=floor(xmid)
     l=floor(zmid)
-    j0=floor(xmid-0.5_num)
-    l0=floor(zmid-0.5_num)
+    j0=floor(xmid-stagger_shift)
+    l0=floor(zmid-stagger_shift)
 
     ! --- computes set of coefficients for node centered quantities
     xint = xmid-j
@@ -152,8 +160,8 @@ SUBROUTINE depose_jxjyjz_scalar2d_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard
     sz( 1) = zint
 
     ! --- computes set of coefficients for staggered quantities
-    xint = xmid-j0-0.5_num
-    zint = zmid-l0-0.5_num
+    xint = xmid-stagger_shift-j0
+    zint = zmid-stagger_shift-l0
     sx0( 0) = 1.0_num-xint
     sx0( 1) = xint
     sz0( 0) = 1.0_num-zint
@@ -211,11 +219,13 @@ END SUBROUTINE depose_jxjyjz_scalar2d_1_1_1
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_scalar2d_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
   jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w, q,     &
-  xmin, zmin, dt, dx, dz)     !#do not wrap
+  xmin, zmin, dt, dx, dz, l_nodal)     !#do not wrap
   USE constants, ONLY: clight
   USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   INTEGER(idp) :: np
+  LOGICAL(idp) :: l_nodal
+  REAL(num)    :: stagger_shift
   INTEGER(idp), intent(in) :: jx_nguard(2), jx_nvalid(2), jy_nguard(2), jy_nvalid(2), &
   jz_nguard(2), jz_nvalid(2)
   REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1,           &
@@ -234,6 +244,12 @@ SUBROUTINE depose_jxjyjz_scalar2d_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard
   sz0(-1:1)
   REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
   INTEGER(idp) :: j, l, j0, l0, ip
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dzi = 1.0_num/dz
@@ -270,8 +286,8 @@ SUBROUTINE depose_jxjyjz_scalar2d_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard
     ! --- finds node of cell containing particles for current positions
     j=nint(xmid)
     l=nint(zmid)
-    j0=nint(xmid-0.5_num)
-    l0=nint(zmid-0.5_num)
+    j0=nint(xmid-stagger_shift)
+    l0=nint(zmid-stagger_shift)
     ! --- computes set of coefficients for node centered quantities
     xint = xmid-j
     zint = zmid-l
@@ -285,8 +301,8 @@ SUBROUTINE depose_jxjyjz_scalar2d_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard
     sz( 1) = 0.5_num*(0.5_num+zint)**2
 
     ! --- computes set of coefficients for staggered quantities
-    xint = xmid-j0-0.5_num
-    zint = zmid-l0-0.5_num
+    xint = xmid-stagger_shift-j0
+    zint = zmid-stagger_shift-l0
     xintsq = xint*xint
     sx0(-1) = 0.5_num*(0.5_num-xint)**2
     sx0( 0) = 0.75_num-xintsq
@@ -377,11 +393,13 @@ END SUBROUTINE depose_jxjyjz_scalar2d_2_2_2
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_scalar2d_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
   jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w, q,     &
-  xmin, zmin, dt, dx, dz)     !#do not wrap
+  xmin, zmin, dt, dx, dz, l_nodal)     !#do not wrap
   USE constants, ONLY: clight
   USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   INTEGER(idp) :: np
+  LOGICAL(idp) :: l_nodal
+  REAL(num)    :: stagger_shift
   INTEGER(idp), intent(in) :: jx_nguard(2), jx_nvalid(2), jy_nguard(2), jy_nvalid(2), &
   jz_nguard(2), jz_nvalid(2)
   REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1,           &
@@ -401,6 +419,12 @@ SUBROUTINE depose_jxjyjz_scalar2d_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard
   REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
   INTEGER(idp) :: j, l, j0, l0, ip
 
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dzi = 1.0_num/dz
@@ -437,8 +461,8 @@ SUBROUTINE depose_jxjyjz_scalar2d_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard
     ! --- finds node of cell containing particles for current positions
     j=floor(xmid)
     l=floor(zmid)
-    j0=floor(xmid-0.5_num)
-    l0=floor(zmid-0.5_num)
+    j0=floor(xmid-stagger_shift)
+    l0=floor(zmid-stagger_shift)
 
     ! --- computes set of coefficients for node centered quantities
     xint = xmid-j
@@ -459,8 +483,8 @@ SUBROUTINE depose_jxjyjz_scalar2d_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard
     sz( 2) = onesixth*zintsq*zint
 
     ! --- computes set of coefficients for staggered quantities
-    xint = xmid-j0-0.5_num
-    zint = zmid-l0-0.5_num
+    xint = xmid-stagger_shift-j0
+    zint = zmid-stagger_shift-l0
     oxint = 1.0_num-xint
     xintsq = xint*xint
     oxintsq = oxint*oxint
