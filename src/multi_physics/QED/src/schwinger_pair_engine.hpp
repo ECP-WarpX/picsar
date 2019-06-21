@@ -252,9 +252,9 @@ _REAL _lambda, _REAL unf_zero_one_minus_epsi
     _REAL volume = dx*dy*dz;
     _REAL probability = rate*volume*dt;
 
-    weight = one/volume;
+    *weight = one/volume;
 
-    has_event_happend = (unf_zero_one_minus_epsi < probability);
+    *has_event_happend = (unf_zero_one_minus_epsi < probability);
 }
 
 //This function determines how many pairs have been generated in a given
@@ -309,9 +309,9 @@ _REAL _lambda, _REAL unf_zero_one_minus_epsi
     _REAL volume = dx*dy*dz;
     _REAL probability = rate*volume*dt;
 
-    weight = one / volume;
+    *weight = one / volume;
 
-    how_many = poisson_distrib(probability, unf_zero_one_minus_epsi);
+    *how_many = poisson_distrib(probability, unf_zero_one_minus_epsi);
 }
 
 
