@@ -42,6 +42,7 @@
 SUBROUTINE depose_jxjyjz_2d(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,  &
   xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, lvect)
   USE picsar_precision, ONLY: idp, num
+  USE fields, ONLY: l_nodalgrid
   implicit none
   integer(idp)                          :: np, nx, nz, nox, noz, nxguard, nzguard
   integer(idp)                          :: lvect
@@ -57,7 +58,7 @@ SUBROUTINE depose_jxjyjz_2d(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w
 
   call depose_jxjyjz_generic_2d( jx, nguard, nvalid, jy, nguard, nvalid, jz, nguard,  &
   nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, zmin, dt, dx, dz, nox,   &
-  noz, lvect, 0_idp)
+  noz, l_nodalgrid, lvect, 0_idp)
 
 END SUBROUTINE depose_jxjyjz_2d
 
@@ -72,7 +73,7 @@ END SUBROUTINE depose_jxjyjz_2d
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_generic_2d( jx, jx_nguard, jx_nvalid, jy, jy_nguard,         &
   jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
-  xmin, zmin, dt, dx, dz, nox, noz, lvect, current_depo_algo )     !#do not wrap
+  xmin, zmin, dt, dx, dz, nox, noz, l_nodal, lvect, current_depo_algo )     !#do not wrap
   USE picsar_precision, ONLY: idp, lp, num
   implicit none
   integer(idp)                          :: np, nox, noz, current_depo_algo
@@ -84,7 +85,8 @@ SUBROUTINE depose_jxjyjz_generic_2d( jx, jx_nguard, jx_nvalid, jy, jy_nguard,   
   REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1,           &
   -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1 )
   REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1,           &
-  -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1 )
+       -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1 )
+  LOGICAL(lp)                           :: l_nodal
   real(num), dimension(np)              :: xp, yp, zp, uxp, uyp, uzp, gaminv, w
   real(num)                             :: q, dt, dx, dz, xmin, zmin
 
@@ -94,15 +96,15 @@ SUBROUTINE depose_jxjyjz_generic_2d( jx, jx_nguard, jx_nvalid, jy, jy_nguard,   
     IF ((nox.eq.1).and.(noz.eq.1)) THEN
       CALL depose_jxjyjz_scalar2d_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
       jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w,  &
-      q, xmin, zmin, dt, dx, dz)
+      q, xmin, zmin, dt, dx, dz, l_nodal)
     ELSE IF ((nox.eq.2).and.(noz.eq.2)) THEN
       CALL depose_jxjyjz_scalar2d_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
       jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w,  &
-      q, xmin, zmin, dt, dx, dz)
+      q, xmin, zmin, dt, dx, dz, l_nodal)
     ELSE IF ((nox.eq.3).and.(noz.eq.3)) THEN
       CALL depose_jxjyjz_scalar2d_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
       jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w,  &
-      q, xmin, zmin, dt, dx, dz)
+      q, xmin, zmin, dt, dx, dz, l_nodal)
     ELSE
       CALL pxr_depose_jxjyjz_esirkepov2d_n( jx, jx_nguard, jx_nvalid, jy, jy_nguard,    &
       jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, &
