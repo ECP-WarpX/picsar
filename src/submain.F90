@@ -496,8 +496,8 @@ SUBROUTINE laser_gaussian
    END DO
   END DO
 
-  !br(:,:,1)= -et(:,:,1)/clight
-  !bt(:,:,1)= er(:,:,1)/clight
+  br(:,:,1)= -et(:,:,1)/clight
+  bt(:,:,1)= er(:,:,1)/clight
   !do k=0,nx-1
   !  Do i=0,ny-1
   !    write (0,*), "max value of erC" ,er_c(k,i,:)

@@ -49,9 +49,10 @@ MODULE matrix_data
   USE PICSAR_precision
   USE constants
   ! Maximum number of instances (matrix_blocks and vector_blocks)
-  INTEGER(idp), PARAMETER ::  ns_max=40
+  INTEGER(idp), PARAMETER ::  ns_max=40 , nm_max=20
   INTEGER(idp) :: nmatrixes=0
   INTEGER(idp) :: nmatrixes2=0
+  INTEGER(idp) :: nmatrixes_h=0
 END MODULE matrix_data
 
 ! ________________________________________________________________________________________
@@ -314,6 +315,19 @@ SUBROUTINE allocate_new_matrix_vector(nvar)
   vnew(nmatrixes)%nblocks=nvar
 
 END SUBROUTINE allocate_new_matrix_vector
+
+SUBROUTINE allocate_new_hankel_matrix_vector(nvar1,nvar2)
+  USE matrix_coefficients, ONLY: hankel_mat
+  USE matrix_data, ONLY: nmatrixes_h, nm_max
+  USE picsar_precision, ONLY: idp
+  IMPLICIT NONE
+  INTEGER(idp), INTENT(IN) :: nvar1, nvar2
+  IF (.NOT. ASSOCIATED(hankel_mat)) THEN
+    ALLOCATE(hankel_mat(nm_max))
+  ENDIF 
+  nmatrixes_h=nmatrixes_h+1
+  ALLOCATE(hankel_mat(nmatrixes_h)%mode_block_matrix2d(nvar1, nvar2))
+END SUBROUTINE allocate_new_hankel_matrix_vector
 
 ! ________________________________________________________________________________________
 !> @brief
