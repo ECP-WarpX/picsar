@@ -79,7 +79,7 @@
 !> @warning arrays jx, jy, jz should be set to 0 before entering this subroutine.
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_scalar2d_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
-  jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w, q,     &
+  jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, vx_gal,vy_gal,vz_gal, gaminv, w, q,     &
   xmin, zmin, dt, dx, dz, l_nodal)     !#do not wrap
   USE constants, ONLY: clight
   USE picsar_precision, ONLY: idp, num
@@ -98,6 +98,7 @@ SUBROUTINE depose_jxjyjz_scalar2d_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard
   REAL(num), DIMENSION(np) :: xp, zp, uxp, uyp, uzp, w, gaminv
   REAL(num)                :: q, dt, dx, dz, xmin, zmin
   REAL(num)                :: dxi, dzi, xint, zint
+  REAL(num)                :: vx_gal, vy_gal, vz_gal
   REAL(num)                :: x, z, xmid, zmid, vx, vy, vz, invvol, dts2dx, dts2dz
   REAL(num)                :: wq, wqx, wqy, wqz, clightsq
   REAL(num), DIMENSION(2)  :: sx(0:1), sz(0:1), sx0(0:1), sz0(0:1)
@@ -142,8 +143,8 @@ SUBROUTINE depose_jxjyjz_scalar2d_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard
     wqz=wq*invvol*vz
 
     ! Gets position in grid units at (n+1/2) for computing rho(n+1/2)
-    xmid=x-dts2dx*vx
-    zmid=z-dts2dz*vz
+    xmid=x-dts2dx * (vx - vx_gal)
+    zmid=z-dts2dz * (vz - vz_gal)
 
     ! --- finds node of cell containing particles for current positions
     j=floor(xmid)
@@ -218,7 +219,7 @@ END SUBROUTINE depose_jxjyjz_scalar2d_1_1_1
 !> 2015
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_scalar2d_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
-  jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w, q,     &
+  jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, vx_gal,vy_gal, vz_gal, gaminv, w, q,     &
   xmin, zmin, dt, dx, dz, l_nodal)     !#do not wrap
   USE constants, ONLY: clight
   USE picsar_precision, ONLY: idp, num
@@ -237,6 +238,7 @@ SUBROUTINE depose_jxjyjz_scalar2d_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard
   REAL(num), DIMENSION(np) :: xp, zp, uxp, uyp, uzp, gaminv, w
   REAL(num) :: q, dt, dx, dz, xmin, zmin
   REAL(num) :: dxi, dzi, xint, zint
+  REAL(num) :: vx_gal, vy_gal, vz_gal
   REAL(num) :: xintsq, zintsq
   REAL(num) :: x, z, xmid, zmid, vx, vy, vz, invvol, dts2dx, dts2dz
   REAL(num) :: wq, wqx, wqy, wqz, clightsq
@@ -280,8 +282,8 @@ SUBROUTINE depose_jxjyjz_scalar2d_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard
     wqz=wq*vz
 
     ! Gets position in grid units at (n+1/2) for computing jx(n+1/2)
-    xmid=x-dts2dx*vx
-    zmid=z-dts2dz*vz
+    xmid=x-dts2dx * (vx - vx_gal)
+    zmid=z-dts2dz * (vz - vz_gal)
 
     ! --- finds node of cell containing particles for current positions
     j=nint(xmid)
@@ -392,7 +394,7 @@ END SUBROUTINE depose_jxjyjz_scalar2d_2_2_2
 !> Creation 2015
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_scalar2d_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
-  jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w, q,     &
+  jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, vx_gal, vy_gal, vz_gal, gaminv, w, q,     &
   xmin, zmin, dt, dx, dz, l_nodal)     !#do not wrap
   USE constants, ONLY: clight
   USE picsar_precision, ONLY: idp, num
@@ -412,6 +414,7 @@ SUBROUTINE depose_jxjyjz_scalar2d_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard
   REAL(num) :: q, dt, dx, dz, xmin, zmin
   REAL(num) :: dxi, dzi, xint, zint, oxint, ozint, xintsq,  &
   zintsq, oxintsq, ozintsq
+  REAL(num) :: vx_gal, vy_gal, vz_gal
   REAL(num) :: x, z, xmid, zmid, vx, vy, vz, invvol, dts2dx, dts2dz
   REAL(num) :: wq, wqx, wqy, wqz, clightsq
   REAL(num), DIMENSION(4) :: sx(-1:2), sz(-1:2), sx0(-1:2),      &
@@ -455,8 +458,8 @@ SUBROUTINE depose_jxjyjz_scalar2d_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard
     wqz=wq*vz
 
     ! Gets position in grid units at (n+1/2) for computing rho(n+1/2)
-    xmid=x-dts2dx*vx
-    zmid=z-dts2dz*vz
+    xmid=x-dts2dx * (vx - vx_gal)
+    zmid=z-dts2dz * (vz - vz_gal)
 
     ! --- finds node of cell containing particles for current positions
     j=floor(xmid)
