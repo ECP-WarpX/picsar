@@ -288,6 +288,7 @@ END SUBROUTINE init_rz_fields_coupling
        BIND(C,name='divergence_cleaning')
     USE fields, ONLY: bl_c, br_c,bt_c, bl_f, bp_f, bm_f
     IMPLICIT NONE
+    Call laser_field_correction
   END SUBROUTINE divergence_cleaning
 
   SUBROUTINE evec3d_push_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, dt, dtsdx,  &

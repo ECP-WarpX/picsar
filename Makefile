@@ -375,7 +375,8 @@ build_lib:$(SRCDIR)/modules/modules.o \
 	$(HANKEL_FILE) \
 	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
-	$(SRCDIR)/init_external.o
+	$(SRCDIR)/init_external.o \
+	$(SRCDIR)/divergence_cleaning.o
 	ar rcs libpxr.a $(SRCDIR)/*.o $(SRCDIR)/*/*.o  $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o
 	$(FC) $(FARGS)  $(LDFLAGS)  -shared -o libpxr.so $(SRCDIR)/*.o  $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o  $(SRCDIR)/*/*/*/*.o
 	mv libpxr.a $(LIBDIR)
