@@ -94,9 +94,6 @@ ifeq ($(USE_PSATD),TRUE)
 
   F90EXE_sources += yee.F90
 
-  F90EXE_sources += current_deposition_manager_circ.F90
-  F90EXE_sources += direct_current_deposition_circ.F90
-
   F90EXE_sources += load_balancing.F90
   VPATH_LOCATIONS   += $(PICSAR_HOME)/src/housekeeping
   INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/housekeeping
