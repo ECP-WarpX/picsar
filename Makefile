@@ -532,6 +532,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/diags/diags.o \
 	$(SRCDIR)/ios/simple_io.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
+	$(SRCDIR)/divergence_cleaning.o \
 	$(SRCDIR)/submain.o \
 	$(SRCDIR)/initialization/control_file.o \
 	$(SRCDIR)/main.o
