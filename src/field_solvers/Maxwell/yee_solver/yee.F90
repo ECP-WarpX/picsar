@@ -337,7 +337,7 @@ subroutine pxrpush_emrz_evec( &
      Jr, jrlo, jrhi, &
      Jt, jtlo, jthi, &
      Jz, jzlo, jzhi, &
-     mudt, dtsdx, dtsdy, dtsdz, rmin, dr)
+     mudt, dtsdr, dtsdt, dtsdz, rmin, dr)
      USE picsar_precision, ONLY: idp, isp, num
 
 
@@ -364,17 +364,17 @@ subroutine pxrpush_emrz_evec( &
   real(num), intent(IN):: Jt(jtlo(1):jthi(1),jtlo(2):jthi(2))
   real(num), intent(IN):: Jz(jzlo(1):jzhi(1),jzlo(2):jzhi(2))
 
-  real(num), intent(IN) :: mudt,dtsdx,dtsdy,dtsdz,rmin,dr
+  real(num), intent(IN) :: mudt,dtsdr,dtsdt,dtsdz,rmin,dr
 
   integer :: j,k
 
   real(num) :: ru, rd
 
-  ! dtsdy should not be used.
+  ! dtsdt should not be used.
 
 #ifndef WARPX
   !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j, ru, rd), &
-  !$OMP SHARED(rlo, rhi, tlo, thi, zlo, zhi, mudt, dtsdx, dtsdz, rmin, dr), &
+  !$OMP SHARED(rlo, rhi, tlo, thi, zlo, zhi, mudt, dtsdr, dtsdz, rmin, dr), &
   !$OMP SHARED(Er, Et, Ez, Br, Bt, Bz, Jr, Jt, Jz)
   !$OMP DO COLLAPSE(2)
 #endif
@@ -397,7 +397,7 @@ subroutine pxrpush_emrz_evec( &
   do k   = tlo(2), thi(2)
     do j = tlo(1), thi(1)
       if (j /= 0 .or. rmin /= 0.) then
-        Et(j,k) = Et(j,k) - dtsdx * (Bz(j,k) - Bz(j-1,k)) &
+        Et(j,k) = Et(j,k) - dtsdr * (Bz(j,k) - Bz(j-1,k)) &
                           + dtsdz * (Br(j,k) - Br(j,k-1)) &
                           - mudt  * Jt(j,k)
       endif
@@ -416,10 +416,10 @@ subroutine pxrpush_emrz_evec( &
       if (j /= 0 .or. rmin /= 0.) then
         ru = 1. + 0.5/(rmin/dr + j)
         rd = 1. - 0.5/(rmin/dr + j)
-        Ez(j,k) = Ez(j,k) + dtsdx * (ru*Bt(j,k) - rd*Bt(j-1,k)) &
+        Ez(j,k) = Ez(j,k) + dtsdr * (ru*Bt(j,k) - rd*Bt(j-1,k)) &
                           - mudt  * Jz(j,k)
       else
-        Ez(j,k) = Ez(j,k) + 4.*dtsdx * Bt(j,k) &
+        Ez(j,k) = Ez(j,k) + 4.*dtsdr * Bt(j,k) &
                           - mudt  * Jz(j,k)
       end if
     end do
@@ -459,7 +459,7 @@ subroutine pxrpush_emrz_evec_multimode( &
      Jr, jrlo, jrhi, &
      Jt, jtlo, jthi, &
      Jz, jzlo, jzhi, &
-     mudt, dtsdx, dtsdy, dtsdz, rmin, dr)
+     mudt, dtsdr, dtsdt, dtsdz, rmin, dr)
      USE picsar_precision, ONLY: idp, isp, num
 
   integer(idp) :: nmodes
@@ -486,24 +486,24 @@ subroutine pxrpush_emrz_evec_multimode( &
   complex(num), intent(IN):: Jt(jtlo(1):jthi(1),jtlo(2):jthi(2),0:nmodes-1)
   complex(num), intent(IN):: Jz(jzlo(1):jzhi(1),jzlo(2):jzhi(2),0:nmodes-1)
 
-  real(num), intent(IN) :: mudt, dtsdx, dtsdy, dtsdz, rmin, dr
+  real(num), intent(IN) :: mudt, dtsdr, dtsdt, dtsdz, rmin, dr
 
   integer(idp) :: j, k, m
-  real(kind=8) :: w, r, rd, ru, dt
+  real(kind=8) :: r, rd, ru, dt
   complex(kind=8) :: i=(0., 1.)
 
   ! ===============================
   !             2-D RZ multipole
   ! ===============================
 
-  dt = dtsdx*dr
+  dt = dtsdr*dr
 
   do m = 0, nmodes-1
 
      ! advance Er
 #ifndef WARPX
   !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j, ru, rd, r), &
-  !$OMP SHARED(rlo, rhi, tlo, thi, zlo, zhi, mudt, dtsdx, dtsdz, rmin, dr), &
+  !$OMP SHARED(rlo, rhi, tlo, thi, zlo, zhi, mudt, dtsdr, dtsdz, rmin, dr, i, m, dt), &
   !$OMP SHARED(Er, Et, Ez, Br, Bt, Bz, Jr, Jt, Jz)
   !$OMP DO COLLAPSE(2)
 #endif
@@ -533,7 +533,7 @@ subroutine pxrpush_emrz_evec_multimode( &
        do j = tlo(1), thi(1)
          if (j /= 0) then
            ! Equation used in the bulk of the grid
-           Et(j,k,m) = Et(j,k,m) - dtsdx * (Bz(j,k,m) - Bz(j-1,k,m)) &
+           Et(j,k,m) = Et(j,k,m) - dtsdr * (Bz(j,k,m) - Bz(j-1,k,m)) &
                 + dtsdz * (Br(j,k,m) - Br(j,k-1,m)) &
                 - mudt * Jt(j,k,m)
          endif
@@ -541,7 +541,7 @@ subroutine pxrpush_emrz_evec_multimode( &
        if (tlo(1) <= 0 .and. 0 <= thi(1)) then
           j = 0
           if (rmin /= 0.) then
-             Et(j,k,m) = Et(j,k,m) - dtsdx * (Bz(j,k,m) - Bz(j-1,k,m)) &
+             Et(j,k,m) = Et(j,k,m) - dtsdr * (Bz(j,k,m) - Bz(j-1,k,m)) &
                                + dtsdz * (Br(j,k,m) - Br(j,k-1,m)) &
                                - mudt  * Jt(j,k,m)
           else
@@ -581,7 +581,7 @@ subroutine pxrpush_emrz_evec_multimode( &
            ru = 1. + 0.5/(rmin/dr + j)
            rd = 1. - 0.5/(rmin/dr + j)
            r = rmin + j*dr
-           Ez(j,k,m) = Ez(j,k,m) + dtsdx * (ru*Bt(j,k,m) - rd*Bt(j-1  ,k,m)) &
+           Ez(j,k,m) = Ez(j,k,m) + dtsdr * (ru*Bt(j,k,m) - rd*Bt(j-1  ,k,m)) &
                 + i*m*dt*Br(j,k,m)/r &
                 - mudt  * Jz(j,k,m)
          end if
@@ -590,7 +590,7 @@ subroutine pxrpush_emrz_evec_multimode( &
          j = 0
          if (rmin == 0.) then
            if (m == 0) then
-              Ez(j,k,m) = Ez(j,k,m) + 4.*dtsdx * Bt(j,k,m) &
+              Ez(j,k,m) = Ez(j,k,m) + 4.*dtsdr * Bt(j,k,m) &
                              - mudt  * Jz(j,k,m)
            else
               ! Ez should remain 0 on axis, for modes with m>0,
@@ -601,7 +601,7 @@ subroutine pxrpush_emrz_evec_multimode( &
            ru = 1. + 0.5/(rmin/dr)
            rd = 1. - 0.5/(rmin/dr)
            r = rmin + j*dr
-           Ez(j,k,m) = Ez(j,k,m) + dtsdx * (ru*Bt(j,k,m) - rd*Bt(j-1  ,k,m)) &
+           Ez(j,k,m) = Ez(j,k,m) + dtsdr * (ru*Bt(j,k,m) - rd*Bt(j-1  ,k,m)) &
                 + i*m*dt*Br(j,k,m)/r &
                 - mudt  * Jz(j,k,m)
          end if
@@ -1126,7 +1126,7 @@ subroutine pxrpush_emrz_bvec_multimode( &
      Br, brlo, brhi, &
      Bt, btlo, bthi, &
      Bz, bzlo, bzhi, &
-     dtsdx, dtsdy, dtsdz, rmin, dr)
+     dtsdr, dtsdt, dtsdz, rmin, dr)
      USE picsar_precision, ONLY: idp, isp, num
 
   integer(idp) :: nmodes
@@ -1147,19 +1147,19 @@ subroutine pxrpush_emrz_bvec_multimode( &
   complex(num), intent(IN OUT):: Bt(btlo(1):bthi(1),btlo(2):bthi(2),0:nmodes-1)
   complex(num), intent(IN OUT):: Bz(bzlo(1):bzhi(1),bzlo(2):bzhi(2),0:nmodes-1)
 
-  real(num), intent(IN) :: dtsdx, dtsdy, dtsdz, rmin, dr
+  real(num), intent(IN) :: dtsdr, dtsdt, dtsdz, rmin, dr
 
   integer(idp) :: j, k, m
-  real(kind=8) :: w, r, rd, ru, dt
+  real(kind=8) :: r, rd, ru, dt
   complex(kind=8) :: i=(0., 1.)
 
-  dt = dtsdx*dr
+  dt = dtsdr*dr
   do m = 0, nmodes-1
 
      ! advance Br
 #ifndef WARPX
-  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j, ru, rd), &
-  !$OMP SHARED(rlo, rhi, tlo, thi, zlo, zhi, dtsdr, dtsdz, rmin, dr), &
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j, ru, rd, r), &
+  !$OMP SHARED(rlo, rhi, tlo, thi, zlo, zhi, dtsdr, dtsdz, rmin, dr, i, m, dt), &
   !$OMP SHARED(Er, Et, Ez, Br, Bt, Bz)
   !$OMP DO COLLAPSE(2)
 #endif
@@ -1203,7 +1203,7 @@ subroutine pxrpush_emrz_bvec_multimode( &
 !$acc loop gang vector collapse(2)
      do k   = tlo(2), thi(2)
        do j = tlo(1), thi(1)
-           Bt(j,k,m) = Bt(j,k,m) + dtsdx * (Ez(j+1,k  ,m) - Ez(j,k,m)) &
+           Bt(j,k,m) = Bt(j,k,m) + dtsdr * (Ez(j+1,k  ,m) - Ez(j,k,m)) &
                 - dtsdz * (Er(j,k+1,m) - Er(j,k,m))
         end do
      end do
@@ -1224,7 +1224,7 @@ subroutine pxrpush_emrz_bvec_multimode( &
            r  = rmin + j*dr + 0.5*dr
            ru = 1. + 0.5/(rmin/dr + j + 0.5)
            rd = 1. - 0.5/(rmin/dr + j + 0.5)
-           Bz(j,k,m) = Bz(j,k,m) - dtsdx * (ru*Et(j+1,k,m) - rd*Et(j,k,m)) &
+           Bz(j,k,m) = Bz(j,k,m) - dtsdr * (ru*Et(j+1,k,m) - rd*Et(j,k,m)) &
                 - i*m*dt*Er(j,k,m)/r
         end do
      end do
