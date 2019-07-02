@@ -254,6 +254,88 @@ MODULE link_external_tools
     IF(rank==0) PRINT*, 'END INIT EXTERNAL'
   END SUBROUTINE init_params_external_RZ
 
+
+  SUBROUTINE free_params_external_RZ() &
+      BIND(C,name='free_params_picsar_AM')
+!    USE fastfft
+    USE fields, ONLY: bl_c, br_c,bt_c, bl_f, bp_f, bm_f, bl_h, bm_h, bp_h, bl_h_inv, bm_h_inv, bp_h_inv,  &
+      el_c, er_c,et_c, el_f, ep_f, em_f, el_h, em_h, ep_h, el_h_inv, em_h_inv, ep_h_inv,  &
+      jl_c, jr_c,jt_c, jl_f, jp_f, jm_f, jl_h, jm_h, jp_h,  &
+      rho_f, rhoold_f, rho_h, rhoold_h, invM, invM1, invM_1, Ma, Ma1, Ma_1,&
+      l_spectral, l_AM_RZ,        &
+      rhof, rho_c,rhoold_c, rhooldf
+    use gpstd_solver
+!#if defined(FFTW)
+!    USE fourier_psaotd
+!    USE hankel 
+!#endif
+    USE iso_c_binding
+    IMPLICIT NONE
+
+    !CALL DFFTW_INIT_THREADS(iret)
+   IF ((l_spectral) .AND. (l_AM_RZ)) THEN 
+      nullify( el_c )
+      nullify( er_c )
+      nullify( et_c )
+      nullify( bl_c )
+      nullify( br_c )
+      nullify( bt_c )
+
+      nullify( jl_c )
+      nullify( jr_c )
+      nullify( jt_c )
+      nullify( rho_c )
+      nullify( rhoold_c )
+
+      IF(ASSOCIATED(el_f))     DEALLOCATE(el_f)
+      IF(ASSOCIATED(em_f))     DEALLOCATE(em_f)
+      IF(ASSOCIATED(ep_f))     DEALLOCATE(ep_f)
+      IF(ASSOCIATED(bl_f))     DEALLOCATE(bl_f)
+      IF(ASSOCIATED(bm_f))     DEALLOCATE(bm_f)
+      IF(ASSOCIATED(bp_f))     DEALLOCATE(bp_f)
+      IF(ASSOCIATED(jl_f))     DEALLOCATE(jl_f)
+      IF(ASSOCIATED(jm_f))     DEALLOCATE(jm_f)
+      IF(ASSOCIATED(jp_f))     DEALLOCATE(jp_f)
+      IF(ASSOCIATED(rho_f))    DEALLOCATE(rho_f)
+      IF(ASSOCIATED(rhoold_f)) DEALLOCATE(rhoold_f)
+      IF(ASSOCIATED(el_h))     DEALLOCATE(el_h)
+      IF(ASSOCIATED(em_h))     DEALLOCATE(em_h)
+      IF(ASSOCIATED(ep_h))     DEALLOCATE(ep_h)
+      IF(ASSOCIATED(bl_h))     DEALLOCATE(bl_h)
+      IF(ASSOCIATED(bm_h))     DEALLOCATE(bm_h)
+      IF(ASSOCIATED(bp_h))     DEALLOCATE(bp_h)
+      IF(ASSOCIATED(jl_h))     DEALLOCATE(jl_h)
+      IF(ASSOCIATED(jm_h))     DEALLOCATE(jm_h)
+      IF(ASSOCIATED(jp_h))     DEALLOCATE(jp_h)
+      IF(ASSOCIATED(rho_h))    DEALLOCATE(rho_h)
+      IF(ASSOCIATED(rhoold_h)) DEALLOCATE(rhoold_h)
+      IF(ASSOCIATED(el_h_inv)) DEALLOCATE(el_h_inv)
+      IF(ASSOCIATED(em_h_inv)) DEALLOCATE(em_h_inv)
+      IF(ASSOCIATED(ep_h_inv)) DEALLOCATE(ep_h_inv)
+      IF(ASSOCIATED(bl_h_inv)) DEALLOCATE(bl_h_inv)
+      IF(ASSOCIATED(bm_h_inv)) DEALLOCATE(bm_h_inv)
+      IF(ASSOCIATED(bp_h_inv)) DEALLOCATE(bp_h_inv)
+      IF(ASSOCIATED(invM))     DEALLOCATE(invM)
+      IF(ASSOCIATED(invM_1))   DEALLOCATE(invM_1)
+      IF(ASSOCIATED(invM1))    DEALLOCATE(invM1)
+      IF(ASSOCIATED(Ma))       DEALLOCATE(Ma)
+      IF(ASSOCIATED(Ma1))      DEALLOCATE(Ma1)
+      !CALL delete_k_space
+      deallocate(krc)
+      deallocate(kyb)
+      deallocate(kyc)
+      deallocate(kyf)
+      IF(ASSOCIATED(Ma_1)) THEN
+        DEALLOCATE(Ma_1)
+        !CALL init_plans_blocks_rz    
+        !CALL init_rz_fields_coupling   
+      ENDIF
+      PRINT*, 'END FREE EXTERNAL'
+    ENDIF
+  END SUBROUTINE free_params_external_RZ
+
+
+
 SUBROUTINE init_rz_fields_coupling
   USE PICSAR_precision
   USE fields

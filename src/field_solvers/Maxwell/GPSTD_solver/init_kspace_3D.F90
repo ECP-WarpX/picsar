@@ -1882,7 +1882,7 @@ END SUBROUTINE Hankel_M_and_invM
     DO i=1,4
        DEALLOCATE(at_op(nmatrixes2)%block_vector(i)%block3dc)
     ENDDO
-    !DEALLOCATE(kxc,kxb,kxf,kyc,kyb,kyf,kzc,kzb,kzf,krc)
+    DEALLOCATE(kxc,kxb,kxf,kyc,kyb,kyf,kzc,kzb,kzf,krc)
 
   END SUBROUTINE delete_k_space
 
@@ -2148,6 +2148,7 @@ END SUBROUTINE Hankel_M_and_invM
      ENDIF
      write (0,*) "nfft", nfft, "size", SIZE(kvec), "delta = ", d,  "k_order=", kvec
      DEALLOCATE(onesp,ones)
+     DEALLOCATE(k_true)
   END SUBROUTINE compute_k_1d
 
   ! ______________________________________________________________________________________
