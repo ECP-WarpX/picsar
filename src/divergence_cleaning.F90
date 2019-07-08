@@ -88,6 +88,10 @@ SUBROUTINE laser_field_correction
   
   CALL get_fields_AM_rz()
   
+#if defined(LIBRARY)
+  write(0, *) "max b ", maxval(abs(el_c)), maxval(abs(er_c)), maxval(abs(et_c)), maxval(abs(bl_c)), maxval(abs(br_c)), maxval(abs(bt_c))
+#else
   write(0, *) "max b ", maxval(abs(el)), maxval(abs(er)), maxval(abs(et)), maxval(abs(bl)), maxval(abs(br)), maxval(abs(bt))
+#endif
 END SUBROUTINE laser_field_correction
 
