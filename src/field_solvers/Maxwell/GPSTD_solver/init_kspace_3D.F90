@@ -2146,7 +2146,7 @@ END SUBROUTINE Hankel_M_and_invM
        kvecb=kvec
        kvecf=kvec
      ENDIF
-     write (0,*) "nfft", nfft, "size", SIZE(kvec), "delta = ", d,  "k_order=", kvec
+     !write (0,*) "nfft", nfft, "size", SIZE(kvec), "delta = ", d,  "k_order=", kvec
      DEALLOCATE(onesp,ones)
      DEALLOCATE(k_true)
   END SUBROUTINE compute_k_1d
