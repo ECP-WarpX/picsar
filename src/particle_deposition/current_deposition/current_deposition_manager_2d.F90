@@ -48,8 +48,9 @@ SUBROUTINE depose_jxjyjz_2d(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, vx_gal, v
   integer(idp)                          :: lvect
   real(num), dimension(-nxguard:nx+nxguard, -nzguard:nz+nzguard), intent(inout) ::    &
   jx, jy, jz
-  real(num), dimension(np)              :: xp, yp, zp, uxp, uyp, uzp, gaminv, w, vx_gal, vy_gal, vz_gal !oshapoval
+  real(num), dimension(np)              :: xp, yp, zp, uxp, uyp, uzp, gaminv, w !oshapoval
   real(num)                             :: q, dt, dx, dz, xmin, zmin
+  real(num)                             :: vx_gal, vy_gal, vz_gal
 
   ! Build array of guard cells and valid cells, to pass them to the generic routine
   integer(idp)                       :: nguard(2), nvalid(2)
@@ -88,7 +89,7 @@ SUBROUTINE depose_jxjyjz_generic_2d( jx, jx_nguard, jx_nvalid, jy, jy_nguard,   
        -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1 )
   LOGICAL(lp)                           :: l_nodal
   real(num), dimension(np)              :: xp, yp, zp, uxp, uyp, uzp, gaminv, w
-  real(num), dimension(np)              :: vx_gal, vy_gal, vz_gal !oshapoval
+  real(num)                             :: vx_gal, vy_gal, vz_gal
   real(num)                             :: q, dt, dx, dz, xmin, zmin
 
   SELECT CASE(current_depo_algo)
