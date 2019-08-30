@@ -81,8 +81,7 @@ ifeq ($(DIM),2)
   F90EXE_sources += field_gathering_on_circ.F90
 endif
 
-ifeq ($(USE_PSATD),TRUE)
-ifeq ($(USE_CUDA),FALSE)
+ifeq ($(USE_PSATD_PICSAR),TRUE)
   F90EXE_sources += mpi_derived_types.F90
 
   F90EXE_sources += maxwell_solver_manager.F90
@@ -102,6 +101,5 @@ ifeq ($(USE_CUDA),FALSE)
   F90EXE_sources += field_boundaries.F90
   VPATH_LOCATIONS   += $(PICSAR_HOME)/src/boundary_conditions
   INCLUDE_LOCATIONS += $(PICSAR_HOME)/src/boundary_conditions
-endif
 endif
       
