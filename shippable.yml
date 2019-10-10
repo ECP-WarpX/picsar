@@ -11,25 +11,37 @@ build:
     - pip install matplotlib pytest
     # Install FFTW3
     - sudo apt-get update && sudo apt-get install -y libfftw3-dev libfftw3-mpi-dev
+
     # Get the latest version of warp
     - cd /home/warp_user/warp/pywarp90 && git pull && make install && make pinstall
-    - cd /home/warp_user/src/bitbucket.org/berkeleylab/picsar/
+
+    #QED LIBRARY
+    - cd /home/warp_user/src/bitbucket.org/berkeleylab/picsar/src/multi_physics
+    - mkdir build
+    - cd build
+    - cmake ../. -DWITH_KOKKOS=OFF
+    - make
+    - make test
+    #END QED LIBRARY
 
     # Compile the unit tests
+    - cd /home/warp_user/src/bitbucket.org/berkeleylab/picsar/
     - make build_test
-    # Run tests on particle routines 
+    # Run tests on particle routines
     - make test_gcov
     # Compile Picsar with fftw
     - make clean
     - sed -i 's/MODE=prod/MODE=prod_spectral/g' Makefile
     - make
     # Compile and run tests on Maxwell solver (plane wave test)
-    - make clean 
+    - make clean
     - make build_test_spectral_3d
     - make test_maxwell_solver_3d
     - make clean
+    #fix issue with MPI tasks number > number of cores & run as root
+    - sed -i 's/mpirun -np/mpirun -host localhost:8 -np/g' Makefile
     - make build_test_spectral_2d
-    - make test_maxwell_solver_2d 
+    - make test_maxwell_solver_2d
     # Compile Picsar as library
     - make clean
     - sed -i 's/MODE=prod_spectral/MODE=library/g' Makefile
@@ -61,4 +73,4 @@ build:
     - export OMP_NUM_THREADS=2
     - python test_Langmuir_wave_3d.py
     - cd ../test_radiation_reaction
-    - py.test 
+    - py.test
