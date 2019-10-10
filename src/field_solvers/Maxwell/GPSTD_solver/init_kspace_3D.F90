@@ -784,7 +784,11 @@ MODULE gpstd_solver
        !> unstaggered grid
        CALL FD_weights_hvincenti(norder, FD, l_stg)
        DO i=1_idp, norder/2
-         kvec=kvec+2.0_num/d*FD(i)*SIN((i*2.0_num-1.0_num)*PI*ones/nfft)
+           IF(l_stg) THEN
+              kvec=kvec+2.0_num/d*FD(i)*SIN((i*2.0_num-1.0_num)*PI*ones/nfft)
+           ELSE
+              kvec=kvec+2.0_num/d*FD(i)*SIN(i*2.0_num*PI*onesp/nfft)
+           ENDIF
        ENDDO
        DEALLOCATE(FD)
      ELSE

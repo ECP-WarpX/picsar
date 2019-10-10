@@ -445,8 +445,22 @@ MODULE control_file
   ! ______________________________________________________________________________________
   SUBROUTINE read_input_file
     INTEGER :: ix = 0
+    CHARACTER(len=32) :: input_filename, input_file_default='input_file.pixr'
+    
+    CALL get_command_argument(1, input_filename)
+    IF (LEN_TRIM(input_filename) == 0) input_filename = input_file_default
+    
     ! --- OPENS INPUT FILE
-    OPEN(fh_input, file='input_file.pixr')
+    OPEN(fh_input, file=TRIM(input_filename), status='OLD', iostat=ios)
+    
+    IF (ios/=0) then
+        write(0,*) '#############################'
+        write(0,*) '# Error opening input file. # '
+        write(0,*) '# Check input filename.     # '
+        write(0,*) '#############################'
+        call abort()
+    END IF
+       
     DO WHILE(ios==0)
       READ(fh_input, '(A)', iostat=ios) buffer
       ix=INDEX(buffer, 'section::')

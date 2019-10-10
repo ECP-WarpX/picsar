@@ -42,6 +42,7 @@
 SUBROUTINE depose_jxjyjz_2d(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,  &
   xmin, zmin, dt, dx, dz, nx, nz, nxguard, nzguard, nox, noz, lvect)
   USE picsar_precision, ONLY: idp, num
+  USE fields, ONLY: l_nodalgrid
   implicit none
   integer(idp)                          :: np, nx, nz, nox, noz, nxguard, nzguard
   integer(idp)                          :: lvect
@@ -57,9 +58,9 @@ SUBROUTINE depose_jxjyjz_2d(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w
 
   call depose_jxjyjz_generic_2d( jx, nguard, nvalid, jy, nguard, nvalid, jz, nguard,  &
   nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, zmin, dt, dx, dz, nox,   &
-  noz, lvect, 0_idp)
+  noz, l_nodalgrid, lvect, 0_idp)
 
-END SUBROUTINE
+END SUBROUTINE depose_jxjyjz_2d
 
 ! ______________________________________________________________________________
 !> @brief
@@ -72,7 +73,7 @@ END SUBROUTINE
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_generic_2d( jx, jx_nguard, jx_nvalid, jy, jy_nguard,         &
   jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
-  xmin, zmin, dt, dx, dz, nox, noz, lvect, current_depo_algo )     !#do not wrap
+  xmin, zmin, dt, dx, dz, nox, noz, l_nodal, lvect, current_depo_algo )     !#do not wrap
   USE picsar_precision, ONLY: idp, lp, num
   implicit none
   integer(idp)                          :: np, nox, noz, current_depo_algo
@@ -84,7 +85,8 @@ SUBROUTINE depose_jxjyjz_generic_2d( jx, jx_nguard, jx_nvalid, jy, jy_nguard,   
   REAL(num), intent(IN OUT):: jy(-jy_nguard(1):jy_nvalid(1)+jy_nguard(1)-1,           &
   -jy_nguard(2):jy_nvalid(2)+jy_nguard(2)-1 )
   REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1,           &
-  -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1 )
+       -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1 )
+  LOGICAL(lp)                           :: l_nodal
   real(num), dimension(np)              :: xp, yp, zp, uxp, uyp, uzp, gaminv, w
   real(num)                             :: q, dt, dx, dz, xmin, zmin
 
@@ -94,15 +96,15 @@ SUBROUTINE depose_jxjyjz_generic_2d( jx, jx_nguard, jx_nvalid, jy, jy_nguard,   
     IF ((nox.eq.1).and.(noz.eq.1)) THEN
       CALL depose_jxjyjz_scalar2d_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
       jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w,  &
-      q, xmin, zmin, dt, dx, dz)
+      q, xmin, zmin, dt, dx, dz, l_nodal)
     ELSE IF ((nox.eq.2).and.(noz.eq.2)) THEN
       CALL depose_jxjyjz_scalar2d_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
       jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w,  &
-      q, xmin, zmin, dt, dx, dz)
+      q, xmin, zmin, dt, dx, dz, l_nodal)
     ELSE IF ((nox.eq.3).and.(noz.eq.3)) THEN
       CALL depose_jxjyjz_scalar2d_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
       jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w,  &
-      q, xmin, zmin, dt, dx, dz)
+      q, xmin, zmin, dt, dx, dz, l_nodal)
     ELSE
       CALL pxr_depose_jxjyjz_esirkepov2d_n( jx, jx_nguard, jx_nvalid, jy, jy_nguard,    &
       jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, &
@@ -129,7 +131,164 @@ SUBROUTINE depose_jxjyjz_generic_2d( jx, jx_nguard, jx_nvalid, jy, jy_nguard,   
     ENDIF
   END SELECT
 
+END SUBROUTINE depose_jxjyjz_generic_2d
+
+! ______________________________________________________________________________
+!> @brief
+!> Generic subroutines for current deposition in RZ, adapted for field
+!> arrays having different sizes depending on their nodal/cell-centered nature
+!>
+!> @details
+!> This routine calls the relevant current deposition routine depending
+!> on the order of the particle shape and the selected algorithm.
+!> Note that the deposition in these routines does not include the division
+!> by the cell volume.
+! ________________________________________________________________________________________
+SUBROUTINE depose_jrjtjz_generic_rz( jr, jr_nguard, jr_nvalid, jt, jt_nguard,         &
+  jt_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
+  xmin, zmin, dt, dx, dz, nox, noz, lvect, current_depo_algo )     !#do not wrap
+  USE picsar_precision, ONLY: idp, lp, num
+  implicit none
+  integer(idp)                          :: np, nox, noz, current_depo_algo
+  INTEGER(idp), intent(in)              :: jr_nguard(2), jr_nvalid(2), jt_nguard(2),  &
+  jt_nvalid(2), jz_nguard(2), jz_nvalid(2)
+  integer(idp)                          :: lvect
+  REAL(num), intent(IN OUT):: jr(-jr_nguard(1):jr_nvalid(1)+jr_nguard(1)-1,           &
+  -jr_nguard(2):jr_nvalid(2)+jr_nguard(2)-1 )
+  REAL(num), intent(IN OUT):: jt(-jt_nguard(1):jt_nvalid(1)+jt_nguard(1)-1,           &
+  -jt_nguard(2):jt_nvalid(2)+jt_nguard(2)-1 )
+  REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1,           &
+  -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1 )
+  real(num), dimension(np)              :: xp, yp, zp, uxp, uyp, uzp, gaminv, w
+  real(num)                             :: q, dt, dx, dz, xmin, zmin
+
+  SELECT CASE(current_depo_algo)
+    ! Scalar classical current deposition subroutines
+  CASE(3)
+!   IF ((nox.eq.1).and.(noz.eq.1)) THEN
+!     CALL depose_jrjtjz_scalar2d_1_1_1( jr, jr_nguard, jr_nvalid, jt, jt_nguard,       &
+!     jt_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w,  &
+!     q, xmin, zmin, dt, dx, dz)
+!   ELSE IF ((nox.eq.2).and.(noz.eq.2)) THEN
+!     CALL depose_jrjtjz_scalar2d_2_2_2( jr, jr_nguard, jr_nvalid, jt, jt_nguard,       &
+!     jt_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w,  &
+!     q, xmin, zmin, dt, dx, dz)
+!   ELSE IF ((nox.eq.3).and.(noz.eq.3)) THEN
+!     CALL depose_jrjtjz_scalar2d_3_3_3( jr, jr_nguard, jr_nvalid, jt, jt_nguard,       &
+!     jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w,  &
+!     q, xmin, zmin, dt, dx, dz)
+!   ELSE
+      CALL pxr_depose_jxjyjz_esirkepov2d_n( jr, jr_nguard, jr_nvalid, jt, jt_nguard,    &
+      jt_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, &
+      xmin, zmin, dt, dx, dz, nox, noz, .TRUE._lp, .FALSE._lp, .TRUE._lp, 0_idp)
+!   ENDIF
+    ! Optimized Esirkepov
+  CASE DEFAULT
+!   IF ((nox.eq.1).and.(noz.eq.1)) THEN
+!     CALL pxr_depose_jrjtjz_esirkepov2d_1_1( jr, jr_nguard, jr_nvalid, jt, jt_nguard,  &
+!     jt_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w, q,     &
+!     xmin, zmin, dt, dx, dz, lvect, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)
+!   ELSE IF ((nox.eq.2).and.(noz.eq.2)) THEN
+!     CALL pxr_depose_jrjtjz_esirkepov2d_2_2( jr, jr_nguard, jr_nvalid, jt, jt_nguard,  &
+!     jt_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w, q,     &
+!     xmin, zmin, dt, dx, dz, lvect, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)
+!   ELSE IF ((nox.eq.3).and.(noz.eq.3)) THEN
+!     CALL pxr_depose_jrjtjz_esirkepov2d_3_3( jr, jr_nguard, jr_nvalid, jt, jt_nguard,  &
+!     jt_nvalid, jz, jz_nguard, jz_nvalid, np, xp, zp, uxp, uyp, uzp, gaminv, w, q,     &
+!     xmin, zmin, dt, dx, dz, lvect, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)
+!   ELSE
+      CALL pxr_depose_jxjyjz_esirkepov2d_n( jr, jr_nguard, jr_nvalid, jt, jt_nguard,    &
+      jt_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, &
+      xmin, zmin, dt, dx, dz, nox, noz, .TRUE._lp, .FALSE._lp, .TRUE._lp, 0_idp)
+!   ENDIF
+  END SELECT
+
 END SUBROUTINE
+
+! ______________________________________________________________________________
+!> @brief
+!> Applies the inverse cell volume scaling to current density.
+!>
+!> @details
+!> Applies the inverse cell volume scaling. It is more efficient to apply
+!> the scaling afterward rather than with the particles.
+! ________________________________________________________________________________________
+SUBROUTINE apply_rz_volume_scaling_j( jr, jr_nguard, jr_nvalid, jt, jt_nguard,         &
+  jt_nvalid, jz, jz_nguard, jz_nvalid, rmin, dr, type_rz_depose)     !#do not wrap
+  USE picsar_precision, ONLY: idp, lp, num
+  USE constants, ONLY: pi
+  implicit none
+  INTEGER(idp), intent(in)              :: jr_nguard(2), jr_nvalid(2), jt_nguard(2),  &
+  jt_nvalid(2), jz_nguard(2), jz_nvalid(2)
+  REAL(num), intent(IN OUT):: jr(-jr_nguard(1):jr_nvalid(1)+jr_nguard(1)-1,           &
+  -jr_nguard(2):jr_nvalid(2)+jr_nguard(2)-1 )
+  REAL(num), intent(IN OUT):: jt(-jt_nguard(1):jt_nvalid(1)+jt_nguard(1)-1,           &
+  -jt_nguard(2):jt_nvalid(2)+jt_nguard(2)-1 )
+  REAL(num), intent(IN OUT):: jz(-jz_nguard(1):jz_nvalid(1)+jz_nguard(1)-1,           &
+  -jz_nguard(2):jz_nvalid(2)+jz_nguard(2)-1 )
+  real(num), intent(in)                 :: dr, rmin
+  INTEGER(idp), intent(in)              :: type_rz_depose
+
+  INTEGER(idp) :: j
+  real(num):: r
+
+  ! In rz geometry, for the guards cells below the axis
+  if (rmin == 0.) then
+    ! This assumes that ir = 0 at rmin == 0
+    ! Fields that are located on the boundary
+    jt(1:jt_nguard(1),:) = jt(1:jt_nguard(1),:) + jt(-1:-jt_nguard(1):-1,:)
+    jz(1:jz_nguard(1),:) = jz(1:jz_nguard(1),:) + jz(-1:-jz_nguard(1):-1,:)
+    ! Fields that are located off the boundary
+    jr(0:jr_nguard(1)-1,:) = jr(0:jr_nguard(1)-1,:) - jr(-1:-jr_nguard(1):-1,:)
+  end if
+
+  ! -- Jr
+
+  ! Since Jr is not cell centered in r, no need for distinction
+  ! between on axis and off-axis factors
+  do j=-jr_nguard(1),jr_nvalid(1)+jr_nguard(1)-1
+    r = abs(rmin + (float(j) + 0.5)*dr)
+    jr(j,:) = jr(j,:)/(2.*pi*r)
+  end do
+
+  ! -- Jtheta and Jz
+
+  ! In the lower guard cells in x (exchanged with nearby processors)
+  ! Assumes jt_nguard == jz_nguard
+  do j=-jt_nguard(1),-1
+    r = abs(rmin + j*dr)
+    jt(j,:) = jt(j,:)/(2.*pi*r)
+    jz(j,:) = jz(j,:)/(2.*pi*r)
+  end do
+
+  ! On the lower boundary
+  j = 0
+  if (rmin == 0.) then
+    ! On axis
+    if (type_rz_depose == 1) then ! Verboncoeur JCP 164, 421-427 (2001) : corrected volume
+       jz(j,:) = jz(j,:)/(pi*dr/3.)
+    else                          ! Standard volume
+       jz(j,:) = jz(j,:)/(pi*dr/4.)
+    endif
+    jt(j,:) = 0. ! Jt is zero on axis.
+    ! Because the previous line uses Jr, it is important that Jr be properly calculated first
+  else
+    ! Not the axis
+    r = abs(rmin + j*dr)
+    jt(j,:) = jt(j,:)/(2.*pi*r)
+    jz(j,:) = jz(j,:)/(2.*pi*r)
+  end if
+
+  ! In the rest of the grid
+  ! Assumes jt_nguard == jz_nguard
+  do j=1,jt_nvalid(1)+jt_nguard(1)-1
+    r = abs(rmin + j*dr)
+    jt(j,:) = jt(j,:)/(2.*pi*r)
+    jz(j,:) = jz(j,:)/(2.*pi*r)
+  end do
+
+  return
+end subroutine apply_rz_volume_scaling_j
 
 ! ________________________________________________________________________________________
 !> @brief
@@ -155,7 +314,7 @@ SUBROUTINE depose_jxjyjz_esirkepov_2d(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp,
   nguard, nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, zmin, dt, dx,    &
   dz, nox, noz, .TRUE._lp, .FALSE._lp, .FALSE._lp, 0_idp)
 
-END SUBROUTINE
+END SUBROUTINE depose_jxjyjz_esirkepov_2d
 
 ! ________________________________________________________________________________________
 !> @brief

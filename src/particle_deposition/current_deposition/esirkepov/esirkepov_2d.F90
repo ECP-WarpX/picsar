@@ -401,7 +401,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_n( jx, jx_nguard, jx_nvalid, jy, jy_ngu
   deallocate(sdx, sdz, sx, sx0, dsx, sz, sz0, dsz)
 
   return
-end subroutine pxr_depose_jxjyjz_esirkepov2d_n
+END SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_n
 
 ! ________________________________________________________________________________________
 !> @brief
@@ -610,7 +610,9 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_1_1( jx, jx_nguard, jx_nvalid, jy,     
             !$acc atomic update
           jz(ic, kc) = jz(ic, kc) + sdzk(i) ! Deposition on the current
         END IF
+        sdxim1 = sdxi
       END DO
+      sdzkm1 = sdzk
     END DO
 
   END DO
@@ -837,7 +839,7 @@ SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_2_2( jx, jx_nguard, jx_nvalid, jy,     
 !$acc end parallel
   RETURN
 
-End subroutine pxr_depose_jxjyjz_esirkepov2d_2_2
+END SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_2_2
 
 ! ______________________________________________________________________________
 !> @brief
@@ -1077,7 +1079,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_3_3( jx, jx_nguard, jx_nvalid, jy,     
 !$acc end parallel
   RETURN
 
-End subroutine pxr_depose_jxjyjz_esirkepov2d_3_3
+END SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_3_3
 
 
 #if defined(DEV)
@@ -1495,7 +1497,7 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_svec_3_3(jx, jy, jz, np, xp, zp, uxp, u
     ENDDO
   END DO
   DEALLOCATE(sdx, sdz, sx, sx0, dsx, sz, sz0, dsz)
-End subroutine pxr_depose_jxjyjz_esirkepov2d_svec_3_3
+END SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_svec_3_3
 #endif
 
 #if defined(DEV)
@@ -2029,5 +2031,5 @@ subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3(jx, jy, jz, np, xp, zp, uxp, 
   DEALLOCATE(jxcells, jycells, jzcells)
   DEALLOCATE(sdx, sdy, sdz)
 
-End subroutine pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3
+END SUBROUTINE pxr_depose_jxjyjz_esirkepov2d_vecHV_3_3
 #endif

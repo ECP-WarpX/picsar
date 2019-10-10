@@ -4,6 +4,7 @@
 
 #include "../QED/src/breit_wheeler_engine.hpp"
 #include "../QED/src/quantum_sync_engine.hpp"
+#include "../QED/src/schwinger_pair_engine.hpp"
 #include "../QED/src/rng_wrapper.hpp"
 
 //Alias for the picsar::multi_physics namespace
@@ -12,6 +13,7 @@ namespace pxrmp =  picsar::multi_physics;
 //Seed of the random number generator
 const size_t seed_bw = 83871734;
 const size_t seed_qs = 93012221;
+const size_t seed_sp = 210130331;
 const size_t seed = 22051988;
 
 //A lot of particles!
@@ -42,13 +44,15 @@ void do_bw();
 
 void do_qs();
 
+void do_sp();
 
 
 int main()
 {
 
     //do_bw();
-    do_qs();
+    //do_qs();
+    do_sp();
 
 }
 
@@ -367,7 +371,7 @@ void do_qs()
 
 
     //Initialize momenta&fields
- pxmin = 10;
+ pxmin = 103.1;
  pymin = 0;
  pzmin = 0;
  exmin = 0;
@@ -375,8 +379,8 @@ void do_qs()
  ezmin = 0;
  bxmin = 0;
  bymin = 0;
- bzmin = 80;
- pxmax = 10;
+ bzmin = 400;
+ pxmax = 103.1;
  pymax = 0;
  pzmax = 0;
  exmax = 0;
@@ -384,7 +388,7 @@ void do_qs()
  ezmax = 0;
  bxmax = 0;
  bymax = 0;
- bzmax = 80;
+ bzmax = 400;
 init_mom_fields
 (px, py, pz, ex,
 ey, ez, bx, by, bz,
@@ -402,24 +406,33 @@ bzmin, bzmax);
 
     //test QS photon properties & print on disk
     std::vector<double> gamma_phot(N);
+    std::vector<double> chi_phot(N);
     for(size_t i = 0; i < N; i++){
         chi[i] = pxrmp::chi_lepton<double>(px[i], py[i], pz[i],
                 ex[i], ey[i], ez[i], bx[i], by[i], bz[i], default_lambda);
+
         auto phot = qs_engine.generate_photons_and_update_momentum(
     			px[i], py[i], pz[i], ex[i], ey[i], ez[i], bx[i], by[i], bz[i], w[i], 1);
 
         auto p_phot = phot[0].first;
 
         gamma_phot[i] = pxrmp::norm(p_phot)/me_c;
+        chi_phot[i] = pxrmp::chi_photon<double>(p_phot[0], p_phot[1], p_phot[2],
+                ex[i], ey[i], ez[i], bx[i], by[i], bz[i], default_lambda);
     }
 
     std::cout << chi[0] << std::endl;
 
 
-    std::ofstream of_photen{"qs_photen_px10_bz80.dat"};
+    std::ofstream of_photen{"qs_photen.dat"};
     for(size_t i = 0; i < N ; i++)
             of_photen << gamma_phot[i] << std::endl;
     of_photen.close();
+
+    std::ofstream of_photchi{"qs_photchilog.dat"};
+    for(size_t i = 0; i < N ; i++)
+            of_photchi << log(chi_phot[i]) << std::endl;
+    of_photchi.close();
 
 
     auto innards = qs_engine.export_innards();
@@ -444,7 +457,54 @@ bzmin, bzmax);
     }
     emtab2.close();
 
+    std::ofstream emtabcc1{"em_photem_cc1.dat"};
+    for (int i = 0; i < innards.cum_distrib_table_coords_1_how_many; i++){
+            emtabcc1 << (cc1[i]) <<  std::endl;
+    }
+    emtabcc1.close();
+
+    std::ofstream emtabcc2{"em_photem_cc2.dat"};
+    for (int i = 0; i < innards.cum_distrib_table_coords_2_how_many; i++){
+            emtabcc2 << (cc2[i]) <<  std::endl;
+    }
+    emtabcc2.close();
 
 
+    std::ofstream emtab2_m{"em_mat.dat"};
+    int count2 = 0;
+    for (int i = 0; i < innards.cum_distrib_table_coords_1_how_many; i++){
+        for (int j = 0; j < innards.cum_distrib_table_coords_2_how_many; j++){
+            emtab2_m << (dd2[count2++]);
+            if(j != innards.cum_distrib_table_coords_2_how_many-1)
+                emtab2_m << " ";
+        }
+        emtab2_m << '\n';
+    }
+    emtab2_m.close();
+
+
+}
+
+void do_sp()
+{
+    pxrmp::schwinger_pair_engine<double, pxrmp::stl_rng_wrapper<double>> sp_engine
+        {std::move(pxrmp::stl_rng_wrapper<double>{seed_sp})};
+
+    std::vector<double> fracs{0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
+    std::vector<double> rates;
+    std::transform(fracs.begin(), fracs.end(), std::back_inserter(rates),
+    [&](double ff){return sp_engine.compute_schwinger_pair_production_rate(
+            0.0, pxrmp::schwinger_field*ff,0.0, 0.0,0.0, 0.0);}
+    );
+
+    double ds = 1.0e-9;
+    double dt = 1.0e-15;
+
+    auto it = rates.begin();
+    for(auto& frac: fracs){
+        std::cout << frac << " " << *it * ds * ds * ds * dt
+        << " " <<  *it * ds * ds * ds * dt * 1.602e-10  << std::endl;
+        it++;
+    }
 
 }

@@ -98,11 +98,13 @@
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_scalar_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
   jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
-  xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
+  xmin, ymin, zmin, dt, dx, dy, dz, l_nodal)     !#do not wrap
   USE constants, ONLY: clight
   USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   INTEGER(idp)             :: np
+  LOGICAL(idp)             :: l_nodal
+  REAL(num)                :: stagger_shift
   INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), jy_nguard(3), jy_nvalid(3), &
   jz_nguard(3), jz_nvalid(3)
   REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1,           &
@@ -123,6 +125,12 @@ SUBROUTINE depose_jxjyjz_scalar_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
   REAL(num), DIMENSION(2)  :: sx(0:1), sy(0:1), sz(0:1), sx0(0:1), sy0(0:1), sz0(0:1)
   REAL(num), PARAMETER     :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
   INTEGER(idp)             :: j, k, l, j0, k0, l0, ip
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -167,9 +175,9 @@ SUBROUTINE depose_jxjyjz_scalar_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
     j=floor(xmid)
     k=floor(ymid)
     l=floor(zmid)
-    j0=floor(xmid-0.5_num)
-    k0=floor(ymid-0.5_num)
-    l0=floor(zmid-0.5_num)
+    j0=floor(xmid-stagger_shift)
+    k0=floor(ymid-stagger_shift)
+    l0=floor(zmid-stagger_shift)
 
     ! --- computes set of coefficients for node centered quantities
     xint = xmid-j
@@ -183,9 +191,9 @@ SUBROUTINE depose_jxjyjz_scalar_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
     sz( 1) = zint
 
     ! --- computes set of coefficients for staggered quantities
-    xint = xmid-j0-0.5_num
-    yint = ymid-k0-0.5_num
-    zint = zmid-l0-0.5_num
+    xint = xmid-stagger_shift-j0
+    yint = ymid-stagger_shift-k0
+    zint = zmid-stagger_shift-l0
     sx0( 0) = 1.0_num-xint
     sx0( 1) = xint
     sy0( 0) = 1.0_num-yint
@@ -302,12 +310,14 @@ END SUBROUTINE depose_jxjyjz_scalar_1_1_1
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,      &
   jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
-  xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
+  xmin, ymin, zmin, dt, dx, dy, dz, l_nodal)     !#do not wrap
   USE constants, ONLY: lvec
   USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   ! ___ Parameter declaration ______________________________________
   INTEGER(idp)             :: np
+  LOGICAL(idp)             :: l_nodal
+  REAL(num)                :: stagger_shift
   INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), jy_nguard(3), jy_nvalid(3), &
   jz_nguard(3), jz_nvalid(3)
   REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1,           &
@@ -350,6 +360,12 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,
   0_idp, 0_idp, 1_idp, 1_idp/)
   INTEGER(idp), DIMENSION(8), PARAMETER  :: mzoff=(/0_idp, 0_idp, 0_idp, 0_idp,       &
   1_idp, 1_idp, 1_idp, 1_idp/)
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -423,9 +439,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,
       j=floor(xmid)
       k=floor(ymid)
       l=floor(zmid)
-      j0=floor(xmid-0.5_num)
-      k0=floor(ymid-0.5_num)
-      l0=floor(zmid-0.5_num)
+      j0=floor(xmid-stagger_shift)
+      k0=floor(ymid-stagger_shift)
+      l0=floor(zmid-stagger_shift)
       ICELL(n, 1)=1+(j0-jorig)+(k-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 2)=1+(j-jorig)+(k0-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 3)=1+(j-jorig)+(k-korig)*ncx+(l0-lorig)*ncxy
@@ -436,9 +452,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1( jx, jx_nguard, jx_nvalid, jy, jy_nguard,
       sz(n) = zmid-l
 
       ! --- computes set of coefficients for staggered quantities
-      sx0(n) = xmid-j0-0.5_num
-      sy0(n) = ymid-k0-0.5_num
-      sz0(n) = zmid-l0-0.5_num
+      sx0(n) = xmid-stagger_shift-j0
+      sy0(n) = ymid-stagger_shift-k0
+      sz0(n) = zmid-stagger_shift-l0
     END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -667,11 +683,13 @@ END SUBROUTINE depose_jxjyjz_vecHVv2_1_1_1
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells, jycells, jzcells, np, ncells, xp,   &
   yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz,    &
-  nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
+  nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect, l_nodal)  !#do not wrap
   USE constants, ONLY: lvec
   USE picsar_precision, ONLY: idp, isp, num
   IMPLICIT NONE
   INTEGER(idp), INTENT(IN)                      :: np, nx, ny, nz, ncells
+ LOGICAL(idp)                      :: l_nodal
+ REAL(num)                         :: stagger_shift
   INTEGER(idp), INTENT(IN)                      :: nxguard, nyguard, nzguard
   INTEGER(idp), INTENT(IN)                      :: lvect
   REAL(num), DIMENSION(8, ncells), INTENT(INOUT) :: jxcells, jycells, jzcells
@@ -696,6 +714,12 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells, jycells, jzcells, np, ncells, 
   ! _____________________________________________
   ! Computation of the parameters
   ncxy=ncx*ncy
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -771,9 +795,9 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells, jycells, jzcells, np, ncells, 
       j=floor(xmid)
       k=floor(ymid)
       l=floor(zmid)
-      j0=floor(xmid-0.5_num)
-      k0=floor(ymid-0.5_num)
-      l0=floor(zmid-0.5_num)
+      j0=floor(xmid-stagger_shift)
+      k0=floor(ymid-stagger_shift)
+      l0=floor(zmid-stagger_shift)
       ICELL(n, 1)=1+(j0-jorig)+(k-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 2)=1+(j-jorig)+(k0-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 3)=1+(j-jorig)+(k-korig)*ncx+(l0-lorig)*ncxy
@@ -784,9 +808,9 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1(jxcells, jycells, jzcells, np, ncells, 
       sz(n) = zmid-l
 
       ! --- computes set of coefficients for staggered quantities
-      sx0(n) = xmid-j0-0.5_num
-      sy0(n) = ymid-k0-0.5_num
-      sz0(n) = zmid-l0-0.5_num
+      sx0(n) = xmid-stagger_shift-j0
+      sy0(n) = ymid-stagger_shift-k0
+      sz0(n) = zmid-stagger_shift-l0
     END DO
 #if defined _OPENMP && _OPENMP>=201307
 #ifndef NOVEC
@@ -854,11 +878,13 @@ END SUBROUTINE depose_jxjyjz_vecHV_vnr_1_1_1
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_scalar_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
   jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
-  xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
+  xmin, ymin, zmin, dt, dx, dy, dz, l_nodal)     !#do not wrap
   USE constants, ONLY: clight
   USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   INTEGER(idp) :: np
+  LOGICAL(idp) :: l_nodal
+  REAL(num)    :: stagger_shift
   INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), jy_nguard(3), jy_nvalid(3), &
   jz_nguard(3), jz_nvalid(3)
   REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1,           &
@@ -880,6 +906,12 @@ SUBROUTINE depose_jxjyjz_scalar_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
   sz0(-1:1)
   REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
   INTEGER(idp) :: j, k, l, j0, k0, l0, ip
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -921,9 +953,9 @@ SUBROUTINE depose_jxjyjz_scalar_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
     j=nint(xmid)
     k=nint(ymid)
     l=nint(zmid)
-    j0=nint(xmid-0.5_num)
-    k0=nint(ymid-0.5_num)
-    l0=nint(zmid-0.5_num)
+    j0=nint(xmid-stagger_shift)
+    k0=nint(ymid-stagger_shift)
+    l0=nint(zmid-stagger_shift)
     ! --- computes set of coefficients for node centered quantities
     xint = xmid-j
     yint = ymid-k
@@ -942,9 +974,9 @@ SUBROUTINE depose_jxjyjz_scalar_2_2_2( jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
     sz( 1) = 0.5_num*(0.5_num+zint)**2
 
     ! --- computes set of coefficients for staggered quantities
-    xint = xmid-j0-0.5_num
-    yint = ymid-k0-0.5_num
-    zint = zmid-l0-0.5_num
+    xint = xmid-stagger_shift-j0
+    yint = ymid-stagger_shift-k0
+    zint = zmid-stagger_shift-l0
     xintsq = xint*xint
     sx0(-1) = 0.5_num*(0.5_num-xint)**2
     sx0( 0) = 0.75_num-xintsq
@@ -1180,12 +1212,14 @@ END SUBROUTINE depose_jxjyjz_scalar_2_2_2
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard,      &
   jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,  &
-  xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
+  xmin, ymin, zmin, dt, dx, dy, dz, l_nodal)     !#do not wrap
   USE constants, ONLY: lvec
   USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
 
   INTEGER(idp)             :: np
+  LOGICAL(idp)             :: l_nodal
+  REAL(num)                :: stagger_shift
   INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), &
   jy_nguard(3), jy_nvalid(3), &
   jz_nguard(3), jz_nvalid(3)
@@ -1232,6 +1266,12 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
   ! ___ Parameter initialization _________________
 
   ww0x=0._num; ww0y=0._num; ww0z=0._num
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -1305,9 +1345,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
       j=nint(xmid)
       k=nint(ymid)
       l=nint(zmid)
-      j0=nint(xmid-0.5_num)
-      k0=nint(ymid-0.5_num)
-      l0=nint(zmid-0.5_num)
+      j0=nint(xmid-stagger_shift)
+      k0=nint(ymid-stagger_shift)
+      l0=nint(zmid-stagger_shift)
       ICELL(n, 1)=1+(j0-jorig)+(k-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 2)=1+(j-jorig)+(k0-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 3)=1+(j-jorig)+(k-korig)*ncx+(l0-lorig)*ncxy
@@ -1336,9 +1376,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2(jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
       sz2=0.5_num*(0.5_num+zint)**2
 
       ! --- computes set of coefficients for staggered quantities
-      xint = xmid-j0-0.5_num
-      yint = ymid-k0-0.5_num
-      zint = zmid-l0-0.5_num
+      xint = xmid-stagger_shift-j0
+      yint = ymid-stagger_shift-k0
+      zint = zmid-stagger_shift-l0
       xintsq= xint**2
       yintsq= yint**2
       zintsq= zint**2
@@ -1636,12 +1676,14 @@ END SUBROUTINE depose_jxjyjz_vecHVv2_2_2_2
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells, jycells, jzcells, np, ncells, xp,   &
   yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz,    &
-  nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
+  nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect, l_nodal)  !#do not wrap
   USE constants, ONLY: lvec
   USE picsar_precision, ONLY: idp, isp, num
   IMPLICIT NONE
   ! ____ Parameter initialization _____________________________________
   INTEGER(idp), INTENT(IN)                      :: np, nx, ny, nz, ncells
+ LOGICAL(idp)                      :: l_nodal
+ REAL(num)                         :: stagger_shift
   INTEGER(idp), INTENT(IN)                      :: ncx, ncy, ncz
   INTEGER(idp)                                  :: nxguard, nyguard, nzguard
   INTEGER(idp), INTENT(IN)                      :: lvect
@@ -1682,6 +1724,12 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells, jycells, jzcells, np, ncells, 
   ww0x=0._num
   ww0y=0._num
   ww0z=0._num
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -1758,9 +1806,9 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells, jycells, jzcells, np, ncells, 
       j=nint(xmid)
       k=nint(ymid)
       l=nint(zmid)
-      j0=nint(xmid-0.5_num)
-      k0=nint(ymid-0.5_num)
-      l0=nint(zmid-0.5_num)
+      j0=nint(xmid-stagger_shift)
+      k0=nint(ymid-stagger_shift)
+      l0=nint(zmid-stagger_shift)
       ICELL(n, 1)=1+(j0-jorig)+(k-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 2)=1+(j-jorig)+(k0-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 3)=1+(j-jorig)+(k-korig)*ncx+(l0-lorig)*ncxy
@@ -1786,9 +1834,9 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2(jxcells, jycells, jzcells, np, ncells, 
       sz2=0.5_num*(0.5_num+zint)**2
 
       ! --- computes set of coefficients for staggered quantities
-      xint = xmid-j0-0.5_num
-      yint = ymid-k0-0.5_num
-      zint = zmid-l0-0.5_num
+      xint = xmid-stagger_shift-j0
+      yint = ymid-stagger_shift-k0
+      zint = zmid-stagger_shift-l0
       xintsq= xint**2
       yintsq= yint**2
       zintsq= zint**2
@@ -1943,11 +1991,13 @@ END SUBROUTINE depose_jxjyjz_vecHV_vnr_2_2_2
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_scalar_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard,       &
   jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
-  xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
+  xmin, ymin, zmin, dt, dx, dy, dz, l_nodal)     !#do not wrap
   USE constants, ONLY: clight
   USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   INTEGER(idp) :: np
+  LOGICAL(idp) :: l_nodal
+  REAL(num)    :: stagger_shift
   INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), jy_nguard(3), jy_nvalid(3), &
   jz_nguard(3), jz_nvalid(3)
   REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1,           &
@@ -1970,6 +2020,12 @@ SUBROUTINE depose_jxjyjz_scalar_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
   REAL(num), PARAMETER :: onesixth=1.0_num/6.0_num, twothird=2.0_num/3.0_num
   INTEGER(idp) :: j, k, l, j0, k0, l0, ip
 
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -2011,9 +2067,9 @@ SUBROUTINE depose_jxjyjz_scalar_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
     j=floor(xmid)
     k=floor(ymid)
     l=floor(zmid)
-    j0=floor(xmid-0.5_num)
-    k0=floor(ymid-0.5_num)
-    l0=floor(zmid-0.5_num)
+    j0=floor(xmid-stagger_shift)
+    k0=floor(ymid-stagger_shift)
+    l0=floor(zmid-stagger_shift)
 
     ! --- computes set of coefficients for node centered quantities
     xint = xmid-j
@@ -2042,9 +2098,9 @@ SUBROUTINE depose_jxjyjz_scalar_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
     sz( 2) = onesixth*zintsq*zint
 
     ! --- computes set of coefficients for staggered quantities
-    xint = xmid-j0-0.5_num
-    yint = ymid-k0-0.5_num
-    zint = zmid-l0-0.5_num
+    xint = xmid-stagger_shift-j0
+    yint = ymid-stagger_shift-k0
+    zint = zmid-stagger_shift-l0
     oxint = 1.0_num-xint
     xintsq = xint*xint
     oxintsq = oxint*oxint
@@ -2466,7 +2522,7 @@ SUBROUTINE depose_jxjyjz_scalar_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard, 
 END SUBROUTINE depose_jxjyjz_scalar_3_3_3
 
 #if defined (DEV)
-!  _______________________________________________________________________________________
+! _______________________________________________________________________________________
 !> @brief
 !> Order 3 3D vector current deposition routine (rho*v)
 !
@@ -2483,11 +2539,13 @@ END SUBROUTINE depose_jxjyjz_scalar_3_3_3
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp,     &
   gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz, nxguard, nyguard,         &
-  nzguard)
+  nzguard, l_nodal)  !#do not wrap
   USE constants, ONLY: clight, lvec
   USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   INTEGER(idp) :: np, nx, ny, nz, nxguard, nyguard, nzguard
+  LOGICAL(idp) :: l_nodal
+  REAL(num)    :: stagger_shift
   REAL(num), INTENT(IN OUT) ::                                                        &
   jx(1:(1+nx+2*nxguard)*(1+ny+2*nyguard)*(1+nz+2*nzguard))
   REAL(num), INTENT(IN OUT) ::                                                        &
@@ -2516,6 +2574,12 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp
   REAL(num) :: sy01(LVEC2), sy02(LVEC2), sy03(LVEC2), sy04(LVEC2)
   REAL(num), DIMENSION(4) :: szz, zdec, h1, h11, h12, sgn
   INTEGER(idp) :: orig, ncxy, ncx, ncy, ncz, ngx, ngxy, igrid, jorig, korig, lorig
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -2593,9 +2657,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp
       j=floor(xmid)
       k=floor(ymid)
       l=floor(zmid)
-      j0=floor(xmid-0.5_num)
-      k0=floor(ymid-0.5_num)
-      l0=floor(zmid-0.5_num)
+      j0=floor(xmid-stagger_shift)
+      k0=floor(ymid-stagger_shift)
+      l0=floor(zmid-stagger_shift)
       ICELL(n, 1)=1+(j0-jorig)+(k-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 2)=1+(j-jorig)+(k0-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 3)=1+(j-jorig)+(k-korig)*ncx+(l0-lorig)*ncxy
@@ -2620,9 +2684,9 @@ SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3(jx, jy, jz, np, xp, yp, zp, uxp, uyp, uzp
       sy4(n)  = onesixth*yintsq*yint*wq
 
       ! --- computes set of coefficients for staggered quantities
-      xint     = xmid-j0-0.5_num
-      yint     = ymid-k0-0.5_num
-      zint0(n) = zmid-l0-0.5_num
+      xint     = xmid-stagger_shift-j0
+      yint     = ymid-stagger_shift-k0
+      zint0(n) = zmid-stagger_shift-l0
       oxint    = 1.0_num-xint
       xintsq   = xint*xint
       oxintsq  = oxint*oxint
@@ -2889,12 +2953,14 @@ END SUBROUTINE depose_jxjyjz_vecHVv2_3_3_3
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard,      &
   jy_nvalid, jz, jz_nguard, jz_nvalid, np, xp, yp, zp, uxp, uyp, uzp, gaminv, w, q,     &
-  xmin, ymin, zmin, dt, dx, dy, dz)     !#do not wrap
+  xmin, ymin, zmin, dt, dx, dy, dz, l_nodal)     !#do not wrap
   USE constants, ONLY: clight, lvec
   USE picsar_precision, ONLY: idp, num
   IMPLICIT NONE
   ! ___ Parameter declaration _______________________________________
   INTEGER(idp)             :: np
+  LOGICAL(idp)             :: l_nodal
+  REAL(num)                :: stagger_shift
   INTEGER(idp), intent(in) :: jx_nguard(3), jx_nvalid(3), &
   jy_nguard(3), jy_nvalid(3), jz_nguard(3), jz_nvalid(3)
   REAL(num), intent(IN OUT):: jx(-jx_nguard(1):jx_nvalid(1)+jx_nguard(1)-1, &
@@ -2936,6 +3002,12 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard,
   (/ -1_idp, 0_idp, 1_idp, 2_idp, -1_idp, 0_idp, 1_idp, 2_idp /)
   INTEGER(idp), DIMENSION(8), PARAMETER  :: myoff = &
   (/  0_idp, 0_idp, 0_idp, 0_idp,  1_idp, 1_idp, 1_idp, 1_idp /)
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -3008,9 +3080,9 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard,
       j=floor(xmid)
       k=floor(ymid)
       l=floor(zmid)
-      j0=floor(xmid-0.5_num)
-      k0=floor(ymid-0.5_num)
-      l0=floor(zmid-0.5_num)
+      j0=floor(xmid-stagger_shift)
+      k0=floor(ymid-stagger_shift)
+      l0=floor(zmid-stagger_shift)
       ICELL(n, 1)=1+(j0-jorig)+(k-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 2)=1+(j-jorig)+(k0-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 3)=1+(j-jorig)+(k-korig)*ncx+(l0-lorig)*ncxy
@@ -3042,9 +3114,9 @@ SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3( jx, jx_nguard, jx_nvalid, jy, jy_nguard,
       sz4 = onesixth*zintsq*zint*wq
 
       ! --- computes set of coefficients for staggered quantities
-      xint     = xmid-j0-0.5_num
-      yint     = ymid-k0-0.5_num
-      zint     = zmid-l0-0.5_num
+      xint     = xmid-stagger_shift-j0
+      yint     = ymid-stagger_shift-k0
+      zint     = zmid-stagger_shift-l0
       oxint    = 1.0_num-xint
       xintsq   = xint*xint
       oxintsq  = oxint*oxint
@@ -3375,12 +3447,14 @@ END SUBROUTINE depose_jxjyjz_vecHVv3_3_3_3
 ! ________________________________________________________________________________________
 SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells, jycells, jzcells, np, ncells, xp,   &
   yp, zp, uxp, uyp, uzp, gaminv, w, q, xmin, ymin, zmin, dt, dx, dy, dz, nx, ny, nz,    &
-  nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect)
+  nxguard, nyguard, nzguard, ncx, ncy, ncz, lvect, l_nodal)  !#do not wrap
   USE constants, ONLY: lvec
   USE picsar_precision, ONLY: idp, isp, num
   IMPLICIT NONE
 
   INTEGER(idp), INTENT(IN)                      :: np, nx, ny, nz, ncells
+ LOGICAL(idp)                      :: l_nodal
+ REAL(num)                         :: stagger_shift
   INTEGER(idp), INTENT(IN)                      :: lvect
   INTEGER(idp), INTENT(IN)                      :: nxguard, nyguard, nzguard
   REAL(num), DIMENSION(8, ncells), INTENT(INOUT) :: jxcells, jycells, jzcells
@@ -3419,6 +3493,12 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells, jycells, jzcells, np, ncells, 
   ! Parameters
   ngridx=nx+1+2*nxguard
   ngridy=ny+1+2*nyguard
+
+  IF (l_nodal) THEN
+    stagger_shift = 0_num
+  ELSE
+    stagger_shift = 0.5_num
+  ENDIF
 
   dxi = 1.0_num/dx
   dyi = 1.0_num/dy
@@ -3494,9 +3574,9 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells, jycells, jzcells, np, ncells, 
       j=floor(xmid)
       k=floor(ymid)
       l=floor(zmid)
-      j0=floor(xmid-0.5_num)
-      k0=floor(ymid-0.5_num)
-      l0=floor(zmid-0.5_num)
+      j0=floor(xmid-stagger_shift)
+      k0=floor(ymid-stagger_shift)
+      l0=floor(zmid-stagger_shift)
       ICELL(n, 1)=1+(j0-jorig)+(k-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 2)=1+(j-jorig)+(k0-korig)*ncx+(l-lorig)*ncxy
       ICELL(n, 3)=1+(j-jorig)+(k-korig)*ncx+(l0-lorig)*ncxy
@@ -3528,9 +3608,9 @@ SUBROUTINE depose_jxjyjz_vecHV_vnr_3_3_3(jxcells, jycells, jzcells, np, ncells, 
       sz4 = onesixth*zintsq*zint*wq
 
       ! --- computes set of coefficients for staggered quantities
-      xint     = xmid-j0-0.5_num
-      yint     = ymid-k0-0.5_num
-      zint     = zmid-l0-0.5_num
+      xint     = xmid-stagger_shift-j0
+      yint     = ymid-stagger_shift-k0
+      zint     = zmid-stagger_shift-l0
       oxint    = 1.0_num-xint
       xintsq   = xint*xint
       oxintsq  = oxint*oxint
@@ -3946,7 +4026,7 @@ SUBROUTINE current_reduction_2_2_2(jx, jy, jz, jxcells, jycells, jzcells, ncells
   END DO
 
   RETURN
-END SUBROUTINE
+END SUBROUTINE current_reduction_2_2_2
 
 ! ________________________________________________________________________________________
 !> @brief

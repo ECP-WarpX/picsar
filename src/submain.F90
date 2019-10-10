@@ -119,7 +119,7 @@ USE sorting
         !IF (rank .EQ. 0) PRINT *, "#3"
 #if defined(FFTW)
         IF (l_spectral) THEN
-          CALL  copy_field(rhoold, nx+2*nxguards+1, ny+2*nyguards+1,      &
+          CALL copy_field(rhoold, nx+2*nxguards+1, ny+2*nyguards+1,      &
                 nz+2*nzguards+1, rho, nx+2*nxguards+1, ny+2*nyguards+1,   &
                 nz+2*nzguards+1)
           CALL pxrdepose_rho_on_grid
@@ -221,7 +221,7 @@ USE sorting
       CALL current_bcs
 #if defined(FFTW)
         IF (l_spectral) THEN
-          CALL  copy_field(rhoold, nx+2*nxguards+1, ny+2*nyguards+1,      &
+          CALL copy_field(rhoold, nx+2*nxguards+1, ny+2*nyguards+1,      &
                 nz+2*nzguards+1, rho, nx+2*nxguards+1, ny+2*nyguards+1,   &
                 nz+2*nzguards+1)
           CALL pxrdepose_rho_on_grid
@@ -703,8 +703,10 @@ SUBROUTINE initall
       IF (p3dfft_flag)   WRITE(0, '(" USING PDFFT")')
       IF(p3dfft_stride .AND. p3dfft_flag) WRITE(0, '(" USING STRIDED  PDFFT")')
       IF(p3dfft_stride .EQV. .FALSE. .AND. p3dfft_flag) WRITE(0, '(" USING UNSTRIDED PDFFT")')
-      IF(fftw_hybrid) WRITE(0, '(" nb_groups :", I5, X, I5, X, I5)') nb_group_x,nb_group_y,nb_group_z
-      IF(fftw_hybrid) WRITE(0, '(" nb guards groups :", I5, X, I5, X, I5)') nxg_group,nyg_group,nzg_group
+      IF(fftw_hybrid) WRITE(0, '(" nb_groups :", I5, X, I5, X, I5)')                  &
+                              nb_group_x,nb_group_y,nb_group_z
+      IF(fftw_hybrid) WRITE(0, '(" nb guards groups :", I5, X, I5, X, I5)')           &
+                              nxg_group,nyg_group,nzg_group
       IF (fftw_threads_ok) WRITE(0, '(" FFTW MPI - Threaded support enabled ")')
       IF (fftw_mpi_transpose) WRITE(0, '(" FFTW MPI Transpose plans enabled ")')
 #endif

@@ -1,15 +1,17 @@
 build:
 
-  #Now based on Ubuntu
   pre_ci_boot:
-    image_name: lf88/picsar_test
+    image_name: rlehe/warp
     image_tag: latest
     pull: true
 
   ci:
-    # Intial setup
+    # Install dependencies
     - export LC_ALL=C
-    - source /home/warp_user/mypy/bin/activate
+    - pip install matplotlib pytest
+    # Install FFTW3
+    - sudo apt-get update && sudo apt-get install -y libfftw3-dev libfftw3-mpi-dev
+
     # Get the latest version of warp
     - cd /home/warp_user/warp/pywarp90 && git pull && make install && make pinstall
 
@@ -72,16 +74,3 @@ build:
     - python test_Langmuir_wave_3d.py
     - cd ../test_radiation_reaction
     - py.test
-
-    #QED LIBRARY
-    #First test without Kokkos support
-    #- export BOOST_LIBRARYDIR=/usr/lib/x86_64-linux-gnu/
-    #- cmake ../. -DWITH_KOKKOS=OFF
-    #- make
-    #- make test
-    #Second test with Kokkos support
-    #- cmake ../. -DWITH_KOKKOS=ON -DKOKKOS_DIRECTORY=${kokkos_dir} -DKOKKOS_ENABLE_OPENMP=ON
-    #- make
-    #- make test
-    #- cd ../../..
-    #-----------

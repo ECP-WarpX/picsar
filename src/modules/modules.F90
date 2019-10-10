@@ -938,7 +938,7 @@ MODULE time_stat!#do not parse
   INTEGER(idp)                           :: itimestat
   !> Number of entries in the buffer
   INTEGER(idp)                           :: nbuffertimestat
-END MODULE
+END MODULE time_stat
 
 ! ________________________________________________________________________________________
 !> Module for the outputs
