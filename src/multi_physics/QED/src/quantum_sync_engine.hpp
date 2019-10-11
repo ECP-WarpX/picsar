@@ -950,4 +950,4 @@ compute_KK_function(_REAL chi_part) const
 
 
 
-#endif //__PICSAR_MULTIPHYSICS_BREIT_WHEELER_ENGINE__
+#endif //__PICSAR_MULTIPHYSICS_QUANTUM_SYNC_ENGINE__
