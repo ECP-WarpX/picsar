@@ -11,9 +11,10 @@
 #include <limits>
 #include <utility>
 
-
-//Uses the root finding algorithms provided by boost
-#include <boost/math/tools/roots.hpp>
+#ifndef PXRMP_CORE_ONLY
+    //Uses the root finding algorithms provided by boost
+    #include <boost/math/tools/roots.hpp>
+#endif //PXRMP_CORE_ONLY
 
 //Should be included by all the src files of the library
 #include "qed_commons.h"
@@ -44,17 +45,19 @@ namespace picsar{
         PXRMP_FORCE_INLINE
         const T* picsar_upper_bound(const T* first, const T* last, const T& val);
 
-        //A wrapper around the function provided by Boost library
-        template<typename _REAL>
-        _REAL bracket_and_solve_root
-        (const std::function<_REAL(_REAL)>& f, _REAL guess, bool rising);
-
         //A function providing values extracted from a poisson distribution,
         //given lambda and a number in the interval [0,1)
         template<typename T>
         PXRMP_GPU
         PXRMP_FORCE_INLINE
         size_t poisson_distrib(T lambda, T unf_zero_one_minus_epsi);
+
+#ifndef PXRMP_CORE_ONLY
+        //A wrapper around the function provided by Boost library
+        template<typename _REAL>
+        _REAL bracket_and_solve_root
+        (const std::function<_REAL(_REAL)>& f, _REAL guess, bool rising);
+#endif
     }
 }
 
@@ -158,26 +161,6 @@ picsar::multi_physics::picsar_upper_bound
     return first;
 }
 
-//A wrapper around the function provided by Boost library
-template<typename _REAL>
-_REAL picsar::multi_physics::bracket_and_solve_root
-(const std::function<_REAL(_REAL)>& f, _REAL guess, bool rising)
-{
-    size_t digits = std::numeric_limits<_REAL>::digits;
-    size_t precision_digits = digits - 2;
-    boost::math::tools::eps_tolerance<_REAL> tol(precision_digits);
-
-    _REAL factor = static_cast<_REAL>(2.0);
-
-    size_t max_iter = 32;
-
-    std::pair<_REAL, _REAL> r =
-        boost::math::tools::bracket_and_solve_root
-        (f, guess, factor, rising, tol, max_iter);
-
-    return r.first + (r.second - r.first)/static_cast<_REAL>(2.0);
-}
-
 //A function providing values extracted from a poisson distribution,
 //given lambda and a number in the interval [0,1)
 template<typename T>
@@ -197,9 +180,31 @@ size_t picsar::multi_physics::poisson_distrib
         //If this is true we have reached the limit of the floating
         //point number that we are using
         if(s <= old_s)
-            break;     
+            break;
     }
     return k;
 }
+
+#ifndef PXRMP_CORE_ONLY
+    //A wrapper around the function provided by Boost library
+    template<typename _REAL>
+    _REAL picsar::multi_physics::bracket_and_solve_root
+    (const std::function<_REAL(_REAL)>& f, _REAL guess, bool rising)
+    {
+        size_t digits = std::numeric_limits<_REAL>::digits;
+        size_t precision_digits = digits - 2;
+        boost::math::tools::eps_tolerance<_REAL> tol(precision_digits);
+
+        _REAL factor = static_cast<_REAL>(2.0);
+
+        size_t max_iter = 32;
+
+        std::pair<_REAL, _REAL> r =
+            boost::math::tools::bracket_and_solve_root
+            (f, guess, factor, rising, tol, max_iter);
+
+        return r.first + (r.second - r.first)/static_cast<_REAL>(2.0);
+    }
+#endif //PXRMP_CORE_ONLY
 
 #endif // __PICSAR_MULTIPHYSICS_UTILITIES__
