@@ -16,6 +16,9 @@
 #define PXRMP_USE_NORMALIZED_UNITS
 #include "quantum_sync_engine.hpp"
 
+//Uses random numbers
+#include "rng_wrapper.hpp"
+
 using namespace picsar::multi_physics;
 
 //________________________________

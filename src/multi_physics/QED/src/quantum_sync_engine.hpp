@@ -27,13 +27,8 @@
 
 #ifndef PXRMP_CORE_ONLY
 
-    #include<limits>
-
     //Uses openMP to speed up the generation of the lookup table
     #include <omp.h>
-
-    //Uses random numbers
-    #include "rng_wrapper.hpp"
 
     //Uses special functions
     #include "special_functions.hpp"
