@@ -18,6 +18,12 @@
     //This flag should be set by the user
     //e.g. #define PXRMP_GPU __host__ __device__
 
+    //Breit-Wheeler and Quantum Synchrotrons engines offer the possibility
+    //to include only the 'core functions' required for a simulation done on GPUs,
+    //dropping everythin related to table generation. This allows avoiding
+    //the Boost dependency.
+    //#define PXRMP_CORE_ONLY
+
     //If the user has not set the GPU flag
     #ifndef PXRMP_GPU
       //set it to the empty string
