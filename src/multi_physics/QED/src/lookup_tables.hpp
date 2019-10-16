@@ -3,12 +3,12 @@
 
 //This .hpp file contains the implementation of 1D and 2D lookup tables.
 
-#include<functional>
-#include<array>
-#include<vector>
 #include<utility>
-#include<iostream>
-#include<fstream>
+
+#ifndef PXRMP_CORE_ONLY
+    #include<iostream>
+    #include<fstream>
+#endif //PXRMP_CORE_ONLY
 
 //Should be included by all the src files of the library
 #include "qed_commons.h"
@@ -75,7 +75,7 @@ namespace picsar{
                 PXRMP_FORCE_INLINE
                 _REAL interp_linear(_REAL where) const;
 
-
+#ifndef PXRMP_CORE_ONLY
                 //_________READ&WRITE________________
 
                 //Read table from stream (simple binary fileformat)
@@ -84,6 +84,7 @@ namespace picsar{
                 //Write table to stream (simple binary fileformat)
                 void write_on_stream_bin(std::ofstream& out);
                 //_________________________
+#endif //PXRMP_CORE_ONLY
 
 
             private:
@@ -167,6 +168,7 @@ namespace picsar{
                 _REAL interp_linear_first_equispaced
                 (_REAL where_x, size_t coord_y) const;
 
+#ifndef PXRMP_CORE_ONLY
                 //_________READ&WRITE________________
 
                 //Read table from stream (simple binary fileformat)
@@ -175,6 +177,7 @@ namespace picsar{
                 //Write table to stream (simple binary fileformat)
                 void write_on_stream_bin(std::ofstream& out);
                 //_________________________
+#endif //PXRMP_CORE_ONLY
 
 
 
@@ -330,6 +333,9 @@ interp_linear(_REAL where) const
     return yleft + ((yright-yleft)/(xright-xleft))*(where-xleft);
 }
 
+
+#ifndef PXRMP_CORE_ONLY
+
 //Read table from stream
 template<typename _REAL>
 void
@@ -371,6 +377,8 @@ write_on_stream_bin(std::ofstream& out)
     out.write(
         reinterpret_cast<char*>(data.data()), sizeof(_REAL)*size_data);
 }
+
+#endif //PXRMP_CORE_ONLY
 
 //_______________________2D table_______________________________
 
@@ -657,6 +665,8 @@ interp_linear_first_equispaced(_REAL where_x, size_t coord_y) const
     return (wlc*zlc + wrc*zrc)/w_norm;
 }
 
+#ifndef PXRMP_CORE_ONLY
+
 //Read table from stream
 template<typename _REAL>
 void
@@ -712,6 +722,8 @@ write_on_stream_bin(std::ofstream& out)
         reinterpret_cast<char*>(data.data()), sizeof(_REAL)*size_data);
 }
 
+
+#endif //PXRMP_CORE_ONLY
 
 //Row major access to underlying data
 template<typename _REAL>
