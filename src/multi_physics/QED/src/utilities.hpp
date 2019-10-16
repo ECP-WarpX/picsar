@@ -8,10 +8,10 @@
 #include <cmath>
 #include <functional>
 #include <algorithm>
-#include <limits>
 #include <utility>
 
 #ifndef PXRMP_CORE_ONLY
+    #include <limits>
     //Uses the root finding algorithms provided by boost
     #include <boost/math/tools/roots.hpp>
 #endif //PXRMP_CORE_ONLY
