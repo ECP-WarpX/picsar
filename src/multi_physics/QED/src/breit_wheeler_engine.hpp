@@ -25,6 +25,9 @@
 //Uses picsar arrays
 #include "picsar_array.hpp"
 
+//Requires the Breit Wheeler engine control struct
+#include "breit_wheeler_engine_ctrl.h"
+
 #ifndef PXRMP_CORE_ONLY
 
     //Uses openMP to speed up the generation of the lookup table
@@ -45,32 +48,6 @@
 
 namespace picsar{
   namespace multi_physics{
-
-      //This structure contains parameters which control how the BW engine
-      //works
-      template<typename _REAL>
-      struct breit_wheeler_engine_ctrl{
-           //Minimum chi_phot to consider
-          _REAL chi_phot_min =
-            static_cast<_REAL>(__breit_wheeler_min_chi_phot);
-
-          _REAL chi_phot_tdndt_min =
-            static_cast<_REAL>(__breit_wheeler_min_tdndt_chi_phot);
-          _REAL chi_phot_tdndt_max =
-            static_cast<_REAL>(__breit_wheeler_max_tdndt_chi_phot);
-          size_t chi_phot_tdndt_how_many =
-            __breit_wheeler_how_many_tdndt_chi_phot;
-
-          _REAL chi_phot_tpair_min =
-            static_cast<_REAL>(__breit_wheeler_min_tpair_chi_phot);
-          _REAL chi_phot_tpair_max =
-            static_cast<_REAL>(__breit_wheeler_max_tpair_chi_phot);
-          size_t chi_phot_tpair_how_many =
-            __breit_wheeler_how_many_tpair_chi_phot;
-          size_t chi_frac_tpair_how_many =
-            __breit_wheeler_chi_frac_tpair_how_many;
-      };
-
 
         //This struct holds all the data required to re-generate
         //the breit_wheeler_engine object

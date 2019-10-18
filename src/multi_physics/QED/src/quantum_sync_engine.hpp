@@ -25,6 +25,9 @@
 //Uses picsar arrays
 #include "picsar_array.hpp"
 
+//Requires the Quantum Synchrotron engine control struct
+#include "quantum_sync_engine_ctrl.h"
+
 #ifndef PXRMP_CORE_ONLY
 
     //Uses openMP to speed up the generation of the lookup table
@@ -45,31 +48,6 @@
 
 namespace picsar{
   namespace multi_physics{
-
-      //This structure contains parameters which control how the QS engine
-      //works
-      template<typename _REAL>
-      struct quantum_synchrotron_engine_ctrl{
-          //Minimum chi for particles to be considered by the engine
-          _REAL chi_part_min =
-            static_cast<_REAL>(__quantum_synchrotron_min_chi_part);
-
-          _REAL chi_part_tdndt_min =
-            static_cast<_REAL>(__quantum_synchrotron_min_tdndt_chi_part);
-          _REAL chi_part_tdndt_max =
-            static_cast<_REAL>(__quantum_synchrotron_max_tdndt_chi_part);
-          size_t chi_part_tdndt_how_many =
-            __quantum_synchrotron_how_many_tdndt_chi_part;
-
-          _REAL chi_part_tem_min =
-            static_cast<_REAL>(__quantum_synchrotron_min_tem_chi_part);
-          _REAL chi_part_tem_max =
-            static_cast<_REAL>(__quantum_synchrotron_max_tem_chi_part);
-          size_t chi_part_tem_how_many =
-            __quantum_synchrotron_how_many_tem_chi_part;
-          size_t prob_tem_how_many =
-            __quantum_synchrotron_prob_tem_how_many;
-      };
 
       //This struct holds all the data required to re-generate
       //the quantum_synchrotron_engine object
