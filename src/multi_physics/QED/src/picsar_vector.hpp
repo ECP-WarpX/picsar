@@ -31,7 +31,8 @@ namespace picsar{
             // Constructor to allow initialization with an STL vector (not for GPU)
             picsar_vector(const std::vector<T>& vec);
 
-            //Empty initialization (not for GPU)
+            //Empty initialization
+            PXRMP_GPU PXRMP_FORCE_INLINE
             picsar_vector();
 
             // Constructor to allow initialization with a list {a,b,c,d,...}
@@ -141,6 +142,7 @@ picsar::multi_physics::picsar_vector<T>::picsar_vector(const std::vector<T>& vec
 
 //Empty initialization
 template <typename T>
+PXRMP_GPU PXRMP_FORCE_INLINE
 picsar::multi_physics::picsar_vector<T>::picsar_vector()
 {
     v_size = 0;
