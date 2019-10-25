@@ -33,6 +33,7 @@ namespace picsar{
         {
             public:
                 //Default empty constructor
+                PXRMP_GPU
                 lookup_1d () = default;
 
                 //Constructor: requires coordinates and data
@@ -47,6 +48,7 @@ namespace picsar{
 
                 //Constructor from raw data pointers
                 PXRMP_GPU
+                PXRMP_FORCE_INLINE
                 lookup_1d(size_t how_many, _REAL* _coords, _REAL* _data);
 
                 //Assignment operator
@@ -100,6 +102,7 @@ namespace picsar{
         {
             public:
                 //Default empty constructor
+                PXRMP_GPU
                 lookup_2d () = default;
 
                 //Constructor: requires coordinates and data
