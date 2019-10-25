@@ -32,9 +32,10 @@ namespace picsar{
         class lookup_1d
         {
             public:
-                //Default empty constructor
+                //Empty constructor
                 PXRMP_GPU
-                lookup_1d () = default;
+                PXRMP_FORCE_INLINE
+                lookup_1d ();
 
                 //Constructor: requires coordinates and data
                 //coordinates should be sorted!
@@ -101,9 +102,10 @@ namespace picsar{
         class lookup_2d
         {
             public:
-                //Default empty constructor
+                //Empty constructor
                 PXRMP_GPU
-                lookup_2d () = default;
+                PXRMP_FORCE_INLINE
+                lookup_2d ();
 
                 //Constructor: requires coordinates and data
                 //coordinates should be sorted!
@@ -206,6 +208,14 @@ namespace picsar{
 
 //_______________________1D table_______________________________
 
+//Empty Constructor
+template<typename _REAL>
+PXRMP_GPU
+PXRMP_FORCE_INLINE
+picsar::multi_physics::lookup_1d<_REAL>::
+lookup_1d(): coords{}, data{}, init_flag{false}
+{}
+
 //Constructor: requires coordinates and data
 template<typename _REAL>
 picsar::multi_physics::lookup_1d<_REAL>::
@@ -234,6 +244,7 @@ lookup_1d(lookup_1d&& other):
 //Constructor from raw data pointers
 template<typename _REAL>
 PXRMP_GPU
+PXRMP_FORCE_INLINE
 picsar::multi_physics::lookup_1d<_REAL>::
 lookup_1d(size_t how_many, _REAL* _coords, _REAL* _data):
 coords{how_many, _coords},
@@ -384,6 +395,15 @@ write_on_stream_bin(std::ofstream& out)
 #endif //PXRMP_CORE_ONLY
 
 //_______________________2D table_______________________________
+
+//Empty Constructor
+template<typename _REAL>
+PXRMP_GPU
+PXRMP_FORCE_INLINE
+picsar::multi_physics::lookup_2d<_REAL>::
+lookup_2d(): coords{}, data{}, init_flag{false}
+{}
+
 
 //Constructor: requires coordinates and data
 template<typename _REAL>
