@@ -81,7 +81,7 @@ namespace picsar{
          //See analogous CPU function below for a detailed description
          PXRMP_GPU
          PXRMP_FORCE_INLINE
-         static _REAL internal_get_optical_depth(_REAL unf_zero_one_minus_epsi);
+         static _REAL internal_get_optical_depth(const _REAL unf_zero_one_minus_epsi);
 
          //______________________GPU
          //Interp the dN_dt from table
@@ -134,7 +134,7 @@ namespace picsar{
          _REAL lambda ,
          const picsar::multi_physics::lookup_2d<_REAL>& ref_cum_distrib_table,
          const picsar::multi_physics::quantum_synchrotron_engine_ctrl<_REAL>& ref_qs_ctrl,
-         _REAL* unf_zero_one_minus_epsi
+         const _REAL* unf_zero_one_minus_epsi
          );
          //______________________
 
@@ -301,7 +301,7 @@ template<typename _REAL, class _RNDWRAP>
 PXRMP_GPU
 PXRMP_FORCE_INLINE
 _REAL picsar::multi_physics::quantum_synchrotron_engine<_REAL, _RNDWRAP>::
-internal_get_optical_depth(_REAL unf_zero_one_minus_epsi)
+internal_get_optical_depth(const _REAL unf_zero_one_minus_epsi)
 {
     return -log(one - unf_zero_one_minus_epsi);
 }
@@ -427,7 +427,7 @@ _REAL* g_weight,
 _REAL _lambda ,
 const picsar::multi_physics::lookup_2d<_REAL>& ref_cum_distrib_table,
 const picsar::multi_physics::quantum_synchrotron_engine_ctrl<_REAL>& ref_qs_ctrl,
-_REAL* unf_zero_one_minus_epsi)
+const _REAL* unf_zero_one_minus_epsi)
 {
 
 #ifdef PXRMP_WITH_SI_UNITS
