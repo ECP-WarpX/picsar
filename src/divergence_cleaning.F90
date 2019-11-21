@@ -95,3 +95,51 @@ SUBROUTINE laser_field_correction
 #endif
 END SUBROUTINE laser_field_correction
 
+
+SUBROUTINE divergence_cleaning
+  USE PICSAR_precision
+  USE shared_data , ONLY : nx, ny, dy, nmodes
+  USE constants, ONLY: clight
+  USE fields !, ONLY: jm_h, jp_h, jl_h, bm_h, rho_h, rhoold_h, nxguards, nyguards
+  USE gpstd_solver !, ONLY : krc, kyc ! (=kyf, kyb)
+  USE shared_data, ONLY: nkx, nky, nmodes
+  USE hankel
+  IMPLICIT NONE
+  INTEGER (idp) :: i,j,k, nfftx, nffty
+  INTEGER(idp) ::  ix, iy, iz, nxx, nyy, nzz
+
+   ! from SUBROUTINE laser_field_correction (divergence_cleaning.F90)
+#if defined(LIBRARY)
+   nfftx = nx+2*nxguards+1 
+   nffty = ny+2*nyguards+1
+#else
+   !> When using picsar
+   nfftx = nx+2*nxguards
+   nffty = ny+2* nyguards
+#endif
+   !DO k=1 , nmodes
+   !  DO j=1, nffty
+   !    DO i= 1, nfftx
+   !    END DO
+   !  END DO
+   !END DO
+
+   ! from SUBROUTINE push_psaotd_ebfielfs_AM_rz (fourier_psaotd.F90)
+   !   with nkx=(2*nxguards+nx+1)! Real To Complex Transform
+   !   with nky=(2*nyguards+ny+1)
+   !   with nmodes= nmodes_in
+
+   !nxx=nkx
+   !nyy=nky
+   !nzz=nmodes
+   !DO iz=1, nzz
+   !  DO iy=1, nyy
+   !    DO ix=1, nxx
+   !      ...
+   !    END DO
+   !  END DO
+   !END DO
+
+
+END SUBROUTINE divergence_cleaning
+
