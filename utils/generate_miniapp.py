@@ -2021,9 +2021,9 @@ class MiniAppParser( object ):
             listlines.append('      CALL DFFTW_DESTROY_PLAN(plan_r2c_mpi)\n')
             listlines.append('      CALL DFFTW_DESTROY_PLAN(plan_c2r_mpi)\n')
             listlines.append('    ELSE\n')
-            listlines.append('      CALL fast_fftw_destroy_plan_dft,'\
+            listlines.append('      CALL fast_fftw_destroy_plan_dft'\
                            + '(plan_r2c)\n')
-            listlines.append('      CALL fast_fftw_destroy_plan_dft,'\
+            listlines.append('      CALL fast_fftw_destroy_plan_dft'\
                            + '(plan_c2r)\n')
             listlines.append('    ENDIF\n')
             listlines.append('  ENDIF\n')
