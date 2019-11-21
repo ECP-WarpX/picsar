@@ -445,7 +445,7 @@ MODULE control_file
   ! ______________________________________________________________________________________
   SUBROUTINE read_input_file
     INTEGER :: ix = 0
-    CHARACTER(len=32) :: input_filename, input_file_default='input_file.pixr'
+    CHARACTER(len=4096) :: input_filename, input_file_default='input_file.pixr'
     
     CALL get_command_argument(1, input_filename)
     IF (LEN_TRIM(input_filename) == 0) input_filename = input_file_default
@@ -455,8 +455,8 @@ MODULE control_file
     
     IF (ios/=0) then
         write(0,*) '#############################'
-        write(0,*) '# Error opening input file. # '
-        write(0,*) '# Check input filename.     # '
+        write(0,*) '# Error opening input file [', TRIM(input_filename), '].'
+        write(0,*) '# Check input filename.'
         write(0,*) '#############################'
         call abort()
     END IF
