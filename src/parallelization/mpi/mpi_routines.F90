@@ -2424,24 +2424,37 @@ SUBROUTINE get_local_grid_mem()
 
 #if defined(FFTW)
   ! -- Update of memory size occupied by Fourier arrays 
-  IF(g_spectral) THEN
-    IF(absorbing_bcs) THEN
-      field_size_f = SIZEOF(exf)*(17.0_num+12.0_num) 
+  field_size_f = 0._num
+  IF (associated(exf)) THEN
+    IF(g_spectral) THEN
+      IF(absorbing_bcs) THEN
+        field_size_f = SIZEOF(exf)*(17.0_num+12.0_num)
+      ELSE 
+        field_size_f = SIZEOF(exf)*(11.0_num+6.0_num)
+      ENDIF
     ELSE 
-      field_size_f = SIZEOF(exf)*(11.0_num+6.0_num)
+      field_size_f = SIZEOF(exf)*11.0_num
     ENDIF
-  ELSE 
-    field_size_f = SIZEOF(exf)*11.0_num
   ENDIF
   local_grid_mem = local_grid_mem + field_size_f
+  field_size_r = 0._num
+  cc_mat_size = 0._num
   IF(absorbing_bcs) THEN
-    field_size_r = SIZEOF(ex_r)*17.0_num  
+    IF (associated(ex_r)) THEN
+      field_size_r = SIZEOF(ex_r)*17.0_num
+    ENDIF
     ! -- Memory occupied by blocs
-    cc_mat_size = SIZEOF(exf)*(34.0_num) 
+    IF (associated(exf)) THEN
+      cc_mat_size = SIZEOF(exf)*(34.0_num)
+    ENDIF
   ELSE 
-    field_size_r = SIZEOF(ex_r)*11.0_num 
+    IF (associated(ex_r)) THEN
+      field_size_r = SIZEOF(ex_r)*11.0_num
+    ENDIF
     ! -- Memory occupued by blocs
-    cc_mat_size = SIZEOF(exf)*(33.0_num)
+    IF (associated(exf)) THEN
+      cc_mat_size = SIZEOF(exf)*(33.0_num)
+    ENDIF
   ENDIF
   local_grid_mem =  local_grid_mem + field_size_r + cc_mat_size
   
