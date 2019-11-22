@@ -87,7 +87,8 @@ SUBROUTINE laser_field_correction
   
   
   CALL get_fields_AM_rz()
-  
+  DEALLOCATE (ky_true, kyc_inv, w, inv_w, filter_array ) 
+
 #if defined(LIBRARY)
   write(0, *) "max b ", maxval(abs(el_c)), maxval(abs(er_c)), maxval(abs(et_c)), maxval(abs(bl_c)), maxval(abs(br_c)), maxval(abs(bt_c))
 #else
@@ -104,11 +105,16 @@ SUBROUTINE divergence_cleaning
   USE gpstd_solver !, ONLY : krc, kyc ! (=kyf, kyb)
   USE shared_data, ONLY: nkx, nky, nmodes
   USE hankel
+  USE PARAMS , ONLY : dt
   IMPLICIT NONE
   INTEGER (idp) :: i,j,k, nfftx, nffty
   INTEGER(idp) ::  ix, iy, iz, nxx, nyy, nzz
+  COMPLEX (cpx), dimension(:,:), allocatable :: g
+  COMPLEX (cpx) :: ii
+  REAL(num) :: knorm
+  ALLOCATE (g (nfftx, nffty))
+  ii= DCMPLX(0.0_num, 1.0_num)
 
-   ! from SUBROUTINE laser_field_correction (divergence_cleaning.F90)
 #if defined(LIBRARY)
    nfftx = nx+2*nxguards+1 
    nffty = ny+2*nyguards+1
@@ -117,29 +123,20 @@ SUBROUTINE divergence_cleaning
    nfftx = nx+2*nxguards
    nffty = ny+2* nyguards
 #endif
-   !DO k=1 , nmodes
-   !  DO j=1, nffty
-   !    DO i= 1, nfftx
-   !    END DO
-   !  END DO
-   !END DO
+   DO k=1 , nmodes
+     g = (rho_h(:,:,k) - rhoold_h(:,:,k))/dt
+     DO j=1, nffty
+       DO i= 1, nfftx
+           knorm = -1./(krc(i,k)*krc(i,k)+kyc(j)*kyc(j))           
+           g(i,j) = knorm * (g(i,j) + krc(i,k)*(jp_h(i,j,k) - jm_h(i,j,k)) + ii*kyc(j)*jl_h(i,j,k)) 
+       END DO
+       jp_h(:,j,k) = jp_h(:,j,k) + 0.5*krc(:,k)*g(:,j)
+       jm_h(:,j,k) = jm_h(:,j,k) - 0.5*krc(:,k)*g(:,j)
+       jl_h(:,j,k) = jl_h(:,j,k) - ii*kyc(j)*g(:,j)
+     END DO
+   END DO
 
-   ! from SUBROUTINE push_psaotd_ebfielfs_AM_rz (fourier_psaotd.F90)
-   !   with nkx=(2*nxguards+nx+1)! Real To Complex Transform
-   !   with nky=(2*nyguards+ny+1)
-   !   with nmodes= nmodes_in
-
-   !nxx=nkx
-   !nyy=nky
-   !nzz=nmodes
-   !DO iz=1, nzz
-   !  DO iy=1, nyy
-   !    DO ix=1, nxx
-   !      ...
-   !    END DO
-   !  END DO
-   !END DO
-
+   DEALLOCATE (g)
 
 END SUBROUTINE divergence_cleaning
 
