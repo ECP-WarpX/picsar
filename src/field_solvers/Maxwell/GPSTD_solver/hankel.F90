@@ -161,6 +161,13 @@ SUBROUTINE get_Hfields()
       mode_block_matrix2d(imode, 2)%block2dc, bm_h(:,:,imode), nfftr, nffty)
     Call  dgemm_example(bp_f(:,:,imode), hankel_mat(nmatrixes_h)% &
       mode_block_matrix2d(imode, 3)%block2dc, bp_h(:,:,imode), nfftr, nffty)
+    Call  dgemm_example(jl_f(:,:,imode), hankel_mat(nmatrixes_h)% &
+      mode_block_matrix2d(imode, 1)%block2dc, jl_h(:,:,imode), nfftr, nffty)
+    Call  dgemm_example(jm_f(:,:,imode), hankel_mat(nmatrixes_h)% &
+      mode_block_matrix2d(imode, 2)%block2dc, jm_h(:,:,imode), nfftr, nffty)
+    Call  dgemm_example(jp_f(:,:,imode), hankel_mat(nmatrixes_h)% &
+      mode_block_matrix2d(imode, 3)%block2dc, jp_h(:,:,imode), nfftr, nffty)
+
     !Call  dgemm_example(jl_f(:,:,imode), Ma, jl_h(:,:,imode), nfftr, nffty)
     !Call  dgemm_example(jm_f(:,:,imode), Ma1, jp_h(:,:,imode), nfftr, nffty)
     !Call  dgemm_example(jp_f(:,:,imode), Ma_1, jm_h(:,:,imode), nfftr, nffty)

@@ -1114,11 +1114,11 @@ MODULE fourier_psaotd
     CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, bl_c, bl_f, plan_rz_f)
     CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, brt_m, bp_f, plan_rz_f)
     CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, brt_p, bm_f, plan_rz_f)
-    !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, jl_c, jl_f, plan_rz_f)
-    !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, jrt_m, jp_f, plan_rz_f)
-    !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, jrt_p, jm_f, plan_rz_f)
-    !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, rhoold_c,rhoold_f,plan_rz_f)
-    !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, rho_c, rho_f, plan_rz_f)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, jl_c, jl_f, plan_rz_f)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, jrt_m, jp_f, plan_rz_f)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, jrt_p, jm_f, plan_rz_f)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, rhoold_c,rhoold_f,plan_rz_f)
+    CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, rho_c, rho_f, plan_rz_f)
     !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, el_c, el_f, plan_rz_f)
     !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, er_c, ep_f, plan_rz_f)
     !CALL fast_fftw1d_3d_array_with_plan(nfftx, nffty, nfftz, et_c, em_f, plan_rz_f)
@@ -1137,6 +1137,11 @@ MODULE fourier_psaotd
     bl_f= bl_f/REAL(nffty,num)
     bp_f= bp_f/REAL(nffty,num)
     bm_f=bm_f/REAL(nffty,num)
+    jl_f=jl_f/REAL(nffty,num)
+    jp_f=jp_f/REAL(nffty,num)
+    jm_f=jm_f/REAL(nffty,num)
+    rhoold_f=rhoold_f/REAL(nffty,num)
+    rho_f=rho_f/REAL(nffty,num)
     DEALLOCATE (ert_p)
     DEALLOCATE (ert_m)
     DEALLOCATE (brt_p)
@@ -1851,16 +1856,16 @@ MODULE fourier_psaotd
           bl_h_old=bl_h(ix, iy, iz)
           bp_h_old=bp_h(ix, iy, iz)
           bm_h_old=bm_h(ix, iy, iz)
-          !jl_h_old=jl_h(ix, iy, iz)
-          !jp_h_old=jp_h(ix, iy, iz)
-          !jm_h_old=jm_h(ix, iy, iz)
-          !rho_h_old=rho_h(ix, iy, iz)
-          !rhoold_h_old=rhoold_h(ix, iy, iz)
-          jl_h_old=0.0
-          jp_h_old=0.0
-          jm_h_old=0.0
-          rho_h_old=0.0
-          rhoold_h_old=0.0
+          jl_h_old=jl_h(ix, iy, iz)
+          jp_h_old=jp_h(ix, iy, iz)
+          jm_h_old=jm_h(ix, iy, iz)
+          rho_h_old=rho_h(ix, iy, iz)
+          rhoold_h_old=rhoold_h(ix, iy, iz)
+          !jl_h_old=0.0
+          !jp_h_old=0.0
+          !jm_h_old=0.0
+          !rho_h_old=0.0
+          !rhoold_h_old=0.0
 
           bl_h(ix, iy, iz) =                                                           &
           cc_mat(nmatrixes)%block_matrix2d(4, 4)%block3dc(ix, iy,                     &
