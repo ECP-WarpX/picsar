@@ -11,3 +11,4 @@ find_package(Boost REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 target_include_directories(pxrmp_qed INTERFACE src/)
+target_include_directories(pxrmp_qed INTERFACE src/containers)

@@ -50,9 +50,9 @@ void do_sp();
 int main()
 {
 
-    //do_bw();
+    do_bw();
     //do_qs();
-    do_sp();
+    //do_sp();
 
 }
 

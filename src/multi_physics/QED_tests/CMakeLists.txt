@@ -21,12 +21,12 @@ foreach(test_src ${TEST_SRCS})
         set_target_properties(${test_name} PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/test_bin)
 
-        #Enforce C++11
+        #Enforce C++14
         set(CMAKE_CXX_EXTENSIONS OFF)
         if(NOT ${CMAKE_VERSION} VERSION_LESS "3.8.0")
-          target_compile_features(${test_name} PUBLIC cxx_std_11)
+          target_compile_features(${test_name} PUBLIC cxx_std_14)
         else()
-          set_target_properties(${test_name} PROPERTIES CXX_STANDARD 11)
+          set_target_properties(${test_name} PROPERTIES CXX_STANDARD 14)
         endif()
 
         #Finally add it to test execution
