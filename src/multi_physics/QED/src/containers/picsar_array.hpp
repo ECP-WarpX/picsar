@@ -55,7 +55,7 @@ namespace containers{
 
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        constexpr const T* data() const noexcept
+        const T* data() const noexcept
         {
             return m_data;
         }

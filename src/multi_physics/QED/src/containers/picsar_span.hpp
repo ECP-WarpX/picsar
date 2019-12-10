@@ -1,11 +1,8 @@
 #ifndef __PICSAR_MULTIPHYSICS_VIEW__
 #define __PICSAR_MULTIPHYSICS_VIEW__
 
-//This .hpp file contains the definition of a GPU-friendly STL-like array
-//(thanks to Weiqun Zhang)
-
 #include <cstddef>
-#include <vector>
+#include <type_traits>
 
 //Should be included by all the src files of the library
 #include "../qed_commons.h"
@@ -24,7 +21,8 @@ namespace containers{
 
     public:
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        picsar_span(){}
+        picsar_span():
+            m_size{0}, m_ptr_data{nullptr}{}
 
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
@@ -33,78 +31,58 @@ namespace containers{
         {}
 
 
-        template <size_t N>
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        picsar_span(const picsar_array<T, N>& pic):
-            m_size{N}, m_ptr_data{pic.data()}
-        {}
-
-
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        picsar_span(const std::vector<T>& vec):
-            m_size{vec.size()}, m_ptr_data{vec.data()}
-        {}
-
-
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        const T& operator [] (int i) const noexcept
+        T& operator [] (int i) const noexcept
         {
             return m_ptr_data[i];
         }
 
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        T& operator [] (int i) noexcept
-        {
-            return m_ptr_data[i];
-        }
-
-
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        const T* data() const noexcept
+        constexpr const T* data() const noexcept
         {
             return m_ptr_data;
         }
 
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        size_t size() const noexcept
+        constexpr size_t size() const noexcept
         {
             return m_size;
         }
 
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        const T* begin() const noexcept
+        constexpr const T* begin() const noexcept
         {
             return m_ptr_data;
         }
 
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        const T* end() const noexcept
+        constexpr const T* end() const noexcept
         {
             return m_ptr_data+m_size;
         }
 
 
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_FORCE_INLINE
-        T* begin() noexcept
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        constexpr T* begin() noexcept
         {
             return m_ptr_data;
         }
 
 
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_FORCE_INLINE
-        T* end() noexcept
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        constexpr T* end() noexcept
         {
             return m_ptr_data;
         }
 
 
-        private:
-            T* m_ptr_data = nullptr;
-            size_t m_size = 0;
+        protected:
+            T* m_ptr_data;
+            size_t m_size;
 
         };
 }

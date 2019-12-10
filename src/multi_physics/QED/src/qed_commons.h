@@ -58,12 +58,16 @@
       #endif
     #endif
 
-
-        //Force inline pragmas (compiler specific!)
+  #ifdef PXRMP_FORCE_BOOST_FOR_SPECFUNC
+    #define PXRMP_INTERNAL_SPECFUNC_WITH_BOOST
+  #else
+    #if __cplusplus > 201402L
+      #define PXRMP_INTERNAL_SPECFUNC_WITH_CXX17
+    #else
+      #define PXRMP_INTERNAL_SPECFUNC_WITH_BOOST
+    #endif
+  #endif
 
 //##############################################################################
-
-
-
 
 #endif// __PICSAR_MULTIPHYSICS_QED_COMMONS__

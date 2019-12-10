@@ -54,3 +54,15 @@ BOOST_AUTO_TEST_CASE( picsar_array_range_based_loops )
     for(auto el : arr) sum += el;
     BOOST_CHECK_EQUAL(sum, 12);
 }
+
+//Test copy
+BOOST_AUTO_TEST_CASE( picsar_array_copy )
+{
+    auto arr = picsar_array<int,3>();
+    int i = 0;
+    for(auto& el : arr) el = ++i;
+    auto c_arr = arr;
+    for(int i = 0; i < arr.size(); ++i)
+        BOOST_CHECK_EQUAL(arr[i], c_arr[i]);
+}
+
