@@ -35,10 +35,10 @@ SUBROUTINE get_Hfields()
   INTEGER (idp) :: imode, i,j 
   REAL(num) :: t1, t2
   complex(cpx)::ii
-  COMPLEX(cpx),POINTER, DIMENSION(:, :) :: el_h_ptr, ep_h_ptr, em_h_ptr, bl_h_ptr, bp_h_ptr, &
-                            bm_h_ptr, jl_h_ptr, jp_h_ptr, jm_h_ptr, rhoold_h_ptr, rho_h_ptr, &
-                                 el_f_ptr, ep_f_ptr, em_f_ptr, bl_f_ptr, bp_f_ptr, bm_f_ptr, &
-                                    jl_f_ptr, jp_f_ptr, jm_f_ptr, rho_f_ptr, rhoold_f_ptr 
+  !COMPLEX(cpx),POINTER, DIMENSION(:, :) :: el_h_ptr, ep_h_ptr, em_h_ptr, bl_h_ptr, bp_h_ptr, &
+  !                          bm_h_ptr, jl_h_ptr, jp_h_ptr, jm_h_ptr, rhoold_h_ptr, rho_h_ptr, &
+  !                               el_f_ptr, ep_f_ptr, em_f_ptr, bl_f_ptr, bp_f_ptr, bm_f_ptr, &
+  !                                  jl_f_ptr, jp_f_ptr, jm_f_ptr, rho_f_ptr, rhoold_f_ptr 
   !REAL (num), dimension (:,:,:), allocatable :: el_h_r, ep_h_r, em_h_r, bl_h_r, bp_h_r, bm_h_r, jl_h_r, &
   !                            jp_h_r, jm_h_r, rhoold_h_r, rho_h_r, el_h_im, ep_h_im, em_h_im, bl_h_im,  &
   !                            bp_h_im, bm_h_im, jl_h_im, jp_h_im, jm_h_im, rhoold_h_im, rho_h_im
@@ -167,7 +167,10 @@ SUBROUTINE get_Hfields()
       mode_block_matrix2d(imode, 2)%block2dc, jm_h(:,:,imode), nfftr, nffty)
     Call  dgemm_example(jp_f(:,:,imode), hankel_mat(nmatrixes_h)% &
       mode_block_matrix2d(imode, 3)%block2dc, jp_h(:,:,imode), nfftr, nffty)
-
+    Call  dgemm_example(jm_f(:,:,imode), hankel_mat(nmatrixes_h)% &
+      mode_block_matrix2d(imode, 1)%block2dc, rho_h(:,:,imode), nfftr, nffty)
+    Call  dgemm_example(jp_f(:,:,imode), hankel_mat(nmatrixes_h)% &
+      mode_block_matrix2d(imode, 1)%block2dc, rhoold_h(:,:,imode), nfftr, nffty)
     !Call  dgemm_example(jl_f(:,:,imode), Ma, jl_h(:,:,imode), nfftr, nffty)
     !Call  dgemm_example(jm_f(:,:,imode), Ma1, jp_h(:,:,imode), nfftr, nffty)
     !Call  dgemm_example(jp_f(:,:,imode), Ma_1, jm_h(:,:,imode), nfftr, nffty)
