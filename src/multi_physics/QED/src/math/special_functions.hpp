@@ -1,5 +1,5 @@
-#ifndef __PICSAR_MULTIPHYSICS_SPECIAL_FUNCTIONS__
-#define __PICSAR_MULTIPHYSICS_SPECIAL_FUNCTIONS__
+#ifndef PICSAR_MULTIPHYSICS_SPECIAL_FUNCTIONS
+#define PICSAR_MULTIPHYSICS_SPECIAL_FUNCTIONS
 
 //This .hpp file is an extremely thin wrapper around special functions
 //(Bessel functions for now) defined either in the STL (if C++17 is available)
@@ -11,16 +11,14 @@
 // 1) from STL (if C++ version > 14)
 // 2) from Boost library
 
-#include <limits>
+//Should be included by all the src files of the library
+#include "../qed_commons.h"
 
-#if PXRMP_INTERNAL_SPECFUNC_WITH_CXX17
+#ifdef PXRMP_INTERNAL_SPECFUNC_WITH_CXX17
     #include <cmath>
 #elif defined(PXRMP_INTERNAL_SPECFUNC_WITH_BOOST)
     #include <boost/math/special_functions/bessel.hpp>
 #endif
-
-//Should be included by all the src files of the library
-#include "../qed_commons.h"
 
 //############################################### Declaration
 
@@ -32,14 +30,18 @@ namespace math{
         //second kind.
         //Different combinations of argument types can be accepted
         //(e.g. double + double or double + float).
-    #ifdef PXRMP_INTERNAL_SPECFUNC_WITH_CXX17
-        using k_v = std::cyl_bessel_k(v, x);
-    #elif defined(PXRMP_INTERNAL_SPECFUNC_WITH_BOOST)
-        using k_v = boost::math::cyl_bessel_k(v, x);
-    #endif
+    template<typename RealType>
+    RealType k_v(RealType v, RealType x)
+    {
+#ifdef PXRMP_INTERNAL_SPECFUNC_WITH_CXX17
+        return std::cyl_bessel_k(v, x);
+#elif defined(PXRMP_INTERNAL_SPECFUNC_WITH_BOOST)
+        return boost::math::cyl_bessel_k(v, x);
+#endif
+    }
 
 }
 }
 }
 
-#endif //__PICSAR_MULTIPHYSICS_SPECIAL_FUNCTIONS__
+#endif //PICSAR_MULTIPHYSICS_SPECIAL_FUNCTIONS

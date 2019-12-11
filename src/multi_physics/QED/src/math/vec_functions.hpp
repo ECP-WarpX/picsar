@@ -1,5 +1,5 @@
-#ifndef __PICSAR_MULTIPHYSICS_VEC_FUNCTIONS__
-#define __PICSAR_MULTIPHYSICS_VEC_FUNCTIONS__
+#ifndef PICSAR_MULTIPHYSICS_VEC_FUNCTIONS
+#define PICSAR_MULTIPHYSICS_VEC_FUNCTIONS
 
 //This .hpp file contains functions to perform operations on 3-vectors
 // (norm, scalar multiplication, vector and cross product...)
@@ -122,4 +122,4 @@ namespace math{
 }
 }
 
-#endif // __PICSAR_MULTIPHYSICS_VEC_FUNCTIONS__
+#endif // PICSAR_MULTIPHYSICS_VEC_FUNCTIONS

@@ -1,5 +1,5 @@
-#ifndef __PICSAR_MULTIPHYSICS_ARRAY__
-#define __PICSAR_MULTIPHYSICS_ARRAY__
+#ifndef PICSAR_MULTIPHYSICS_ARRAY
+#define PICSAR_MULTIPHYSICS_ARRAY
 
 //This .hpp file contains the definition of a GPU-friendly STL-like array
 //(thanks to Weiqun Zhang)
@@ -109,4 +109,4 @@ namespace containers{
 }
 }
 
-#endif //__PICSAR_MULTIPHYSICS_ARRAY__
+#endif //PICSAR_MULTIPHYSICS_ARRAY

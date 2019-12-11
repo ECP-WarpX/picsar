@@ -1,5 +1,5 @@
-#ifndef __PICSAR_MULTIPHYSICS_VIEW__
-#define __PICSAR_MULTIPHYSICS_VIEW__
+#ifndef PICSAR_MULTIPHYSICS_VIEW
+#define PICSAR_MULTIPHYSICS_VIEW
 
 #include <cstddef>
 #include <type_traits>
@@ -89,4 +89,4 @@ namespace containers{
 }
 }
 
-#endif //__PICSAR_MULTIPHYSICS_VIEW__
+#endif //PICSAR_MULTIPHYSICS_VIEW

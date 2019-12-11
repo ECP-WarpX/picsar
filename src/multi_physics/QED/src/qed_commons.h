@@ -1,5 +1,5 @@
-#ifndef __PICSAR_MULTIPHYSICS_QED_COMMONS__
-#define __PICSAR_MULTIPHYSICS_QED_COMMONS__
+#ifndef PICSAR_MULTIPHYSICS_QED_COMMONS
+#define PICSAR_MULTIPHYSICS_QED_COMMONS
 
 //###################### Decorator to compile some functions for CPU and GPU####
 
@@ -70,4 +70,4 @@
 
 //##############################################################################
 
-#endif// __PICSAR_MULTIPHYSICS_QED_COMMONS__
+#endif// PICSAR_MULTIPHYSICS_QED_COMMONS
