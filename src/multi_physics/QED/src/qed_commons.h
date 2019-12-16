@@ -58,6 +58,14 @@
       #endif
     #endif
 
+
+    #ifdef PXRMP_RESTRICT_SET_DECORATOR
+      #define PXRMP_INTERNAL_RESTRICT PXRMP_RESTRICT_SET_DECORATOR
+    #else
+      #define PXRMP_INTERNAL_RESTRICT __restrict__
+    #endif
+
+
   #ifdef PXRMP_FORCE_BOOST_FOR_SPECFUNC
     #define PXRMP_INTERNAL_SPECFUNC_WITH_BOOST
   #else
@@ -77,7 +85,6 @@
       #define PXRMP_INTERNAL_STL_UPPER_BOUND
     #endif
   #endif
-
 
 //##############################################################################
 

@@ -285,7 +285,6 @@ constexpr void test_case_time_to_SI()
     BOOST_CHECK_SMALL((res_lambda-exp_lambda)/exp_lambda, tolerance<RealType>());
 }
 
-
 //Test empty constructor
 BOOST_AUTO_TEST_CASE( picsar_unit_conv_time )
 {
@@ -294,6 +293,58 @@ BOOST_AUTO_TEST_CASE( picsar_unit_conv_time )
     test_case_time_to_SI<double>();
     test_case_time_to_SI<float>();
 }
+
+template<typename RealType>
+constexpr void test_case_rate_from_SI()
+{
+    const auto lambda = static_cast<RealType>(800.0e-9);
+
+    const auto rate = static_cast<RealType>(light_speed/lambda);
+    const auto res_SI = rate*
+        fact_rate_from_SI_to<unit_system::SI, RealType>();
+    const auto res_omega = rate*
+        fact_rate_from_SI_to<unit_system::norm_omega, RealType>(lambda);
+    const auto res_lambda = rate*
+        fact_rate_from_SI_to<unit_system::norm_lambda, RealType>(lambda);
+    const auto exp_SI = static_cast<RealType>(light_speed/lambda);
+    const auto exp_omega = static_cast<RealType>(1.0/2.0/pi);
+    const auto exp_lambda = static_cast<RealType>(1.0);
+
+    BOOST_CHECK_SMALL((res_SI-exp_SI)/exp_SI, tolerance<RealType>());
+    BOOST_CHECK_SMALL((res_omega-exp_omega)/exp_omega, tolerance<RealType>());
+    BOOST_CHECK_SMALL((res_lambda-exp_lambda)/exp_lambda, tolerance<RealType>());
+}
+
+template<typename RealType>
+constexpr void test_case_rate_to_SI()
+{
+    const auto lambda = static_cast<RealType>(800.0e-9);
+
+    const auto rate = static_cast<RealType>(1.0);
+    const auto res_SI =
+        rate*fact_rate_to_SI_from<unit_system::SI, RealType>();
+    const auto res_omega =
+        rate*fact_rate_to_SI_from<unit_system::norm_omega, RealType>(lambda);
+    const auto res_lambda =
+        rate*fact_rate_to_SI_from<unit_system::norm_lambda, RealType>(lambda);
+    const auto exp_SI = static_cast<RealType>(1.0);
+    const auto exp_omega = static_cast<RealType>(2.0*pi*light_speed/lambda);
+    const auto exp_lambda = static_cast<RealType>(light_speed/lambda);
+
+    BOOST_CHECK_SMALL((res_SI-exp_SI)/exp_SI, tolerance<RealType>());
+    BOOST_CHECK_SMALL((res_omega-exp_omega)/exp_omega, tolerance<RealType>());
+    BOOST_CHECK_SMALL((res_lambda-exp_lambda)/exp_lambda, tolerance<RealType>());
+}
+
+//Test empty constructor
+BOOST_AUTO_TEST_CASE( picsar_unit_conv_rate )
+{
+    test_case_rate_from_SI<double>();
+    test_case_rate_from_SI<float>();
+    test_case_rate_to_SI<double>();
+    test_case_rate_to_SI<float>();
+}
+
 
 template<typename RealType>
 constexpr void test_case_E_from_SI()

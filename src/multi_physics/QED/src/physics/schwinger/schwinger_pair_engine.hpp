@@ -1,5 +1,5 @@
-#ifndef __PICSAR_MULTIPHYSICS_SCHWINGER_PAIR_ENGINE__
-#define __PICSAR_MULTIPHYSICS_SCHWINGER_PAIR_ENGINE__
+#ifndef PICSAR_MULTIPHYSICS_SCHWINGER_PAIR_ENGINE
+#define PICSAR_MULTIPHYSICS_SCHWINGER_PAIR_ENGINE
 
 //This .hpp file contais the implementation of the
 //Schwinger pair engine (as described in Gonoskov et al. PRE 92, 023305 2015
