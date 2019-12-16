@@ -78,7 +78,7 @@ void test_chi_photons(
     if(exp_res != static_cast<RealType>(0.0))
         BOOST_CHECK_SMALL((res-exp_res)/exp_res, tolerance<RealType>());
     else
-        BOOST_CHECK_EQUAL(res, static_cast<RealType>(0.0));
+        BOOST_CHECK_SMALL(res, tolerance<RealType>());
 }
 
 template<typename RealType, unit_system UnitSystem>
@@ -218,176 +218,222 @@ BOOST_AUTO_TEST_CASE( chi_photons_4 )
     test_chi_photons<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
 }
 
+//Test chi function for photons (case 5)
+BOOST_AUTO_TEST_CASE( chi_photons_5 )
+{
+    const double px = -2314.45*me_c;
+    const double py = -2356.30*me_c;
+    const double pz = 546.28*me_c;
+    const double ex = 0.0*eref;
+    const double ey = 0.0*eref;
+    const double ez = 0.0*eref;
+    const double bx = 0.0*bref;
+    const double by = 0.0*bref;
+    const double bz = 0.0*bref;
 
+    const double chi_exp = 0.0;
+
+    const auto p = vec3<double>{px,py,pz};
+    const auto em_e = vec3<double>{ex,ey,ez};
+    const auto em_b = vec3<double>{bx,by,bz};
+
+    test_chi_photons<double, unit_system::SI>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_photons<double, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_photons<double, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_photons<float, unit_system::SI>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_photons<float, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_photons<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
+}
+
+
+//Test chi function for photons (case 6)
+BOOST_AUTO_TEST_CASE( chi_photons_6 )
+{
+    const double px = -2314.45*me_c;
+    const double py = 0.0*me_c;
+    const double pz = 0.0*me_c;
+    const double ex = 1230.11*eref;
+    const double ey = 0.0*eref;
+    const double ez = 0.0*eref;
+    const double bx = 0.0*bref;
+    const double by = 0.0*bref;
+    const double bz = 0.0*bref;
+
+    const double chi_exp = 0.0;
+
+    const auto p = vec3<double>{px,py,pz};
+    const auto em_e = vec3<double>{ex,ey,ez};
+    const auto em_b = vec3<double>{bx,by,bz};
+
+    test_chi_photons<double, unit_system::SI>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_photons<double, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_photons<double, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_photons<float, unit_system::SI>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_photons<float, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_photons<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
+}
+
+//Test chi function for leptons (case 1)
+BOOST_AUTO_TEST_CASE( chi_leptons_1 )
+{
+    const double px = 24.3752*me_c;
+    const double py = -11.5710*me_c;
+    const double pz = -10.0841*me_c;
+    const double ex = 57.185*eref;
+    const double ey = -16.6555*eref;
+    const double ez = 22.4340*eref;
+    const double bx = 6.6911*bref;
+    const double by = -23.8724*bref;
+    const double bz = 13.9934*bref;
+
+    const double chi_exp = 0.00216716627219670;
+
+    const auto p = vec3<double>{px,py,pz};
+    const auto em_e = vec3<double>{ex,ey,ez};
+    const auto em_b = vec3<double>{bx,by,bz};
+
+    test_chi_leptons<double, unit_system::SI>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<double, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<double, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<float, unit_system::SI>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<float, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
+}
 /*
-//Test chi function for photons with double precision (case 4)
-BOOST_AUTO_TEST_CASE( chi_photons_double_4 )
+//Test chi function for leptons (case 2)
+BOOST_AUTO_TEST_CASE( chi_leptons_2 )
 {
-    double px = 0*me_c;
-    double py = 0*me_c;
-    double pz = 0*me_c;
-    double ex = 1230.11*eref;
-    double ey =  1638.02*eref;
-    double ez = -2911.04*eref;
-    double bx = -2203.66*bref;
-    double by = 1243.79*bref;
-    double bz = -2830.99*bref;
+    const double px = 4.015*me_c;
+    const double py = 197.287*me_c;
+    const double pz = 141.705*me_c;
+    const double ex = 30.287*eref;
+    const double ey = 115.740*eref;
+    const double ez = 120.891*eref;
+    const double bx = -190.161*bref;
+    const double by = -129.115*bref;
+    const double bz = -57.002*bref;
 
-    double chi_res = chi_photon(px,py,pz,ex,ey,ez,bx,by,bz);
+    const double  chi_exp = 0.166318112874468;
 
-    BOOST_CHECK_EQUAL(chi_res, 0.0);
+    const auto p = vec3<double>{px,py,pz};
+    const auto em_e = vec3<double>{ex,ey,ez};
+    const auto em_b = vec3<double>{bx,by,bz};
+
+    test_chi_leptons<double, unit_system::SI>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<double, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<double, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<float, unit_system::SI>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<float, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
 }
 
-//Test chi function for photons with double precision (case 5)
-BOOST_AUTO_TEST_CASE( chi_photons_double_5 )
+//Test chi function for leptons (case 3)
+BOOST_AUTO_TEST_CASE( chi_leptons_3 )
 {
-    double px = -2314.45*me_c;
-    double py = -2356.30*me_c;
-    double pz = 546.28*me_c;
-    double ex = 0*eref;
-    double ey =  0*eref;
-    double ez = 0*eref;
-    double bx = 0*bref;
-    double by = 0*bref;
-    double bz = 0*bref;
+    const double px = -2534.83*me_c;
+    const double py = 1011.54*me_c;
+    const double pz = -793.04*me_c;
+    const double ex = 741.67*eref;
+    const double ey = -2359.97*eref;
+    const double ez = 1463.50*eref;
+    const double bx = 1477.19*bref;
+    const double by = -1448.33*bref;
+    const double bz = 1953.68*bref;
 
-    double chi_res = chi_photon(px,py,pz,ex,ey,ez,bx,by,bz);
+    const double chi_exp = 16.0114572646993;
 
-    BOOST_CHECK_EQUAL(chi_res, 0.0);
+    const auto p = vec3<double>{px,py,pz};
+    const auto em_e = vec3<double>{ex,ey,ez};
+    const auto em_b = vec3<double>{bx,by,bz};
+
+    test_chi_leptons<double, unit_system::SI>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<double, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<double, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<float, unit_system::SI>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<float, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
 }
 
-//Test chi function for photons with double precision (case 6)
-BOOST_AUTO_TEST_CASE( chi_photons_double_6 )
+
+//Test chi function for leptons (case 4)
+BOOST_AUTO_TEST_CASE( chi_leptons_4 )
 {
-    double px = -2314.45*me_c;
-    double py = 0*me_c;
-    double pz = 0*me_c;
-    double ex = 1230.11*eref;
-    double ey = 0*eref;
-    double ez = 0*eref;
-    double bx = 0*bref;
-    double by = 0*bref;
-    double bz = 0*bref;
+    const double px = 0*me_c;
+    const double py = 0*me_c;
+    const double pz = 0*me_c;
+    const double ex = 741.67*eref;
+    const double ey = -2359.97*eref;
+    const double ez = 1463.50*eref;
+    const double bx = 1477.19*bref;
+    const double by = -1448.33*bref;
+    const double bz = 1953.68*bref;
 
-    double chi_res = chi_photon(px,py,pz,ex,ey,ez,bx,by,bz);
+    const double chi_exp = 0.0;
 
-    BOOST_CHECK_SMALL(chi_res, double_tolerance);
+    const auto p = vec3<double>{px,py,pz};
+    const auto em_e = vec3<double>{ex,ey,ez};
+    const auto em_b = vec3<double>{bx,by,bz};
+
+    test_chi_leptons<double, unit_system::SI>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<double, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<double, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<float, unit_system::SI>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<float, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
 }
 
-//#################### Leptons
-
-//Test chi function for leptons with double precision (case 1)
-BOOST_AUTO_TEST_CASE( chi_leptons_double_1 )
+//Test chi function for leptons (case 5)
+BOOST_AUTO_TEST_CASE( chi_leptons_5 )
 {
-    double px = 24.3752*me_c;
-    double py = -11.5710*me_c;
-    double pz = -10.0841*me_c;
-    double ex = 57.185*eref;
-    double ey = -16.6555*eref;
-    double ez = 22.4340*eref;
-    double bx = 6.6911*bref;
-    double by = -23.8724*bref;
-    double bz = 13.9934*bref;
+    const double px = -2534.83*me_c;
+    const double py = 1011.54*me_c;
+    const double pz = -793.04*me_c;
+    const double ex = 0*eref;
+    const double ey = 0*eref;
+    const double ez = 0*eref;
+    const double bx = 0*bref;
+    const double by = 0*bref;
+    const double bz = 0*bref;
 
-    double chi_exp = 0.00216716627219670;
+    const double chi_exp = 0.0;
 
-    double chi_res = chi_lepton(px,py,pz,ex,ey,ez,bx,by,bz);
+    const auto p = vec3<double>{px,py,pz};
+    const auto em_e = vec3<double>{ex,ey,ez};
+    const auto em_b = vec3<double>{bx,by,bz};
 
-    BOOST_CHECK_SMALL((chi_res-chi_exp)/chi_exp, double_tolerance);
+    test_chi_leptons<double, unit_system::SI>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<double, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<double, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<float, unit_system::SI>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<float, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
 }
 
-//Test chi function for leptons with double precision (case 2)
-BOOST_AUTO_TEST_CASE( chi_leptons_double_2 )
+
+//Test chi function for leptons (case 6)
+BOOST_AUTO_TEST_CASE( chi_leptons_6 )
 {
-    double px = 4.015*me_c;
-    double py = 197.287*me_c;
-    double pz = 141.705*me_c;
-    double ex = 30.287*eref;
-    double ey = 115.740*eref;
-    double ez = 120.891*eref;
-    double bx = -190.161*bref;
-    double by = -129.115*bref;
-    double bz = -57.002*bref;
+    const double px = -2534.83*me_c;
+    const double py = 0*me_c;
+    const double pz = 0*me_c;
+    const double ex = 0*eref;
+    const double ey = 0*eref;
+    const double ez = 0*eref;
+    const double bx = 1477.19*bref;
+    const double by = 0*bref;
+    const double bz = 0*bref;
 
-    double chi_exp = 0.166318112874468;
+    const double chi_exp = 0.0;
 
-    double chi_res = chi_lepton(px,py,pz,ex,ey,ez,bx,by,bz);
+    const auto p = vec3<double>{px,py,pz};
+    const auto em_e = vec3<double>{ex,ey,ez};
+    const auto em_b = vec3<double>{bx,by,bz};
 
-    BOOST_CHECK_SMALL((chi_res-chi_exp)/chi_exp, double_tolerance);
+    test_chi_leptons<double, unit_system::SI>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<double, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<double, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<float, unit_system::SI>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<float, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_leptons<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
 }
-
-//Test chi function for leptons with double precision (case 3)
-BOOST_AUTO_TEST_CASE( chi_leptons_double_3 )
-{
-    double px = -2534.83*me_c;
-    double py = 1011.54*me_c;
-    double pz = -793.04*me_c;
-    double ex = 741.67*eref;
-    double ey = -2359.97*eref;
-    double ez = 1463.50*eref;
-    double bx = 1477.19*bref;
-    double by = -1448.33*bref;
-    double bz = 1953.68*bref;
-
-    double chi_exp = 16.0114572646993;
-
-    double chi_res = chi_lepton(px,py,pz,ex,ey,ez,bx,by,bz);
-
-    BOOST_CHECK_SMALL((chi_res-chi_exp)/chi_exp, double_tolerance);
-}
-
-//Test chi function for leptons with double precision (case 4)
-BOOST_AUTO_TEST_CASE( chi_leptons_double_4 )
-{
-    double px = 0*me_c;
-    double py = 0*me_c;
-    double pz = 0*me_c;
-    double ex = 741.67*eref;
-    double ey = -2359.97*eref;
-    double ez = 1463.50*eref;
-    double bx = 1477.19*bref;
-    double by = -1448.33*bref;
-    double bz = 1953.68*bref;
-
-    double chi_res = chi_lepton(px,py,pz,ex,ey,ez,bx,by,bz);
-
-    BOOST_CHECK_EQUAL(chi_res, 0.0);
-}
-
-//Test chi function for leptons with double precision (case 5)
-BOOST_AUTO_TEST_CASE( chi_leptons_double_5 )
-{
-    double px = -2534.83*me_c;
-    double py = 1011.54*me_c;
-    double pz = -793.04*me_c;
-    double ex = 0*eref;
-    double ey = 0*eref;
-    double ez = 0*eref;
-    double bx = 0*bref;
-    double by = 0*bref;
-    double bz = 0*bref;
-
-    double chi_res = chi_lepton(px,py,pz,ex,ey,ez,bx,by,bz);
-
-    BOOST_CHECK_EQUAL(chi_res, 0.0);
-}
-
-//Test chi function for leptons with double precision (case 6)
-BOOST_AUTO_TEST_CASE( chi_leptons_double_6 )
-{
-    double px = -2534.83*me_c;
-    double py = 0*me_c;
-    double pz = 0*me_c;
-    double ex = 0*eref;
-    double ey = 0*eref;
-    double ez = 0*eref;
-    double bx = 1477.19*bref;
-    double by = 0*bref;
-    double bz = 0*bref;
-
-    double chi_res = chi_lepton(px,py,pz,ex,ey,ez,bx,by,bz);
-
-    BOOST_CHECK_SMALL(chi_res, double_tolerance);
-}
-
 */

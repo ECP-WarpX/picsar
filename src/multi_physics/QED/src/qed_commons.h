@@ -68,6 +68,17 @@
     #endif
   #endif
 
+  #ifdef PXRMP_FORCE_PICSAR_UPPER_BOUND
+    #define PXRMP_INTERNAL_PICSAR_UPPER_BOUND
+  #else
+    #ifdef PXRMP_INTERNAL_WITH_GPU
+      #define PXRMP_INTERNAL_PICSAR_UPPER_BOUND
+    #else
+      #define PXRMP_INTERNAL_STL_UPPER_BOUND
+    #endif
+  #endif
+
+
 //##############################################################################
 
 #endif// PICSAR_MULTIPHYSICS_QED_COMMONS

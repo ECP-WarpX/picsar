@@ -96,7 +96,7 @@ namespace phys{
         const auto gamma_2 = one + (norm_p_over_me_c)*(norm_p_over_me_c);
         const auto gamma = sqrt(gamma_2);
 
-        const auto beta = sqrt(one-one/gamma_2);
+        const auto beta = static_cast<RealType>(sqrt((gamma_2-one)/gamma_2));
         const auto beta_vec = beta * p_unit;
 
         const auto beta_dot_e = math::dot(beta_vec, em_e);
