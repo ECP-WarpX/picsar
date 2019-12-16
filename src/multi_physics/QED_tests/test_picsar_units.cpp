@@ -310,7 +310,7 @@ constexpr void test_case_E_from_SI()
         fact_E_from_SI_to<unit_system::norm_lambda, RealType>(lambda);
     const auto exp_SI = static_cast<RealType>(E);
     const auto exp_omega = static_cast<RealType>(1.0);
-    const auto exp_lambda = static_cast<RealType>(1.0/2.0/pi);
+    const auto exp_lambda = static_cast<RealType>(2.0*pi);
 
     BOOST_CHECK_SMALL((res_SI-exp_SI)/exp_SI, tolerance<RealType>());
     BOOST_CHECK_SMALL((res_omega-exp_omega)/exp_omega, tolerance<RealType>());
