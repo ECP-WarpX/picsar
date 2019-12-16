@@ -3039,7 +3039,7 @@ END SUBROUTINE Hankel_M_and_invM
 
 
     cc_mat(nmatrixes)%block_matrix2d(4, 9)%block3dc =  mu0*                             &
-    kspace(nmatrixes2)%block_vector(4)%block3dc*                                       &
+    ii*kspace(nmatrixes2)%block_vector(4)%block3dc*                                       &
     at_op(nmatrixes2)%block_vector(3)%block3dc
 
 
