@@ -95,6 +95,7 @@ namespace containers{
             return m_data+N;
         }
 
+        typedef T value_type;
 
         private:
             T m_data[N];

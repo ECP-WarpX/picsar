@@ -79,6 +79,7 @@ namespace containers{
             return m_ptr_data;
         }
 
+        typedef T value_type;
 
         protected:
             T* m_ptr_data;
