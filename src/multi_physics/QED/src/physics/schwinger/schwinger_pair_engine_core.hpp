@@ -23,6 +23,9 @@
 //Uses unit conversion"
 #include "../unit_conversion.hpp"
 
+//Uses Poisson's distribution
+#include "../../math/poisson_distrib.hpp"
+
 //############################################### Declaration
 
 namespace picsar{
@@ -103,42 +106,35 @@ namespace phys{
         return (unf_zero_one_minus_epsi < probability);
     }
 
+    //This function determines how many pairs have been generated in a given
+    //cell and their statistical weight.
+    //It returns a size_t (the number of the generated particles)
+    //and a _REAL (the statistical weight of the new pair)
+    //It requires to provide the fields, the cell size and dt
+    //Use this function if the probability to generate a pair is large
+    template<typename RealType, unit_system UnitSystem = unit_system::SI>
+    PXRMP_INTERNAL_GPU_DECORATOR
+    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    int generate_pairs_multiple(
+        const RealType ex, const RealType ey, const RealType ez,
+        const RealType bx, const RealType by, const RealType bz,
+        const RealType dx, const RealType dy, const RealType dz,
+        const RealType dt,
+        const RealType unf_zero_one_minus_epsi,
+        const RealType lambda = static_cast<RealType>(1.0))
+    {
+        const auto rate =
+            compute_schwinger_pair_production_rate<RealType, UnitSystem>(
+                ex, ey, ez, bx, by, bz, lambda);
+
+        const auto volume = dx*dy*dz;
+        const auto probability = rate*volume*dt;
+
+        return math::poisson_distrib(probability, unf_zero_one_minus_epsi);
+    }
+
 }
 }
-}
-
-
-
-//______________________GPU
-//Same as above, but with GPU use directly this one!
-//Returns false if errors occur
-template<typename _REAL, class _RNDWRAP>
-PXRMP_GPU
-PXRMP_FORCE_INLINE
-void
-picsar::multi_physics::schwinger_pair_engine<_REAL, _RNDWRAP>::
-internal_generate_pairs_multiple(
-_REAL ex, _REAL ey, _REAL ez,
-_REAL bx, _REAL by, _REAL bz,
-_REAL dx, _REAL dy, _REAL dz,
-_REAL dt,
-size_t* how_many, _REAL* weight,
-_REAL _lambda, _REAL unf_zero_one_minus_epsi
-)
-{
-#ifdef PXRMP_WITH_SI_UNITS
-    _lambda = static_cast<_REAL>(1.0);
-#endif
-
-    _REAL rate = internal_compute_schwinger_pair_production_rate
-        (ex, ey, ez, bx, by, bz, _lambda);
-
-    _REAL volume = dx*dy*dz;
-    _REAL probability = rate*volume*dt;
-
-    *weight = one / volume;
-
-    *how_many = poisson_distrib(probability, unf_zero_one_minus_epsi);
 }
 
 #endif //PICSAR_MULTIPHYSICS_SCHWINGER_PAIR_ENGINE_CORE
