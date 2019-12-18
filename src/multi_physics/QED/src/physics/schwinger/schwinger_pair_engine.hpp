@@ -145,10 +145,12 @@ namespace phys{
 
     private:
 
-        RealType m_lambda;
         //The only requrement for the RNG is to be able to provide unf(a,b) and
         //exp(l)
         RandWrap m_rng;
+
+        RealType m_lambda;
+
 
         RealType m_threshold = static_cast<RealType>(poisson_gaussian_threshold);
 
