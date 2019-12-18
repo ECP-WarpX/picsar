@@ -32,7 +32,7 @@ namespace phys{
     template<typename RealType, unit_system UnitSystem = unit_system::SI>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    int generate_schwinger_pairs_single(
+    int get_num_schwinger_pairs_single(
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
         const RealType dx, const RealType dy, const RealType dz,
@@ -56,7 +56,7 @@ namespace phys{
         unit_system UnitSystem = unit_system::SI>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    int generate_schwinger_multiple_poisson(
+    int get_num_schwinger_pairs_multiple_poisson(
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
         const RealType dx, const RealType dy, const RealType dz,
@@ -80,7 +80,7 @@ namespace phys{
         unit_system UnitSystem = unit_system::SI>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    int generate_schwinger_multiple_gaussian(
+    int get_num_schwinger_pairs_multiple_gaussian(
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
         const RealType dx, const RealType dy, const RealType dz,
@@ -96,7 +96,7 @@ namespace phys{
         const auto probability = rate*volume*dt;
 
         const auto res = static_cast<RealType>(
-            rng.gauss(probability, sqrt(probability));
+            rng->gaussian(probability, sqrt(probability)));
 
         if(res <= static_cast<RealType>(0.0))
             return 0;
@@ -112,7 +112,7 @@ namespace phys{
         unit_system UnitSystem = unit_system::SI>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    int generate_schwinger_multiple_choice(
+    int get_num_schwinger_pairs_multiple_choice(
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
         const RealType dx, const RealType dy, const RealType dz,
@@ -133,7 +133,7 @@ namespace phys{
         }
         else{
             const auto res = static_cast<RealType>(
-                rng.gauss(probability, sqrt(probability));
+                rng->gaussian(probability, sqrt(probability)));
 
             if(res <= static_cast<RealType>(0.0))
                 return 0;

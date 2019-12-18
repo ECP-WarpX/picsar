@@ -23,11 +23,6 @@
 //Uses unit conversion"
 #include "../unit_conversion.hpp"
 
-//Uses Poisson's distribution
-#include "../../math/poisson_distrib.hpp"
-
-//############################################### Declaration
-
 namespace picsar{
 namespace multi_physics{
 namespace phys{

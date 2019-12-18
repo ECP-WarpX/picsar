@@ -52,58 +52,61 @@ namespace phys{
         //This function determines if a pair has been generated in a given
         //cell
         PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        int generate_pairs_single(
+        int get_num_pairs_single(
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
         const RealType dx, const RealType dy, const RealType dz,
         const RealType dt)
         {
-            return internal_generate_pairs_single<RealType, UnitSystem>(
-                ex, ey, ez, bx, by, bz, dx, dy, dz, dt
+            return get_num_schwinger_pairs_single<RealType, UnitSystem>(
+                ex, ey, ez, bx, by, bz, dx, dy, dz, dt,
                 m_rng.unf(zero, one), m_lambda);
         }
 
         //This function determines how many pairs have been generated in a given
         //cell.
         PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        int generate_pairs_multiple_poisson(
+        int get_num_pairs_poisson(
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
         const RealType dx, const RealType dy, const RealType dz,
         const RealType dt)
         {
-            return generate_pairs_multiple_poisson<RealType, UnitSystem>(
-                ex, ey, ez, bx, by, bz, dx, dy, dz, dt,
-                &m_rng, m_lambda);
+            return get_num_schwinger_pairs_multiple_poisson<
+                RealType, RandWrap, UnitSystem>(
+                    ex, ey, ez, bx, by, bz, dx, dy, dz, dt,
+                    &m_rng, m_lambda);
         }
 
 
         //This function determines how many pairs have been generated in a given
         //cell.
         PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        int generate_pairs_multiple_gaussian(
+        int get_num_pairs_multiple_gaussian(
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
         const RealType dx, const RealType dy, const RealType dz,
         const RealType dt)
         {
-            return generate_pairs_gaussian<RealType, UnitSystem>(
-                ex, ey, ez, bx, by, bz, dx, dy, dz, dt,
-                &m_rng, m_lambda);
+            return get_num_schwinger_pairs_multiple_gaussian<
+                RealType, RandWrap, UnitSystem>(
+                    ex, ey, ez, bx, by, bz, dx, dy, dz, dt,
+                    &m_rng, m_lambda);
         }
 
         //This function determines how many pairs have been generated in a given
         //cell.
         PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        int generate_pairs_multiple_choice(
+        int get_num_pairs_multiple_choice(
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
         const RealType dx, const RealType dy, const RealType dz,
         const RealType dt)
         {
-            return generate_pairs_choice<RealType, UnitSystem>(
-                ex, ey, ez, bx, by, bz, dx, dy, dz, dt, m_threshold
-                &m_rng, m_lambda);
+            return get_num_schwinger_pairs_multiple_choice<
+                RealType, RandWrap, UnitSystem>(
+                    ex, ey, ez, bx, by, bz, dx, dy, dz, dt, m_threshold
+                    &m_rng, m_lambda);
         }
 
 
@@ -112,8 +115,8 @@ namespace phys{
         PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         containers::picsar_array<RealType, 3> get_new_pair_position()
         {
-            auto res = picsar_array<RealType, 3> res;
-            for(auto& val: res) val = rng.unf(zero, one);
+            auto res = containers::picsar_array<RealType, 3>();
+            for(auto& val: res) val = m_rng.unf(zero, one);
             return res;
         }
 
@@ -147,13 +150,14 @@ namespace phys{
         //exp(l)
         RandWrap m_rng;
 
-        constexpr auto m_threshold = static_cast<RealType>(poisson_gaussian_threshold);
+        RealType m_threshold = static_cast<RealType>(poisson_gaussian_threshold);
 
         //Some handy constants
-        constexpr const auto zero = static_cast<RealType>(0.0);
-        constexpr const auto one = static_cast<RealType>(1.0);
-        constexpr const auto two = static_cast<RealType>(2.0);
+        static const constexpr auto zero = static_cast<RealType>(0.0);
+        static const constexpr auto one = static_cast<RealType>(1.0);
+        static const constexpr auto two = static_cast<RealType>(2.0);
 
+    };
 }
 }
 }
