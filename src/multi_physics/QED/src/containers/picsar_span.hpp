@@ -21,8 +21,7 @@ namespace containers{
 
     public:
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        picsar_span():
-            m_size{0}, m_ptr_data{nullptr}{}
+        picsar_span(){}
 
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
@@ -82,8 +81,8 @@ namespace containers{
         typedef T value_type;
 
         protected:
-            T* m_ptr_data;
-            size_t m_size;
+            size_t m_size = 0;
+            T* m_ptr_data = nullptr;
 
         };
 }

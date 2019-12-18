@@ -23,27 +23,16 @@
 //Uses unit conversion"
 #include "../unit_conversion.hpp"
 
-//Uses Poisson's distribution
-#include "../../math/poisson_distrib.hpp"
-
 #include "schwinger_pair_engine_model.hpp"
-
-//############################################### Declaration
 
 namespace picsar{
 namespace multi_physics{
 namespace phys{
 
-    //This function determines if a pair has been generated in a given
-    //cell and its statistical weight.
-    //It returns a bool (true if a pair has been generated)
-    //and a _REAL (the statistical weight of the new pair)
-    //It requires to provide the fields, the cell size and dt
-    //Use this function if the probability to generate a pair is << 1
     template<typename RealType, unit_system UnitSystem = unit_system::SI>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    int generate_pairs_single(
+    int generate_schwinger_pairs_single(
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
         const RealType dx, const RealType dy, const RealType dz,
@@ -61,21 +50,18 @@ namespace phys{
         return (unf_zero_one_minus_epsi < probability);
     }
 
-    //This function determines how many pairs have been generated in a given
-    //cell and their statistical weight.
-    //It returns a size_t (the number of the generated particles)
-    //and a _REAL (the statistical weight of the new pair)
-    //It requires to provide the fields, the cell size and dt
-    //Use this function if the probability to generate a pair is large
-    template<typename RealType, unit_system UnitSystem = unit_system::SI>
+    template<
+        typename RealType,
+        class RandomNumberGenerator,
+        unit_system UnitSystem = unit_system::SI>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    int generate_pairs_multiple(
+    int generate_schwinger_multiple_poisson(
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
         const RealType dx, const RealType dy, const RealType dz,
         const RealType dt,
-        const RealType unf_zero_one_minus_epsi,
+        RandomNumberGenerator* rng,
         const RealType lambda = static_cast<RealType>(1.0))
     {
         const auto rate =
@@ -85,9 +71,76 @@ namespace phys{
         const auto volume = dx*dy*dz;
         const auto probability = rate*volume*dt;
 
-        return math::poisson_distrib(probability, unf_zero_one_minus_epsi);
+        return rng->poisson(probability);
     }
 
+    template<
+        typename RealType,
+        class RandomNumberGenerator,
+        unit_system UnitSystem = unit_system::SI>
+    PXRMP_INTERNAL_GPU_DECORATOR
+    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    int generate_schwinger_multiple_gaussian(
+        const RealType ex, const RealType ey, const RealType ez,
+        const RealType bx, const RealType by, const RealType bz,
+        const RealType dx, const RealType dy, const RealType dz,
+        const RealType dt,
+        RandomNumberGenerator* rng,
+        const RealType lambda = static_cast<RealType>(1.0))
+    {
+        const auto rate =
+            compute_schwinger_pair_production_rate<RealType, UnitSystem>(
+                ex, ey, ez, bx, by, bz, lambda);
+
+        const auto volume = dx*dy*dz;
+        const auto probability = rate*volume*dt;
+
+        const auto res = static_cast<RealType>(
+            rng.gauss(probability, sqrt(probability));
+
+        if(res <= static_cast<RealType>(0.0))
+            return 0;
+
+        return static_cast<int>(res);
+    }
+
+    //This function determines how many pairs have been generated in a given
+    //cell
+    template<
+        typename RealType,
+        class RandomNumberGenerator,
+        unit_system UnitSystem = unit_system::SI>
+    PXRMP_INTERNAL_GPU_DECORATOR
+    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    int generate_schwinger_multiple_choice(
+        const RealType ex, const RealType ey, const RealType ez,
+        const RealType bx, const RealType by, const RealType bz,
+        const RealType dx, const RealType dy, const RealType dz,
+        const RealType dt,
+        const RealType threshold,
+        RandomNumberGenerator* rng,
+        const RealType lambda = static_cast<RealType>(1.0))
+    {
+        const auto rate =
+            compute_schwinger_pair_production_rate<RealType, UnitSystem>(
+                ex, ey, ez, bx, by, bz, lambda);
+
+        const auto volume = dx*dy*dz;
+        const auto probability = rate*volume*dt;
+
+        if(probability < static_cast<RealType>(threshold)){
+            return rng->poisson(probability);
+        }
+        else{
+            const auto res = static_cast<RealType>(
+                rng.gauss(probability, sqrt(probability));
+
+            if(res <= static_cast<RealType>(0.0))
+                return 0;
+
+            return static_cast<int>(res);
+        }
+    }
 }
 }
 }

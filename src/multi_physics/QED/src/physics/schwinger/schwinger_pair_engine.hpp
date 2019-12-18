@@ -11,7 +11,6 @@
 #include "../../containers/picsar_array.hpp"
 
 #include "schwinger_pair_engine_core.hpp"
-
 #include "schwinger_pair_engine_model.hpp"
 
 namespace picsar{
@@ -24,6 +23,9 @@ namespace phys{
     class schwinger_pair_engine
     {
     public:
+
+        static const size_t poisson_gaussian_threshold = 30;
+
         //A random number generatator has to be passed by move.
         //The RNG can be ANY object implementing the functions
         //RealType unf (RealType a, RealType b)
@@ -33,16 +35,16 @@ namespace phys{
         //It is ignored if the SI units option is selected
         schwinger_pair_engine(
             RandWrap&& t_rng, RealType t_lambda = static_cast<RealType>(1.0)):
-            rng{t_rng}, lambda{t_lambda}{}
+            m_rng{t_rng}, m_lambda{t_lambda}{}
 
         //Setter for lambda
-        RealType set_lambda(RealType t_lambda)
+        void set_lambda(RealType t_lambda) noexcept
         {
             m_lambda = t_lambda;
         }
 
         //Getter for lambda
-        RealType get_lambda() const
+        RealType get_lambda() const noexcept
         {
             return m_lambda;
         }
@@ -64,16 +66,46 @@ namespace phys{
         //This function determines how many pairs have been generated in a given
         //cell.
         PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        int generate_pairs_multiple(
+        int generate_pairs_multiple_poisson(
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
         const RealType dx, const RealType dy, const RealType dz,
         const RealType dt)
         {
-            return generate_pairs_multiple<RealType, UnitSystem>(
+            return generate_pairs_multiple_poisson<RealType, UnitSystem>(
                 ex, ey, ez, bx, by, bz, dx, dy, dz, dt,
-                m_rng.unf(zero, one), m_lambda);
+                &m_rng, m_lambda);
         }
+
+
+        //This function determines how many pairs have been generated in a given
+        //cell.
+        PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        int generate_pairs_multiple_gaussian(
+        const RealType ex, const RealType ey, const RealType ez,
+        const RealType bx, const RealType by, const RealType bz,
+        const RealType dx, const RealType dy, const RealType dz,
+        const RealType dt)
+        {
+            return generate_pairs_gaussian<RealType, UnitSystem>(
+                ex, ey, ez, bx, by, bz, dx, dy, dz, dt,
+                &m_rng, m_lambda);
+        }
+
+        //This function determines how many pairs have been generated in a given
+        //cell.
+        PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        int generate_pairs_multiple_choice(
+        const RealType ex, const RealType ey, const RealType ez,
+        const RealType bx, const RealType by, const RealType bz,
+        const RealType dx, const RealType dy, const RealType dz,
+        const RealType dt)
+        {
+            return generate_pairs_choice<RealType, UnitSystem>(
+                ex, ey, ez, bx, by, bz, dx, dy, dz, dt, m_threshold
+                &m_rng, m_lambda);
+        }
+
 
         //This function computes 3 random numbers between 0 and 1.
         //They should be used to initialize the position of the pair.
@@ -96,12 +128,26 @@ namespace phys{
                 ex, ey, ez, bx, by, bz, m_lambda);
         }
 
+        PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        RealType get_poisson_gaussian_threshold() const noexcept
+        {
+            return m_threshold;
+        }
+
+        PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        void set_poisson_gaussian_threshold(RealType new_threshold) noexcept
+        {
+            m_threshold = new_threshold;
+        }
+
     private:
 
         RealType m_lambda;
         //The only requrement for the RNG is to be able to provide unf(a,b) and
         //exp(l)
         RandWrap m_rng;
+
+        constexpr auto m_threshold = static_cast<RealType>(poisson_gaussian_threshold);
 
         //Some handy constants
         constexpr const auto zero = static_cast<RealType>(0.0);
@@ -112,4 +158,4 @@ namespace phys{
 }
 }
 
-#endif //__PICSAR_MULTIPHYSICS_SCHWINGER_PAIR_ENGINE__
+#endif //PICSAR_MULTIPHYSICS_SCHWINGER_PAIR_ENGINE

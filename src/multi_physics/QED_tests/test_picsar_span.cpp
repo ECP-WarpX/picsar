@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE( picsar_span_raw_pointers_constructor )
     const auto span = picsar_span<const double>{arr.size(), arr.data()};
 
     BOOST_CHECK_EQUAL(span.size(), arr.size());
-    for(int i = 0; i <  arr.size(); ++i)
+    for(size_t i = 0; i <  arr.size(); ++i)
         BOOST_CHECK_EQUAL(span[i], arr[i]);
 }
 
@@ -60,6 +60,6 @@ BOOST_AUTO_TEST_CASE( picsar_span_copy )
 
     BOOST_CHECK_EQUAL(cspan.size(), arr.size());
     BOOST_CHECK_EQUAL(cspan.data(), arr.data());
-    for(int i = 0; i < arr.size(); ++i)
+    for(size_t i = 0; i < arr.size(); ++i)
         BOOST_CHECK_EQUAL(cspan[i], arr[i]);
 }

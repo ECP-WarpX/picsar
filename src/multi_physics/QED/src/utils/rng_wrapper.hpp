@@ -21,7 +21,7 @@ namespace utils{
     public:
         //The seed must be a 64 bit integer
         stl_rng_wrapper(uint64_t seed):
-            m_rng.seed{seed}{}
+            m_rng{seed}{}
 
         //Get rnd number uniformly distributed in [a,b)
         template<typename RealType>
@@ -41,6 +41,26 @@ namespace utils{
             auto exp_dist_l =
                 std::exponential_distribution<RealType>(l);
             return exp_dist_l(m_rng);
+        }
+
+        //Get rnd number with poisson distribution
+        template<typename RealType>
+        PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        size_t poisson(RealType l)
+        {
+            auto poisson_dist_l =
+                std::poisson_distribution<size_t>(l);
+            return poisson_dist_l(m_rng);
+        }
+
+        //Get rnd number with gaussian distribution
+        template<typename RealType>
+        PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        RealType gaussian(RealType mean, RealType deviation)
+        {
+            auto gaussian_dist_l =
+                std::normal_distribution<RealType>(mean, deviation);
+            return gaussian_dist_l(m_rng);
         }
 
     private:
