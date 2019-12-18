@@ -24,7 +24,7 @@ namespace phys{
     {
     public:
 
-        static const size_t poisson_gaussian_threshold = 30;
+        static const size_t poisson_gaussian_default_threshold = 30;
 
         //A random number generatator has to be passed by move.
         //The RNG can be ANY object implementing the functions
@@ -152,7 +152,7 @@ namespace phys{
         RealType m_lambda;
 
 
-        RealType m_threshold = static_cast<RealType>(poisson_gaussian_threshold);
+        RealType m_threshold = static_cast<RealType>(poisson_gaussian_default_threshold);
 
         //Some handy constants
         static const constexpr auto zero = static_cast<RealType>(0.0);
