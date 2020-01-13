@@ -400,3 +400,57 @@ BOOST_AUTO_TEST_CASE( picsar_unit_conv_E )
     test_case_E_to_SI<double>();
     test_case_E_to_SI<float>();
 }
+
+template<typename RealType>
+constexpr void test_case_energy_from_SI()
+{
+    const auto energy = static_cast<RealType>(
+        electron_mass*light_speed*light_speed);
+    const auto res_SI = energy*
+        fact_energy_from_SI_to<unit_system::SI, RealType>();
+    const auto res_omega = energy*
+        fact_energy_from_SI_to<unit_system::norm_omega, RealType>();
+    const auto res_lambda = energy*
+        fact_energy_from_SI_to<unit_system::norm_lambda, RealType>();
+    const auto exp_SI = static_cast<RealType>(energy);
+    const auto exp_omega = static_cast<RealType>(energy/
+        (electron_mass*light_speed*light_speed));
+    const auto exp_lambda = static_cast<RealType>(energy/
+        (electron_mass*light_speed*light_speed));
+
+    BOOST_CHECK_SMALL((res_SI-exp_SI)/exp_SI, tolerance<RealType>());
+    BOOST_CHECK_SMALL((res_omega-exp_omega)/exp_omega, tolerance<RealType>());
+    BOOST_CHECK_SMALL((res_lambda-exp_lambda)/exp_lambda, tolerance<RealType>());
+}
+
+template<typename RealType>
+constexpr void test_case_energy_to_SI()
+{
+    const auto energy = static_cast<RealType>(1.0);
+    const auto res_SI =
+        energy*fact_energy_to_SI_from<unit_system::SI, RealType>();
+    const auto res_omega =
+        energy*fact_energy_to_SI_from<unit_system::norm_omega, RealType>();
+    const auto res_lambda =
+        energy*fact_energy_to_SI_from<unit_system::norm_lambda, RealType>();
+    const auto exp_SI = static_cast<RealType>(energy);
+    const auto exp_omega = static_cast<RealType>(
+        energy*electron_mass*light_speed*light_speed);
+    const auto exp_lambda = static_cast<RealType>(
+        energy*electron_mass*light_speed*light_speed);
+
+    BOOST_CHECK_SMALL((res_SI-exp_SI)/exp_SI, tolerance<RealType>());
+    BOOST_CHECK_SMALL((res_omega-exp_omega)/exp_omega, tolerance<RealType>());
+    BOOST_CHECK_SMALL((res_lambda-exp_lambda)/exp_lambda, tolerance<RealType>());
+}
+
+
+//Test empty constructor
+BOOST_AUTO_TEST_CASE( picsar_unit_conv_energy )
+{
+    test_case_energy_from_SI<double>();
+    test_case_energy_from_SI<float>();
+    test_case_energy_to_SI<double>();
+    test_case_energy_to_SI<float>();
+}
+

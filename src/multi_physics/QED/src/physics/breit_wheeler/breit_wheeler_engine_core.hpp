@@ -31,6 +31,7 @@
 namespace picsar{
 namespace multi_physics{
 namespace phys{
+namespace breit_wheeler{
 
     //Computes the pair production rate per unit time per unit volume
     template<typename RealType, unit_system UnitSystem = unit_system::SI>
@@ -133,6 +134,7 @@ namespace phys{
         return math::poisson_distrib(probability, unf_zero_one_minus_epsi);
     }
 
+}
 }
 }
 }

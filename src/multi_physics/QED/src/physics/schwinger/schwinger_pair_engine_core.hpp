@@ -28,11 +28,12 @@
 namespace picsar{
 namespace multi_physics{
 namespace phys{
+namespace schwinger{
 
     template<typename RealType, unit_system UnitSystem = unit_system::SI>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    int get_num_schwinger_pairs_single(
+    int get_num_pairs_single(
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
         const RealType dx, const RealType dy, const RealType dz,
@@ -41,7 +42,7 @@ namespace phys{
         const RealType lambda = static_cast<RealType>(1.0))
     {
         const auto rate =
-            compute_schwinger_pair_production_rate<RealType, UnitSystem>(
+            compute_pair_production_rate<RealType, UnitSystem>(
                 ex, ey, ez, bx, by, bz, lambda);
 
         const auto volume = dx*dy*dz;
@@ -56,7 +57,7 @@ namespace phys{
         unit_system UnitSystem = unit_system::SI>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    int get_num_schwinger_pairs_multiple_poisson(
+    int get_num_pairs_multiple_poisson(
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
         const RealType dx, const RealType dy, const RealType dz,
@@ -65,7 +66,7 @@ namespace phys{
         const RealType lambda = static_cast<RealType>(1.0))
     {
         const auto rate =
-            compute_schwinger_pair_production_rate<RealType, UnitSystem>(
+            compute_pair_production_rate<RealType, UnitSystem>(
                 ex, ey, ez, bx, by, bz, lambda);
 
         const auto volume = dx*dy*dz;
@@ -80,7 +81,7 @@ namespace phys{
         unit_system UnitSystem = unit_system::SI>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    int get_num_schwinger_pairs_multiple_gaussian(
+    int get_num_pairs_multiple_gaussian(
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
         const RealType dx, const RealType dy, const RealType dz,
@@ -89,7 +90,7 @@ namespace phys{
         const RealType lambda = static_cast<RealType>(1.0))
     {
         const auto rate =
-            compute_schwinger_pair_production_rate<RealType, UnitSystem>(
+            compute_pair_production_rate<RealType, UnitSystem>(
                 ex, ey, ez, bx, by, bz, lambda);
 
         const auto volume = dx*dy*dz;
@@ -112,7 +113,7 @@ namespace phys{
         unit_system UnitSystem = unit_system::SI>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    int get_num_schwinger_pairs_multiple_choice(
+    int get_num_pairs_multiple_choice(
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
         const RealType dx, const RealType dy, const RealType dz,
@@ -122,7 +123,7 @@ namespace phys{
         const RealType lambda = static_cast<RealType>(1.0))
     {
         const auto rate =
-            compute_schwinger_pair_production_rate<RealType, UnitSystem>(
+            compute_pair_production_rate<RealType, UnitSystem>(
                 ex, ey, ez, bx, by, bz, lambda);
 
         const auto volume = dx*dy*dz;
@@ -141,6 +142,8 @@ namespace phys{
             return static_cast<int>(res);
         }
     }
+
+}
 }
 }
 }

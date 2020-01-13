@@ -247,7 +247,7 @@ namespace phys{
             return static_cast<RealType>(1.0);
     }
 
-        template<unit_system From, typename RealType>
+    template<unit_system From, typename RealType>
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     constexpr RealType fact_B_to_SI_from(
         const RealType lambda = static_cast<RealType>(1.0))
@@ -281,6 +281,39 @@ namespace phys{
             return static_cast<RealType>(
                 (lambda*phys::elementary_charge)/
                 (phys::electron_mass*phys::light_speed));
+        else
+            return static_cast<RealType>(1.0);
+    }
+
+    template<unit_system From, typename RealType>
+    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    constexpr RealType fact_energy_to_SI_from()
+    {
+        if(From == unit_system::SI)
+            return static_cast<RealType>(1.0);
+        else if (From == unit_system::norm_omega)
+            return static_cast<RealType>(
+                phys::electron_mass*phys::light_speed*phys::light_speed);
+        else if (From == unit_system::norm_lambda)
+            return static_cast<RealType>(
+                phys::electron_mass*phys::light_speed*phys::light_speed);
+        else
+            return static_cast<RealType>(1.0);
+    }
+
+    template<unit_system To, typename RealType>
+    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    constexpr RealType fact_energy_from_SI_to(
+        const RealType lambda = static_cast<RealType>(1.0))
+    {
+        if(To == unit_system::SI)
+            return static_cast<RealType>(1.0);
+        else if (To == unit_system::norm_omega)
+            return static_cast<RealType>(
+                1.0/phys::electron_mass*phys::light_speed*phys::light_speed);
+        else if (To == unit_system::norm_lambda)
+            return static_cast<RealType>(
+                1.0/phys::electron_mass*phys::light_speed*phys::light_speed);
         else
             return static_cast<RealType>(1.0);
     }

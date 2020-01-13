@@ -26,12 +26,13 @@
 namespace picsar{
 namespace multi_physics{
 namespace phys{
+namespace schwinger{
 
     //Computes the pair production rate per unit time per unit volume
     template<typename RealType, unit_system UnitSystem = unit_system::SI>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    RealType compute_schwinger_pair_production_rate(
+    RealType compute_pair_production_rate(
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
         const RealType lambda = static_cast<RealType>(1.0))
@@ -74,6 +75,7 @@ namespace phys{
         return coeff*res;
 }
 
+}
 }
 }
 }

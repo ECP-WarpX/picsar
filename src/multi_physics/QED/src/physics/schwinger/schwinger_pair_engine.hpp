@@ -16,6 +16,7 @@
 namespace picsar{
 namespace multi_physics{
 namespace phys{
+namespace schwinger{
 
     template<
         typename RealType, class RandWrap,
@@ -160,6 +161,8 @@ namespace phys{
         static const constexpr auto two = static_cast<RealType>(2.0);
 
     };
+
+}
 }
 }
 }
