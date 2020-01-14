@@ -101,8 +101,8 @@ SUBROUTINE divergence_cleaning
   USE PICSAR_precision
   USE shared_data , ONLY : nx, ny, dy, nmodes
   USE constants, ONLY: clight
-  USE fields !, ONLY: jm_h, jp_h, jl_h, bm_h, rho_h, rhoold_h, nxguards, nyguards
-  USE gpstd_solver !, ONLY : krc, kyc ! (=kyf, kyb)
+  USE fields , ONLY: jm_h, jp_h, jl_h, bm_h, rho_h, rhoold_h, nxguards, nyguards
+  USE gpstd_solver , ONLY : krc, kyc ! (=kyf, kyb)
   USE shared_data, ONLY: nkx, nky, nmodes
   USE hankel
   USE PARAMS , ONLY : dt
@@ -112,7 +112,6 @@ SUBROUTINE divergence_cleaning
   COMPLEX (cpx), dimension(:,:), allocatable :: g
   COMPLEX (cpx) :: ii
   REAL(num) :: knorm
-  ALLOCATE (g (nfftx, nffty))
   ii= DCMPLX(0.0_num, 1.0_num)
 
 #if defined(LIBRARY)
@@ -123,6 +122,8 @@ SUBROUTINE divergence_cleaning
    nfftx = nx+2*nxguards
    nffty = ny+2* nyguards
 #endif
+  ALLOCATE (g (nfftx, nffty))
+
    DO k=1 , nmodes
      g = (rho_h(:,:,k) - rhoold_h(:,:,k))/dt
      DO j=1, nffty
@@ -130,9 +131,14 @@ SUBROUTINE divergence_cleaning
            knorm = -1./(krc(i,k)*krc(i,k)+kyc(j)*kyc(j))           
            g(i,j) = knorm * (g(i,j) + krc(i,k)*(jp_h(i,j,k) - jm_h(i,j,k)) + ii*kyc(j)*jl_h(i,j,k)) 
        END DO
+     END DO
+     if (k .gt. 1) then
+         g(1,1) = 0. ! Avoid NaN
+     end  if
+     DO j=1, nffty
        jp_h(:,j,k) = jp_h(:,j,k) + 0.5*krc(:,k)*g(:,j)
        jm_h(:,j,k) = jm_h(:,j,k) - 0.5*krc(:,k)*g(:,j)
-       jl_h(:,j,k) = jl_h(:,j,k) - ii*kyc(j)*g(:,j)
+       jl_h(:,j,k) = jl_h(:,j,k) -  ii*kyc(j  )*g(:,j)
      END DO
    END DO
 
