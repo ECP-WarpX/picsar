@@ -459,19 +459,40 @@ const _REAL* unf_zero_one_minus_epsi)
     for(size_t s = 0; s < sampling; s++){
         _REAL prob = unf_zero_one_minus_epsi[s];
 
-        size_t idx_prob_left = static_cast<size_t>(
-            floor((how_many_prob-1)*prob));
-        size_t idx_prob_right = idx_prob_left + 1;
-        _REAL prob_left = ref_cum_distrib_table.ref_coords()[1][idx_prob_left];
-        _REAL prob_right = ref_cum_distrib_table.ref_coords()[1][idx_prob_right];
 
-        _REAL left = exp(ref_cum_distrib_table.interp_linear_first_equispaced
-                (log(tab_chi_part), idx_prob_left));
-        _REAL right = exp(ref_cum_distrib_table.interp_linear_first_equispaced
-                (log(tab_chi_part), idx_prob_right));
+        size_t first = 0;
+        size_t it;
+        _REAL val;
+        size_t count = how_many_prob;
+        while(count > 0){
+            it = first;
+            size_t step = count/2;
+            it += step;
+            val =
+                exp(ref_cum_distrib_table.interp_linear_first_equispaced
+                    (log(tab_chi_part), it));
+            if(!(prob < val)){
+                first = ++it;
+                count -= step+1;
+            }
+            else{
+                count = step;
+            }
+        }
 
-        _REAL chi_phot_frac = left +
-                (prob-prob_left)*(right-left)/(prob_right-prob_left);
+        size_t upper = first;
+        size_t lower = upper-1;
+
+        const _REAL upper_frac = ref_cum_distrib_table.ref_coords()[1][upper];
+        const _REAL lower_frac = ref_cum_distrib_table.ref_coords()[1][lower];
+        _REAL upper_prob =
+            exp(ref_cum_distrib_table.interp_linear_first_equispaced
+            (log(tab_chi_part), upper));
+        _REAL lower_prob =
+            exp(ref_cum_distrib_table.interp_linear_first_equispaced
+            (log(tab_chi_part), lower));
+        _REAL chi_phot_frac = lower_frac +
+            (prob-lower_prob)*(upper_frac-lower_frac)/(upper_prob-lower_prob);
 
         _REAL chi_phot = chi_phot_frac*chi_part;
         _REAL gamma_phot = chi_phot/chi_part*(gamma_part-one);
@@ -683,57 +704,38 @@ compute_cumulative_phot_em_table (std::ostream* stream)
      qs_ctrl.chi_part_tem_min, qs_ctrl.chi_part_tem_max,
     qs_ctrl.chi_part_tem_how_many);
 
-    picsar_vector<_REAL> prob_coords = generate_lin_spaced_vec
+    picsar_vector<_REAL> frac_coords = generate_lin_spaced_vec
         (zero, one, qs_ctrl.prob_tem_how_many);
 
-    picsar_vector<_REAL> chi_phot_frac_vals{chi_coords.size()*prob_coords.size()};
+    picsar_vector<_REAL> phot_vals{chi_coords.size()*frac_coords.size()};
 
     msg("Computing table for photon emission...\n", stream);
 
     #pragma omp parallel for
     for(size_t ii = 0; ii < chi_coords.size(); ii++){
         auto chi_part = chi_coords[ii];
-        size_t cc = ii*prob_coords.size();
-        _REAL guess = -ten;
-        _REAL previous = zero;
-        bool first_one = true;
-        for(size_t jj = 0; jj < prob_coords.size(); jj++){
-            _REAL prob = prob_coords[jj];
+        size_t cc = ii*frac_coords.size();
 
-            if(jj == 0)
-                prob = prob_coords[1]/ten;
-            if(jj == prob_coords.size()-1)
-                prob = one - (one - prob_coords[prob_coords.size()-2])/ten;
-
-            auto func = [=](_REAL log_chi_photon_frac){
-                    if(log_chi_photon_frac >= zero)
-                        return one;
-                    if(!first_one && log_chi_photon_frac < previous)
-                        return one;
-                    return compute_cumulative_phot_em
-                        (exp(log_chi_photon_frac)*chi_part, chi_part) - prob;
-            };
-            bool rising = true;
-            _REAL log_chi_phot_frac = bracket_and_solve_root<_REAL>(func, guess, rising);
-            guess = log_chi_phot_frac;
-            previous = guess;
-            chi_phot_frac_vals[cc++] = exp(log_chi_phot_frac);
-            first_one = false;
-            msg(std::to_string(ii) + " " + std::to_string(jj) + "\n", stream);
+        phot_vals[cc++] = zero;
+        for(size_t jj = 1; jj < frac_coords.size() - 1; jj++){
+            phot_vals[cc++] = compute_cumulative_phot_em(
+                chi_part, chi_part*frac_coords[jj]);
         }
+        phot_vals[cc++] = one;
     }
+
     msg("...done!\n", stream);
 
     //The table will store the logarithms
     auto logfun = [](_REAL val){return log(val);};
     std::transform(chi_coords.begin(),
         chi_coords.end(), chi_coords.begin(), logfun);
-    std::transform(chi_phot_frac_vals.begin(),
-        chi_phot_frac_vals.end(), chi_phot_frac_vals.begin(), logfun);
+    std::transform(phot_vals.begin(),
+        phot_vals.end(), phot_vals.begin(), logfun);
 
     cum_distrib_table = lookup_2d<_REAL>{
         picsar_array<picsar_vector<_REAL>,2>
-        {chi_coords, prob_coords}, chi_phot_frac_vals};
+        {chi_coords, frac_coords}, phot_vals};
 }
 
 
