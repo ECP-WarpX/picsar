@@ -8,6 +8,43 @@
 namespace picsar{
 namespace multi_physics{
 namespace phys{
+
+    /**
+    * The interface of the PICSAR QED library supports 3 unit systems
+    * (although internally only SI units are used):
+    *
+    * > SI units (International System of Units)
+    *
+    * > norm_omega, a popular unit system in Particle-In-Cell codes where:
+    *   - a reference frequenecy omega_r = 2*pi*c/lambda is chosen
+    *     (c is the speed of light, lambda is a wavelength)
+    *   - mass is normalized with respect to the electron mass m_e
+    *   - electric charge is normalized with respect to the elementary charge e0
+    *   - momentum is normalized with respect to m_e*c
+    *   - energy is normalized with respect to m_e*c^2
+    *   - velocity is normalized with respect to the speed of light
+    *   - time is normalized with respect to 1/omega_r
+    *   - length is normalized with respect to c/omega_r
+    *   - electric field is normalized with respect to m_e*c*omega_r /e0
+    *   - magnetic field is normalized with respect to m_e*omega_r /e0
+    *
+    * > norm_lambda, a popular unit system in Particle-In-Cell codes where:
+    *   - a reference wavelength lambda is chosen
+    *   - mass is normalized with respect to the electron mass m_e
+    *   - electric charge is normalized with respect to the elementary charge e0
+    *   - momentum is normalized with respect to m_e*c
+    *   - energy is normalized with respect to m_e*c^2
+    *   - velocity is normalized with respect to the speed of light
+    *   - time is normalized with respect to lambda/c
+    *   - length is normalized with respect to lambda
+    *   - electric field is normalized with respect to m_e*c^2/(lambda*e0)
+    *   - magnetic field is normalized with respect to m_e*c/(lambda*e0)
+    *
+    * The helper functions provided by this module are used internally by the
+    * library to convert the input values of a function to SI and to convert the
+    * output from SI to the desired unit system.
+    *
+    */
     enum unit_system
     {
         SI,
@@ -15,6 +52,14 @@ namespace phys{
         norm_lambda
     };
 
+    /**
+    * This function returns the conversion factor for mass from any unit
+    * system to SI
+    *
+    * @tparam From unit system (enum unit_system) from which to convert
+    * @tparam RealType the floating point type of the result
+    * @return the conversion factor
+    */
     template<unit_system From, typename RealType>
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     constexpr RealType fact_mass_to_SI_from(){
@@ -28,6 +73,14 @@ namespace phys{
             return static_cast<RealType>(1.0);
     }
 
+    /**
+    * This function returns the conversion factor for mass from SI to
+    * any unit system
+    *
+    * @tparam To unit system (enum unit_system) to which to convert
+    * @tparam RealType the floating point type of the result
+    * @return the conversion factor
+    */
     template<unit_system To, typename RealType>
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     constexpr RealType fact_mass_from_SI_to(){
@@ -41,6 +94,14 @@ namespace phys{
             return static_cast<RealType>(1.0);
     }
 
+    /**
+    * This function returns the conversion factor for charge from any unit
+    * system to SI
+    *
+    * @tparam From unit system (enum unit_system) from which to convert
+    * @tparam RealType the floating point type of the result
+    * @return the conversion factor
+    */
     template<unit_system From, typename RealType>
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     constexpr RealType fact_charge_to_SI_from(){
@@ -54,6 +115,14 @@ namespace phys{
             return static_cast<RealType>(1.0);
     }
 
+    /**
+    * This function returns the conversion factor for charge from SI to
+    * any unit system
+    *
+    * @tparam To unit system (enum unit_system) to which to convert
+    * @tparam RealType the floating point type of the result
+    * @return the conversion factor
+    */
     template<unit_system To, typename RealType>
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     constexpr RealType fact_charge_from_SI_to(){
@@ -67,6 +136,14 @@ namespace phys{
             return static_cast<RealType>(1.0);
     }
 
+    /**
+    * This function returns the conversion factor for velocity from any unit
+    * system to SI
+    *
+    * @tparam From unit system (enum unit_system) from which to convert
+    * @tparam RealType the floating point type of the result
+    * @return the conversion factor
+    */
     template<unit_system From, typename RealType>
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     constexpr RealType fact_velocity_to_SI_from(){
@@ -80,6 +157,14 @@ namespace phys{
             return static_cast<RealType>(1.0);
     }
 
+    /**
+    * This function returns the conversion factor for velocity from SI to
+    * any unit system
+    *
+    * @tparam To unit system (enum unit_system) to which to convert
+    * @tparam RealType the floating point type of the result
+    * @return the conversion factor
+    */
     template<unit_system To, typename RealType>
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     constexpr RealType fact_velocity_from_SI_to(){
@@ -93,7 +178,15 @@ namespace phys{
             return static_cast<RealType>(1.0);
     }
 
-        template<unit_system From, typename RealType>
+    /**
+    * This function returns the conversion factor for momentum from any unit
+    * system to SI
+    *
+    * @tparam From unit system (enum unit_system) from which to convert
+    * @tparam RealType the floating point type of the result
+    * @return the conversion factor
+    */
+    template<unit_system From, typename RealType>
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     constexpr RealType fact_momentum_to_SI_from(){
         if(From == unit_system::SI)
@@ -106,6 +199,14 @@ namespace phys{
             return static_cast<RealType>(1.0);
     }
 
+    /**
+    * This function returns the conversion factor for momentum from SI to
+    * any unit system
+    *
+    * @tparam To unit system (enum unit_system) to which to convert
+    * @tparam RealType the floating point type of the result
+    * @return the conversion factor
+    */
     template<unit_system To, typename RealType>
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     constexpr RealType fact_momentum_from_SI_to(){
@@ -285,6 +386,14 @@ namespace phys{
             return static_cast<RealType>(1.0);
     }
 
+    /**
+    * This function returns the conversion factor for energy from any unit
+    * system to SI
+    *
+    * @tparam From unit system (enum unit_system) from which to convert
+    * @tparam RealType the floating point type of the result
+    * @return the conversion factor
+    */
     template<unit_system From, typename RealType>
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     constexpr RealType fact_energy_to_SI_from()
@@ -301,10 +410,17 @@ namespace phys{
             return static_cast<RealType>(1.0);
     }
 
+    /**
+    * This function returns the conversion factor for energy from SI to
+    * any unit system
+    *
+    * @tparam To unit system (enum unit_system) to which to convert
+    * @tparam RealType the floating point type of the result
+    * @return the conversion factor
+    */
     template<unit_system To, typename RealType>
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_energy_from_SI_to(
-        const RealType lambda = static_cast<RealType>(1.0))
+    constexpr RealType fact_energy_from_SI_to()
     {
         if(To == unit_system::SI)
             return static_cast<RealType>(1.0);
