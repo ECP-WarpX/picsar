@@ -364,77 +364,109 @@ namespace phys{
             return static_cast<RealType>(1.0);
     }
 
+    /**
+    * This function returns the conversion factor for electric field from any unit
+    * system to SI
+    *
+    * @tparam From unit system (enum unit_system) from which to convert
+    * @tparam RealType the floating point type of the result
+    * @param reference_quantity the reference frequency or the ref. wavelength (depending on the unit system) in SI units
+    * @return the conversion factor
+    */
     template<unit_system From, typename RealType>
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     constexpr RealType fact_E_to_SI_from(
-        const RealType lambda = static_cast<RealType>(1.0))
+        const RealType reference_quantity = static_cast<RealType>(1.0))
     {
         if(From == unit_system::SI)
             return static_cast<RealType>(1.0);
         else if (From == unit_system::norm_omega)
-            return static_cast<RealType>(
-                (phys::electron_mass*phys::light_speed*2.0*math::pi*phys::light_speed)/
-                (phys::elementary_charge))/lambda;
+            return static_cast<RealType>(phys::electron_mass*phys::light_speed/
+                phys::elementary_charge)*reference_quantity;
         else if (From == unit_system::norm_lambda)
             return static_cast<RealType>(
                 phys::electron_mass*phys::light_speed*phys::light_speed/
-                (phys::elementary_charge))/lambda;
+                (phys::elementary_charge))/reference_quantity;
         else
             return static_cast<RealType>(1.0);
     }
 
+    /**
+    * This function returns the conversion factor for electric field from SI to
+    * any unit system
+    *
+    * @tparam To unit system (enum unit_system) to which to convert
+    * @tparam RealType the floating point type of the result
+    * @param reference_quantity the reference frequency or the ref. wavelength (depending on the unit system) in SI units
+    * @return the conversion factor
+    */
     template<unit_system To, typename RealType>
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     constexpr RealType fact_E_from_SI_to(
-        const RealType lambda = static_cast<RealType>(1.0))
+        const RealType reference_quantity = static_cast<RealType>(1.0))
     {
         if(To == unit_system::SI)
             return static_cast<RealType>(1.0);
         else if (To == unit_system::norm_omega)
-            return lambda*static_cast<RealType>(
-                (phys::elementary_charge)/
-                (phys::electron_mass*phys::light_speed*2.0*math::pi*phys::light_speed));
+            return static_cast<RealType>((phys::elementary_charge)/
+                (phys::electron_mass*phys::light_speed))/reference_quantity;
         else if (To == unit_system::norm_lambda)
-            return lambda*static_cast<RealType>(
+            return reference_quantity*static_cast<RealType>(
                 (phys::elementary_charge)/
                 (phys::electron_mass*phys::light_speed*phys::light_speed));
         else
             return static_cast<RealType>(1.0);
     }
 
+    /**
+    * This function returns the conversion factor for magnetic field from any unit
+    * system to SI
+    *
+    * @tparam From unit system (enum unit_system) from which to convert
+    * @tparam RealType the floating point type of the result
+    * @param reference_quantity the reference frequency or the ref. wavelength (depending on the unit system) in SI units
+    * @return the conversion factor
+    */
     template<unit_system From, typename RealType>
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     constexpr RealType fact_B_to_SI_from(
-        const RealType lambda = static_cast<RealType>(1.0))
+        const RealType reference_quantity = static_cast<RealType>(1.0))
     {
         if(From == unit_system::SI)
             return static_cast<RealType>(1.0);
         else if (From == unit_system::norm_omega)
-            return static_cast<RealType>(
-                (phys::electron_mass*2.0*math::pi*phys::light_speed)/
-                (lambda*phys::elementary_charge));
+            return static_cast<RealType>(phys::electron_mass*reference_quantity/
+                phys::elementary_charge);
         else if (From == unit_system::norm_lambda)
             return static_cast<RealType>(
                 phys::electron_mass*phys::light_speed/
-                (lambda*phys::elementary_charge));
+                (reference_quantity*phys::elementary_charge));
         else
             return static_cast<RealType>(1.0);
     }
 
+    /**
+    * This function returns the conversion factor for magnetic field from SI to
+    * any unit system
+    *
+    * @tparam To unit system (enum unit_system) to which to convert
+    * @tparam RealType the floating point type of the result
+    * @param reference_quantity the reference frequency or the ref. wavelength (depending on the unit system) in SI units
+    * @return the conversion factor
+    */
     template<unit_system To, typename RealType>
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     constexpr RealType fact_B_from_SI_to(
-        const RealType lambda = static_cast<RealType>(1.0))
+        const RealType reference_quantity = static_cast<RealType>(1.0))
     {
         if(To == unit_system::SI)
             return static_cast<RealType>(1.0);
         else if (To == unit_system::norm_omega)
-            return static_cast<RealType>(
-                (lambda*phys::elementary_charge)/
-                (phys::electron_mass*2.0*math::pi*phys::light_speed));
+            return static_cast<RealType>(phys::elementary_charge/
+                (phys::electron_mass*reference_quantity));
         else if (To == unit_system::norm_lambda)
             return static_cast<RealType>(
-                (lambda*phys::elementary_charge)/
+                (reference_quantity*phys::elementary_charge)/
                 (phys::electron_mass*phys::light_speed));
         else
             return static_cast<RealType>(1.0);
