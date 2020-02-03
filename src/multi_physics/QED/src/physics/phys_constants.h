@@ -7,6 +7,9 @@
 namespace picsar{
 namespace multi_physics{
 namespace phys{
+
+    // Physical constants
+
     constexpr const double electron_mass = 9.10938356e-31;
     constexpr const double elementary_charge = 1.6021766208e-19;
     constexpr const double light_speed = 299792458.;
@@ -22,19 +25,7 @@ namespace phys{
         electron_mass*electron_mass*(light_speed*light_speed*light_speed)/
         (elementary_charge*reduced_plank);
 
-    constexpr const double pair_prod_rate_coeff =
-        fine_structure * electron_mass * light_speed * light_speed /
-        (reduced_plank);
-
     constexpr const double tau_e = classical_electron_radius/light_speed;
-
-    constexpr const double quantum_synchrotron_rate_coeff =
-        fine_structure*fine_structure/tau_e;
-
-    constexpr const double schwinger_pair_prod_coeff =
-          elementary_charge*elementary_charge*
-          schwinger_field*schwinger_field/
-          (4.0*math::pi*math::pi*reduced_plank*reduced_plank*light_speed);
 }
 }
 }

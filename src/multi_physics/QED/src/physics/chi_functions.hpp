@@ -1,9 +1,6 @@
 #ifndef PICSAR_MULTIPHYSICS_CHI_FUNCTIONS
 #define PICSAR_MULTIPHYSICS_CHI_FUNCTIONS
 
-//This .hpp file contains the functions to calcuate the chi parameter for
-//photons and leptons
-
 #include <cmath>
 
 //Should be included by all the src files of the library
@@ -16,11 +13,24 @@
 
 #include "unit_conversion.hpp"
 
+// This file contains auxiliary functions to calculate the chi parameter
+// for photons and leptons (electrons and positrons)
+
 namespace picsar{
 namespace multi_physics{
 namespace phys{
 
-    //chi for photons
+    /**
+    * This function returns the chi parameter for a photon
+    *
+    * @tparam RealType the floating point type of the result
+    * @tparam unit_system unit system to be used for input&output [default is SI]
+    * @param[in] t_p a vec3<RealType> containing the momentum of the photon
+    * @param[in] t_em_e a vec3<RealType> containing the electric field
+    * @param[in] t_em_b a vec3<RealType> containing the magnetic field
+    * @param[in] reference_quantity reference quantity for unit conversion (e.g. lambda or omega_r), if needed
+    * @return the chi parameter
+    */
     template<typename RealType, unit_system UnitSystem = unit_system::SI>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
@@ -28,12 +38,14 @@ namespace phys{
         const math::vec3<RealType> t_p,
         const math::vec3<RealType> t_em_e,
         const math::vec3<RealType> t_em_b,
-        const RealType lambda = static_cast<RealType>(1.0))
+        const RealType reference_quantity = static_cast<RealType>(1.0))
     {
 
         const auto p = t_p * fact_momentum_to_SI_from<UnitSystem, RealType>();
-        const auto em_e = t_em_e * fact_E_to_SI_from<UnitSystem, RealType>(lambda);
-        const auto em_b = t_em_b * fact_B_to_SI_from<UnitSystem, RealType>(lambda);
+        const auto em_e = t_em_e *
+            fact_E_to_SI_from<UnitSystem, RealType>(reference_quantity);
+        const auto em_b = t_em_b *
+            fact_B_to_SI_from<UnitSystem, RealType>(reference_quantity);
 
         auto norm_p = math::norm(p);
         if(norm_p == static_cast<RealType>(0.0))
@@ -50,7 +62,23 @@ namespace phys{
         return mod*norm_p*coeff;
     }
 
-    //chi for photons
+    /**
+    * This function returns the chi parameter for a photon
+    *
+    * @tparam RealType the floating point type of the result
+    * @tparam unit_system unit system to be used for input&output [default is SI]
+    * @param[in] px a RealType containing the x component of the momentum of the photon
+    * @param[in] py a RealType containing the y component of the momentum of the photon
+    * @param[in] pz a RealType containing the z component of the momentum of the photon
+    * @param[in] ex a RealType containing the x component of the electric field
+    * @param[in] ey a RealType containing the y component of the electric field
+    * @param[in] ez a RealType containing the z component of the electric field
+    * @param[in] bx a RealType containing the x component of the magnetic field
+    * @param[in] by a RealType containing the y component of the magnetic field
+    * @param[in] bz a RealType containing the z component of the magnetic field
+    * @param[in] reference_quantity reference quantity for unit conversion (e.g. lambda or omega_r), if needed
+    * @return the chi parameter
+    */
     template<typename RealType, unit_system UnitSystem>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
@@ -58,15 +86,25 @@ namespace phys{
         const RealType px, const RealType py, const RealType pz,
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
-        const RealType lambda = static_cast<RealType>(1.0))
+        const RealType reference_quantity = static_cast<RealType>(1.0))
     {
         const auto p = math::vec3<RealType>{px, py, pz};
         const auto em_e = math::vec3<RealType>{ex, ey, ez};
         const auto em_b = math::vec3<RealType>{bx, by, bz};
-        return chi_photon(p, em_e, em_b);
+        return chi_photon(p, em_e, em_b, reference_quantity);
     }
 
-    //chi for leptons
+    /**
+    * This function returns the chi parameter for either an electron or a positron
+    *
+    * @tparam RealType the floating point type of the result
+    * @tparam unit_system unit system to be used for input&output [default is SI]
+    * @param[in] t_p a vec3<RealType> containing the momentum of the electron or the positrion
+    * @param[in] t_em_e a vec3<RealType> containing the electric field
+    * @param[in] t_em_b a vec3<RealType> containing the magnetic field
+    * @param[in] reference_quantity reference quantity for unit conversion (e.g. lambda or omega_r), if needed
+    * @return the chi parameter
+    */
     template<typename RealType, unit_system UnitSystem>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
@@ -74,12 +112,12 @@ namespace phys{
         const math::vec3<RealType> t_p,
         const math::vec3<RealType> t_em_e,
         const math::vec3<RealType> t_em_b,
-        const RealType lambda = static_cast<RealType>(1.0))
+        const RealType reference_quantity = static_cast<RealType>(1.0))
     {
 
         const auto p = t_p * fact_momentum_to_SI_from<UnitSystem, RealType>();
-        const auto em_e = t_em_e * fact_E_to_SI_from<UnitSystem, RealType>(lambda);
-        const auto em_b = t_em_b * fact_B_to_SI_from<UnitSystem, RealType>(lambda);
+        const auto em_e = t_em_e * fact_E_to_SI_from<UnitSystem, RealType>(reference_quantity);
+        const auto em_b = t_em_b * fact_B_to_SI_from<UnitSystem, RealType>(reference_quantity);
 
         const auto norm_p = math::norm(p);
         if(norm_p == static_cast<RealType>(0.0))
@@ -110,7 +148,23 @@ namespace phys{
     }
 
 
-    //chi for leptons
+    /**
+    * This function returns the chi parameter for either an electron or a positron
+    *
+    * @tparam RealType the floating point type of the result
+    * @tparam unit_system unit system to be used for input&output [default is SI]
+    * @param[in] px a RealType containing the x component of the momentum of the electron (or the positron)
+    * @param[in] py a RealType containing the y component of the momentum of the electron (or the positron)
+    * @param[in] pz a RealType containing the z component of the momentum of the electron (or the positron)
+    * @param[in] ex a RealType containing the x component of the electric field
+    * @param[in] ey a RealType containing the y component of the electric field
+    * @param[in] ez a RealType containing the z component of the electric field
+    * @param[in] bx a RealType containing the x component of the magnetic field
+    * @param[in] by a RealType containing the y component of the magnetic field
+    * @param[in] bz a RealType containing the z component of the magnetic field
+    * @param[in] reference_quantity reference quantity for unit conversion (e.g. lambda or omega_r), if needed
+    * @return the chi parameter
+    */
     template<typename RealType, unit_system UnitSystem>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
@@ -118,12 +172,12 @@ namespace phys{
         const RealType px, const RealType py, const RealType pz,
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
-        const RealType lambda = static_cast<RealType>(1.0))
+        const RealType reference_quantity = static_cast<RealType>(1.0))
     {
         const auto p = math::vec3<RealType>{px, py, pz};
         const auto em_e = math::vec3<RealType>{ex, ey, ez};
         const auto em_b = math::vec3<RealType>{bx, by, bz};
-        return chi_photon(p, em_e, em_b);
+        return chi_photon(p, em_e, em_b, reference_quantity);
     }
 }
 }

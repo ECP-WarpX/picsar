@@ -28,6 +28,11 @@ namespace multi_physics{
 namespace phys{
 namespace schwinger{
 
+        constexpr const double schwinger_pair_prod_coeff =
+          elementary_charge*elementary_charge*
+          schwinger_field*schwinger_field/
+          (4.0*math::pi*math::pi*reduced_plank*reduced_plank*light_speed);
+
     //Computes the pair production rate per unit time per unit volume
     template<typename RealType, unit_system UnitSystem = unit_system::SI>
     PXRMP_INTERNAL_GPU_DECORATOR
