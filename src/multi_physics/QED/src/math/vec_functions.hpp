@@ -1,9 +1,6 @@
 #ifndef PICSAR_MULTIPHYSICS_VEC_FUNCTIONS
 #define PICSAR_MULTIPHYSICS_VEC_FUNCTIONS
 
-//This .hpp file contains functions to perform operations on 3-vectors
-// (norm, scalar multiplication, vector and cross product...)
-
 #include <cmath>
 
 //Should be included by all the src files of the library
@@ -12,13 +9,13 @@
 //Uses GPU-friendly arrays
 #include "../containers/picsar_array.hpp"
 
-//############################################### Declaration
-
 namespace picsar{
 namespace multi_physics{
 namespace math{
 
-    //A 3-vector
+    //This .hpp file contains functions to perform operations on 3-vectors
+    // (norm, scalar multiplication, vector and cross product...)
+
     template <typename RealType>
     using vec3 = containers::picsar_array<RealType, 3>;
 

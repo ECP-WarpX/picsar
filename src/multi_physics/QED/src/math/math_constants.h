@@ -7,6 +7,8 @@ namespace picsar{
 namespace multi_physics{
 namespace math{
 
+    // Mathemtatical constants
+
     constexpr const double pi = 3.14159265358979323846264338327950288;
 }
 }
