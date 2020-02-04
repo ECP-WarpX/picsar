@@ -336,8 +336,10 @@ namespace phys{
         if(From == unit_system::SI)
             return static_cast<RealType>(1.0);
         else if (From == unit_system::norm_omega)
-            return static_cast<RealType>(phys::light_speed*phys::light_speed*phys::light_speed/
-                (reference_quantity*reference_quantity*reference_quantity));
+            return static_cast<RealType>(
+                (phys::light_speed/reference_quantity)*
+                (phys::light_speed/reference_quantity)*
+                (phys::light_speed/reference_quantity));
         else if (From == unit_system::norm_lambda)
             return static_cast<RealType>(reference_quantity*reference_quantity*reference_quantity);
         else
