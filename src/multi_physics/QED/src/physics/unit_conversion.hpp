@@ -512,10 +512,10 @@ namespace phys{
             return static_cast<RealType>(1.0);
         else if (To == unit_system::norm_omega)
             return static_cast<RealType>(
-                1.0/phys::electron_mass*phys::light_speed*phys::light_speed);
+                1.0/(phys::electron_mass*phys::light_speed*phys::light_speed));
         else if (To == unit_system::norm_lambda)
             return static_cast<RealType>(
-                1.0/phys::electron_mass*phys::light_speed*phys::light_speed);
+                1.0/(phys::electron_mass*phys::light_speed*phys::light_speed));
         else
             return static_cast<RealType>(1.0);
     }
