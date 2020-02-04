@@ -32,6 +32,8 @@ T constexpr tolerance()
 
 // ------------- Tests --------------
 
+//***Test norm2
+
 template<typename RealType>
 void test_norm2()
 {
@@ -45,12 +47,15 @@ void test_norm2()
     BOOST_CHECK_SMALL((norm2(vec)-expected)/expected, tolerance<RealType>());
 }
 
-//Test empty constructor
 BOOST_AUTO_TEST_CASE( picsar_vec_functions_norm2 )
 {
     test_norm2<double>();
     test_norm2<float>();
 }
+
+//*******************************
+
+//***Test norm
 
 template<typename RealType>
 void test_norm()
@@ -65,12 +70,15 @@ void test_norm()
     BOOST_CHECK_SMALL((norm(vec)-expected)/expected, tolerance<RealType>());
 }
 
-//Test empty constructor
 BOOST_AUTO_TEST_CASE( picsar_vec_functions_norm )
 {
     test_norm<double>();
     test_norm<float>();
 }
+
+//*******************************
+
+//***Test dot product
 
 template<typename RealType>
 void test_dot()
@@ -89,13 +97,15 @@ void test_dot()
     BOOST_CHECK_SMALL((dot(veca,vecb)-expected)/expected, tolerance<RealType>());
 }
 
-//Test empty constructor
 BOOST_AUTO_TEST_CASE( picsar_vec_functions_dot )
 {
     test_dot<double>();
     test_dot<float>();
 }
 
+//*******************************
+
+//***Test cross product
 
 template<typename RealType>
 void test_cross()
@@ -123,12 +133,15 @@ void test_cross()
     }
 }
 
-//Test empty constructor
 BOOST_AUTO_TEST_CASE( picsar_vec_functions_cross )
 {
     test_cross<double>();
     test_cross<float>();
 }
+
+//*******************************
+
+//***Test scalar product
 
 template<typename RealType>
 void test_vec_times_scalar()
@@ -155,7 +168,6 @@ void test_vec_times_scalar()
     }
 }
 
-//Test empty constructor
 BOOST_AUTO_TEST_CASE( picsar_vec_functions_vec_times_scalar )
 {
     test_vec_times_scalar<double>();
@@ -187,12 +199,15 @@ void test_scalar_times_vec()
     }
 }
 
-//Test empty constructor
 BOOST_AUTO_TEST_CASE( picsar_vec_functions_scalar_times_vec )
 {
     test_scalar_times_vec<double>();
     test_scalar_times_vec<float>();
 }
+
+//*******************************
+
+//***Test division by scalar
 
 template<typename RealType>
 void test_vec_div_scalar()
@@ -219,12 +234,15 @@ void test_vec_div_scalar()
     }
 }
 
-//Test empty constructor
 BOOST_AUTO_TEST_CASE( picsar_vec_functions_vec_div_scalar )
 {
     test_vec_div_scalar<double>();
     test_vec_div_scalar<float>();
 }
+
+//*******************************
+
+//***Test vector addition
 
 template<typename RealType>
 void test_add()
@@ -252,12 +270,15 @@ void test_add()
     }
 }
 
-//Test empty constructor
 BOOST_AUTO_TEST_CASE( picsar_vec_functions_add )
 {
     test_add<double>();
     test_add<float>();
 }
+
+//*******************************
+
+//***Test vector subraction
 
 template<typename RealType>
 void test_subtract()
@@ -285,9 +306,10 @@ void test_subtract()
     }
 }
 
-//Test empty constructor
 BOOST_AUTO_TEST_CASE( picsar_vec_functions_subtract )
 {
     test_subtract<double>();
     test_subtract<float>();
 }
+
+//*******************************
