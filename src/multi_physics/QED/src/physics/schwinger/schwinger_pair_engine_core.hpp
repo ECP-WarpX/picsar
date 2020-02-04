@@ -163,7 +163,7 @@ namespace schwinger{
         const RealType bx, const RealType by, const RealType bz,
         const RealType dx, const RealType dy, const RealType dz,
         const RealType dt,
-        RandomNumberGenerator* rng,
+        const RealType gauss_mean_zero_sigma_one,
         const RealType lambda = static_cast<RealType>(1.0))
     {
         const auto rate =
@@ -173,8 +173,8 @@ namespace schwinger{
         const auto volume = dx*dy*dz;
         const auto probability = rate*volume*dt;
 
-        const auto res = static_cast<RealType>(
-            rng->gaussian(probability, sqrt(probability)));
+        const auto res = probability +
+            gauss_mean_zero_sigma_one*sqrt(probability);
 
         if(res <= static_cast<RealType>(0.0))
             return 0;
