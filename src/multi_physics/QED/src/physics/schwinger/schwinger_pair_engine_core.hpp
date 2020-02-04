@@ -25,6 +25,9 @@
 //Uses unit conversion"
 #include "../unit_conversion.hpp"
 
+//Uses Poisson's distribution
+#include "../../math/poisson_distrib.hpp"
+
 namespace picsar{
 namespace multi_physics{
 namespace phys{
@@ -99,8 +102,9 @@ namespace schwinger{
 }
 
     /**
-    * This function computes the Schwinger pair production
-    * and returns 1 if a pair is generated, 0 otherwise.
+    * This function computes the Schwinger pair production rate
+    * and returns an integer number extracted from a Poisson's distribution
+    * according to the calculated rate.
     * It needs a uniformly distributed random number.
     * Use this function only if the probability of generating
     * a pair is << 1.
@@ -114,32 +118,12 @@ namespace schwinger{
     * @param[in] by the y component of the magnetic field
     * @param[in] bz the z component of the magnetic field
     * @param[in] t_volume the volume of the physical region
-    * @param[in] dt the temporal step
+    * @param[in] t_dt the temporal step
     * @param[in] unf_zero_one_minus_epsi a uniformly distributed random number
     * @param[in] ref_quantity reference quantityt for unit conversion (lambda or omega)
 
     * @return 1 if a particle is generated, 0 otherwise.
     */
-    template<typename RealType, unit_system UnitSystem = unit_system::SI>
-    PXRMP_INTERNAL_GPU_DECORATOR
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    int get_num_pairs_single(
-        const RealType ex, const RealType ey, const RealType ez,
-        const RealType bx, const RealType by, const RealType bz,
-        const RealType t_volume, const RealType dt,
-        const RealType unf_zero_one_minus_epsi,
-        const RealType ref_quantity = static_cast<RealType>(1.0))
-    {
-        const auto rate =
-            compute_pair_production_rate<RealType, UnitSystem>(
-                ex, ey, ez, bx, by, bz, ref_quantity);
-
-        const auto volume = t_volume;
-        const auto probability = rate*volume*dt;
-
-        return (unf_zero_one_minus_epsi < probability);
-    }
-
     template<
         typename RealType,
         class RandomNumberGenerator,
@@ -149,19 +133,23 @@ namespace schwinger{
     int get_num_pairs_multiple_poisson(
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
-        const RealType dx, const RealType dy, const RealType dz,
-        const RealType dt,
-        RandomNumberGenerator* rng,
-        const RealType lambda = static_cast<RealType>(1.0))
+        const RealType t_volume, const RealType t_dt,
+        const RealType unf_zero_one_minus_epsi,
+        const RealType ref_quantity = static_cast<RealType>(1.0))
     {
-        const auto rate =
-            compute_pair_production_rate<RealType, UnitSystem>(
-                ex, ey, ez, bx, by, bz, lambda);
+        const auto dt = t_dt *
+            fact_time_to_SI_from<UnitSystem>(ref_quantity);
 
-        const auto volume = dx*dy*dz;
+        const auto volume = t_volume*
+            fact_volume_to_SI_from<UnitSystem>(ref_quantity);
+
+        const auto rate =
+            compute_pair_production_rate<RealType, unit_system::SI>(
+                ex, ey, ez, bx, by, bz);
+
         const auto probability = rate*volume*dt;
 
-        return rng->poisson(probability);
+        return poisson_distrib(probability, unf_zero_one_minus_epsi);
     }
 
     template<
