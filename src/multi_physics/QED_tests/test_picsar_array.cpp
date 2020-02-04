@@ -1,4 +1,4 @@
-//####### Test module for vec functions ####################################
+//####### Test module for picsar_array ####################################
 
 //Define Module name
  #define BOOST_TEST_MODULE "containers/picsar_array"
@@ -15,10 +15,10 @@
 
 using namespace picsar::multi_physics::containers;
 
-
 // ------------- Tests --------------
 
-//Test empty constructor
+//***Test empty constructor
+
 BOOST_AUTO_TEST_CASE( picsar_array_empty_constructor )
 {
     auto arr = picsar_array<int,3>();
@@ -30,7 +30,30 @@ BOOST_AUTO_TEST_CASE( picsar_array_empty_constructor )
     BOOST_CHECK_EQUAL(arr[2], 1);
 }
 
-//Test initializer list
+//*******************************
+
+//***Test copy constructor
+
+BOOST_AUTO_TEST_CASE( picsar_array_copy_constructor )
+{
+    auto arr = picsar_array<int,3>();
+    arr[0] = 3;
+    arr[1] = 2;
+    arr[2] = 1;
+    auto arr2 = arr;
+    arr2[1] = 10;
+    BOOST_CHECK_EQUAL(arr2[0], 3);
+    BOOST_CHECK_EQUAL(arr2[1], 10);
+    BOOST_CHECK_EQUAL(arr2[2], 1);
+    BOOST_CHECK_EQUAL(arr[0], 3);
+    BOOST_CHECK_EQUAL(arr[1], 2);
+    BOOST_CHECK_EQUAL(arr[2], 1);
+}
+
+//*******************************
+
+//***Test initializer list
+
 BOOST_AUTO_TEST_CASE( picsar_array_list_constructor )
 {
     auto arr = picsar_array<int,3>{3,2,1};
@@ -43,7 +66,10 @@ BOOST_AUTO_TEST_CASE( picsar_array_list_constructor )
     BOOST_CHECK_EQUAL(carr[2], 1);
 }
 
-//Test iterator
+//*******************************
+
+//***Test range based loops
+
 BOOST_AUTO_TEST_CASE( picsar_array_range_based_loops )
 {
     auto arr = picsar_array<int,3>();
@@ -55,7 +81,10 @@ BOOST_AUTO_TEST_CASE( picsar_array_range_based_loops )
     BOOST_CHECK_EQUAL(sum, 12);
 }
 
-//Test copy
+//*******************************
+
+//***Test range based loops
+
 BOOST_AUTO_TEST_CASE( picsar_array_copy )
 {
     auto arr = picsar_array<int,3>();
@@ -66,3 +95,4 @@ BOOST_AUTO_TEST_CASE( picsar_array_copy )
         BOOST_CHECK_EQUAL(arr[i], c_arr[i]);
 }
 
+//*******************************
