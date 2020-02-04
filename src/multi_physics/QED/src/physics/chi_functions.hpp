@@ -14,7 +14,7 @@
 #include "unit_conversion.hpp"
 
 // This file contains auxiliary functions to calculate the chi parameter
-// for photons and leptons (electrons and positrons)
+// for photons and electrons or positrons
 
 namespace picsar{
 namespace multi_physics{
@@ -108,7 +108,7 @@ namespace phys{
     template<typename RealType, unit_system UnitSystem>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    RealType chi_lepton(
+    RealType chi_ele_pos(
         const math::vec3<RealType> t_p,
         const math::vec3<RealType> t_em_e,
         const math::vec3<RealType> t_em_b,
@@ -168,7 +168,7 @@ namespace phys{
     template<typename RealType, unit_system UnitSystem>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    RealType chi_lepton(
+    RealType chi_ele_pos(
         const RealType px, const RealType py, const RealType pz,
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
@@ -177,7 +177,7 @@ namespace phys{
         const auto p = math::vec3<RealType>{px, py, pz};
         const auto em_e = math::vec3<RealType>{ex, ey, ez};
         const auto em_b = math::vec3<RealType>{bx, by, bz};
-        return chi_photon(p, em_e, em_b, reference_quantity);
+        return chi_ele_pos(p, em_e, em_b, reference_quantity);
     }
 }
 }

@@ -10,7 +10,6 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 
-//For this test we will use SI units
 #include "chi_functions.hpp"
 
 #include "unit_conversion.hpp"
@@ -35,19 +34,17 @@ T constexpr tolerance()
         return double_tolerance;
 }
 
-// ------------- Tests --------------
 
-
-//SI units for momenta
 const double me_c = electron_mass * light_speed;
-
-//SI units for fields
 const double lambda = 800.0e-9;
+const double omega = 2.0*pi*light_speed/lambda;
 const double eref = 2.0*pi*electron_mass*light_speed*light_speed/
             (lambda*elementary_charge);
 const double bref = eref/light_speed;
 
-//#################### Photons
+// ------------- Tests --------------
+
+//***Test chi calculation for photons
 
 template<typename RealType, unit_system UnitSystem>
 void test_chi_photons(
@@ -63,7 +60,7 @@ void test_chi_photons(
         static_cast<RealType>(t_em_e[0]),
         static_cast<RealType>(t_em_e[1]),
         static_cast<RealType>(t_em_e[2])}*
-        fact_E_from_SI_to<UnitSystem, RealType>(lambda);
+        fact_E_from_SI_to<UnitSystem, RealType>(omega);
 
     const auto em_b =  vec3<RealType>{
         static_cast<RealType>(t_em_b[0]),
@@ -81,36 +78,6 @@ void test_chi_photons(
         BOOST_CHECK_SMALL(res, tolerance<RealType>());
 }
 
-template<typename RealType, unit_system UnitSystem>
-void test_chi_leptons(
-    vec3<double> t_p, vec3<double> t_em_e, vec3<double> t_em_b, double t_exp_res, double lambda)
-{
-    const auto p =  vec3<RealType>{
-        static_cast<RealType>(t_p[0]),
-        static_cast<RealType>(t_p[1]),
-        static_cast<RealType>(t_p[2])}*
-        fact_momentum_from_SI_to<UnitSystem, RealType>();
-
-    const auto em_e =  vec3<RealType>{
-        static_cast<RealType>(t_em_e[0]),
-        static_cast<RealType>(t_em_e[1]),
-        static_cast<RealType>(t_em_e[2])}*
-        fact_E_from_SI_to<UnitSystem, RealType>(lambda);
-
-    const auto em_b =  vec3<RealType>{
-        static_cast<RealType>(t_em_b[0]),
-        static_cast<RealType>(t_em_b[1]),
-        static_cast<RealType>(t_em_b[2])}*
-        fact_B_from_SI_to<UnitSystem, RealType>(lambda);
-
-    const auto res = chi_lepton<RealType, UnitSystem>(p, em_e, em_b, lambda);
-
-    const auto exp_res = static_cast<RealType>(t_exp_res);
-
-    BOOST_CHECK_SMALL((res-exp_res)/exp_res, tolerance<RealType>());
-}
-
-//Test chi function for photons (case 1)
 BOOST_AUTO_TEST_CASE( chi_photons_1 )
 {
     const double px = 83.759*me_c;
@@ -137,7 +104,6 @@ BOOST_AUTO_TEST_CASE( chi_photons_1 )
     test_chi_photons<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
 }
 
-//Test chi function for photons (case 2)
 BOOST_AUTO_TEST_CASE( chi_photons_2 )
 {
     const double px = 9.2627*me_c;
@@ -164,7 +130,6 @@ BOOST_AUTO_TEST_CASE( chi_photons_2 )
     test_chi_photons<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
 }
 
-//Test chi function for photons (case 3)
 BOOST_AUTO_TEST_CASE( chi_photons_3 )
 {
     const double px = -2314.45*me_c;
@@ -191,7 +156,6 @@ BOOST_AUTO_TEST_CASE( chi_photons_3 )
     test_chi_photons<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
 }
 
-//Test chi function for photons (case 4)
 BOOST_AUTO_TEST_CASE( chi_photons_4 )
 {
     const double px = 0*me_c;
@@ -218,7 +182,6 @@ BOOST_AUTO_TEST_CASE( chi_photons_4 )
     test_chi_photons<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
 }
 
-//Test chi function for photons (case 5)
 BOOST_AUTO_TEST_CASE( chi_photons_5 )
 {
     const double px = -2314.45*me_c;
@@ -245,8 +208,6 @@ BOOST_AUTO_TEST_CASE( chi_photons_5 )
     test_chi_photons<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
 }
 
-
-//Test chi function for photons (case 6)
 BOOST_AUTO_TEST_CASE( chi_photons_6 )
 {
     const double px = -2314.45*me_c;
@@ -273,8 +234,41 @@ BOOST_AUTO_TEST_CASE( chi_photons_6 )
     test_chi_photons<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
 }
 
+//*******************************
+
+//***Test chi calculation for electrons and positrons
+
+template<typename RealType, unit_system UnitSystem>
+void test_chi_ele_pos(
+    vec3<double> t_p, vec3<double> t_em_e, vec3<double> t_em_b, double t_exp_res, double lambda)
+{
+    const auto p =  vec3<RealType>{
+        static_cast<RealType>(t_p[0]),
+        static_cast<RealType>(t_p[1]),
+        static_cast<RealType>(t_p[2])}*
+        fact_momentum_from_SI_to<UnitSystem, RealType>();
+
+    const auto em_e =  vec3<RealType>{
+        static_cast<RealType>(t_em_e[0]),
+        static_cast<RealType>(t_em_e[1]),
+        static_cast<RealType>(t_em_e[2])}*
+        fact_E_from_SI_to<UnitSystem, RealType>(lambda);
+
+    const auto em_b =  vec3<RealType>{
+        static_cast<RealType>(t_em_b[0]),
+        static_cast<RealType>(t_em_b[1]),
+        static_cast<RealType>(t_em_b[2])}*
+        fact_B_from_SI_to<UnitSystem, RealType>(lambda);
+
+    const auto res = chi_ele_pos<RealType, UnitSystem>(p, em_e, em_b, lambda);
+
+    const auto exp_res = static_cast<RealType>(t_exp_res);
+
+    BOOST_CHECK_SMALL((res-exp_res)/exp_res, tolerance<RealType>());
+}
+
 //Test chi function for leptons (case 1)
-BOOST_AUTO_TEST_CASE( chi_leptons_1 )
+BOOST_AUTO_TEST_CASE( chi_ele_pos_1 )
 {
     const double px = 24.3752*me_c;
     const double py = -11.5710*me_c;
@@ -292,12 +286,12 @@ BOOST_AUTO_TEST_CASE( chi_leptons_1 )
     const auto em_e = vec3<double>{ex,ey,ez};
     const auto em_b = vec3<double>{bx,by,bz};
 
-    test_chi_leptons<double, unit_system::SI>(p, em_e, em_b, chi_exp, lambda);
-    test_chi_leptons<double, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
-    test_chi_leptons<double, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
-    test_chi_leptons<float, unit_system::SI>(p, em_e, em_b, chi_exp, lambda);
-    test_chi_leptons<float, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
-    test_chi_leptons<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_ele_pos<double, unit_system::SI>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_ele_pos<double, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_ele_pos<double, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_ele_pos<float, unit_system::SI>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_ele_pos<float, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
+    test_chi_ele_pos<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, lambda);
 }
 /*
 //Test chi function for leptons (case 2)

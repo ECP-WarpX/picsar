@@ -14,9 +14,6 @@
 //Uses vector functions
 #include "../../math/vec_functions.hpp"
 
-//Uses chi functions
-#include "../chi_functions.hpp"
-
 //Uses physical constants
 #include "../phys_constants.h"
 
