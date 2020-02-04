@@ -1,4 +1,4 @@
-//####### Test module for vec functions ####################################
+//####### Test module for quadrature functions ####################################
 
 //Define Module name
  #define BOOST_TEST_MODULE "math/quadrature"
@@ -34,6 +34,8 @@ T constexpr tolerance()
 }
 
 // ------------- Tests --------------
+
+//***Test quadrature algorithms in a finite interval
 
 template<typename RealType>
 constexpr void test_quadrature_finite_interval()
@@ -77,12 +79,15 @@ constexpr void test_quadrature_finite_interval()
     BOOST_CHECK_SMALL((res_gauss_kronrod61-exp_res)/exp_res, tolerance<RealType>());
 }
 
-
 BOOST_AUTO_TEST_CASE( picsar_quadrature_finite_interval )
 {
     test_quadrature_finite_interval <double>();
     test_quadrature_finite_interval <float>();
 }
+
+//*******************************
+
+//***Test quadrature algorithms in a semi-infinite interval
 
 template<typename RealType>
 constexpr void test_quadrature_infinite_interval_1()
@@ -126,3 +131,5 @@ BOOST_AUTO_TEST_CASE( picsar_quadrature_infinite_interval_2 )
     test_quadrature_infinite_interval_2<double>();
     test_quadrature_infinite_interval_2<float>();
 }
+
+//*******************************
