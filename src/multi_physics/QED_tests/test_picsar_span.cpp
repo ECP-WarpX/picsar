@@ -1,4 +1,4 @@
-//####### Test module for vec functions ####################################
+//####### Test module for picsar_span ####################################
 
 //Define Module name
  #define BOOST_TEST_MODULE "containers/picsar_span"
@@ -19,7 +19,8 @@ using namespace picsar::multi_physics::containers;
 
 // ------------- Tests --------------
 
-//Test empty constructor
+//***Test empty constructor
+
 BOOST_AUTO_TEST_CASE( picsar_span_empty_constructor )
 {
     auto span = picsar_span<int>();
@@ -27,7 +28,10 @@ BOOST_AUTO_TEST_CASE( picsar_span_empty_constructor )
     BOOST_CHECK_EQUAL(span.data(), nullptr);
 }
 
-//Test costructor with raw pointers
+//*******************************
+
+//***Test constructor with raw pointers
+
 BOOST_AUTO_TEST_CASE( picsar_span_raw_pointers_constructor )
 {
     auto arr = picsar_array<double,3>{1.0,2.0,3.0};
@@ -38,7 +42,10 @@ BOOST_AUTO_TEST_CASE( picsar_span_raw_pointers_constructor )
         BOOST_CHECK_EQUAL(span[i], arr[i]);
 }
 
-//Test iterator
+//*******************************
+
+//***Test range based loops
+
 BOOST_AUTO_TEST_CASE( picsar_span_range_based_loops )
 {
     auto arr = picsar_array<int,3>();
@@ -51,7 +58,10 @@ BOOST_AUTO_TEST_CASE( picsar_span_range_based_loops )
     BOOST_CHECK_EQUAL(sum, 12);
 }
 
-//Test copy
+//*******************************
+
+//***Test copy
+
 BOOST_AUTO_TEST_CASE( picsar_span_copy )
 {
     auto arr = picsar_array<double,3>{1.0,2.0,3.0};
@@ -63,3 +73,5 @@ BOOST_AUTO_TEST_CASE( picsar_span_copy )
     for(size_t i = 0; i < arr.size(); ++i)
         BOOST_CHECK_EQUAL(cspan[i], arr[i]);
 }
+
+//*******************************
