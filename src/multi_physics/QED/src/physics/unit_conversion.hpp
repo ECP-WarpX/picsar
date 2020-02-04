@@ -269,6 +269,110 @@ namespace phys{
     }
 
     /**
+    * This function returns the conversion factor for area from any unit
+    * system to SI
+    *
+    * @tparam From unit system (enum unit_system) from which to convert
+    * @tparam RealType the floating point type of the result
+    * @param reference_quantity the reference frequency or the ref. wavelength (depending on the unit system) in SI units
+    * @return the conversion factor
+    */
+    template<unit_system From, typename RealType>
+    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    constexpr RealType fact_area_to_SI_from(
+        const RealType reference_quantity = static_cast<RealType>(1.0))
+    {
+        if(From == unit_system::SI)
+            return static_cast<RealType>(1.0);
+        else if (From == unit_system::norm_omega)
+            return static_cast<RealType>(phys::light_speed *phys::light_speed /
+                (reference_quantity*reference_quantity));
+        else if (From == unit_system::norm_lambda)
+            return static_cast<RealType>(reference_quantity*reference_quantity);
+        else
+            return static_cast<RealType>(1.0);
+    }
+
+    /**
+    * This function returns the conversion factor for area from SI to
+    * any unit system
+    *
+    * @tparam To unit system (enum unit_system) to which to convert
+    * @tparam RealType the floating point type of the result
+    * @param reference_quantity the reference frequency or the ref. wavelength (depending on the unit system) in SI units
+    * @return the conversion factor
+    */
+    template<unit_system To, typename RealType>
+    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    constexpr RealType fact_area_from_SI_to(
+        const RealType reference_quantity = static_cast<RealType>(1.0))
+    {
+        if(To == unit_system::SI)
+            return static_cast<RealType>(1.0);
+        else if (To == unit_system::norm_omega)
+            return static_cast<RealType>(reference_quantity*reference_quantity/
+                (phys::light_speed*phys::light_speed));
+        else if (To == unit_system::norm_lambda)
+            return static_cast<RealType>(1.0/
+                (reference_quantity*reference_quantity));
+        else
+            return static_cast<RealType>(1.0);
+    }
+
+        /**
+    * This function returns the conversion factor for volume from any unit
+    * system to SI
+    *
+    * @tparam From unit system (enum unit_system) from which to convert
+    * @tparam RealType the floating point type of the result
+    * @param reference_quantity the reference frequency or the ref. wavelength (depending on the unit system) in SI units
+    * @return the conversion factor
+    */
+    template<unit_system From, typename RealType>
+    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    constexpr RealType fact_volume_to_SI_from(
+        const RealType reference_quantity = static_cast<RealType>(1.0))
+    {
+        if(From == unit_system::SI)
+            return static_cast<RealType>(1.0);
+        else if (From == unit_system::norm_omega)
+            return static_cast<RealType>(phys::light_speed*phys::light_speed*phys::light_speed/
+                (reference_quantity*reference_quantity*reference_quantity));
+        else if (From == unit_system::norm_lambda)
+            return static_cast<RealType>(reference_quantity*reference_quantity*reference_quantity);
+        else
+            return static_cast<RealType>(1.0);
+    }
+
+    /**
+    * This function returns the conversion factor for volume from SI to
+    * any unit system
+    *
+    * @tparam To unit system (enum unit_system) to which to convert
+    * @tparam RealType the floating point type of the result
+    * @param reference_quantity the reference frequency or the ref. wavelength (depending on the unit system) in SI units
+    * @return the conversion factor
+    */
+    template<unit_system To, typename RealType>
+    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    constexpr RealType fact_volume_from_SI_to(
+        const RealType reference_quantity = static_cast<RealType>(1.0))
+    {
+        if(To == unit_system::SI)
+            return static_cast<RealType>(1.0);
+        else if (To == unit_system::norm_omega)
+            return static_cast<RealType>(
+                (reference_quantity/phys::light_speed)*
+                (reference_quantity/phys::light_speed)*
+                (reference_quantity/phys::light_speed));
+        else if (To == unit_system::norm_lambda)
+            return static_cast<RealType>(1.0/
+                (reference_quantity*reference_quantity*reference_quantity));
+        else
+            return static_cast<RealType>(1.0);
+    }
+
+    /**
     * This function returns the conversion factor for time from any unit
     * system to SI
     *

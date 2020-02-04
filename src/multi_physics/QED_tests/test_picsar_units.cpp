@@ -267,6 +267,118 @@ BOOST_AUTO_TEST_CASE( picsar_unit_conv_length )
 
 //*******************************
 
+//***Test area conversion from and to SI
+
+template<typename RealType>
+constexpr void test_case_area_from_SI()
+{
+    const auto lambda = static_cast<RealType>(800.0e-9);
+    const auto omega = static_cast<RealType>(2.0*pi*light_speed/lambda);
+
+    const auto area = static_cast<RealType>(lambda*lambda);
+    const auto res_SI = area*
+        fact_area_from_SI_to<unit_system::SI, RealType>();
+    const auto res_omega = area*
+        fact_area_from_SI_to<unit_system::norm_omega, RealType>(omega);
+    const auto res_lambda = area*
+        fact_area_from_SI_to<unit_system::norm_lambda, RealType>(lambda);
+    const auto exp_SI = static_cast<RealType>(lambda*lambda);
+    const auto exp_omega = static_cast<RealType>(2.0*pi*2.0*pi);
+    const auto exp_lambda = static_cast<RealType>(1.0);
+
+    BOOST_CHECK_SMALL((res_SI-exp_SI)/exp_SI, tolerance<RealType>());
+    BOOST_CHECK_SMALL((res_omega-exp_omega)/exp_omega, tolerance<RealType>());
+    BOOST_CHECK_SMALL((res_lambda-exp_lambda)/exp_lambda, tolerance<RealType>());
+}
+
+template<typename RealType>
+constexpr void test_case_area_to_SI()
+{
+    const auto lambda = static_cast<RealType>(800.0e-9);
+    const auto omega = static_cast<RealType>(2.0*pi*light_speed/lambda);
+
+    const auto area = static_cast<RealType>(1.0);
+    const auto res_SI =
+        area*fact_area_to_SI_from<unit_system::SI, RealType>();
+    const auto res_omega =
+        area*fact_area_to_SI_from<unit_system::norm_omega, RealType>(omega);
+    const auto res_lambda =
+        area*fact_area_to_SI_from<unit_system::norm_lambda, RealType>(lambda);
+    const auto exp_SI = static_cast<RealType>(1.0);
+    const auto exp_omega = static_cast<RealType>(lambda*lambda/4.0/(pi*pi));
+    const auto exp_lambda = static_cast<RealType>(lambda*lambda);
+
+    BOOST_CHECK_SMALL((res_SI-exp_SI)/exp_SI, tolerance<RealType>());
+    BOOST_CHECK_SMALL((res_omega-exp_omega)/exp_omega, tolerance<RealType>());
+    BOOST_CHECK_SMALL((res_lambda-exp_lambda)/exp_lambda, tolerance<RealType>());
+}
+
+BOOST_AUTO_TEST_CASE( picsar_unit_conv_area )
+{
+    test_case_area_from_SI<double>();
+    test_case_area_from_SI<float>();
+    test_case_area_to_SI<double>();
+    test_case_area_to_SI<float>();
+}
+
+//*******************************
+
+//***Test area conversion from and to SI
+
+template<typename RealType>
+constexpr void test_case_volume_from_SI()
+{
+    const auto lambda = static_cast<RealType>(800.0e-9);
+    const auto omega = static_cast<RealType>(2.0*pi*light_speed/lambda);
+
+    const auto volume = static_cast<RealType>(lambda*lambda*lambda);
+    const auto res_SI = volume*
+        fact_volume_from_SI_to<unit_system::SI, RealType>();
+    const auto res_omega = volume*
+        fact_volume_from_SI_to<unit_system::norm_omega, RealType>(omega);
+    const auto res_lambda = volume*
+        fact_volume_from_SI_to<unit_system::norm_lambda, RealType>(lambda);
+    const auto exp_SI = static_cast<RealType>(lambda*lambda*lambda);
+    const auto exp_omega = static_cast<RealType>(8.0*pi*pi*pi);
+    const auto exp_lambda = static_cast<RealType>(1.0);
+
+    BOOST_CHECK_SMALL((res_SI-exp_SI)/exp_SI, tolerance<RealType>());
+    BOOST_CHECK_SMALL((res_omega-exp_omega)/exp_omega, tolerance<RealType>());
+    BOOST_CHECK_SMALL((res_lambda-exp_lambda)/exp_lambda, tolerance<RealType>());
+}
+
+template<typename RealType>
+constexpr void test_case_volume_to_SI()
+{
+    const auto lambda = static_cast<RealType>(800.0e-9);
+    const auto omega = static_cast<RealType>(2.0*pi*light_speed/lambda);
+
+    const auto volume = static_cast<RealType>(1.0);
+    const auto res_SI =
+        volume*fact_volume_to_SI_from<unit_system::SI, RealType>();
+    const auto res_omega =
+        volume*fact_volume_to_SI_from<unit_system::norm_omega, RealType>(omega);
+    const auto res_lambda =
+        volume*fact_volume_to_SI_from<unit_system::norm_lambda, RealType>(lambda);
+    const auto exp_SI = static_cast<RealType>(1.0);
+    const auto exp_omega = static_cast<RealType>(lambda*lambda*lambda/8.0/(pi*pi*pi));
+    const auto exp_lambda = static_cast<RealType>(lambda*lambda*lambda);
+
+    BOOST_CHECK_SMALL((res_SI-exp_SI)/exp_SI, tolerance<RealType>());
+    BOOST_CHECK_SMALL((res_omega-exp_omega)/exp_omega, tolerance<RealType>());
+    BOOST_CHECK_SMALL((res_lambda-exp_lambda)/exp_lambda, tolerance<RealType>());
+}
+
+BOOST_AUTO_TEST_CASE( picsar_unit_conv_volume )
+{
+    test_case_volume_from_SI<double>();
+    test_case_volume_from_SI<float>();
+    test_case_volume_to_SI<double>();
+    test_case_volume_to_SI<float>();
+}
+
+//*******************************
+
 //***Test time conversion from and to SI
 
 template<typename RealType>
