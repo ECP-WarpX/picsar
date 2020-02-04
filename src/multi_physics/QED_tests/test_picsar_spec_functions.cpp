@@ -34,7 +34,8 @@ T constexpr tolerance()
 
 // ------------- Tests --------------
 
-//Test Bessel functions generic
+//***Test Bessel functions
+
 template<typename T, typename WHATEVER>
 constexpr void bessel_functions_test(WHATEVER t_v, WHATEVER t_x, WHATEVER t_exp)
 {
@@ -57,9 +58,10 @@ constexpr void test_case()
     bessel_functions_test<T>(2.0/3.0, 2.0, 0.124838927488128);
 }
 
-//Test empty constructor
 BOOST_AUTO_TEST_CASE( picsar_bessel_functions )
 {
     test_case<double>();
     test_case<float>();
 }
+
+//*******************************

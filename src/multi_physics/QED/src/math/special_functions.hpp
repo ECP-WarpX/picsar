@@ -5,12 +5,6 @@
 //(Bessel functions for now) defined either in the STL (if C++17 is available)
 //or in Boost library as a fallback.
 
-//TODO: should we foresee a flag FORCE_USE_BOOST ?
-
-//Set build option for the Bessel functions.
-// 1) from STL (if C++ version > 14)
-// 2) from Boost library
-
 //Should be included by all the src files of the library
 #include "../qed_commons.h"
 
@@ -20,17 +14,22 @@
     #include <boost/math/special_functions/bessel.hpp>
 #endif
 
-//############################################### Declaration
-
 namespace picsar{
 namespace multi_physics{
 namespace math{
 
-        //For the moment we need just modified Bessel functions of the
-        //second kind.
-        //Different combinations of argument types can be accepted
-        //(e.g. double + double or double + float).
+    /**
+    * This function is a wrapper around the Bessel function
+    * of the second kind defined either in the STL (if C++17 is available)
+    * or in Boost library as a fallback.
+    *
+    * @tparam RealType the floating point type to be used
+    * @param[in] v order of the function
+    * @param[in] x argument of the function
+    * @return K_v(x)
+    */
     template<typename RealType>
+    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     RealType k_v(RealType v, RealType x)
     {
 #ifdef PXRMP_INTERNAL_SPECFUNC_WITH_CXX17
