@@ -26,7 +26,7 @@
 #include "../unit_conversion.hpp"
 
 //Uses Poisson's distribution
-#include "../../math/poisson_distrib.hpp"
+#include "../../utils/rng_wrapper.hpp"
 
 namespace picsar{
 namespace multi_physics{
@@ -45,7 +45,7 @@ namespace schwinger{
     * @param[in] bx the x component of the magnetic field
     * @param[in] by the y component of the magnetic field
     * @param[in] bz the z component of the magnetic field
-    * @param[in] ref_quantity reference quantityt for unit conversion (lambda or omega)
+    * @param[in] ref_quantity reference quantity for unit conversion (lambda or omega)
 
     * @return the conversion factor
     */
@@ -86,8 +86,8 @@ namespace schwinger{
         else
             res = epsi*epsi*exp(-math::pi/epsi)/math::pi;
 
-        constexpr const auto unit_vol = static_cast<RealType>(pow(
-            fact_length_from_SI_to<UnitSystem, RealType>(ref_quantity),3));
+        constexpr const auto unit_vol =
+            fact_volume_from_SI_to<UnitSystem, RealType>(ref_quantity);
 
         constexpr const auto schwinger_pair_prod_coeff =
             static_cast<RealType>{
@@ -105,11 +105,11 @@ namespace schwinger{
     * This function computes the Schwinger pair production rate
     * and returns an integer number extracted from a Poisson's distribution
     * according to the calculated rate.
-    * It needs a uniformly distributed random number.
-    * Use this function only if the probability of generating
-    * a pair is << 1.
+    * It requires a pointer to a RNG wrapper providing "poisson(lambda)" method
+    * (see utils/rng_wrapper.hpp) for an example
     *
     * @tparam RealType the floating point type to be used
+    * @tparam RandomNumberGenerator the RNG wrapper
     * @tparam UnitSystem unit system to be used for inputs & outputs
     * @param[in] ex the x component of the electric field
     * @param[in] ey the y component of the electric field
@@ -120,9 +120,9 @@ namespace schwinger{
     * @param[in] t_volume the volume of the physical region
     * @param[in] t_dt the temporal step
     * @param[in] unf_zero_one_minus_epsi a uniformly distributed random number
-    * @param[in] ref_quantity reference quantityt for unit conversion (lambda or omega)
+    * @param[in] ref_quantity reference quantity for unit conversion (lambda or omega)
 
-    * @return 1 if a particle is generated, 0 otherwise.
+    * @return the number of generated pairs
     */
     template<
         typename RealType,
@@ -134,7 +134,7 @@ namespace schwinger{
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
         const RealType t_volume, const RealType t_dt,
-        const RealType unf_zero_one_minus_epsi,
+        RandomNumberGenerator* rng,
         const RealType ref_quantity = static_cast<RealType>(1.0))
     {
         const auto dt = t_dt *
@@ -149,65 +149,119 @@ namespace schwinger{
 
         const auto probability = rate*volume*dt;
 
-        return poisson_distrib(probability, unf_zero_one_minus_epsi);
+        return rng->poisson(probability);
     }
 
+    /**
+    * This function computes the Schwinger pair production rate
+    * and returns a real number extracted from a Gaussian distribution
+    * according to the calculated rate.
+    * It needs a normally distributed random number (mean=0, sigma=1)
+    * Use this function only if the probability of generating
+    * a pair is >> 1.
+    *
+    * @tparam RealType the floating point type to be used
+    * @tparam UnitSystem unit system to be used for inputs & outputs
+    * @param[in] ex the x component of the electric field
+    * @param[in] ey the y component of the electric field
+    * @param[in] ez the z component of the electric field
+    * @param[in] bx the x component of the magnetic field
+    * @param[in] by the y component of the magnetic field
+    * @param[in] bz the z component of the magnetic field
+    * @param[in] t_volume the volume of the physical region
+    * @param[in] t_dt the temporal step
+    * @param[in] gauss_mean_zero_sigma_one the normally distributed random number
+    * @param[in] ref_quantity reference quantity for unit conversion (lambda or omega)
+
+    * @return the number of generated pairs
+    */
     template<
         typename RealType,
-        class RandomNumberGenerator,
         unit_system UnitSystem = unit_system::SI>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    int get_num_pairs_multiple_gaussian(
+    RealType get_num_pairs_multiple_gaussian(
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
-        const RealType dx, const RealType dy, const RealType dz,
-        const RealType dt,
+        const RealType t_volume, const RealType dt,
         const RealType gauss_mean_zero_sigma_one,
-        const RealType lambda = static_cast<RealType>(1.0))
+        const RealType ref_quantity = static_cast<RealType>(1.0))
     {
+        const auto dt = t_dt *
+            fact_time_to_SI_from<UnitSystem>(ref_quantity);
+
+        const auto volume = t_volume*
+            fact_volume_to_SI_from<UnitSystem>(ref_quantity);
+
         const auto rate =
             compute_pair_production_rate<RealType, UnitSystem>(
                 ex, ey, ez, bx, by, bz, lambda);
 
-        const auto volume = dx*dy*dz;
         const auto probability = rate*volume*dt;
 
-        const auto res = probability +
+        const auto num_pairs = probability +
             gauss_mean_zero_sigma_one*sqrt(probability);
 
-        if(res <= static_cast<RealType>(0.0))
+        if(num_pairs <= static_cast<RealType>(0.0))
             return 0;
 
-        return static_cast<int>(res);
+        return num_pairs;
     }
 
-    //This function determines how many pairs have been generated in a given
-    //cell
+    /**
+    * This function computes the Schwinger pair production rate
+    * and returns a real number extracted from a Gaussian distribution
+    * according to the calculated rate. Indeed, if the pair prodduction rate
+    * is >> 1, a Gaussian approximation can be used. A threshold
+    * to choose between the two distributions can be specified by the user
+    * (the default value is 1000). This function needs a RNG wrapper able
+    * to provide the functions  "poisson(lambda)" and "gaussian(mean, deviation)".
+    * See utils/rng_wrapper.hpp for an example.
+    *
+    * @tparam RealType the floating point type to be used
+    * @tparam RandomNumberGenerator the RNG wrapper
+    * @tparam UnitSystem unit system to be used for inputs & outputs
+    * @param[in] ex the x component of the electric field
+    * @param[in] ey the y component of the electric field
+    * @param[in] ez the z component of the electric field
+    * @param[in] bx the x component of the magnetic field
+    * @param[in] by the y component of the magnetic field
+    * @param[in] bz the z component of the magnetic field
+    * @param[in] t_volume the volume of the physical region
+    * @param[in] t_dt the temporal step
+    * @param[in] rng a pointer to the RNG wrapper
+    * @param[in] ref_quantity reference quantity for unit conversion (lambda or omega)
+
+    * @return the number of generated pairs
+    */
     template<
         typename RealType,
         class RandomNumberGenerator,
         unit_system UnitSystem = unit_system::SI>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    int get_num_pairs_multiple_choice(
+    RealType get_num_pairs_multiple_choice(
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
-        const RealType dx, const RealType dy, const RealType dz,
-        const RealType dt,
-        const RealType threshold,
+        const RealType t_volume, const RealType dt,
         RandomNumberGenerator* rng,
-        const RealType lambda = static_cast<RealType>(1.0))
+        const RealType threshold = static_cast<RealType>(1000.),
+        const RealType ref_quantity = static_cast<RealType>(1.0))
     {
+        const auto dt = t_dt *
+            fact_time_to_SI_from<UnitSystem>(ref_quantity);
+
+        const auto volume = t_volume*
+            fact_volume_to_SI_from<UnitSystem>(ref_quantity);
+
         const auto rate =
             compute_pair_production_rate<RealType, UnitSystem>(
                 ex, ey, ez, bx, by, bz, lambda);
 
-        const auto volume = dx*dy*dz;
         const auto probability = rate*volume*dt;
 
         if(probability < static_cast<RealType>(threshold)){
-            return rng->poisson(probability);
+            return static_cast<RealType>(rng->poisson(probability);
         }
         else{
             const auto res = static_cast<RealType>(
@@ -216,7 +270,7 @@ namespace schwinger{
             if(res <= static_cast<RealType>(0.0))
                 return 0;
 
-            return static_cast<int>(res);
+            return res;
         }
     }
 

@@ -1,4 +1,4 @@
-//####### Test module for vec functions ####################################
+//####### Test module for schwinger engine (core functions) ####################################
 
 //Define Module name
  #define BOOST_TEST_MODULE "phys/schwinger"
@@ -9,8 +9,8 @@
 //Include Boost unit tests library & library for floating point comparison
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
-/*
-#include "schwinger_pair_engine.hpp"
+
+#include "schwinger_pair_engine_core.hpp"
 
 #include "rng_wrapper.hpp"
 
@@ -34,7 +34,8 @@ T constexpr tolerance()
         return double_tolerance;
 }
 
-
+//This wrapper is used for debug purposes to understand if the right
+//functions are actually called
 class wrapper_wrapper{
 public:
     wrapper_wrapper(size_t seed):
@@ -95,10 +96,9 @@ private:
 
 const double lambda = 800e-9;
 
-
 // ------------- Tests --------------
 
-
+/*
 
 template<typename RealType>
 constexpr void test_lambda_threshold_set_get()
