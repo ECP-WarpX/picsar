@@ -7,8 +7,12 @@
 //without the higher-level interface.
 //
 // References:
-// 1) Gonoskov et al. PRE 92, 023305 2015
-// 2) Banerjee et al. PRA 98, 032121 2018
+// 1) Schwinger. Phys. Rev. 82, 5 (1951)
+// 2) Nikishov. Sov. Phys. JETP 30, 660 (1970)
+// 3) Narozhny et al. Phys. LEtt. A, 330, 1-2 (2004)
+// 4) Bulanov et al. Phys. Rev. Lett. 104, 220404 (2010)
+// 5) Gonoskov et al. Phys. Rev. E 92, 023305 (2015)
+
 
 //Should be included by all the src files of the library
 #include "../../qed_commons.h"
@@ -35,7 +39,7 @@ namespace schwinger{
 
     /**
     * This function computes the Schwinger pair production
-    * rate per unit time per unit volume.
+    * rate per unit time per unit volume using the Nikishov formula.
     *
     * @tparam RealType the floating point type to be used
     * @tparam UnitSystem unit system to be used for inputs & outputs

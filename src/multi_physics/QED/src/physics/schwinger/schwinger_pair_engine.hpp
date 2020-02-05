@@ -11,7 +11,6 @@
 #include "../../containers/picsar_array.hpp"
 
 #include "schwinger_pair_engine_core.hpp"
-#include "schwinger_pair_engine_model.hpp"
 
 namespace picsar{
 namespace multi_physics{
