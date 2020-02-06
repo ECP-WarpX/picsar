@@ -2,8 +2,7 @@
 #define PICSAR_MULTIPHYSICS_BREIT_WHEELER_ENGINE_CORE
 
 //This .hpp file contais the implementation of the
-//Schwinger pair engine (as described in Gonoskov et al. PRE 92, 023305 2015
-// and Banerjee et al. PRA 98, 032121 2018)
+//nonlinear Breit Wheeler engine
 
 //Should be included by all the src files of the library
 #include "../../qed_commons.h"
@@ -22,11 +21,6 @@
 
 //Uses unit conversion"
 #include "../unit_conversion.hpp"
-
-//Uses Poisson's distribution
-#include "../../math/poisson_distrib.hpp"
-
-//############################################### Declaration
 
 namespace picsar{
 namespace multi_physics{

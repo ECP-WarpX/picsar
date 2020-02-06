@@ -10,11 +10,14 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 
+#include <vector>
+#include <array>
+
 #include "schwinger_pair_engine_core.hpp"
 
-#include "rng_wrapper.hpp"
-
 using namespace picsar::multi_physics::utils;
+
+using namespace picsar::multi_physics::phys;
 
 using namespace picsar::multi_physics::phys::schwinger;
 
@@ -97,6 +100,37 @@ private:
 const double lambda = 800e-9;
 
 // ------------- Tests --------------
+
+std::vector<std::array<double,3>> E =
+    {std::array<double,3>{3.57893317e+18,  5.46020302e+19, -9.93627604e+18}};
+
+std::vector<std::array<double,3>> B =
+    {std::array<double,3>{7.66560594e+10,  -1.58756483e+11, 3.79913127e+10}};
+
+std::vector<double> res_exp =
+    {4.633600473471703e+17};
+
+double volume = (1.0e-27);
+double dt = 1.0e-15;
+
+
+template<typename RealType>
+void test_expected_pair_number()
+{
+    for(int i = 0 ; i < E.size(); ++i){
+        const auto exp = compute_expected_pair_number<RealType, unit_system::SI>(
+            E[i][0], E[i][1], E[i][2], B[i][0], B[i][1], B[i][2],
+            volume, dt);
+
+        BOOST_CHECK_SMALL((exp-static_cast<RealType>(res_exp[i]))/static_cast<RealType>(res_exp[i]), tolerance<RealType>());
+    }
+}
+
+BOOST_AUTO_TEST_CASE( picsar_schwinger_core_expected_pair_number )
+{
+    test_expected_pair_number <double>();
+    test_expected_pair_number <float>();
+}
 
 /*
 
