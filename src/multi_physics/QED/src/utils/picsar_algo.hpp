@@ -62,9 +62,42 @@ picsar_upper_bound
 #else
     #error Wrong preprocessor variable for picsar_upper_bound
 #endif
-
 }
 
+/** \brief Performs a linear interpolation
+ *
+ * Performs a linear interpolation at x given the 2 points
+ * (x0, f0) and (x1, f1)
+ */
+template<typename RealType>
+PXRMP_INTERNAL_GPU_DECORATOR
+PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+RealType linear_interp(
+    RealType x0, RealType x1,
+    RealType f0, RealType f1, RealType x)
+{
+    return ((x1-x)*f0 + (x-x0)*f1)/(x1-x0);
+}
+
+/** \brief Performs a bilinear interpolation
+ *
+ * Performs a bilinear interpolation at (x,y) given the 4 points
+ * (x0, y0, f00), (x0, y1, f01), (x1, y0, f10), (x1, y1, f11).
+ */
+template<typename RealType>
+PXRMP_INTERNAL_GPU_DECORATOR
+PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+RealType bilinear_interp(
+    RealType x0, RealType x1,
+    RealType y0, RealType y1,
+    RealType f00, RealType f01,
+    RealType f10, RealType f11,
+    RealType x, RealType y)
+{
+    const auto fx0 = linear_interp(x0, x1, f00, f10, x);
+    const auto fx1 = linear_interp(x0, x1, f01, f11, x);
+    return linear_interp(y0, y1, fx0, fx1, y);
+}
 
 }
 }
