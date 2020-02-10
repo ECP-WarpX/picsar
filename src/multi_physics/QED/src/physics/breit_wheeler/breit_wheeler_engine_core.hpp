@@ -46,6 +46,9 @@ namespace breit_wheeler{
         //without touching the optical depth and communicating that no event
         //has occurred.
         RealType chi_phot_min = static_cast<RealType>(0.001);
+
+        //Sets the limits for the semi-infinite integrals in the library
+        RealType very_large_number = 1.0e20;
     };
 
     template<typename RealType>
@@ -97,9 +100,75 @@ namespace breit_wheeler{
             VectorType m_values;
     };
 
+    template<typename RealType>
+    struct pair_prod_lookup_table_params{
+        // Pair production table:
+        RealType chi_phot_tpair_min = static_cast<RealType>(0.01); //Min chi_phot
+        RealType chi_phot_tpair_max = static_cast<RealType>(500.0); //Max chi_phot
+        size_t chi_phot_tpair_how_many = 50; //How many points
+        size_t chi_frac_tpair_how_many = 50;
+    };
 
-    template <typename T, typename B>
-    T funct (T a, B c){return a + c;}
+
+    template<typename RealType, typename VectorType>
+    class pair_prod_lookup_table{
+        public:
+            template<unit_system UnitSystem>
+            friend void generate_breit_wheeler_pairs(
+                const RealType, const RealType,
+                const size_t, RealType*, RealType*,
+                const RealType*, const pair_prod_lookup_table<RealType, VectorType>&,
+                const control_params<RealType>&, const RealType);
+
+            PXRMP_INTERNAL_GPU_DECORATOR
+            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            RealType interp_linear_first(RealType where_x, size_t coord_y) const
+            {
+                const auto sx = m_ctrl.chi_phot_tpair_how_many;
+                const auto sy = m_ctrl.chi_frac_tpair_how_many;
+
+                const auto xmin = m_ctrl.chi_phot_tpair_min;
+                const auto xmax = m_ctrl.chi_phot_tpair_max;
+                const auto xsize = xmax - xmin;
+
+                if(where_x <= xmin)
+                    return m_values[idx(0,coord_y)];
+
+                if(where_x >= xmax)
+                    return m_values[idx(sx-1,coord_y)];
+
+                const auto idx_x_left = static_cast<size_t>(
+                    floor((sx-1)*(where_x-xmin)/xsize));
+                const auto idx_x_right = idx_x_left + 1;
+
+                const auto xleft = (idx_x_left*xsize/sx) + xmin;
+                const auto xright = (idx_x_right*xsize/sx) + xmin;
+
+                const auto zlc = m_values[idx(idx_x_left,coord_y)];
+                const auto zrc = m_values[idx(idx_x_right,coord_y)];
+
+                const auto wlc = (xright - where_x);
+                const auto wrc = (where_x - xleft);
+
+                const auto w_norm = (xright-xleft);
+
+                return (wlc*zlc + wrc*zrc)/w_norm;
+
+            }
+
+
+        private:
+            pair_prod_lookup_table_params<RealType> m_ctrl;
+            VectorType m_values;
+
+            PXRMP_INTERNAL_GPU_DECORATOR
+            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            int idx(int i, int j) const
+            {
+                return i*m_ctrl.chi_phot_tpair_how_many + j;
+            };
+    };
+
 
     //______________________GPU
     //get a single optical depth
@@ -237,20 +306,24 @@ namespace breit_wheeler{
     //generated in a BW process.
     //Conceived for GPU usage.
     template<
-        typename RealType,
-        typename VectorType,
-        check_input CheckInput = check_input::yes,
+        typename RealType, typename VectorType,
         unit_system UnitSystem = unit_system::SI>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     void generate_breit_wheeler_pairs(
         const RealType chi_photon, const RealType t_momentum_photon,
-        const size_t sampling, RealType* ele_momentum, RealType* pos_momentum,
-        const RealType* unf_zero_one_minus_epsi,
-        const dndt_lookup_table<RealType, VectorType>& ref_dndt_table,
+        const size_t sampling,
+        PXRMR_INTERNAL_RESTRICT RealType* ele_momentum,
+        PXRMR_INTERNAL_RESTRICT RealType* pos_momentum,
+        PXRMR_INTERNAL_RESTRICT const RealType* unf_zero_one_minus_epsi,
+        const pair_prod_lookup_table<RealType, VectorType>& ref_pair_prod_table,
         const control_params<RealType>& ref_ctrl,
         const RealType ref_quantity = static_cast<RealType>(1.0))
 {
+    constexpr const auto zero = static_cast<RealType>(0.0);
+    constexpr const auto one = static_cast<RealType>(1.0);
+    constexpr const auto two = static_cast<RealType>(2.0);
+
     constexpr const auto me_c =
         static_cast<RealType>(phys::electron_mass*phys::light_speed);
 
@@ -259,16 +332,17 @@ namespace breit_wheeler{
 
     const auto gamma_phot = momentum_photon/me_c;
 
-    const size_t how_many_frac = ref_cum_distrib_table.ref_coords()[1].size();
+    const size_t how_many_frac =
+        ref_pair_prod_table.m_ctrl.chi_frac_tpair_how_many;
 
-    _REAL tab_chi_phot = chi_phot;
-    if(chi_phot < ref_bw_ctrl.chi_phot_tpair_min)
-        tab_chi_phot = ref_bw_ctrl.chi_phot_tpair_min;
-    else if(chi_phot > ref_bw_ctrl.chi_phot_tpair_max)
-        tab_chi_phot = ref_bw_ctrl.chi_phot_tpair_max;
+    auto tab_chi_phot = chi_photon;
+    if(chi_photon < ref_pair_prod_table.m_ctrl.chi_phot_tpair_min)
+        tab_chi_phot = ref_pair_prod_table.m_ctrl.chi_phot_tpair_min;
+    else if(chi_photon > ref_pair_prod_table.m_ctrl.chi_phot_tpair_max)
+        tab_chi_phot = ref_pair_prod_table.m_ctrl.chi_phot_tpair_max;
 
-    for(size_t s = 0; s < sampling; s++){
-        _REAL prob = unf_zero_one_minus_epsi[s];
+    for(size_t s = 0; s < sampling; ++s){
+        auto prob = unf_zero_one_minus_epsi[s];
         bool invert = false;
         if(prob >= one/two){
             prob -= one/two;
@@ -276,15 +350,14 @@ namespace breit_wheeler{
         }
 
         size_t first = 0;
-        size_t it;
-        _REAL val;
+        auto val = zero;
         size_t count = how_many_frac;
         while(count > 0){
-            it = first;
+            auto it = first;
             size_t step = count/2;
             it += step;
             val =
-                exp(ref_cum_distrib_table.interp_linear_first_equispaced
+                exp(ref_pair_prod_table.interp_linear_first
                     (log(tab_chi_phot), it));
             if(!(prob < val)){
                 first = ++it;
@@ -295,45 +368,39 @@ namespace breit_wheeler{
             }
         }
 
-        size_t upper = first;
-        size_t lower = upper-1;
+        const auto upper = first;
+        const auto lower = upper-1;
 
-        const _REAL upper_frac = ref_cum_distrib_table.ref_coords()[1][upper];
-        const _REAL lower_frac = ref_cum_distrib_table.ref_coords()[1][lower];
-        _REAL upper_prob =
-            exp(ref_cum_distrib_table.interp_linear_first_equispaced
-            (log(tab_chi_phot), upper));
-        _REAL lower_prob =
-            exp(ref_cum_distrib_table.interp_linear_first_equispaced
-            (log(tab_chi_phot), lower));
-        _REAL chi_ele_frac = lower_frac +
+        const auto upper_frac =
+            upper*0.5/(ref_pair_prod_table.m_ctrl.chi_frac_tpair_how_many-1);
+
+        const auto lower_frac =
+            upper*0.5/(ref_pair_prod_table.m_ctrl.chi_frac_tpair_how_many-1);
+
+        const auto upper_prob =
+            exp(ref_pair_prod_table.interp_linear_first(
+                log(tab_chi_phot), upper));
+        const auto lower_prob =
+            exp(ref_pair_prod_table.interp_linear_first(
+                log(tab_chi_phot), lower));
+        const auto chi_ele_frac = lower_frac +
             (prob-lower_prob)*(upper_frac-lower_frac)/(upper_prob-lower_prob);
 
-        _REAL chi_ele = chi_ele_frac*chi_phot;
-        _REAL chi_pos = chi_phot - chi_ele;
+        const auto chi_ele = chi_ele_frac*chi_photon;
+        const auto chi_pos = chi_photon - chi_ele;
 
         if(invert){
-            _REAL tt = chi_ele;
+            const auto tt = chi_ele;
             chi_ele = chi_pos;
             chi_pos = tt;
         }
 
-        _REAL coeff =  (gamma_phot - two)/chi_phot;
+        const auto coeff =  (gamma_phot - two)/chi_photon;
 
-        _REAL cc_ele = sqrt((one+chi_ele*coeff)*(one+chi_ele*coeff)-one)*me_c;
-        _REAL cc_pos = sqrt((one+chi_pos*coeff)*(one+chi_pos*coeff)-one)*me_c;
-
-        vec3<_REAL> p_ele = cc_ele*n_phot;
-        vec3<_REAL> p_pos = cc_pos*n_phot;
-
-
-        e_px[s] =  p_ele[0];
-        e_py[s] =  p_ele[1];
-        e_pz[s] =  p_ele[2];
-
-        p_px[s] =  p_pos[0];
-        p_py[s] =  p_pos[1];
-        p_pz[s] =  p_pos[2];
+        ele_momentum[s] = sqrt((one+chi_ele*coeff)*(one+chi_ele*coeff)-one)*me_c*
+            fact_momentum_from_SI_to<UnitSystem,RealType>();
+        pos_momentum[s] = sqrt((one+chi_pos*coeff)*(one+chi_pos*coeff)-one)*me_c*
+            fact_momentum_from_SI_to<UnitSystem,RealType>();;
     }
 }
 
