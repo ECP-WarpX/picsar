@@ -638,7 +638,9 @@ END SUBROUTINE push_efield_2d
         !#if defined(DEBUG)
         !  WRITE(0, *) "push ebfield RZ"
         !#endif
-        CALL divergence_cleaning
+        ! Prevents accumulation of high frequency noise
+        CALL high_frequency_smoothing
+        !CALL divergence_cleaning
         CALL push_psaotd_ebfielfs_AM_rz !- push psatd in azimuthal cylindrical
         !write (*,*) " without push_psaotd AM", MAXval( abs(er_c))
         !#if defined(DEBUG)

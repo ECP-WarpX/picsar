@@ -25,7 +25,7 @@ COMP=intel
 # - sde: sde profiling
 # - map: Allinea Map profiling
 # - library: create static and dynamic library
-MODE= debug_spectral
+MODE= library
 
 # System (SYS)
 # - cori2
@@ -376,7 +376,8 @@ build_lib:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/field_solvers/Maxwell/maxwell_solver_manager.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/init_external.o \
-	$(SRCDIR)/divergence_cleaning.o
+	$(SRCDIR)/divergence_cleaning.o \
+	$(SRCDIR)/high_frequency_smoothing.o
 	ar rcs libpxr.a $(SRCDIR)/*.o $(SRCDIR)/*/*.o  $(SRCDIR)/*/*/*.o $(SRCDIR)/*/*/*/*.o
 	$(FC) $(FARGS)  $(LDFLAGS)  -shared -o libpxr.so $(SRCDIR)/*.o  $(SRCDIR)/*/*.o $(SRCDIR)/*/*/*.o  $(SRCDIR)/*/*/*/*.o
 	mv libpxr.a $(LIBDIR)
@@ -533,6 +534,7 @@ build:$(SRCDIR)/modules/modules.o \
 	$(SRCDIR)/ios/simple_io.o \
 	$(SRCDIR)/parallelization/mpi/mpi_routines.o \
 	$(SRCDIR)/divergence_cleaning.o \
+	$(SRCDIR)/high_frequency_smoothing.o \
 	$(SRCDIR)/submain.o \
 	$(SRCDIR)/initialization/control_file.o \
 	$(SRCDIR)/main.o

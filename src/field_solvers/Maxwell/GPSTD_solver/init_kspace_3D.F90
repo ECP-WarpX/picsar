@@ -713,6 +713,7 @@ MODULE gpstd_solver
   COMPLEX(cpx), DIMENSION(:), ALLOCATABLE :: kxc, kxb, kxf, kyc, kyb, kyf, kzc, kzb,  &
   kzf
   COMPLEX(cpx), DIMENSION(:,:), ALLOCATABLE :: krc
+  REAL(num), DIMENSION(:,:,:), ALLOCATABLE :: tau_filter
 
   ! Flattened array of matrix_blocks indices that are usefull for the PSATD push 
   ! in the case of periodic boundary conditions
@@ -1974,7 +1975,7 @@ END SUBROUTINE Hankel_M_and_invM
     ELSE IF (l_AM_rz) THEN
       CALL  compute_kr_1d(nfftx,krc,dx,nmodes) 
       CALL  compute_k_1d( nffty,kyc,kyf,kyb,nordery,dy,l_stg)
-      !write (0,*) "dy = ", dy, "nordery= ", nordery
+      CALL  compute_tau_filter(nfftx,nffty, nmodes)
     END IF
     
     !write (0,*), "===========================kr=============================="
@@ -2156,7 +2157,7 @@ END SUBROUTINE Hankel_M_and_invM
   !> This subroutine computes a 1D k-vector along r  direction using the zeros
   !> of Bessel  functions
   !> PS : kr is always centred for the moment and we calculate the exact value !  
-  !> for the moment l_stg is always false and norder should be only 0 
+  !> for the moment l_stg is always false and norder along R should be only 0 
   !> @author
   !> Imen Zemzemi
   !
@@ -2206,6 +2207,46 @@ END SUBROUTINE Hankel_M_and_invM
   DEALLOCATE (nu, nu1, RJ1, RY0, RY1, ones)
 
   END SUBROUTINE compute_kr_1d
+  ! ______________________________________________________________________________________
+  !> @brief
+  !> This subroutine computes a 3D array used for filtering high frequencies
+  !> at every iterations in function "high_frequency_smoothing".
+  !> @author
+  !> Arnaud Beck
+  !
+  !> @params[in] nfftx INTEGER(idp) - number of points on which the FFT is
+  !  performed along R
+  !> @params[in] nffty INTEGER(idp) - number of points on which the FFT is
+  !  performed longitudinaly
+  !> @params[in] krc - COMPLEX(cpx) - radial wavevector
+  !> @params[in] kyc - COMPLEX(cpx) - longitudinal wavevector
+  !> @params[out] tau_filter  - REAL(num) - 3D array used for high frequency
+  !  filtering
+  !
+  !> @date
+  !> Creation 2017
+  ! ______________________________________________________________________________________
+
+  SUBROUTINE compute_tau_filter(nfftx,nffty,nmodes)
+     USE picsar_precision, ONLY: idp, cpx
+     USE constants, ONLY: pi
+     INTEGER(idp) , INTENT(IN) :: nfftx, nffty, nmodes
+     INTEGER(idp) ::  i,j,k
+     REAL(num) :: kycmax, krmax
+
+
+     ALLOCATE (tau_filter (nfftx, nffty, nmodes))
+     kycmax = pi/2./maxval(abs(kyc))
+     DO k=1 , nmodes
+        krmax  = pi/2./maxval(abs(krc(:,k)))
+        DO j=1, nffty
+          DO i= 1, nfftx
+              tau_filter(i,j,k) = cos(abs(krc(i,k))*krmax) * cos(abs(kyc(j))*kycmax) 
+              tau_filter(i,j,k) = tau_filter(i,j,k) * tau_filter(i,j,k)
+          END DO
+        END DO
+     END DO
+  END SUBROUTINE compute_tau_filter
 
   ! ______________________________________________________________________________________
   !> @brief

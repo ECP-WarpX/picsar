@@ -325,6 +325,7 @@ MODULE link_external_tools
       deallocate(kyb)
       deallocate(kyc)
       deallocate(kyf)
+      deallocate(tau_filter)
       IF(ASSOCIATED(Ma_1)) THEN
         DEALLOCATE(Ma_1)
         !CALL init_plans_blocks_rz    
