@@ -128,13 +128,13 @@ SUBROUTINE divergence_cleaning
      g = (rho_h(:,:,k) - rhoold_h(:,:,k))/dt
      DO j=1, nffty
        DO i= 1, nfftx
-           knorm = -1./(krc(i,k)*krc(i,k)+kyc(j)*kyc(j))           
+           knorm = krc(i,k)*krc(i,k)+kyc(j)*kyc(j)           
+           if (knorm .ne. 0.0_num) then
+               knorm = -1.0_num / knorm 
+           end if
            g(i,j) = knorm * (g(i,j) + krc(i,k)*(jp_h(i,j,k) - jm_h(i,j,k)) + ii*kyc(j)*jl_h(i,j,k)) 
        END DO
      END DO
-     if (k .gt. 1) then
-         g(1,1) = 0. ! Avoid NaN
-     end  if
      DO j=1, nffty
        jp_h(:,j,k) = jp_h(:,j,k) + 0.5*krc(:,k)*g(:,j)
        jm_h(:,j,k) = jm_h(:,j,k) - 0.5*krc(:,k)*g(:,j)
