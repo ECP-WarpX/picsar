@@ -502,9 +502,9 @@ subroutine pxrpush_emrz_evec_multimode( &
 
      ! advance Er
 #ifndef WARPX
-  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j, ru, rd, r), &
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(m, k, j, ru, rd, r), &
   !$OMP SHARED(rlo, rhi, tlo, thi, zlo, zhi, mudt, dtsdx, dtsdz, rmin, dr), &
-  !$OMP SHARED(Er, Et, Ez, Br, Bt, Bz, Jr, Jt, Jz)
+  !$OMP SHARED(Er, Et, Ez, Br, Bt, Bz, Jr, Jt, Jz, i, dt)
   !$OMP DO COLLAPSE(2)
 #endif
 !$acc parallel deviceptr(Er,Bt,Bz,Jr)
@@ -1158,9 +1158,9 @@ subroutine pxrpush_emrz_bvec_multimode( &
 
      ! advance Br
 #ifndef WARPX
-  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(k, j, ru, rd), &
-  !$OMP SHARED(rlo, rhi, tlo, thi, zlo, zhi, dtsdr, dtsdz, rmin, dr), &
-  !$OMP SHARED(Er, Et, Ez, Br, Bt, Bz)
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(m, k, j, ru, rd, r), &
+  !$OMP SHARED(rlo, rhi, tlo, thi, zlo, zhi, dtsdr, dtsdz, dtsdx, rmin, dr), &
+  !$OMP SHARED(Er, Et, Ez, Br, Bt, Bz, i, dt)
   !$OMP DO COLLAPSE(2)
 #endif
 !$acc parallel deviceptr(Br,Et,Ez)
