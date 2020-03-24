@@ -47,7 +47,7 @@ SUBROUTINE laser_field_correction
   
   DO i=1, nffty
     IF (ky_true(i) .eq. 0.) THEN
-     kyc_inv=0._num
+     kyc_inv(i)=0._num
     ELSE
      kyc_inv(i)=1./ky_true(i)
     END IF
