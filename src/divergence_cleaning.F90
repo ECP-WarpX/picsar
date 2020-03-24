@@ -34,16 +34,16 @@ SUBROUTINE laser_field_correction
   !CALL compute_k_vec(l_staggered)
   CALL fftfreq(nffty, ky_true, dy)
   write(0,*) "max ", maxval(abs(el_h)) , maxval(abs(em_h)), maxval(abs(ep_h))  
-  filter_array= (1._num- sin(0.5_num*ky_true*dy**2))*(1._num+sin(0.5_num*ky_true*dy**2))
+  filter_array= (1._num- sin(0.5_num*ky_true*dy)**2)*(1._num+sin(0.5_num*ky_true*dy)**2)
   
   write(0,*) "kyc" , maxval(abs(kyc))
   write(0,*) "kyc" , maxval(abs(ky_true))
-  !DO j= 1, nffty
-  !  DO i= 1, nfftx
-  !    em_h(i,j,:)= em_h(i,j,:)*filter_array(j)
-  !    ep_h(i,j,:)= ep_h(i,j,:)* filter_array(j)
-  !   END DO
-  !END DO
+  DO j= 1, nffty
+    DO i= 1, nfftx
+      em_h(i,j,:)= em_h(i,j,:)*filter_array(j)
+      ep_h(i,j,:)= ep_h(i,j,:)* filter_array(j)
+     END DO
+  END DO
   
   DO i=1, nffty
     IF (ky_true(i) .eq. 0.) THEN
@@ -53,14 +53,6 @@ SUBROUTINE laser_field_correction
     END IF
   END DO
   
-  
-  !DO j=1, nffty
-  !  DO i=1, nfftx
-  !    el_h(i,j,:)=ii* krc(i,:)*(ep_h(i,j,:)-em_h(i,j,:))*kyc_inv(i)
-  !  END DO
-  !END DO  
-  !w = clight* sqrt(kyc**2+krc**2)
-  !w *= sign(kyc)* prop_dir
   
   DO k=1 , nmodes
     DO j=1, nffty
@@ -81,10 +73,6 @@ SUBROUTINE laser_field_correction
   END DO
   
   write(0, *) "max b ", maxval(abs(bl_h)), maxval(abs(bm_h)), maxval(abs(bp_h))
-  !bp_h  = -ii*inv_w*(kyc*ep_h-0.5_num*krc*el_h)
-  !bm_h = -ii*inv_w*(-kyc*em_h -0.5_num*krc*el_h)
-  !bl_h = inv_w* krc *(ep_h+em_h)
-  
   
   CALL get_fields_AM_rz()
   DEALLOCATE (ky_true, kyc_inv, w, inv_w, filter_array ) 
