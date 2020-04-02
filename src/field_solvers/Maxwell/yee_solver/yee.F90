@@ -1159,7 +1159,7 @@ subroutine pxrpush_emrz_bvec_multimode( &
      ! advance Br
 #ifndef WARPX
   !$OMP PARALLEL DEFAULT(NONE) PRIVATE(m, k, j, ru, rd, r), &
-  !$OMP SHARED(rlo, rhi, tlo, thi, zlo, zhi, dtsdr, dtsdz, dtsdx, rmin, dr), &
+  !$OMP SHARED(rlo, rhi, tlo, thi, zlo, zhi, dtsdz, dtsdx, rmin, dr), &
   !$OMP SHARED(Er, Et, Ez, Br, Bt, Bz, i, dt)
   !$OMP DO COLLAPSE(2)
 #endif
