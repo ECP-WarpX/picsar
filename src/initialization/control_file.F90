@@ -455,7 +455,7 @@ MODULE control_file
     
     CALL get_command_argument(1, input_filename)
     IF ((LEN_TRIM(input_filename) == 0) .OR. &
-    &   (INDEX(input_filename, '.pixr') == 0)) input_filename = input_file_default
+       (INDEX(input_filename, '.pixr') == 0)) input_filename = input_file_default
     
     ! --- OPENS INPUT FILE
     OPEN(fh_input, file=TRIM(input_filename), status='OLD', iostat=ios)
