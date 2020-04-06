@@ -1926,6 +1926,9 @@ MODULE fourier_psaotd
           iy, iz)*rho_h_old + cc_mat(nmatrixes)%block_matrix2d(3,                       &
           10)%block3dc(ix, iy, iz)*rhoold_h_old
 
+          !Copy rho into rho_old
+          rhoold_h(ix,iy,iz)=rho_h(ix, iy, iz)
+
           IF (cc_mat(nmatrixes)%block_matrix2d(5, 5)%block3dc(ix,iy,iz)/= cc_mat(nmatrixes) &
              %block_matrix2d(5, 5)%block3dc(ix,iy,iz))THEN
             write (0,*) "(5,5)   ", "ix=", ix, "iy=", iy, "iz=", iz
