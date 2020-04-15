@@ -255,8 +255,14 @@ MODULE control_file
   !> Creation 2015
   ! ______________________________________________________________________________________
   SUBROUTINE read_from_cl
-    INTEGER :: i
-    DO i = 1, COMMAND_ARGUMENT_COUNT()-1, 2
+    INTEGER :: i, cl_input_file
+    CALL GETARG(1, buffer)
+    IF (INDEX(buffer, '.pixr') .GT. 0) THEN
+      cl_input_file = 1
+    ELSE
+      cl_input_file = 0
+    ENDIF
+    DO i = 1 + cl_input_file, COMMAND_ARGUMENT_COUNT()-1, 2
       CALL GETARG(i, buffer)
       IF (INDEX(buffer, 'ntilex') .GT. 0) THEN
         CALL GETARG(i+1, buffer)
@@ -448,7 +454,8 @@ MODULE control_file
     CHARACTER(len=4096) :: input_filename, input_file_default='input_file.pixr'
     
     CALL get_command_argument(1, input_filename)
-    IF (LEN_TRIM(input_filename) == 0) input_filename = input_file_default
+    IF ((LEN_TRIM(input_filename) == 0) .OR. &
+       (INDEX(input_filename, '.pixr') == 0)) input_filename = input_file_default
     
     ! --- OPENS INPUT FILE
     OPEN(fh_input, file=TRIM(input_filename), status='OLD', iostat=ios)
