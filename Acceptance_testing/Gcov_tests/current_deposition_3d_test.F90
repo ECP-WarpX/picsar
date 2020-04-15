@@ -42,6 +42,7 @@ PROGRAM current_deposition_3d_test
   INTEGER(idp)                             :: ncx,ncy,ncz
   INTEGER(idp)                             :: nxguard,nyguard,nzguard
   INTEGER(idp)                             :: ncells
+  LOGICAL(lp)                              :: l_nodal
   LOGICAL(lp)                              :: passed
   REAL(num)                                :: xmin,ymin,zmin
   REAL(num)                                :: xmax,ymax,zmax
@@ -91,6 +92,7 @@ PROGRAM current_deposition_3d_test
 
   epsilon = 1E-3
 
+  l_nodal = .FALSE.
   passed = .TRUE.
 
   xmax = xmin + (nx-1)*dx
@@ -190,7 +192,7 @@ PROGRAM current_deposition_3d_test
        jy,nguard,nvalid,     &
        jz,nguard,nvalid,     &
        np,xp,yp,zp,uxp,uyp,uzp,    &
-       gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz)
+       gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz,l_nodal)
 
   sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
   errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
@@ -212,7 +214,7 @@ PROGRAM current_deposition_3d_test
        jy,nguard,nvalid,     &
        jz,nguard,nvalid,     &
        np,xp,yp,zp,uxp,uyp,uzp,     &
-       gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz)
+       gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz,l_nodal)
   sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
   errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
   errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
@@ -233,7 +235,7 @@ PROGRAM current_deposition_3d_test
   jxcells = 0 ; jycells = 0; jzcells = 0
   CALL depose_jxjyjz_vecHV_vnr_1_1_1(jxcells,jycells,jzcells,np,ncells,xp,yp,zp,&
            uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz,lvect)
+           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz,lvect, l_nodal)
   CALL current_reduction_1_1_1(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny,nz,&
                                nxguard,nyguard,nzguard,ncx,ncy,ncz)
   WRITE(0,*)'Sum:',sum(jxcells),sum(jycells),sum(jzcells)
@@ -285,7 +287,7 @@ PROGRAM current_deposition_3d_test
        jy,nguard,nvalid,     &
        jz,nguard,nvalid,     &
        np,xp,yp,zp,uxp,uyp,uzp,    &
-       gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz)
+       gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz,l_nodal)
   sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz) ;
   sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
   errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
@@ -305,7 +307,7 @@ PROGRAM current_deposition_3d_test
        jy,nguard,nvalid,     &
        jz,nguard,nvalid,     &
        np,xp,yp,zp,uxp,uyp,uzp,     &
-       gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz)
+       gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz,l_nodal)
   sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
   errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
   errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
@@ -328,7 +330,7 @@ PROGRAM current_deposition_3d_test
   jxcells = 0 ; jycells = 0; jzcells = 0
   CALL depose_jxjyjz_vecHV_vnr_2_2_2(jxcells,jycells,jzcells,np,ncells,xp,yp,zp,&
            uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz,lvect)
+           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz,lvect,l_nodal)
   CALL current_reduction_2_2_2(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny,nz,&
                                nxguard,nyguard,nzguard,ncx,ncy,ncz)
   WRITE(0,*)'Sum:',sum(jxcells),sum(jycells),sum(jzcells)
@@ -380,7 +382,7 @@ PROGRAM current_deposition_3d_test
        jy,nguard,nvalid,     &
        jz,nguard,nvalid,     &
        np,xp,yp,zp,uxp,uyp,uzp,    &
-       gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz)
+       gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz,l_nodal)
   sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
   errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
   errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
@@ -400,7 +402,7 @@ PROGRAM current_deposition_3d_test
        jy,nguard,nvalid,     &
        jz,nguard,nvalid,     &
        np,xp,yp,zp,uxp,uyp,uzp,     &
-       gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz)
+       gaminv,w,q,xmin,ymin,zmin,dt,dx,dy,dz,l_nodal)
   sumjx(i)=sum(jx) ; sumjy(i) = sum(jy) ; sumjz(i) = sum(jz)
   errjx(i) = abs((sumjx(i) - sumjx(1)))/abs(sumjx(1))
   errjy(i) = abs((sumjy(i) - sumjy(1)))/abs(sumjy(1))
@@ -424,7 +426,7 @@ PROGRAM current_deposition_3d_test
   jxcells = 0 ; jycells = 0; jzcells = 0
   CALL depose_jxjyjz_vecHV_vnr_3_3_3(jxcells,jycells,jzcells,np,ncells,xp,yp,zp,&
            uxp,uyp,uzp,gaminv,w,q,xmin,ymin,zmin, &
-           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz,lvect)
+           dt,dx,dy,dz,nx,ny,nz,nxguard,nyguard,nzguard,ncx,ncy,ncz,lvect,l_nodal)
   CALL current_reduction_3_3_3(jx,jy,jz,jxcells,jycells,jzcells,ncells,nx,ny,nz,&
                                nxguard,nyguard,nzguard,ncx,ncy,ncz)
   WRITE(0,*)'Sum jxcells:',sum(jxcells),'Sum jycells:',sum(jycells),'Sum jzcells',sum(jzcells)
