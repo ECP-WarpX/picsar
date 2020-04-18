@@ -26,10 +26,22 @@ namespace phys{
     constexpr auto vacuum_permittivity = RealType(8.8541878128e-12);
 
     template<typename RealType = double>
-    constexpr auto vacuum_permeability = RealType(1.25663706212e-6);    
+    constexpr auto vacuum_permeability = RealType(1.25663706212e-6);
 
     template<typename RealType = double>
     constexpr auto fine_structure =  RealType(0.0072973525693);
+
+    template<typename RealType = double>
+    constexpr auto eV = RealType(1.602176634e-19);
+
+    template<typename RealType = double>
+    constexpr auto KeV = RealType(1.602176634e-16);
+
+    template<typename RealType = double>
+    constexpr auto MeV = RealType(1.602176634e-13);
+
+    template<typename RealType = double>
+    constexpr auto GeV = RealType(1.602176634e-10);
 
     //Intermediate calculations of the following quantities are performed with
     //double precision to avoid numerical issues

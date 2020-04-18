@@ -69,9 +69,17 @@ void test_case_const_phys()
     const auto exp_vacuum_permittivity =
         static_cast<RealType>(8.8541878128e-12);
     const auto exp_vacuum_permeability =
-            static_cast<RealType>(1.25663706212e-6);
+        static_cast<RealType>(1.25663706212e-6);
     const auto exp_fine_structure =
         static_cast<RealType>(0.0072973525693);
+    const auto exp_eV =
+        static_cast<RealType>(1.602176634e-19);
+    const auto exp_KeV =
+        static_cast<RealType>(1.602176634e-16);
+    const auto exp_MeV =
+        static_cast<RealType>(1.602176634e-13);
+    const auto exp_GeV =
+        static_cast<RealType>(1.602176634e-10);
     const auto exp_classical_electron_radius =
         static_cast<RealType>(2.81794032620493e-15);
     const auto exp_schwinger_field =
@@ -105,6 +113,22 @@ void test_case_const_phys()
 
     BOOST_CHECK_SMALL(
         (fine_structure<RealType>-exp_fine_structure)/exp_fine_structure,
+        tolerance<RealType>());
+
+    BOOST_CHECK_SMALL(
+        (eV<RealType>-exp_eV)/exp_eV,
+        tolerance<RealType>());
+
+    BOOST_CHECK_SMALL(
+        (KeV<RealType>-exp_KeV)/exp_KeV,
+        tolerance<RealType>());
+
+    BOOST_CHECK_SMALL(
+        (MeV<RealType>-exp_MeV)/exp_MeV,
+        tolerance<RealType>());
+
+    BOOST_CHECK_SMALL(
+        (GeV<RealType>-exp_GeV)/exp_GeV,
         tolerance<RealType>());
 
     BOOST_CHECK_SMALL(
