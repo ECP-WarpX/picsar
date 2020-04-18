@@ -17,10 +17,10 @@ using namespace picsar::multi_physics::phys;
 using namespace picsar::multi_physics::math;
 
 //Tolerance for double precision calculations
-const double double_tolerance = 1.0e-15;
+const double double_tolerance = 1.0e-14;
 
 //Tolerance for single precision calculations
-const float float_tolerance = 1.0e-8;
+const float float_tolerance = 1.0e-7;
 
 //Templated tolerance
 template <typename T>
@@ -40,7 +40,7 @@ template<typename RealType>
 void test_case_const_math()
 {
     const auto exp_pi =
-        static_cast<RealType(3.14159265358979323846264338327950288);
+        static_cast<RealType>(3.14159265358979323846264338327950288);
 
     BOOST_CHECK_SMALL((pi<RealType>-exp_pi)/exp_pi, tolerance<RealType>());
 }
@@ -72,7 +72,7 @@ void test_case_const_phys()
         static_cast<RealType>(0.0072973525693);
     const auto exp_classical_electron_radius =
         static_cast<RealType>(2.81794032620493e-15);
-    const auto exp_schwinger =
+    const auto exp_schwinger_field =
         static_cast<RealType>(1.32328547494817e18);
     const auto exp_tau_e =
         static_cast<RealType>(9.39963715232933e-24);

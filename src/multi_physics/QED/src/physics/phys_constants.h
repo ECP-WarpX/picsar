@@ -25,13 +25,11 @@ namespace phys{
     template<typename RealType = double>
     constexpr auto vacuum_permittivity = RealType(8.8541878128e-12);
 
+    template<typename RealType = double>
+    constexpr auto fine_structure =  RealType(0.0072973525693);
+
     //Intermediate calculations of the following quantities are performed with
     //double precision to avoid numerical issues
-
-    template<typename RealType = double>
-    constexpr auto fine_structure =  RealType(
-        elementary_charge<>*elementary_charge<>/
-        (4.0*math::pi<>*vacuum_permittivity<>*reduced_plank<>*light_speed<>));
 
     template<typename RealType = double>
     constexpr auto classical_electron_radius = RealType(
