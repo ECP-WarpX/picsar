@@ -10,10 +10,18 @@ namespace multi_physics{
 namespace phys{
 
     /**
-    * The interface of the PICSAR QED library supports 3 unit systems
-    * (although internally only SI units are used):
+    * The interface of the PICSAR QED library supports 4 unit systems
+    * (Internally all the calculations are performed in natural units):
     *
     * > SI units (International System of Units)
+    *
+    * > Natural units, a unit system frequently used in particle phyics
+    *   where c (speed of light) = hbar (reduced Plank constant) = 1.
+    *   We also choose to measure energy in GeV (1 GeV ~ 1.60218e-10 J ) and
+    *   to use Heaviside-Lorentz units for charge and electromagnetic fields.    *
+    *   As a consequence:
+    *   - mass is in 1/GeV units
+    *   - e
     *
     * > norm_omega, a popular unit system in Particle-In-Cell codes where:
     *   - a reference frequenecy omega_r = 2*pi*c/lambda is chosen
@@ -48,6 +56,7 @@ namespace phys{
     enum unit_system
     {
         SI,
+        natural,
         norm_omega,
         norm_lambda
     };
