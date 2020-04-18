@@ -8,24 +8,42 @@ namespace picsar{
 namespace multi_physics{
 namespace phys{
 
-    // Physical constants
+    // Physical constants in SI units
 
-    constexpr const double electron_mass = 9.10938356e-31;
-    constexpr const double elementary_charge = 1.6021766208e-19;
-    constexpr const double light_speed = 299792458.;
-    constexpr const double reduced_plank = 1.054571800e-34;
-    constexpr const double vacuum_permittivity =  8.854187817e-12;
-    constexpr const double fine_structure =  0.0072973525664;
+    template<typename RealType = double>
+    constexpr auto electron_mass = RealType(9.10938356e-31);
 
-    constexpr const double classical_electron_radius =
+    template<typename RealType = double>
+    constexpr auto elementary_charge = RealType(1.6021766208e-19);
+
+    template<typename RealType = double>
+    constexpr auto light_speed = RealType(299792458.);
+
+    template<typename RealType = double>
+    constexpr auto reduced_plank = RealType(1.054571800e-34);
+
+    template<typename RealType = double>
+    constexpr auto vacuum_permittivity = RealType(8.854187817e-12);
+
+    template<typename RealType = double>
+    constexpr auto fine_structure =  RealType(0.0072973525664);
+
+    //Intermediate calculations of the following quantities are performed with
+    //double precision to avoid numerical issues
+    template<typename RealType = double>
+    constexpr auto classical_electron_radius = RealType(
         elementary_charge*elementary_charge /
-        (4.0*math::pi*vacuum_permittivity*electron_mass*light_speed*light_speed);
+        (4.0*math::pi * vacuum_permittivity *
+        electron_mass * light_speed * light_speed));
 
-    constexpr const double schwinger_field =
+    template<typename RealType = double>
+    constexpr auto schwinger_field = RealType(
         electron_mass*electron_mass*(light_speed*light_speed*light_speed)/
-        (elementary_charge*reduced_plank);
+        (elementary_charge*reduced_plank));
 
-    constexpr const double tau_e = classical_electron_radius/light_speed;
+    template<typename RealType = double>
+    constexpr auto tau_e = RealType(classical_electron_radius/light_speed);
+    //_______________________________________________________________________
 }
 }
 }
