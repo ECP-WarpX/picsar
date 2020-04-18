@@ -68,6 +68,8 @@ void test_case_const_phys()
         static_cast<RealType>(1.054571817e-34);
     const auto exp_vacuum_permittivity =
         static_cast<RealType>(8.8541878128e-12);
+    const auto exp_vacuum_permeability =
+            static_cast<RealType>(1.25663706212e-6);
     const auto exp_fine_structure =
         static_cast<RealType>(0.0072973525693);
     const auto exp_classical_electron_radius =
@@ -94,7 +96,11 @@ void test_case_const_phys()
         tolerance<RealType>());
 
     BOOST_CHECK_SMALL(
-        (vacuum_permittivity<RealType>-exp_vacuum_permittivity)/exp_vacuum_permittivity,
+        (vacuum_permittivity<RealType>-exp_vacuum_permeability)/exp_vacuum_permeability,
+        tolerance<RealType>());
+
+    BOOST_CHECK_SMALL(
+        (vacuum_permeability<RealType>-exp_vacuum_permittivity)/exp_vacuum_permittivity,
         tolerance<RealType>());
 
     BOOST_CHECK_SMALL(
