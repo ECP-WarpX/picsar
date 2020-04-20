@@ -154,6 +154,15 @@ struct fact_to_SI<quantity::ttime>
     }
 };
 
+template<>
+struct fact_to_SI<quantity::rate>
+{
+    template<unit_system From, typename RealType>
+    static constexpr RealType from(RealType reference_quantity = 1.0)
+    {
+        return fact_rate_to_SI_from<From, RealType>(reference_quantity);
+    }
+};
 
 template<typename RealType, quantity Quantity>
 constexpr void test_to_SI(val_pack<RealType> vals)
@@ -434,4 +443,32 @@ BOOST_AUTO_TEST_CASE( picsar_unit_conv_time_to_SI )
 {
     test_case_time_to_SI<double>();
     test_case_time_to_SI<float>();
+}
+
+// ***Test rate conversion to SI
+template<typename RealType>
+void test_case_rate_to_SI()
+{
+    constexpr auto reference_length = static_cast<RealType>(800.0e-9);
+    constexpr auto reference_omega = static_cast<RealType>(
+        2.0*pi<double>*light_speed<double>/reference_length);
+
+    constexpr auto rate_SI = static_cast<RealType>(light_speed<double>/reference_length);
+    constexpr auto rate_omega = static_cast<RealType>(1/(2.0*pi<double>));
+    constexpr auto rate_lambda = static_cast<RealType>(1.0);
+    constexpr auto rate_hl = static_cast<RealType>(
+        (light_speed<double>/reference_length)*
+        reduced_plank<double>/
+        heaviside_lorentz_reference_energy<double>);
+
+    constexpr auto all_rates = val_pack<RealType>{rate_SI, rate_omega, rate_lambda, rate_hl};
+
+    test_to_SI<RealType, quantity::rate>(
+        all_rates, reference_omega, reference_length);
+}
+
+BOOST_AUTO_TEST_CASE( picsar_unit_conv_rate_to_SI )
+{
+    test_case_rate_to_SI<double>();
+    test_case_rate_to_SI<float>();
 }
