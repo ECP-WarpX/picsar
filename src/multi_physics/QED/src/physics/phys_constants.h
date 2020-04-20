@@ -43,6 +43,12 @@ namespace phys{
     template<typename RealType = double>
     constexpr auto GeV = RealType(1.602176634e-10);
 
+    //This constant is used for the Heaviside Lorentz unit system
+    //(unfortunately, sqrt is not constexpr)
+    template<typename RealType = double>
+    constexpr auto sqrt_4_pi_fine_structure =
+        RealType(0.302822120872089);
+
     //Intermediate calculations of the following quantities are performed with
     //double precision to avoid numerical issues
 
