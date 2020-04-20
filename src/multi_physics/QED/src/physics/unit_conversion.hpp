@@ -73,7 +73,7 @@ namespace phys{
         heaviside_lorentz
     };
 
-    template <RealType>
+    template <typename RealType>
     constexpr RealType heaviside_lorentz_reference_energy = phys::MeV<RealType>;
 
     /**
@@ -138,7 +138,7 @@ namespace phys{
             return elementary_charge<RealType>;
         else if (From == unit_system::norm_lambda)
             return elementary_charge<RealType>;
-        else if (To == unit_system::heaviside_lorentz){
+        else if (From == unit_system::heaviside_lorentz){
             constexpr auto res = static_cast<RealType>(
                 elementary_charge<double>/
                 sqrt(4.0*pi<double>*fine_structure<double>));
@@ -356,7 +356,7 @@ namespace phys{
         const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
     {
         return fact_area_to_SI_from<From,RealType>(reference_quantity_from)/
-            fact_area_to_SI_from<To,RealType>(reference_quantity_to));
+            fact_area_to_SI_from<To,RealType>(reference_quantity_to);
     }
 
     /**
@@ -597,6 +597,7 @@ namespace phys{
         const RealType reference_quantity = static_cast<RealType>(1.0)) noexcept
     {
         using namespace phys;
+        using namespace math;
 
         if (From == unit_system::norm_omega){
             constexpr auto fact = static_cast<RealType>(
