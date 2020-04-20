@@ -44,9 +44,9 @@ constexpr void test_quadrature_finite_interval()
         {return sin(x)*sin(x);};
 
     const auto a = static_cast<RealType>(0.0);
-    const auto b = static_cast<RealType>(2.0*pi);
+    const auto b = static_cast<RealType>(2.0)*pi<RealType>;
 
-    const auto exp_res = static_cast<RealType>(pi);
+    const auto exp_res = pi<RealType>;
 
     const auto res_a_b = quad_a_b<RealType>(sin2, a, b);
     const auto res_a_b_s = quad_a_b_s<RealType>(sin2, a, b);
@@ -97,7 +97,7 @@ constexpr void test_quadrature_infinite_interval_1()
 
     const auto a = static_cast<RealType>(0.0);
 
-    const auto exp_res = static_cast<RealType>(sqrt(pi)/2.0);
+    const auto exp_res = static_cast<RealType>(sqrt(pi<double>)/2.0);
 
     const auto res_expx2 = quad_a_inf<RealType>(expx2, a);
 
@@ -119,7 +119,7 @@ constexpr void test_quadrature_infinite_interval_2()
 
     const auto a = static_cast<RealType>(0.0);
 
-    const auto exp_res = static_cast<RealType>(0.5*pi);
+    const auto exp_res = static_cast<RealType>(0.5)*pi<RealType>;
 
     const auto res_datan = quad_a_inf<RealType>(datan, a);
 
