@@ -54,7 +54,7 @@ enum quantity{
     length,
     area,
     volume,
-    ttime,
+    ttime, //to avoid clash with "time" function
     rate,
     E,
     B
@@ -121,6 +121,36 @@ struct fact_to_SI<quantity::length>
     static constexpr RealType from(RealType reference_quantity = 1.0)
     {
         return fact_length_to_SI_from<From, RealType>(reference_quantity);
+    }
+};
+
+template<>
+struct fact_to_SI<quantity::area>
+{
+    template<unit_system From, typename RealType>
+    static constexpr RealType from(RealType reference_quantity = 1.0)
+    {
+        return fact_area_to_SI_from<From, RealType>(reference_quantity);
+    }
+};
+
+template<>
+struct fact_to_SI<quantity::volume>
+{
+    template<unit_system From, typename RealType>
+    static constexpr RealType from(RealType reference_quantity = 1.0)
+    {
+        return fact_volume_to_SI_from<From, RealType>(reference_quantity);
+    }
+};
+
+template<>
+struct fact_to_SI<quantity::ttime>
+{
+    template<unit_system From, typename RealType>
+    static constexpr RealType from(RealType reference_quantity = 1.0)
+    {
+        return fact_time_to_SI_from<From, RealType>(reference_quantity);
     }
 };
 
@@ -314,4 +344,94 @@ BOOST_AUTO_TEST_CASE( picsar_unit_conv_length_to_SI )
 {
     test_case_length_to_SI<double>();
     test_case_length_to_SI<float>();
+}
+
+// ***Test area conversion to SI
+template<typename RealType>
+void test_case_area_to_SI()
+{
+    constexpr auto reference_length = static_cast<RealType>(800.0e-9);
+    constexpr auto reference_omega = static_cast<RealType>(
+        2.0*pi<double>*light_speed<double>/reference_length);
+
+    constexpr auto area_SI = reference_length*reference_length;
+    constexpr auto area_omega = static_cast<RealType>(4.0* pi<double>*pi<double>);
+    constexpr auto area_lambda = static_cast<RealType>(1.0);
+    constexpr auto area_hl = static_cast<RealType>(
+        heaviside_lorentz_reference_energy<double>*
+        heaviside_lorentz_reference_energy<double>*
+        reference_length*reference_length/
+        reduced_plank<double>/reduced_plank<double>/
+        light_speed<double>/light_speed<double>);
+
+    constexpr auto all_areas = val_pack<RealType>{area_SI, area_omega, area_lambda, area_hl};
+
+    test_to_SI<RealType, quantity::area>(
+        all_areas, reference_omega, reference_length);
+}
+
+BOOST_AUTO_TEST_CASE( picsar_unit_conv_area_to_SI )
+{
+    test_case_area_to_SI<double>();
+    test_case_area_to_SI<float>();
+}
+
+// ***Test volume conversion to SI
+template<typename RealType>
+void test_case_volume_to_SI()
+{
+    constexpr auto reference_length = static_cast<RealType>(800.0e-9);
+    constexpr auto reference_omega = static_cast<RealType>(
+        2.0*pi<double>*light_speed<double>/reference_length);
+
+    constexpr auto volume_SI = reference_length*reference_length*reference_length;
+    constexpr auto volume_omega = static_cast<RealType>(8.0*
+        pi<double>*pi<double>*pi<double>);
+    constexpr auto volume_lambda = static_cast<RealType>(1.0);
+    constexpr auto volume_hl = static_cast<RealType>(
+        heaviside_lorentz_reference_energy<double>*
+        heaviside_lorentz_reference_energy<double>*
+        heaviside_lorentz_reference_energy<double>*
+        reference_length*reference_length*reference_length/
+        reduced_plank<double>/reduced_plank<double>/reduced_plank<double>/
+        light_speed<double>/light_speed<double>/light_speed<double>);
+
+    constexpr auto all_volumes = val_pack<RealType>{volume_SI, volume_omega, volume_lambda, volume_hl};
+
+    test_to_SI<RealType, quantity::volume>(
+        all_volumes, reference_omega, reference_length);
+}
+
+BOOST_AUTO_TEST_CASE( picsar_unit_conv_volume_to_SI )
+{
+    test_case_volume_to_SI<double>();
+    test_case_volume_to_SI<float>();
+}
+
+// ***Test time conversion to SI
+template<typename RealType>
+void test_case_time_to_SI()
+{
+    constexpr auto reference_length = static_cast<RealType>(800.0e-9);
+    constexpr auto reference_omega = static_cast<RealType>(
+        2.0*pi<double>*light_speed<double>/reference_length);
+
+    constexpr auto time_SI = static_cast<RealType>(reference_length/light_speed<double>);
+    constexpr auto time_omega = static_cast<RealType>(2.0*pi<double>);
+    constexpr auto time_lambda = static_cast<RealType>(1.0);
+    constexpr auto time_hl = static_cast<RealType>(
+        (reference_length/light_speed<double>)*
+        heaviside_lorentz_reference_energy<double>/
+        reduced_plank<double>);
+
+    constexpr auto all_times = val_pack<RealType>{time_SI, time_omega, time_lambda, time_hl};
+
+    test_to_SI<RealType, quantity::ttime>(
+        all_times, reference_omega, reference_length);
+}
+
+BOOST_AUTO_TEST_CASE( picsar_unit_conv_time_to_SI )
+{
+    test_case_time_to_SI<double>();
+    test_case_time_to_SI<float>();
 }
