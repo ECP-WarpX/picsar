@@ -21,7 +21,7 @@ using namespace picsar::multi_physics::utils;
 
 // ------------- Tests --------------
 
-//***Test upper_bound
+// ***Test upper_bound
 
 BOOST_AUTO_TEST_CASE( picsar_upper_bound_1 )
 {
@@ -60,4 +60,4 @@ BOOST_AUTO_TEST_CASE( picsar_upper_bound_1 )
         std::upper_bound(arr.begin(), arr.end(), 5.0));
 }
 
-//*******************************
+// *******************************

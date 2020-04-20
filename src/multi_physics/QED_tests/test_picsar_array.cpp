@@ -17,7 +17,7 @@ using namespace picsar::multi_physics::containers;
 
 // ------------- Tests --------------
 
-//***Test empty constructor
+// ***Test empty constructor
 
 BOOST_AUTO_TEST_CASE( picsar_array_empty_constructor )
 {
@@ -30,9 +30,9 @@ BOOST_AUTO_TEST_CASE( picsar_array_empty_constructor )
     BOOST_CHECK_EQUAL(arr[2], 1);
 }
 
-//*******************************
+// *******************************
 
-//***Test copy constructor
+// ***Test copy constructor
 
 BOOST_AUTO_TEST_CASE( picsar_array_copy_constructor )
 {
@@ -50,9 +50,9 @@ BOOST_AUTO_TEST_CASE( picsar_array_copy_constructor )
     BOOST_CHECK_EQUAL(arr[2], 1);
 }
 
-//*******************************
+// *******************************
 
-//***Test initializer list
+// ***Test initializer list
 
 BOOST_AUTO_TEST_CASE( picsar_array_list_constructor )
 {
@@ -66,9 +66,9 @@ BOOST_AUTO_TEST_CASE( picsar_array_list_constructor )
     BOOST_CHECK_EQUAL(carr[2], 1);
 }
 
-//*******************************
+// *******************************
 
-//***Test range based loops
+// ***Test range based loops
 
 BOOST_AUTO_TEST_CASE( picsar_array_range_based_loops )
 {
@@ -81,9 +81,9 @@ BOOST_AUTO_TEST_CASE( picsar_array_range_based_loops )
     BOOST_CHECK_EQUAL(sum, 12);
 }
 
-//*******************************
+// *******************************
 
-//***Test range based loops
+// ***Test range based loops
 
 BOOST_AUTO_TEST_CASE( picsar_array_copy )
 {
@@ -95,4 +95,4 @@ BOOST_AUTO_TEST_CASE( picsar_array_copy )
         BOOST_CHECK_EQUAL(arr[i], c_arr[i]);
 }
 
-//*******************************
+// *******************************

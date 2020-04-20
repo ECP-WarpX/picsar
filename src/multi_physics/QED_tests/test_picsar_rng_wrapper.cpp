@@ -47,9 +47,9 @@ BOOST_AUTO_TEST_CASE( picsar_rng_stl_wrapper_constructor_copy)
     rng_stl_wrapper_constructor_copy<float>(2391892344079);
 }
 
-//*******************************
+// *******************************
 
-//***Test Uniform distribution
+// ***Test Uniform distribution
 
 template<typename RealType>
 void rng_stl_wrapper_unf(uint64_t seed)
@@ -72,9 +72,9 @@ BOOST_AUTO_TEST_CASE( picsar_rng_stl_wrapper_unf )
     rng_stl_wrapper_unf<float>(2391892344079);
 }
 
-//*******************************
+// *******************************
 
-//***Test exponential distribution
+// ***Test exponential distribution
 
 template<typename RealType>
 void rng_stl_wrapper_exp(uint64_t seed)
@@ -95,9 +95,9 @@ BOOST_AUTO_TEST_CASE( picsar_rng_stl_wrapper_exp )
     rng_stl_wrapper_exp<double>(2391892344079);
 }
 
-//*******************************
+// *******************************
 
-//***Test Poisson distribution
+// ***Test Poisson distribution
 
 template<typename RealType>
 void rng_stl_wrapper_poisson(uint64_t seed)
@@ -118,9 +118,9 @@ BOOST_AUTO_TEST_CASE( picsar_rng_stl_wrapper_poisson )
     rng_stl_wrapper_poisson<double>(2391892344079);
 }
 
-//*******************************
+// *******************************
 
-//***Test gaussian distribution
+// ***Test gaussian distribution
 
 template<typename RealType>
 void rng_stl_wrapper_gaussian(uint64_t seed)
@@ -142,4 +142,4 @@ BOOST_AUTO_TEST_CASE( picsar_rng_stl_wrapper_gaussian )
     rng_stl_wrapper_gaussian<double>(2391892344079);
 }
 
-//*******************************
+// *******************************

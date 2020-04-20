@@ -35,7 +35,7 @@ T constexpr tolerance()
 
 // ------------- Tests --------------
 
-//***Test quadrature algorithms in a finite interval
+// ***Test quadrature algorithms in a finite interval
 
 template<typename RealType>
 constexpr void test_quadrature_finite_interval()
@@ -85,9 +85,9 @@ BOOST_AUTO_TEST_CASE( picsar_quadrature_finite_interval )
     test_quadrature_finite_interval <float>();
 }
 
-//*******************************
+// *******************************
 
-//***Test quadrature algorithms in a semi-infinite interval
+// ***Test quadrature algorithms in a semi-infinite interval
 
 template<typename RealType>
 constexpr void test_quadrature_infinite_interval_1()
@@ -132,4 +132,4 @@ BOOST_AUTO_TEST_CASE( picsar_quadrature_infinite_interval_2 )
     test_quadrature_infinite_interval_2<float>();
 }
 
-//*******************************
+// *******************************

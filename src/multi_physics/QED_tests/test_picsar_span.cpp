@@ -19,7 +19,7 @@ using namespace picsar::multi_physics::containers;
 
 // ------------- Tests --------------
 
-//***Test empty constructor
+// ***Test empty constructor
 
 BOOST_AUTO_TEST_CASE( picsar_span_empty_constructor )
 {
@@ -28,9 +28,9 @@ BOOST_AUTO_TEST_CASE( picsar_span_empty_constructor )
     BOOST_CHECK_EQUAL(span.data(), nullptr);
 }
 
-//*******************************
+// *******************************
 
-//***Test constructor with raw pointers
+// ***Test constructor with raw pointers
 
 BOOST_AUTO_TEST_CASE( picsar_span_raw_pointers_constructor )
 {
@@ -42,9 +42,9 @@ BOOST_AUTO_TEST_CASE( picsar_span_raw_pointers_constructor )
         BOOST_CHECK_EQUAL(span[i], arr[i]);
 }
 
-//*******************************
+// *******************************
 
-//***Test range based loops
+// ***Test range based loops
 
 BOOST_AUTO_TEST_CASE( picsar_span_range_based_loops )
 {
@@ -58,9 +58,9 @@ BOOST_AUTO_TEST_CASE( picsar_span_range_based_loops )
     BOOST_CHECK_EQUAL(sum, 12);
 }
 
-//*******************************
+// *******************************
 
-//***Test copy
+// ***Test copy
 
 BOOST_AUTO_TEST_CASE( picsar_span_copy )
 {
@@ -74,4 +74,4 @@ BOOST_AUTO_TEST_CASE( picsar_span_copy )
         BOOST_CHECK_EQUAL(cspan[i], arr[i]);
 }
 
-//*******************************
+// *******************************

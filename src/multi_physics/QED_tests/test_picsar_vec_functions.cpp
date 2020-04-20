@@ -32,7 +32,7 @@ T constexpr tolerance()
 
 // ------------- Tests --------------
 
-//***Test norm2
+// ***Test norm2
 
 template<typename RealType>
 void test_norm2()
@@ -53,9 +53,9 @@ BOOST_AUTO_TEST_CASE( picsar_vec_functions_norm2 )
     test_norm2<float>();
 }
 
-//*******************************
+// *******************************
 
-//***Test norm
+// ***Test norm
 
 template<typename RealType>
 void test_norm()
@@ -76,9 +76,9 @@ BOOST_AUTO_TEST_CASE( picsar_vec_functions_norm )
     test_norm<float>();
 }
 
-//*******************************
+// *******************************
 
-//***Test dot product
+// ***Test dot product
 
 template<typename RealType>
 void test_dot()
@@ -103,9 +103,9 @@ BOOST_AUTO_TEST_CASE( picsar_vec_functions_dot )
     test_dot<float>();
 }
 
-//*******************************
+// *******************************
 
-//***Test cross product
+// ***Test cross product
 
 template<typename RealType>
 void test_cross()
@@ -139,9 +139,9 @@ BOOST_AUTO_TEST_CASE( picsar_vec_functions_cross )
     test_cross<float>();
 }
 
-//*******************************
+// *******************************
 
-//***Test scalar product
+// ***Test scalar product
 
 template<typename RealType>
 void test_vec_times_scalar()
@@ -205,9 +205,9 @@ BOOST_AUTO_TEST_CASE( picsar_vec_functions_scalar_times_vec )
     test_scalar_times_vec<float>();
 }
 
-//*******************************
+// *******************************
 
-//***Test division by scalar
+// ***Test division by scalar
 
 template<typename RealType>
 void test_vec_div_scalar()
@@ -240,9 +240,9 @@ BOOST_AUTO_TEST_CASE( picsar_vec_functions_vec_div_scalar )
     test_vec_div_scalar<float>();
 }
 
-//*******************************
+// *******************************
 
-//***Test vector addition
+// ***Test vector addition
 
 template<typename RealType>
 void test_add()
@@ -276,9 +276,9 @@ BOOST_AUTO_TEST_CASE( picsar_vec_functions_add )
     test_add<float>();
 }
 
-//*******************************
+// *******************************
 
-//***Test vector subraction
+// ***Test vector subraction
 
 template<typename RealType>
 void test_subtract()
@@ -312,4 +312,4 @@ BOOST_AUTO_TEST_CASE( picsar_vec_functions_subtract )
     test_subtract<float>();
 }
 
-//*******************************
+// *******************************
