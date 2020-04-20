@@ -104,12 +104,13 @@ void test_case_const_phys()
         tolerance<RealType>());
 
     BOOST_CHECK_SMALL(
-        (vacuum_permittivity<RealType>-exp_vacuum_permeability)/exp_vacuum_permeability,
+        (vacuum_permittivity<RealType>-exp_vacuum_permittivity)/exp_vacuum_permittivity,
         tolerance<RealType>());
 
     BOOST_CHECK_SMALL(
-        (vacuum_permeability<RealType>-exp_vacuum_permittivity)/exp_vacuum_permittivity,
+        (vacuum_permeability<RealType>-exp_vacuum_permeability)/exp_vacuum_permeability,
         tolerance<RealType>());
+
 
     BOOST_CHECK_SMALL(
         (fine_structure<RealType>-exp_fine_structure)/exp_fine_structure,
