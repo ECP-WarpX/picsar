@@ -140,8 +140,7 @@ namespace phys{
             return elementary_charge<RealType>;
         else if (From == unit_system::heaviside_lorentz){
             constexpr auto res = static_cast<RealType>(
-                elementary_charge<double>/
-                sqrt(4.0*pi<double>*fine_structure<double>));
+                elementary_charge<double>/sqrt_4_pi_fine_structure<double>);
             return res;
         }
         else
@@ -253,6 +252,54 @@ namespace phys{
             fact_momentum_to_SI_from<To,RealType>();
     }
 
+    /**
+    * This function returns the conversion factor for energy from any unit
+    * system to SI
+    *
+    * @tparam From unit system (enum unit_system) from which to convert
+    * @tparam RealType the floating point type of the result
+    * @return the conversion factor
+    */
+    template<unit_system From, typename RealType>
+    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    constexpr RealType fact_energy_to_SI_from()
+    {
+        using namespace phys;
+        if (From == unit_system::norm_omega){
+            constexpr auto res = static_cast<RealType>(
+                electron_mass<double>*light_speed<double>*light_speed<double>);
+            return res;
+        }
+        else if (From == unit_system::norm_lambda)
+        {
+            constexpr auto res = static_cast<RealType>(
+                electron_mass<double>*light_speed<double>*light_speed<double>);
+            return res;
+        }
+        else if (From == unit_system::heaviside_lorentz)
+            return heaviside_lorentz_reference_energy<RealType>;
+        else
+            return static_cast<RealType>(1.0);
+    }
+
+    /**
+    * This function returns the conversion factor for energy from any unit
+    * system to any other unit system
+    *
+    * @tparam From unit system (enum unit_system) from which to convert
+    * @tparam To unit system (enum unit_system) to which to convert
+    * @tparam RealType the floating point type of the result
+    * @param reference_quantity_from the reference frequency or the ref. wavelength for From in SI units
+    * @param reference_quantity_to the reference frequency or the ref. wavelength for To in SI units
+    * @return the conversion factor
+    */
+    template<unit_system From, unit_system To, typename RealType>
+    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    constexpr RealType fact_energy_from_to() noexcept
+    {
+        return fact_energy_to_SI_from<From,RealType>()/
+            fact_energy_to_SI_from<To,RealType>();
+    }
 
     /**
     * This function returns the conversion factor for length from any unit
@@ -552,7 +599,7 @@ namespace phys{
             constexpr auto res = static_cast<RealType>(
                 heaviside_lorentz_reference_energy<double>*
                 heaviside_lorentz_reference_energy<double>*
-                sqrt(4*pi<double>*fine_structure<double>)/
+                sqrt_4_pi_fine_structure<double>/
                 (elementary_charge<double>*reduced_plank<double>*
                 light_speed<double>));
             return res;
@@ -614,7 +661,7 @@ namespace phys{
             constexpr auto res = static_cast<RealType>(
                 heaviside_lorentz_reference_energy<double>*
                 heaviside_lorentz_reference_energy<double>*
-                sqrt(4*pi<double>*fine_structure<double>)/
+                sqrt_4_pi_fine_structure<double>/
                 (elementary_charge<double>*reduced_plank<double>*
                 light_speed<double>*light_speed<double>));
             return res;
@@ -643,56 +690,6 @@ namespace phys{
         return fact_B_to_SI_from<From,RealType>(reference_quantity_from)/
             fact_B_to_SI_from<To,RealType>(reference_quantity_to);
     }
-
-    /**
-    * This function returns the conversion factor for energy from any unit
-    * system to SI
-    *
-    * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam RealType the floating point type of the result
-    * @return the conversion factor
-    */
-    template<unit_system From, typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_energy_to_SI_from()
-    {
-        using namespace phys;
-        if (From == unit_system::norm_omega){
-            constexpr auto res = static_cast<RealType>(
-                electron_mass<double>*light_speed<double>*light_speed<double>);
-            return res;
-        }
-        else if (From == unit_system::norm_lambda)
-        {
-            constexpr auto res = static_cast<RealType>(
-                electron_mass<double>*light_speed<double>*light_speed<double>);
-            return res;
-        }
-        else if (From == unit_system::heaviside_lorentz)
-            return heaviside_lorentz_reference_energy<RealType>;
-        else
-            return static_cast<RealType>(1.0);
-    }
-
-    /**
-    * This function returns the conversion factor for energy from any unit
-    * system to any other unit system
-    *
-    * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam To unit system (enum unit_system) to which to convert
-    * @tparam RealType the floating point type of the result
-    * @param reference_quantity_from the reference frequency or the ref. wavelength for From in SI units
-    * @param reference_quantity_to the reference frequency or the ref. wavelength for To in SI units
-    * @return the conversion factor
-    */
-    template<unit_system From, unit_system To, typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_energy_from_to() noexcept
-    {
-        return fact_energy_to_SI_from<From,RealType>()/
-            fact_energy_to_SI_from<To,RealType>();
-    }
-
 }
 }
 }

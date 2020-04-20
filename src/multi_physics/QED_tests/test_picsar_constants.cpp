@@ -6,6 +6,8 @@
 //Will automatically define a main for this test
  #define BOOST_TEST_DYN_LINK
 
+#include <cmath>
+
 //Include Boost unit tests library & library for floating point comparison
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
@@ -34,7 +36,7 @@ T constexpr tolerance()
 
 // ------------- Tests --------------
 
-//***Test math constants
+// ***Test math constants
 
 template<typename RealType>
 void test_case_const_math()
@@ -51,9 +53,9 @@ BOOST_AUTO_TEST_CASE( picsar_const_math )
     test_case_const_math<float>();
 }
 
-//*******************************
+// *******************************
 
-//***Test physical constants
+// ***Test physical constants
 
 template<typename RealType>
 void test_case_const_phys()
@@ -80,6 +82,9 @@ void test_case_const_phys()
         static_cast<RealType>(1.602176634e-13);
     const auto exp_GeV =
         static_cast<RealType>(1.602176634e-10);
+    const auto exp_sqrt_4_pi_fine_structure =
+            static_cast<RealType>(sqrt(
+                4.0*pi<double>*fine_structure<double>));
     const auto exp_classical_electron_radius =
         static_cast<RealType>(2.81794032620493e-15);
     const auto exp_schwinger_field =
@@ -111,7 +116,6 @@ void test_case_const_phys()
         (vacuum_permeability<RealType>-exp_vacuum_permeability)/exp_vacuum_permeability,
         tolerance<RealType>());
 
-
     BOOST_CHECK_SMALL(
         (fine_structure<RealType>-exp_fine_structure)/exp_fine_structure,
         tolerance<RealType>());
@@ -133,6 +137,10 @@ void test_case_const_phys()
         tolerance<RealType>());
 
     BOOST_CHECK_SMALL(
+            (sqrt_4_pi_fine_structure<RealType>-exp_sqrt_4_pi_fine_structure)/
+            exp_sqrt_4_pi_fine_structure, tolerance<RealType>());
+
+    BOOST_CHECK_SMALL(
         (classical_electron_radius<RealType>-exp_classical_electron_radius)/exp_classical_electron_radius,
         tolerance<RealType>());
 
@@ -151,4 +159,4 @@ BOOST_AUTO_TEST_CASE( picsar_const_phys )
     test_case_const_phys<float>();
 }
 
-//*******************************
+// *******************************
