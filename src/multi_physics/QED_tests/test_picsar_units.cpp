@@ -9,6 +9,7 @@
 #include <array>
 #include <algorithm>
 #include <functional>
+#include <iostream>
 
 //Include Boost unit tests library & library for floating point comparison
 #include <boost/test/unit_test.hpp>
@@ -213,6 +214,15 @@ struct fact<quantity::ttime>
     {
         return fact_time_to_SI_from<From, RealType>(reference_quantity);
     }
+
+    template<unit_system From, unit_system To, typename RealType>
+    static constexpr RealType from_to(
+        RealType reference_quantity_from = 1.0,
+        RealType reference_quantity_to = 1.0){
+        return fact_time_from_to<From, To, RealType>(
+            reference_quantity_from,
+            reference_quantity_to);
+    }
 };
 
 template<>
@@ -222,6 +232,53 @@ struct fact<quantity::rate>
     static constexpr RealType to_SI_from(RealType reference_quantity = 1.0)
     {
         return fact_rate_to_SI_from<From, RealType>(reference_quantity);
+    }
+
+    template<unit_system From, unit_system To, typename RealType>
+    static constexpr RealType from_to(
+        RealType reference_quantity_from = 1.0,
+        RealType reference_quantity_to = 1.0){
+        return fact_rate_from_to<From, To, RealType>(
+            reference_quantity_from,
+            reference_quantity_to);
+    }
+};
+
+template<>
+struct fact<quantity::E>
+{
+    template<unit_system From, typename RealType>
+    static constexpr RealType to_SI_from(RealType reference_quantity = 1.0)
+    {
+        return fact_E_to_SI_from<From, RealType>(reference_quantity);
+    }
+
+    template<unit_system From, unit_system To, typename RealType>
+    static constexpr RealType from_to(
+        RealType reference_quantity_from = 1.0,
+        RealType reference_quantity_to = 1.0){
+        return fact_E_from_to<From, To, RealType>(
+            reference_quantity_from,
+            reference_quantity_to);
+    }
+};
+
+template<>
+struct fact<quantity::B>
+{
+    template<unit_system From, typename RealType>
+    static constexpr RealType to_SI_from(RealType reference_quantity = 1.0)
+    {
+        return fact_B_to_SI_from<From, RealType>(reference_quantity);
+    }
+
+    template<unit_system From, unit_system To, typename RealType>
+    static constexpr RealType from_to(
+        RealType reference_quantity_from = 1.0,
+        RealType reference_quantity_to = 1.0){
+        return fact_B_from_to<From, To, RealType>(
+            reference_quantity_from,
+            reference_quantity_to);
     }
 };
 
@@ -412,9 +469,9 @@ constexpr void test_from_to(
     const auto fact_SI = fact<Quantity>::
         template to_SI_from<unit_system::SI, RealType>();
     const auto fact_omega = fact<Quantity>::
-        template to_SI_from<unit_system::norm_omega, RealType>();
+        template to_SI_from<unit_system::norm_omega, RealType>(reference_omega);
     const auto fact_lambda = fact<Quantity>::
-        template to_SI_from<unit_system::norm_lambda, RealType>();
+        template to_SI_from<unit_system::norm_lambda, RealType>(reference_length);
     const auto fact_hl = fact<Quantity>::
         template to_SI_from<unit_system::heaviside_lorentz, RealType>();
 
@@ -593,7 +650,7 @@ BOOST_AUTO_TEST_CASE( picsar_unit_conv_length)
     test_case_length<float>();
 }
 
-// ***Test area conversion to SI
+// ***Test area conversion to SI and all to all
 template<typename RealType>
 void test_case_area_to_SI()
 {
@@ -615,6 +672,8 @@ void test_case_area_to_SI()
 
     test_to_SI<RealType, quantity::area>(
         all_areas, reference_omega, reference_length);
+    test_from_to<RealType, quantity::area>(
+        all_areas, reference_omega, reference_length);
 }
 
 BOOST_AUTO_TEST_CASE( picsar_unit_conv_area_to_SI )
@@ -623,7 +682,7 @@ BOOST_AUTO_TEST_CASE( picsar_unit_conv_area_to_SI )
     test_case_area_to_SI<float>();
 }
 
-// ***Test volume conversion to SI
+// ***Test volume conversion to SI and all to all
 template<typename RealType>
 void test_case_volume_to_SI()
 {
@@ -647,6 +706,8 @@ void test_case_volume_to_SI()
 
     test_to_SI<RealType, quantity::volume>(
         all_volumes, reference_omega, reference_length);
+    test_from_to<RealType, quantity::volume>(
+        all_volumes, reference_omega, reference_length);
 }
 
 BOOST_AUTO_TEST_CASE( picsar_unit_conv_volume_to_SI )
@@ -655,7 +716,7 @@ BOOST_AUTO_TEST_CASE( picsar_unit_conv_volume_to_SI )
     test_case_volume_to_SI<float>();
 }
 
-// ***Test time conversion to SI
+// ***Test time conversion to SI and all to all
 template<typename RealType>
 void test_case_time_to_SI()
 {
@@ -675,6 +736,8 @@ void test_case_time_to_SI()
 
     test_to_SI<RealType, quantity::ttime>(
         all_times, reference_omega, reference_length);
+    test_from_to<RealType, quantity::ttime>(
+        all_times, reference_omega, reference_length);
 }
 
 BOOST_AUTO_TEST_CASE( picsar_unit_conv_time_to_SI )
@@ -683,7 +746,7 @@ BOOST_AUTO_TEST_CASE( picsar_unit_conv_time_to_SI )
     test_case_time_to_SI<float>();
 }
 
-// ***Test rate conversion to SI
+// ***Test rate conversion to SI and all to all
 template<typename RealType>
 void test_case_rate_to_SI()
 {
@@ -703,10 +766,95 @@ void test_case_rate_to_SI()
 
     test_to_SI<RealType, quantity::rate>(
         all_rates, reference_omega, reference_length);
+    test_from_to<RealType, quantity::rate>(
+        all_rates, reference_omega, reference_length);
 }
 
 BOOST_AUTO_TEST_CASE( picsar_unit_conv_rate_to_SI )
 {
     test_case_rate_to_SI<double>();
     test_case_rate_to_SI<float>();
+}
+
+// ***Test E conversion to SI and all to all
+template<typename RealType>
+void test_case_E_to_SI()
+{
+    constexpr auto reference_length = static_cast<RealType>(800.0e-9);
+    constexpr auto reference_omega = static_cast<RealType>(
+        2.0*pi<double>*light_speed<double>/reference_length);
+
+    constexpr double ref_field_omega = reference_omega*
+        (electron_mass<double>*light_speed<double>/elementary_charge<double>);
+    constexpr double ref_field_length = electron_mass<double>*
+        light_speed<double>*light_speed<double>/elementary_charge<double>/reference_length;
+    constexpr double ref_field_hl =
+        heaviside_lorentz_reference_energy<double>*
+        heaviside_lorentz_reference_energy<double>*
+        sqrt_4_pi_fine_structure<double>/
+        elementary_charge<double>/reduced_plank<double>/light_speed<double>;
+
+    constexpr auto E_SI = schwinger_field<RealType>;
+    constexpr auto E_omega = static_cast<RealType>(
+        schwinger_field<double>/ref_field_omega);
+    constexpr auto E_lambda = static_cast<RealType>(schwinger_field<double>/
+        ref_field_length);
+    constexpr auto E_hl = static_cast<RealType>(schwinger_field<double>/
+        ref_field_hl);
+
+    constexpr auto all_E = val_pack<RealType>{E_SI, E_omega, E_lambda, E_hl};
+
+    test_to_SI<RealType, quantity::E>(
+        all_E, reference_omega, reference_length);
+    test_from_to<RealType, quantity::E>(
+        all_E, reference_omega, reference_length);
+}
+
+BOOST_AUTO_TEST_CASE( picsar_unit_conv_E_to_SI )
+{
+    test_case_E_to_SI<double>();
+    test_case_E_to_SI<float>();
+}
+
+// ***Test B conversion to SI and all to all
+template<typename RealType>
+void test_case_B_to_SI()
+{
+    constexpr auto reference_length = static_cast<RealType>(800.0e-9);
+    constexpr auto reference_omega = static_cast<RealType>(
+        2.0*pi<double>*light_speed<double>/reference_length);
+
+    constexpr double ref_field_omega = reference_omega*
+        (electron_mass<double>/elementary_charge<double>);
+    constexpr double ref_field_length = electron_mass<double>*
+        light_speed<double>/elementary_charge<double>/reference_length;
+    constexpr double ref_field_hl =
+        heaviside_lorentz_reference_energy<double>*
+        heaviside_lorentz_reference_energy<double>*
+        sqrt_4_pi_fine_structure<double>/
+        elementary_charge<double>/reduced_plank<double>/
+        light_speed<double>/light_speed<double>;
+
+    constexpr double mag_schwinger = schwinger_field<double>/light_speed<double>;
+
+    constexpr auto B_SI = static_cast<RealType>(mag_schwinger);
+    constexpr auto B_omega = static_cast<RealType>(
+        mag_schwinger/ref_field_omega);
+    constexpr auto B_lambda = static_cast<RealType>(mag_schwinger/
+        ref_field_length);
+    constexpr auto B_hl = static_cast<RealType>(mag_schwinger/
+        ref_field_hl);
+
+    constexpr auto all_B = val_pack<RealType>{B_SI, B_omega, B_lambda, B_hl};
+
+    test_to_SI<RealType, quantity::B>(
+        all_B, reference_omega, reference_length);
+    test_from_to<RealType, quantity::B>(
+        all_B, reference_omega, reference_length);
+}
+
+BOOST_AUTO_TEST_CASE( picsar_unit_conv_B_to_SI )
+{
+    test_case_B_to_SI<double>();
+    test_case_B_to_SI<float>();
 }
