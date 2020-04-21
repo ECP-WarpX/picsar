@@ -3,12 +3,12 @@
 
 //This .hpp file contains the implementation of 1D and 2D lookup tables.
 
-#include<functional>
-#include<array>
-#include<vector>
 #include<utility>
-#include<iostream>
-#include<fstream>
+
+#ifndef PXRMP_CORE_ONLY
+    #include<iostream>
+    #include<fstream>
+#endif //PXRMP_CORE_ONLY
 
 //Should be included by all the src files of the library
 #include "qed_commons.h"
@@ -32,8 +32,10 @@ namespace picsar{
         class lookup_1d
         {
             public:
-                //Default empty constructor
-                lookup_1d () = default;
+                //Empty constructor
+                PXRMP_GPU
+                PXRMP_FORCE_INLINE
+                lookup_1d ();
 
                 //Constructor: requires coordinates and data
                 //coordinates should be sorted!
@@ -47,6 +49,7 @@ namespace picsar{
 
                 //Constructor from raw data pointers
                 PXRMP_GPU
+                PXRMP_FORCE_INLINE
                 lookup_1d(size_t how_many, _REAL* _coords, _REAL* _data);
 
                 //Assignment operator
@@ -75,7 +78,7 @@ namespace picsar{
                 PXRMP_FORCE_INLINE
                 _REAL interp_linear(_REAL where) const;
 
-
+#ifndef PXRMP_CORE_ONLY
                 //_________READ&WRITE________________
 
                 //Read table from stream (simple binary fileformat)
@@ -84,6 +87,7 @@ namespace picsar{
                 //Write table to stream (simple binary fileformat)
                 void write_on_stream_bin(std::ofstream& out);
                 //_________________________
+#endif //PXRMP_CORE_ONLY
 
 
             private:
@@ -98,8 +102,10 @@ namespace picsar{
         class lookup_2d
         {
             public:
-                //Default empty constructor
-                lookup_2d () = default;
+                //Empty constructor
+                PXRMP_GPU
+                PXRMP_FORCE_INLINE
+                lookup_2d ();
 
                 //Constructor: requires coordinates and data
                 //coordinates should be sorted!
@@ -167,6 +173,7 @@ namespace picsar{
                 _REAL interp_linear_first_equispaced
                 (_REAL where_x, size_t coord_y) const;
 
+#ifndef PXRMP_CORE_ONLY
                 //_________READ&WRITE________________
 
                 //Read table from stream (simple binary fileformat)
@@ -175,6 +182,7 @@ namespace picsar{
                 //Write table to stream (simple binary fileformat)
                 void write_on_stream_bin(std::ofstream& out);
                 //_________________________
+#endif //PXRMP_CORE_ONLY
 
 
 
@@ -199,6 +207,14 @@ namespace picsar{
 //############################################### Implementation
 
 //_______________________1D table_______________________________
+
+//Empty Constructor
+template<typename _REAL>
+PXRMP_GPU
+PXRMP_FORCE_INLINE
+picsar::multi_physics::lookup_1d<_REAL>::
+lookup_1d(): coords{}, data{}, init_flag{false}
+{}
 
 //Constructor: requires coordinates and data
 template<typename _REAL>
@@ -228,6 +244,7 @@ lookup_1d(lookup_1d&& other):
 //Constructor from raw data pointers
 template<typename _REAL>
 PXRMP_GPU
+PXRMP_FORCE_INLINE
 picsar::multi_physics::lookup_1d<_REAL>::
 lookup_1d(size_t how_many, _REAL* _coords, _REAL* _data):
 coords{how_many, _coords},
@@ -330,6 +347,9 @@ interp_linear(_REAL where) const
     return yleft + ((yright-yleft)/(xright-xleft))*(where-xleft);
 }
 
+
+#ifndef PXRMP_CORE_ONLY
+
 //Read table from stream
 template<typename _REAL>
 void
@@ -372,7 +392,18 @@ write_on_stream_bin(std::ofstream& out)
         reinterpret_cast<char*>(data.data()), sizeof(_REAL)*size_data);
 }
 
+#endif //PXRMP_CORE_ONLY
+
 //_______________________2D table_______________________________
+
+//Empty Constructor
+template<typename _REAL>
+PXRMP_GPU
+PXRMP_FORCE_INLINE
+picsar::multi_physics::lookup_2d<_REAL>::
+lookup_2d(): coords{}, data{}, init_flag{false}
+{}
+
 
 //Constructor: requires coordinates and data
 template<typename _REAL>
@@ -657,6 +688,8 @@ interp_linear_first_equispaced(_REAL where_x, size_t coord_y) const
     return (wlc*zlc + wrc*zrc)/w_norm;
 }
 
+#ifndef PXRMP_CORE_ONLY
+
 //Read table from stream
 template<typename _REAL>
 void
@@ -712,6 +745,8 @@ write_on_stream_bin(std::ofstream& out)
         reinterpret_cast<char*>(data.data()), sizeof(_REAL)*size_data);
 }
 
+
+#endif //PXRMP_CORE_ONLY
 
 //Row major access to underlying data
 template<typename _REAL>

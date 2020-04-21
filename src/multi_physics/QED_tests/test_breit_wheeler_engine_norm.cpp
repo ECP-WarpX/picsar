@@ -16,8 +16,8 @@
 #define PXRMP_USE_NORMALIZED_UNITS
 #include "breit_wheeler_engine.hpp"
 
-#include "chi_functions.hpp"
-#include "vec_functions.hpp"
+//Uses random numbers
+#include "rng_wrapper.hpp"
 
 using namespace picsar::multi_physics;
 

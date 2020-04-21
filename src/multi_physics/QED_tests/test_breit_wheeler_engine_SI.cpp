@@ -15,9 +15,6 @@
 #define PXRMP_USE_SI_UNITS
 #include "breit_wheeler_engine.hpp"
 
-#include "chi_functions.hpp"
-#include "vec_functions.hpp"
-
 #include "rng_wrapper.hpp"
 
 using namespace picsar::multi_physics;

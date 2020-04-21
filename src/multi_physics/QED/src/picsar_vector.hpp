@@ -31,7 +31,8 @@ namespace picsar{
             // Constructor to allow initialization with an STL vector (not for GPU)
             picsar_vector(const std::vector<T>& vec);
 
-            //Empty initialization (not for GPU)
+            //Empty initialization
+            PXRMP_GPU PXRMP_FORCE_INLINE
             picsar_vector();
 
             // Constructor to allow initialization with a list {a,b,c,d,...}
@@ -44,7 +45,6 @@ namespace picsar{
             picsar_vector(size_t size, T* raw);
 
             //Copy constructor  (a deep copy)
-            PXRMP_GPU PXRMP_FORCE_INLINE
             picsar_vector(const picsar_vector& other);
 
             //Move constructor
@@ -52,7 +52,6 @@ namespace picsar{
             picsar_vector(picsar_vector&& other);
 
             //Assignment operator  (a deep copy)
-            PXRMP_GPU PXRMP_FORCE_INLINE
             picsar_vector&  operator= (const picsar_vector& other);
 
             //Move assignment operator
@@ -141,6 +140,7 @@ picsar::multi_physics::picsar_vector<T>::picsar_vector(const std::vector<T>& vec
 
 //Empty initialization
 template <typename T>
+PXRMP_GPU PXRMP_FORCE_INLINE
 picsar::multi_physics::picsar_vector<T>::picsar_vector()
 {
     v_size = 0;
@@ -180,7 +180,6 @@ picsar::multi_physics::picsar_vector<T>::picsar_vector(size_t size, T* raw)
 
 //Copy constructor (a deep copy)
 template <typename T>
-PXRMP_GPU PXRMP_FORCE_INLINE
 picsar::multi_physics::picsar_vector<T>::
 picsar_vector(const picsar_vector& other)
 {
@@ -211,7 +210,6 @@ picsar::multi_physics::picsar_vector<T>::picsar_vector(picsar_vector&& other)
 
 //Assignment operator (a deep copy)
 template <typename T>
-PXRMP_GPU PXRMP_FORCE_INLINE
 picsar::multi_physics::picsar_vector<T>&
 picsar::multi_physics::picsar_vector<T>::operator= (const picsar_vector& other)
 {
