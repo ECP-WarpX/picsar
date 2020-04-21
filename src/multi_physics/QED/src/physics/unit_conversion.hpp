@@ -13,7 +13,8 @@ namespace phys{
 
     /**
     * The interface of the PICSAR QED library supports 4 unit systems
-    * (Internally all the calculations are performed in Heaviside-Lorentz units):
+    * (Internally all the calculations are performed in Natural
+    * Heaviside-Lorentz units):
     *
     * > SI units (International System of Units)
     *
@@ -42,7 +43,7 @@ namespace phys{
     *   - electric field is normalized with respect to m_e*c^2/(lambda*e0)
     *   - magnetic field is normalized with respect to m_e*c/(lambda*e0)
     *
-    * > Heaviside Lorentz units, a unit system frequently used in particle phyics
+    * > Natural Heaviside Lorentz units, a unit system frequently used in particle phyics
     *   where c (speed of light) = hbar (reduced Plank constant) =
     *   = epsilon_0 (vacuum permittivity) = mu_0 (vacuum_permeability) = 1.
     *   In addition, we choose to measure the energy in MeV units
@@ -593,7 +594,7 @@ namespace phys{
             constexpr auto fact = static_cast<RealType>(
                 electron_mass<double>*light_speed<double>*light_speed<double>/
                 (elementary_charge<double>));
-            return fact*reference_quantity;
+            return fact/reference_quantity;
         }
         else if (From == unit_system::heaviside_lorentz){
             constexpr auto res = static_cast<RealType>(
