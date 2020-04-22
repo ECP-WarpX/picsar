@@ -2278,6 +2278,25 @@ namespace phys{
             const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
+
+    //____________________________
+
+    /**
+    * Electron rest energy in heaviside_lorentz units
+    */
+    template <typename RealType>
+    constexpr RealType heaviside_lorentz_electron_rest_energy = static_cast<RealType>(
+        phys::electron_mass<double>*phys::light_speed<double>*phys::light_speed<double>*
+        conv<quantity::energy, unit_system::SI, unit_system::heaviside_lorentz, double>::fact());
+
+    /**
+    * Schwinger field in heaviside_lorentz units
+    */
+    template <typename RealType>
+    constexpr RealType heaviside_lorentz_schwinger= static_cast<RealType>(
+        phys::schwinger_field<double>*conv<quantity::E, unit_system::SI,
+            unit_system::heaviside_lorentz, double>::fact());
+
 }
 }
 }

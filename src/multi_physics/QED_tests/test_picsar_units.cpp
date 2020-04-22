@@ -177,6 +177,40 @@ BOOST_AUTO_TEST_CASE( picsar_unit_conv_heaviside_lorentz_ref_energy )
     test_case_hl_reference_energy<float>();
 }
 
+// ***Test electron rest energy in Heaviside Lorentz units
+template<typename RealType>
+void test_case_hl_electron_rest_energy()
+{
+    constexpr auto exp = static_cast<RealType>(
+        electron_mass<double>*light_speed<double>*light_speed<double>/
+        MeV<double>);
+    constexpr auto res = heaviside_lorentz_electron_rest_energy<RealType>;
+    BOOST_CHECK_SMALL((res-exp)/exp, tolerance<RealType>());
+}
+
+BOOST_AUTO_TEST_CASE( picsar_unit_conv_heaviside_lorentz_electron_rest_energy )
+{
+    test_case_hl_electron_rest_energy<double>();
+    test_case_hl_electron_rest_energy<float>();
+}
+
+// ***Test Schwinger field in Heaviside Lorentz units
+template<typename RealType>
+void test_case_hl_schwinger_field()
+{
+    constexpr auto exp = static_cast<RealType>(
+        schwinger_field<double>*conv<quantity::E,
+            unit_system::SI, unit_system::heaviside_lorentz, double>::fact());
+    constexpr auto res = heaviside_lorentz_schwinger<RealType>;
+    BOOST_CHECK_SMALL((res-exp)/exp, tolerance<RealType>());
+}
+
+BOOST_AUTO_TEST_CASE( picsar_unit_conv_heaviside_lorentz_schwinger_field )
+{
+    test_case_hl_schwinger_field<double>();
+    test_case_hl_schwinger_field<float>();
+}
+
 // ***Test mass conversion to SI and all to all
 template<typename RealType>
 void test_case_mass()
