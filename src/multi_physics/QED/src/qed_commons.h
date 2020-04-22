@@ -109,14 +109,4 @@
     #endif
   #endif
 
-/**
-  * If C++17 is available and GPU is not used,
-  * enable the use of "constexpr if" in some expressions.
-  */
-  #if __cplusplus > 201402L && defined(PXRMP_INTERNAL_NO_GPU)
-    #define PXRMP_INTERNAL_CONSTEXPR_IF constexpr if
-  #else
-    #define PXRMP_INTERNAL_CONSTEXPR_IF if
-  #endif
-
 #endif// PICSAR_MULTIPHYSICS_QED_COMMONS
