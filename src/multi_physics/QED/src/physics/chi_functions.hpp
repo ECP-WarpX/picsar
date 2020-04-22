@@ -38,7 +38,7 @@ namespace phys{
         const math::vec3<RealType> t_p,
         const math::vec3<RealType> t_em_e,
         const math::vec3<RealType> t_em_b,
-        const RealType reference_quantity = static_cast<RealType>(1.0))
+        const RealType reference_quantity = math::one<RealType>)
     {
         using namespace math;
 
@@ -53,8 +53,8 @@ namespace phys{
             unit_system::heaviside_lorentz, RealType>::fact(reference_quantity);
 
         const auto norm_p = math::norm(p);
-        if(norm_p == static_cast<RealType>(0.0))
-            return static_cast<RealType>(0.0);
+        if(norm_p == zero<RealType>)
+            return zero<RealType>;
 
         const auto p_unit = p / norm_p;
         const auto em_eperp = em_e - math::dot(p_unit,em_e)*p_unit;
@@ -93,7 +93,7 @@ namespace phys{
         const RealType px, const RealType py, const RealType pz,
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
-        const RealType reference_quantity = static_cast<RealType>(1.0))
+        const RealType reference_quantity = math::one<RealType>)
     {
         const auto p = math::vec3<RealType>{px, py, pz};
         const auto em_e = math::vec3<RealType>{ex, ey, ez};
@@ -120,7 +120,7 @@ namespace phys{
         const math::vec3<RealType> t_p,
         const math::vec3<RealType> t_em_e,
         const math::vec3<RealType> t_em_b,
-        const RealType reference_quantity = static_cast<RealType>(1.0))
+        const RealType reference_quantity = math::one<RealType>)
     {
         using namespace math;
 
@@ -135,12 +135,12 @@ namespace phys{
             unit_system::heaviside_lorentz, RealType>::fact(reference_quantity);
 
         const auto norm_p = math::norm(p);
-        if(norm_p == static_cast<RealType>(0.0))
-            return static_cast<RealType>(0.0);
+        if(norm_p == zero<RealType>)
+            return zero<RealType>;
 
         const auto p_unit = p / norm_p;
 
-        constexpr auto one = static_cast<RealType>(1.0);
+        constexpr auto one = math::one<RealType>;
         constexpr auto one_over_m2 = static_cast<RealType>(1.0/
             heaviside_lorentz_electron_rest_energy<double>/
             heaviside_lorentz_electron_rest_energy<double>);
@@ -187,7 +187,7 @@ namespace phys{
         const RealType px, const RealType py, const RealType pz,
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
-        const RealType reference_quantity = static_cast<RealType>(1.0))
+        const RealType reference_quantity = math::one<RealType>)
     {
         const auto p = math::vec3<RealType>{px, py, pz};
         const auto em_e = math::vec3<RealType>{ex, ey, ez};

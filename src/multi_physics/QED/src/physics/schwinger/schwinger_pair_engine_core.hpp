@@ -41,12 +41,8 @@ namespace schwinger{
     *
     * @tparam RealType the floating point type to be used
     * @tparam UnitSystem unit system to be used for inputs & outputs
-    * @param[in] ex the x component of the electric field
-    * @param[in] ey the y component of the electric field
-    * @param[in] ez the z component of the electric field
-    * @param[in] bx the x component of the magnetic field
-    * @param[in] by the y component of the magnetic field
-    * @param[in] bz the z component of the magnetic field
+    * @param[in] t_em_e a vec3<RealType> containing the electric field
+    * @param[in] t_em_b a vec3<RealType> containing the magnetic field
     * @param[in] t_volume the volume of the physical region
     * @param[in] t_dt the temporal step
     * @param[in] ref_quantity reference quantity for unit conversion (lambda or omega)
@@ -56,18 +52,20 @@ namespace schwinger{
     template<typename RealType, unit_system UnitSystem = unit_system::SI>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    RealType compute_expected_pair_number(
-        const RealType ex, const RealType ey, const RealType ez,
-        const RealType bx, const RealType by, const RealType bz,
+    RealType expected_pair_number(
+        const math::vec3<RealType> t_em_e,
+        const math::vec3<RealType> t_em_b,
         const RealType t_volume, const RealType t_dt,
         const RealType ref_quantity = static_cast<RealType>(1.0))
     {
         using namespace picsar::multi_physics::math;
 
-        const auto ee = math::vec3<RealType>{ex,ey,ez}*
-            fact_E_to_SI_from<UnitSystem, RealType>(ref_quantity);
-        const auto bb = math::vec3<RealType>{bx,by,bz}*
-            fact_B_to_SI_from<UnitSystem, RealType>(ref_quantity);
+        const auto em_e = t_em_e * conv<
+            quantity::E, UnitSystem,
+            unit_system::heaviside_lorentz, RealType>::fact(reference_quantity);
+        const auto em_b = t_em_b * conv<
+            quantity::B, UnitSystem,
+            unit_system::heaviside_lorentz, RealType>::fact(reference_quantity);
 
         constexpr const auto c_ff =
             static_cast<RealType>(1.0/(2.0*schwinger_field*schwinger_field));
@@ -108,7 +106,42 @@ namespace schwinger{
             (dt/(reduced_plank*light_speed)));
 
         return schwinger_pair_prod_coeff*res;
-}
+    }
+
+    /**
+    * This function computes the number of expected Schwinger pairs
+    * in a given volume for a given timestep using the Nikishov formula.
+    *
+    * @tparam RealType the floating point type to be used
+    * @tparam UnitSystem unit system to be used for inputs & outputs
+    * @param[in] ex a RealType containing the x component of the electric field
+    * @param[in] ey a RealType containing the y component of the electric field
+    * @param[in] ez a RealType containing the z component of the electric field
+    * @param[in] bx a RealType containing the x component of the magnetic field
+    * @param[in] by a RealType containing the y component of the magnetic field
+    * @param[in] bz a RealType containing the z component of the magnetic field
+    * @param[in] t_volume the volume of the physical region
+    * @param[in] t_dt the temporal step
+    * @param[in] ref_quantity reference quantity for unit conversion (lambda or omega)
+
+    * @return the expected number of generated pairs
+    */
+    template<typename RealType, unit_system UnitSystem>
+    PXRMP_INTERNAL_GPU_DECORATOR
+    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    RealType expected_pair_number(
+        const RealType ex, const RealType ey, const RealType ez,
+        const RealType bx, const RealType by, const RealType bz,
+        const RealType reference_quantity = static_cast<RealType>(1.0))
+    {
+        const auto p = math::vec3<RealType>{px, py, pz};
+        const auto em_e = math::vec3<RealType>{ex, ey, ez};
+        const auto em_b = math::vec3<RealType>{bx, by, bz};
+        return expected_pair_number<RealType, UnitSystem>(
+            p, em_e, em_b, reference_quantity);
+    }
+
+
 
     /**
     * This function computes the number of expected Schwinger pairs

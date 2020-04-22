@@ -10,6 +10,20 @@ namespace math{
     // Mathemtatical constants
     template<typename RealType = double>
     constexpr RealType pi = RealType(3.14159265358979323846264338327950288);
+
+    // Useful constants
+    template<typename RealType = double>
+    constexpr RealType zero = RealType(0.0);
+
+    template<typename RealType = double>
+    constexpr RealType one = RealType(1.0);
+
+    template<typename RealType = double>
+    constexpr RealType two = RealType(2.0);
+
+    template<typename RealType = double>
+    constexpr RealType three = RealType(3.0);
+
 }
 }
 }
