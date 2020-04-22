@@ -47,37 +47,9 @@ struct val_pack{
 };
 
 template<typename RealType, quantity Quantity>
-constexpr void test_to_SI(val_pack<RealType> vals)
-{
-    const auto fact_SI =
-        conv<Quantity, unit_system::SI,
-            unit_system::SI, RealType>::fact();
-    const auto fact_omega =
-        conv<Quantity, unit_system::norm_omega,
-            unit_system::SI, RealType>::fact();
-    const auto fact_lambda =
-        conv<Quantity, unit_system::norm_lambda,
-            unit_system::SI, RealType>::fact();
-    const auto fact_hl =
-        conv<Quantity, unit_system::heaviside_lorentz,
-            unit_system::SI, RealType>::fact();
-
-    const auto res_SI2SI = vals.SI*fact_SI;
-    const auto res_omega2SI = vals.omega*fact_omega;
-    const auto res_lambda2SI = vals.lambda*fact_lambda;
-    const auto res_hl2SI = vals.hl*fact_hl;
-    const auto all_res = std::array<RealType,4>{
-        res_SI2SI, res_omega2SI, res_lambda2SI, res_hl2SI};
-    for (const auto& res : all_res)
-        BOOST_CHECK_SMALL((res-vals.SI)/vals.SI, tolerance<RealType>());
-}
-
-
-
-template<typename RealType, quantity Quantity>
 constexpr void test_to_SI(val_pack<RealType> vals,
-    RealType reference_omega,
-    RealType reference_length)
+    RealType reference_omega = -1.0,
+    RealType reference_length = -1.0)
 {
     const auto fact_SI =
         conv<Quantity, unit_system::SI,
@@ -102,95 +74,11 @@ constexpr void test_to_SI(val_pack<RealType> vals,
         BOOST_CHECK_SMALL((res-vals.SI)/vals.SI, tolerance<RealType>());
 }
 
-
-template<typename RealType, quantity Quantity>
-constexpr void test_from_to(val_pack<RealType> vals)
-{
-    const auto from_SI_to_all = std::array<RealType,4>
-    {
-        vals.SI*conv<Quantity, unit_system::SI,
-            unit_system::SI, RealType>::fact(),
-        vals.SI*conv<Quantity, unit_system::SI,
-            unit_system::norm_omega, RealType>::fact(),
-        vals.SI*conv<Quantity, unit_system::SI,
-            unit_system::norm_lambda, RealType>::fact(),
-        vals.SI*conv<Quantity, unit_system::SI,
-            unit_system::heaviside_lorentz, RealType>::fact(),
-    };
-
-    const auto from_omega_to_all = std::array<RealType,4>
-    {
-        vals.omega*conv<Quantity, unit_system::norm_omega,
-            unit_system::SI, RealType>::fact(),
-        vals.omega*conv<Quantity, unit_system::norm_omega,
-            unit_system::norm_omega, RealType>::fact(),
-        vals.omega*conv<Quantity, unit_system::norm_omega,
-            unit_system::norm_lambda, RealType>::fact(),
-        vals.omega*conv<Quantity, unit_system::norm_omega,
-            unit_system::heaviside_lorentz, RealType>::fact(),
-    };
-
-    const auto from_lambda_to_all = std::array<RealType,4>
-    {
-        vals.lambda*conv<Quantity, unit_system::norm_lambda,
-            unit_system::SI, RealType>::fact(),
-        vals.lambda*conv<Quantity, unit_system::norm_lambda,
-            unit_system::norm_omega, RealType>::fact(),
-        vals.lambda*conv<Quantity, unit_system::norm_lambda,
-            unit_system::norm_lambda, RealType>::fact(),
-        vals.lambda*conv<Quantity, unit_system::norm_lambda,
-            unit_system::heaviside_lorentz, RealType>::fact(),
-    };
-
-    const auto from_hl_to_all = std::array<RealType,4>
-    {
-        vals.hl*conv<Quantity, unit_system::heaviside_lorentz,
-            unit_system::SI, RealType>::fact(),
-        vals.hl*conv<Quantity, unit_system::heaviside_lorentz,
-            unit_system::norm_omega, RealType>::fact(),
-        vals.hl*conv<Quantity, unit_system::heaviside_lorentz,
-            unit_system::norm_lambda, RealType>::fact(),
-        vals.hl*conv<Quantity, unit_system::heaviside_lorentz,
-            unit_system::heaviside_lorentz, RealType>::fact(),
-    };
-
-    const auto fact_SI = conv<Quantity, unit_system::SI,
-        unit_system::SI, RealType>::fact();
-    const auto fact_omega = conv<Quantity, unit_system::norm_omega,
-        unit_system::SI, RealType>::fact();
-    const auto fact_lambda = conv<Quantity, unit_system::norm_lambda,
-        unit_system::SI, RealType>::fact();
-    const auto fact_hl = conv<Quantity, unit_system::heaviside_lorentz,
-        unit_system::SI, RealType>::fact();
-
-    const auto all_facts = std::array<RealType, 4>{
-        fact_SI, fact_omega, fact_lambda, fact_hl};
-
-    const auto all_data = std::array<std::array<RealType, 4>, 4>{
-        from_SI_to_all,
-        from_omega_to_all,
-        from_lambda_to_all,
-        from_hl_to_all
-    };
-
-    for (auto data: all_data)
-    {
-        std::transform( data.begin(), data.end(),
-            all_facts.begin(), data.begin(),
-            std::multiplies<RealType>());
-
-        for (const auto& res : data){
-            BOOST_CHECK_SMALL((res-vals.SI)/vals.SI, tolerance<RealType>());
-        }
-
-    }
-}
-
 template<typename RealType, quantity Quantity>
 constexpr void test_from_to(
     val_pack<RealType> vals,
-    RealType reference_omega,
-    RealType reference_length)
+    RealType reference_omega = -1.0,
+    RealType reference_length = -1.0)
 
 {
     const auto from_SI_to_all = std::array<RealType,4>
@@ -198,9 +86,9 @@ constexpr void test_from_to(
         vals.SI*conv<Quantity, unit_system::SI,
             unit_system::SI, RealType>::fact(),
         vals.SI*conv<Quantity, unit_system::SI,
-            unit_system::norm_omega, RealType>::fact(reference_omega),
+            unit_system::norm_omega, RealType>::fact(1.0,reference_omega),
         vals.SI*conv<Quantity, unit_system::SI,
-            unit_system::norm_lambda, RealType>::fact(reference_length),
+            unit_system::norm_lambda, RealType>::fact(1.0,reference_length),
         vals.SI*conv<Quantity, unit_system::SI,
             unit_system::heaviside_lorentz, RealType>::fact(),
     };
@@ -226,7 +114,7 @@ constexpr void test_from_to(
         vals.lambda*conv<Quantity, unit_system::norm_lambda,
             unit_system::norm_lambda, RealType>::fact(reference_length, reference_length),
         vals.lambda*conv<Quantity, unit_system::norm_lambda,
-            unit_system::heaviside_lorentz, RealType>::fact(reference_length),
+            unit_system::heaviside_lorentz, RealType>::fact(reference_length, 1.0),
     };
 
     const auto from_hl_to_all = std::array<RealType,4>
@@ -234,9 +122,9 @@ constexpr void test_from_to(
         vals.hl*conv<Quantity, unit_system::heaviside_lorentz,
             unit_system::SI, RealType>::fact(),
         vals.hl*conv<Quantity, unit_system::heaviside_lorentz,
-            unit_system::norm_omega, RealType>::fact(reference_omega),
+            unit_system::norm_omega, RealType>::fact(1.0,reference_omega),
         vals.hl*conv<Quantity, unit_system::heaviside_lorentz,
-            unit_system::norm_lambda, RealType>::fact(reference_length),
+            unit_system::norm_lambda, RealType>::fact(1.0,reference_length),
         vals.hl*conv<Quantity, unit_system::heaviside_lorentz,
             unit_system::heaviside_lorentz, RealType>::fact(),
     };

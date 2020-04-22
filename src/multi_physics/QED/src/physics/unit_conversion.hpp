@@ -122,39 +122,16 @@ namespace phys{
     {
         /**
         * This function returns the conversion factor for any quantity from any unit
-        * system to any other unit system (in the case that no reference quantities
-        * are needed).
+        * system to any other unit system
         *
-        * @return the conversion factor
-        */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept;
-
-        /**
-        * This function returns the conversion factor for any quantity from any unit
-        * system to any other unit system (in the case that a reference quantity
-        * is needed).
-        *
-        * @param[in] reference_quantity a reference quantity needed either for From or To
+        * @param[in] reference_quantity_from reference quantity needed for From (if needed)
+        * @param[in] reference_quantity_to reference quantity needed for To  (if needed)
         * @return the conversion factor
         */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept;
-
-        /**
-        * This function returns the conversion factor for any quantity from any unit
-        * system to any other unit system (in the case that two reference quantities
-        * are needed).
-        *
-        * @param[in] reference_quantity_from a reference quantity needed for From
-        * @param[in] reference_quantity_to a reference quantity needed for To
-        * @return the conversion factor
-        */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact(
-            const RealType reference_quantity_from,
-            const RealType reference_quantity_to) noexcept;
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept;
     };
 
     //All possible template specializations follow
@@ -165,7 +142,9 @@ namespace phys{
     struct conv<quantity::mass, UnitSystem, UnitSystem, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -173,7 +152,9 @@ namespace phys{
     struct conv<quantity::mass, unit_system::SI, unit_system::norm_omega, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0/electron_mass<double>);};
     };
 
@@ -181,7 +162,9 @@ namespace phys{
     struct conv<quantity::mass, unit_system::SI, unit_system::norm_lambda, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0/electron_mass<double>);};
     };
 
@@ -189,7 +172,9 @@ namespace phys{
     struct conv<quantity::mass, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(
             (light_speed<double>*light_speed<double>)/
             heaviside_lorentz_reference_energy<double>);};
@@ -199,7 +184,9 @@ namespace phys{
     struct conv<quantity::mass, unit_system::norm_omega, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return electron_mass<RealType>;};
     };
 
@@ -207,7 +194,9 @@ namespace phys{
     struct conv<quantity::mass, unit_system::norm_omega, unit_system::norm_lambda, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -215,7 +204,9 @@ namespace phys{
     struct conv<quantity::mass, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(
             electron_mass<double>*
             (light_speed<double>*light_speed<double>)/
@@ -226,7 +217,9 @@ namespace phys{
     struct conv<quantity::mass, unit_system::norm_lambda, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return electron_mass<RealType>;};
     };
 
@@ -234,7 +227,9 @@ namespace phys{
     struct conv<quantity::mass, unit_system::norm_lambda, unit_system::norm_omega, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -242,7 +237,9 @@ namespace phys{
     struct conv<quantity::mass, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(
             electron_mass<double>*
             (light_speed<double>*light_speed<double>)/
@@ -253,7 +250,9 @@ namespace phys{
     struct conv<quantity::mass, unit_system::heaviside_lorentz, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(
             heaviside_lorentz_reference_energy<double>/
             (light_speed<double>*light_speed<double>));};
@@ -263,7 +262,9 @@ namespace phys{
     struct conv<quantity::mass, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(
             heaviside_lorentz_reference_energy<double>/
             (light_speed<double>*light_speed<double>)/
@@ -274,7 +275,9 @@ namespace phys{
     struct conv<quantity::mass, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(
             heaviside_lorentz_reference_energy<double>/
             (light_speed<double>*light_speed<double>)/
@@ -287,7 +290,9 @@ namespace phys{
     struct conv<quantity::charge, UnitSystem, UnitSystem, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -295,7 +300,9 @@ namespace phys{
     struct conv<quantity::charge, unit_system::SI, unit_system::norm_omega, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0/elementary_charge<double>);};
     };
 
@@ -303,7 +310,9 @@ namespace phys{
     struct conv<quantity::charge, unit_system::SI, unit_system::norm_lambda, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0/elementary_charge<double>);};
     };
 
@@ -311,7 +320,9 @@ namespace phys{
     struct conv<quantity::charge, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(
             sqrt_4_pi_fine_structure<double>/
             elementary_charge<double>);};
@@ -321,7 +332,9 @@ namespace phys{
     struct conv<quantity::charge, unit_system::norm_omega, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return elementary_charge<RealType>;};
     };
 
@@ -329,7 +342,9 @@ namespace phys{
     struct conv<quantity::charge, unit_system::norm_omega, unit_system::norm_lambda, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -337,7 +352,9 @@ namespace phys{
     struct conv<quantity::charge, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return sqrt_4_pi_fine_structure<RealType>;};
     };
 
@@ -345,7 +362,9 @@ namespace phys{
     struct conv<quantity::charge, unit_system::norm_lambda, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return elementary_charge<RealType>;};
     };
 
@@ -353,7 +372,9 @@ namespace phys{
     struct conv<quantity::charge, unit_system::norm_lambda, unit_system::norm_omega, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -361,7 +382,9 @@ namespace phys{
     struct conv<quantity::charge, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return sqrt_4_pi_fine_structure<RealType>;};
     };
 
@@ -369,7 +392,9 @@ namespace phys{
     struct conv<quantity::charge, unit_system::heaviside_lorentz, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(
                 elementary_charge<double>/sqrt_4_pi_fine_structure<double>);};
     };
@@ -378,7 +403,9 @@ namespace phys{
     struct conv<quantity::charge, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0/sqrt_4_pi_fine_structure<double>);};
     };
 
@@ -386,7 +413,9 @@ namespace phys{
     struct conv<quantity::charge, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0/sqrt_4_pi_fine_structure<double>);};
     };
 
@@ -396,7 +425,9 @@ namespace phys{
     struct conv<quantity::velocity, UnitSystem, UnitSystem, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -404,7 +435,9 @@ namespace phys{
     struct conv<quantity::velocity, unit_system::SI, unit_system::norm_omega, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0/light_speed<double>);};
     };
 
@@ -412,7 +445,9 @@ namespace phys{
     struct conv<quantity::velocity, unit_system::SI, unit_system::norm_lambda, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0/light_speed<double>);};
     };
 
@@ -420,7 +455,9 @@ namespace phys{
     struct conv<quantity::velocity, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0/light_speed<double>);};
     };
 
@@ -428,7 +465,9 @@ namespace phys{
     struct conv<quantity::velocity, unit_system::norm_omega, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return light_speed<RealType>;};
     };
 
@@ -436,7 +475,9 @@ namespace phys{
     struct conv<quantity::velocity, unit_system::norm_omega, unit_system::norm_lambda, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -444,7 +485,9 @@ namespace phys{
     struct conv<quantity::velocity, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -452,7 +495,9 @@ namespace phys{
     struct conv<quantity::velocity, unit_system::norm_lambda, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return light_speed<RealType>;};
     };
 
@@ -460,7 +505,9 @@ namespace phys{
     struct conv<quantity::velocity, unit_system::norm_lambda, unit_system::norm_omega, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -468,7 +515,9 @@ namespace phys{
     struct conv<quantity::velocity, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -476,7 +525,9 @@ namespace phys{
     struct conv<quantity::velocity, unit_system::heaviside_lorentz, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return light_speed<RealType>;};
     };
 
@@ -484,7 +535,9 @@ namespace phys{
     struct conv<quantity::velocity, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -492,7 +545,9 @@ namespace phys{
     struct conv<quantity::velocity, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -502,7 +557,9 @@ namespace phys{
     struct conv<quantity::momentum, UnitSystem, UnitSystem, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -510,7 +567,9 @@ namespace phys{
     struct conv<quantity::momentum, unit_system::SI, unit_system::norm_omega, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0/
             (electron_mass<double>*light_speed<double>));};
     };
@@ -519,7 +578,9 @@ namespace phys{
     struct conv<quantity::momentum, unit_system::SI, unit_system::norm_lambda, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0/
             (electron_mass<double>*light_speed<double>));};
     };
@@ -528,7 +589,9 @@ namespace phys{
     struct conv<quantity::momentum, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(light_speed<double>/
             heaviside_lorentz_reference_energy<double>);};
     };
@@ -537,7 +600,9 @@ namespace phys{
     struct conv<quantity::momentum, unit_system::norm_omega, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(
                 electron_mass<double>*light_speed<double>);};
     };
@@ -546,7 +611,9 @@ namespace phys{
     struct conv<quantity::momentum, unit_system::norm_omega, unit_system::norm_lambda, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -554,7 +621,9 @@ namespace phys{
     struct conv<quantity::momentum, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(electron_mass<double>*light_speed<double>
             *light_speed<double>/heaviside_lorentz_reference_energy<double>);};
     };
@@ -563,7 +632,9 @@ namespace phys{
     struct conv<quantity::momentum, unit_system::norm_lambda, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(
                 electron_mass<double>*light_speed<double>);};
     };
@@ -572,7 +643,9 @@ namespace phys{
     struct conv<quantity::momentum, unit_system::norm_lambda, unit_system::norm_omega, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -580,7 +653,9 @@ namespace phys{
     struct conv<quantity::momentum, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(electron_mass<double>*light_speed<double>
             *light_speed<double>/heaviside_lorentz_reference_energy<double>);};
     };
@@ -589,7 +664,9 @@ namespace phys{
     struct conv<quantity::momentum, unit_system::heaviside_lorentz, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(
             heaviside_lorentz_reference_energy<double>/light_speed<double>);};
     };
@@ -598,7 +675,9 @@ namespace phys{
     struct conv<quantity::momentum, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(heaviside_lorentz_reference_energy<double>/
             electron_mass<double>/light_speed<double>/light_speed<double>);};
     };
@@ -607,7 +686,9 @@ namespace phys{
     struct conv<quantity::momentum, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(heaviside_lorentz_reference_energy<double>/
             electron_mass<double>/light_speed<double>/light_speed<double>);};
     };
@@ -618,7 +699,9 @@ namespace phys{
     struct conv<quantity::energy, UnitSystem, UnitSystem, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -626,7 +709,9 @@ namespace phys{
     struct conv<quantity::energy, unit_system::SI, unit_system::norm_omega, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0/
             (electron_mass<double>*light_speed<double>*light_speed<double>));};
     };
@@ -635,7 +720,9 @@ namespace phys{
     struct conv<quantity::energy, unit_system::SI, unit_system::norm_lambda, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0/
             (electron_mass<double>*light_speed<double>*light_speed<double>));};
     };
@@ -644,7 +731,9 @@ namespace phys{
     struct conv<quantity::energy, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0/
             heaviside_lorentz_reference_energy<double>);};
     };
@@ -653,7 +742,9 @@ namespace phys{
     struct conv<quantity::energy, unit_system::norm_omega, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(
                 electron_mass<double>*light_speed<double>*light_speed<double>);};
     };
@@ -662,7 +753,9 @@ namespace phys{
     struct conv<quantity::energy, unit_system::norm_omega, unit_system::norm_lambda, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -670,7 +763,9 @@ namespace phys{
     struct conv<quantity::energy, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(electron_mass<double>*light_speed<double>*
             light_speed<double>/heaviside_lorentz_reference_energy<double>);};
     };
@@ -679,7 +774,9 @@ namespace phys{
     struct conv<quantity::energy, unit_system::norm_lambda, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(
                 electron_mass<double>*light_speed<double>*light_speed<double>);};
     };
@@ -688,7 +785,9 @@ namespace phys{
     struct conv<quantity::energy, unit_system::norm_lambda, unit_system::norm_omega, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -696,7 +795,9 @@ namespace phys{
     struct conv<quantity::energy, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(electron_mass<double>*light_speed<double>
             *light_speed<double>/heaviside_lorentz_reference_energy<double>);};
     };
@@ -705,7 +806,9 @@ namespace phys{
     struct conv<quantity::energy, unit_system::heaviside_lorentz, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return heaviside_lorentz_reference_energy<double>;};
     };
 
@@ -713,7 +816,9 @@ namespace phys{
     struct conv<quantity::energy, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(heaviside_lorentz_reference_energy<double>/
             electron_mass<double>/light_speed<double>/light_speed<double>);};
     };
@@ -722,7 +827,9 @@ namespace phys{
     struct conv<quantity::energy, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(heaviside_lorentz_reference_energy<double>/
             electron_mass<double>/light_speed<double>/light_speed<double>);};
     };
@@ -733,7 +840,9 @@ namespace phys{
     struct conv<quantity::length, unit_system::SI, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -742,10 +851,11 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(1.0/light_speed<RealType>);
-            return reference_quantity*ff;
+            return reference_quantity_to*ff;
         };
     };
 
@@ -754,15 +864,18 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
-        {return static_cast<RealType>(1.0)/reference_quantity;};
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
+        {return static_cast<RealType>(1.0)/reference_quantity_to;};
     };
 
     template<typename RealType>
     struct conv<quantity::length, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(heaviside_lorentz_reference_energy<double>/
             (reduced_plank<double>*light_speed<double>));};
     };
@@ -772,8 +885,9 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
-        {return light_speed<RealType>/reference_quantity;};
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
+        {return light_speed<RealType>/reference_quantity_from;};
     };
 
     template<typename RealType>
@@ -802,11 +916,12 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
             heaviside_lorentz_reference_energy<double>/reduced_plank<double>);
-            return ff/reference_quantity;};
+            return ff/reference_quantity_from;};
     };
 
     template<typename RealType>
@@ -814,8 +929,9 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
-        {return reference_quantity;};
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
+        {return reference_quantity_from;};
     };
 
     template<typename RealType>
@@ -847,11 +963,12 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(heaviside_lorentz_reference_energy<double>/
             (reduced_plank<double>*light_speed<double>));
-            return reference_quantity*ff;
+            return reference_quantity_from*ff;
         };
     };
 
@@ -859,7 +976,9 @@ namespace phys{
     struct conv<quantity::length, unit_system::heaviside_lorentz, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>((reduced_plank<double>*light_speed<double>)/
             heaviside_lorentz_reference_energy<double>);};
     };
@@ -869,12 +988,13 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 reduced_plank<double>/
                 heaviside_lorentz_reference_energy<double>);
-            return ff*reference_quantity;
+            return ff*reference_quantity_to;
        };
     };
 
@@ -883,12 +1003,13 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 reduced_plank<double>*light_speed<double>/
                 heaviside_lorentz_reference_energy<double>);
-            return ff/reference_quantity;
+            return ff/reference_quantity_to;
         };
     };
 
@@ -896,7 +1017,9 @@ namespace phys{
     struct conv<quantity::length, unit_system::heaviside_lorentz, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -906,7 +1029,9 @@ namespace phys{
     struct conv<quantity::area, unit_system::SI, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -915,10 +1040,11 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(1.0/light_speed<RealType>);
-            return (reference_quantity*ff)*(reference_quantity*ff);
+            return (reference_quantity_to*ff)*(reference_quantity_to*ff);
         };
     };
 
@@ -927,16 +1053,19 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0)/
-            (reference_quantity*reference_quantity);};
+            (reference_quantity_to*reference_quantity_to);};
     };
 
     template<typename RealType>
     struct conv<quantity::area, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(
             heaviside_lorentz_reference_energy<double>*
             heaviside_lorentz_reference_energy<double>/
@@ -949,11 +1078,12 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 light_speed<RealType>*light_speed<RealType>);
-            return ff/reference_quantity/reference_quantity;
+            return ff/reference_quantity_from/reference_quantity_from;
         };
     };
 
@@ -988,11 +1118,12 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 heaviside_lorentz_reference_energy<double>/reduced_plank<double>);
-            return (ff/reference_quantity)*(ff/reference_quantity);};
+            return (ff/reference_quantity_from)*(ff/reference_quantity_from);};
     };
 
     template<typename RealType>
@@ -1000,8 +1131,9 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
-        {return reference_quantity*reference_quantity;};
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
+        {return reference_quantity_from*reference_quantity_from;};
     };
 
     template<typename RealType>
@@ -1036,12 +1168,13 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
             heaviside_lorentz_reference_energy<double>/
             (reduced_plank<double>*light_speed<double>));
-            return (reference_quantity*ff)*(reference_quantity*ff);
+            return (reference_quantity_from*ff)*(reference_quantity_from*ff);
         };
     };
 
@@ -1049,7 +1182,9 @@ namespace phys{
     struct conv<quantity::area, unit_system::heaviside_lorentz, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(
             (reduced_plank<double>*light_speed<double>)*
             (reduced_plank<double>*light_speed<double>)/
@@ -1062,12 +1197,13 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 reduced_plank<double>/
                 heaviside_lorentz_reference_energy<double>);
-            return (ff*reference_quantity)*(ff*reference_quantity);
+            return (ff*reference_quantity_to)*(ff*reference_quantity_to);
        };
     };
 
@@ -1076,12 +1212,13 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 reduced_plank<double>*light_speed<double>/
                 heaviside_lorentz_reference_energy<double>);
-            return (ff/reference_quantity)*(ff/reference_quantity);
+            return (ff/reference_quantity_to)*(ff/reference_quantity_to);
         };
     };
 
@@ -1089,7 +1226,9 @@ namespace phys{
     struct conv<quantity::area, unit_system::heaviside_lorentz, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -1099,7 +1238,9 @@ namespace phys{
     struct conv<quantity::volume, unit_system::SI, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -1108,11 +1249,12 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(1.0/light_speed<RealType>);
-            return (reference_quantity*ff)*(reference_quantity*ff)*
-                (reference_quantity*ff);
+            return (reference_quantity_to*ff)*(reference_quantity_to*ff)*
+                (reference_quantity_to*ff);
         };
     };
 
@@ -1121,16 +1263,19 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0)/
-            (reference_quantity*reference_quantity*reference_quantity);};
+            (reference_quantity_to*reference_quantity_to*reference_quantity_to);};
     };
 
     template<typename RealType>
     struct conv<quantity::volume, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(
             heaviside_lorentz_reference_energy<double>*
             heaviside_lorentz_reference_energy<double>*
@@ -1145,11 +1290,12 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 light_speed<RealType>*light_speed<RealType>*light_speed<RealType>);
-            return ff/reference_quantity/reference_quantity/reference_quantity;
+            return ff/reference_quantity_from/reference_quantity_from/reference_quantity_from;
         };
     };
 
@@ -1186,12 +1332,13 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 heaviside_lorentz_reference_energy<double>/reduced_plank<double>);
-            return (ff/reference_quantity)*(ff/reference_quantity)*
-                (ff/reference_quantity);};
+            return (ff/reference_quantity_from)*(ff/reference_quantity_from)*
+                (ff/reference_quantity_from);};
     };
 
     template<typename RealType>
@@ -1199,8 +1346,9 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
-        {return reference_quantity*reference_quantity*reference_quantity;};
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
+        {return reference_quantity_from*reference_quantity_from*reference_quantity_from;};
     };
 
     template<typename RealType>
@@ -1237,13 +1385,14 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
             heaviside_lorentz_reference_energy<double>/
             (reduced_plank<double>*light_speed<double>));
-            return (reference_quantity*ff)*(reference_quantity*ff)*
-                (reference_quantity*ff);
+            return (reference_quantity_from*ff)*(reference_quantity_from*ff)*
+                (reference_quantity_from*ff);
         };
     };
 
@@ -1251,7 +1400,9 @@ namespace phys{
     struct conv<quantity::volume, unit_system::heaviside_lorentz, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(
             (reduced_plank<double>*light_speed<double>)*
             (reduced_plank<double>*light_speed<double>)*
@@ -1266,13 +1417,14 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 reduced_plank<double>/
                 heaviside_lorentz_reference_energy<double>);
-            return (ff*reference_quantity)*(ff*reference_quantity)*
-                (ff*reference_quantity);
+            return (ff*reference_quantity_to)*(ff*reference_quantity_to)*
+                (ff*reference_quantity_to);
        };
     };
 
@@ -1281,13 +1433,14 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 reduced_plank<double>*light_speed<double>/
                 heaviside_lorentz_reference_energy<double>);
-            return (ff/reference_quantity)*(ff/reference_quantity)*
-                (ff/reference_quantity);
+            return (ff/reference_quantity_to)*(ff/reference_quantity_to)*
+                (ff/reference_quantity_to);
         };
     };
 
@@ -1295,7 +1448,9 @@ namespace phys{
     struct conv<quantity::volume, unit_system::heaviside_lorentz, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -1305,7 +1460,9 @@ namespace phys{
     struct conv<quantity::time, unit_system::SI, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -1314,9 +1471,10 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
-            return reference_quantity;
+            return reference_quantity_to;
         };
     };
 
@@ -1325,15 +1483,18 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
-        {return light_speed<RealType>/reference_quantity;};
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
+        {return light_speed<RealType>/reference_quantity_to;};
     };
 
     template<typename RealType>
     struct conv<quantity::time, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(
                 heaviside_lorentz_reference_energy<double>/
                 reduced_plank<double>);};
@@ -1344,8 +1505,9 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
-        {return static_cast<RealType>(1.0)/reference_quantity;};
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
+        {return static_cast<RealType>(1.0)/reference_quantity_from;};
     };
 
     template<typename RealType>
@@ -1374,11 +1536,12 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
             heaviside_lorentz_reference_energy<double>/reduced_plank<double>);
-            return ff/reference_quantity;};
+            return ff/reference_quantity_from;};
     };
 
     template<typename RealType>
@@ -1386,8 +1549,9 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
-        {return reference_quantity/light_speed<RealType>;};
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
+        {return reference_quantity_from/light_speed<RealType>;};
     };
 
     template<typename RealType>
@@ -1419,11 +1583,12 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(heaviside_lorentz_reference_energy<double>/
             (reduced_plank<double>*light_speed<double>));
-            return reference_quantity*ff;
+            return reference_quantity_from*ff;
         };
     };
 
@@ -1431,7 +1596,9 @@ namespace phys{
     struct conv<quantity::time, unit_system::heaviside_lorentz, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(reduced_plank<double>/
             heaviside_lorentz_reference_energy<double>);};
     };
@@ -1441,12 +1608,13 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 reduced_plank<double>/
                 heaviside_lorentz_reference_energy<double>);
-            return ff*reference_quantity;
+            return ff*reference_quantity_to;
        };
     };
 
@@ -1455,12 +1623,13 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 reduced_plank<double>*light_speed<double>/
                 heaviside_lorentz_reference_energy<double>);
-            return ff/reference_quantity;
+            return ff/reference_quantity_to;
         };
     };
 
@@ -1468,7 +1637,9 @@ namespace phys{
     struct conv<quantity::time, unit_system::heaviside_lorentz, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -1478,7 +1649,9 @@ namespace phys{
     struct conv<quantity::rate, unit_system::SI, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -1487,8 +1660,9 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
-        {return static_cast<RealType>(1.0)/reference_quantity;};
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
+        {return static_cast<RealType>(1.0)/reference_quantity_to;};
     };
 
     template<typename RealType>
@@ -1496,15 +1670,18 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
-        {return reference_quantity/light_speed<RealType>;};
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
+        {return reference_quantity_to/light_speed<RealType>;};
     };
 
     template<typename RealType>
     struct conv<quantity::rate, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(reduced_plank<double>/
                 heaviside_lorentz_reference_energy<double>);};
     };
@@ -1514,8 +1691,9 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
-        {return reference_quantity;};
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
+        {return reference_quantity_from;};
     };
 
     template<typename RealType>
@@ -1546,11 +1724,12 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
             heaviside_lorentz_reference_energy<double>/reduced_plank<double>);
-            return reference_quantity/ff;};
+            return reference_quantity_from/ff;};
     };
 
     template<typename RealType>
@@ -1558,8 +1737,9 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
-        {return light_speed<RealType>/reference_quantity;};
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
+        {return light_speed<RealType>/reference_quantity_from;};
     };
 
     template<typename RealType>
@@ -1588,12 +1768,13 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 (reduced_plank<double>*light_speed<double>)/
                 heaviside_lorentz_reference_energy<double>);
-            return ff/reference_quantity;
+            return ff/reference_quantity_from;
         };
     };
 
@@ -1601,7 +1782,9 @@ namespace phys{
     struct conv<quantity::rate, unit_system::heaviside_lorentz, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(
             heaviside_lorentz_reference_energy<double>)/
             reduced_plank<double>;};
@@ -1612,12 +1795,13 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 heaviside_lorentz_reference_energy<double>/
                 reduced_plank<double>);
-            return ff/reference_quantity;
+            return ff/reference_quantity_to;
        };
     };
 
@@ -1626,12 +1810,13 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 heaviside_lorentz_reference_energy<double>/
                 reduced_plank<double>/light_speed<double>);
-            return ff*reference_quantity;
+            return ff*reference_quantity_to;
         };
     };
 
@@ -1639,7 +1824,9 @@ namespace phys{
     struct conv<quantity::rate, unit_system::heaviside_lorentz, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -1649,7 +1836,9 @@ namespace phys{
     struct conv<quantity::E, unit_system::SI, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -1658,12 +1847,13 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 elementary_charge<double>/electron_mass<double>/
                 light_speed<double>);
-            return ff/reference_quantity;
+            return ff/reference_quantity_to;
         };
     };
 
@@ -1672,12 +1862,13 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 elementary_charge<double>/electron_mass<double>/
                 light_speed<double>/light_speed<double>);
-            return ff*reference_quantity;
+            return ff*reference_quantity_to;
         };
     };
 
@@ -1685,7 +1876,9 @@ namespace phys{
     struct conv<quantity::E, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(
             (elementary_charge<double>*reduced_plank<double>*
             light_speed<double>)/
@@ -1699,11 +1892,12 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(electron_mass<double>*
                 light_speed<double>/elementary_charge<double>);
-            return ff*reference_quantity;
+            return ff*reference_quantity_from;
         };
     };
 
@@ -1735,14 +1929,15 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 electron_mass<double>*light_speed<double>*reduced_plank<double>*
                 light_speed<double>/heaviside_lorentz_reference_energy<double>/
                 heaviside_lorentz_reference_energy<double>/
                 sqrt_4_pi_fine_structure<double>);
-            return ff*reference_quantity;
+            return ff*reference_quantity_from;
         };
     };
 
@@ -1751,12 +1946,13 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 electron_mass<double>*light_speed<double>*light_speed<double>/
                 (elementary_charge<double>));
-            return ff/reference_quantity;
+            return ff/reference_quantity_from;
         };
     };
 
@@ -1786,7 +1982,8 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(electron_mass<double>*
                 light_speed<double>*light_speed<double>*reduced_plank<double>*
@@ -1794,7 +1991,7 @@ namespace phys{
                 heaviside_lorentz_reference_energy<double>/
                 heaviside_lorentz_reference_energy<double>/
                 sqrt_4_pi_fine_structure<double>);
-            return ff/reference_quantity;
+            return ff/reference_quantity_from;
         };
     };
 
@@ -1802,7 +1999,9 @@ namespace phys{
     struct conv<quantity::E, unit_system::heaviside_lorentz, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(
                 heaviside_lorentz_reference_energy<double>*
                 heaviside_lorentz_reference_energy<double>*
@@ -1816,14 +2015,15 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 heaviside_lorentz_reference_energy<double>*
                 heaviside_lorentz_reference_energy<double>*
                 sqrt_4_pi_fine_structure<double>/reduced_plank<double>/
                 light_speed<double>/electron_mass<double>/light_speed<double>);
-            return ff /reference_quantity;
+            return ff /reference_quantity_to;
        };
     };
 
@@ -1832,7 +2032,8 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 heaviside_lorentz_reference_energy<double>*
@@ -1840,7 +2041,7 @@ namespace phys{
                 sqrt_4_pi_fine_structure<double>/reduced_plank<double>/
                 light_speed<double>/electron_mass<double>/light_speed<double>/
                 light_speed<double>);
-            return ff*reference_quantity;
+            return ff*reference_quantity_to;
         };
     };
 
@@ -1848,7 +2049,9 @@ namespace phys{
     struct conv<quantity::E, unit_system::heaviside_lorentz, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -1858,7 +2061,9 @@ namespace phys{
     struct conv<quantity::B, unit_system::SI, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 
@@ -1867,11 +2072,12 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 elementary_charge<double>/electron_mass<double>);
-            return ff/reference_quantity;
+            return ff/reference_quantity_to;
         };
     };
 
@@ -1880,12 +2086,13 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 elementary_charge<double>/electron_mass<double>/
                 light_speed<double>);
-            return ff*reference_quantity;
+            return ff*reference_quantity_to;
         };
     };
 
@@ -1893,7 +2100,9 @@ namespace phys{
     struct conv<quantity::B, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(
             (elementary_charge<double>*reduced_plank<double>*
             light_speed<double>)*light_speed<double>/
@@ -1907,11 +2116,12 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(electron_mass<double>/
                 elementary_charge<double>);
-            return ff*reference_quantity;
+            return ff*reference_quantity_from;
         };
     };
 
@@ -1943,14 +2153,15 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 electron_mass<double>*light_speed<double>*reduced_plank<double>*
                 light_speed<double>/heaviside_lorentz_reference_energy<double>/
                 heaviside_lorentz_reference_energy<double>/
                 sqrt_4_pi_fine_structure<double>);
-            return ff*reference_quantity;
+            return ff*reference_quantity_from;
         };
     };
 
@@ -1959,12 +2170,13 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 electron_mass<double>*light_speed<double>/
                 (elementary_charge<double>));
-            return ff/reference_quantity;
+            return ff/reference_quantity_from;
         };
     };
 
@@ -1994,7 +2206,8 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(electron_mass<double>*
                 light_speed<double>*light_speed<double>*reduced_plank<double>*
@@ -2002,7 +2215,7 @@ namespace phys{
                 heaviside_lorentz_reference_energy<double>/
                 heaviside_lorentz_reference_energy<double>/
                 sqrt_4_pi_fine_structure<double>);
-            return ff/reference_quantity;
+            return ff/reference_quantity_from;
         };
     };
 
@@ -2010,7 +2223,9 @@ namespace phys{
     struct conv<quantity::B, unit_system::heaviside_lorentz, unit_system::SI, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(
                 heaviside_lorentz_reference_energy<double>*
                 heaviside_lorentz_reference_energy<double>*
@@ -2024,14 +2239,15 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 heaviside_lorentz_reference_energy<double>*
                 heaviside_lorentz_reference_energy<double>*
                 sqrt_4_pi_fine_structure<double>/reduced_plank<double>/
                 light_speed<double>/electron_mass<double>/light_speed<double>);
-            return ff /reference_quantity;
+            return ff /reference_quantity_to;
        };
     };
 
@@ -2040,7 +2256,8 @@ namespace phys{
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         static constexpr RealType fact(
-            const RealType reference_quantity) noexcept
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {
             constexpr auto ff = static_cast<RealType>(
                 heaviside_lorentz_reference_energy<double>*
@@ -2048,7 +2265,7 @@ namespace phys{
                 sqrt_4_pi_fine_structure<double>/reduced_plank<double>/
                 light_speed<double>/electron_mass<double>/light_speed<double>/
                 light_speed<double>);
-            return ff*reference_quantity;
+            return ff*reference_quantity_to;
         };
     };
 
@@ -2056,7 +2273,9 @@ namespace phys{
     struct conv<quantity::B, unit_system::heaviside_lorentz, unit_system::heaviside_lorentz, RealType>
     {
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        static constexpr RealType fact() noexcept
+        static constexpr RealType fact(
+            const RealType reference_quantity_from = static_cast<RealType>(1.0),
+            const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
         {return static_cast<RealType>(1.0);};
     };
 }
