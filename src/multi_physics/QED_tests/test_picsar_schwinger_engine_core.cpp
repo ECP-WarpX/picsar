@@ -22,10 +22,10 @@ using namespace picsar::multi_physics::phys;
 using namespace picsar::multi_physics::phys::schwinger;
 
 //Tolerance for double precision calculations
-const double double_tolerance = 1.0e-6;
+const double double_tolerance = 1.0e-8;
 
 //Tolerance for single precision calculations
-const float float_tolerance = 1.0e-3;
+const float float_tolerance = 1.0e-4;
 
 //Templated tolerance
 template <typename T>
@@ -118,7 +118,7 @@ template<typename RealType>
 void test_expected_pair_number()
 {
     for(int i = 0 ; i < E.size(); ++i){
-        const auto exp = compute_expected_pair_number<RealType, unit_system::SI>(
+        const auto exp = expected_pair_number<RealType, unit_system::SI>(
             E[i][0], E[i][1], E[i][2], B[i][0], B[i][1], B[i][2],
             volume, dt);
 
