@@ -2293,7 +2293,7 @@ namespace phys{
     * Schwinger field in heaviside_lorentz units
     */
     template <typename RealType>
-    constexpr RealType heaviside_lorentz_schwinger= static_cast<RealType>(
+    constexpr RealType heaviside_lorentz_schwinger_field= static_cast<RealType>(
         phys::schwinger_field<double>*conv<quantity::E, unit_system::SI,
             unit_system::heaviside_lorentz, double>::fact());
 

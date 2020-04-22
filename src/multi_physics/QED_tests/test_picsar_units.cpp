@@ -201,7 +201,7 @@ void test_case_hl_schwinger_field()
     constexpr auto exp = static_cast<RealType>(
         schwinger_field<double>*conv<quantity::E,
             unit_system::SI, unit_system::heaviside_lorentz, double>::fact());
-    constexpr auto res = heaviside_lorentz_schwinger<RealType>;
+    constexpr auto res = heaviside_lorentz_schwinger_field<RealType>;
     BOOST_CHECK_SMALL((res-exp)/exp, tolerance<RealType>());
 }
 
