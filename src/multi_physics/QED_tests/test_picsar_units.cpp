@@ -211,6 +211,23 @@ BOOST_AUTO_TEST_CASE( picsar_unit_conv_heaviside_lorentz_schwinger_field )
     test_case_hl_schwinger_field<float>();
 }
 
+// ***Test elementary charge in Heaviside Lorentz units
+template<typename RealType>
+void test_case_hl_elementary_charge()
+{
+    constexpr auto exp = static_cast<RealType>(
+        elementary_charge<double>*conv<quantity::charge,
+            unit_system::SI, unit_system::heaviside_lorentz, double>::fact());
+    constexpr auto res = heaviside_lorentz_elementary_charge<RealType>;
+    BOOST_CHECK_SMALL((res-exp)/exp, tolerance<RealType>());
+}
+
+BOOST_AUTO_TEST_CASE( picsar_unit_conv_heaviside_lorentz_elementary_charge )
+{
+    test_case_hl_elementary_charge<double>();
+    test_case_hl_elementary_charge<float>();
+}
+
 // ***Test mass conversion to SI and all to all
 template<typename RealType>
 void test_case_mass()

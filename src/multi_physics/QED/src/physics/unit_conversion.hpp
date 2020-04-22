@@ -2297,6 +2297,14 @@ namespace phys{
         phys::schwinger_field<double>*conv<quantity::E, unit_system::SI,
             unit_system::heaviside_lorentz, double>::fact());
 
+    /**
+    * Elementary charge in heaviside_lorentz units
+    */
+    template <typename RealType>
+    constexpr RealType heaviside_lorentz_elementary_charge = static_cast<RealType>(
+        phys::elementary_charge<double>*conv<quantity::charge, unit_system::SI,
+            unit_system::heaviside_lorentz, double>::fact());
+
 }
 }
 }
