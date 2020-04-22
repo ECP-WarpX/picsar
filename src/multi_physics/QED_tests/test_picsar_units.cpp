@@ -9,7 +9,6 @@
 #include <array>
 #include <algorithm>
 #include <functional>
-#include <iostream>
 
 //Include Boost unit tests library & library for floating point comparison
 #include <boost/test/unit_test.hpp>
@@ -47,252 +46,21 @@ struct val_pack{
     RealType hl;
 };
 
-enum quantity{
-    mass,
-    charge,
-    velocity,
-    momentum,
-    energy,
-    length,
-    area,
-    volume,
-    ttime, //to avoid clash with "time" function
-    rate,
-    E,
-    B
-};
-
-template <quantity Quantity>
-struct fact{
-    template<unit_system From, typename RealType>
-    static constexpr RealType to_SI_from();
-
-    template<unit_system From, typename RealType>
-    static constexpr RealType to_SI_from(RealType reference_quantity);
-
-    template<unit_system From, unit_system To, typename RealType>
-    static constexpr RealType from_to();
-
-    template<unit_system From,  unit_system To, typename RealType>
-    static constexpr RealType from_to(
-        RealType from_reference_quantity,
-        RealType to_reference_quantity);
-};
-
-template<>
-struct fact<quantity::mass>
-{
-    template<unit_system From, typename RealType>
-    static constexpr RealType to_SI_from(){
-        return fact_mass_to_SI_from<From, RealType>();
-    }
-
-    template<unit_system From, unit_system To, typename RealType>
-    static constexpr RealType from_to(){
-        return fact_mass_from_to<From, To, RealType>();
-    }
-};
-
-template<>
-struct fact<quantity::charge>
-{
-    template<unit_system From, typename RealType>
-    static constexpr RealType to_SI_from(){
-        return fact_charge_to_SI_from<From, RealType>();
-    }
-
-    template<unit_system From, unit_system To, typename RealType>
-    static constexpr RealType from_to(){
-        return fact_charge_from_to<From, To, RealType>();
-    }
-};
-
-template<>
-struct fact<quantity::velocity>
-{
-    template<unit_system From, typename RealType>
-    static constexpr RealType to_SI_from(){
-        return fact_velocity_to_SI_from<From, RealType>();
-    }
-
-    template<unit_system From, unit_system To, typename RealType>
-    static constexpr RealType from_to(){
-        return fact_velocity_from_to<From, To, RealType>();
-    }
-};
-
-template<>
-struct fact<quantity::momentum>
-{
-    template<unit_system From, typename RealType>
-    static constexpr RealType to_SI_from(){
-        return fact_momentum_to_SI_from<From, RealType>();
-    }
-
-    template<unit_system From, unit_system To, typename RealType>
-    static constexpr RealType from_to(){
-        return fact_momentum_from_to<From, To, RealType>();
-    }
-};
-
-template<>
-struct fact<quantity::energy>
-{
-    template<unit_system From, typename RealType>
-    static constexpr RealType to_SI_from(){
-        return fact_energy_to_SI_from<From, RealType>();
-    }
-
-    template<unit_system From, unit_system To, typename RealType>
-    static constexpr RealType from_to(){
-        return fact_energy_from_to<From, To, RealType>();
-    }
-};
-
-template<>
-struct fact<quantity::length>
-{
-    template<unit_system From, typename RealType>
-    static constexpr RealType to_SI_from(RealType reference_quantity = 1.0)
-    {
-        return fact_length_to_SI_from<From, RealType>(reference_quantity);
-    }
-
-    template<unit_system From, unit_system To, typename RealType>
-    static constexpr RealType from_to(
-        RealType reference_quantity_from = 1.0,
-        RealType reference_quantity_to = 1.0){
-        return fact_length_from_to<From, To, RealType>(
-            reference_quantity_from,
-            reference_quantity_to);
-    }
-};
-
-template<>
-struct fact<quantity::area>
-{
-    template<unit_system From, typename RealType>
-    static constexpr RealType to_SI_from(RealType reference_quantity = 1.0)
-    {
-        return fact_area_to_SI_from<From, RealType>(reference_quantity);
-    }
-
-    template<unit_system From, unit_system To, typename RealType>
-    static constexpr RealType from_to(
-        RealType reference_quantity_from = 1.0,
-        RealType reference_quantity_to = 1.0){
-        return fact_area_from_to<From, To, RealType>(
-            reference_quantity_from,
-            reference_quantity_to);
-    }
-};
-
-template<>
-struct fact<quantity::volume>
-{
-    template<unit_system From, typename RealType>
-    static constexpr RealType to_SI_from(RealType reference_quantity = 1.0)
-    {
-        return fact_volume_to_SI_from<From, RealType>(reference_quantity);
-    }
-
-    template<unit_system From, unit_system To, typename RealType>
-    static constexpr RealType from_to(
-        RealType reference_quantity_from = 1.0,
-        RealType reference_quantity_to = 1.0){
-        return fact_volume_from_to<From, To, RealType>(
-            reference_quantity_from,
-            reference_quantity_to);
-    }
-};
-
-template<>
-struct fact<quantity::ttime>
-{
-    template<unit_system From, typename RealType>
-    static constexpr RealType to_SI_from(RealType reference_quantity = 1.0)
-    {
-        return fact_time_to_SI_from<From, RealType>(reference_quantity);
-    }
-
-    template<unit_system From, unit_system To, typename RealType>
-    static constexpr RealType from_to(
-        RealType reference_quantity_from = 1.0,
-        RealType reference_quantity_to = 1.0){
-        return fact_time_from_to<From, To, RealType>(
-            reference_quantity_from,
-            reference_quantity_to);
-    }
-};
-
-template<>
-struct fact<quantity::rate>
-{
-    template<unit_system From, typename RealType>
-    static constexpr RealType to_SI_from(RealType reference_quantity = 1.0)
-    {
-        return fact_rate_to_SI_from<From, RealType>(reference_quantity);
-    }
-
-    template<unit_system From, unit_system To, typename RealType>
-    static constexpr RealType from_to(
-        RealType reference_quantity_from = 1.0,
-        RealType reference_quantity_to = 1.0){
-        return fact_rate_from_to<From, To, RealType>(
-            reference_quantity_from,
-            reference_quantity_to);
-    }
-};
-
-template<>
-struct fact<quantity::E>
-{
-    template<unit_system From, typename RealType>
-    static constexpr RealType to_SI_from(RealType reference_quantity = 1.0)
-    {
-        return fact_E_to_SI_from<From, RealType>(reference_quantity);
-    }
-
-    template<unit_system From, unit_system To, typename RealType>
-    static constexpr RealType from_to(
-        RealType reference_quantity_from = 1.0,
-        RealType reference_quantity_to = 1.0){
-        return fact_E_from_to<From, To, RealType>(
-            reference_quantity_from,
-            reference_quantity_to);
-    }
-};
-
-template<>
-struct fact<quantity::B>
-{
-    template<unit_system From, typename RealType>
-    static constexpr RealType to_SI_from(RealType reference_quantity = 1.0)
-    {
-        return fact_B_to_SI_from<From, RealType>(reference_quantity);
-    }
-
-    template<unit_system From, unit_system To, typename RealType>
-    static constexpr RealType from_to(
-        RealType reference_quantity_from = 1.0,
-        RealType reference_quantity_to = 1.0){
-        return fact_B_from_to<From, To, RealType>(
-            reference_quantity_from,
-            reference_quantity_to);
-    }
-};
-
 template<typename RealType, quantity Quantity>
 constexpr void test_to_SI(val_pack<RealType> vals)
 {
-    const auto fact_SI = fact<Quantity>::
-        template to_SI_from<unit_system::SI, RealType>();
-    const auto fact_omega = fact<Quantity>::
-        template to_SI_from<unit_system::norm_omega, RealType>();
-    const auto fact_lambda = fact<Quantity>::
-        template to_SI_from<unit_system::norm_lambda, RealType>();
-    const auto fact_hl = fact<Quantity>::
-        template to_SI_from<unit_system::heaviside_lorentz, RealType>();
+    const auto fact_SI =
+        conv<Quantity, unit_system::SI,
+            unit_system::SI, RealType>::fact();
+    const auto fact_omega =
+        conv<Quantity, unit_system::norm_omega,
+            unit_system::SI, RealType>::fact();
+    const auto fact_lambda =
+        conv<Quantity, unit_system::norm_lambda,
+            unit_system::SI, RealType>::fact();
+    const auto fact_hl =
+        conv<Quantity, unit_system::heaviside_lorentz,
+            unit_system::SI, RealType>::fact();
 
     const auto res_SI2SI = vals.SI*fact_SI;
     const auto res_omega2SI = vals.omega*fact_omega;
@@ -303,20 +71,26 @@ constexpr void test_to_SI(val_pack<RealType> vals)
     for (const auto& res : all_res)
         BOOST_CHECK_SMALL((res-vals.SI)/vals.SI, tolerance<RealType>());
 }
+
+
 
 template<typename RealType, quantity Quantity>
 constexpr void test_to_SI(val_pack<RealType> vals,
     RealType reference_omega,
     RealType reference_length)
 {
-    const auto fact_SI = fact<Quantity>::
-        template to_SI_from<unit_system::SI, RealType>();
-    const auto fact_omega = fact<Quantity>::
-        template to_SI_from<unit_system::norm_omega, RealType>(reference_omega);
-    const auto fact_lambda = fact<Quantity>::
-        template to_SI_from<unit_system::norm_lambda, RealType>(reference_length);
-    const auto fact_hl = fact<Quantity>::
-        template to_SI_from<unit_system::heaviside_lorentz, RealType>();
+    const auto fact_SI =
+        conv<Quantity, unit_system::SI,
+            unit_system::SI, RealType>::fact();
+    const auto fact_omega =
+        conv<Quantity, unit_system::norm_omega,
+            unit_system::SI, RealType>::fact(reference_omega);
+    const auto fact_lambda =
+        conv<Quantity, unit_system::norm_lambda,
+            unit_system::SI, RealType>::fact(reference_length);
+    const auto fact_hl =
+        conv<Quantity, unit_system::heaviside_lorentz,
+            unit_system::SI, RealType>::fact();
 
     const auto res_SI2SI = vals.SI*fact_SI;
     const auto res_omega2SI = vals.omega*fact_omega;
@@ -328,65 +102,66 @@ constexpr void test_to_SI(val_pack<RealType> vals,
         BOOST_CHECK_SMALL((res-vals.SI)/vals.SI, tolerance<RealType>());
 }
 
+
 template<typename RealType, quantity Quantity>
 constexpr void test_from_to(val_pack<RealType> vals)
 {
     const auto from_SI_to_all = std::array<RealType,4>
     {
-        vals.SI*fact<Quantity>::
-            template from_to<unit_system::SI, unit_system::SI, RealType>(),
-        vals.SI*fact<Quantity>::
-            template from_to<unit_system::SI, unit_system::norm_omega, RealType>(),
-        vals.SI*fact<Quantity>::
-            template from_to<unit_system::SI, unit_system::norm_lambda, RealType>(),
-        vals.SI*fact<Quantity>::
-            template from_to<unit_system::SI, unit_system::heaviside_lorentz, RealType>()
+        vals.SI*conv<Quantity, unit_system::SI,
+            unit_system::SI, RealType>::fact(),
+        vals.SI*conv<Quantity, unit_system::SI,
+            unit_system::norm_omega, RealType>::fact(),
+        vals.SI*conv<Quantity, unit_system::SI,
+            unit_system::norm_lambda, RealType>::fact(),
+        vals.SI*conv<Quantity, unit_system::SI,
+            unit_system::heaviside_lorentz, RealType>::fact(),
     };
 
     const auto from_omega_to_all = std::array<RealType,4>
     {
-        vals.omega*fact<Quantity>::
-            template from_to<unit_system::norm_omega, unit_system::SI, RealType>(),
-        vals.omega*fact<Quantity>::
-            template from_to<unit_system::norm_omega, unit_system::norm_omega, RealType>(),
-        vals.omega*fact<Quantity>::
-            template from_to<unit_system::norm_omega, unit_system::norm_lambda, RealType>(),
-        vals.omega*fact<Quantity>::
-            template from_to<unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>()
+        vals.omega*conv<Quantity, unit_system::norm_omega,
+            unit_system::SI, RealType>::fact(),
+        vals.omega*conv<Quantity, unit_system::norm_omega,
+            unit_system::norm_omega, RealType>::fact(),
+        vals.omega*conv<Quantity, unit_system::norm_omega,
+            unit_system::norm_lambda, RealType>::fact(),
+        vals.omega*conv<Quantity, unit_system::norm_omega,
+            unit_system::heaviside_lorentz, RealType>::fact(),
     };
 
     const auto from_lambda_to_all = std::array<RealType,4>
     {
-        vals.lambda*fact<Quantity>::
-            template from_to<unit_system::norm_lambda, unit_system::SI, RealType>(),
-        vals.lambda*fact<Quantity>::
-            template from_to<unit_system::norm_lambda, unit_system::norm_omega, RealType>(),
-        vals.lambda*fact<Quantity>::
-            template from_to<unit_system::norm_lambda, unit_system::norm_lambda, RealType>(),
-        vals.lambda*fact<Quantity>::
-            template from_to<unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>()
+        vals.lambda*conv<Quantity, unit_system::norm_lambda,
+            unit_system::SI, RealType>::fact(),
+        vals.lambda*conv<Quantity, unit_system::norm_lambda,
+            unit_system::norm_omega, RealType>::fact(),
+        vals.lambda*conv<Quantity, unit_system::norm_lambda,
+            unit_system::norm_lambda, RealType>::fact(),
+        vals.lambda*conv<Quantity, unit_system::norm_lambda,
+            unit_system::heaviside_lorentz, RealType>::fact(),
     };
 
     const auto from_hl_to_all = std::array<RealType,4>
     {
-        vals.hl*fact<Quantity>::
-            template from_to<unit_system::heaviside_lorentz, unit_system::SI, RealType>(),
-        vals.hl*fact<Quantity>::
-            template from_to<unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>(),
-        vals.hl*fact<Quantity>::
-            template from_to<unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>(),
-        vals.hl*fact<Quantity>::
-            template from_to<unit_system::heaviside_lorentz, unit_system::heaviside_lorentz, RealType>()
+        vals.hl*conv<Quantity, unit_system::heaviside_lorentz,
+            unit_system::SI, RealType>::fact(),
+        vals.hl*conv<Quantity, unit_system::heaviside_lorentz,
+            unit_system::norm_omega, RealType>::fact(),
+        vals.hl*conv<Quantity, unit_system::heaviside_lorentz,
+            unit_system::norm_lambda, RealType>::fact(),
+        vals.hl*conv<Quantity, unit_system::heaviside_lorentz,
+            unit_system::heaviside_lorentz, RealType>::fact(),
     };
 
-    const auto fact_SI = fact<Quantity>::
-        template to_SI_from<unit_system::SI, RealType>();
-    const auto fact_omega = fact<Quantity>::
-        template to_SI_from<unit_system::norm_omega, RealType>();
-    const auto fact_lambda = fact<Quantity>::
-        template to_SI_from<unit_system::norm_lambda, RealType>();
-    const auto fact_hl = fact<Quantity>::
-        template to_SI_from<unit_system::heaviside_lorentz, RealType>();
+    const auto fact_SI = conv<Quantity, unit_system::SI,
+        unit_system::SI, RealType>::fact();
+    const auto fact_omega = conv<Quantity, unit_system::norm_omega,
+        unit_system::SI, RealType>::fact();
+    const auto fact_lambda = conv<Quantity, unit_system::norm_lambda,
+        unit_system::SI, RealType>::fact();
+    const auto fact_hl = conv<Quantity, unit_system::heaviside_lorentz,
+        unit_system::SI, RealType>::fact();
 
     const auto all_facts = std::array<RealType, 4>{
         fact_SI, fact_omega, fact_lambda, fact_hl};
@@ -420,60 +195,60 @@ constexpr void test_from_to(
 {
     const auto from_SI_to_all = std::array<RealType,4>
     {
-        vals.SI*fact<Quantity>::
-            template from_to<unit_system::SI, unit_system::SI, RealType>(1.0, 1.0),
-        vals.SI*fact<Quantity>::
-            template from_to<unit_system::SI, unit_system::norm_omega, RealType>(1.0, reference_omega),
-        vals.SI*fact<Quantity>::
-            template from_to<unit_system::SI, unit_system::norm_lambda, RealType>(1.0, reference_length),
-        vals.SI*fact<Quantity>::
-            template from_to<unit_system::SI, unit_system::heaviside_lorentz, RealType>(1.0, 1.0)
+        vals.SI*conv<Quantity, unit_system::SI,
+            unit_system::SI, RealType>::fact(),
+        vals.SI*conv<Quantity, unit_system::SI,
+            unit_system::norm_omega, RealType>::fact(reference_omega),
+        vals.SI*conv<Quantity, unit_system::SI,
+            unit_system::norm_lambda, RealType>::fact(reference_length),
+        vals.SI*conv<Quantity, unit_system::SI,
+            unit_system::heaviside_lorentz, RealType>::fact(),
     };
 
     const auto from_omega_to_all = std::array<RealType,4>
     {
-        vals.omega*fact<Quantity>::
-            template from_to<unit_system::norm_omega, unit_system::SI, RealType>(reference_omega, 1.0),
-        vals.omega*fact<Quantity>::
-            template from_to<unit_system::norm_omega, unit_system::norm_omega, RealType>(reference_omega, reference_omega),
-        vals.omega*fact<Quantity>::
-            template from_to<unit_system::norm_omega, unit_system::norm_lambda, RealType>(reference_omega, reference_length),
-        vals.omega*fact<Quantity>::
-            template from_to<unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>(reference_omega, 1.0)
+        vals.omega*conv<Quantity, unit_system::norm_omega,
+            unit_system::SI, RealType>::fact(reference_omega),
+        vals.omega*conv<Quantity, unit_system::norm_omega,
+            unit_system::norm_omega, RealType>::fact(reference_omega, reference_omega),
+        vals.omega*conv<Quantity, unit_system::norm_omega,
+            unit_system::norm_lambda, RealType>::fact(reference_omega, reference_length),
+        vals.omega*conv<Quantity, unit_system::norm_omega,
+            unit_system::heaviside_lorentz, RealType>::fact(reference_omega),
     };
 
     const auto from_lambda_to_all = std::array<RealType,4>
     {
-        vals.lambda*fact<Quantity>::
-            template from_to<unit_system::norm_lambda, unit_system::SI, RealType>(reference_length, 1.0),
-        vals.lambda*fact<Quantity>::
-            template from_to<unit_system::norm_lambda, unit_system::norm_omega, RealType>(reference_length, reference_omega),
-        vals.lambda*fact<Quantity>::
-            template from_to<unit_system::norm_lambda, unit_system::norm_lambda, RealType>(reference_length, reference_length),
-        vals.lambda*fact<Quantity>::
-            template from_to<unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>(reference_length, 1.0)
+        vals.lambda*conv<Quantity, unit_system::norm_lambda,
+            unit_system::SI, RealType>::fact(reference_length),
+        vals.lambda*conv<Quantity, unit_system::norm_lambda,
+            unit_system::norm_omega, RealType>::fact(reference_length, reference_omega),
+        vals.lambda*conv<Quantity, unit_system::norm_lambda,
+            unit_system::norm_lambda, RealType>::fact(reference_length, reference_length),
+        vals.lambda*conv<Quantity, unit_system::norm_lambda,
+            unit_system::heaviside_lorentz, RealType>::fact(reference_length),
     };
 
     const auto from_hl_to_all = std::array<RealType,4>
     {
-        vals.hl*fact<Quantity>::
-            template from_to<unit_system::heaviside_lorentz, unit_system::SI, RealType>(1.0, 1.0),
-        vals.hl*fact<Quantity>::
-            template from_to<unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>(1.0, reference_omega),
-        vals.hl*fact<Quantity>::
-            template from_to<unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>(1.0, reference_length),
-        vals.hl*fact<Quantity>::
-            template from_to<unit_system::heaviside_lorentz, unit_system::heaviside_lorentz, RealType>(1.0, 1.0)
+        vals.hl*conv<Quantity, unit_system::heaviside_lorentz,
+            unit_system::SI, RealType>::fact(),
+        vals.hl*conv<Quantity, unit_system::heaviside_lorentz,
+            unit_system::norm_omega, RealType>::fact(reference_omega),
+        vals.hl*conv<Quantity, unit_system::heaviside_lorentz,
+            unit_system::norm_lambda, RealType>::fact(reference_length),
+        vals.hl*conv<Quantity, unit_system::heaviside_lorentz,
+            unit_system::heaviside_lorentz, RealType>::fact(),
     };
 
-    const auto fact_SI = fact<Quantity>::
-        template to_SI_from<unit_system::SI, RealType>();
-    const auto fact_omega = fact<Quantity>::
-        template to_SI_from<unit_system::norm_omega, RealType>(reference_omega);
-    const auto fact_lambda = fact<Quantity>::
-        template to_SI_from<unit_system::norm_lambda, RealType>(reference_length);
-    const auto fact_hl = fact<Quantity>::
-        template to_SI_from<unit_system::heaviside_lorentz, RealType>();
+    const auto fact_SI = conv<Quantity, unit_system::SI,
+        unit_system::SI, RealType>::fact();
+    const auto fact_omega = conv<Quantity, unit_system::norm_omega,
+        unit_system::SI, RealType>::fact(reference_omega);
+    const auto fact_lambda = conv<Quantity, unit_system::norm_lambda,
+        unit_system::SI, RealType>::fact(reference_length);
+    const auto fact_hl = conv<Quantity, unit_system::heaviside_lorentz,
+        unit_system::SI, RealType>::fact();
 
     const auto all_facts = std::array<RealType, 4>{
         fact_SI, fact_omega, fact_lambda, fact_hl};
@@ -494,7 +269,6 @@ constexpr void test_from_to(
         for (const auto& res : data){
             BOOST_CHECK_SMALL((res-vals.SI)/vals.SI, tolerance<RealType>());
         }
-
     }
 }
 
@@ -621,6 +395,7 @@ BOOST_AUTO_TEST_CASE( picsar_unit_conv_energy )
     test_case_energy<float>();
 }
 
+
 // ***Test length conversion to SI and all to all
 template<typename RealType>
 void test_case_length()
@@ -734,9 +509,9 @@ void test_case_time_to_SI()
 
     constexpr auto all_times = val_pack<RealType>{time_SI, time_omega, time_lambda, time_hl};
 
-    test_to_SI<RealType, quantity::ttime>(
+    test_to_SI<RealType, quantity::time>(
         all_times, reference_omega, reference_length);
-    test_from_to<RealType, quantity::ttime>(
+    test_from_to<RealType, quantity::time>(
         all_times, reference_omega, reference_length);
 }
 

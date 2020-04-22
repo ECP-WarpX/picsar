@@ -43,8 +43,8 @@ namespace phys{
     *   - electric field is normalized with respect to m_e*c^2/(lambda*e0)
     *   - magnetic field is normalized with respect to m_e*c/(lambda*e0)
     *
-    * > Natural Heaviside Lorentz units, a unit system frequently used in particle phyics
-    *   where c (speed of light) = hbar (reduced Plank constant) =
+    * > Natural Heaviside Lorentz units, a unit system frequently used in
+    *   particle phyics where c (speed of light) = hbar (reduced Plank constant)
     *   = epsilon_0 (vacuum permittivity) = mu_0 (vacuum_permeability) = 1.
     *   In addition, we choose to measure the energy in MeV units
     *   (1 MeV = 1.0e6 * e0 * 1 V (Volt) = 1.60218e-13 J ).
@@ -66,7 +66,11 @@ namespace phys{
     * Inside these helper functions, calculations of constexpr constants are
     * carried out in double precision.
     */
-    enum unit_system
+
+    /**
+    * All supported unit systems
+    */
+    enum class unit_system
     {
         SI,
         norm_omega,
@@ -74,623 +78,1987 @@ namespace phys{
         heaviside_lorentz
     };
 
+    /**
+    * Reference energy used for the heaviside_lorentz units
+    */
     template <typename RealType>
     constexpr RealType heaviside_lorentz_reference_energy = phys::MeV<RealType>;
 
     /**
-    * This function returns the conversion factor for mass from any unit
-    * system to SI
-    *
-    * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam RealType the floating point type of the result
-    * @return the conversion factor
+    * All possible quantities
     */
-    template<unit_system From, typename RealType = double>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_mass_to_SI_from() noexcept
+    enum class quantity
     {
-        using namespace phys;
-
-        if (From == unit_system::norm_omega)
-            return electron_mass<RealType>;
-        else if (From == unit_system::norm_lambda)
-            return electron_mass<RealType>;
-        else if (From == unit_system::heaviside_lorentz)
-            return static_cast<RealType>(
-                heaviside_lorentz_reference_energy<double>/
-                (light_speed<double>*light_speed<double>));
-        else
-            return static_cast<RealType>(1.0);
-    }
+        mass,
+        charge,
+        velocity,
+        momentum,
+        energy,
+        length,
+        area,
+        volume,
+        time,
+        rate,
+        E,
+        B
+    };
 
     /**
-    * This function returns the conversion factor for mass from any unit
-    * system to any other unit system.
+    * This struct provides a workaround to achieve
+    * partial function specialization
     *
+    * @tparam Quantity physical quantity to convert
     * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam To unit system (enum unit_system) to which to convert
+    * @tparam To unit system (enum unit_system) from which to convert
     * @tparam RealType the floating point type of the result
-    * @return the conversion factor
     */
-    template<unit_system From, unit_system To, typename RealType = double>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_mass_from_to()noexcept
+    template<
+        quantity Quantity,
+        unit_system From,
+        unit_system To,
+        typename RealType = double
+        >
+    struct conv
     {
-            return fact_mass_to_SI_from<From,RealType>()/
-            fact_mass_to_SI_from<To,RealType>();
-    }
+        /**
+        * This function returns the conversion factor for any quantity from any unit
+        * system to any other unit system (in the case that no reference quantities
+        * are needed).
+        *
+        * @return the conversion factor
+        */
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept;
 
-    /**
-    * This function returns the conversion factor for charge from any unit
-    * system to SI
-    *
-    * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam RealType the floating point type of the result
-    * @return the conversion factor
-    */
-    template<unit_system From, typename RealType = double>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_charge_to_SI_from() noexcept
+        /**
+        * This function returns the conversion factor for any quantity from any unit
+        * system to any other unit system (in the case that a reference quantity
+        * is needed).
+        *
+        * @param[in] reference_quantity a reference quantity needed either for From or To
+        * @return the conversion factor
+        */
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept;
+
+        /**
+        * This function returns the conversion factor for any quantity from any unit
+        * system to any other unit system (in the case that two reference quantities
+        * are needed).
+        *
+        * @param[in] reference_quantity_from a reference quantity needed for From
+        * @param[in] reference_quantity_to a reference quantity needed for To
+        * @return the conversion factor
+        */
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept;
+    };
+
+    //All possible template specializations follow
+
+    // __________________________ mass ____________________________
+
+    template<unit_system UnitSystem, typename RealType>
+    struct conv<quantity::mass, UnitSystem, UnitSystem, RealType>
     {
-        using namespace phys;
-        using namespace math;
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
 
-        if (From == unit_system::norm_omega)
-            return elementary_charge<RealType>;
-        else if (From == unit_system::norm_lambda)
-            return elementary_charge<RealType>;
-        else if (From == unit_system::heaviside_lorentz){
-            constexpr auto res = static_cast<RealType>(
-                elementary_charge<double>/sqrt_4_pi_fine_structure<double>);
-            return res;
-        }
-        else
-            return static_cast<RealType>(1.0);
-    }
-
-    /**
-    * This function returns the conversion factor for charge from any unit
-    * system to any other unit system
-    *
-    * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam To unit system (enum unit_system) to which to convert
-    * @tparam RealType the floating point type of the result
-    * @return the conversion factor
-    */
-    template<unit_system From, unit_system To, typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_charge_from_to() noexcept
+    template<typename RealType>
+    struct conv<quantity::mass, unit_system::SI, unit_system::norm_omega, RealType>
     {
-        return fact_charge_to_SI_from<From,RealType>()/
-            fact_charge_to_SI_from<To,RealType>();
-    }
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0/electron_mass<double>);};
+    };
 
-    /**
-    * This function returns the conversion factor for velocity from any unit
-    * system to SI
-    *
-    * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam RealType the floating point type of the result
-    * @return the conversion factor
-    */
-    template<unit_system From, typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_velocity_to_SI_from() noexcept
+    template<typename RealType>
+    struct conv<quantity::mass, unit_system::SI, unit_system::norm_lambda, RealType>
     {
-        using namespace phys;
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0/electron_mass<double>);};
+    };
 
-        if (From == unit_system::norm_omega)
-            return light_speed<RealType>;
-        else if (From == unit_system::norm_lambda)
-            return light_speed<RealType>;
-        else if (From == unit_system::heaviside_lorentz)
-            return light_speed<RealType>;
-        else
-            return static_cast<RealType>(1.0);
-    }
-
-    /**
-    * This function returns the conversion factor for velocity from any unit
-    * system to any other unit system
-    *
-    * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam To unit system (enum unit_system) to which to convert
-    * @tparam RealType the floating point type of the result
-    * @return the conversion factor
-    */
-    template<unit_system From, unit_system To, typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_velocity_from_to() noexcept
+    template<typename RealType>
+    struct conv<quantity::mass, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
-        return fact_velocity_to_SI_from<From,RealType>()/
-            fact_velocity_to_SI_from<To,RealType>();
-    }
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(
+            (light_speed<double>*light_speed<double>)/
+            heaviside_lorentz_reference_energy<double>);};
+    };
 
-    /**
-    * This function returns the conversion factor for momentum from any unit
-    * system to SI
-    *
-    * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam RealType the floating point type of the result
-    * @return the conversion factor
-    */
-    template<unit_system From, typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_momentum_to_SI_from() noexcept
+    template<typename RealType>
+    struct conv<quantity::mass, unit_system::norm_omega, unit_system::SI, RealType>
     {
-        using namespace phys;
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return electron_mass<RealType>;};
+    };
 
-        if (From == unit_system::norm_omega)
-            return static_cast<RealType>(
-                electron_mass<double>*light_speed<double>);
-        else if (From == unit_system::norm_lambda)
-            return static_cast<RealType>(
-                electron_mass<double>*light_speed<double>);
-        else if (From == unit_system::heaviside_lorentz){
-            constexpr auto res =
-                static_cast<RealType>(
-                    heaviside_lorentz_reference_energy<double>/light_speed<double>);
-            return res;
-        }
-        else
-            return static_cast<RealType>(1.0);
-    }
-
-    /**
-    * This function returns the conversion factor for momentum from any unit
-    * system to any other unit system
-    *
-    * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam To unit system (enum unit_system) to which to convert
-    * @tparam RealType the floating point type of the result
-    * @return the conversion factor
-    */
-    template<unit_system From, unit_system To, typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_momentum_from_to() noexcept
+    template<typename RealType>
+    struct conv<quantity::mass, unit_system::norm_omega, unit_system::norm_lambda, RealType>
     {
-        return fact_momentum_to_SI_from<From,RealType>()/
-            fact_momentum_to_SI_from<To,RealType>();
-    }
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
 
-    /**
-    * This function returns the conversion factor for energy from any unit
-    * system to SI
-    *
-    * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam RealType the floating point type of the result
-    * @return the conversion factor
-    */
-    template<unit_system From, typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_energy_to_SI_from()
+    template<typename RealType>
+    struct conv<quantity::mass, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
     {
-        using namespace phys;
-        if (From == unit_system::norm_omega){
-            constexpr auto res = static_cast<RealType>(
-                electron_mass<double>*light_speed<double>*light_speed<double>);
-            return res;
-        }
-        else if (From == unit_system::norm_lambda)
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(
+            electron_mass<double>*
+            (light_speed<double>*light_speed<double>)/
+            heaviside_lorentz_reference_energy<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::mass, unit_system::norm_lambda, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return electron_mass<RealType>;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::mass, unit_system::norm_lambda, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::mass, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(
+            electron_mass<double>*
+            (light_speed<double>*light_speed<double>)/
+            heaviside_lorentz_reference_energy<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::mass, unit_system::heaviside_lorentz, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(
+            heaviside_lorentz_reference_energy<double>/
+            (light_speed<double>*light_speed<double>));};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::mass, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(
+            heaviside_lorentz_reference_energy<double>/
+            (light_speed<double>*light_speed<double>)/
+            electron_mass<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::mass, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(
+            heaviside_lorentz_reference_energy<double>/
+            (light_speed<double>*light_speed<double>)/
+            electron_mass<double>);};
+    };
+
+    // __________________________ charge ____________________________
+
+    template<unit_system UnitSystem, typename RealType>
+    struct conv<quantity::charge, UnitSystem, UnitSystem, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::charge, unit_system::SI, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0/elementary_charge<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::charge, unit_system::SI, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0/elementary_charge<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::charge, unit_system::SI, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(
+            sqrt_4_pi_fine_structure<double>/
+            elementary_charge<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::charge, unit_system::norm_omega, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return elementary_charge<RealType>;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::charge, unit_system::norm_omega, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::charge, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return sqrt_4_pi_fine_structure<RealType>;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::charge, unit_system::norm_lambda, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return elementary_charge<RealType>;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::charge, unit_system::norm_lambda, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::charge, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return sqrt_4_pi_fine_structure<RealType>;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::charge, unit_system::heaviside_lorentz, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(
+                elementary_charge<double>/sqrt_4_pi_fine_structure<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::charge, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0/sqrt_4_pi_fine_structure<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::charge, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0/sqrt_4_pi_fine_structure<double>);};
+    };
+
+    // __________________________ velocity ____________________________
+
+    template<unit_system UnitSystem, typename RealType>
+    struct conv<quantity::velocity, UnitSystem, UnitSystem, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::velocity, unit_system::SI, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0/light_speed<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::velocity, unit_system::SI, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0/light_speed<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::velocity, unit_system::SI, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0/light_speed<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::velocity, unit_system::norm_omega, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return light_speed<RealType>;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::velocity, unit_system::norm_omega, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::velocity, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::velocity, unit_system::norm_lambda, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return light_speed<RealType>;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::velocity, unit_system::norm_lambda, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::velocity, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::velocity, unit_system::heaviside_lorentz, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return light_speed<RealType>;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::velocity, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::velocity, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    // __________________________ momentum ____________________________
+
+    template<unit_system UnitSystem, typename RealType>
+    struct conv<quantity::momentum, UnitSystem, UnitSystem, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::momentum, unit_system::SI, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0/
+            (electron_mass<double>*light_speed<double>));};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::momentum, unit_system::SI, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0/
+            (electron_mass<double>*light_speed<double>));};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::momentum, unit_system::SI, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(light_speed<double>/
+            heaviside_lorentz_reference_energy<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::momentum, unit_system::norm_omega, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(
+                electron_mass<double>*light_speed<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::momentum, unit_system::norm_omega, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::momentum, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(electron_mass<double>*light_speed<double>
+            *light_speed<double>/heaviside_lorentz_reference_energy<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::momentum, unit_system::norm_lambda, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(
+                electron_mass<double>*light_speed<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::momentum, unit_system::norm_lambda, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::momentum, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(electron_mass<double>*light_speed<double>
+            *light_speed<double>/heaviside_lorentz_reference_energy<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::momentum, unit_system::heaviside_lorentz, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(
+            heaviside_lorentz_reference_energy<double>/light_speed<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::momentum, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(heaviside_lorentz_reference_energy<double>/
+            electron_mass<double>/light_speed<double>/light_speed<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::momentum, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(heaviside_lorentz_reference_energy<double>/
+            electron_mass<double>/light_speed<double>/light_speed<double>);};
+    };
+
+    // __________________________ energy ____________________________
+
+    template<unit_system UnitSystem, typename RealType>
+    struct conv<quantity::energy, UnitSystem, UnitSystem, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::energy, unit_system::SI, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0/
+            (electron_mass<double>*light_speed<double>*light_speed<double>));};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::energy, unit_system::SI, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0/
+            (electron_mass<double>*light_speed<double>*light_speed<double>));};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::energy, unit_system::SI, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0/
+            heaviside_lorentz_reference_energy<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::energy, unit_system::norm_omega, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(
+                electron_mass<double>*light_speed<double>*light_speed<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::energy, unit_system::norm_omega, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::energy, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(electron_mass<double>*light_speed<double>*
+            light_speed<double>/heaviside_lorentz_reference_energy<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::energy, unit_system::norm_lambda, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(
+                electron_mass<double>*light_speed<double>*light_speed<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::energy, unit_system::norm_lambda, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::energy, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(electron_mass<double>*light_speed<double>
+            *light_speed<double>/heaviside_lorentz_reference_energy<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::energy, unit_system::heaviside_lorentz, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return heaviside_lorentz_reference_energy<double>;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::energy, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(heaviside_lorentz_reference_energy<double>/
+            electron_mass<double>/light_speed<double>/light_speed<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::energy, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(heaviside_lorentz_reference_energy<double>/
+            electron_mass<double>/light_speed<double>/light_speed<double>);};
+    };
+
+    // __________________________ length ____________________________
+
+    template<typename RealType>
+    struct conv<quantity::length, unit_system::SI, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::length, unit_system::SI, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
         {
-            constexpr auto res = static_cast<RealType>(
-                electron_mass<double>*light_speed<double>*light_speed<double>);
-            return res;
+            constexpr auto ff = static_cast<RealType>(1.0/light_speed<RealType>);
+            return reference_quantity*ff;
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::length, unit_system::SI, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {return static_cast<RealType>(1.0)/reference_quantity;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::length, unit_system::SI, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(heaviside_lorentz_reference_energy<double>/
+            (reduced_plank<double>*light_speed<double>));};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::length, unit_system::norm_omega, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {return light_speed<RealType>/reference_quantity;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::length, unit_system::norm_omega, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {return reference_quantity_to/reference_quantity_from;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::length, unit_system::norm_omega, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {return light_speed<RealType>/
+            (reference_quantity_from*reference_quantity_to);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::length, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+            heaviside_lorentz_reference_energy<double>/reduced_plank<double>);
+            return ff/reference_quantity;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::length, unit_system::norm_lambda, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {return reference_quantity;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::length, unit_system::norm_lambda, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(1.0/light_speed<double>);
+            return reference_quantity_from*reference_quantity_to*ff;
         }
-        else if (From == unit_system::heaviside_lorentz)
-            return heaviside_lorentz_reference_energy<RealType>;
-        else
-            return static_cast<RealType>(1.0);
-    }
+    };
 
-    /**
-    * This function returns the conversion factor for energy from any unit
-    * system to any other unit system
-    *
-    * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam To unit system (enum unit_system) to which to convert
-    * @tparam RealType the floating point type of the result
-    * @param reference_quantity_from the reference frequency or the ref. wavelength for From in SI units
-    * @param reference_quantity_to the reference frequency or the ref. wavelength for To in SI units
-    * @return the conversion factor
-    */
-    template<unit_system From, unit_system To, typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_energy_from_to() noexcept
+    template<typename RealType>
+    struct conv<quantity::length, unit_system::norm_lambda, unit_system::norm_lambda, RealType>
     {
-        return fact_energy_to_SI_from<From,RealType>()/
-            fact_energy_to_SI_from<To,RealType>();
-    }
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {return reference_quantity_from/reference_quantity_to;}
+    };
 
-    /**
-    * This function returns the conversion factor for length from any unit
-    * system to SI
-    *
-    * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam RealType the floating point type of the result
-    * @param reference_quantity the reference frequency or the ref. wavelength (depending on the unit system) in SI units
-    * @return the conversion factor
-    */
-    template<unit_system From, typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_length_to_SI_from(
-        const RealType reference_quantity = static_cast<RealType>(1.0)) noexcept
+
+    template<typename RealType>
+    struct conv<quantity::length, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
     {
-        using namespace phys;
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(heaviside_lorentz_reference_energy<double>/
+            (reduced_plank<double>*light_speed<double>));
+            return reference_quantity*ff;
+        };
+    };
 
-        if (From == unit_system::norm_omega)
-            return light_speed<RealType>/reference_quantity;
-        else if (From == unit_system::norm_lambda)
-            return reference_quantity;
-        else if (From == unit_system::heaviside_lorentz){
-            constexpr auto res = static_cast<RealType>(
+    template<typename RealType>
+    struct conv<quantity::length, unit_system::heaviside_lorentz, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>((reduced_plank<double>*light_speed<double>)/
+            heaviside_lorentz_reference_energy<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::length, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                reduced_plank<double>/
+                heaviside_lorentz_reference_energy<double>);
+            return ff*reference_quantity;
+       };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::length, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
                 reduced_plank<double>*light_speed<double>/
                 heaviside_lorentz_reference_energy<double>);
-            return res;
+            return ff/reference_quantity;
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::length, unit_system::heaviside_lorentz, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    // __________________________ area ____________________________
+
+    template<typename RealType>
+    struct conv<quantity::area, unit_system::SI, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::area, unit_system::SI, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(1.0/light_speed<RealType>);
+            return (reference_quantity*ff)*(reference_quantity*ff);
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::area, unit_system::SI, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {return static_cast<RealType>(1.0)/
+            (reference_quantity*reference_quantity);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::area, unit_system::SI, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(
+            heaviside_lorentz_reference_energy<double>*
+            heaviside_lorentz_reference_energy<double>/
+            (reduced_plank<double>*light_speed<double>)/
+            (reduced_plank<double>*light_speed<double>));};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::area, unit_system::norm_omega, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                light_speed<RealType>*light_speed<RealType>);
+            return ff/reference_quantity/reference_quantity;
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::area, unit_system::norm_omega, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {return (reference_quantity_to/reference_quantity_from)*
+             (reference_quantity_to/reference_quantity_from);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::area, unit_system::norm_omega, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                light_speed<double>*light_speed<double>);
+            return ff/(
+                (reference_quantity_from*reference_quantity_to)*
+                (reference_quantity_from*reference_quantity_to));};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::area, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                heaviside_lorentz_reference_energy<double>/reduced_plank<double>);
+            return (ff/reference_quantity)*(ff/reference_quantity);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::area, unit_system::norm_lambda, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {return reference_quantity*reference_quantity;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::area, unit_system::norm_lambda, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                1.0/light_speed<double>/light_speed<double>);
+            return ff*(reference_quantity_from*reference_quantity_to)*
+                (reference_quantity_from*reference_quantity_to);
         }
-        else
-            return static_cast<RealType>(1.0);
-    }
+    };
 
-    /**
-    * This function returns the conversion factor for length from any unit
-    * system to any other unit system
-    *
-    * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam To unit system (enum unit_system) to which to convert
-    * @tparam RealType the floating point type of the result
-    * @param reference_quantity_from the reference frequency or the ref. wavelength for From in SI units
-    * @param reference_quantity_to the reference frequency or the ref. wavelength for To in SI units
-    * @return the conversion factor
-    */
-    template<unit_system From, unit_system To, typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_length_from_to(
-        const RealType reference_quantity_from = static_cast<RealType>(1.0),
-        const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
+    template<typename RealType>
+    struct conv<quantity::area, unit_system::norm_lambda, unit_system::norm_lambda, RealType>
     {
-        return fact_length_to_SI_from<From,RealType>(reference_quantity_from)/
-            fact_length_to_SI_from<To,RealType>(reference_quantity_to);
-    }
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {return (reference_quantity_from/reference_quantity_to)*
+                (reference_quantity_from/reference_quantity_to);}
+    };
 
-    /**
-    * This function returns the conversion factor for area from any unit
-    * system to SI
-    *
-    * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam RealType the floating point type of the result
-    * @param reference_quantity the reference frequency or the ref. wavelength (depending on the unit system) in SI units
-    * @return the conversion factor
-    */
-    template<unit_system From, typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_area_to_SI_from(
-        const RealType reference_quantity = static_cast<RealType>(1.0)) noexcept
+
+    template<typename RealType>
+    struct conv<quantity::area, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
     {
-        using namespace phys;
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+            heaviside_lorentz_reference_energy<double>/
+            (reduced_plank<double>*light_speed<double>));
+            return (reference_quantity*ff)*(reference_quantity*ff);
+        };
+    };
 
-        if (From == unit_system::norm_omega)
-            return (light_speed<RealType>/reference_quantity)*
-                (light_speed<RealType>/reference_quantity);
-        else if (From == unit_system::norm_lambda)
-            return reference_quantity*reference_quantity;
-        else if (From == unit_system::heaviside_lorentz){
-            constexpr auto res = static_cast<RealType>(
-                (reduced_plank<double>*light_speed<double>/
-                    heaviside_lorentz_reference_energy<double>)*
-                (reduced_plank<double>*light_speed<double>/
-                    heaviside_lorentz_reference_energy<double>));
-                return res;
-            }
-        else
-            return static_cast<RealType>(1.0);
-    }
-
-    /**
-    * This function returns the conversion factor for area from any unit
-    * system to any other unit system
-    *
-    * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam To unit system (enum unit_system) to which to convert
-    * @tparam RealType the floating point type of the result
-    * @param reference_quantity_from the reference frequency or the ref. wavelength for From in SI units
-    * @param reference_quantity_to the reference frequency or the ref. wavelength for To in SI units
-    * @return the conversion factor
-    */
-    template<unit_system From, unit_system To, typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_area_from_to(
-        const RealType reference_quantity_from = static_cast<RealType>(1.0),
-        const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
+    template<typename RealType>
+    struct conv<quantity::area, unit_system::heaviside_lorentz, unit_system::SI, RealType>
     {
-        return fact_area_to_SI_from<From,RealType>(reference_quantity_from)/
-            fact_area_to_SI_from<To,RealType>(reference_quantity_to);
-    }
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(
+            (reduced_plank<double>*light_speed<double>)*
+            (reduced_plank<double>*light_speed<double>)/
+            heaviside_lorentz_reference_energy<double>/
+            heaviside_lorentz_reference_energy<double>);};
+    };
 
-    /**
-    * This function returns the conversion factor for volume from any unit
-    * system to SI
-    *
-    * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam RealType the floating point type of the result
-    * @param reference_quantity the reference frequency or the ref. wavelength (depending on the unit system) in SI units
-    * @return the conversion factor
-    */
-    template<unit_system From, typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_volume_to_SI_from(
-        const RealType reference_quantity = static_cast<RealType>(1.0)) noexcept
+    template<typename RealType>
+    struct conv<quantity::area, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
     {
-        using namespace phys;
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                reduced_plank<double>/
+                heaviside_lorentz_reference_energy<double>);
+            return (ff*reference_quantity)*(ff*reference_quantity);
+       };
+    };
 
-        if (From == unit_system::norm_omega)
-            return (light_speed<RealType>/reference_quantity)*
-                (light_speed<RealType>/reference_quantity)*
-                (light_speed<RealType>/reference_quantity);
-        else if (From == unit_system::norm_lambda)
-            return reference_quantity*
-                reference_quantity*
-                reference_quantity;
-        else if (From == unit_system::heaviside_lorentz){
-            constexpr auto res = static_cast<RealType>(
-                (reduced_plank<double>*light_speed<double>/
-                    heaviside_lorentz_reference_energy<double>)*
-                (reduced_plank<double>*light_speed<double>/
-                    heaviside_lorentz_reference_energy<double>)*
-                (reduced_plank<double>*light_speed<double>/
-                    heaviside_lorentz_reference_energy<double>));
-                return res;
-            }
-        else
-            return static_cast<RealType>(1.0);
-    }
-
-    /**
-    * This function returns the conversion factor for volume from any unit
-    * system to any other unit system
-    *
-    * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam To unit system (enum unit_system) to which to convert
-    * @tparam RealType the floating point type of the result
-    * @param reference_quantity_from the reference frequency or the ref. wavelength for From in SI units
-    * @param reference_quantity_to the reference frequency or the ref. wavelength for To in SI units
-    * @return the conversion factor
-    */
-    template<unit_system From, unit_system To, typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_volume_from_to(
-        const RealType reference_quantity_from = static_cast<RealType>(1.0),
-        const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
+    template<typename RealType>
+    struct conv<quantity::area, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
     {
-        return fact_volume_to_SI_from<From,RealType>(reference_quantity_from)/
-            fact_volume_to_SI_from<To,RealType>(reference_quantity_to);
-    }
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                reduced_plank<double>*light_speed<double>/
+                heaviside_lorentz_reference_energy<double>);
+            return (ff/reference_quantity)*(ff/reference_quantity);
+        };
+    };
 
-    /**
-    * This function returns the conversion factor for time from any unit
-    * system to SI
-    *
-    * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam RealType the floating point type of the result
-    * @param reference_quantity the reference frequency or the ref. wavelength (depending on the unit system) in SI units
-    * @return the conversion factor
-    */
-    template<unit_system From, typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_time_to_SI_from(
-        const RealType reference_quantity = static_cast<RealType>(1.0)) noexcept
+    template<typename RealType>
+    struct conv<quantity::area, unit_system::heaviside_lorentz, unit_system::heaviside_lorentz, RealType>
     {
-        using namespace phys;
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
 
-        if (From == unit_system::norm_omega)
-            return static_cast<RealType>(1.0)/reference_quantity;
-        else if (From == unit_system::norm_lambda)
-            return reference_quantity/light_speed<RealType>;
-        else if (From == unit_system::heaviside_lorentz){
-            constexpr auto res =
-                static_cast<RealType>(reduced_plank<double>/
-                    heaviside_lorentz_reference_energy<double>);
-            return res;
+    // __________________________ volume ____________________________
+
+    template<typename RealType>
+    struct conv<quantity::volume, unit_system::SI, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::volume, unit_system::SI, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(1.0/light_speed<RealType>);
+            return (reference_quantity*ff)*(reference_quantity*ff)*
+                (reference_quantity*ff);
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::volume, unit_system::SI, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {return static_cast<RealType>(1.0)/
+            (reference_quantity*reference_quantity*reference_quantity);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::volume, unit_system::SI, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(
+            heaviside_lorentz_reference_energy<double>*
+            heaviside_lorentz_reference_energy<double>*
+            heaviside_lorentz_reference_energy<double>/
+            (reduced_plank<double>*light_speed<double>)/
+            (reduced_plank<double>*light_speed<double>)/
+            (reduced_plank<double>*light_speed<double>));};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::volume, unit_system::norm_omega, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                light_speed<RealType>*light_speed<RealType>*light_speed<RealType>);
+            return ff/reference_quantity/reference_quantity/reference_quantity;
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::volume, unit_system::norm_omega, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {return (reference_quantity_to/reference_quantity_from)*
+             (reference_quantity_to/reference_quantity_from)*
+             (reference_quantity_to/reference_quantity_from);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::volume, unit_system::norm_omega, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                light_speed<double>*light_speed<double>*light_speed<double>);
+            return ff/(
+                (reference_quantity_from*reference_quantity_to)*
+                (reference_quantity_from*reference_quantity_to)*
+                (reference_quantity_from*reference_quantity_to));};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::volume, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                heaviside_lorentz_reference_energy<double>/reduced_plank<double>);
+            return (ff/reference_quantity)*(ff/reference_quantity)*
+                (ff/reference_quantity);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::volume, unit_system::norm_lambda, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {return reference_quantity*reference_quantity*reference_quantity;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::volume, unit_system::norm_lambda, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                1.0/light_speed<double>/light_speed<double>/light_speed<double>);
+            return ff*(reference_quantity_from*reference_quantity_to)*
+                (reference_quantity_from*reference_quantity_to)*
+                (reference_quantity_from*reference_quantity_to);
         }
-        else
-            return static_cast<RealType>(1.0);
-    }
+    };
 
-    /**
-    * This function returns the conversion factor for time from any unit
-    * system to any other unit system
-    *
-    * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam To unit system (enum unit_system) to which to convert
-    * @tparam RealType the floating point type of the result
-    * @param reference_quantity_from the reference frequency or the ref. wavelength for From in SI units
-    * @param reference_quantity_to the reference frequency or the ref. wavelength for To in SI units
-    * @return the conversion factor
-    */
-    template<unit_system From, unit_system To, typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_time_from_to(
-        const RealType reference_quantity_from = static_cast<RealType>(1.0),
-        const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
+    template<typename RealType>
+    struct conv<quantity::volume, unit_system::norm_lambda, unit_system::norm_lambda, RealType>
     {
-        return fact_time_to_SI_from<From,RealType>(reference_quantity_from)/
-            fact_time_to_SI_from<To,RealType>(reference_quantity_to);
-    }
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {return (reference_quantity_from/reference_quantity_to)*
+            (reference_quantity_from/reference_quantity_to)*
+            (reference_quantity_from/reference_quantity_to);}
+    };
 
-    /**
-    * This function returns the conversion factor for rate from any unit
-    * system to SI
-    *
-    * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam RealType the floating point type of the result
-    * @param reference_quantity the reference frequency or the ref. wavelength (depending on the unit system) in SI units
-    * @return the conversion factor
-    */
-    template<unit_system From, typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_rate_to_SI_from(
-        const RealType reference_quantity = static_cast<RealType>(1.0)) noexcept
+
+    template<typename RealType>
+    struct conv<quantity::volume, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
     {
-        using namespace phys;
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+            heaviside_lorentz_reference_energy<double>/
+            (reduced_plank<double>*light_speed<double>));
+            return (reference_quantity*ff)*(reference_quantity*ff)*
+                (reference_quantity*ff);
+        };
+    };
 
-        if (From == unit_system::norm_omega)
+    template<typename RealType>
+    struct conv<quantity::volume, unit_system::heaviside_lorentz, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(
+            (reduced_plank<double>*light_speed<double>)*
+            (reduced_plank<double>*light_speed<double>)*
+            (reduced_plank<double>*light_speed<double>)/
+            heaviside_lorentz_reference_energy<double>/
+            heaviside_lorentz_reference_energy<double>/
+            heaviside_lorentz_reference_energy<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::volume, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                reduced_plank<double>/
+                heaviside_lorentz_reference_energy<double>);
+            return (ff*reference_quantity)*(ff*reference_quantity)*
+                (ff*reference_quantity);
+       };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::volume, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                reduced_plank<double>*light_speed<double>/
+                heaviside_lorentz_reference_energy<double>);
+            return (ff/reference_quantity)*(ff/reference_quantity)*
+                (ff/reference_quantity);
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::volume, unit_system::heaviside_lorentz, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    // __________________________ time ____________________________
+
+    template<typename RealType>
+    struct conv<quantity::time, unit_system::SI, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::time, unit_system::SI, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
             return reference_quantity;
-        else if (From == unit_system::norm_lambda)
-            return light_speed<RealType>/reference_quantity;
-        else if (From == unit_system::heaviside_lorentz){
-            constexpr auto res =
-                static_cast<RealType>(heaviside_lorentz_reference_energy<double>/
-                    reduced_plank<double>);
-            return res;
-        }
-        else
-            return static_cast<RealType>(1.0);
-    }
+        };
+    };
 
-    /**
-    * This function returns the conversion factor for rate from any unit
-    * system to any other unit system
-    *
-    * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam To unit system (enum unit_system) to which to convert
-    * @tparam RealType the floating point type of the result
-    * @param reference_quantity_from the reference frequency or the ref. wavelength for From in SI units
-    * @param reference_quantity_to the reference frequency or the ref. wavelength for To in SI units
-    * @return the conversion factor
-    */
-    template<unit_system From, unit_system To, typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_rate_from_to(
-        const RealType reference_quantity_from = static_cast<RealType>(1.0),
-        const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
+    template<typename RealType>
+    struct conv<quantity::time, unit_system::SI, unit_system::norm_lambda, RealType>
     {
-        return fact_rate_to_SI_from<From,RealType>(reference_quantity_from)/
-            fact_rate_to_SI_from<To,RealType>(reference_quantity_to);
-    }
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {return light_speed<RealType>/reference_quantity;};
+    };
 
-    /**
-    * This function returns the conversion factor for electric field from any unit
-    * system to SI
-    *
-    * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam RealType the floating point type of the result
-    * @param reference_quantity the reference frequency or the ref. wavelength (depending on the unit system) in SI units
-    * @return the conversion factor
-    */
-    template<unit_system From, typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_E_to_SI_from(
-        const RealType reference_quantity = static_cast<RealType>(1.0)) noexcept
+    template<typename RealType>
+    struct conv<quantity::time, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
-        using namespace phys;
-        using namespace math;
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(
+                heaviside_lorentz_reference_energy<double>/
+                reduced_plank<double>);};
+    };
 
-        if (From == unit_system::norm_omega){
-            constexpr auto fact = static_cast<RealType>(
-                electron_mass<double>*light_speed<double>/elementary_charge<double>);
-            return fact*reference_quantity;
+    template<typename RealType>
+    struct conv<quantity::time, unit_system::norm_omega, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {return static_cast<RealType>(1.0)/reference_quantity;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::time, unit_system::norm_omega, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {return reference_quantity_to/reference_quantity_from;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::time, unit_system::norm_omega, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {return light_speed<RealType>/
+            (reference_quantity_from*reference_quantity_to);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::time, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+            heaviside_lorentz_reference_energy<double>/reduced_plank<double>);
+            return ff/reference_quantity;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::time, unit_system::norm_lambda, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {return reference_quantity/light_speed<RealType>;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::time, unit_system::norm_lambda, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(1.0/light_speed<double>);
+            return reference_quantity_from*reference_quantity_to*ff;
         }
-        else if (From == unit_system::norm_lambda){
-            constexpr auto fact = static_cast<RealType>(
+    };
+
+    template<typename RealType>
+    struct conv<quantity::time, unit_system::norm_lambda, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {return reference_quantity_from/reference_quantity_to;}
+    };
+
+
+    template<typename RealType>
+    struct conv<quantity::time, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(heaviside_lorentz_reference_energy<double>/
+            (reduced_plank<double>*light_speed<double>));
+            return reference_quantity*ff;
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::time, unit_system::heaviside_lorentz, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(reduced_plank<double>/
+            heaviside_lorentz_reference_energy<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::time, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                reduced_plank<double>/
+                heaviside_lorentz_reference_energy<double>);
+            return ff*reference_quantity;
+       };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::time, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                reduced_plank<double>*light_speed<double>/
+                heaviside_lorentz_reference_energy<double>);
+            return ff/reference_quantity;
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::time, unit_system::heaviside_lorentz, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    // __________________________ rate ____________________________
+
+    template<typename RealType>
+    struct conv<quantity::rate, unit_system::SI, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::rate, unit_system::SI, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {return static_cast<RealType>(1.0)/reference_quantity;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::rate, unit_system::SI, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {return reference_quantity/light_speed<RealType>;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::rate, unit_system::SI, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(reduced_plank<double>/
+                heaviside_lorentz_reference_energy<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::rate, unit_system::norm_omega, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {return reference_quantity;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::rate, unit_system::norm_omega, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {return reference_quantity_from/reference_quantity_to;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::rate, unit_system::norm_omega, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(1.0/light_speed<double>);
+            return ff*(reference_quantity_from*reference_quantity_to);
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::rate, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+            heaviside_lorentz_reference_energy<double>/reduced_plank<double>);
+            return reference_quantity/ff;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::rate, unit_system::norm_lambda, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {return light_speed<RealType>/reference_quantity;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::rate, unit_system::norm_lambda, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {return light_speed<double>/
+            (reference_quantity_from*reference_quantity_to);}
+    };
+
+    template<typename RealType>
+    struct conv<quantity::rate, unit_system::norm_lambda, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {return reference_quantity_to/reference_quantity_from;}
+    };
+
+    template<typename RealType>
+    struct conv<quantity::rate, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                (reduced_plank<double>*light_speed<double>)/
+                heaviside_lorentz_reference_energy<double>);
+            return ff/reference_quantity;
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::rate, unit_system::heaviside_lorentz, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(
+            heaviside_lorentz_reference_energy<double>)/
+            reduced_plank<double>;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::rate, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                heaviside_lorentz_reference_energy<double>/
+                reduced_plank<double>);
+            return ff/reference_quantity;
+       };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::rate, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                heaviside_lorentz_reference_energy<double>/
+                reduced_plank<double>/light_speed<double>);
+            return ff*reference_quantity;
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::rate, unit_system::heaviside_lorentz, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    // __________________________ E field ____________________________
+
+    template<typename RealType>
+    struct conv<quantity::E, unit_system::SI, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::E, unit_system::SI, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                elementary_charge<double>/electron_mass<double>/
+                light_speed<double>);
+            return ff/reference_quantity;
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::E, unit_system::SI, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                elementary_charge<double>/electron_mass<double>/
+                light_speed<double>/light_speed<double>);
+            return ff*reference_quantity;
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::E, unit_system::SI, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(
+            (elementary_charge<double>*reduced_plank<double>*
+            light_speed<double>)/
+            heaviside_lorentz_reference_energy<double>/
+            heaviside_lorentz_reference_energy<double>/
+            sqrt_4_pi_fine_structure<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::E, unit_system::norm_omega, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(electron_mass<double>*
+                light_speed<double>/elementary_charge<double>);
+            return ff*reference_quantity;
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::E, unit_system::norm_omega, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {return reference_quantity_from/reference_quantity_to;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::E, unit_system::norm_omega, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(1.0/light_speed<double>);
+            return ff*(reference_quantity_from*reference_quantity_to);
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::E, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                electron_mass<double>*light_speed<double>*reduced_plank<double>*
+                light_speed<double>/heaviside_lorentz_reference_energy<double>/
+                heaviside_lorentz_reference_energy<double>/
+                sqrt_4_pi_fine_structure<double>);
+            return ff*reference_quantity;
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::E, unit_system::norm_lambda, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
                 electron_mass<double>*light_speed<double>*light_speed<double>/
                 (elementary_charge<double>));
-            return fact/reference_quantity;
-        }
-        else if (From == unit_system::heaviside_lorentz){
-            constexpr auto res = static_cast<RealType>(
+            return ff/reference_quantity;
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::E, unit_system::norm_lambda, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {return light_speed<double>/
+            (reference_quantity_from*reference_quantity_to);}
+    };
+
+    template<typename RealType>
+    struct conv<quantity::E, unit_system::norm_lambda, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {return reference_quantity_to/reference_quantity_from;}
+    };
+
+    template<typename RealType>
+    struct conv<quantity::E, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(electron_mass<double>*
+                light_speed<double>*light_speed<double>*reduced_plank<double>*
+                light_speed<double>/
+                heaviside_lorentz_reference_energy<double>/
+                heaviside_lorentz_reference_energy<double>/
+                sqrt_4_pi_fine_structure<double>);
+            return ff/reference_quantity;
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::E, unit_system::heaviside_lorentz, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(
                 heaviside_lorentz_reference_energy<double>*
                 heaviside_lorentz_reference_energy<double>*
                 sqrt_4_pi_fine_structure<double>/
                 (elementary_charge<double>*reduced_plank<double>*
-                light_speed<double>));
-            return res;
-        }
-        else
-            return static_cast<RealType>(1.0);
-    }
+                light_speed<double>));};
+    };
 
-    /**
-    * This function returns the conversion factor for electric field from any unit
-    * system to any other unit system
-    *
-    * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam To unit system (enum unit_system) to which to convert
-    * @tparam RealType the floating point type of the result
-    * @param reference_quantity_from the reference frequency or the ref. wavelength for From in SI units
-    * @param reference_quantity_to the reference frequency or the ref. wavelength for To in SI units
-    * @return the conversion factor
-    */
-    template<unit_system From, unit_system To, typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_E_from_to(
-        const RealType reference_quantity_from = static_cast<RealType>(1.0),
-        const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
+    template<typename RealType>
+    struct conv<quantity::E, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
     {
-        return fact_E_to_SI_from<From,RealType>(reference_quantity_from)/
-            fact_E_to_SI_from<To,RealType>(reference_quantity_to);
-    }
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                heaviside_lorentz_reference_energy<double>*
+                heaviside_lorentz_reference_energy<double>*
+                sqrt_4_pi_fine_structure<double>/reduced_plank<double>/
+                light_speed<double>/electron_mass<double>/light_speed<double>);
+            return ff /reference_quantity;
+       };
+    };
 
-    /**
-    * This function returns the conversion factor for magnetic field from any unit
-    * system to SI
-    *
-    * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam RealType the floating point type of the result
-    * @param reference_quantity the reference frequency or the ref. wavelength (depending on the unit system) in SI units
-    * @return the conversion factor
-    */
-    template<unit_system From, typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_B_to_SI_from(
-        const RealType reference_quantity = static_cast<RealType>(1.0)) noexcept
+    template<typename RealType>
+    struct conv<quantity::E, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
     {
-        using namespace phys;
-        using namespace math;
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                heaviside_lorentz_reference_energy<double>*
+                heaviside_lorentz_reference_energy<double>*
+                sqrt_4_pi_fine_structure<double>/reduced_plank<double>/
+                light_speed<double>/electron_mass<double>/light_speed<double>/
+                light_speed<double>);
+            return ff*reference_quantity;
+        };
+    };
 
-        if (From == unit_system::norm_omega){
-            constexpr auto fact = static_cast<RealType>(
-                    electron_mass<double>/elementary_charge<double>);
-            return fact * reference_quantity;
-        }
-        else if (From == unit_system::norm_lambda){
-            constexpr auto fact =
-                static_cast<RealType>(electron_mass<double>*light_speed<double>/
-                    elementary_charge<double>);
-            return fact / reference_quantity;
-        }
-        else if (From == unit_system::heaviside_lorentz){
-            constexpr auto res = static_cast<RealType>(
+    template<typename RealType>
+    struct conv<quantity::E, unit_system::heaviside_lorentz, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    // __________________________ B field ____________________________
+
+    template<typename RealType>
+    struct conv<quantity::B, unit_system::SI, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::B, unit_system::SI, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                elementary_charge<double>/electron_mass<double>);
+            return ff/reference_quantity;
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::B, unit_system::SI, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                elementary_charge<double>/electron_mass<double>/
+                light_speed<double>);
+            return ff*reference_quantity;
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::B, unit_system::SI, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(
+            (elementary_charge<double>*reduced_plank<double>*
+            light_speed<double>)*light_speed<double>/
+            heaviside_lorentz_reference_energy<double>/
+            heaviside_lorentz_reference_energy<double>/
+            sqrt_4_pi_fine_structure<double>);};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::B, unit_system::norm_omega, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(electron_mass<double>/
+                elementary_charge<double>);
+            return ff*reference_quantity;
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::B, unit_system::norm_omega, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {return reference_quantity_from/reference_quantity_to;};
+    };
+
+    template<typename RealType>
+    struct conv<quantity::B, unit_system::norm_omega, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(1.0/light_speed<double>);
+            return ff*(reference_quantity_from*reference_quantity_to);
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::B, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                electron_mass<double>*light_speed<double>*reduced_plank<double>*
+                light_speed<double>/heaviside_lorentz_reference_energy<double>/
+                heaviside_lorentz_reference_energy<double>/
+                sqrt_4_pi_fine_structure<double>);
+            return ff*reference_quantity;
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::B, unit_system::norm_lambda, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                electron_mass<double>*light_speed<double>/
+                (elementary_charge<double>));
+            return ff/reference_quantity;
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::B, unit_system::norm_lambda, unit_system::norm_omega, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {return light_speed<double>/
+            (reference_quantity_from*reference_quantity_to);}
+    };
+
+    template<typename RealType>
+    struct conv<quantity::B, unit_system::norm_lambda, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity_from,
+            const RealType reference_quantity_to) noexcept
+        {return reference_quantity_to/reference_quantity_from;}
+    };
+
+    template<typename RealType>
+    struct conv<quantity::B, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(electron_mass<double>*
+                light_speed<double>*light_speed<double>*reduced_plank<double>*
+                light_speed<double>/
+                heaviside_lorentz_reference_energy<double>/
+                heaviside_lorentz_reference_energy<double>/
+                sqrt_4_pi_fine_structure<double>);
+            return ff/reference_quantity;
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::B, unit_system::heaviside_lorentz, unit_system::SI, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(
                 heaviside_lorentz_reference_energy<double>*
                 heaviside_lorentz_reference_energy<double>*
                 sqrt_4_pi_fine_structure<double>/
                 (elementary_charge<double>*reduced_plank<double>*
-                light_speed<double>*light_speed<double>));
-            return res;
-        }
-        else
-            return static_cast<RealType>(1.0);
-    }
+                light_speed<double>*light_speed<double>));};
+    };
 
-    /**
-    * This function returns the conversion factor for magnetic field from any unit
-    * system to any other unit system
-    *
-    * @tparam From unit system (enum unit_system) from which to convert
-    * @tparam To unit system (enum unit_system) to which to convert
-    * @tparam RealType the floating point type of the result
-    * @param reference_quantity_from the reference frequency or the ref. wavelength for From in SI units
-    * @param reference_quantity_to the reference frequency or the ref. wavelength for To in SI units
-    * @return the conversion factor
-    */
-    template<unit_system From, unit_system To, typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    constexpr RealType fact_B_from_to(
-        const RealType reference_quantity_from = static_cast<RealType>(1.0),
-        const RealType reference_quantity_to = static_cast<RealType>(1.0)) noexcept
+    template<typename RealType>
+    struct conv<quantity::B, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
     {
-        return fact_B_to_SI_from<From,RealType>(reference_quantity_from)/
-            fact_B_to_SI_from<To,RealType>(reference_quantity_to);
-    }
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                heaviside_lorentz_reference_energy<double>*
+                heaviside_lorentz_reference_energy<double>*
+                sqrt_4_pi_fine_structure<double>/reduced_plank<double>/
+                light_speed<double>/electron_mass<double>/light_speed<double>);
+            return ff /reference_quantity;
+       };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::B, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact(
+            const RealType reference_quantity) noexcept
+        {
+            constexpr auto ff = static_cast<RealType>(
+                heaviside_lorentz_reference_energy<double>*
+                heaviside_lorentz_reference_energy<double>*
+                sqrt_4_pi_fine_structure<double>/reduced_plank<double>/
+                light_speed<double>/electron_mass<double>/light_speed<double>/
+                light_speed<double>);
+            return ff*reference_quantity;
+        };
+    };
+
+    template<typename RealType>
+    struct conv<quantity::B, unit_system::heaviside_lorentz, unit_system::heaviside_lorentz, RealType>
+    {
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        static constexpr RealType fact() noexcept
+        {return static_cast<RealType>(1.0);};
+    };
 }
 }
 }
