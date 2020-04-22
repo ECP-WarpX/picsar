@@ -19,10 +19,10 @@ using namespace picsar::multi_physics::phys;
 using namespace picsar::multi_physics::math;
 
 //Tolerance for double precision calculations
-const double double_tolerance = 1.0e-10;
+const double double_tolerance = 1.0e-12;
 
 //Tolerance for single precision calculations
-const float float_tolerance = 1.0e-4;
+const float float_tolerance = 1.0e-6;
 
 //Templated tolerance
 template <typename T>
@@ -35,12 +35,12 @@ T constexpr tolerance()
 }
 
 
-const double me_c = electron_mass * light_speed;
+const double me_c = electron_mass<double> * light_speed<double>;
 const double lambda = 800.0e-9;
-const double omega = 2.0*pi*light_speed/lambda;
-const double eref = 2.0*pi*electron_mass*light_speed*light_speed/
-            (lambda*elementary_charge);
-const double bref = eref/light_speed;
+const double omega = 2.0*pi<double>*light_speed<double>/lambda;
+const double eref = 2.0*pi<double>*electron_mass<double>*
+    light_speed<double>*light_speed<double>/(lambda*elementary_charge<double>);
+const double bref = eref/light_speed<double>;
 
 // ------------- Tests --------------
 
@@ -55,19 +55,19 @@ void test_chi_photons(
         static_cast<RealType>(t_p[0]),
         static_cast<RealType>(t_p[1]),
         static_cast<RealType>(t_p[2])}*
-        fact_momentum_from_SI_to<UnitSystem, RealType>();
+        conv<quantity::momentum, unit_system::SI, UnitSystem, RealType>::fact();
 
     const auto em_e =  vec3<RealType>{
         static_cast<RealType>(t_em_e[0]),
         static_cast<RealType>(t_em_e[1]),
         static_cast<RealType>(t_em_e[2])}*
-        fact_E_from_SI_to<UnitSystem, RealType>(t_ref_quant);
+        conv<quantity::E, unit_system::SI, UnitSystem, RealType>::fact(1.0, t_ref_quant);
 
     const auto em_b =  vec3<RealType>{
         static_cast<RealType>(t_em_b[0]),
         static_cast<RealType>(t_em_b[1]),
         static_cast<RealType>(t_em_b[2])}*
-        fact_B_from_SI_to<UnitSystem, RealType>(t_ref_quant);
+        conv<quantity::B, unit_system::SI, UnitSystem, RealType>::fact(1.0, t_ref_quant);
 
     const auto res = chi_photon<RealType, UnitSystem>(p, em_e, em_b, t_ref_quant);
 
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE( chi_photons_1 )
     const double by = -158.849*bref;
     const double bz = -93.826*bref;
 
-    const double chi_exp = 0.347111844317;
+    const double chi_exp = 0.3471118445206898;
 
     const auto p = vec3<double>{px,py,pz};
     const auto em_e = vec3<double>{ex,ey,ez};
@@ -100,9 +100,11 @@ BOOST_AUTO_TEST_CASE( chi_photons_1 )
     test_chi_photons<double, unit_system::SI>(p, em_e, em_b, chi_exp);
     test_chi_photons<double, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
     test_chi_photons<double, unit_system::norm_omega>(p, em_e, em_b, chi_exp, omega);
+    test_chi_photons<double, unit_system::heaviside_lorentz>(p, em_e, em_b, chi_exp, 1.0);
     test_chi_photons<float, unit_system::SI>(p, em_e, em_b, chi_exp);
     test_chi_photons<float, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
     test_chi_photons<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, omega);
+    test_chi_photons<float, unit_system::heaviside_lorentz>(p, em_e, em_b, chi_exp, 1.0);
 }
 
 BOOST_AUTO_TEST_CASE( chi_photons_2 )
@@ -117,7 +119,7 @@ BOOST_AUTO_TEST_CASE( chi_photons_2 )
     const double by = 1.9778*bref;
     const double bz = 17.8799*bref;
 
-    const double chi_exp = 0.00090414740533;
+    const double chi_exp = 0.0009041474058668584;
 
     const auto p = vec3<double>{px,py,pz};
     const auto em_e = vec3<double>{ex,ey,ez};
@@ -126,9 +128,11 @@ BOOST_AUTO_TEST_CASE( chi_photons_2 )
     test_chi_photons<double, unit_system::SI>(p, em_e, em_b, chi_exp);
     test_chi_photons<double, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
     test_chi_photons<double, unit_system::norm_omega>(p, em_e, em_b, chi_exp, omega);
+    test_chi_photons<double, unit_system::heaviside_lorentz>(p, em_e, em_b, chi_exp, 1.0);
     test_chi_photons<float, unit_system::SI>(p, em_e, em_b, chi_exp);
     test_chi_photons<float, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
     test_chi_photons<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, omega);
+    test_chi_photons<float, unit_system::heaviside_lorentz>(p, em_e, em_b, chi_exp, 1.0);
 }
 
 BOOST_AUTO_TEST_CASE( chi_photons_3 )
@@ -143,7 +147,7 @@ BOOST_AUTO_TEST_CASE( chi_photons_3 )
     const double by = 1243.79*bref;
     const double bz = -2830.99*bref;
 
-    const double chi_exp = 57.2204397969;
+    const double chi_exp = 57.22043983047014;
 
     const auto p = vec3<double>{px,py,pz};
     const auto em_e = vec3<double>{ex,ey,ez};
@@ -152,9 +156,11 @@ BOOST_AUTO_TEST_CASE( chi_photons_3 )
     test_chi_photons<double, unit_system::SI>(p, em_e, em_b, chi_exp);
     test_chi_photons<double, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
     test_chi_photons<double, unit_system::norm_omega>(p, em_e, em_b, chi_exp, omega);
+    test_chi_photons<double, unit_system::heaviside_lorentz>(p, em_e, em_b, chi_exp, 1.0);
     test_chi_photons<float, unit_system::SI>(p, em_e, em_b, chi_exp);
     test_chi_photons<float, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
     test_chi_photons<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, omega);
+    test_chi_photons<float, unit_system::heaviside_lorentz>(p, em_e, em_b, chi_exp, 1.0);
 }
 
 BOOST_AUTO_TEST_CASE( chi_photons_4 )
@@ -178,9 +184,11 @@ BOOST_AUTO_TEST_CASE( chi_photons_4 )
     test_chi_photons<double, unit_system::SI>(p, em_e, em_b, chi_exp);
     test_chi_photons<double, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
     test_chi_photons<double, unit_system::norm_omega>(p, em_e, em_b, chi_exp, omega);
+    test_chi_photons<double, unit_system::heaviside_lorentz>(p, em_e, em_b, chi_exp, 1.0);
     test_chi_photons<float, unit_system::SI>(p, em_e, em_b, chi_exp);
     test_chi_photons<float, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
     test_chi_photons<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, omega);
+    test_chi_photons<float, unit_system::heaviside_lorentz>(p, em_e, em_b, chi_exp, 1.0);
 }
 
 BOOST_AUTO_TEST_CASE( chi_photons_5 )
@@ -204,9 +212,11 @@ BOOST_AUTO_TEST_CASE( chi_photons_5 )
     test_chi_photons<double, unit_system::SI>(p, em_e, em_b, chi_exp);
     test_chi_photons<double, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
     test_chi_photons<double, unit_system::norm_omega>(p, em_e, em_b, chi_exp, omega);
+    test_chi_photons<double, unit_system::heaviside_lorentz>(p, em_e, em_b, chi_exp, 1.0);
     test_chi_photons<float, unit_system::SI>(p, em_e, em_b, chi_exp);
     test_chi_photons<float, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
     test_chi_photons<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, omega);
+    test_chi_photons<float, unit_system::heaviside_lorentz>(p, em_e, em_b, chi_exp, 1.0);
 }
 
 BOOST_AUTO_TEST_CASE( chi_photons_6 )
@@ -230,9 +240,11 @@ BOOST_AUTO_TEST_CASE( chi_photons_6 )
     test_chi_photons<double, unit_system::SI>(p, em_e, em_b, chi_exp);
     test_chi_photons<double, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
     test_chi_photons<double, unit_system::norm_omega>(p, em_e, em_b, chi_exp, omega);
+    test_chi_photons<double, unit_system::heaviside_lorentz>(p, em_e, em_b, chi_exp, 1.0);
     test_chi_photons<float, unit_system::SI>(p, em_e, em_b, chi_exp);
     test_chi_photons<float, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
     test_chi_photons<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, omega);
+    test_chi_photons<float, unit_system::heaviside_lorentz>(p, em_e, em_b, chi_exp, 1.0);
 }
 
 //*******************************
@@ -248,19 +260,19 @@ void test_chi_ele_pos(
         static_cast<RealType>(t_p[0]),
         static_cast<RealType>(t_p[1]),
         static_cast<RealType>(t_p[2])}*
-        fact_momentum_from_SI_to<UnitSystem, RealType>();
+        conv<quantity::momentum, unit_system::SI, UnitSystem, RealType>::fact();
 
     const auto em_e =  vec3<RealType>{
         static_cast<RealType>(t_em_e[0]),
         static_cast<RealType>(t_em_e[1]),
         static_cast<RealType>(t_em_e[2])}*
-        fact_E_from_SI_to<UnitSystem, RealType>(t_ref_quant);
+        conv<quantity::E, unit_system::SI, UnitSystem, RealType>::fact(1.0, t_ref_quant);
 
     const auto em_b =  vec3<RealType>{
         static_cast<RealType>(t_em_b[0]),
         static_cast<RealType>(t_em_b[1]),
         static_cast<RealType>(t_em_b[2])}*
-        fact_B_from_SI_to<UnitSystem, RealType>(t_ref_quant);
+        conv<quantity::B, unit_system::SI, UnitSystem, RealType>::fact(1.0, t_ref_quant);
 
     const auto res = chi_ele_pos<RealType, UnitSystem>(p, em_e, em_b, t_ref_quant);
 
@@ -284,7 +296,7 @@ BOOST_AUTO_TEST_CASE( chi_ele_pos_1 )
     const double by = -23.8724*bref;
     const double bz = 13.9934*bref;
 
-    const double chi_exp = 0.00216716627219670;
+    const double chi_exp = 0.002167166273468506;
 
     const auto p = vec3<double>{px,py,pz};
     const auto em_e = vec3<double>{ex,ey,ez};
@@ -293,9 +305,12 @@ BOOST_AUTO_TEST_CASE( chi_ele_pos_1 )
     test_chi_ele_pos<double, unit_system::SI>(p, em_e, em_b, chi_exp, 1.0);
     test_chi_ele_pos<double, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
     test_chi_ele_pos<double, unit_system::norm_omega>(p, em_e, em_b, chi_exp, omega);
+    test_chi_ele_pos<double, unit_system::heaviside_lorentz>(p, em_e, em_b, chi_exp, 1.0);
     test_chi_ele_pos<float, unit_system::SI>(p, em_e, em_b, chi_exp, 1.0);
     test_chi_ele_pos<float, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
     test_chi_ele_pos<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, omega);
+    test_chi_ele_pos<float, unit_system::heaviside_lorentz>(p, em_e, em_b, chi_exp, 1.0);
+
 }
 
 BOOST_AUTO_TEST_CASE( chi_ele_pos_2 )
@@ -310,7 +325,7 @@ BOOST_AUTO_TEST_CASE( chi_ele_pos_2 )
     const double by = -129.115*bref;
     const double bz = -57.002*bref;
 
-    const double  chi_exp = 0.166318112874468;
+    const double  chi_exp = 0.16631811297207244;
 
     const auto p = vec3<double>{px,py,pz};
     const auto em_e = vec3<double>{ex,ey,ez};
@@ -319,9 +334,11 @@ BOOST_AUTO_TEST_CASE( chi_ele_pos_2 )
     test_chi_ele_pos<double, unit_system::SI>(p, em_e, em_b, chi_exp, 1.0);
     test_chi_ele_pos<double, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
     test_chi_ele_pos<double, unit_system::norm_omega>(p, em_e, em_b, chi_exp, omega);
+    test_chi_ele_pos<double, unit_system::heaviside_lorentz>(p, em_e, em_b, chi_exp, 1.0);
     test_chi_ele_pos<float, unit_system::SI>(p, em_e, em_b, chi_exp, 1.0);
     test_chi_ele_pos<float, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
     test_chi_ele_pos<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, omega);
+    test_chi_ele_pos<float, unit_system::heaviside_lorentz>(p, em_e, em_b, chi_exp, 1.0);
 }
 
 BOOST_AUTO_TEST_CASE( chi_ele_pos_3 )
@@ -336,7 +353,7 @@ BOOST_AUTO_TEST_CASE( chi_ele_pos_3 )
     const double by = -1448.33*bref;
     const double bz = 1953.68*bref;
 
-    const double chi_exp = 16.0114572646993;
+    const double chi_exp = 16.011457274095676;
 
     const auto p = vec3<double>{px,py,pz};
     const auto em_e = vec3<double>{ex,ey,ez};
@@ -345,9 +362,11 @@ BOOST_AUTO_TEST_CASE( chi_ele_pos_3 )
     test_chi_ele_pos<double, unit_system::SI>(p, em_e, em_b, chi_exp, 1.0);
     test_chi_ele_pos<double, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
     test_chi_ele_pos<double, unit_system::norm_omega>(p, em_e, em_b, chi_exp, omega);
+    test_chi_ele_pos<double, unit_system::heaviside_lorentz>(p, em_e, em_b, chi_exp, 1.0);
     test_chi_ele_pos<float, unit_system::SI>(p, em_e, em_b, chi_exp, 1.0);
     test_chi_ele_pos<float, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
     test_chi_ele_pos<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, omega);
+    test_chi_ele_pos<float, unit_system::heaviside_lorentz>(p, em_e, em_b, chi_exp, 1.0);
 }
 
 BOOST_AUTO_TEST_CASE( chi_ele_pos_4 )
@@ -371,9 +390,11 @@ BOOST_AUTO_TEST_CASE( chi_ele_pos_4 )
     test_chi_ele_pos<double, unit_system::SI>(p, em_e, em_b, chi_exp, 1.0);
     test_chi_ele_pos<double, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
     test_chi_ele_pos<double, unit_system::norm_omega>(p, em_e, em_b, chi_exp, omega);
+    test_chi_ele_pos<double, unit_system::heaviside_lorentz>(p, em_e, em_b, chi_exp, 1.0);
     test_chi_ele_pos<float, unit_system::SI>(p, em_e, em_b, chi_exp, 1.0);
     test_chi_ele_pos<float, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
     test_chi_ele_pos<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, omega);
+    test_chi_ele_pos<float, unit_system::heaviside_lorentz>(p, em_e, em_b, chi_exp, 1.0);
 }
 
 BOOST_AUTO_TEST_CASE( chi_ele_pos_5 )
@@ -397,9 +418,11 @@ BOOST_AUTO_TEST_CASE( chi_ele_pos_5 )
     test_chi_ele_pos<double, unit_system::SI>(p, em_e, em_b, chi_exp, 1.0);
     test_chi_ele_pos<double, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
     test_chi_ele_pos<double, unit_system::norm_omega>(p, em_e, em_b, chi_exp, omega);
+    test_chi_ele_pos<double, unit_system::heaviside_lorentz>(p, em_e, em_b, chi_exp, 1.0);
     test_chi_ele_pos<float, unit_system::SI>(p, em_e, em_b, chi_exp, 1.0);
     test_chi_ele_pos<float, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
     test_chi_ele_pos<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, omega);
+    test_chi_ele_pos<float, unit_system::heaviside_lorentz>(p, em_e, em_b, chi_exp, 1.0);
 }
 
 BOOST_AUTO_TEST_CASE( chi_ele_pos_6 )
@@ -423,9 +446,11 @@ BOOST_AUTO_TEST_CASE( chi_ele_pos_6 )
     test_chi_ele_pos<double, unit_system::SI>(p, em_e, em_b, chi_exp, 1.0);
     test_chi_ele_pos<double, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
     test_chi_ele_pos<double, unit_system::norm_omega>(p, em_e, em_b, chi_exp, omega);
+    test_chi_ele_pos<double, unit_system::heaviside_lorentz>(p, em_e, em_b, chi_exp, 1.0);
     test_chi_ele_pos<float, unit_system::SI>(p, em_e, em_b, chi_exp, 1.0);
     test_chi_ele_pos<float, unit_system::norm_lambda>(p, em_e, em_b, chi_exp, lambda);
     test_chi_ele_pos<float, unit_system::norm_omega>(p, em_e, em_b, chi_exp, omega);
+    test_chi_ele_pos<float, unit_system::heaviside_lorentz>(p, em_e, em_b, chi_exp, 1.0);
 }
 
 //*******************************
