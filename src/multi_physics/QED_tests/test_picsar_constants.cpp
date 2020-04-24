@@ -53,7 +53,6 @@ void test_case_const_math()
     BOOST_CHECK_SMALL((one<RealType>-exp_one)/exp_one, tolerance<RealType>());
     BOOST_CHECK_SMALL((two<RealType>-exp_two)/exp_two, tolerance<RealType>());
     BOOST_CHECK_SMALL((three<RealType>-exp_three)/exp_three, tolerance<RealType>());
-
 }
 
 BOOST_AUTO_TEST_CASE( picsar_const_math )
