@@ -10,7 +10,6 @@
 #include <curand.h>
 
 #define PXRMP_GPU __host__ __device__
-#define PXRMP_WITH_SI_UNITS
 #include "../QED/src/physics/schwinger/schwinger_pair_engine_core.hpp"
 
 //Alias for the picsar::multi_physics namespace
