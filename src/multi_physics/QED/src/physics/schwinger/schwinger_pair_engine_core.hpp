@@ -73,20 +73,24 @@ namespace schwinger{
 
         const auto inner = sqrt(ff*ff+ gg*gg);
 
-        const auto epsi = sqrt(inner + ff)*one_over_schwinger;
-        const auto eta = sqrt(inner - ff)*one_over_schwinger;
+        const auto epsi = sqrt(fabs(inner + ff))*one_over_schwinger;
+        const auto eta = sqrt(fabs(inner - ff))*one_over_schwinger;
 
         constexpr const auto coeff = static_cast<RealType>(
             heaviside_lorentz_elementary_charge<double>*
+            heaviside_lorentz_elementary_charge<double>*
+            heaviside_lorentz_schwinger_field<double>*
             heaviside_lorentz_schwinger_field<double>/
-            4.0*pi<double>*pi<double>);
+            (4.0*pi<double>*pi<double>));
+        const auto rate_conv = conv<quantity::rate,
+            unit_system::heaviside_lorentz, UnitSystem, RealType>::fact(1.0, ref_quantity);
 
         if(epsi != zero<RealType> && eta != zero<RealType>)
-            return coeff*epsi*eta*exp(-pi<RealType>/epsi)/tanh(pi<RealType>*eta/epsi);
+            return coeff*rate_conv*epsi*eta*exp(-pi<RealType>/epsi)/tanh(pi<RealType>*eta/epsi);
         else if(epsi == zero<RealType>)
             return zero<RealType>;
         else
-            return coeff*epsi*epsi*exp(-pi<RealType>/epsi)/pi<RealType>;
+            return coeff*rate_conv*epsi*epsi*exp(-pi<RealType>/epsi)/pi<RealType>;
     }
 
     /**
