@@ -1252,7 +1252,7 @@ namespace phys{
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
         {
-            constexpr auto ff = static_cast<RealType>(1.0/light_speed<RealType>);
+            constexpr auto ff = static_cast<RealType>(1.0/light_speed<double>);
             return (reference_quantity_to*ff)*(reference_quantity_to*ff)*
                 (reference_quantity_to*ff);
         };
