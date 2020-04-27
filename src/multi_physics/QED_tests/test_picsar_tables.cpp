@@ -13,9 +13,10 @@
 #include <vector>
 #include <algorithm>
 #include <array>
-#include <iostream>
 
 #include "picsar_tables.hpp"
+
+#include "picsar_span.hpp"
 
 using namespace picsar::multi_physics::containers;
 
@@ -42,40 +43,108 @@ double linear_function(double x)
     return m*x + q;
 }
 
+double linear_function(double x, double y)
+{
+    const double a = 2.2;
+    const double b = -1.7;
+    const double c = -3.1;
+    return a*x + b*y + c;
+}
+
 const double xmin = -10.0;
 const double xmax = 10.0;
-const int size = 100;
+const double ymin = -8.0;
+const double ymax = 8.0;
+const int xsize = 100;
+const int ysize = 100;
 
 equispaced_1d_table<double, std::vector<double> > make_1d_table()
 {
-    std::vector<double> data(size);
+    std::vector<double> data(xsize);
     std::generate(data.begin(), data.end(),
         [&, n = 0]() mutable {
-            double x = xmin+((xmax-xmin)*(n++))/(size-1);
+            double x = xmin+((xmax-xmin)*(n++))/(xsize-1);
             return linear_function(x);
         });
 
     return equispaced_1d_table<double, std::vector<double>>(xmin, xmax,data);
 }
 
+equispaced_2d_table<double, std::vector<double> > make_2d_table()
+{
+    std::vector<double> data(xsize*ysize);
+    for (int i = 0; i < xsize; ++i){
+        for (int j = 0; j < ysize; ++j){
+            double x = xmin+i*(xmax-xmin)/(xsize-1);
+            double y = ymin+j*(ymax-ymin)/(ysize-1);
+            data[i*ysize+j] = linear_function(x, y);
+        }
+    }
+
+    return equispaced_2d_table<double, std::vector<double>>(
+        xmin, xmax, ymin, ymax, xsize, ysize, data);
+}
+
+
 // ------------- Tests --------------
 
 void check_table_1d(
     const equispaced_1d_table<double, std::vector<double> >& tab)
 {
-    BOOST_CHECK_EQUAL(0, 0);
-
     const auto rxmin = tab.get_x_min();
     BOOST_CHECK_EQUAL(rxmin, xmin);
     const auto rxmax = tab.get_x_max();
     BOOST_CHECK_EQUAL(rxmax, xmax);
     const auto rhowmany =  tab.get_how_many_x();
-    BOOST_CHECK_EQUAL(rhowmany, size);
+    BOOST_CHECK_EQUAL(rhowmany, xsize);
 
-    const auto x0 = tab.x_coord(0);
-    const auto x1 = tab.x_coord(size/2);
-    const auto x2 = tab.x_coord(size-1);
-    const auto x1exp = (size/2)*(xmax - xmin)/(size-1) + xmin;
+    const auto x0 = tab.get_x_coord(0);
+    const auto x1 = tab.get_x_coord(xsize/2);
+    const auto x2 = tab.get_x_coord(xsize-1);
+    const auto x1exp = (xsize/2)*(xmax - xmin)/(xsize-1) + xmin;
+    BOOST_CHECK_SMALL(fabs((x0-xmin)/xmin), tolerance<double>());
+    BOOST_CHECK_SMALL(fabs(x1 - x1exp)/x1exp, tolerance<double>());
+    BOOST_CHECK_SMALL(fabs((x2 - xmax)/xmax), tolerance<double>());
+
+    const auto x3 = 0.732*(x1-x0) + x0;
+    const auto x4 = 0.118*(x2-x1) + x1;
+
+    const auto v0 = tab.get_val(0);
+    const auto v1 = tab.get_val(xsize/2);
+    const auto v2 = tab.get_val(xsize-1);
+    BOOST_CHECK_EQUAL(v0, linear_function(x0));
+    BOOST_CHECK_EQUAL(v1, linear_function(x1));
+    BOOST_CHECK_EQUAL(v2, linear_function(x2));
+
+    const auto xarr = std::array<double, 5>{x0,x1,x2,x3,x4};
+    for (const auto& xx : xarr)
+    {
+        const auto val = tab.interp(xx);
+        const auto expected = linear_function(xx);
+        BOOST_CHECK_SMALL(fabs((val - expected)/expected), tolerance<double>());
+    }
+}
+
+void check_table_2d(
+    const equispaced_2d_table<double, std::vector<double> >& tab)
+{
+    const auto rxmin = tab.get_x_min();
+    BOOST_CHECK_EQUAL(rxmin, xmin);
+    const auto rxmax = tab.get_x_max();
+    BOOST_CHECK_EQUAL(rxmax, xmax);
+    const auto rhowmany_x =  tab.get_how_many_x();
+    BOOST_CHECK_EQUAL(rhowmany_x, xsize);
+    const auto rymin = tab.get_y_min();
+    BOOST_CHECK_EQUAL(rxmin, xmin);
+    const auto rymax = tab.get_y_max();
+    BOOST_CHECK_EQUAL(rxmax, xmax);
+    const auto rhowmany_y =  tab.get_how_many_y();
+    BOOST_CHECK_EQUAL(rhowmany_y, ysize);
+
+    const auto x0 = tab.get_x_coord(0);
+    const auto x1 = tab.get_x_coord(xsize/2);
+    const auto x2 = tab.get_x_coord(xsize-1);
+    const auto x1exp = (xsize/2)*(xmax - xmin)/(xsize-1) + xmin;
     BOOST_CHECK_SMALL(fabs((x0-xmin)/xmin), tolerance<double>());
     BOOST_CHECK_SMALL(fabs(x1 - x1exp)/x1exp, tolerance<double>());
     BOOST_CHECK_SMALL(fabs((x2 - xmax)/xmax), tolerance<double>());
@@ -83,11 +152,46 @@ void check_table_1d(
     const auto x3 = 0.732*(x1-x0) + x0;
     const auto x4 = 0.118*(x2-x1) + x1;
     const auto xarr = std::array<double, 5>{x0,x1,x2,x3,x4};
+
+    const auto y0 = tab.get_y_coord(0);
+    const auto y1 = tab.get_y_coord(ysize/2);
+    const auto y2 = tab.get_y_coord(ysize-1);
+    const auto y1exp = (ysize/2)*(ymax - ymin)/(ysize-1) + ymin;
+    BOOST_CHECK_SMALL(fabs((y0-ymin)/ymin), tolerance<double>());
+    BOOST_CHECK_SMALL(fabs(y1 - y1exp)/y1exp, tolerance<double>());
+    BOOST_CHECK_SMALL(fabs((y2 - ymax)/ymax), tolerance<double>());
+
+    const auto v00 = tab.get_val(0, 0);
+    const auto v10 = tab.get_val(xsize/2, 0);
+    const auto v20 = tab.get_val(xsize-1, 0);
+    const auto v01 = tab.get_val(0, ysize/2);
+    const auto v11 = tab.get_val(xsize/2, ysize/2);
+    const auto v21 = tab.get_val(xsize-1, ysize/2);
+    const auto v02 = tab.get_val(0, ysize-1);
+    const auto v12 = tab.get_val(xsize/2, ysize-1);
+    const auto v22 = tab.get_val(xsize-1, ysize-1);
+    BOOST_CHECK_EQUAL(v00, linear_function(x0,y0));
+    BOOST_CHECK_EQUAL(v10, linear_function(x1,y0));
+    BOOST_CHECK_EQUAL(v20, linear_function(x2,y0));
+    BOOST_CHECK_EQUAL(v01, linear_function(x0,y1));
+    BOOST_CHECK_EQUAL(v11, linear_function(x1,y1));
+    BOOST_CHECK_EQUAL(v21, linear_function(x2,y1));
+    BOOST_CHECK_EQUAL(v02, linear_function(x0,y2));
+    BOOST_CHECK_EQUAL(v12, linear_function(x1,y2));
+    BOOST_CHECK_EQUAL(v22, linear_function(x2,y2));
+
+    const auto y3 = 0.8569*(y1-y0) + y0;
+    const auto y4 = 0.3467*(y2-y1) + y1;
+    const auto yarr = std::array<double, 5>{y0,y1,y2,y3,y4};
+
     for (const auto& xx : xarr)
     {
-        const auto val = tab.interp(xx);
-        const auto expected = linear_function(xx);
-        BOOST_CHECK_SMALL(fabs((val - expected)/expected), tolerance<double>());
+        for (const auto& yy : yarr)
+        {
+            const auto val = tab.interp(xx, yy);
+            const auto expected = linear_function(xx, yy);
+            BOOST_CHECK_SMALL(fabs((val - expected)/expected), tolerance<double>());
+        }
     }
 }
 
@@ -110,11 +214,38 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_1d_table_constructor_setter)
     const auto val = 1000.0;
     const int where = 10;
     tab_1d.set_val(where, val);
-    const auto x10 = tab_1d.x_coord(where);
+    const auto x10 = tab_1d.get_x_coord(where);
     const auto res =tab_1d.interp(x10);
 
     BOOST_CHECK_SMALL(fabs((res - val)/val), tolerance<double>());
 
 }
 
-// *******************************
+
+// ***Test equispaced_2d_table constructor and getters
+BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_constructor_getters)
+{
+    auto tab_2d = make_2d_table();
+    const auto const_tab_2d = make_2d_table();
+    auto copy_tab_2d = tab_2d;
+
+    check_table_2d(tab_2d);
+    check_table_2d(const_tab_2d);
+    check_table_2d(copy_tab_2d);
+}
+
+// ***Test equispaced_2d_table setter
+BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_constructor_setter)
+{
+    auto tab_2d = make_2d_table();
+    const auto val = 1000.0;
+    const int i = 10;
+    const int j = 20;
+    tab_2d.set_val(i,j,val);
+    const auto xx = tab_2d.get_x_coord(i);
+    const auto yy = tab_2d.get_y_coord(j);
+    const auto res =tab_2d.interp(xx,yy);
+
+    BOOST_CHECK_SMALL(fabs((res - val)/val), tolerance<double>());
+
+}

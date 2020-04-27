@@ -8,6 +8,8 @@
 
 #include "../utils/picsar_algo.hpp"
 
+#include "../math/math_constants.h"
+
 namespace picsar{
 namespace multi_physics{
 namespace containers{
@@ -21,25 +23,33 @@ namespace containers{
             RealType x_min, RealType x_max, VectorType values):
             m_x_min{x_min}, m_x_max{x_max}, m_values{values}
             {
-                m_how_many_x = values.size();
+                m_how_many_x = static_cast<int>(values.size());
                 m_x_size = x_max - x_min;
             };
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        RealType x_coord(const size_t i) const noexcept
+        RealType get_x_coord(const int i) const noexcept
         {
                 return i*m_x_size/(m_how_many_x-1) + m_x_min;
         }
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        RealType get_val(const size_t i) const noexcept
+        {
+                return m_values[i];
+        }
+
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         RealType interp(const RealType where_x) const noexcept
         {
-            const auto idx_left = static_cast<size_t>(
+            const auto idx_left = static_cast<int>(
                 floor((m_how_many_x-1)*(where_x-m_x_min)/m_x_size));
+            if (idx_left == (m_how_many_x-1))
+                return  m_values[m_how_many_x-1];
             const auto idx_right = idx_left + 1;
 
-            const auto xleft = x_coord(idx_left);
-            const auto xright = x_coord(idx_right);
+            const auto xleft = get_x_coord(idx_left);
+            const auto xright = get_x_coord(idx_right);
             const auto yleft = m_values[idx_left];
             const auto yright = m_values[idx_right];
 
@@ -47,13 +57,13 @@ namespace containers{
         }
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        void set_val(size_t where, RealType what)
+        void set_val(int i, RealType what)
         {
-            m_values[where] = what;
+            m_values[i] = what;
         }
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        size_t get_how_many_x() const noexcept
+        int get_how_many_x() const noexcept
         {
             return m_how_many_x;
         }
@@ -74,10 +84,10 @@ namespace containers{
         RealType m_x_min;
         RealType m_x_max;
         RealType m_x_size;
-        size_t m_how_many_x;
+        int m_how_many_x;
         VectorType m_values;
     };
-/*
+
     template <typename RealType, class VectorType>
     class equispaced_2d_table
     {
@@ -85,7 +95,7 @@ namespace containers{
         equispaced_2d_table(
             RealType x_min, RealType x_max,
             RealType y_min, RealType y_max,
-            size_t how_many_x, size_t how_many_y,
+            int how_many_x, int how_many_y,
             VectorType values):
             m_x_min{x_min}, m_x_max{x_max},
             m_y_min{y_min}, m_y_max{y_max},
@@ -97,19 +107,25 @@ namespace containers{
             };
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        RealType x_coord(size_t i) const noexcept
+        RealType get_x_coord(int i) const noexcept
         {
             return i*m_x_size/(m_how_many_x-1) + m_x_min;
         }
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        RealType y_coord(size_t j) const noexcept
+        RealType get_y_coord(int j) const noexcept
         {
             return j*m_y_size/(m_how_many_y-1) + m_y_min;
         }
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        RealType interp_first_coord(RealType where_x, size_t j) const
+        RealType get_val(int i, int j) const noexcept
+        {
+            return m_values[idx(i, j)];
+        }
+
+        /*PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        RealType interp_first_coord(RealType where_x, size_t j) const noexcept
         {
             const auto idx_left = static_cast<size_t>(
                 floor((m_x_size-1)*(where_x-m_x_min)/m_x_size));
@@ -124,7 +140,7 @@ namespace containers{
         }
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        RealType interp_second_coord(size_t i, RealType where_y) const
+        RealType interp_second_coord(size_t i, RealType where_y) const noexcept
         {
             const auto idx_left = static_cast<size_t>(
                 floor((m_y_size-1)*(where_y-m_y_min)/m_y_size));
@@ -136,46 +152,75 @@ namespace containers{
             const auto yright = idx_right*m_y_size/(m_y_size-1) + m_y_min;
 
             return linear_interp(xleft, xright, yleft, yright, where_x);
-        }
+        }*/
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        void set_val(size_t where_x, size_t where_y, RealType what)
+        RealType interp(const RealType where_x, const RealType where_y) const noexcept
         {
-            m_values[idx(where_x, where_y)] = what;
+            auto idx_x_left = static_cast<int>(
+                floor((m_how_many_x-1)*(where_x-m_x_min)/m_x_size));
+            if (idx_x_left == (m_how_many_x-1))
+                idx_x_left = m_how_many_x-2;
+            const auto idx_x_right = idx_x_left + 1;
+            auto idx_y_left = static_cast<int>(
+                floor((m_how_many_y-1)*(where_y-m_y_min)/m_y_size));
+            if (idx_y_left == (m_how_many_y-1))
+                idx_y_left = m_how_many_y-2;
+            const auto idx_y_right = idx_y_left + 1;
+
+            const auto xleft = get_x_coord(idx_x_left);
+            const auto xright = get_x_coord(idx_x_right);
+            const auto yleft = get_y_coord(idx_y_left);
+            const auto yright = get_y_coord(idx_y_right);
+            const auto f_xl_yl = m_values[idx(idx_x_left, idx_y_left)];
+            const auto f_xl_yr = m_values[idx(idx_x_left, idx_y_right)];
+            const auto f_xr_yl = m_values[idx(idx_x_right, idx_y_left)];
+            const auto f_xr_yr = m_values[idx(idx_x_right, idx_y_right)];
+
+            return utils::bilinear_interp(
+                xleft, xright, yleft, yright,
+                f_xl_yl, f_xl_yr, f_xr_yl, f_xr_yr,
+                where_x, where_y);
         }
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        size_t get_how_many_x(size_t i) const
+        void set_val(const int i, const int j, const RealType what)
+        {
+            m_values[idx(i, j)] = what;
+        }
+
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        int get_how_many_x() const noexcept
         {
             return m_how_many_x;
         }
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        RealType get_x_min() const
+        RealType get_x_min() const noexcept
         {
             return m_x_min;
         }
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        RealType get_x_max() const
+        RealType get_x_max() const noexcept
         {
             return m_x_max;
         }
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        size_t get_how_many_y(size_t i) const
+        int get_how_many_y() const noexcept
         {
             return m_how_many_y;
         }
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        RealType get_y_min() const
+        RealType get_y_min() const noexcept
         {
             return m_y_min;
         }
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        RealType get_y_max() const
+        RealType get_y_max() const noexcept
         {
             return m_y_max;
         }
@@ -188,18 +233,16 @@ namespace containers{
             RealType m_y_max;
             RealType m_x_size;
             RealType m_y_size;
-            size_t m_how_many_x;
-            size_t m_how_many_y;
+            int m_how_many_x;
+            int m_how_many_y;
             VectorType m_values;
 
             PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-            size_t idx(size_t i, size_t j) const
+            int idx(int i, int j) const noexcept
             {
-                return i*m_y_size + j;
+                return i*m_how_many_y + j;
             }
     };
-
-    */
 }
 }
 }
