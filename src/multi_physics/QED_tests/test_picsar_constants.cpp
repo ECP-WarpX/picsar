@@ -44,12 +44,14 @@ void test_case_const_math()
     const auto exp_pi =
         static_cast<RealType>(3.14159265358979323846264338327950288);
 
+    const auto exp_half = static_cast<RealType>(0.5);
     const auto exp_one = static_cast<RealType>(1.0);
     const auto exp_two = static_cast<RealType>(2.0);
     const auto exp_three = static_cast<RealType>(3.0);
 
     BOOST_CHECK_SMALL((pi<RealType>-exp_pi)/exp_pi, tolerance<RealType>());
     BOOST_CHECK_SMALL(zero<RealType>, tolerance<RealType>());
+    BOOST_CHECK_SMALL((half<RealType>-exp_half)/exp_half, tolerance<RealType>());
     BOOST_CHECK_SMALL((one<RealType>-exp_one)/exp_one, tolerance<RealType>());
     BOOST_CHECK_SMALL((two<RealType>-exp_two)/exp_two, tolerance<RealType>());
     BOOST_CHECK_SMALL((three<RealType>-exp_three)/exp_three, tolerance<RealType>());
