@@ -14,10 +14,24 @@ namespace picsar{
 namespace multi_physics{
 namespace containers{
 
+    /**
+    * This class implements a generic equispace 1D lookup table
+    *
+    * @tparam RealType the floating point type to be used (e.g. double or float)
+    * @tparam VectorType the vector type to be used (e.g. std::vector<double>)
+    */
     template <typename RealType, class VectorType>
     class equispaced_1d_table{
 
     public:
+
+        /**
+        * Constructor
+        *
+        * @param[in] x_min the leftmost extreme of the x coordinates
+        * @param[in] x_max the rightmost extreme of the x coordinates
+        * @param[in] values the values of the function that should be interpolated.
+        */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         equispaced_1d_table(
             RealType x_min, RealType x_max, VectorType values):
@@ -124,35 +138,39 @@ namespace containers{
             return m_values[idx(i, j)];
         }
 
-        /*PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        RealType interp_first_coord(RealType where_x, size_t j) const noexcept
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        RealType interp_first_coord(RealType where_x, int j) const noexcept
         {
-            const auto idx_left = static_cast<size_t>(
-                floor((m_x_size-1)*(where_x-m_x_min)/m_x_size));
+            auto idx_left = static_cast<int>(
+                floor((m_how_many_x-1)*(where_x-m_x_min)/m_x_size));
+            if (idx_left == (m_how_many_x-1))
+                idx_left = m_how_many_x-2;
             const auto idx_right = idx_left + 1;
 
             const auto xleft = idx_left*m_x_size/(m_x_size-1) + m_x_min;
             const auto xright = idx_right*m_x_size/(m_x_size-1) + m_x_min;
-            const auto yleft = m_values[idx(idx_left,j)];
-            const auto yright = m_values[idx(idx_right,j)];
+            const auto left_val = m_values[idx(idx_left,j)];
+            const auto right_val = m_values[idx(idx_right,j)];
 
-            return linear_interp(xleft, xright, yleft, yright, where_x);
+            return linear_interp(xleft, xright, left_val, right_val, where_x);
         }
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        RealType interp_second_coord(size_t i, RealType where_y) const noexcept
+        RealType interp_second_coord(int i, RealType where_y) const noexcept
         {
-            const auto idx_left = static_cast<size_t>(
-                floor((m_y_size-1)*(where_y-m_y_min)/m_y_size));
+            auto idx_left = static_cast<int>(
+                floor((m_how_many_y-1)*(where_y-m_y_min)/m_y_size));
+            if (idx_left == (m_how_many_y-1))
+                idx_left = m_how_many_y-2;
             const auto idx_right = idx_left + 1;
 
-            const auto xleft = m_values[idx(i, idx_left)];
-            const auto xright = m_values[idx(i, idx_right)];
+            const auto left_val = m_values[idx(i, idx_left)];
+            const auto right_val = m_values[idx(i, idx_right)];
             const auto yleft = idx_left*m_y_size/(m_y_size-1) + m_y_min;
             const auto yright = idx_right*m_y_size/(m_y_size-1) + m_y_min;
 
-            return linear_interp(xleft, xright, yleft, yright, where_x);
-        }*/
+            return linear_interp(yleft, yright, left_val, right_val, where_y);
+        }
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         RealType interp(const RealType where_x, const RealType where_y) const noexcept

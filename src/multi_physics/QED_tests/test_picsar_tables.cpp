@@ -247,5 +247,4 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_constructor_setter)
     const auto res =tab_2d.interp(xx,yy);
 
     BOOST_CHECK_SMALL(fabs((res - val)/val), tolerance<double>());
-
 }
