@@ -16,6 +16,9 @@ namespace math{
     constexpr RealType zero = RealType(0.0);
 
     template<typename RealType = double>
+    constexpr RealType half = RealType(0.5);
+
+    template<typename RealType = double>
     constexpr RealType one = RealType(1.0);
 
     template<typename RealType = double>
