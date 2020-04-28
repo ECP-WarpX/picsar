@@ -1974,7 +1974,7 @@ END SUBROUTINE Hankel_M_and_invM
     ELSE IF (l_AM_rz) THEN
       CALL  compute_kr_1d(nfftx,krc,dx,nmodes) 
       CALL  compute_k_1d( nffty,kyc,kyf,kyb,nordery,dy,l_stg)
-      CALL  compute_tau_filter(nfftx,nffty, nmodes)
+      CALL  compute_tau_filter(nfftx,nffty)
     END IF
     
     !write (0,*), "===========================kr=============================="
@@ -2227,25 +2227,27 @@ END SUBROUTINE Hankel_M_and_invM
   !> Creation 2017
   ! ______________________________________________________________________________________
 
-  SUBROUTINE compute_tau_filter(nfftx,nffty,nmodes)
+  SUBROUTINE compute_tau_filter(nfftx,nffty)
      USE picsar_precision, ONLY: idp, cpx
      USE constants, ONLY: pi
-     INTEGER(idp) , INTENT(IN) :: nfftx, nffty, nmodes
+     USE shared_data , ONLY : nx, ny, dy, dx, nmodes
+     INTEGER(idp) , INTENT(IN) :: nfftx, nffty
      INTEGER(idp) ::  i,j,k
-     REAL(num) :: kycmax, krmax
+     COMPLEX(cpx), dimension (:) , allocatable :: ky_true
 
+     ALLOCATE (ky_true(nffty))
+     CALL fftfreq(nffty, ky_true, dy)
 
      ALLOCATE (tau_filter (nfftx, nffty, nmodes))
-     kycmax = pi/2./maxval(abs(kyc))
      DO k=1 , nmodes
-        krmax  = pi/2./maxval(abs(krc(:,k)))
         DO j=1, nffty
           DO i= 1, nfftx
-              tau_filter(i,j,k) = cos(abs(krc(i,k))*krmax) * cos(abs(kyc(j))*kycmax) 
+              tau_filter(i,j,k) = cos(0.5_num*krc(i,k)*dx) * cos(0.5_num*ky_true(j)*dy) 
               tau_filter(i,j,k) = tau_filter(i,j,k) * tau_filter(i,j,k)
           END DO
         END DO
      END DO
+     DEALLOCATE (ky_true)
   END SUBROUTINE compute_tau_filter
   ! ______________________________________________________________________________________
   !> @brief
