@@ -373,8 +373,12 @@ END SUBROUTINE init_rz_fields_coupling
     IMPLICIT NONE
     !Transform densities from intermediate to spectral space
     Call get_Hdensities
+    !Filter currents and densities to avoid accumulation of high frequency noise
     CALL high_frequency_smoothing
+    !Current correction in spectral space
     CALL divergence_cleaning
+    !Transform densities back to intermediate space
+    Call get_Cdensities
   END SUBROUTINE densities_correction
 
   SUBROUTINE divergence_cleaning() &
