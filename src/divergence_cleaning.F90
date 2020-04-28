@@ -31,13 +31,11 @@ SUBROUTINE laser_field_correction
   prop_dir= 1._num
 
   CALL get_Hfields
-  !CALL compute_k_vec(l_staggered)
+  ! For filtering, we use the real ky (infinite order) and not the modified ones
+  ! for reduced orders.
   CALL fftfreq(nffty, ky_true, dy)
-  write(0,*) "max ", maxval(abs(el_h)) , maxval(abs(em_h)), maxval(abs(ep_h))  
   filter_array= (1._num- sin(0.5_num*ky_true*dy)**2)*(1._num+sin(0.5_num*ky_true*dy)**2)
   
-  write(0,*) "kyc" , maxval(abs(kyc))
-  write(0,*) "kyc" , maxval(abs(ky_true))
   DO j= 1, nffty
     DO i= 1, nfftx
       em_h(i,j,:)= em_h(i,j,:)*filter_array(j)
@@ -72,16 +70,9 @@ SUBROUTINE laser_field_correction
     END DO 
   END DO
   
-  write(0, *) "max b ", maxval(abs(bl_h)), maxval(abs(bm_h)), maxval(abs(bp_h))
-  
   CALL get_fields_AM_rz()
   DEALLOCATE (ky_true, kyc_inv, w, inv_w, filter_array ) 
 
-#if defined(LIBRARY)
-  write(0, *) "max b ", maxval(abs(el_c)), maxval(abs(er_c)), maxval(abs(et_c)), maxval(abs(bl_c)), maxval(abs(br_c)), maxval(abs(bt_c))
-#else
-  write(0, *) "max b ", maxval(abs(el)), maxval(abs(er)), maxval(abs(et)), maxval(abs(bl)), maxval(abs(br)), maxval(abs(bt))
-#endif
 END SUBROUTINE laser_field_correction
 
 
