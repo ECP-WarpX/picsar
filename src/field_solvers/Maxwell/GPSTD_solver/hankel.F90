@@ -75,6 +75,71 @@ SUBROUTINE get_Hdensities()
 
 END SUBROUTINE get_Hdensities
 
+!Transform densities from spectral to intermediate space
+SUBROUTINE get_Cdensities()
+  USE PICSAR_precision
+  USE fourier, ONLY: plan_rz_f_inv
+  USE gpstd_solver
+  USE fourier_psaotd
+  USE shared_data, ONLY: nmodes
+  USE matrix_coefficients, ONLY : hankel_mat
+  USE matrix_data, ONLY:  nmatrixes_h
+  USE fields , ONLY:  rho_c, rhoold_c, jl_c, jr_c, jt_c, &
+                      rho_h, rhoold_h, jl_h, jp_h, jm_h, &
+                      rho_f, rhoold_f, jl_f, jp_f, jm_f, &
+                      nxguards, nyguards
+  USE shared_data, ONLY:  nx, ny, nmodes 
+  IMPLICIT NONE
+  COMPLEX(cpx), dimension(:,:,:), allocatable :: jr_h_inv, jt_h_inv
+  INTEGER(idp) :: nfftr, nffty
+  INTEGER (idp) :: imode!, i,j 
+  complex(cpx)::ii
+  !REAL(num) :: t1, t2
+  ii= DCMPLX(0.0_NUM,1.0_NUM)
+#if defined(LIBRARY)
+    nfftr=nx+2*nxguards+1
+    nffty=ny+2*nyguards+1
+#else
+    nfftr=nx+2*nxguards
+    nffty=ny+2*nyguards
+#endif
+  ALLOCATE (jr_h_inv(nfftr,nffty,nmodes))
+  ALLOCATE (jt_h_inv(nfftr,nffty,nmodes))
+  ! Perform inverse Hankel transform on densities array
+  !Here we use temporary array _f instead of dedicated _inv arrays in order to
+  !avoid additional allocations.
+  DO imode=1, nmodes
+    Call  dgemm_example(jl_h(:,:,imode), hankel_mat(nmatrixes_h)% & 
+       mode_block_matrix2d(imode, 4)%block2dc, jl_f(:,:,imode), nfftr, nffty)
+    Call  dgemm_example(jm_h(:,:,imode), hankel_mat(nmatrixes_h)% &
+       mode_block_matrix2d(imode, 5)%block2dc, jm_f(:,:,imode), nfftr, nffty)
+    Call  dgemm_example(jp_h(:,:,imode), hankel_mat(nmatrixes_h)% &
+       mode_block_matrix2d(imode, 6)%block2dc, jp_f(:,:,imode), nfftr, nffty)
+    Call  dgemm_example(rho_h(:,:,imode), hankel_mat(nmatrixes_h)% & 
+       mode_block_matrix2d(imode, 4)%block2dc, rho_f(:,:,imode), nfftr, nffty)
+    Call  dgemm_example(rhoold_h(:,:,imode), hankel_mat(nmatrixes_h)% & 
+       mode_block_matrix2d(imode, 4)%block2dc, rhoold_f(:,:,imode), nfftr, nffty)
+  END DO
+
+    jr_h_inv = jm_f+jp_f
+    jt_h_inv = jp_f-jm_f
+
+
+  ! Perform local backward FFTs C2C on densities array
+    CALL fast_fftw1d_3d_array_with_plan(nfftr, nffty, nmodes, jl_f, jl_c,plan_rz_f_inv)
+    CALL fast_fftw1d_3d_array_with_plan(nfftr, nffty, nmodes, jr_h_inv, jr_c,plan_rz_f_inv)
+    CALL fast_fftw1d_3d_array_with_plan(nfftr, nffty, nmodes, jt_h_inv, jt_c,plan_rz_f_inv)
+    CALL fast_fftw1d_3d_array_with_plan(nfftr, nffty, nmodes, rho_f, rho_c,plan_rz_f_inv)
+    CALL fast_fftw1d_3d_array_with_plan(nfftr, nffty, nmodes, rhoold_f, rhoold_c,plan_rz_f_inv)
+
+
+    jt_c = ii*jt_c
+
+    DEALLOCATE (jr_h_inv)
+    DEALLOCATE (jt_h_inv)
+
+END SUBROUTINE get_Cdensities
+
 SUBROUTINE get_Hfields()
   USE PICSAR_precision
   USE gpstd_solver
