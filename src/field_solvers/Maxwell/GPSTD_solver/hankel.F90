@@ -14,6 +14,66 @@ MODULE Hankel !# do not parse
 IMPLICIT NONE
 CONTAINS
 
+!Transform densities from intermediate to spectral space
+SUBROUTINE get_Hdensities()
+  USE PICSAR_precision
+  USE fourier, ONLY: plan_rz_f
+  USE gpstd_solver
+  USE fourier_psaotd
+  USE shared_data, ONLY: nmodes
+  USE matrix_coefficients, ONLY : hankel_mat
+  USE matrix_data, ONLY:  nmatrixes_h
+  USE fields , ONLY:  rho_c, rhoold_c, jl_c, jr_c, jt_c, &
+                      rho_h, rhoold_h, jl_h, jp_h, jm_h, &
+                      rho_f, rhoold_f, jl_f, jp_f, jm_f, &
+                      nxguards, nyguards
+  USE shared_data, ONLY:  nx, ny, nmodes 
+  IMPLICIT NONE
+  COMPLEX(cpx), dimension(:,:,:), allocatable :: jrt_p, jrt_m
+  INTEGER(idp) :: nfftr, nffty
+  INTEGER (idp) :: imode!, i,j 
+  complex(cpx)::ii
+  !REAL(num) :: t1, t2
+  ii= DCMPLX(0.0_NUM,1.0_NUM)
+#if defined(LIBRARY)
+    nfftr=nx+2*nxguards+1
+    nffty=ny+2*nyguards+1
+#else
+    nfftr=nx+2*nxguards
+    nffty=ny+2*nyguards
+#endif
+    ! Perform local forward FFTs C2C on densities array
+    ALLOCATE (jrt_p(nfftr,nffty,nmodes))
+    ALLOCATE (jrt_m(nfftr,nffty,nmodes))
+    jrt_p = (jr_c+ii*jt_c)/2.0_num
+    jrt_m = (jr_c-ii*jt_c)/2.0_num
+    CALL fast_fftw1d_3d_array_with_plan(nfftr, nffty, nmodes, jl_c, jl_f, plan_rz_f)
+    CALL fast_fftw1d_3d_array_with_plan(nfftr, nffty, nmodes, jrt_m, jp_f, plan_rz_f)
+    CALL fast_fftw1d_3d_array_with_plan(nfftr, nffty, nmodes, jrt_p, jm_f, plan_rz_f)
+    CALL fast_fftw1d_3d_array_with_plan(nfftr, nffty, nmodes, rhoold_c,rhoold_f,plan_rz_f)
+    CALL fast_fftw1d_3d_array_with_plan(nfftr, nffty, nmodes, rho_c, rho_f, plan_rz_f)
+    jl_f=jl_f/REAL(nffty,num)
+    jp_f=jp_f/REAL(nffty,num)
+    jm_f=jm_f/REAL(nffty,num)
+    rhoold_f=rhoold_f/REAL(nffty,num)
+    rho_f=rho_f/REAL(nffty,num)
+    DEALLOCATE (jrt_p)
+    DEALLOCATE (jrt_m)
+  ! Perform Hankel transform on densities array
+  DO imode=1, nmodes
+    Call  dgemm_example(jl_f(:,:,imode), hankel_mat(nmatrixes_h)% &
+      mode_block_matrix2d(imode, 1)%block2dc, jl_h(:,:,imode), nfftr, nffty)
+    Call  dgemm_example(jm_f(:,:,imode), hankel_mat(nmatrixes_h)% &
+      mode_block_matrix2d(imode, 2)%block2dc, jm_h(:,:,imode), nfftr, nffty)
+    Call  dgemm_example(jp_f(:,:,imode), hankel_mat(nmatrixes_h)% &
+      mode_block_matrix2d(imode, 3)%block2dc, jp_h(:,:,imode), nfftr, nffty)
+    Call  dgemm_example(rho_f(:,:,imode), hankel_mat(nmatrixes_h)% &
+      mode_block_matrix2d(imode, 1)%block2dc, rho_h(:,:,imode), nfftr, nffty)
+    Call  dgemm_example(rhoold_f(:,:,imode), hankel_mat(nmatrixes_h)% &
+      mode_block_matrix2d(imode, 1)%block2dc, rhoold_h(:,:,imode), nfftr, nffty)
+  END DO
+
+END SUBROUTINE get_Hdensities
 
 SUBROUTINE get_Hfields()
   USE PICSAR_precision
@@ -22,14 +82,8 @@ SUBROUTINE get_Hfields()
   USE shared_data, ONLY: nmodes
   USE matrix_coefficients, ONLY : hankel_mat
   USE matrix_data, ONLY:  nmatrixes_h
-  USE fields !, ONLY:  el_h, ep_h, em_h, bl_h, bp_h, bm_h, jl_h, jp_h, jm_h, rhoold_h, rho_h
-  !USE fields, ONLY : el_f, er_f, et_f, bl_f, br_f, bt_f, jl_f, jr_f, jt_f, rho_f, rhoold_h
-  !USE fields, ONLY : el_f, ep_f, em_f, bl_f, bp_f, bm_f, jl_f, jp_f, jm_f, rho_f, rhoold_f
-  !USE fields, ONLY : Ma, Ma1, Ma_1
+  USE fields 
   USE shared_data, ONLY:  nx, ny, nmodes 
-  USE fields, ONLY:  nxguards, nyguards
-  !INTEGER (idp), intent(in) :: nfftr
-  !REAL(num), dimension(:,:), allocatable :: Ma
   IMPLICIT NONE
   INTEGER(idp) :: nfftr, nffty
   INTEGER (idp) :: imode, i,j 
@@ -277,7 +331,6 @@ SUBROUTINE get_Hfields_inv()
   !                   jl_h_inv, jp_h_inv, jm_h_inv, rhoold_h_inv, rho_h_inv
   !USE fields, ONLY : invM, invM1, invM_1
   USE shared_data, ONLY:  nx,ny
-  USE fields, ONLY:  nxguards, nyguards
   IMPLICIT NONE
   COMPLEX(cpx),POINTER, DIMENSION(:, :) :: el_h_ptr, ep_h_ptr, em_h_ptr, bl_h_ptr, bp_h_ptr, bm_h_ptr,&
                                   el_h_inv_ptr, ep_h_inv_ptr, em_h_inv_ptr, bl_h_inv_ptr, bp_h_inv_ptr, bm_h_inv_ptr
@@ -428,14 +481,8 @@ END SUBROUTINE get_Hfields_inv
 
 
   SUBROUTINE fft_backward_c2c_local_AM_rz(nfftx,nffty,nfftz)
-    USE PICSAR_precision
     USE fastfft
-    USE fields !, ONLY : el_c, er_c, et_c, bl_c, br_c, bt_c, jl_c, jr_c, jt_c,rho_c,   &
-                !       rhoold_c
-    !USE fields, ONLY : el_h_inv, em_h_inv, ep_h_inv, bl_h_inv, bp_h_inv, bm_h_inv
-    ! jl_h_inv, jp_h_inv, jm_h_inv, rho_h_inv,   &
-    !                   rhoold_h_inv
-
+    USE fields 
     USE fourier, ONLY: plan_rz_f_inv
     USE mpi
     USE params, ONLY: it
