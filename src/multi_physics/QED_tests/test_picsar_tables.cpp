@@ -195,6 +195,48 @@ void check_table_2d(
     }
 }
 
+void check_table_2d_interp_one_coord(
+        const equispaced_2d_table<double, std::vector<double> >& tab)
+{
+    const auto x0 = tab.get_x_coord(0);
+    const auto x1 = tab.get_x_coord(xsize/2);
+    const auto x2 = tab.get_x_coord(xsize-1);
+    const auto x3 = 0.732*(x1-x0) + x0;
+    const auto x4 = 0.118*(x2-x1) + x1;
+    const auto xarr = std::array<double, 5>{x0,x1,x2,x3,x4};
+    const auto jarr = std::array<int, 5>{0,1,5,27,ysize-1};
+
+    for (auto xx : xarr){
+        for (auto jj : jarr)
+        {
+            const auto yy = tab.get_y_coord(jj);
+            const auto res = tab.interp_first_coord(xx, jj);
+            const auto exp = linear_function(xx, yy);
+            BOOST_CHECK_SMALL(fabs((res - exp)/exp), tolerance<double>());
+        }
+    }
+
+
+    const auto y0 = tab.get_y_coord(0);
+    const auto y1 = tab.get_y_coord(ysize/2);
+    const auto y2 = tab.get_y_coord(ysize-1);
+    const auto y3 = 0.8569*(y1-y0) + y0;
+    const auto y4 = 0.3467*(y2-y1) + y1;
+    const auto yarr = std::array<double, 5>{y0,y1,y2,y3,y4};
+    const auto iarr = std::array<int, 5>{0,1,5,27,xsize-1};
+
+    for (auto yy : yarr){
+        for (auto ii : iarr)
+        {
+            const auto xx = tab.get_x_coord(ii);
+            const auto res = tab.interp_first_coord(ii, yy);
+            const auto exp = linear_function(xx, yy);
+            BOOST_CHECK_SMALL(fabs((res - exp)/exp), tolerance<double>());
+        }
+    }
+
+}
+
 // ***Test equispaced_1d_table constructor and getters
 BOOST_AUTO_TEST_CASE( picsar_equispaced_1d_table_constructor_getters)
 {
@@ -232,6 +274,14 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_constructor_getters)
     check_table_2d(tab_2d);
     check_table_2d(const_tab_2d);
     check_table_2d(copy_tab_2d);
+}
+
+// ***Test equispaced_2d_table setter
+BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_interp_one_coord)
+{
+    const auto const_tab_2d = make_2d_table();
+
+    check_table_2d_interp_one_coord(const_tab_2d);
 }
 
 // ***Test equispaced_2d_table setter

@@ -152,7 +152,7 @@ namespace containers{
             const auto left_val = m_values[idx(idx_left,j)];
             const auto right_val = m_values[idx(idx_right,j)];
 
-            return linear_interp(xleft, xright, left_val, right_val, where_x);
+            return utils::linear_interp(xleft, xright, left_val, right_val, where_x);
         }
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
@@ -169,7 +169,7 @@ namespace containers{
             const auto yleft = idx_left*m_y_size/(m_y_size-1) + m_y_min;
             const auto yright = idx_right*m_y_size/(m_y_size-1) + m_y_min;
 
-            return linear_interp(yleft, yright, left_val, right_val, where_y);
+            return utils::linear_interp(yleft, yright, left_val, right_val, where_y);
         }
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
