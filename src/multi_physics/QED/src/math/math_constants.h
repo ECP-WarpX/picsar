@@ -27,6 +27,12 @@ namespace math{
     template<typename RealType = double>
     constexpr RealType three = RealType(3.0);
 
+    template<typename RealType = double>
+    constexpr RealType one_third = RealType(1.0/3.0);
+
+    template<typename RealType = double>
+    constexpr RealType two_thirds = RealType(2.0/3.0);
+
 }
 }
 }
