@@ -147,8 +147,8 @@ namespace containers{
                 idx_left = m_how_many_x-2;
             const auto idx_right = idx_left + 1;
 
-            const auto xleft = idx_left*m_x_size/(m_x_size-1) + m_x_min;
-            const auto xright = idx_right*m_x_size/(m_x_size-1) + m_x_min;
+            const auto xleft = (idx_left*m_x_size)/(m_how_many_x-1) + m_x_min;
+            const auto xright = (idx_right*m_x_size)/(m_how_many_x-1) + m_x_min;
             const auto left_val = m_values[idx(idx_left,j)];
             const auto right_val = m_values[idx(idx_right,j)];
 
@@ -166,8 +166,8 @@ namespace containers{
 
             const auto left_val = m_values[idx(i, idx_left)];
             const auto right_val = m_values[idx(i, idx_right)];
-            const auto yleft = idx_left*m_y_size/(m_y_size-1) + m_y_min;
-            const auto yright = idx_right*m_y_size/(m_y_size-1) + m_y_min;
+            const auto yleft = (idx_left*m_y_size)/(m_how_many_y-1) + m_y_min;
+            const auto yright = (idx_right*m_y_size)/(m_how_many_y-1) + m_y_min;
 
             return utils::linear_interp(yleft, yright, left_val, right_val, where_y);
         }

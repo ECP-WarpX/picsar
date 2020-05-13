@@ -229,7 +229,7 @@ void check_table_2d_interp_one_coord(
         for (auto ii : iarr)
         {
             const auto xx = tab.get_x_coord(ii);
-            const auto res = tab.interp_first_coord(ii, yy);
+            const auto res = tab.interp_second_coord(ii, yy);
             const auto exp = linear_function(xx, yy);
             BOOST_CHECK_SMALL(fabs((res - exp)/exp), tolerance<double>());
         }
