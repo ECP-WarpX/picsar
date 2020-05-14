@@ -6,8 +6,6 @@
 //If desired, these functions can be used directly
 //without the higher-level interface.
 
-#include <cmath>
-
 //Should be included by all the src files of the library
 #include "../../qed_commons.h"
 
@@ -26,16 +24,20 @@
 //Uses unit conversion"
 #include "../unit_conversion.hpp"
 
+#include "breit_wheeler_engine_tables.hpp"
+
 namespace picsar{
 namespace multi_physics{
 namespace phys{
 namespace breit_wheeler{
 
-    enum check_input
-    {
-        yes,
-        no
-    };
+namespace default_params
+{
+    constexpr double chi_phot_min = 0.1;
+    constexpr double chi_phot_max = 500.0;
+    constexpr int chi_phot_how_many = 50;
+}
+
 
     template<typename RealType>
     struct control_params{
@@ -51,55 +53,8 @@ namespace breit_wheeler{
         RealType very_large_number = 1.0e20;
     };
 
-    template<typename RealType>
-    struct dndt_lookup_table_params{
-        // dN/dt table:
-        //__breit_wheeler_min_tdndt_chi_phot  is the inferior
-        //limit of the total pair production rate lookup table.
-        //If  __breit_wheeler_min_chi_phot < chi <__breit_wheeler_min_tdndt_chi_phot
-        //BW process is taken into account, but the Erber approximation
-        //rather than the lookup table is used.
-        RealType chi_phot_tdndt_min = static_cast<RealType>(0.1); //Min chi_phot
-        RealType chi_phot_tdndt_max = static_cast<RealType>(500.0); //Max chi_phot
-        size_t chi_phot_tdndt_how_many = 50; //How many points
-    };
 
-
-    template<typename RealType, typename VectorType>
-    class dndt_lookup_table{
-        public:
-            template <unit_system UnitSystem, check_input CheckInput>
-            friend RealType interp_dN_dt(
-                const RealType, const RealType,
-                const dndt_lookup_table<RealType, VectorType>&,
-                const control_params<RealType>&);
-
-            PXRMP_INTERNAL_GPU_DECORATOR
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-            RealType interp(RealType where) const
-            {
-                const auto xmin = m_ctrl.chi_phot_tdndt_min;
-                const auto xmax = m_ctrl.chi_phot_tdndt_max;
-                const auto isize = m_ctrl.chi_phot_tdndt_how_many;
-                const auto xsize = xmax - xmin;
-
-                const size_t idx_left = static_cast<size_t>(
-                    floor((isize-1)*(where-xmin)/xsize));
-                const size_t idx_right = idx_left + 1;
-
-                const auto xleft = (idx_left*xsize/isize) + xmin;
-                const auto xright = (idx_right*xsize/isize) + xmin;
-                const auto yleft = m_values[idx_left];
-                const auto yright = m_values[idx_right];
-
-                return yleft + ((yright-yleft)/(xright-xleft))*(where-xleft);
-            }
-
-        private:
-            dndt_lookup_table_params<RealType> m_ctrl;
-            VectorType m_values;
-    };
-
+/*
     template<typename RealType>
     struct pair_prod_lookup_table_params{
         // Pair production table:
@@ -403,7 +358,7 @@ namespace breit_wheeler{
             fact_momentum_from_SI_to<UnitSystem,RealType>();;
     }
 }
-
+*/
 
 }
 }
