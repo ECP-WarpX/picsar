@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE( picsar_schwinger_core_expected_pair_number )
     test_expected_pair_number <unit_system::norm_omega, double>(reference_omega);
     test_expected_pair_number <unit_system::norm_lambda, double>(reference_length);
     test_expected_pair_number <unit_system::heaviside_lorentz, double>();
-    //test_expected_pair_number <unit_system::SI, float>();
+    test_expected_pair_number <unit_system::SI, float>();
 }
 
 /*
