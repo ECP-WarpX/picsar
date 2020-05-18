@@ -16,6 +16,7 @@ CONTAINS
 
 !Transform densities from intermediate to spectral space
 SUBROUTINE get_Hdensities()
+
   USE PICSAR_precision
   USE fourier, ONLY: plan_rz_f
   USE gpstd_solver
@@ -28,6 +29,7 @@ SUBROUTINE get_Hdensities()
                       rho_f, rhoold_f, jl_f, jp_f, jm_f, &
                       nxguards, nyguards
   USE shared_data, ONLY:  nx, ny, nmodes 
+  USE fastfft
   IMPLICIT NONE
   COMPLEX(cpx), dimension(:,:,:), allocatable :: jrt_p, jrt_m
   INTEGER(idp) :: nfftr, nffty
