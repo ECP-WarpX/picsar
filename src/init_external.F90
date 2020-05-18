@@ -382,12 +382,12 @@ END SUBROUTINE init_rz_fields_coupling
     Call get_Cdensities
   END SUBROUTINE densities_correction
 
-  SUBROUTINE divergence_cleaning() &
+  SUBROUTINE rotational_cleaning() &
        BIND(C,name='rotational_cleaning')
     USE fields, ONLY: bl_c, br_c,bt_c, bl_f, bp_f, bm_f
     IMPLICIT NONE
     Call laser_field_correction
-  END SUBROUTINE divergence_cleaning
+  END SUBROUTINE rotational_cleaning
 
   SUBROUTINE evec3d_push_norder(ex, ey, ez, bx, by, bz, jx, jy, jz, dt, dtsdx,  &
   dtsdy, dtsdz, nx, ny, nz, norderx, nordery, norderz, nxguard, nyguard,nzguard)
