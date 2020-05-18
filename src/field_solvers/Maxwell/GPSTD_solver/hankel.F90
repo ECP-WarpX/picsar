@@ -89,6 +89,7 @@ SUBROUTINE get_Cdensities()
                       rho_f, rhoold_f, jl_f, jp_f, jm_f, &
                       nxguards, nyguards
   USE shared_data, ONLY:  nx, ny, nmodes 
+  USE fastfft
   IMPLICIT NONE
   COMPLEX(cpx), dimension(:,:,:), allocatable :: jr_h_inv, jt_h_inv
   INTEGER(idp) :: nfftr, nffty
@@ -149,6 +150,7 @@ SUBROUTINE get_Hfields()
   USE matrix_data, ONLY:  nmatrixes_h
   USE fields 
   USE shared_data, ONLY:  nx, ny, nmodes 
+  USE fastfft
   IMPLICIT NONE
   INTEGER(idp) :: nfftr, nffty
   INTEGER (idp) :: imode, i,j 

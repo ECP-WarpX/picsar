@@ -370,6 +370,7 @@ END SUBROUTINE init_rz_fields_coupling
   SUBROUTINE densities_correction() &
        BIND(C,name='densities_correction')
     USE fields!, ONLY: bl_c, br_c,bt_c, bl_f, bp_f, bm_f
+    USE hankel 
     IMPLICIT NONE
     !Transform densities from intermediate to spectral space
     Call get_Hdensities
