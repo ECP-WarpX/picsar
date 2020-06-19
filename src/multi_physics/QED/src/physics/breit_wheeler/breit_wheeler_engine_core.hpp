@@ -6,6 +6,8 @@
 //If desired, these functions can be used directly
 //without the higher-level interface.
 
+#include <cmath>
+
 //Should be included by all the src files of the library
 #include "../../qed_commons.h"
 
@@ -21,6 +23,9 @@
 //Uses physical constants
 #include "../phys_constants.h"
 
+//Uses math constants
+#include "../../math/math_constants.h"
+
 //Uses unit conversion"
 #include "../unit_conversion.hpp"
 
@@ -31,13 +36,55 @@ namespace multi_physics{
 namespace phys{
 namespace breit_wheeler{
 
-namespace default_params
-{
-    constexpr double chi_phot_min = 0.1;
-    constexpr double chi_phot_max = 500.0;
-    constexpr int chi_phot_how_many = 50;
-}
+    //______________________GPU
+    //get a single optical depth
+    //same as above but conceived for GPU usage
+    template<typename RealType>
+    PXRMP_INTERNAL_GPU_DECORATOR
+    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    RealType get_optical_depth(const RealType unf_zero_one_minus_epsi)
+    {
+        using namespace math;
+        return -log(one<RealType> - unf_zero_one_minus_epsi);
+    }
 
+
+    //______________________GPU
+    //Interp the dN_dt from table (with GPU use directly this one!)
+    template<
+        typename RealType,
+        typename TableType,
+        unit_system UnitSystem = unit_system::SI>
+    PXRMP_INTERNAL_GPU_DECORATOR
+    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    RealType get_dN_dt(
+        const RealType t_energy_phot, const RealType chi_phot,
+        const TableType& ref_dndt_table,
+        const RealType ref_quantity = math::one<RealType>)
+    {
+        const auto energy_phot = t_energy_phot*conv<
+            quantity::energy, UnitSystem,
+            unit_system::heaviside_lorentz, RealType>::fact(ref_quantity);
+
+        if(energy_phot == math::zero<RealType> || chi_phot ==  math::zero<RealType>){
+                return  math::zero<RealType>;
+        }
+
+        const auto gamma_phot = energy_phot/
+            heaviside_lorentz_electron_rest_energy<RealType>;
+
+        const auto TT = ref_dndt_table.interp(chi_phot);
+
+        constexpr const auto pair_prod_rate_coeff = static_cast<RealType>(
+            fine_structure<> * electron_mass<> * light_speed<> * light_speed<> /
+            reduced_plank<>);
+        const auto dndt = pair_prod_rate_coeff * TT *(chi_phot/gamma_phot);
+
+        return dndt*conv<quantity::rate, unit_system::heaviside_lorentz,
+            UnitSystem, RealType>::fact(math::one<RealType>,ref_quantity);
+    }
+
+/*
 
     template<typename RealType>
     struct control_params{
@@ -54,7 +101,7 @@ namespace default_params
     };
 
 
-/*
+
     template<typename RealType>
     struct pair_prod_lookup_table_params{
         // Pair production table:
@@ -125,16 +172,7 @@ namespace default_params
     };
 
 
-    //______________________GPU
-    //get a single optical depth
-    //same as above but conceived for GPU usage
-    template<typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    RealType get_optical_depth(const RealType unf_zero_one_minus_epsi)
-    {
-        return -log(static_cast<RealType>(1.0) - unf_zero_one_minus_epsi);
-    }
+
 
     //______________________GPU
     //Interp the dN_dt from table (with GPU use directly this one!)

@@ -109,10 +109,15 @@
     #endif
   #endif
 
+/**
+ * If possible (i.e. if C++17 or more recent is used)
+ * picsar makes use of "if constexpr". Otherwise, the
+ * expression falls back to a regular "if".
+ */
   #if __cplusplus > 201402L
-    #define PXRMP_CONSTEXPR_IF if constexpr
+    #define PXRMP_INTERNAL_CONSTEXPR_IF if constexpr
   #else
-    #define PXRMP_CONSTEXPR_IF if
+    #define PXRMP_INTERNAL_CONSTEXPR_IF if
   #endif
 
 #endif// PICSAR_MULTIPHYSICS_QED_COMMONS

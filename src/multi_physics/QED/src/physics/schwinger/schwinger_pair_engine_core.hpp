@@ -202,52 +202,6 @@ namespace schwinger{
             em_e, em_b, t_volume, t_dt, reference_quantity);
     }
 
-#ifdef EXCLUDE__
-
-    /**
-    * This function computes the number of expected Schwinger pairs
-    * and returns an integer number extracted from a Poisson distribution.
-    * It requires a pointer to a RNG wrapper providing "poisson(lambda)" method
-    * (see utils/rng_wrapper.hpp) for an example
-    *
-    * @tparam RealType the floating point type to be used
-    * @tparam RandomNumberGenerator the RNG wrapper
-    * @tparam UnitSystem unit system to be used for inputs & outputs
-    * @param[in] ex the x component of the electric field
-    * @param[in] ey the y component of the electric field
-    * @param[in] ez the z component of the electric field
-    * @param[in] bx the x component of the magnetic field
-    * @param[in] by the y component of the magnetic field
-    * @param[in] bz the z component of the magnetic field
-    * @param[in] t_volume the volume of the physical region
-    * @param[in] t_dt the temporal step
-    * @param[in] unf_zero_one_minus_epsi a uniformly distributed random number
-    * @param[in] ref_quantity reference quantity for unit conversion (lambda or omega)
-
-    * @return the number of generated pairs
-    */
-    template<
-        typename RealType,
-        class RandomNumberGenerator,
-        unit_system UnitSystem = unit_system::SI>
-    PXRMP_INTERNAL_GPU_DECORATOR
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    int get_num_pairs_multiple_poisson(
-        const RealType ex, const RealType ey, const RealType ez,
-        const RealType bx, const RealType by, const RealType bz,
-        const RealType t_volume, const RealType t_dt,
-        RandomNumberGenerator* rng,
-        const RealType ref_quantity = static_cast<RealType>(1.0))
-    {
-        const auto expected_number =
-            compute_expected_pair_number<RealType, UnitSystem>(
-                ex, ey, ez, bx, by, bz, t_volume, t_dt, ref_quantity);
-
-        return rng->poisson(expected_number);
-    }
-
-#endif
-
 }
 }
 }

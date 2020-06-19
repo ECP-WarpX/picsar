@@ -12,6 +12,10 @@
 //Uses physical constants
 #include "../../math/math_constants.h"
 
+#include "../../math/quadrature.hpp"
+
+#include "../../math/special_functions.hpp"
+
 namespace picsar{
 namespace multi_physics{
 namespace phys{
@@ -22,7 +26,7 @@ namespace breit_wheeler{
     constexpr RealType compute_x(
         const RealType chi_phot, const RealType chi_ele) noexcept
     {
-        const auto temp = cbrt(chi_phot/(chi_ele*(chi_phot-chi_ele));
+        const auto temp = cbrt(chi_phot/(chi_ele*(chi_phot-chi_ele)));
         return temp*temp;
     }
 
@@ -31,7 +35,6 @@ namespace breit_wheeler{
         const RealType chi_phot, const RealType chi_ele) noexcept
     {
         using namespace math;
-
         if( chi_ele >= chi_phot )
             return zero<RealType>;
 
@@ -42,9 +45,6 @@ namespace breit_wheeler{
         const auto sqrt_xx = sqrt(xx);
         const auto xx_3_2 = sqrt_xx*sqrt_xx*sqrt_xx;
 
-        constexpr auto div = one<RealType>/(pi<RealType>*three<RealType>);
-
-
         constexpr auto one_third = one<RealType>/three<RealType>;
         constexpr auto two_thirds = one<RealType>/three<RealType>;
         const auto inner_integral = math::quad_a_inf<RealType>(
@@ -52,19 +52,23 @@ namespace breit_wheeler{
                 const auto sqrt_s = sqrt(s);
                 const auto s_3_2 = sqrt_s*sqrt_s*sqrt_s;
 
-                return sqrt_s*k_v(one_third<RealType>, two_thirds<RealType>*s_3_2);
+                return sqrt_s*math::k_v(math::one_third<RealType>,
+                    math::two_thirds<RealType>*s_3_2);
             }, xx);
 
-        return (inner_integral-(two<RealType>-chi_phot*xx_3_2)
-            *k_v(two_thirds<RealType>, two_thirds<RealType>*xx_3_2))*div;
+        return (inner_integral-(math::two<RealType>-chi_phot*xx_3_2)
+            *k_v(math::two_thirds<RealType>,
+                math::two_thirds<RealType>*xx_3_2));
     }
 
     template<typename RealType>
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     RealType compute_T_function(const RealType chi_phot)
     {
-        using namespace math;
-        return quad_a_b<RealType>(compute_T_integrand<RealType>, zero<RealType>, chi_phot);
+        constexpr auto coeff = static_cast<RealType>(1./math::pi<>);
+        return coeff*math::quad_a_b<RealType>(
+            [=](RealType cc){
+                return compute_T_integrand<RealType>(chi_phot, cc);},
+            math::zero<RealType>, chi_phot)/(chi_phot*chi_phot*sqrt(3.0));
     }
 
 }

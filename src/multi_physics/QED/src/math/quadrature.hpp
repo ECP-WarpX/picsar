@@ -103,7 +103,7 @@ namespace math{
         const std::function<RealType(RealType)>& f, RealType a, RealType b)
     {
         return generic_quad_a_b<
-            RealType, quadrature_algorithm::trapezoidal>(f, a, b);
+            RealType, quadrature_algorithm::gauss_kronrod61>(f, a, b);
     }
 
     /**

@@ -105,7 +105,6 @@ namespace containers{
             return all_coords;
         }
 
-    protected:
         RealType m_x_min;
         RealType m_x_max;
         RealType m_x_size;
@@ -269,7 +268,6 @@ namespace containers{
             return all_coords;
         }
 
-    protected:
             RealType m_x_min;
             RealType m_x_max;
             RealType m_y_min;
