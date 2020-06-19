@@ -1,6 +1,8 @@
 #ifndef PICSAR_EQUISPACED_TABLES
 #define PICSAR_EQUISPACED_TABLES
 
+#include <vector>
+#include <array>
 #include<cmath>
 
 //Should be included by all the src files of the library
@@ -92,6 +94,15 @@ namespace containers{
         RealType get_x_max() const noexcept
         {
             return m_x_max;
+        }
+
+        std::vector<RealType> get_all_coordinates()  const noexcept
+        {
+            auto all_coords = std::vector<RealType>(m_how_many_x);
+            for (int i = 0; i < m_how_many_x; ++i){
+                all_coords[i] = get_x_coord(i);
+            }
+            return all_coords;
         }
 
     protected:
@@ -243,6 +254,20 @@ namespace containers{
             return m_y_max;
         }
 
+        std::vector<std::array<RealType,2>> get_all_coordinates() const noexcept
+        {
+            auto all_coords = std::vector<std::array<RealType,2>>(
+                m_how_many_x*m_how_many_y, {0,0});
+            int count = 0;
+            for (int i = 0; i < m_how_many_x; ++i){
+                for (int j = 0; j < m_how_many_y; ++j){
+                    all_coords[count][0] = get_x_coord(i);
+                    all_coords[count][1] = get_y_coord(j);
+                    count++;
+                }
+            }
+            return all_coords;
+        }
 
     protected:
             RealType m_x_min;

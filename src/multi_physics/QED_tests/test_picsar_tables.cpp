@@ -8,7 +8,7 @@
 
 //Include Boost unit tests library & library for floating point comparison
 #include <boost/test/unit_test.hpp>
-#include <boost/test/floating_point_comparison.hpp>
+#include <boost/test/tools/floating_point_comparison.hpp>
 
 #include <vector>
 #include <algorithm>
@@ -123,6 +123,12 @@ void check_table_1d(
         const auto expected = linear_function(xx);
         BOOST_CHECK_SMALL(fabs((val - expected)/expected), tolerance<double>());
     }
+
+    const auto all_coords = tab.get_all_coordinates();
+    BOOST_CHECK_EQUAL(all_coords.size(), xsize);
+    for (int i = 0; i < xsize; ++i){
+        BOOST_CHECK_EQUAL(all_coords[i], tab.get_x_coord(i));
+    }
 }
 
 void check_table_2d(
@@ -193,6 +199,17 @@ void check_table_2d(
             BOOST_CHECK_SMALL(fabs((val - expected)/expected), tolerance<double>());
         }
     }
+
+    const auto all_coords = tab.get_all_coordinates();
+    int count = 0;
+    BOOST_CHECK_EQUAL(all_coords.size(), xsize*ysize);
+    for (int i = 0; i < xsize; ++i){
+        for (int j = 0; j < ysize; ++j){
+            auto cc = all_coords[count++];
+            BOOST_CHECK_EQUAL(cc[0], tab.get_x_coord(i));
+            BOOST_CHECK_EQUAL(cc[1], tab.get_y_coord(j));
+        }
+    }
 }
 
 void check_table_2d_interp_one_coord(
@@ -234,7 +251,6 @@ void check_table_2d_interp_one_coord(
             BOOST_CHECK_SMALL(fabs((res - exp)/exp), tolerance<double>());
         }
     }
-
 }
 
 // ***Test equispaced_1d_table constructor and getters

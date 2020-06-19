@@ -109,4 +109,10 @@
     #endif
   #endif
 
+  #if __cplusplus > 201402L
+    #define PXRMP_CONSTEXPR_IF if constexpr
+  #else
+    #define PXRMP_CONSTEXPR_IF if
+  #endif
+
 #endif// PICSAR_MULTIPHYSICS_QED_COMMONS

@@ -10,7 +10,7 @@
 
 //Include Boost unit tests library & library for floating point comparison
 #include <boost/test/unit_test.hpp>
-#include <boost/test/floating_point_comparison.hpp>
+#include <boost/test/tools/floating_point_comparison.hpp>
 
 #include "math_constants.h"
 #include "phys_constants.h"
