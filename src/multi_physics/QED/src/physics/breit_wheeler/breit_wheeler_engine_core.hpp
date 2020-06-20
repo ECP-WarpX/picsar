@@ -70,18 +70,47 @@ namespace breit_wheeler{
                 return  math::zero<RealType>;
         }
 
-        const auto gamma_phot = energy_phot/
-            heaviside_lorentz_electron_rest_energy<RealType>;
-
         const auto TT = ref_dndt_table.interp(chi_phot);
 
         constexpr const auto pair_prod_rate_coeff = static_cast<RealType>(
-            fine_structure<> * electron_mass<> * light_speed<> * light_speed<> /
-            reduced_plank<>);
-        const auto dndt = pair_prod_rate_coeff * TT *(chi_phot/gamma_phot);
+            fine_structure<> * heaviside_lorentz_electron_rest_energy<RealType>
+            * heaviside_lorentz_electron_rest_energy<RealType>);
+
+        const auto dndt = pair_prod_rate_coeff * TT *(chi_phot/energy_phot);
 
         return dndt*conv<quantity::rate, unit_system::heaviside_lorentz,
             UnitSystem, RealType>::fact(math::one<RealType>,ref_quantity);
+    }
+
+    //______________________GPU
+    //Evolve optical depth (with GPU use directly this one!)
+    template<
+        typename RealType,
+        typename TableType,
+        unit_system UnitSystem = unit_system::SI>
+    PXRMP_INTERNAL_GPU_DECORATOR
+    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    bool evolve_optical_depth(
+        const RealType t_energy_phot, const RealType chi_phot,
+        const RealType t_dt, RealType& optical_depth,
+        const TableType& ref_dndt_table,
+        const RealType ref_quantity = math::one<RealType>)
+    {
+        const auto energy_phot = t_energy_phot*conv<
+            quantity::energy, UnitSystem,
+            unit_system::heaviside_lorentz, RealType>::fact(ref_quantity);
+
+        const auto dt = t_dt*conv<
+                quantity::time, UnitSystem,
+                unit_system::heaviside_lorentz, RealType>::fact(ref_quantity);
+
+        const auto dndt = get_dN_dt<
+            RealType, TableType, unit_system::heaviside_lorentz>(
+                energy_phot, chi_phot, ref_dndt_table, ref_quantity);
+
+        optical_depth -= dndt*dt;
+
+        return (optical_depth <= math::zero<RealType>);
     }
 
 /*
