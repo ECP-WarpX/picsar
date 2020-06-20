@@ -79,22 +79,19 @@ namespace breit_wheeler{
     //Coefficients for che asymptotic behaviour of the dndt table
     //using Erber approximation
     //Erber T. (1966), Reviews of Modern Physics,38, 626
-    template <typename T>
-    constexpr T erber_dndt_asynt_a = 0.16;
-    template <typename T>
-    constexpr T erber_dndt_asynt_b = 4./3.;
+    template <typename T> //0.16*pi*(3/8)
+    constexpr T erber_dndt_asynt_a = 0.1884955592153876;
+    template <typename T> //0.16*(gamma(1/3)*(3/2)**(1/3) /2)**2
+    constexpr T erber_dndt_asynt_b = 0.37616610710114734;
+
 
     template <typename RealType>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     RealType dndt_approx_left(RealType chi_phot)
     {
-        using namespace math;
-        constexpr auto a = erber_dndt_asynt_a<RealType>;
-        constexpr auto b = erber_dndt_asynt_b<RealType>;
-
-        return (pi<RealType>*a/(two<RealType>*b))*chi_phot*chi_phot*
-            exp(-two<RealType>*b/chi_phot);
+        constexpr RealType coeff = 8./3.;
+        return erber_dndt_asynt_a<RealType>*exp(-coeff/chi_phot);
     }
 
     template <typename RealType>
@@ -102,13 +99,7 @@ namespace breit_wheeler{
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     RealType dndt_approx_right(RealType chi_phot)
     {
-        using namespace math;
-        constexpr auto a = erber_dndt_asynt_a<RealType>;
-        constexpr auto b = erber_dndt_asynt_b<RealType>;
-
-        const RealType coeff = tgamma(one<>/three<>)/two<>;
-        return a*chi_phot*coeff*
-            pow(chi_phot*two<RealType>/b,two_thirds<RealType>);
+        return erber_dndt_asynt_b<RealType>/cbrt(chi_phot);
     }
 
     template<

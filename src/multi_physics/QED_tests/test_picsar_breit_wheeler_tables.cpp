@@ -17,10 +17,13 @@
 #include "breit_wheeler_engine_tables.hpp"
 
 //Tolerance for double precision calculations
-const double double_tolerance = 1.0e-12;
+const double double_tolerance = 1.0e-6;
+const double double_small = 1e-30;
 
 //Tolerance for single precision calculations
-const float float_tolerance = 1.0e-5;
+const float float_tolerance = 1.0e-3;
+const float float_small = 1e-20;
+
 
 using namespace picsar::multi_physics::phys::breit_wheeler;
 
@@ -32,6 +35,15 @@ T constexpr tolerance()
         return float_tolerance;
     else
         return double_tolerance;
+}
+
+template <typename T>
+T constexpr small()
+{
+    if(std::is_same<T,float>::value)
+        return float_small;
+    else
+        return double_small;
 }
 
 const double chi_min = 0.001;
@@ -150,4 +162,35 @@ BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_dndt_table)
         dndt_table_type::log , dndt_table_out_policy::extrema>();
     check_dndt_table<float, std::vector<float>,
         dndt_table_type::log , dndt_table_out_policy::extrema>();
+}
+
+template <typename RealType>
+void check_dndt_table_out_approx()
+{
+    const auto left_chi = std::array<RealType,4>{0.01,0.05,0.1,0.2};
+    const auto left_sol = std::array<RealType,4>{
+        2.9069621438923337e-117,
+        1.2969667695320204e-24,
+        4.944416339700773e-13,
+        3.0528686912504136e-07};
+
+    for(int i = 0; i < 4; i++){
+        const auto left_res = dndt_approx_left(left_chi[i]);
+        if(left_sol[i] < small<RealType>()){
+            BOOST_CHECK_SMALL(
+                left_res,small<RealType>());
+        }
+        else{
+            BOOST_CHECK_SMALL(
+                (left_res - left_sol[i])/left_sol[i],tolerance<RealType>());
+        }
+    }
+
+}
+
+// ***Test Breit Wheeler dndt table out range approximation
+BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_dndt_table_out_approx)
+{
+    check_dndt_table_out_approx<double>();
+    check_dndt_table_out_approx<float>();
 }

@@ -17,9 +17,11 @@
 
 //Tolerance for double precision calculations
 const double double_tolerance = 5.0e-8;
+const double double_small = 1e-30;
 
 //Tolerance for single precision calculations
 const float float_tolerance = 3.0e-3;
+const float float_small = 1e-20;
 
 using namespace picsar::multi_physics::phys::breit_wheeler;
 
@@ -31,6 +33,15 @@ T constexpr tolerance()
         return float_tolerance;
     else
         return double_tolerance;
+}
+
+template <typename T>
+T constexpr small()
+{
+    if(std::is_same<T,float>::value)
+        return float_small;
+    else
+        return double_small;
 }
 
 // ------------- Tests --------------
@@ -63,8 +74,8 @@ void check_dndt_table()
     for (const auto cc : cases)
     {
         const auto res = compute_T_function(static_cast<RealType>(cc.first));
-        if(cc.second < tolerance<RealType>()){
-            BOOST_CHECK_SMALL( res, tolerance<RealType>());
+        if(cc.second < small<RealType>()){
+            BOOST_CHECK_SMALL( res, small<RealType>());
         }else{
             BOOST_CHECK_SMALL((res - static_cast<RealType>(cc.second))/
                 static_cast<RealType>(cc.second), tolerance<RealType>());
