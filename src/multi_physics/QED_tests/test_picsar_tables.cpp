@@ -279,6 +279,25 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_1d_table_constructor_setter)
 
 }
 
+// ***Test equispaced_1d_table serialization
+BOOST_AUTO_TEST_CASE( picsar_equispaced_1d_table_serialization)
+{
+    auto tab_1d = make_1d_table();
+    auto raw_data = tab_1d.serialize();
+    auto tab_1d_2 = equispaced_1d_table<double, std::vector<double>>{raw_data};
+
+/*
+    BOOST_CHECK_EQUAL(tab_1d.m_x_min, tab_1d_2.m_x_min);
+    BOOST_CHECK_EQUAL(tab_1d.m_x_max, tab_1d_2.m_x_max);
+    BOOST_CHECK_EQUAL(tab_1d.m_x_size, tab_1d_2.m_x_size);
+    BOOST_CHECK_EQUAL(tab_1d.m_how_many_x, tab_1d_2.m_how_many_x);
+
+    for(int i = 0; i < tab_1d.m_how_many_x; ++i){
+        BOOST_CHECK_EQUAL(tab_1d.m_values[i], tab_1d_2.m_values[i]);
+    }
+    */
+}
+
 
 // ***Test equispaced_2d_table constructor and getters
 BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_constructor_getters)

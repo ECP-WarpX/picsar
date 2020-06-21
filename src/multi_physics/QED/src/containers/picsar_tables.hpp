@@ -3,12 +3,15 @@
 
 #include <vector>
 #include <array>
-#include<cmath>
+#include <cmath>
+#include <algorithm>
 
 //Should be included by all the src files of the library
 #include "../qed_commons.h"
 
 #include "../utils/picsar_algo.hpp"
+
+#include "../utils/serialization.hpp"
 
 #include "../math/math_constants.h"
 
@@ -42,6 +45,41 @@ namespace containers{
                 m_how_many_x = static_cast<int>(values.size());
                 m_x_size = x_max - x_min;
             };
+
+        equispaced_1d_table(const std::vector<char>& raw_data)
+        {
+            using namespace picsar::multi_physics::utils;
+
+            constexpr size_t min_size =
+                sizeof(char)+//magic_number
+                sizeof(m_x_min)+sizeof(m_x_max)+//xmin, xmax
+                sizeof(m_how_many_x);// m_how_many_x
+
+            if (raw_data.size() < min_size)
+                throw "Binary data is too small to be a 1D table.";
+
+            auto it_raw_data = raw_data.begin();
+
+
+            if (serialization::get_out<char>(it_raw_data) !=
+                static_cast<char>(sizeof(RealType))){
+                throw "Mismatch between RealType used to write and to read the 1D table";
+            }
+
+            m_x_min = serialization::get_out<RealType>(it_raw_data);
+            m_x_max = serialization::get_out<RealType>(it_raw_data);
+            m_x_size = m_x_max - m_x_min;
+            if(m_x_size < 0)
+                throw "raw_data contains invalid data.";
+
+            m_how_many_x = serialization::get_out<int>(it_raw_data);
+            if(m_how_many_x <= 0)
+                throw "raw_data contains invalid data.";
+            m_values = VectorType(m_how_many_x);
+            auto vals =
+                serialization::get_n_out<RealType>(it_raw_data, m_how_many_x);
+            std::copy(vals.begin(), vals.end(), m_values.begin());
+        };
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         RealType get_x_coord(const int i) const noexcept
@@ -103,6 +141,28 @@ namespace containers{
                 all_coords[i] = get_x_coord(i);
             }
             return all_coords;
+        }
+
+        std::vector<char> serialize() const
+        {
+            const size_t size =
+                sizeof(char)+//magic_number
+                sizeof(m_x_min)+sizeof(m_x_max)+//xmin, xmax
+                sizeof(m_how_many_x)+// m_how_many_x
+                m_how_many_x*sizeof(RealType); //values
+
+            auto raw_data = std::vector<char>{};
+            raw_data.reserve(size);
+
+            utils::serialization::put_in(
+                static_cast<char>(sizeof(RealType)), raw_data);
+            utils::serialization::put_in(m_x_min, raw_data);
+            utils::serialization::put_in(m_x_max, raw_data);
+            utils::serialization::put_in(m_how_many_x, raw_data);
+            for (auto val : m_values)
+                utils::serialization::put_in(val, raw_data);
+
+            return raw_data;
         }
 
         RealType m_x_min;
