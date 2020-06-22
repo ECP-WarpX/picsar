@@ -46,6 +46,9 @@ namespace containers{
                 m_x_size = x_max - x_min;
             };
 
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        equispaced_1d_table(){};
+
         equispaced_1d_table(const std::vector<char>& raw_data)
         {
             using namespace picsar::multi_physics::utils;
@@ -59,7 +62,6 @@ namespace containers{
                 throw "Binary data is too small to be a 1D table.";
 
             auto it_raw_data = raw_data.begin();
-
 
             if (serialization::get_out<char>(it_raw_data) !=
                 static_cast<char>(sizeof(RealType))){
@@ -80,6 +82,18 @@ namespace containers{
                 serialization::get_n_out<RealType>(it_raw_data, m_how_many_x);
             std::copy(vals.begin(), vals.end(), m_values.begin());
         };
+
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        bool operator== (
+            const equispaced_1d_table<RealType, VectorType> &b) const
+        {
+            return
+                (m_x_min == b.m_x_min) &&
+                (m_x_max == b.m_x_max) &&
+                (m_x_size == b.m_x_size) &&
+                (m_how_many_x == b.m_how_many_x) &&
+                (m_values == b.m_values);
+        }
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         RealType get_x_coord(const int i) const noexcept
@@ -145,14 +159,7 @@ namespace containers{
 
         std::vector<char> serialize() const
         {
-            const size_t size =
-                sizeof(char)+//magic_number
-                sizeof(m_x_min)+sizeof(m_x_max)+//xmin, xmax
-                sizeof(m_how_many_x)+// m_how_many_x
-                m_how_many_x*sizeof(RealType); //values
-
             auto raw_data = std::vector<char>{};
-            raw_data.reserve(size);
 
             utils::serialization::put_in(
                 static_cast<char>(sizeof(RealType)), raw_data);
@@ -165,10 +172,10 @@ namespace containers{
             return raw_data;
         }
 
-        RealType m_x_min;
-        RealType m_x_max;
-        RealType m_x_size;
-        int m_how_many_x;
+        RealType m_x_min = 0.0;
+        RealType m_x_max = 0.0;
+        RealType m_x_size = 0.0;
+        int m_how_many_x = 0;
         VectorType m_values;
     };
 

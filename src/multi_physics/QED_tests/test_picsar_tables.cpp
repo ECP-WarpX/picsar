@@ -296,6 +296,17 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_1d_table_serialization)
     }
 }
 
+// ***Test equispaced_1d_table equality
+BOOST_AUTO_TEST_CASE( picsar_equispaced_1d_table_equality)
+{
+    auto tab_1d = make_1d_table();
+    auto tab_1d_2 = make_1d_table();
+    BOOST_CHECK_EQUAL(tab_1d == tab_1d_2, true);
+
+    tab_1d.m_x_min = 23.;
+    BOOST_CHECK_EQUAL(tab_1d == tab_1d_2, false);
+}
+
 
 // ***Test equispaced_2d_table constructor and getters
 BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_constructor_getters)

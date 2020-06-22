@@ -7,6 +7,7 @@
 #include <vector>
 #include <array>
 #include <algorithm>
+#include <type_traits>
 
 namespace picsar{
 namespace multi_physics{
@@ -16,6 +17,9 @@ namespace serialization{
     template<typename T>
     void put_in(T val, std::vector<char>& vec)
     {
+        static_assert(std::is_pod<T>(), "Cannot serialize \
+            non-POD types.");
+
         const auto* ptr_val = reinterpret_cast<char*>(&val);
         vec.insert(vec.end(), ptr_val, ptr_val+sizeof(T));
     }
@@ -23,6 +27,9 @@ namespace serialization{
     template<typename T, typename CharIter=std::vector<char>::const_iterator>
     T get_out(CharIter& it)
     {
+        static_assert(std::is_pod<T>(), "Cannot extract \
+            non-POD types from char vectors.");
+
         auto ptr_res = reinterpret_cast<const T*>(&(*it));
         it += sizeof(T);
         return *ptr_res;
@@ -33,6 +40,9 @@ namespace serialization{
         CharIter& it,
         int how_many)
     {
+        static_assert(std::is_pod<T>(), "Cannot extract \
+            non-POD types from char vectors.");
+
         auto res = std::vector<T>(how_many);
         std::generate(res.begin(), res.end(),
             [&](){
