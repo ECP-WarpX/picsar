@@ -322,8 +322,7 @@ auto generate_dndt_table_cpu(double chi_min, double chi_max, int table_size)
 	
 	auto table = pxr_bw::dndt_lookup_table<
         double, std::vector<double>,
-        pxr_bw::dndt_table_type::log,
-		pxr_bw::dndt_table_out_policy::approx>{bw_params};
+        pxr_bw::dndt_table_out_policy::approx>{bw_params};
 	
     const auto all_coords = table.get_all_coordinates();
     auto all_vals = std::vector<double>(all_coords.size());
@@ -338,7 +337,6 @@ auto generate_dndt_table_cpu(double chi_min, double chi_max, int table_size)
         
     auto table_extrema = pxr_bw::dndt_lookup_table<
         double, std::vector<double>,
-        pxr_bw::dndt_table_type::log,
 		pxr_bw::dndt_table_out_policy::extrema>{bw_params};
 		
     if(!table_extrema.set_all_vals(all_vals) )
@@ -357,7 +355,6 @@ auto generate_dndt_table_gpu(RealType chi_min, RealType chi_max, int table_size)
 	
 	auto table = pxr_bw::dndt_lookup_table<
         RealType, ThrustDeviceWrapper<RealType>,
-        pxr_bw::dndt_table_type::log,
 		pxr_bw::dndt_table_out_policy::approx>{bw_params};
 	
     const auto all_coords = table.get_all_coordinates();
@@ -373,7 +370,6 @@ auto generate_dndt_table_gpu(RealType chi_min, RealType chi_max, int table_size)
         
     auto table_extrema = pxr_bw::dndt_lookup_table<
         RealType, ThrustDeviceWrapper<RealType>,
-        pxr_bw::dndt_table_type::log,
 		pxr_bw::dndt_table_out_policy::extrema>{bw_params};
 		
     if(!table_extrema.set_all_vals(all_vals) )
