@@ -51,7 +51,7 @@ const double chi_max = 1000;
 const int how_many = 100;
 
 template <typename RealType, typename VectorType,
-    dndt_table_type TableType, dndt_table_out_policy TablePolicy>
+    dndt_table_out_policy TablePolicy>
 auto get_table()
 {
     const auto params =
@@ -60,17 +60,17 @@ auto get_table()
             static_cast<RealType>(chi_max), how_many};
 
     return dndt_lookup_table<
-        RealType, VectorType, TableType, TablePolicy>{params};
+        RealType, VectorType, TablePolicy>{params};
 }
 
 
 // ------------- Tests --------------
 
 template <typename RealType, typename VectorType,
-    dndt_table_type TableType, dndt_table_out_policy TablePolicy>
+    dndt_table_out_policy TablePolicy>
 void check_dndt_table()
 {
-    auto table = get_table<RealType, VectorType, TableType, TablePolicy>();
+    auto table = get_table<RealType, VectorType, TablePolicy>();
     BOOST_CHECK_EQUAL(table.is_init(),false);
 
     VectorType coords = table.get_all_coordinates();
@@ -98,7 +98,7 @@ void check_dndt_table()
     BOOST_CHECK_EQUAL(result,true);
     BOOST_CHECK_EQUAL(table.is_init(),true);
 
-    auto table_2 = get_table<RealType, VectorType, TableType, TablePolicy>();
+    auto table_2 = get_table<RealType, VectorType, TablePolicy>();
     BOOST_CHECK_EQUAL(table_2 == table, false);
     BOOST_CHECK_EQUAL(table == table, true);
     BOOST_CHECK_EQUAL(table_2 == table_2, true);
@@ -156,13 +156,13 @@ void check_dndt_table()
 BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_dndt_table)
 {
     check_dndt_table<double, std::vector<double>,
-        dndt_table_type::log , dndt_table_out_policy::approx>();
+        dndt_table_out_policy::approx>();
     check_dndt_table<float, std::vector<float>,
-        dndt_table_type::log , dndt_table_out_policy::approx>();
+        dndt_table_out_policy::approx>();
     check_dndt_table<double, std::vector<double>,
-        dndt_table_type::log , dndt_table_out_policy::extrema>();
+        dndt_table_out_policy::extrema>();
     check_dndt_table<float, std::vector<float>,
-        dndt_table_type::log , dndt_table_out_policy::extrema>();
+        dndt_table_out_policy::extrema>();
 }
 
 template <typename RealType>
@@ -197,7 +197,7 @@ BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_dndt_table_out_approx)
 }
 
 template <typename RealType, typename VectorType,
-    dndt_table_type TableType, dndt_table_out_policy TablePolicy>
+    dndt_table_out_policy TablePolicy>
 void check_dndt_table_serialization()
 {
     const auto params =
@@ -206,11 +206,11 @@ void check_dndt_table_serialization()
             static_cast<RealType>(10.0), 3};
 
     auto table = dndt_lookup_table<
-        RealType, VectorType, TableType, TablePolicy>{params, {1.,2.,3.}};
+        RealType, VectorType, TablePolicy>{params, {1.,2.,3.}};
 
     auto raw_data = table.serialize();
     auto new_table = dndt_lookup_table<
-        RealType, VectorType, TableType, TablePolicy>{raw_data};
+        RealType, VectorType, TablePolicy>{raw_data};
 
     BOOST_CHECK_EQUAL(new_table.is_init(), true);
     BOOST_CHECK_EQUAL(new_table == table, true);
@@ -220,7 +220,7 @@ void check_dndt_table_serialization()
 BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_dndt_table_serialization)
 {
     check_dndt_table_serialization<double, std::vector<double>,
-        dndt_table_type::log, dndt_table_out_policy::approx>();
+        dndt_table_out_policy::approx>();
     check_dndt_table_serialization<float, std::vector<float>,
-        dndt_table_type::log, dndt_table_out_policy::extrema>();
+        dndt_table_out_policy::extrema>();
 }

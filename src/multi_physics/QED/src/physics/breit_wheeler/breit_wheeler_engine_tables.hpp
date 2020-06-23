@@ -25,7 +25,6 @@ namespace multi_physics{
 namespace phys{
 namespace breit_wheeler{
 
-    enum class dndt_table_type {log};
     enum class dndt_table_out_policy {approx, extrema};
 
     template<typename RealType>
@@ -48,43 +47,6 @@ namespace breit_wheeler{
         }
     };
 
-    template<
-        typename RealType,
-        typename VectorType,
-        dndt_table_type TableType = dndt_table_type::log,
-        dndt_table_out_policy TableOutPolicy = dndt_table_out_policy::approx
-        >
-    class dndt_lookup_table{
-
-        public:
-
-            typedef const dndt_lookup_table<
-                RealType, containers::picsar_span<RealType>,
-                TableType,TableOutPolicy> view_type;
-
-            PXRMP_INTERNAL_GPU_DECORATOR
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-            dndt_lookup_table(dndt_lookup_table_params<RealType> params);
-
-            std::pair<bool, view_type> get_view();
-
-            PXRMP_INTERNAL_GPU_DECORATOR
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-            RealType interp(RealType chi_phot) const noexcept;
-
-            PXRMP_INTERNAL_GPU_DECORATOR
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-            RealType
-            interp_flag_out(RealType chi_phot, bool& is_out) const noexcept;
-
-            std::vector<RealType> get_all_coordinates();
-
-            bool set_all_vals(const std::vector<RealType>& vals);
-
-            PXRMP_INTERNAL_GPU_DECORATOR
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-            bool is_init();
-        };
 
     //Coefficients for che asymptotic behaviour of the dndt table
     //using Erber approximation
@@ -117,15 +79,13 @@ namespace breit_wheeler{
         typename VectorType,
         dndt_table_out_policy TableOutPolicy
         >
-    class dndt_lookup_table<
-        RealType, VectorType,
-        dndt_table_type::log, TableOutPolicy>{
+    class dndt_lookup_table{
 
         public:
 
             typedef const dndt_lookup_table<
                 RealType, containers::picsar_span<RealType>,
-                dndt_table_type::log,TableOutPolicy> view_type;
+                TableOutPolicy> view_type;
 
             dndt_lookup_table(dndt_lookup_table_params<RealType> params):
             m_params{params},
@@ -178,8 +138,7 @@ namespace breit_wheeler{
             PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
             bool operator== (
                 const dndt_lookup_table<
-                    RealType, VectorType,
-                    dndt_table_type::log, TableOutPolicy> &b) const
+                    RealType, VectorType, TableOutPolicy> &b) const
             {
                 return
                     (m_params == b.m_params) &&
