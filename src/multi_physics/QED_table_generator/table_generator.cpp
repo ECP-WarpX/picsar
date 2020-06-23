@@ -18,7 +18,7 @@ void generate_breit_wheeler_dndt_table_log(const std::string& file_name)
 
     auto table = px_bw::dndt_lookup_table<
         RealType, std::vector<RealType>,
-        px_bw::dndt_table_type::log, px_bw::dndt_table_out_policy::approx>{
+        px_bw::dndt_table_out_policy::approx>{
             bw_params};
 
     const auto all_coords = table.get_all_coordinates();
