@@ -127,8 +127,6 @@ namespace breit_wheeler{
                 RealType, containers::picsar_span<RealType>,
                 dndt_table_type::log,TableOutPolicy> view_type;
 
-            PXRMP_INTERNAL_GPU_DECORATOR
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
             dndt_lookup_table(dndt_lookup_table_params<RealType> params):
             m_params{params},
             m_table{containers::equispaced_1d_table<RealType, VectorType>{
@@ -137,9 +135,6 @@ namespace breit_wheeler{
                     VectorType(params.chi_phot_how_many)}}
             {};
 
-
-            PXRMP_INTERNAL_GPU_DECORATOR
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
             dndt_lookup_table(dndt_lookup_table_params<RealType> params,
                 VectorType vals):
             m_params{params},
@@ -192,14 +187,16 @@ namespace breit_wheeler{
                     (m_table == b.m_table);
             }
 
-            std::pair<bool, view_type> get_view()
+            view_type get_view()
             {
+                if(!m_init_flag)
+                    throw "Can't generate a view of an uninitialized table";
                 const auto span = containers::picsar_span<RealType>{
                     static_cast<size_t>(m_params.chi_phot_how_many),
                     m_table.m_values.data()
                 };
                 const view_type view{m_params, span};
-                return std::make_pair(m_init_flag, view);
+                return view;
             }
 
             PXRMP_INTERNAL_GPU_DECORATOR

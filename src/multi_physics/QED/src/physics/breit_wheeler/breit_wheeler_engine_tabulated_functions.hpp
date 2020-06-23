@@ -45,8 +45,6 @@ namespace breit_wheeler{
         const auto sqrt_xx = sqrt(xx);
         const auto xx_3_2 = sqrt_xx*sqrt_xx*sqrt_xx;
 
-        constexpr auto one_third = one<RealType>/three<RealType>;
-        constexpr auto two_thirds = one<RealType>/three<RealType>;
         const auto inner_integral = math::quad_a_inf<RealType>(
             [](RealType s){
                 const auto sqrt_s = sqrt(s);

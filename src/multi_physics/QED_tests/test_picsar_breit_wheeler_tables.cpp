@@ -75,9 +75,6 @@ void check_dndt_table()
 
     VectorType coords = table.get_all_coordinates();
 
-    auto flag_view_pre_init = table.get_view();
-    BOOST_CHECK_EQUAL(flag_view_pre_init.first, false);
-
     BOOST_CHECK_EQUAL(coords.size(),how_many);
 
     const RealType log_chi_min = log(chi_min);
@@ -148,11 +145,10 @@ void check_dndt_table()
             BOOST_CHECK_SMALL((res-expect), tolerance<RealType>());
     }
 
-    const auto flag_view = table.get_view();
-    BOOST_CHECK_EQUAL(flag_view.first, true);
+    const auto table_view = table.get_view();
 
     for(int i = 0 ; i < xxs.size() ; ++i){
-        BOOST_CHECK_EQUAL(flag_view.second.interp(xxs[i]), table.interp(xxs[i]));
+        BOOST_CHECK_EQUAL(table_view.interp(xxs[i]), table.interp(xxs[i]));
     }
 }
 

@@ -2285,7 +2285,7 @@ namespace phys{
     * Electron rest energy in heaviside_lorentz units
     */
     template <typename RealType>
-    constexpr RealType heaviside_lorentz_electron_rest_energy = static_cast<RealType>(
+    constexpr RealType heaviside_lorentz_electron_rest_energy = RealType(
         phys::electron_mass<double>*phys::light_speed<double>*phys::light_speed<double>*
         conv<quantity::energy, unit_system::SI, unit_system::heaviside_lorentz, double>::fact());
 

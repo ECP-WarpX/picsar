@@ -37,7 +37,6 @@ namespace containers{
         * @param[in] x_max the rightmost extreme of the x coordinates
         * @param[in] values the values of the function that should be interpolated.
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         equispaced_1d_table(
             RealType x_min, RealType x_max, VectorType values):
             m_x_min{x_min}, m_x_max{x_max}, m_values{values}
@@ -124,7 +123,6 @@ namespace containers{
             return utils::linear_interp(xleft, xright, yleft, yright, where_x);
         }
 
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         void set_val(int i, RealType what)
         {
             m_values[i] = what;
