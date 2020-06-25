@@ -56,16 +56,19 @@ namespace quantum_sync{
 
         return coeff*(inner_integral + second_part)/chi_part;
     }
+    
+    template<typename RealType>
+    constexpr RealType default_csi_phot_min = 1.0e-6;
 
     template<typename RealType>
     RealType compute_G_function(const RealType chi_part,
-        const RealType chi_phot_min = math::zero<RealType>)
+        const RealType csi_phot_min = default_csi_phot_min<RealType>)
     {
         using namespace math;
         return quad_a_b<RealType>(
             [=](RealType chi_phot){
                 return compute_G_integrand<RealType>(chi_part, chi_phot);},
-                chi_phot_min, chi_part);
+                csi_phot_min*chi_part, chi_part);
     }
 
 }
