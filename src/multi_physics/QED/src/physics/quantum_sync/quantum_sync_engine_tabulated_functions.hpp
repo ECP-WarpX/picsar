@@ -40,6 +40,8 @@ namespace quantum_sync{
         return quad_a_inf<RealType>(
             [=](RealType s){
                 using namespace math;
+                if( y ==  zero<RealType>)
+                    return std::numeric_limits<RealType>::infinity();;
                 const auto s2 = s*s;
                 const auto s4 = s2*s2;
                 const auto cc = (one<RealType> +
@@ -56,41 +58,38 @@ namespace quantum_sync{
 
     template<typename RealType>
     RealType compute_G_integrand(
-        const RealType chi_part, const RealType chi_phot) noexcept
+        const RealType chi_part, const RealType csi) noexcept
     {
         using namespace math;
-        if( chi_phot >= chi_part )
+        if( csi >= one<RealType> || chi_part == zero<RealType> )
             return zero<RealType>;
 
-        if (chi_phot == zero<RealType> || chi_part == zero<RealType>)
-            return zero<RealType>;
-
-        const auto csi = chi_phot/chi_part;
+        if (csi == zero<RealType>)
+            return std::numeric_limits<RealType>::infinity();
 
         const auto yy = compute_y(chi_part, csi);
 
-        constexpr RealType coeff = sqrt(three<>)/(two<>*pi<>);
+        const RealType coeff = sqrt(three<>)/(two<>*pi<>);
 
         const auto inner = inner_integral(yy);
 
         const auto second_part = (csi*csi/(one<RealType>-csi))*
             k_v(two_thirds<RealType>,yy);
 
-        return coeff*(inner_integral + second_part)/chi_part;
+        if(std::isinf(second_part))
+            return zero<RealType>;
+
+        return coeff*csi*(inner + second_part);
     }
 
     template<typename RealType>
-    constexpr RealType default_csi_phot_min = 1.0e-6;
-
-    template<typename RealType>
-    RealType compute_G_function(const RealType chi_part,
-        const RealType csi_phot_min = default_csi_phot_min<RealType>)
+    RealType compute_G_function(const RealType chi_part)
     {
         using namespace math;
         return quad_a_b<RealType>(
-            [=](RealType chi_phot){
-                return compute_G_integrand<RealType>(chi_part, chi_phot);},
-                csi_phot_min*chi_part, chi_part);
+            [=](RealType csi){
+                return compute_G_integrand<RealType>(chi_part, csi)/csi;},
+                zero<RealType>, one<RealType>);
     }
 
 }
