@@ -50,6 +50,7 @@ void test_case_const_math()
     const auto exp_three = static_cast<RealType>(3.0);
     const auto exp_one_third = static_cast<RealType>(1.0/3.0);
     const auto exp_two_thirds = static_cast<RealType>(2.0/3.0);
+    const auto exp_five_thirds = static_cast<RealType>(5.0/3.0);
 
     BOOST_CHECK_SMALL((pi<RealType>-exp_pi)/exp_pi, tolerance<RealType>());
     BOOST_CHECK_SMALL(zero<RealType>, tolerance<RealType>());
@@ -59,6 +60,7 @@ void test_case_const_math()
     BOOST_CHECK_SMALL((three<RealType>-exp_three)/exp_three, tolerance<RealType>());
     BOOST_CHECK_SMALL((one_third<RealType>-exp_one_third)/exp_one_third, tolerance<RealType>());
     BOOST_CHECK_SMALL((two_thirds<RealType>-exp_two_thirds)/exp_two_thirds, tolerance<RealType>());
+    BOOST_CHECK_SMALL((five_thirds<RealType>-exp_five_thirds)/exp_five_thirds, tolerance<RealType>());
 }
 
 BOOST_AUTO_TEST_CASE( picsar_const_math )
