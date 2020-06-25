@@ -47,6 +47,36 @@ T constexpr small()
 // ------------- Tests --------------
 
 template <typename RealType>
+void check_int_K_5_3_replacement()
+{
+    /*const auto cases = std::array<std::pair<RealType,RealType>,5>{
+        std::make_pair<RealType,RealType>( 1e-5, 4629.2044114881355),
+        std::make_pair<RealType,RealType>( 1e-4, 995.9088308508012),
+        std::make_pair<RealType,RealType>( 1e-2, 44.497250411420913),
+        std::make_pair<RealType,RealType>( 1, 0.651422815355309),
+        std::make_pair<RealType,RealType>( 10, 1.9223826430338323e-05)};*/
+    const auto cases = std::array<std::pair<RealType,RealType>,1>{
+        std::make_pair<RealType,RealType>( 1e-5, 4629.2044114881355),
+    };
+
+    for (const auto cc : cases)
+    {
+        const auto res = inner_integral(cc.first);
+        const auto sol = cc.second;
+        BOOST_CHECK_SMALL((res-sol)/sol,  tolerance<RealType>());
+    }
+
+}
+
+// ***Test replacement of the integral of K_5_3
+BOOST_AUTO_TEST_CASE( picsar_quantum_sync_int_K_5_3_replacement)
+{
+    check_int_K_5_3_replacement<double>();
+    //check_int_K_5_3_replacement<float>();
+}
+
+/*
+template <typename RealType>
 void check_dndt_table()
 {
     const auto cases = std::array<std::pair<double,double>,10>{
@@ -79,4 +109,4 @@ BOOST_AUTO_TEST_CASE( picsar_quantum_sync_dndt_G_function)
 {
     check_dndt_table<double>();
     check_dndt_table<float>();
-}
+}*/

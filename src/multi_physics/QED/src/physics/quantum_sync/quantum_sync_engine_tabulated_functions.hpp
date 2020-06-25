@@ -31,8 +31,31 @@ namespace quantum_sync{
             csi/(chi_part*(math::one<RealType> - csi));
     }
 
+    // see https://en.wikipedia.org/wiki/Synchrotron_radiation
+    // this expression replaces the more difficult integration of kv(5/3, x)
     template<typename RealType>
-    constexpr RealType compute_G_integrand(
+    RealType inner_integral(const RealType y)
+    {
+        using namespace math;
+        return quad_a_inf<RealType>(
+            [=](RealType s){
+                using namespace math;
+                const auto s2 = s*s;
+                const auto s4 = s2*s2;
+                const auto cc = (one<RealType> +
+                    four<RealType>*one_third<RealType>*s2)*
+                    sqrt(one<RealType> + one_third<RealType>*s2);
+                const auto f1 = static_cast<RealType>(9.0) +
+                    static_cast<RealType>(36.0) * s2 +
+                    static_cast<RealType>(16.0) * s4;
+                if(isinf(f1) || isinf(cc))
+                    return zero<RealType>;
+                return f1*exp(-y*cc)/cc/three<RealType>;},
+            zero<RealType>)/sqrt(three<RealType>);
+    }
+
+    template<typename RealType>
+    RealType compute_G_integrand(
         const RealType chi_part, const RealType chi_phot) noexcept
     {
         using namespace math;
@@ -48,15 +71,14 @@ namespace quantum_sync{
 
         constexpr RealType coeff = sqrt(three<>)/(two<>*pi<>);
 
-        const auto inner_integral = quad_a_inf<RealType>(
-            [](RealType s){return k_v(five_thirds<RealType>,s);}, yy);
+        const auto inner = inner_integral(yy);
 
         const auto second_part = (csi*csi/(one<RealType>-csi))*
             k_v(two_thirds<RealType>,yy);
 
         return coeff*(inner_integral + second_part)/chi_part;
     }
-    
+
     template<typename RealType>
     constexpr RealType default_csi_phot_min = 1.0e-6;
 

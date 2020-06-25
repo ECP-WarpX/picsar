@@ -28,6 +28,9 @@ namespace math{
     constexpr RealType three = RealType(3.0);
 
     template<typename RealType = double>
+    constexpr RealType four = RealType(4.0);
+
+    template<typename RealType = double>
     constexpr RealType one_third = RealType(1.0/3.0);
 
     template<typename RealType = double>
