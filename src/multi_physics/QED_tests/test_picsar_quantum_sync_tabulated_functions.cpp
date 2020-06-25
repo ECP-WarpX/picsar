@@ -16,10 +16,9 @@
 #include "quantum_sync_engine_tabulated_functions.hpp"
 
 //Tolerance for double precision calculations
-const double double_tolerance = 1.5e-1; //Warning! High error for chi >= 100
-
+const double double_tolerance = 3.0e-2;
 //Tolerance for single precision calculations
-const float float_tolerance = 1.5e-1; //Warning! High error for chi >= 100
+const float float_tolerance = 3.0e-2;
 
 using namespace picsar::multi_physics::phys::quantum_sync;
 
@@ -65,15 +64,16 @@ BOOST_AUTO_TEST_CASE( picsar_quantum_sync_int_K_5_3_replacement)
 template <typename RealType>
 void check_dndt_table()
 {
-    const auto cases = std::array<std::pair<double,double>,8>{
-        std::make_pair( 0.0001, 2.16486358e-04),
-        std::make_pair( 0.001, 2.16307103e-03),
-        std::make_pair( 0.01, 2.14576898e-02),
-        std::make_pair( 0.1,  2.01157780e-01),
-        std::make_pair( 1.0 , 1.50538892e+00),
-        std::make_pair( 10.0, 8.36547559e+00),
-        std::make_pair( 100.0, 4.05810801e+01),
-        std::make_pair( 1000.0, 1.90176330e+02)};
+    const auto cases = std::array<std::pair<double,double>,9>{
+        std::make_pair( 0.0001, 0.0002164863577428999),
+        std::make_pair( 0.001, 0.0021630710451102635),
+        std::make_pair( 0.01, 0.02145778613250966),
+        std::make_pair( 0.1, 0.20141650057288696),
+        std::make_pair( 1.0 , 1.5508709239783094),
+        std::make_pair( 10.0, 9.170292626506058),
+        std::make_pair( 100.0, 46.02341774244706),
+        std::make_pair( 1000.0, 217.8438638968691),
+        std::make_pair( 10000.0, 1015.6105987224346)};
 
     for (const auto cc : cases)
     {
