@@ -57,17 +57,17 @@ namespace quantum_sync{
             dndt_lookup_table(dndt_lookup_table_params<RealType> params):
             m_params{params},
             m_table{containers::equispaced_1d_table<RealType, VectorType>{
-                    log(params.chi_phot_min),
-                    log(params.chi_phot_max),
-                    VectorType(params.chi_phot_how_many)}}
+                    log(params.chi_part_min),
+                    log(params.chi_part_max),
+                    VectorType(params.chi_part_how_many)}}
             {};
 
             dndt_lookup_table(dndt_lookup_table_params<RealType> params,
                 VectorType vals):
             m_params{params},
             m_table{containers::equispaced_1d_table<RealType, VectorType>{
-                    log(params.chi_phot_min),
-                    log(params.chi_phot_max),
+                    log(params.chi_part_min),
+                    log(params.chi_part_max),
                     vals}}
             {
                 m_init_flag = true;
@@ -138,16 +138,18 @@ namespace quantum_sync{
                 }
                 else
                 {
-                    if (chi_phot < m_params.chi_part_min){
-                        return dndt_approx_left<RealType>(chi_phot);
+                    if (chi_part < m_params.chi_part_min){
+                        /*TODO*/
+                        return math::zero<RealType>;
                     }
 
-                    if(chi_phot > m_params.chi_part_max){
-                        return dndt_approx_right<RealType>(chi_phot);
+                    if(chi_part > m_params.chi_part_max){
+                        /*TODO*/
+                        return  math::zero<RealType>;
                     }
                 }
 
-                return exp(m_table.interp(log(chi_phot)));
+                return exp(m_table.interp(log(chi_part)));
             }
 
             PXRMP_INTERNAL_GPU_DECORATOR
@@ -156,7 +158,7 @@ namespace quantum_sync{
                 const RealType chi_part, bool& is_out) const noexcept
             {
                 is_out = false;
-                if(chi_phot < m_params.chi_part_min || chi_phot >  m_params.chi_part_max)
+                if(chi_part < m_params.chi_part_min || chi_part >  m_params.chi_part_max)
                     is_out = true;
                 return interp(chi_part);
             }
