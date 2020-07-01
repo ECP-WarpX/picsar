@@ -16,12 +16,12 @@
 #include "breit_wheeler_engine_tabulated_functions.hpp"
 
 //Tolerance for double precision calculations
-const double double_tolerance = 5.0e-8;
-const double double_small = 1e-30;
+const double double_tolerance = 2.0e-6;
+const double double_small = 1e-22;
 
 //Tolerance for single precision calculations
-const float float_tolerance = 3.0e-3;
-const float float_small = 1e-20;
+const float float_tolerance = 2.0e-3;
+const float float_small = 1e-16;
 
 using namespace picsar::multi_physics::phys::breit_wheeler;
 
@@ -47,7 +47,7 @@ T constexpr small()
 // ------------- Tests --------------
 
 template <typename RealType>
-void check_dndt_table()
+void check_T_func()
 {
     const auto cases = std::array<std::pair<double,double>,20>{
         std::make_pair( 0.0001, 0.0),
@@ -84,9 +84,120 @@ void check_dndt_table()
     }
 }
 
-// ***Test Breit Wheeler dndt table
-BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_dndt_T_function)
+// ***Test Breit Wheeler T function
+BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_T_function)
 {
-    check_dndt_table<double>();
-    check_dndt_table<float>();
+    check_T_func<double>();
+    check_T_func<float>();
 }
+
+template <typename RealType>
+void check_cumulative_prob_1()
+{
+    const auto chiphot_chipart_res = std::array<std::array<double,3>,50>{
+        std::array<double,3>{0.0, 0.0, 0.0},
+        std::array<double,3>{0.001, 0.0, 0.0},
+        std::array<double,3>{0.001, 1e-06, 0.0},
+        std::array<double,3>{0.001, 0.0003, 0.0},
+        std::array<double,3>{0.001, 0.0005, 0.5},
+        std::array<double,3>{0.001, 0.0007, 1.0},
+        std::array<double,3>{0.001, 0.000999, 1.0},
+        std::array<double,3>{0.001, 0.001, 1.0},
+        std::array<double,3>{0.01, 0.0, 0.0},
+        std::array<double,3>{0.01, 1e-05, 0.0},
+        std::array<double,3>{0.01, 0.003, 3.0227480641243037e-24},
+        std::array<double,3>{0.01, 0.005, 0.5},
+        std::array<double,3>{0.01, 0.006999999999999999, 1.0},
+        std::array<double,3>{0.01, 0.00999, 0.9999999786081522},
+        std::array<double,3>{0.01, 0.01, 1.0},
+        std::array<double,3>{0.1, 0.0, 0.0},
+        std::array<double,3>{0.1, 0.0001, 0.0},
+        std::array<double,3>{0.1, 0.03, 0.0006311081101750777},
+        std::array<double,3>{0.1, 0.05, 0.5000000000000001},
+        std::array<double,3>{0.1, 0.06999999999999999, 0.9993688919143366},
+        std::array<double,3>{0.1, 0.0999, 1.000000000000005},
+        std::array<double,3>{0.1, 0.1, 1.0},
+        std::array<double,3>{1, 0, 0.0},
+        std::array<double,3>{1, 0.001, 1.4530789387331725e-293},
+        std::array<double,3>{1, 0.3, 0.1345442547767904},
+        std::array<double,3>{1, 0.5, 0.5},
+        std::array<double,3>{1, 0.7, 0.8654557452351763},
+        std::array<double,3>{1, 0.999, 1.0000000000006934},
+        std::array<double,3>{1, 1.0, 1.0},
+        std::array<double,3>{10.0, 0.0, 0.0},
+        std::array<double,3>{10.0, 0.01, 3.981434709202223e-33},
+        std::array<double,3>{10.0, 3.0, 0.3096952419129383},
+        std::array<double,3>{10.0, 5.0, 0.5},
+        std::array<double,3>{10.0, 7.0, 0.6903047580870976},
+        std::array<double,3>{10.0, 9.99, 0.9999999999997944},
+        std::array<double,3>{10.0, 10.0, 1.0},
+        std::array<double,3>{100.0, 0.0, 0.0},
+        std::array<double,3>{100.0, 0.1, 1.9014438671301059e-06},
+        std::array<double,3>{100.0, 30.0, 0.36646213315061366},
+        std::array<double,3>{100.0, 50.0, 0.5000000000000001},
+        std::array<double,3>{100.0, 70.0, 0.633537866849343},
+        std::array<double,3>{100.0, 99.9, 0.9999980985561322},
+        std::array<double,3>{100.0, 100.0, 1.0},
+        std::array<double,3>{1000.0, 0.0, 0.0},
+        std::array<double,3>{1000.0, 1.0, 0.00249628362862492},
+        std::array<double,3>{1000.0, 300.0, 0.37995481425306316},
+        std::array<double,3>{1000.0, 500.0, 0.49999999999999994},
+        std::array<double,3>{1000.0, 700.0, 0.6200451857470134},
+        std::array<double,3>{1000.0, 999.0, 0.9975037163713809},
+        std::array<double,3>{1000.0, 1000.0, 1.0}};
+
+    for (const auto cc : chiphot_chipart_res)
+    {
+        const auto chi_phot = static_cast<RealType>(cc[0]);
+        const auto chi_part = static_cast<RealType>(cc[1]);
+        const auto expected = static_cast<RealType>(cc[2]);
+        const auto res = compute_cumulative_prob(
+            chi_phot, std::vector<RealType>{chi_part})[0];
+        if(expected < small<RealType>()){
+            BOOST_CHECK_SMALL( (res - expected), small<RealType>());
+        }else{
+            BOOST_CHECK_SMALL((res - expected)/expected, tolerance<RealType>());
+        }
+
+    }
+}
+
+// ***Test Breit Wheeler cumulative probability
+BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_cumulative_prob_1)
+{
+    check_cumulative_prob_1<double>();
+    check_cumulative_prob_1<float>();
+}
+
+template <typename RealType>
+void check_cumulative_prob_vec()
+{
+    const RealType chiphot = 10.0;
+    const auto chipart = std::vector<RealType>{
+        0.0, 1e-3, 1e-2, 1e-1, 1, 2, 3, 4, 5,
+        6, 7, 8, 9, 9.9, 9.99, 9.999, 10.0};
+    const auto expected = std::vector<RealType>{
+        0.0,3.45376351890413e-295,3.981434709202223e-33,1.2297633168391708e-05,
+        0.07575595226082421,0.19941889404675717,0.3096952419129383,0.40793955045875263,
+        0.5,0.592060449541101,0.6903047580870976,0.8005811059529608,0.924244047739035,
+        0.9999877023668319,0.9999999999997944,0.9999999999999992,1.0};
+    const auto res = compute_cumulative_prob(chiphot, chipart);
+
+    for (int i = 0 ; i < expected.size(); ++i)
+    {
+        if(expected[i] < small<RealType>()){
+            BOOST_CHECK_SMALL( (res[i] - expected[i]), small<RealType>());
+        }else{
+            BOOST_CHECK_SMALL((res[i] - expected[i])/expected[i], tolerance<RealType>());
+        }
+
+    }
+}
+
+// ***Test Breit Wheeler cumulative probability vector
+BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_cumulative_prob_vec)
+{
+    check_cumulative_prob_vec<double>();
+    check_cumulative_prob_vec<float>();
+}
+
