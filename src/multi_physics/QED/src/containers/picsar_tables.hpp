@@ -195,6 +195,51 @@ namespace containers{
                 m_y_size = y_max - y_min;
             };
 
+        equispaced_2d_table(const std::vector<char>& raw_data)
+        {
+            using namespace picsar::multi_physics::utils;
+
+            constexpr size_t min_size =
+                sizeof(char)+//magic_number
+                sizeof(m_x_min)+sizeof(m_x_max)+//xmin, xmax
+                sizeof(m_y_min)+sizeof(m_y_max)+//ymin, ymax
+                sizeof(m_how_many_x)+//m_how_many_x
+                sizeof(m_how_many_y);//m_how_many_y
+
+            if (raw_data.size() < min_size)
+                throw "Binary data is too small to be a 2D table.";
+
+            auto it_raw_data = raw_data.begin();
+
+            if (serialization::get_out<char>(it_raw_data) !=
+                static_cast<char>(sizeof(RealType))){
+                throw "Mismatch between RealType used to write and to read the 1D table";
+            }
+
+            m_x_min = serialization::get_out<RealType>(it_raw_data);
+            m_x_max = serialization::get_out<RealType>(it_raw_data);
+            m_y_min = serialization::get_out<RealType>(it_raw_data);
+            m_y_max = serialization::get_out<RealType>(it_raw_data);
+            m_x_size = m_x_max - m_x_min;
+            m_y_size = m_y_max - m_y_min;
+            if(m_x_size < 0)
+                throw "raw_data contains invalid data.";
+            if(m_y_size < 0)
+                throw "raw_data contains invalid data.";
+
+            m_how_many_x = serialization::get_out<int>(it_raw_data);
+            m_how_many_y = serialization::get_out<int>(it_raw_data);
+            if(m_how_many_x <= 0)
+                throw "raw_data contains invalid data.";
+            if(m_how_many_y <= 0)
+                throw "raw_data contains invalid data.";
+            m_values = VectorType(m_how_many_x*m_how_many_y);
+            auto vals = serialization::get_n_out<RealType>(
+                    it_raw_data,
+                    m_how_many_x*m_how_many_y);
+            std::copy(vals.begin(), vals.end(), m_values.begin());
+        };
+
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         RealType get_x_coord(int i) const noexcept
         {
@@ -331,6 +376,26 @@ namespace containers{
                 }
             }
             return all_coords;
+        }
+
+        std::vector<char> serialize() const
+        {
+            auto raw_data = std::vector<char>{};
+
+            utils::serialization::put_in(
+                static_cast<char>(sizeof(RealType)), raw_data);
+            utils::serialization::put_in(m_x_min, raw_data);
+            utils::serialization::put_in(m_x_max, raw_data);
+            utils::serialization::put_in(m_y_min, raw_data);
+            utils::serialization::put_in(m_y_max, raw_data);
+            utils::serialization::put_in(m_x_size, raw_data);
+            utils::serialization::put_in(m_y_size, raw_data);
+            utils::serialization::put_in(m_how_many_x, raw_data);
+            utils::serialization::put_in(m_how_many_y, raw_data);
+            for (auto val : m_values)
+                utils::serialization::put_in(val, raw_data);
+
+            return raw_data;
         }
 
             RealType m_x_min;

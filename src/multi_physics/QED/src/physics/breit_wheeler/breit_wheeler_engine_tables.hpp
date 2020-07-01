@@ -77,7 +77,7 @@ namespace breit_wheeler{
     template<
         typename RealType,
         typename VectorType,
-        dndt_table_out_policy TableOutPolicy
+        dndt_table_out_policy TableOutPolicy = dndt_table_out_policy::approx
         >
     class dndt_lookup_table{
 
@@ -245,6 +245,190 @@ namespace breit_wheeler{
             containers::equispaced_1d_table<RealType, VectorType> m_table;
     };
 
+    //________________________________________________________________________________
+
+    template<typename RealType>
+    struct pair_prod_lookup_table_params{
+        RealType chi_phot_min; //Min chi_phot
+        RealType chi_phot_max; //Max chi_phot
+        int chi_phot_how_many; //How many points
+        int how_many_frac; //How many points
+
+        bool operator== (const dndt_lookup_table_params<RealType> &b) const
+        {
+            return (chi_phot_min == b.chi_phot_min) &&
+                (chi_phot_max == b.chi_phot_max) &&
+                (chi_phot_how_many == b.chi_phot_how_many) &&
+                (how_many_frac == b.how_many_frac);
+        }
+    };
+
+        template<
+        typename RealType,
+        typename VectorType>
+    class pair_prod_lookup_table_logchi_linfrac{
+        public:
+            typedef const pair_prod_lookup_table_logchi_linfrac<
+                RealType, containers::picsar_span<RealType> view_type;
+
+            pair_prod_lookup_table_logchi_linfrac(
+                pair_prod_lookup_table_params<RealType> params):
+            m_params{params},
+            m_table{containers::equispaced_2d_table<RealType, VectorType>{
+                    log(params.chi_phot_min),
+                    log(params.chi_phot_max),
+                    math::zero<RealType>,
+                    math::half<RealType>,
+                    params.chi_phot_how_many, params.how_many_frac,
+                    VectorType(params.chi_phot_how_many * params.how_many_frac)}}
+            {};
+
+            pair_prod_lookup_table_logchi_linfrac(
+                pair_prod_lookup_table_params<RealType> params,
+                VectorType vals):
+            m_params{params},
+            m_table{containers::equispaced_2d_table<RealType, VectorType>{
+                    log(params.chi_phot_min),
+                    log(params.chi_phot_max),
+                    math::zero<RealType>,
+                    math::half<RealType>,
+                    params.chi_phot_how_many, params.how_many_frac,
+                    vals}}
+            {
+                m_init_flag = true;
+            };
+
+            pair_prod_lookup_table_logchi_linfrac(std::vector<char>& raw_data)
+            {
+                using namespace utils;
+
+                constexpr size_t min_size =
+                    sizeof(char)+//magic_number
+                    sizeof(m_params);
+
+                if (raw_data.size() < min_size)
+                    throw "Binary data is too small to be a Breit Wheeler \
+                     pair production lookup-table.";
+
+                auto it_raw_data = raw_data.begin();
+
+                if (serialization::get_out<char>(it_raw_data) !=
+                    static_cast<char>(sizeof(RealType))){
+                    throw "Mismatch between RealType used to write and to read \
+                        the Breit pair production lookup-table";
+                }
+
+                m_params = serialization::get_out<
+                    dndt_lookup_table_params<RealType>>(it_raw_data);
+                m_table = containers::equispaced_2d_table<
+                    RealType, VectorType>{std::vector<char>(it_raw_data,
+                        raw_data.end())};
+
+                m_init_flag = true;
+            };
+
+            PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            bool operator== (
+                const pair_prod_lookup_table_logchi_linfrac<
+                    RealType, VectorType> &b) const
+            {
+                return
+                    (m_params == b.m_params) &&
+                    (m_init_flag == b.m_init_flag) &&
+                    (m_table == b.m_table);
+            }
+
+            view_type get_view()
+            {
+                if(!m_init_flag)
+                    throw "Can't generate a view of an uninitialized table";
+                const auto span = containers::picsar_span<RealType>{
+                    static_cast<size_t>(m_params.chi_phot_how_many),
+                    m_table.m_values.data()
+                };
+                const view_type view{m_params, span};
+                return view;
+            }
+
+            PXRMP_INTERNAL_GPU_DECORATOR
+            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            RealType interp(
+                const RealType chi_phot,
+                const RealType unf_zero_one_minus_epsi) const noexcept
+            {
+                if(chi_phot<m_params.chi_phot_min)
+                    chi_phot = m_params.chi_phot_min;
+                else if (chi_phot > m_params.chi_phot_max)
+                    chi_phot = m_params.chi_phot_max;
+
+                /* TO DO */
+
+                return math::zero<RealType>;
+            }
+
+            PXRMP_INTERNAL_GPU_DECORATOR
+            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            RealType interp_flag_out(
+                const RealType chi_phot,
+                const RealType unf_zero_one_minus_epsi,
+                bool& is_out) const noexcept
+            {
+                is_out = false;
+                if(chi_phot < m_params.chi_phot_min || chi_phot >  m_params.chi_phot_max)
+                    is_out = true;
+                return interp(chi_phot, unf_zero_one_minus_epsi);
+            }
+
+            std::vector<RealType> get_all_coordinates() const noexcept
+            {
+                auto all_coords = m_table.get_all_coordinates();
+                std::transform(all_coords.begin(),all_coords.end(),all_coords.begin(),
+                    [](RealType a){return exp(a);});
+                return all_coords;
+            }
+
+            bool set_all_vals(const std::vector<RealType>& vals)
+            {
+                if(vals.size() == m_table.get_how_many_x()){
+                    for(int i = 0; i < vals.size(); ++i){
+                        m_table.set_val(i, log(vals[i]));
+                    }
+                    m_init_flag = true;
+                    return true;
+                }
+                return false;
+            }
+
+            PXRMP_INTERNAL_GPU_DECORATOR
+            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            bool is_init()
+            {
+                return m_init_flag;
+            }
+
+            std::vector<char> serialize()
+            {
+                using namespace utils;
+
+                if(!m_init_flag)
+                    throw "Cannot serialize an unitialized table";
+
+                std::vector<char> res;
+
+                serialization::put_in(static_cast<char>(sizeof(RealType)), res);
+                serialization::put_in(m_params, res);
+
+                auto tdata = m_table.serialize();
+                res.insert(res.end(), tdata.begin(), tdata.end());
+
+                return res;
+            }
+
+        private:
+            dndt_lookup_table_params<RealType> m_params;
+            bool m_init_flag = false;
+            containers::equispaced_2d_table<RealType, VectorType> m_table;
+    };
 
 }
 }
