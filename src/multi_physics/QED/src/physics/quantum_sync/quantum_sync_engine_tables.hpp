@@ -118,7 +118,7 @@ namespace quantum_sync{
                 if(!m_init_flag)
                     throw "Can't generate a view of an uninitialized table";
                 const auto span = containers::picsar_span<RealType>{
-                    static_cast<size_t>(m_params.chi_phot_how_many),
+                    static_cast<size_t>(m_params.chi_part_how_many),
                     m_table.m_values.data()
                 };
                 const view_type view{m_params, span};

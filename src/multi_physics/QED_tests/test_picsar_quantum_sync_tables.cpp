@@ -109,8 +109,6 @@ void check_dndt_table()
     const RealType x1 = (chi_max+chi_min)*0.5642 + chi_min;
     const RealType x2 = chi_max;
 
-    const RealType ye_app_o0 = dndt_approx_left<RealType>(xo0);
-    const RealType ye_app_o1 = dndt_approx_right<RealType>(xo1);
     const RealType ye_ext_o0 = alpha*chi_min;
     const RealType ye_ext_o1 = alpha*chi_max;
     const RealType ye0 = alpha*x0;
@@ -119,9 +117,6 @@ void check_dndt_table()
 
     const auto xxs = std::array<RealType, 5>
         {xo0, x0, x1, x2, xo1};
-
-    const auto exp_app = std::array<RealType, 5>
-        {ye_app_o0, ye0, ye1, ye2, ye_app_o1};
 
     const auto exp_ext = std::array<RealType, 5>
         {ye_ext_o0, ye0, ye1, ye2, ye_ext_o1};
@@ -136,8 +131,7 @@ void check_dndt_table()
         BOOST_CHECK_EQUAL(flag_out, is_out[i]);
         BOOST_CHECK_EQUAL(res, res2);
 
-        const RealType expect =
-             (TablePolicy == dndt_table_out_policy::approx)?exp_app[i]:exp_ext[i];
+        const RealType expect = exp_ext[i];
 
         if(i != 0)
             BOOST_CHECK_SMALL((res-expect)/expect, tolerance<RealType>());
