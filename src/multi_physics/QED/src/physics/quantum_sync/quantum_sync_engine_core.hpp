@@ -104,7 +104,7 @@ namespace quantum_sync{
 
         const auto dndt = get_dN_dt<
             RealType, TableType, unit_system::heaviside_lorentz>(
-                energy_part chi_part, ref_dndt_table, ref_quantity);
+                energy_part, chi_part, ref_dndt_table, ref_quantity);
 
         optical_depth -= dndt*dt;
 
