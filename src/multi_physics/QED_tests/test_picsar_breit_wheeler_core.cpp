@@ -285,7 +285,7 @@ void check_pair_production(RealType ref_q = one<RealType>)
         vec3<double>{1.0, 0.0, 0.0},
         vec3<double>{0.0, 1.0, 0.0},
         vec3<double>{0.0, 0.0, 1.0},
-        vec3<double>{1.0, 1.0, 1.0}};
+        vec3<double>{1.0, 1.0, 1.0}/sqrt(3.0)};
 
     const auto photon_momenta_SI = std::array<double,3> {
         2.7309245307378235e-21,
@@ -350,27 +350,6 @@ void check_pair_production(RealType ref_q = one<RealType>)
                                 unit_system::SI,UnitSystem,
                                 double>::fact(1.0, ref_q);
 
-                        std::cerr << " " << norm(photon_momentum)/me_c << " " <<
-                         sqrt(1+norm2(mom_ele)/(me_c*me_c)) << " " << sqrt(1+norm2(mom_pos)/(me_c*me_c)) << std::endl;
-
-/*
-    const auto me_c = electron_mass<>*light_speed<>;
-    auto const tchi_phot = 10.0;
-    auto const tchi_ele = 1.0;
-    fake_table.m_res = tchi_ele;
-    const auto tmomphot = vec3<double>{100*me_c,0,0};
-
-    vec3<double> mom_ele;
-    vec3<double> mom_pos;
-
-    generate_breit_wheeler_pairs<
-        double, fake_P_table<double>>(
-            tchi_phot, tmomphot, 0.5, fake_table, mom_ele, mom_pos);
-
-    std::cerr << norm(tmomphot)/me_c << " " <<  norm(mom_ele)/me_c << " "
-        << norm(mom_pos)/me_c << " " << sqrt(1 + (norm2(mom_ele)/me_c/me_c ))+sqrt(1 + (norm2(mom_pos)/me_c/me_c )) << std::endl;
-*/
-
                         const auto exp_mom_ele = vec3<RealType>{
                             static_cast<RealType>(tv_mom_ele[0]),
                             static_cast<RealType>(tv_mom_ele[1]),
@@ -398,12 +377,12 @@ BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_core_pair_production)
         reference_length;
 
     check_pair_production<double, unit_system::SI>();
-    /*check_pair_production<double, unit_system::norm_omega>(reference_omega);
+    check_pair_production<double, unit_system::norm_omega>(reference_omega);
     check_pair_production<double, unit_system::norm_lambda>(reference_length);
     check_pair_production<double, unit_system::heaviside_lorentz>();
     check_pair_production<float, unit_system::SI>();
     check_pair_production<float, unit_system::norm_omega>(reference_omega);
     check_pair_production<float, unit_system::norm_lambda>(reference_length);
-    check_pair_production<float, unit_system::heaviside_lorentz>();*/
+    check_pair_production<float, unit_system::heaviside_lorentz>();
 }
 
