@@ -269,7 +269,7 @@ namespace breit_wheeler{
     class pair_prod_lookup_table_logchi_linfrac{
         public:
             typedef const pair_prod_lookup_table_logchi_linfrac<
-                RealType, containers::picsar_span<RealType> view_type;
+                RealType, containers::picsar_span<RealType>> view_type;
 
             pair_prod_lookup_table_logchi_linfrac(
                 pair_prod_lookup_table_params<RealType> params):

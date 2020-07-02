@@ -130,7 +130,7 @@ namespace breit_wheeler{
         const TableType& ref_pair_prod_table,
         math::vec3<RealType>& ele_momentum,
         math::vec3<RealType>& pos_momentum,
-        const RealType ref_quantity = static_cast<RealType>(1.0))
+        const RealType ref_quantity = static_cast<RealType>(1.0)) noexcept
     {
         using namespace math;
         using namespace containers;
@@ -138,28 +138,31 @@ namespace breit_wheeler{
         const auto mon_u2hl = conv<
             quantity::momentum, UnitSystem,
             unit_system::heaviside_lorentz, RealType>::fact(ref_quantity);
-        const auto mom_hl2u = one<RealType>/mon_u2hl;
 
         const auto v_mom_photon = t_v_momentum_photon *mon_u2hl;
 
-        const auto mom_photon_2 = norm2(v_mom_photon);
-        const auto mom_photon = sqrt(mom_photon_2);
+        const auto mom_photon = norm(v_mom_photon);
         const auto v_dir_photon = v_mom_photon/mom_photon;
         const auto gamma_photon = mom_photon/
             heaviside_lorentz_electron_rest_energy<RealType>;
 
         const auto chi_ele = ref_pair_prod_table.interp(
-                chi_photon, unf_zero_one_minus_epsi[s]);
+                chi_photon, unf_zero_one_minus_epsi);
         const auto chi_pos = chi_photon - chi_ele;
 
         const auto coeff =  (gamma_photon - two<RealType>)/chi_photon;
-        const auto cele = one<RealType>+chi_ele*coeff;
-        const auto cpos = one<RealType>+chi_pos*coeff;
+        const auto gamma_ele = one<RealType>+chi_ele*coeff;
+        const auto gamma_pos = one<RealType>+chi_pos*coeff;
 
-        ele_momentum = v_dir_photon*sqrt(cele*cele - one<RealType>)*mom_hl2u;
-        pos_momentum = v_dir_photon*sqrt(cpos*cpos - one<RealType>)*mom_hl2u;
+        const auto mom_hl2u = conv<
+            quantity::momentum, unit_system::heaviside_lorentz,
+            UnitSystem, RealType>::fact(one<RealType>, ref_quantity);
+
+        ele_momentum = heaviside_lorentz_electron_rest_energy<RealType>*
+            v_dir_photon*sqrt(gamma_ele*gamma_ele - one<RealType>)*mom_hl2u;
+        pos_momentum = heaviside_lorentz_electron_rest_energy<RealType>*
+            v_dir_photon*sqrt(gamma_pos*gamma_pos - one<RealType>)*mom_hl2u;
     }
-}
 
 }
 }

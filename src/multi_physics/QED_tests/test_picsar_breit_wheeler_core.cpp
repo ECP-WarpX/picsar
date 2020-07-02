@@ -60,6 +60,20 @@ struct fake_T_table
     mutable RealType m_chi;
 };
 
+template<typename RealType>
+struct fake_P_table
+{
+    RealType interp(RealType chi, RealType random) const {
+        m_chi = chi;
+        m_random = random;
+        return static_cast<RealType>(m_res);
+    }
+
+    RealType m_res;
+    mutable RealType m_chi;
+    mutable RealType m_random;
+};
+
 // ------------- Tests --------------
 template <typename RealType>
 void check_opt_depth()
@@ -245,3 +259,151 @@ BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_core_evolve_opt_depth)
     check_evolve_opt_depth<float, unit_system::norm_lambda>(reference_length);
     check_evolve_opt_depth<float, unit_system::heaviside_lorentz>();
 }
+
+template <typename RealType>
+void aux_check_small_or_zero(vec3<RealType> res, vec3<RealType> expected)
+{
+    for(int i = 0; i < 3; ++i){
+        if(expected[i] == zero<RealType>){
+            BOOST_CHECK_SMALL(expected[i]-res[i], tolerance<RealType>());
+        }
+        else{
+            BOOST_CHECK_SMALL((expected[i]-res[i])/res[i], tolerance<RealType>());
+        }
+    }
+}
+
+template <typename RealType, unit_system UnitSystem>
+void check_pair_production(RealType ref_q = one<RealType>)
+{
+    fake_P_table<RealType> fake_table;
+
+    const auto chi_photons = std::array<double,7>{
+        1.0e-3,1.0e-2, 1.0e-1, 1.0, 1.0e1, 1.0e2, 1.0e3};
+
+    const auto dirs = std::array<vec3<double>,4>{
+        vec3<double>{1.0, 0.0, 0.0},
+        vec3<double>{0.0, 1.0, 0.0},
+        vec3<double>{0.0, 0.0, 1.0},
+        vec3<double>{1.0, 1.0, 1.0}};
+
+    const auto photon_momenta_SI = std::array<double,3> {
+        2.7309245307378235e-21,
+        2.730924530737823e-20,
+        2.730924530737823e-19};
+
+    const auto random = std::array<double,4> {
+        0.0, 0.3,0.9,0.999};
+
+    const auto chi_ele_fracs = std::array<double, 7> {
+        1.0e-2, 1.0e-1, 0.2, 0.5, 0.7, 0.9, 0.99};
+
+    for (auto tchi_phot : chi_photons){
+        for (auto dir : dirs){
+            for(auto mom : photon_momenta_SI){
+                for (auto rand : random){
+                    for (auto chi_ele_frac : chi_ele_fracs){
+                        const RealType chi_photon = tchi_phot;
+                        const RealType chi_ele = chi_ele_frac*tchi_phot;
+                        fake_table.m_res = chi_ele;
+
+                        const RealType pmom = static_cast<RealType>(mom);
+
+                        const auto photon_momentum =
+                            vec3<RealType>{
+                                static_cast<RealType>(dir[0]),
+                                static_cast<RealType>(dir[1]),
+                                static_cast<RealType>(dir[2])} *
+                                pmom *
+                            conv<quantity::momentum,
+                                unit_system::SI,UnitSystem,
+                                RealType>::fact(1.0, ref_q);
+
+                        const auto rand_num = static_cast<RealType>(rand);
+
+                        vec3<RealType> mom_ele;
+                        vec3<RealType> mom_pos;
+
+                        generate_breit_wheeler_pairs<
+                            RealType,
+                            fake_P_table<RealType>,
+                            UnitSystem>(
+                                chi_photon, photon_momentum, rand_num,
+                                fake_table, mom_ele, mom_pos, ref_q);
+
+                        BOOST_CHECK_EQUAL(fake_table.m_random,rand_num);
+                        BOOST_CHECK_EQUAL(fake_table.m_chi,chi_photon);
+
+                        const auto me_c = electron_mass<>*light_speed<>;
+                        const auto gamma_phot = mom/(me_c);
+                        const auto en_ele = (1. + (gamma_phot-2.)*chi_ele/tchi_phot);
+                        const auto en_pos = (1. + (gamma_phot-2.)*(tchi_phot - chi_ele)/tchi_phot);
+                        const auto t_mom_ele = me_c*sqrt( en_ele*en_ele - 1);
+                        const auto t_mom_pos = me_c*sqrt( en_pos*en_pos - 1);
+
+                        const auto tv_mom_ele = t_mom_ele * dir *
+                            conv<quantity::momentum,
+                                unit_system::SI,UnitSystem,
+                                double>::fact(1.0, ref_q);
+                        const auto tv_mom_pos = t_mom_pos * dir *
+                            conv<quantity::momentum,
+                                unit_system::SI,UnitSystem,
+                                double>::fact(1.0, ref_q);
+
+                        std::cerr << " " << norm(photon_momentum)/me_c << " " <<
+                         sqrt(1+norm2(mom_ele)/(me_c*me_c)) << " " << sqrt(1+norm2(mom_pos)/(me_c*me_c)) << std::endl;
+
+/*
+    const auto me_c = electron_mass<>*light_speed<>;
+    auto const tchi_phot = 10.0;
+    auto const tchi_ele = 1.0;
+    fake_table.m_res = tchi_ele;
+    const auto tmomphot = vec3<double>{100*me_c,0,0};
+
+    vec3<double> mom_ele;
+    vec3<double> mom_pos;
+
+    generate_breit_wheeler_pairs<
+        double, fake_P_table<double>>(
+            tchi_phot, tmomphot, 0.5, fake_table, mom_ele, mom_pos);
+
+    std::cerr << norm(tmomphot)/me_c << " " <<  norm(mom_ele)/me_c << " "
+        << norm(mom_pos)/me_c << " " << sqrt(1 + (norm2(mom_ele)/me_c/me_c ))+sqrt(1 + (norm2(mom_pos)/me_c/me_c )) << std::endl;
+*/
+
+                        const auto exp_mom_ele = vec3<RealType>{
+                            static_cast<RealType>(tv_mom_ele[0]),
+                            static_cast<RealType>(tv_mom_ele[1]),
+                            static_cast<RealType>(tv_mom_ele[2])};
+
+                        const auto exp_mom_pos = vec3<RealType>{
+                            static_cast<RealType>(tv_mom_pos[0]),
+                            static_cast<RealType>(tv_mom_pos[1]),
+                            static_cast<RealType>(tv_mom_pos[2])};
+
+                        aux_check_small_or_zero(mom_ele, exp_mom_ele);
+                        aux_check_small_or_zero(mom_pos, exp_mom_pos);
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ***Test Breit Wheeler pair production
+BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_core_pair_production)
+{
+    const double reference_length = 800.0e-9;
+    const double reference_omega = 2.0*pi<double>*light_speed<double>/
+        reference_length;
+
+    check_pair_production<double, unit_system::SI>();
+    /*check_pair_production<double, unit_system::norm_omega>(reference_omega);
+    check_pair_production<double, unit_system::norm_lambda>(reference_length);
+    check_pair_production<double, unit_system::heaviside_lorentz>();
+    check_pair_production<float, unit_system::SI>();
+    check_pair_production<float, unit_system::norm_omega>(reference_omega);
+    check_pair_production<float, unit_system::norm_lambda>(reference_length);
+    check_pair_production<float, unit_system::heaviside_lorentz>();*/
+}
+
