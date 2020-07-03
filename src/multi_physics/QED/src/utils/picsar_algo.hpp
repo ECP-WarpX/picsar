@@ -64,6 +64,30 @@ picsar_upper_bound
 #endif
 }
 
+template<typename T, typename Functor>
+PXRMP_INTERNAL_GPU_DECORATOR
+PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+size_t
+picsar_upper_bound_functor
+(size_t first, const size_t last, const T& val, Functor&& functor)
+{
+    int count = last-first;
+    do{
+        auto i = first;
+        const auto step = count/2;
+        i += step;
+         if (!(val<functor(i))){
+             first = ++i;
+             count -= step + 1;
+         }
+         else{
+             count = step;
+         }
+    }while(count>0);
+
+    return first;
+}
+
 /** \brief Performs a linear interpolation
  *
  * Performs a linear interpolation at x given the 2 points
