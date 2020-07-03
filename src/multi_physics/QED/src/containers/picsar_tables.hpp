@@ -378,6 +378,22 @@ namespace containers{
             return all_coords;
         }
 
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        bool operator== (
+            const equispaced_2d_table<RealType, VectorType> &b) const
+        {
+            return
+                (m_x_min == b.m_x_min) &&
+                (m_x_max == b.m_x_max) &&
+                (m_y_min == b.m_y_min) &&
+                (m_y_max == b.m_y_max) &&
+                (m_x_size == b.m_x_size) &&
+                (m_y_size == b.m_y_size) &&
+                (m_how_many_x == b.m_how_many_x) &&
+                (m_how_many_y == b.m_how_many_y) &&
+                (m_values == b.m_values);
+        }
+
         std::vector<char> serialize() const
         {
             auto raw_data = std::vector<char>{};
@@ -388,8 +404,6 @@ namespace containers{
             utils::serialization::put_in(m_x_max, raw_data);
             utils::serialization::put_in(m_y_min, raw_data);
             utils::serialization::put_in(m_y_max, raw_data);
-            utils::serialization::put_in(m_x_size, raw_data);
-            utils::serialization::put_in(m_y_size, raw_data);
             utils::serialization::put_in(m_how_many_x, raw_data);
             utils::serialization::put_in(m_how_many_y, raw_data);
             for (auto val : m_values)
