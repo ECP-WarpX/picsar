@@ -86,10 +86,49 @@ namespace quantum_sync{
     RealType compute_G_function(const RealType chi_part)
     {
         using namespace math;
-        return quad_a_b<RealType>(
+        return quad_a_b_s<RealType>(
             [=](RealType csi){
                 return compute_G_integrand<RealType>(chi_part, csi)/csi;},
                 zero<RealType>, one<RealType>);
+    }
+
+    template<typename RealType>
+    RealType compute_cumulative_prob_numerator(
+        const RealType chi_particle, RealType chi_photon)
+    {
+        using namespace math;
+        if(chi_photon <= math::zero<RealType>) return math::zero<RealType>;
+        if(chi_particle  <= math::zero<RealType>) return math::zero<RealType>;
+
+        auto frac = chi_photon/chi_particle;
+        if(frac > math::one<RealType>) frac =  math::one<RealType>;
+
+        return math::quad_a_b_s<RealType>(
+            [=](RealType csi){
+                return compute_G_integrand<RealType>(chi_particle, csi)/csi;},
+                zero<RealType>, frac);
+    }
+
+    template<typename VectorType, typename RealType>
+    VectorType compute_cumulative_prob(
+        const RealType chi_particle, const VectorType& chi_photons)
+    {
+        const auto den = compute_G_function(chi_particle);
+        auto res = VectorType(chi_photons.size());
+
+        if(chi_particle <= math::zero<RealType> || den <= math::zero<RealType>){
+            for (auto& el: res ) el = math::zero<RealType>;
+            return res;
+        }
+
+        std::transform(chi_photons.begin(), chi_photons.end(),
+            res.begin(), [=](auto chi_phot){
+                const auto val =
+                    compute_cumulative_prob_numerator(chi_particle, chi_phot)/den;
+                if(val <= math::one<RealType>) return val;
+                return math::one<RealType>;});
+
+        return res;
     }
 
 }

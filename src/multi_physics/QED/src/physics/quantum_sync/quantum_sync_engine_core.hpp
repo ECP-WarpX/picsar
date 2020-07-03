@@ -111,7 +111,52 @@ namespace quantum_sync{
         return (optical_depth <= math::zero<RealType>);
     }
 
+    //______________________GPU
+    //This function computes the properties of the photon
+    //generated in a QS process.
+    //Conceived for GPU usage.
+    template<
+        typename RealType, typename TableType,
+        unit_system UnitSystem = unit_system::SI
+        >
+    PXRMP_INTERNAL_GPU_DECORATOR
+    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    void generate_photon_update_momentum(
+        const RealType chi_particle,
+        math::vec3<RealType>& t_v_momentum_particle,
+        const RealType unf_zero_one_minus_epsi,
+        const TableType& ref_phot_prod_table,
+        math::vec3<RealType>& phot_momentum,
+        const RealType ref_quantity = static_cast<RealType>(1.0)) noexcept
+    {
+        using namespace math;
+        using namespace containers;
 
+        const auto mon_u2hl = conv<
+            quantity::momentum, UnitSystem,
+            unit_system::heaviside_lorentz, RealType>::fact(ref_quantity);
+
+        const auto v_mom_particle = t_v_momentum_particle *mon_u2hl;
+
+        const auto mom_particle = norm(v_mom_particle);
+        const auto v_dir_particle = v_mom_particle/mom_particle;
+        const auto norm_mom_particle = mom_particle/
+            heaviside_lorentz_electron_rest_energy<RealType>;
+        const auto gamma_particle = sqrt(
+                one<RealType> + norm_mom_particle*norm_mom_particle);
+
+        const auto chi_photon = ref_phot_prod_table.interp(
+                chi_particle, unf_zero_one_minus_epsi);
+
+        const auto gamma_photon =  gamma_particle/chi_particle;
+
+        const auto mom_hl2u = conv<
+            quantity::momentum, unit_system::heaviside_lorentz,
+            UnitSystem, RealType>::fact(one<RealType>, ref_quantity);
+
+        phot_momentum = heaviside_lorentz_electron_rest_energy<RealType>*
+            v_mom_particle*gamma_photon*mom_hl2u;
+    }
 
 }
 }
