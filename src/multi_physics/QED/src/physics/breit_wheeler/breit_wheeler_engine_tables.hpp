@@ -20,6 +20,8 @@
 
 #include "../../utils/serialization.hpp"
 
+#include "../../utils/picsar_algo.hpp"
+
 namespace picsar{
 namespace multi_physics{
 namespace phys{
@@ -254,7 +256,8 @@ namespace breit_wheeler{
         int chi_phot_how_many; //How many points
         int how_many_frac; //How many points
 
-        bool operator== (const dndt_lookup_table_params<RealType> &b) const
+        bool operator== (
+            const pair_prod_lookup_table_params<RealType> &b) const
         {
             return (chi_phot_min == b.chi_phot_min) &&
                 (chi_phot_max == b.chi_phot_max) &&
@@ -319,7 +322,7 @@ namespace breit_wheeler{
                 }
 
                 m_params = serialization::get_out<
-                    dndt_lookup_table_params<RealType>>(it_raw_data);
+                    pair_prod_lookup_table_params<RealType>>(it_raw_data);
                 m_table = containers::equispaced_2d_table<
                     RealType, VectorType>{std::vector<char>(it_raw_data,
                         raw_data.end())};
@@ -353,17 +356,43 @@ namespace breit_wheeler{
             PXRMP_INTERNAL_GPU_DECORATOR
             PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
             RealType interp(
-                const RealType chi_phot,
+                RealType chi_phot,
                 const RealType unf_zero_one_minus_epsi) const noexcept
             {
+                using namespace math;
+
                 if(chi_phot<m_params.chi_phot_min)
                     chi_phot = m_params.chi_phot_min;
                 else if (chi_phot > m_params.chi_phot_max)
                     chi_phot = m_params.chi_phot_max;
 
-                /* TO DO */
+                const auto prob = unf_zero_one_minus_epsi*half<RealType>;
 
-                return math::zero<RealType>;
+                const auto upper_frac_index = utils::picsar_upper_bound_functor(
+                    0, m_params.how_many_frac,prob,[&](int i){
+                        return (m_table.interp_first_coord(
+                            log(chi_phot), i));
+                    });
+                const auto lower_frac_index = upper_frac_index-1;
+
+                const auto upper_frac = m_table.get_y_coord(upper_frac_index);
+                const auto lower_frac = m_table.get_y_coord(lower_frac_index);
+
+                const auto lower_prob= m_table.interp_first_coord
+                    (log(chi_phot), lower_frac_index);
+                const auto upper_prob = m_table.interp_first_coord
+                    (log(chi_phot), upper_frac_index);
+
+                const auto frac = utils::linear_interp(
+                    lower_prob, upper_prob, lower_frac, upper_frac,
+                    prob);
+
+                const auto chi = frac*chi_phot;
+
+                auto res = (unf_zero_one_minus_epsi < half<RealType>)?chi:(chi_phot - chi);
+
+                return (unf_zero_one_minus_epsi < half<RealType>)?
+                    chi:(chi_phot - chi);
             }
 
             PXRMP_INTERNAL_GPU_DECORATOR
@@ -379,19 +408,21 @@ namespace breit_wheeler{
                 return interp(chi_phot, unf_zero_one_minus_epsi);
             }
 
-            std::vector<RealType> get_all_coordinates() const noexcept
+            std::vector<std::array<RealType,2>> get_all_coordinates() const noexcept
             {
                 auto all_coords = m_table.get_all_coordinates();
                 std::transform(all_coords.begin(),all_coords.end(),all_coords.begin(),
-                    [](RealType a){return exp(a);});
+                    [](std::array<RealType,2> a){return
+                        std::array<RealType,2>{exp(a[0]), a[1]};});
                 return all_coords;
             }
 
             bool set_all_vals(const std::vector<RealType>& vals)
             {
-                if(vals.size() == m_table.get_how_many_x()){
+                if(vals.size() == m_table.get_how_many_x()*
+                    m_table.get_how_many_y()){
                     for(int i = 0; i < vals.size(); ++i){
-                        m_table.set_val(i, log(vals[i]));
+                        m_table.set_val(i,vals[i]);
                     }
                     m_init_flag = true;
                     return true;
@@ -425,7 +456,7 @@ namespace breit_wheeler{
             }
 
         private:
-            dndt_lookup_table_params<RealType> m_params;
+            pair_prod_lookup_table_params<RealType> m_params;
             bool m_init_flag = false;
             containers::equispaced_2d_table<RealType, VectorType> m_table;
     };

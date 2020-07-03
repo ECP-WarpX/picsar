@@ -195,6 +195,9 @@ namespace containers{
                 m_y_size = y_max - y_min;
             };
 
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        equispaced_2d_table(){};
+
         equispaced_2d_table(const std::vector<char>& raw_data)
         {
             using namespace picsar::multi_physics::utils;
@@ -326,6 +329,13 @@ namespace containers{
         {
             m_values[idx(i, j)] = what;
         }
+
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        void set_val(const int i, const RealType what)
+        {
+            m_values[i] = what;
+        }
+
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         int get_how_many_x() const noexcept

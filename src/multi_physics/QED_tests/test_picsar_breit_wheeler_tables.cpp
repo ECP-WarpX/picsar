@@ -17,7 +17,7 @@
 #include "breit_wheeler_engine_tables.hpp"
 
 //Tolerance for double precision calculations
-const double double_tolerance = 1.0e-6;
+const double double_tolerance = 5.0e-5;
 const double double_small = 1e-30;
 
 //Tolerance for single precision calculations
@@ -48,7 +48,8 @@ T constexpr small()
 
 const double chi_min = 0.001;
 const double chi_max = 1000;
-const int how_many = 100;
+const int how_many = 256;
+const int how_many_frac = 256;
 
 template <typename RealType, typename VectorType,
     dndt_table_out_policy TablePolicy>
@@ -61,6 +62,18 @@ auto get_table()
 
     return dndt_lookup_table<
         RealType, VectorType, TablePolicy>{params};
+}
+
+template <typename RealType, typename VectorType>
+auto get_pair_table()
+{
+    const auto params =
+        pair_prod_lookup_table_params<RealType>{
+            static_cast<RealType>(chi_min),
+            static_cast<RealType>(chi_max),
+            how_many, how_many_frac};
+
+    return pair_prod_lookup_table_logchi_linfrac<RealType, VectorType>{params};
 }
 
 
@@ -223,4 +236,126 @@ BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_dndt_table_serialization)
         dndt_table_out_policy::approx>();
     check_dndt_table_serialization<float, std::vector<float>,
         dndt_table_out_policy::extrema>();
+}
+
+template <typename RealType, typename VectorType>
+void check_pair_production_table()
+{
+    auto table = get_pair_table<RealType, VectorType>();
+    BOOST_CHECK_EQUAL(table.is_init(),false);
+
+    auto coords = table.get_all_coordinates();
+
+    BOOST_CHECK_EQUAL(coords.size(),how_many*how_many_frac);
+
+    const RealType log_chi_min = log(chi_min);
+    const RealType log_chi_max = log(chi_max);
+
+     for (int i = 0 ; i < how_many*how_many_frac; ++i){
+         auto res_1 = coords[i][0];
+         auto res_2 = coords[i][1];
+         const auto ii = i/how_many_frac;
+         const auto jj = i%how_many_frac;
+         auto expected_1 = static_cast<RealType>(
+             exp(log_chi_min +ii*(log_chi_max-log_chi_min)/(how_many-1)));
+        auto expected_2 = static_cast<RealType>(
+             0.0 +jj*0.5/(how_many_frac-1));
+
+         BOOST_CHECK_SMALL((res_1-expected_1)/expected_1, tolerance<RealType>());
+         if(expected_2 != static_cast<RealType>(0.0))
+            BOOST_CHECK_SMALL((res_2-expected_2)/expected_2, tolerance<RealType>());
+        else
+            BOOST_CHECK_SMALL((res_2-expected_2), tolerance<RealType>());
+     }
+
+    auto vals = VectorType(coords.size());
+
+    auto functor = [=](std::array<RealType,2> x){
+        return static_cast<RealType>(0.5*pow(2*x[1], 8.0 + log(x[0])));};
+
+    auto inverse_functor = [=](std::array<RealType,2> x){
+            return static_cast<RealType>(0.5*pow(2*x[1], 1.0/(8.0 + log(x[0]))));};
+
+    std::transform(coords.begin(), coords.end(), vals.begin(),functor);
+
+    bool result = table.set_all_vals(vals);
+    BOOST_CHECK_EQUAL(result,true);
+    BOOST_CHECK_EQUAL(table.is_init(),true);
+
+
+    auto table_2 = get_pair_table<RealType, VectorType>();
+    BOOST_CHECK_EQUAL(table_2 == table, false);
+    BOOST_CHECK_EQUAL(table == table, true);
+    BOOST_CHECK_EQUAL(table_2 == table_2, true);
+
+
+    const RealType xo0 = chi_min*0.1;
+    const RealType xo1 = chi_max*10;
+    const RealType x0 = chi_min;
+    const RealType x1 = (chi_max+chi_min)*0.5642 + chi_min;
+    const RealType x2 = chi_max;
+
+    const auto xxs = std::array<RealType, 5>
+        {xo0, x0, x1, x2, xo1};
+
+    const auto rrs = std::array<RealType, 11>
+            {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.99};
+
+    for (auto xx : xxs){
+        for (auto rr : rrs){
+            auto res = table.interp(xx, rr);
+            if(xx < chi_min) xx = chi_min;
+            if(xx > chi_max) xx = chi_max;
+            auto expected = inverse_functor(std::array<RealType,2>{xx, rr/2})*xx;
+            if(rr >= 0.5) expected = xx - expected;
+
+            if(expected != static_cast<RealType>(0.0))
+                BOOST_CHECK_SMALL((res-expected)/expected, tolerance<RealType>());
+            else
+                BOOST_CHECK_SMALL((res-expected), tolerance<RealType>());
+
+        }
+    }
+    const auto table_view = table.get_view();
+/*
+    for(int i = 0 ; i < xxs.size() ; ++i){
+        BOOST_CHECK_EQUAL(table_view.interp(xxs[i]), table.interp(xxs[i]));
+    }*/
+}
+
+// ***Test Breit Wheeler dndt table
+BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_pair_production_table)
+{
+    check_pair_production_table<double, std::vector<double>>();
+    check_pair_production_table<float, std::vector<float>>();
+    check_pair_production_table<double, std::vector<double>>();
+    check_pair_production_table<float, std::vector<float>>();
+}
+
+
+template <typename RealType, typename VectorType>
+void check_pair_production_table_serialization()
+{
+    const auto params =
+        pair_prod_lookup_table_params<RealType>{
+            static_cast<RealType>(0.1),static_cast<RealType>(10.0),
+            3, 3};
+
+    auto table = pair_prod_lookup_table_logchi_linfrac<
+        RealType, VectorType>{params, {1.,2.,3.,4.,5.,6.,7.,8.,9.}};
+
+    auto raw_data = table.serialize();
+    auto new_table =
+        pair_prod_lookup_table_logchi_linfrac<RealType, VectorType>{raw_data};
+
+    BOOST_CHECK_EQUAL(new_table.is_init(), true);
+    BOOST_CHECK_EQUAL(new_table == table, true);
+}
+
+
+// ***Test Breit Wheeler pair production table serialization
+BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_pair_production_table_serialization)
+{
+    check_pair_production_table_serialization<double, std::vector<double>>();
+    check_pair_production_table_serialization<float, std::vector<float>>();
 }
