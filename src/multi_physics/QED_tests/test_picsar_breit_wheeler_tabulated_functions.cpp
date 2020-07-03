@@ -16,11 +16,11 @@
 #include "breit_wheeler_engine_tabulated_functions.hpp"
 
 //Tolerance for double precision calculations
-const double double_tolerance = 2.0e-6;
+const double double_tolerance = 1.0e-7;
 const double double_small = 1e-22;
 
 //Tolerance for single precision calculations
-const float float_tolerance = 2.0e-3;
+const float float_tolerance = 5.0e-4;
 const float float_small = 1e-16;
 
 using namespace picsar::multi_physics::phys::breit_wheeler;
@@ -200,4 +200,3 @@ BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_cumulative_prob_vec)
     check_cumulative_prob_vec<double>();
     check_cumulative_prob_vec<float>();
 }
-

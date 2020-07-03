@@ -33,7 +33,7 @@ namespace breit_wheeler{
 
     template<typename RealType>
     constexpr RealType compute_T_integrand(
-        const RealType chi_phot, const RealType chi_ele) noexcept
+        const RealType chi_phot, const RealType chi_ele)
     {
         using namespace math;
         if( chi_ele >= chi_phot )
@@ -55,9 +55,12 @@ namespace breit_wheeler{
                     math::two_thirds<RealType>*s_3_2);
             }, xx);
 
-        return (inner_integral-(math::two<RealType>-chi_phot*xx_3_2)
+        auto prod = (math::two<RealType>-chi_phot*xx_3_2)
             *k_v(math::two_thirds<RealType>,
-                math::two_thirds<RealType>*xx_3_2));
+                math::two_thirds<RealType>*xx_3_2);
+        if(std::isnan(prod)) prod = math::zero<RealType>;
+
+        return (inner_integral-prod);
     }
 
     template<typename RealType>
@@ -65,7 +68,7 @@ namespace breit_wheeler{
     {
         if(chi_phot <= math::zero<RealType>) return math::zero<RealType>;
         constexpr auto coeff = static_cast<RealType>(1./math::pi<>);
-        return coeff*math::quad_a_b<RealType>(
+        return coeff*math::quad_a_b_s<RealType>(
             [=](RealType cc){
                 return compute_T_integrand<RealType>(chi_phot, cc);},
             math::zero<RealType>, chi_phot)/(chi_phot*chi_phot*sqrt(3.0));
@@ -82,7 +85,7 @@ namespace breit_wheeler{
 
         if(chi_part >= chi_photon) chi_part = chi_photon;
 
-        return coeff*math::quad_a_b<RealType>(
+        return coeff*math::quad_a_b_s<RealType>(
             [=](RealType cc){
                 return compute_T_integrand<RealType>(chi_photon, cc);
             },math::zero<RealType>, chi_part)/(chi_photon*chi_photon*sqrt(3.0));
