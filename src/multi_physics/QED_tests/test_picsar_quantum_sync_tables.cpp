@@ -213,3 +213,31 @@ BOOST_AUTO_TEST_CASE( picsar_quantum_sync_dndt_table_serialization)
     check_dndt_table_serialization<float, std::vector<float>,
         dndt_table_out_policy::extrema>();
 }
+
+
+template <typename RealType, typename VectorType>
+void check_photon_emission_table_serialization()
+{
+    const auto params =
+        photon_emission_lookup_table_params<RealType>{
+            static_cast<RealType>(0.1),static_cast<RealType>(10.0),
+            static_cast<RealType>(1e-5), 3, 3};
+
+    auto table = photon_emission_lookup_table_logchi_logfrac<
+        RealType, VectorType>{params, {1.,2.,3.,4.,5.,6.,7.,8.,9.}};
+
+    auto raw_data = table.serialize();
+    auto new_table =
+        photon_emission_lookup_table_logchi_logfrac<RealType, VectorType>{raw_data};
+
+    BOOST_CHECK_EQUAL(new_table.is_init(), true);
+    BOOST_CHECK_EQUAL(new_table == table, true);
+}
+
+
+// ***Test Quantum Synchrotron photon emission table serialization
+BOOST_AUTO_TEST_CASE( picsar_quantum_sync_photon_emission_table_serialization)
+{
+    check_photon_emission_table_serialization<double, std::vector<double>>();
+    check_photon_emission_table_serialization<float, std::vector<float>>();
+}
