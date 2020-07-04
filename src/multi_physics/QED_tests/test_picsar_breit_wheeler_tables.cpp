@@ -317,10 +317,13 @@ void check_pair_production_table()
         }
     }
     const auto table_view = table.get_view();
-/*
+
+    const auto ff = std::array<double,4>{0.0, 0.1, 0.5, 0.99};
+
     for(int i = 0 ; i < xxs.size() ; ++i){
-        BOOST_CHECK_EQUAL(table_view.interp(xxs[i]), table.interp(xxs[i]));
-    }*/
+        for (auto f : ff)
+            BOOST_CHECK_EQUAL(table_view.interp(xxs[i],f ), table.interp(xxs[i], f));
+    }
 }
 
 // ***Test Breit Wheeler dndt table
