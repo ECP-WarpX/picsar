@@ -2,8 +2,8 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <chrono>
 
-/*#include <mpi.h>*/
 #include <omp.h>
 
 #include "../QED/src/physics/quantum_sync/quantum_sync_engine_tables.hpp"
@@ -13,6 +13,29 @@
 
 namespace px_bw = picsar::multi_physics::phys::breit_wheeler;
 namespace px_qs = picsar::multi_physics::phys::quantum_sync;
+
+void draw_progress(
+    const int i, const int how_many,
+    const std::string text, const int up_freq = 1)
+{
+    if (i % up_freq != 0 && i != how_many)
+        return;
+
+    const auto bar_width = 50;
+    const auto progress = (i*1.0/how_many);
+    const auto pos = static_cast<int>(bar_width*progress);
+    std::cout << text << " [";
+    for (int j = 0; j < bar_width; ++j) {
+        if (j < pos) std::cout << "=";
+        else if (j == pos) std::cout << ">";
+        else std::cout << " ";
+    }
+    std::cout << "] " << static_cast<int>(progress * 100.0);
+    if(i < how_many) std::cout <<" %\r";
+    else std::cout <<" %\n";
+    std::cout.flush();
+}
+
 
 template<typename RealType>
 void generate_breit_wheeler_dndt_table(const std::string& file_name)
@@ -27,10 +50,21 @@ void generate_breit_wheeler_dndt_table(const std::string& file_name)
     const auto all_coords = table.get_all_coordinates();
     auto all_vals = std::vector<RealType>(all_coords.size());
 
+    auto t_start =  std::chrono::system_clock::now();
+    int count = 0;
     #pragma omp parallel for
     for (int i = 0; i < all_vals.size(); ++i){
         all_vals[i] = px_bw::compute_T_function(all_coords[i]);
+        #pragma omp critical
+        {
+            count++;
+            draw_progress(count, all_vals.size(), "BW dndt:", 10);
+        }
     }
+    auto t_end =  std::chrono::system_clock::now();
+    std::cout << "Done in " <<
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+            t_end - t_start).count()/1000.0 << " seconds! \n" << std::endl;
 
     if(!table.set_all_vals(all_vals) )
         throw "Fail!";
@@ -46,8 +80,8 @@ void generate_breit_wheeler_dndt_table(const std::string& file_name)
 template<typename RealType>
 void generate_breit_wheeler_pair_prod_table(const std::string& file_name)
 {
-    const int chi_size = 128;
-    const int frac_size = 128;
+    const int chi_size = 256;
+    const int frac_size = 256;
     px_bw::pair_prod_lookup_table_params<RealType> bw_params{1e-4,1e4,chi_size,frac_size};
 
     auto table = px_bw::pair_prod_lookup_table_logchi_linfrac<
@@ -61,6 +95,7 @@ void generate_breit_wheeler_pair_prod_table(const std::string& file_name)
     for(int j = 0; j < frac_size; ++j)
         fracs[j] = all_coords[j][1];
 
+    auto t_start =  std::chrono::system_clock::now();
     int count = 0;
     #pragma omp parallel for
     for (int i = 0; i < chi_size; ++i){
@@ -72,9 +107,13 @@ void generate_breit_wheeler_pair_prod_table(const std::string& file_name)
         #pragma omp critical
         {
             count++;
-            std::cout << count << "/" << chi_size << std::endl;
+            draw_progress(count, chi_size, "BW pair prod:", 10);
         }
     }
+    auto t_end =  std::chrono::system_clock::now();
+    std::cout << "Done in " <<
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+            t_end - t_start).count()/1000.0 << " seconds! \n" << std::endl;
 
     if(!table.set_all_vals(all_vals) )
         throw "Fail!";
@@ -100,10 +139,72 @@ void generate_quantum_sync_dndt_table(const std::string& file_name)
     const auto all_coords = table.get_all_coordinates();
     auto all_vals = std::vector<RealType>(all_coords.size());
 
+    auto t_start =  std::chrono::system_clock::now();
+    int count = 0;
     #pragma omp parallel for
     for (int i = 0; i < all_vals.size(); ++i){
         all_vals[i] = px_qs::compute_G_function(all_coords[i]);
+
+        #pragma omp critical
+        {
+            count++;
+            draw_progress(count, all_vals.size(), "QS dndt:", 10);
+        }
     }
+    auto t_end =  std::chrono::system_clock::now();
+    std::cout << "Done in " <<
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+            t_end - t_start).count()/1000.0 << " seconds! \n" << std::endl;
+
+
+    if(!table.set_all_vals(all_vals) )
+        throw "Fail!";
+
+    const auto raw_data = table.serialize();
+
+    std::ofstream of{file_name};
+    of.write (raw_data.data(),raw_data.size());
+    of.close();
+}
+
+template<typename RealType>
+void generate_quantum_sync_photem_table(const std::string& file_name)
+{
+    const int chi_size = 256;
+    const int frac_size = 256;
+    px_qs::photon_emission_lookup_table_params<RealType> qs_params{
+        1e-4,1e4,1e-5,chi_size,frac_size};
+
+    auto table = px_qs::photon_emission_lookup_table_logchi_logfrac<
+        RealType, std::vector<RealType>>{
+            qs_params};
+
+    const auto all_coords = table.get_all_coordinates();
+    auto all_vals = std::vector<RealType>(all_coords.size());
+
+    auto fracs = std::vector<RealType>(frac_size);
+    for(int j = 0; j < frac_size; ++j)
+        fracs[j] = all_coords[j][1];
+
+    auto t_start =  std::chrono::system_clock::now();
+    int count = 0;
+    #pragma omp parallel for
+    for (int i = 0; i < chi_size; ++i){
+        const auto temp = px_qs::compute_cumulative_prob(
+            all_coords[i*frac_size][0],fracs);
+
+        std::copy(temp.begin(), temp.end(), all_vals.begin()+i*frac_size);
+
+        #pragma omp critical
+        {
+            count++;
+            draw_progress(count, chi_size, "QS pair prod:", 10);
+        }
+    }
+    auto t_end =  std::chrono::system_clock::now();
+    std::cout << "Done in " <<
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+            t_end - t_start).count()/1000.0 << " seconds! \n" << std::endl;
 
     if(!table.set_all_vals(all_vals) )
         throw "Fail!";
@@ -116,16 +217,21 @@ void generate_quantum_sync_dndt_table(const std::string& file_name)
 
 }
 
+
 int main(int argc, char** argv)
 {
-    //MPI_Init(argc,argv);
 
+    std::cout << "** Table generation in double precision ** \n" << std::endl;
     generate_breit_wheeler_dndt_table<double>("bw_dndt.tab");
-
     generate_breit_wheeler_pair_prod_table<double>("bw_pairprod.tab");
-
     generate_quantum_sync_dndt_table<double>("qs_dndt.tab");
+    generate_quantum_sync_photem_table<double>("qs_photem.tab");
 
-    //MPI_Finalize();
+    std::cout << "** Table generation in single precision ** \n" << std::endl;
+    generate_breit_wheeler_dndt_table<float>("bw_dndt.ftab");
+    generate_breit_wheeler_pair_prod_table<float>("bw_pairprod.ftab");
+    generate_quantum_sync_dndt_table<float>("qs_dndt.ftab");
+    generate_quantum_sync_photem_table<float>("qs_photem.ftab");
+
     return 0;
 }

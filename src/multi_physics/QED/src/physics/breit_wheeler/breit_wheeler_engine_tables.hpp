@@ -81,7 +81,8 @@ namespace breit_wheeler{
         typename VectorType,
         dndt_table_out_policy TableOutPolicy = dndt_table_out_policy::approx
         >
-    class dndt_lookup_table{
+    class dndt_lookup_table
+    {
 
         public:
 
@@ -346,8 +347,8 @@ namespace breit_wheeler{
                 if(!m_init_flag)
                     throw "Can't generate a view of an uninitialized table";
                 const auto span = containers::picsar_span<RealType>{
-                    static_cast<size_t>(m_params.chi_phot_how_many),
-                    m_table.m_values.data()
+                    static_cast<size_t>(m_params.chi_phot_how_many *
+                        m_params.how_many_frac), m_table.m_values.data()
                 };
                 const view_type view{m_params, span};
                 return view;

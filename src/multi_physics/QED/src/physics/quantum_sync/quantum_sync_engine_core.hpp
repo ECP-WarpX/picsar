@@ -156,6 +156,7 @@ namespace quantum_sync{
 
         phot_momentum = heaviside_lorentz_electron_rest_energy<RealType>*
             v_mom_particle*gamma_photon*mom_hl2u;
+        t_v_momentum_particle -= phot_momentum;
     }
 
 }
