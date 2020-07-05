@@ -301,14 +301,14 @@ void check_pair_production_table()
     const auto rrs = std::array<RealType, 11>
             {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.99};
 
-    for (auto xx : xxs){
-        for (auto rr : rrs){
+    for (const auto xx : xxs){
+        for (const auto rr : rrs){
             auto res = table.interp(xx, rr);
-            const auto rxx = xx;
-            if(xx < chi_min) xx = chi_min;
-            if(xx > chi_max) xx = chi_max;
-            auto expected = inverse_functor(std::array<RealType,2>{xx, rr/2})*rxx;
-            if(rr >= 0.5) expected = rxx - expected;
+            auto rxx = xx;
+            if(rxx < chi_min) rxx = chi_min;
+            if(rxx > chi_max) rxx = chi_max;
+            auto expected = inverse_functor(std::array<RealType,2>{rxx, rr/2})*xx;
+            if(rr >= 0.5) expected = xx - expected;
 
             if(expected != static_cast<RealType>(0.0))
                 BOOST_CHECK_SMALL((res-expected)/expected, tolerance<RealType>());
