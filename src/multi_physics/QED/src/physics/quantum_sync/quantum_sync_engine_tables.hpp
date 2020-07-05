@@ -317,7 +317,7 @@ public:
             throw "Can't generate a view of an uninitialized table";
         const auto span = containers::picsar_span<RealType>{
             static_cast<size_t>(m_params.chi_part_how_many *
-                m_params.how_many_frac), m_params.m_values.data()
+                m_params.how_many_frac), m_table.m_values.data()
         };
         const view_type view{m_params, span};
         return view;
