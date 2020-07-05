@@ -304,10 +304,11 @@ void check_pair_production_table()
     for (auto xx : xxs){
         for (auto rr : rrs){
             auto res = table.interp(xx, rr);
+            const auto rxx = xx;
             if(xx < chi_min) xx = chi_min;
             if(xx > chi_max) xx = chi_max;
-            auto expected = inverse_functor(std::array<RealType,2>{xx, rr/2})*xx;
-            if(rr >= 0.5) expected = xx - expected;
+            auto expected = inverse_functor(std::array<RealType,2>{xx, rr/2})*rxx;
+            if(rr >= 0.5) expected = rxx - expected;
 
             if(expected != static_cast<RealType>(0.0))
                 BOOST_CHECK_SMALL((res-expected)/expected, tolerance<RealType>());

@@ -357,22 +357,24 @@ namespace breit_wheeler{
             PXRMP_INTERNAL_GPU_DECORATOR
             PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
             RealType interp(
-                RealType chi_phot,
+                const RealType chi_phot,
                 const RealType unf_zero_one_minus_epsi) const noexcept
             {
                 using namespace math;
 
+                auto e_chi_phot = chi_phot;
                 if(chi_phot<m_params.chi_phot_min)
-                    chi_phot = m_params.chi_phot_min;
+                    e_chi_phot = m_params.chi_phot_min;
                 else if (chi_phot > m_params.chi_phot_max)
-                    chi_phot = m_params.chi_phot_max;
+                    e_chi_phot = m_params.chi_phot_max;
+                const auto log_e_chi_phot = log(e_chi_phot);
 
                 const auto prob = unf_zero_one_minus_epsi*half<RealType>;
 
                 const auto upper_frac_index = utils::picsar_upper_bound_functor(
                     0, m_params.how_many_frac,prob,[&](int i){
                         return (m_table.interp_first_coord(
-                            log(chi_phot), i));
+                            log_e_chi_phot, i));
                     });
                 const auto lower_frac_index = upper_frac_index-1;
 
@@ -380,9 +382,9 @@ namespace breit_wheeler{
                 const auto lower_frac = m_table.get_y_coord(lower_frac_index);
 
                 const auto lower_prob= m_table.interp_first_coord
-                    (log(chi_phot), lower_frac_index);
+                    (log_e_chi_phot, lower_frac_index);
                 const auto upper_prob = m_table.interp_first_coord
-                    (log(chi_phot), upper_frac_index);
+                    (log_e_chi_phot, upper_frac_index);
 
                 const auto frac = utils::linear_interp(
                     lower_prob, upper_prob, lower_frac, upper_frac,
