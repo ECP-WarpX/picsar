@@ -17,12 +17,12 @@
 #include "quantum_sync_engine_tables.hpp"
 
 //Tolerance for double precision calculations
-const double double_tolerance = 1.0e-6;
-const double double_small = 1e-30;
+const double double_tolerance = 1.0e-3;
+const double double_small = 1e-20;
 
 //Tolerance for single precision calculations
-const float float_tolerance = 1.0e-3;
-const float float_small = 1e-20;
+const float float_tolerance = 1.0e-2;
+const float float_small = 1e-10;
 
 
 using namespace picsar::multi_physics::phys::quantum_sync;
@@ -48,8 +48,8 @@ T constexpr small()
 
 const double chi_min = 0.001;
 const double chi_max = 1000;
-const int how_many = 100;
-const int how_many_frac = 100;
+const int how_many = 500;
+const int how_many_frac = 500;
 const double frac_min = 1e-4;
 
 template <typename RealType, typename VectorType,
@@ -264,10 +264,10 @@ void check_photon_emission_table()
     auto vals = VectorType(coords.size());
 
     auto functor = [=](std::array<RealType,2> x){
-        return static_cast<RealType>(1.0*pow(x[1], 5.0 + log(x[0])));};
+        return static_cast<RealType>(1.0*pow(x[1], 4.0 + log10(x[0])));};
 
     auto inverse_functor = [=](std::array<RealType,2> x){
-            return static_cast<RealType>(1.0*pow((1-x[1]), 1.0/(5.0 + log(x[0]))));};
+            return static_cast<RealType>(1.0*pow((1-x[1]), 1.0/(4.0 + log10(x[0]))));};
 
     std::transform(coords.begin(), coords.end(), vals.begin(),functor);
 
@@ -293,14 +293,14 @@ void check_photon_emission_table()
     const auto rrs = std::array<RealType, 11>
             {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.99};
 
-    for (auto xx : xxs){
-        for (auto rr : rrs){
+    for (const auto xx : xxs){
+        for (const auto rr : rrs){
             auto res = table.interp(xx, rr);
-            if(xx < chi_min) xx = chi_min;
-            if(xx > chi_max) xx = chi_max;
-            auto expected = inverse_functor(std::array<RealType,2>{xx, rr})*xx;
-
-            if(expected < tolerance<RealType>())
+            auto rxx = xx;
+            if(rxx < chi_min) rxx = chi_min;
+            if(rxx > chi_max) rxx = chi_max;
+            auto expected = inverse_functor(std::array<RealType,2>{rxx, rr})*xx;
+            if(expected < small<RealType>())
                 BOOST_CHECK_SMALL((res-expected)/expected, tolerance<RealType>());
             else
                 BOOST_CHECK_SMALL((res-expected), tolerance<RealType>());

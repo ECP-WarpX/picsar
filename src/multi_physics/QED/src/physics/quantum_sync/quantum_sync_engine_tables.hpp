@@ -327,26 +327,31 @@ public:
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     RealType interp(
-        RealType chi_part,
+        const RealType chi_part,
         const RealType unf_zero_one_minus_epsi) const noexcept
     {
         using namespace math;
 
+        auto e_chi_part = chi_part;
         if(chi_part<m_params.chi_part_min)
-            chi_part = m_params.chi_part_min;
+            e_chi_part = m_params.chi_part_min;
         else if (chi_part > m_params.chi_part_max)
-            chi_part = m_params.chi_part_max;
+            e_chi_part = m_params.chi_part_max;
+        const auto log_e_chi_part = log(e_chi_part);
 
         const auto log_prob = log(one<RealType>-unf_zero_one_minus_epsi);
 
         const auto upper_frac_index = utils::picsar_upper_bound_functor(
             0, m_params.how_many_frac,log_prob,[&](int i){
                 return (m_table.interp_first_coord(
-                    log(chi_part), i));
+                    log_e_chi_part, i));
             });
 
         if(upper_frac_index == 0)
             return m_params.frac_min*chi_part;
+
+        if(upper_frac_index ==  m_params.how_many_frac)
+            return chi_part;
 
         const auto lower_frac_index = upper_frac_index-1;
 
@@ -354,14 +359,13 @@ public:
         const auto lower_log_frac = m_table.get_y_coord(lower_frac_index);
 
         const auto lower_log_prob= m_table.interp_first_coord
-            (log(chi_part), lower_frac_index);
+            (log_e_chi_part, lower_frac_index);
         const auto upper_log_prob = m_table.interp_first_coord
-            (log(chi_part), upper_frac_index);
+            (log_e_chi_part, upper_frac_index);
 
         const auto log_frac = utils::linear_interp(
             lower_log_prob, upper_log_prob, lower_log_frac, upper_log_frac,
             log_prob);
-            
         return  exp(log_frac)*chi_part;
     }
 
