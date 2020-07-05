@@ -50,7 +50,7 @@ const double chi_min = 0.001;
 const double chi_max = 1000;
 const int how_many = 100;
 const int how_many_frac = 100;
-const double frac_min = 1e-6;
+const double frac_min = 1e-4;
 
 template <typename RealType, typename VectorType,
     dndt_table_out_policy TablePolicy>
@@ -264,10 +264,10 @@ void check_photon_emission_table()
     auto vals = VectorType(coords.size());
 
     auto functor = [=](std::array<RealType,2> x){
-        return static_cast<RealType>(1.0*pow(2*x[1], 8.0 + log(x[0])));};
+        return static_cast<RealType>(1.0*pow(x[1], 5.0 + log(x[0])));};
 
     auto inverse_functor = [=](std::array<RealType,2> x){
-            return static_cast<RealType>(1.0*pow(2*x[1], 1.0/(8.0 + log(x[0]))));};
+            return static_cast<RealType>(1.0*pow((1-x[1]), 1.0/(5.0 + log(x[0]))));};
 
     std::transform(coords.begin(), coords.end(), vals.begin(),functor);
 
@@ -290,7 +290,6 @@ void check_photon_emission_table()
 
     const auto xxs = std::array<RealType, 5>
         {xo0, x0, x1, x2, xo1};
-
     const auto rrs = std::array<RealType, 11>
             {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.99};
 
@@ -299,30 +298,29 @@ void check_photon_emission_table()
             auto res = table.interp(xx, rr);
             if(xx < chi_min) xx = chi_min;
             if(xx > chi_max) xx = chi_max;
-            auto expected = exp(inverse_functor(std::array<RealType,2>{xx, rr}))*xx;
+            auto expected = inverse_functor(std::array<RealType,2>{xx, rr})*xx;
 
-            if(expected != static_cast<RealType>(0.0))
+            if(expected < tolerance<RealType>())
                 BOOST_CHECK_SMALL((res-expected)/expected, tolerance<RealType>());
             else
                 BOOST_CHECK_SMALL((res-expected), tolerance<RealType>());
 
         }
     }
+
     const auto table_view = table.get_view();
 
     const auto ff = std::array<double,4>{0.0, 0.1, 0.5, 0.99};
 
-    for(int i = 0 ; i < xxs.size() ; ++i){
-        for (auto f : ff)
-            BOOST_CHECK_EQUAL(table_view.interp(xxs[i],f ), table.interp(xxs[i], f));
+    for(auto xx : xxs){
+        for (auto r : rrs)
+            BOOST_CHECK_EQUAL(table_view.interp(xx,r ), table.interp(xx, r));
     }
 }
 
 // ***Test Quantum Synchrotron photon emission table
 BOOST_AUTO_TEST_CASE( picsar_quantum_sync_photon_emission_table)
 {
-    check_photon_emission_table<double, std::vector<double>>();
-    check_photon_emission_table<float, std::vector<float>>();
     check_photon_emission_table<double, std::vector<double>>();
     check_photon_emission_table<float, std::vector<float>>();
 }

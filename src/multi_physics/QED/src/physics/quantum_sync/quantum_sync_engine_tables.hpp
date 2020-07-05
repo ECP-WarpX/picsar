@@ -264,7 +264,7 @@ public:
             log(params.chi_part_min),
             log(params.chi_part_max),
             log(params.frac_min),
-            math::one<RealType>,
+            log(math::one<RealType>),
             params.chi_part_how_many, params.how_many_frac,
             vals}}
     {
@@ -319,6 +319,7 @@ public:
             static_cast<size_t>(m_params.chi_part_how_many *
                 m_params.how_many_frac), m_table.m_values.data()
         };
+
         const view_type view{m_params, span};
         return view;
     }
@@ -343,6 +344,10 @@ public:
                 return (m_table.interp_first_coord(
                     log(chi_part), i));
             });
+
+        if(upper_frac_index == 0)
+            return m_params.frac_min*chi_part;
+
         const auto lower_frac_index = upper_frac_index-1;
 
         const auto upper_log_frac = m_table.get_y_coord(upper_frac_index);
@@ -356,7 +361,7 @@ public:
         const auto log_frac = utils::linear_interp(
             lower_log_prob, upper_log_prob, lower_log_frac, upper_log_frac,
             log_prob);
-
+            
         return  exp(log_frac)*chi_part;
     }
 
