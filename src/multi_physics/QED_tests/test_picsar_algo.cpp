@@ -27,37 +27,11 @@ BOOST_AUTO_TEST_CASE( picsar_upper_bound_1 )
 {
     const auto arr = std::array<double,5>{0.0, 1.0, 2.0, 3.0, 4.0};
 
-    BOOST_CHECK_EQUAL(
-        picsar_upper_bound(arr.begin(), arr.end(), -1.0),
-        std::upper_bound(arr.begin(), arr.end(), -1.0));
-
-    BOOST_CHECK_EQUAL(
-        picsar_upper_bound(arr.begin(), arr.end(), 0.0),
-        std::upper_bound(arr.begin(), arr.end(), 0.0));
-
-    BOOST_CHECK_EQUAL(
-        picsar_upper_bound(arr.begin(), arr.end(), 0.1),
-        std::upper_bound(arr.begin(), arr.end(), 0.1));
-
-    BOOST_CHECK_EQUAL(
-        picsar_upper_bound(arr.begin(), arr.end(), 1.0),
-        std::upper_bound(arr.begin(), arr.end(), 1.0));
-
-    BOOST_CHECK_EQUAL(
-        picsar_upper_bound(arr.begin(), arr.end(), 1.1),
-        std::upper_bound(arr.begin(), arr.end(), 1.1));
-
-    BOOST_CHECK_EQUAL(
-        picsar_upper_bound(arr.begin(), arr.end(), 3.9),
-        std::upper_bound(arr.begin(), arr.end(), 3.9));
-
-    BOOST_CHECK_EQUAL(
-        picsar_upper_bound(arr.begin(), arr.end(), 4.0),
-        std::upper_bound(arr.begin(), arr.end(), 4.0));
-
-    BOOST_CHECK_EQUAL(
-        picsar_upper_bound(arr.begin(), arr.end(), 5.0),
-        std::upper_bound(arr.begin(), arr.end(), 5.0));
+    for (const auto nn : std::vector<double>{-1.,0.,0.1,1,1.1,3.9,4.0,5.0}){
+        BOOST_CHECK_EQUAL(
+            picsar_upper_bound(arr.begin(), arr.end(), nn),
+            std::upper_bound(arr.begin(), arr.end(), nn));
+    }
 }
 
 // ***Test upper_bound_functor
@@ -66,40 +40,15 @@ BOOST_AUTO_TEST_CASE( picsar_upper_bound_functor_1 )
 {
     const auto arr = std::array<double,5>{0.0, 1.0, 2.0, 3.0, 4.0};
 
-    BOOST_CHECK_EQUAL(
-        picsar_upper_bound_functor(0, arr.size(), -1.0, [&](size_t i){
-            return arr[i];}),
-        std::distance(
-            arr.begin(),
-            std::upper_bound(arr.begin(), arr.end(), -1.0)));
+    for (const auto nn : std::vector<double>{-1.,0.,0.1,1,1.1,3.9,4.0,5.0}){
+        BOOST_CHECK_EQUAL(
+            picsar_upper_bound_functor(0, arr.size(), nn, [&](size_t i){
+                return arr[i];}),
+            std::distance(
+                arr.begin(),
+                std::upper_bound(arr.begin(), arr.end(), nn)));
 
-    BOOST_CHECK_EQUAL(
-        picsar_upper_bound_functor(0, arr.size(), 0.0, [&](size_t i){
-            return arr[i];}),
-        std::distance(
-            arr.begin(),
-            std::upper_bound(arr.begin(), arr.end(), 0.0)));
-
-    BOOST_CHECK_EQUAL(
-        picsar_upper_bound_functor(0, arr.size(), 1.0, [&](size_t i){
-            return arr[i];}),
-        std::distance(
-            arr.begin(),
-            std::upper_bound(arr.begin(), arr.end(), 1.0)));
-
-    BOOST_CHECK_EQUAL(
-        picsar_upper_bound_functor(0, arr.size(), 4.0, [&](int i){
-            return arr[i];}),
-        std::distance(
-            arr.begin(),
-            std::upper_bound(arr.begin(), arr.end(), 4.0)));
-
-    BOOST_CHECK_EQUAL(
-        picsar_upper_bound_functor(0, arr.size(), 5.0, [&](int i){
-            return arr[i];}),
-        std::distance(
-            arr.begin(),
-            std::upper_bound(arr.begin(), arr.end(), 5.0)));
+    }
 }
 
 // *******************************
