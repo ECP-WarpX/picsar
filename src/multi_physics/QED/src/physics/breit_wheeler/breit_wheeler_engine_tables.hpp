@@ -38,30 +38,75 @@ namespace multi_physics{
 namespace phys{
 namespace breit_wheeler{
 
+    //Reasonable default values for the dndt_lookup_table_params
+    //and the pair_prod_lookup_table_params (see below)
+    template <typename T>
+    constexpr T default_chi_phot_min = 1.0e-3; /*Default minimum photon chi parameter*/
+    template <typename T>
+    constexpr T default_chi_phot_max = 1.0e3; /* Default maximum photon chi parameter*/
+    const int default_chi_phot_how_many = 256; /* Default number of grid points for photon chi */
+    const int default_how_many_frac = 256; /* Default number of grid points for particle chi */
+
+    /**
+    * This structure holds the parameters to generate a dN/dt
+    * lookup table. The dN/dt lookup table stores the values of the
+    * T function (see validation script)
+    *
+    * @tparam RealType the floating point type to be used
+    */
     template<typename RealType>
     struct dndt_lookup_table_params{
-        RealType chi_phot_min; //Min chi_phot
-        RealType chi_phot_max; //Max chi_phot
-        int chi_phot_how_many; //How many points
+        RealType chi_phot_min; /*Minimum photon chi parameter*/
+        RealType chi_phot_max;/*Maximum photon chi parameter*/
+        int chi_phot_how_many; /* Number of grid points for photon chi */
 
-        bool operator== (const dndt_lookup_table_params<RealType> &b) const
+        /**
+        * Operator==
+        *
+        * @param[in] rhs a structure of the same type
+        * @return true if rhs is equal to *this. false otherwise
+        */
+        bool operator== (const dndt_lookup_table_params<RealType> &rhs) const
         {
-            return (chi_phot_min == b.chi_phot_min) &&
-                (chi_phot_max == b.chi_phot_max) &&
-                (chi_phot_how_many == b.chi_phot_how_many);
+            return (chi_phot_min == rhs.chi_phot_min) &&
+                (chi_phot_max == rhs.chi_phot_max) &&
+                (chi_phot_how_many == rhs.chi_phot_how_many);
         }
     };
 
+    /**
+    * The defaultd dndt_lookup_table_params
+    *
+    * @tparam RealType the floating point type to be used
+    */
+    template<typename RealType>
+    constexpr auto default_dndt_lookup_table_params =
+        dndt_lookup_table_params<RealType>{default_chi_phot_min<RealType>,
+                                           default_chi_phot_max<RealType>,
+                                           default_chi_phot_how_many};
+    //__________________________________________________________
 
-    //Coefficients for che asymptotic behaviour of the dndt table
-    //using Erber approximation
-    //Erber T. (1966), Reviews of Modern Physics,38, 626
+    //If a photon has a chi parameter which is out of table,
+    //a simple analytical approximation can be used to calculate
+    //the T function (see validation script)
+    //
+    // References:
+    // 1) Erber T. (1966), Reviews of Modern Physics,38, 626
+
+    //Coefficients for che asymptotic behaviour of the T function
     template <typename T> //0.16*pi*(3/8)
-    constexpr T erber_dndt_asynt_a = 0.1884955592153876;
+    constexpr T erber_dndt_asynt_a = 0.1884955592153876; /*Coefficient a of the Erber approximation*/
     template <typename T> //0.16*(gamma(1/3)*(3/2)**(1/3) /2)**2
-    constexpr T erber_dndt_asynt_b = 0.37616610710114734;
+    constexpr T erber_dndt_asynt_b = 0.37616610710114734; /*Coefficient b of the Erber approximation*/
 
-
+    /**
+    * This function provides an approximation for the T function
+    * when chi << 1
+    *
+    * @tparam RealType the floating point type to be used
+    * @param[in] chi_phot the chi parameter of a photon
+    * @return the Erber approximation for T when chi << 1
+    */
     template <typename RealType>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
@@ -71,6 +116,14 @@ namespace breit_wheeler{
         return erber_dndt_asynt_a<RealType>*math::m_exp(-coeff/chi_phot);
     }
 
+    /**
+    * This function provides an approximation for the T function
+    * when chi >> 1
+    *
+    * @tparam RealType the floating point type to be used
+    * @param[in] chi_phot the chi parameter of a photon
+    * @return the Erber approximation for T when chi >> 1
+    */
     template <typename RealType>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
@@ -78,7 +131,23 @@ namespace breit_wheeler{
     {
         return erber_dndt_asynt_b<RealType>/math::m_cbrt(chi_phot);
     }
+    //__________________________________________________________
 
+
+    /**
+    * This class provides the lookup table for dN/dt,
+    * storing the values of the T function (see validation script)
+    * and providing methods to perform interpolations.
+    * It also provides methods for serialization (export to byte array,
+    * import from byte array) and to generate "table views" based on
+    * non-owning poynters (this is crucial in order to use the table
+    * in GPU kernels, as explained below).
+    *
+    * Internally, this table stores log(T(log(chi))).
+    *
+    * @tparam RealType the floating point type to be used
+    * @tparam VectorType the vector type to be used internally (e.g. std::vector)
+    */
     template<
         typename RealType,
         typename VectorType>
@@ -86,10 +155,31 @@ namespace breit_wheeler{
     {
         public:
 
+            /**
+            * A view_type is essentially a dN/dt lookup table which
+            * uses non-owning, constant, pointers to hold the data.
+            * The use of views is crucial for GPUs usage. As demonstrated
+            * in test_gpu/test_breit_wheeler.cu, it is possible to:
+            * - define a thin wrapper around a thrust::device_vector
+            * - use this wrapper as a template parameter for a dndt_lookup_table
+            * - initialize the lookup table on the CPU
+            * - generate a view
+            * - pass by copy this view to a GPU kernel (see get_view() method)
+            *
+            * @tparam RealType the floating point type to be used
+            */
             typedef const dndt_lookup_table<
                 RealType, containers::picsar_span<const RealType>> view_type;
 
-            dndt_lookup_table(dndt_lookup_table_params<RealType> params):
+            /**
+            * Constructor (not usable on GPUs).
+            * After construction the table is empty. The user has to generate
+            * the T function values before being able to use the table.
+            *
+            * @param params table parameters
+            */
+            dndt_lookup_table(
+                dndt_lookup_table_params<RealType> params = default_dndt_lookup_table_params<RealType>):
             m_params{params},
             m_table{containers::equispaced_1d_table<RealType, VectorType>{
                     math::m_log(params.chi_phot_min),
@@ -97,6 +187,14 @@ namespace breit_wheeler{
                     VectorType(params.chi_phot_how_many)}}
             {};
 
+            /**
+            * Constructor (not usable on GPUs).
+            * After construction the table is empty. The user has to generate
+            * the T function values before being able to use the table.
+            *
+            * @param params parameters for table generation
+            * @param vals values of the T function
+            */
             dndt_lookup_table(dndt_lookup_table_params<RealType> params,
                 VectorType vals):
             m_params{params},
