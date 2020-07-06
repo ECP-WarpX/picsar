@@ -5,7 +5,6 @@
 #include "../qed_commons.h"
 
 #include <vector>
-#include <array>
 #include <algorithm>
 #include <type_traits>
 
@@ -14,6 +13,15 @@ namespace multi_physics{
 namespace utils{
 namespace serialization{
 
+    /**
+    * This function transform a variable of type T into a vector of chars holding its
+    * byte representation and it appends this vector at the end of an
+    * existing vector of chars. T must be a POD type. This functions is not
+    * usable on GPUs.
+    *
+    * @tparam T the variable type (must be POD)
+    * @param[in, out] vec a reference to the vector to which the byte representation of val is appended
+    */
     template<typename T>
     void put_in(T val, std::vector<char>& vec)
     {
@@ -24,6 +32,17 @@ namespace serialization{
         vec.insert(vec.end(), ptr_val, ptr_val+sizeof(T));
     }
 
+    /**
+    * This function extract a variable of type T from a byte vector, at the position
+    * given by an iterator. The iterator is then advanced according to
+    * the number of bytes read from the byte vector. T must be a POD type.
+    * This functions is not usable on GPUs.
+    *
+    * @tparam T the variable type (must be POD)
+    * @tparam CharIter the iterator type
+    * @param[in, out] it the iterator to a byte vector
+    * @return the variable extracted from the byte array
+    */
     template<typename T, typename CharIter=std::vector<char>::const_iterator>
     T get_out(CharIter& it)
     {
@@ -35,6 +54,18 @@ namespace serialization{
         return *ptr_res;
     }
 
+    /**
+    * This function extract several variables of type T from a byte vector,
+    * at the position given by an iterator. The iterator is then advanced according to
+    * the number of bytes read from the byte vector. T must be a POD type.
+    * This functions is not usable on GPUs.
+    *
+    * @tparam T the variable type (must be POD)
+    * @tparam CharIter the iterator type
+    * @param[in, out] it the iterator to a byte vector
+    * @param[in] how_many how many variables should be extracted
+    * @return an std::vector<T> containing the extracted variables.
+    */
     template<typename T, typename CharIter=std::vector<char>::const_iterator>
     std::vector<T> get_n_out(
         CharIter& it,
@@ -51,8 +82,6 @@ namespace serialization{
                 return el;});
         return res;
     }
-
-
 
 }
 }
