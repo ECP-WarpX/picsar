@@ -1,20 +1,17 @@
 #ifndef PICSAR_MULTIPHYSICS_CHI_FUNCTIONS
 #define PICSAR_MULTIPHYSICS_CHI_FUNCTIONS
 
-#include <cmath>
-
 //Should be included by all the src files of the library
 #include "../qed_commons.h"
 
-//Uses picsar_arrays
+//Uses GPU-friendly array
 #include "../containers/picsar_array.hpp"
-
+//Uses operations on 3-vectors
 #include "../math/vec_functions.hpp"
-
+//Uses unit conversion
 #include "unit_conversion.hpp"
 
-// This file contains auxiliary functions to calculate the chi parameter
-// for photons and electrons or positrons
+#include <cmath>
 
 namespace picsar{
 namespace multi_physics{
@@ -40,8 +37,6 @@ namespace phys{
         const math::vec3<RealType> t_em_b,
         const RealType reference_quantity = math::one<RealType>)
     {
-        using namespace math;
-
         const auto p = t_p *conv<
             quantity::momentum, UnitSystem,
             unit_system::heaviside_lorentz, RealType>::fact();
@@ -53,8 +48,8 @@ namespace phys{
             unit_system::heaviside_lorentz, RealType>::fact(reference_quantity);
 
         const auto norm_p = math::norm(p);
-        if(norm_p == zero<RealType>)
-            return zero<RealType>;
+        if(norm_p == math::zero<RealType>)
+            return math::zero<RealType>;
 
         const auto p_unit = p / norm_p;
         const auto em_eperp = em_e - math::dot(p_unit,em_e)*p_unit;
@@ -122,8 +117,6 @@ namespace phys{
         const math::vec3<RealType> t_em_b,
         const RealType reference_quantity = math::one<RealType>)
     {
-        using namespace math;
-
         const auto p = t_p * conv<
             quantity::momentum, UnitSystem,
             unit_system::heaviside_lorentz, RealType>::fact();
@@ -135,8 +128,8 @@ namespace phys{
             unit_system::heaviside_lorentz, RealType>::fact(reference_quantity);
 
         const auto norm_p = math::norm(p);
-        if(norm_p == zero<RealType>)
-            return zero<RealType>;
+        if(norm_p == math::zero<RealType>)
+            return math::zero<RealType>;
 
         const auto p_unit = p / norm_p;
 
