@@ -22,7 +22,7 @@ void generate_breit_wheeler_dndt_table(const std::string& file_name)
     px_bw::dndt_lookup_table_params<RealType> bw_params{1e-4,1e4,256};
 
     auto table = px_bw::dndt_lookup_table<
-        RealType, std::vector<RealType>{bw_params};
+        RealType, std::vector<RealType>>{bw_params};
 
     const auto all_coords = table.get_all_coordinates();
     auto all_vals = std::vector<RealType>(all_coords.size());
@@ -85,10 +85,11 @@ void generate_breit_wheeler_pair_prod_table(const std::string& file_name)
         #pragma omp critical
         {
             count++;
-            draw_progress(count, chi_size, "BW pair prod:", 10);
+            px_ut::draw_progress(count, chi_size, "BW pair prod:", 10);
         }
     }
     auto t_end =  std::chrono::system_clock::now();
+    px_ut::draw_progress(count, count, "BW pair prod:", 10, true);
     std::cout << "Done in " <<
         std::chrono::duration_cast<std::chrono::milliseconds>(
             t_end - t_start).count()/1000.0 << " seconds! \n" << std::endl;
@@ -126,9 +127,10 @@ void generate_quantum_sync_dndt_table(const std::string& file_name)
         #pragma omp critical
         {
             count++;
-            draw_progress(count, all_vals.size(), "QS dndt:", 10);
+            px_ut::draw_progress(count, all_vals.size(), "QS dndt:", 10);
         }
     }
+    px_ut::draw_progress(count, count, "QS dndt:", 10, true);
     auto t_end =  std::chrono::system_clock::now();
     std::cout << "Done in " <<
         std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -176,10 +178,11 @@ void generate_quantum_sync_photem_table(const std::string& file_name)
         #pragma omp critical
         {
             count++;
-            draw_progress(count, chi_size, "QS pair prod:", 10);
+            px_ut::draw_progress(count, chi_size, "QS phot em:", 10);
         }
     }
     auto t_end =  std::chrono::system_clock::now();
+    px_ut::draw_progress(count, chi_size, "QS phot em:", 10, true);
     std::cout << "Done in " <<
         std::chrono::duration_cast<std::chrono::milliseconds>(
             t_end - t_start).count()/1000.0 << " seconds! \n" << std::endl;

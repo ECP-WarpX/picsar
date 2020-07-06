@@ -11,31 +11,41 @@ namespace picsar{
 namespace multi_physics{
 namespace utils{
 
-template<typename OutStream = std::ostream>
-void draw_progress(
-    const int i, const int how_many,
-    const std::string text,
-    const int up_freq = 1,
-    bool last=false,
-    OutStream& out = &std::cout)
-{
-    if (i % up_freq != 0 && i != how_many)
-        return;
+    /**
+    * A simple progress bar
+    *
+    * @param[in] i current progress index
+    * @param[in] how_many maximum value of the progress index
+    * @param[in] text an optional text to append to the progress bar
+    * @param[in] up_freq frequency at which the progress bar is updated
+    * @param[in] last if true the last character is a new line instead of a carriage return
+    * @param[in] out the std::ostream where the progress bar is drawn   
+    */
+    void draw_progress(
+        const int i, const int how_many,
+        const std::string text = "",
+        const int up_freq = 1,
+        bool last=false,
+        std::ostream& out = std::cout)
+        {
+            if (i % up_freq != 0 && i != how_many)
+            return;
 
-    const auto bar_width = 50;
-    const auto progress = (i*1.0/how_many);
-    const auto pos = static_cast<int>(bar_width*progress);
-    out << text << " [";
-    for (int j = 0; j < bar_width; ++j) {
-        if (j < pos) out << "=";
-        else if (j == pos) out << ">";
-        else out << " ";
-    }
-    out << "] " << static_cast<int>(progress * 100.0);
-    if(last) out <<" %\n";
-    else out <<" %\r";
-    out.flush();
-}
+            const auto bar_width = 50;
+            const auto progress = (i*1.0/how_many);
+            const auto pos = static_cast<int>(bar_width*progress);
+            out << " [";
+            for (int j = 0; j < bar_width; ++j) {
+                if (j < pos) out << "=";
+                else if (j == pos) out << ">";
+                else out << " ";
+            }
+            out << "] " << static_cast<int>(progress * 100.0)
+            << " " << text;
+            if(last) out <<" %\n";
+            else out <<" %\r";
+            out.flush();
+        }
 
 }
 }
