@@ -35,11 +35,11 @@ void generate_breit_wheeler_dndt_table(const std::string& file_name)
         #pragma omp critical
         {
             count++;
-            px_ut::draw_progress(count, all_vals.size(), "BW dndt:", 10);
+            px_ut::draw_progress(count, all_vals.size(), "BW dndt", 10);
         }
     }
     auto t_end =  std::chrono::system_clock::now();
-    px_ut::draw_progress(count, count, "BW dndt:", 10, true);
+    px_ut::draw_progress(count, count, "BW dndt", 10, true);
     std::cout << "Done in " <<
         std::chrono::duration_cast<std::chrono::milliseconds>(
             t_end - t_start).count()/1000.0 << " seconds! \n" << std::endl;
@@ -85,11 +85,11 @@ void generate_breit_wheeler_pair_prod_table(const std::string& file_name)
         #pragma omp critical
         {
             count++;
-            px_ut::draw_progress(count, chi_size, "BW pair prod:", 10);
+            px_ut::draw_progress(count, chi_size, "BW pair prod", 10);
         }
     }
     auto t_end =  std::chrono::system_clock::now();
-    px_ut::draw_progress(count, count, "BW pair prod:", 10, true);
+    px_ut::draw_progress(count, count, "BW pair prod", 10, true);
     std::cout << "Done in " <<
         std::chrono::duration_cast<std::chrono::milliseconds>(
             t_end - t_start).count()/1000.0 << " seconds! \n" << std::endl;
@@ -127,10 +127,10 @@ void generate_quantum_sync_dndt_table(const std::string& file_name)
         #pragma omp critical
         {
             count++;
-            px_ut::draw_progress(count, all_vals.size(), "QS dndt:", 10);
+            px_ut::draw_progress(count, all_vals.size(), "QS dndt", 10);
         }
     }
-    px_ut::draw_progress(count, count, "QS dndt:", 10, true);
+    px_ut::draw_progress(count, count, "QS dndt", 10, true);
     auto t_end =  std::chrono::system_clock::now();
     std::cout << "Done in " <<
         std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -178,11 +178,11 @@ void generate_quantum_sync_photem_table(const std::string& file_name)
         #pragma omp critical
         {
             count++;
-            px_ut::draw_progress(count, chi_size, "QS phot em:", 10);
+            px_ut::draw_progress(count, chi_size, "QS phot em", 10);
         }
     }
     auto t_end =  std::chrono::system_clock::now();
-    px_ut::draw_progress(count, chi_size, "QS phot em:", 10, true);
+    px_ut::draw_progress(count, chi_size, "QS phot em", 10, true);
     std::cout << "Done in " <<
         std::chrono::duration_cast<std::chrono::milliseconds>(
             t_end - t_start).count()/1000.0 << " seconds! \n" << std::endl;

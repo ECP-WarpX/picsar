@@ -19,7 +19,7 @@ namespace utils{
     * @param[in] text an optional text to append to the progress bar
     * @param[in] up_freq frequency at which the progress bar is updated
     * @param[in] last if true the last character is a new line instead of a carriage return
-    * @param[in] out the std::ostream where the progress bar is drawn   
+    * @param[in] out the std::ostream where the progress bar is drawn
     */
     void draw_progress(
         const int i, const int how_many,
@@ -41,9 +41,9 @@ namespace utils{
                 else out << " ";
             }
             out << "] " << static_cast<int>(progress * 100.0)
-            << " " << text;
-            if(last) out <<" %\n";
-            else out <<" %\r";
+            << "%  " << text ;
+            if(last) out <<"\n";
+            else out <<"\r";
             out.flush();
         }
 
