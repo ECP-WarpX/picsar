@@ -3,8 +3,6 @@
 
 //This .hpp file contais the implementation of the
 //core functions of the Schwinger pair engine.
-//If desired, these functions can be used directly
-//without the higher-level interface.
 //
 // References:
 // 1) Schwinger. Phys. Rev. 82, 5 (1951)
@@ -15,15 +13,12 @@
 //Should be included by all the src files of the library
 #include "../../qed_commons.h"
 
-//Uses picsar arrays
+//Uses GPU-friendly arrays
 #include "../../math/vec_functions.hpp"
-
 //Uses vector functions
 #include "../../math/vec_functions.hpp"
-
 //Uses physical constants
 #include "../phys_constants.h"
-
 //Uses unit conversion"
 #include "../unit_conversion.hpp"
 
