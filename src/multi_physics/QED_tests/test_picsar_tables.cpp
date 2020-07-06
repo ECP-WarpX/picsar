@@ -95,8 +95,13 @@ void check_table_1d(
     BOOST_CHECK_EQUAL(rxmin, xmin);
     const auto rxmax = tab.get_x_max();
     BOOST_CHECK_EQUAL(rxmax, xmax);
+    const auto rxsize = tab.get_x_size();
+    BOOST_CHECK_EQUAL(rxsize, xmax-xmin);
     const auto rhowmany =  tab.get_how_many_x();
     BOOST_CHECK_EQUAL(rhowmany, xsize);
+
+    const auto first_val = tab.get_values_reference()[0];
+    BOOST_CHECK_EQUAL(first_val, linear_function(xmin));
 
     const auto x0 = tab.get_x_coord(0);
     const auto x1 = tab.get_x_coord(xsize/2);
@@ -286,7 +291,7 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_1d_table_equality)
     auto tab_1d_2 = make_1d_table();
     BOOST_CHECK_EQUAL(tab_1d == tab_1d_2, true);
 
-    tab_1d.m_x_min = 23.;
+    tab_1d.set_val(1, 3.14);
     BOOST_CHECK_EQUAL(tab_1d == tab_1d_2, false);
 }
 
@@ -297,13 +302,13 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_1d_table_serialization)
     auto raw_data = tab_1d.serialize();
     auto tab_1d_2 = equispaced_1d_table<double, std::vector<double>>{raw_data};
 
-    BOOST_CHECK_EQUAL(tab_1d.m_x_min, tab_1d_2.m_x_min);
-    BOOST_CHECK_EQUAL(tab_1d.m_x_max, tab_1d_2.m_x_max);
-    BOOST_CHECK_EQUAL(tab_1d.m_x_size, tab_1d_2.m_x_size);
-    BOOST_CHECK_EQUAL(tab_1d.m_how_many_x, tab_1d_2.m_how_many_x);
+    BOOST_CHECK_EQUAL(tab_1d.get_x_min(), tab_1d_2.get_x_min());
+    BOOST_CHECK_EQUAL(tab_1d.get_x_max(), tab_1d_2.get_x_max());
+    BOOST_CHECK_EQUAL(tab_1d.get_x_size(), tab_1d_2.get_x_size());
+    BOOST_CHECK_EQUAL(tab_1d.get_how_many_x(), tab_1d_2.get_how_many_x());
 
-    for(int i = 0; i < tab_1d.m_how_many_x; ++i){
-        BOOST_CHECK_EQUAL(tab_1d.m_values[i], tab_1d_2.m_values[i]);
+    for(int i = 0; i < tab_1d.get_how_many_x(); ++i){
+        BOOST_CHECK_EQUAL(tab_1d.get_val(i), tab_1d_2.get_val(i));
     }
 }
 

@@ -51,7 +51,7 @@ namespace quantum_sync{
         public:
 
             typedef const dndt_lookup_table<
-                RealType, containers::picsar_span<RealType>,
+                RealType, containers::picsar_span<const RealType>,
                 TableOutPolicy> view_type;
 
             dndt_lookup_table(dndt_lookup_table_params<RealType> params):
@@ -117,9 +117,9 @@ namespace quantum_sync{
             {
                 if(!m_init_flag)
                     throw "Can't generate a view of an uninitialized table";
-                const auto span = containers::picsar_span<RealType>{
+                const auto span = containers::picsar_span<const RealType>{
                     static_cast<size_t>(m_params.chi_part_how_many),
-                    m_table.m_values.data()
+                    m_table.get_values_reference().data()
                 };
                 const view_type view{m_params, span};
                 return view;

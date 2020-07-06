@@ -1,26 +1,29 @@
-#ifndef PICSAR_EQUISPACED_TABLES
-#define PICSAR_EQUISPACED_TABLES
+#ifndef PICSAR_TABLES
+#define PICSAR_TABLES
+
+//Should be included by all the src files of the library
+#include "../qed_commons.h"
+
+// Interpolation is used
+#include "../utils/picsar_algo.hpp"
+// Serialization is used to export tables to byte vectors
+// and to read tables from byte arrays
+#include "../utils/serialization.hpp"
+// Some mathematical constants are used
+#include "../math/math_constants.h"
 
 #include <vector>
 #include <array>
 #include <cmath>
 #include <algorithm>
 
-//Should be included by all the src files of the library
-#include "../qed_commons.h"
-
-#include "../utils/picsar_algo.hpp"
-
-#include "../utils/serialization.hpp"
-
-#include "../math/math_constants.h"
-
 namespace picsar{
 namespace multi_physics{
 namespace containers{
 
     /**
-    * This class implements a generic equispace 1D lookup table
+    * This class implements a generic equispaced 1D lookup table
+    * for a function f(x)
     *
     * @tparam RealType the floating point type to be used (e.g. double or float)
     * @tparam VectorType the vector type to be used (e.g. std::vector<double>)
@@ -31,7 +34,7 @@ namespace containers{
     public:
 
         /**
-        * Constructor
+        * Constructor (not usable on GPUs)
         *
         * @param[in] x_min the leftmost extreme of the x coordinates
         * @param[in] x_max the rightmost extreme of the x coordinates
@@ -45,17 +48,25 @@ namespace containers{
                 m_x_size = x_max - x_min;
             };
 
+        /**
+        * Empty constructor
+        */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         equispaced_1d_table(){};
 
+        /**
+        * Constructor from byte array (not usable on GPUs)
+        *
+        * @param[in] raw_data a const reference to a byte vector
+        */
         equispaced_1d_table(const std::vector<char>& raw_data)
         {
             using namespace picsar::multi_physics::utils;
 
             constexpr size_t min_size =
-                sizeof(char)+//magic_number
-                sizeof(m_x_min)+sizeof(m_x_max)+//xmin, xmax
-                sizeof(m_how_many_x);// m_how_many_x
+                sizeof(char)+//double or float
+                sizeof(m_x_min)+sizeof(m_x_max)+
+                sizeof(m_how_many_x);
 
             if (raw_data.size() < min_size)
                 throw "Binary data is too small to be a 1D table.";
@@ -82,30 +93,125 @@ namespace containers{
             std::copy(vals.begin(), vals.end(), m_values.begin());
         };
 
+        /**
+        * Operator ==
+        *
+        * @param[in] rhs a const reference to a 1D table of the same type
+        * @return true if rhs and *this are equal. false otherwise
+        */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         bool operator== (
-            const equispaced_1d_table<RealType, VectorType> &b) const
+            const equispaced_1d_table<RealType, VectorType> &rhs) const
         {
             return
-                (m_x_min == b.m_x_min) &&
-                (m_x_max == b.m_x_max) &&
-                (m_x_size == b.m_x_size) &&
-                (m_how_many_x == b.m_how_many_x) &&
-                (m_values == b.m_values);
+                (m_x_min == rhs.m_x_min) &&
+                (m_x_max == rhs.m_x_max) &&
+                (m_x_size == rhs.m_x_size) &&
+                (m_how_many_x == rhs.m_how_many_x) &&
+                (m_values == rhs.m_values);
         }
 
+        /**
+        * Returns the i-th coodinate along x axis
+        *
+        * @param[in] i the index of the desired coordinate
+        * @return the i-th coordinate
+        */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         RealType get_x_coord(const int i) const noexcept
         {
                 return i*m_x_size/(m_how_many_x-1) + m_x_min;
         }
 
+        /**
+        * Returns the i-th value
+        *
+        * @param[in] i the index of the desired value
+        * @return the i-th value
+        */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         RealType get_val(const size_t i) const noexcept
         {
                 return m_values[i];
         }
 
+        /**
+        * Returns the number of points along x
+        *
+        * @return the number of points along x
+        */
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        int get_how_many_x() const noexcept
+        {
+            return m_how_many_x;
+        }
+
+        /**
+        * Returns the minimum x coordinate
+        *
+        * @return the minimum x coordinate
+        */
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        RealType get_x_min() const noexcept
+        {
+            return m_x_min;
+        }
+
+        /**
+        * Returns the maximum x coordinate
+        *
+        * @return the maximum x coordinate
+        */
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        RealType get_x_max() const noexcept
+        {
+            return m_x_max;
+        }
+
+        /**
+        * Returns the size along x
+        *
+        * @return the size along x
+        */
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        RealType get_x_size() const noexcept
+        {
+            return m_x_size;
+        }
+
+        /**
+        * Returns an std::vector containing all the coordinates (not usable on
+        * GPUs).
+        *
+        * @return all the coordinates
+        */
+        std::vector<RealType> get_all_coordinates()  const noexcept
+        {
+            auto all_coords = std::vector<RealType>(m_how_many_x);
+            for (int i = 0; i < m_how_many_x; ++i){
+                all_coords[i] = get_x_coord(i);
+            }
+            return all_coords;
+        }
+
+        /**
+        * Returns a const refence to the underlying Vector holding value data
+        *
+        * @return a const refence to the underlying Vector holding value data
+        */
+        const VectorType& get_values_reference() const noexcept
+        {
+            return m_values;
+        }
+
+        /**
+        * Perfoms a linear interpolation at a given position
+        * Warning: where_x must be within [x_min, x_max]. No safety check
+        * is performed!
+        *
+        * @param[in] where_x where to perform the interpolation
+        * @return the interpolated value
+        */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         RealType interp(const RealType where_x) const noexcept
         {
@@ -123,38 +229,24 @@ namespace containers{
             return utils::linear_interp(xleft, xright, yleft, yright, where_x);
         }
 
+        /**
+        * Overwrites the i-th value (not usable on GPUs)
+        * Warning: no safety check on i is performed!
+        *
+        * @param[in] i index of the value to be overwritten
+        * @param[in] what value to be written at position i
+        */
         void set_val(int i, RealType what)
         {
             m_values[i] = what;
         }
 
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        int get_how_many_x() const noexcept
-        {
-            return m_how_many_x;
-        }
-
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        RealType get_x_min() const noexcept
-        {
-            return m_x_min;
-        }
-
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        RealType get_x_max() const noexcept
-        {
-            return m_x_max;
-        }
-
-        std::vector<RealType> get_all_coordinates()  const noexcept
-        {
-            auto all_coords = std::vector<RealType>(m_how_many_x);
-            for (int i = 0; i < m_how_many_x; ++i){
-                all_coords[i] = get_x_coord(i);
-            }
-            return all_coords;
-        }
-
+        /**
+        * Returns a byte vector containing all the raw data of the
+        * table (not usable on GPUs)
+        *
+        * @return a byte vector containing table data
+        */
         std::vector<char> serialize() const
         {
             auto raw_data = std::vector<char>{};
@@ -170,12 +262,15 @@ namespace containers{
             return raw_data;
         }
 
-        RealType m_x_min = 0.0;
-        RealType m_x_max = 0.0;
-        RealType m_x_size = 0.0;
-        int m_how_many_x = 0;
-        VectorType m_values;
+    protected:
+        RealType m_x_min = 0.0; /* minimum x coordinate */
+        RealType m_x_max = 0.0; /* maximum x coordinate */
+        RealType m_x_size = 0.0; /* size along x */
+        int m_how_many_x = 0; /* how many values are stored in the table */
+        VectorType m_values; /* values f(x) */
     };
+
+//______________________________________________________________________________
 
     template <typename RealType, class VectorType>
     class equispaced_2d_table
