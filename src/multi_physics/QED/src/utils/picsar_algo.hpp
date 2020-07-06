@@ -64,6 +64,21 @@ picsar_upper_bound
 #endif
 }
 
+/**
+* This function returns the value of the
+* the first element in a sequence which compares greater than val.
+* If no element in the range compares greater than val, the function returns last.
+* In order to be completely general, the sequence is given by a functor
+* f(size_t i) --> T res, which should respect the property "res2 >= res1 if i2 >= i1".
+*
+* @tparam the type of 'val'
+* @tparam Functor the type of Functor
+* @param[in] first the first index (a size_t)
+* @param[in] last the last index (a size_t)
+* @param[in] val the value to use to find the upper bound
+* @param[in] functor a functor f(size_t i) --> T res, respecting "res2 >= res1 if i2 >= i1"
+* @return a ForwardIt to the upper bound
+*/
 template<typename T, typename Functor>
 PXRMP_INTERNAL_GPU_DECORATOR
 PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
@@ -92,6 +107,13 @@ picsar_upper_bound_functor
  *
  * Performs a linear interpolation at x given the 2 points
  * (x0, f0) and (x1, f1)
+ *
+ * @param[in] x0
+ * @param[in] x1
+ * @param[in] f0
+ * @param[in] f1
+ * @param[in] x
+ * @return the interpolation result
  */
 template<typename RealType>
 PXRMP_INTERNAL_GPU_DECORATOR
@@ -107,6 +129,19 @@ RealType linear_interp(
  *
  * Performs a bilinear interpolation at (x,y) given the 4 points
  * (x0, y0, f00), (x0, y1, f01), (x1, y0, f10), (x1, y1, f11).
+ *
+ * @param[in] x0
+ * @param[in] x1
+ * @param[in] y0
+ * @param[in] y1
+ * @param[in] f00
+ * @param[in] f01
+ * @param[in] f10
+ * @param[in] f11
+ * @param[in] f1
+ * @param[in] x
+ * @param[in] y
+ * @return the interpolation result
  */
 template<typename RealType>
 PXRMP_INTERNAL_GPU_DECORATOR
