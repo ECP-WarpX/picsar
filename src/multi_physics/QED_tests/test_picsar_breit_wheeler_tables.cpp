@@ -51,8 +51,7 @@ const double chi_max = 1000;
 const int how_many = 256;
 const int how_many_frac = 256;
 
-template <typename RealType, typename VectorType,
-    dndt_table_out_policy TablePolicy>
+template <typename RealType, typename VectorType>
 auto get_table()
 {
     const auto params =
@@ -60,8 +59,7 @@ auto get_table()
             static_cast<RealType>(chi_min),
             static_cast<RealType>(chi_max), how_many};
 
-    return dndt_lookup_table<
-        RealType, VectorType, TablePolicy>{params};
+    return dndt_lookup_table<RealType, VectorType>{params};
 }
 
 template <typename RealType, typename VectorType>
@@ -79,11 +77,10 @@ auto get_pair_table()
 
 // ------------- Tests --------------
 
-template <typename RealType, typename VectorType,
-    dndt_table_out_policy TablePolicy>
+template <typename RealType, typename VectorType>
 void check_dndt_table()
 {
-    auto table = get_table<RealType, VectorType, TablePolicy>();
+    auto table = get_table<RealType, VectorType>();
     BOOST_CHECK_EQUAL(table.is_init(),false);
 
     VectorType coords = table.get_all_coordinates();
@@ -111,7 +108,7 @@ void check_dndt_table()
     BOOST_CHECK_EQUAL(result,true);
     BOOST_CHECK_EQUAL(table.is_init(),true);
 
-    auto table_2 = get_table<RealType, VectorType, TablePolicy>();
+    auto table_2 = get_table<RealType, VectorType>();
     BOOST_CHECK_EQUAL(table_2 == table, false);
     BOOST_CHECK_EQUAL(table == table, true);
     BOOST_CHECK_EQUAL(table_2 == table_2, true);
@@ -124,8 +121,6 @@ void check_dndt_table()
 
     const RealType ye_app_o0 = dndt_approx_left<RealType>(xo0);
     const RealType ye_app_o1 = dndt_approx_right<RealType>(xo1);
-    const RealType ye_ext_o0 = alpha*chi_min;
-    const RealType ye_ext_o1 = alpha*chi_max;
     const RealType ye0 = alpha*x0;
     const RealType ye1 = alpha*x1;
     const RealType ye2 = alpha*x2;
@@ -135,9 +130,6 @@ void check_dndt_table()
 
     const auto exp_app = std::array<RealType, 5>
         {ye_app_o0, ye0, ye1, ye2, ye_app_o1};
-
-    const auto exp_ext = std::array<RealType, 5>
-        {ye_ext_o0, ye0, ye1, ye2, ye_ext_o1};
 
     const auto is_out = std::array<bool, 5>
         {true, false, false, false, true};
@@ -149,8 +141,7 @@ void check_dndt_table()
         BOOST_CHECK_EQUAL(flag_out, is_out[i]);
         BOOST_CHECK_EQUAL(res, res2);
 
-        const RealType expect =
-             (TablePolicy == dndt_table_out_policy::approx)?exp_app[i]:exp_ext[i];
+        const RealType expect = exp_app[i];
 
         if(i != 0)
             BOOST_CHECK_SMALL((res-expect)/expect, tolerance<RealType>());
@@ -168,14 +159,8 @@ void check_dndt_table()
 // ***Test Breit Wheeler dndt table
 BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_dndt_table)
 {
-    check_dndt_table<double, std::vector<double>,
-        dndt_table_out_policy::approx>();
-    check_dndt_table<float, std::vector<float>,
-        dndt_table_out_policy::approx>();
-    check_dndt_table<double, std::vector<double>,
-        dndt_table_out_policy::extrema>();
-    check_dndt_table<float, std::vector<float>,
-        dndt_table_out_policy::extrema>();
+    check_dndt_table<double, std::vector<double>>();
+    check_dndt_table<float, std::vector<float>>();
 }
 
 template <typename RealType>
@@ -209,8 +194,7 @@ BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_dndt_table_out_approx)
     check_dndt_table_out_approx<float>();
 }
 
-template <typename RealType, typename VectorType,
-    dndt_table_out_policy TablePolicy>
+template <typename RealType, typename VectorType>
 void check_dndt_table_serialization()
 {
     const auto params =
@@ -219,11 +203,11 @@ void check_dndt_table_serialization()
             static_cast<RealType>(10.0), 3};
 
     auto table = dndt_lookup_table<
-        RealType, VectorType, TablePolicy>{params, {1.,2.,3.}};
+        RealType, VectorType>{params, {1.,2.,3.}};
 
     auto raw_data = table.serialize();
     auto new_table = dndt_lookup_table<
-        RealType, VectorType, TablePolicy>{raw_data};
+        RealType, VectorType>{raw_data};
 
     BOOST_CHECK_EQUAL(new_table.is_init(), true);
     BOOST_CHECK_EQUAL(new_table == table, true);
@@ -232,10 +216,8 @@ void check_dndt_table_serialization()
 // ***Test Breit Wheeler dndt table serialization
 BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_dndt_table_serialization)
 {
-    check_dndt_table_serialization<double, std::vector<double>,
-        dndt_table_out_policy::approx>();
-    check_dndt_table_serialization<float, std::vector<float>,
-        dndt_table_out_policy::extrema>();
+    check_dndt_table_serialization<double, std::vector<double>>();
+    check_dndt_table_serialization<float, std::vector<float>>();
 }
 
 template <typename RealType, typename VectorType>

@@ -27,6 +27,7 @@
 #include "../../math/cmath_overloads.hpp"
 
 #include <algorithm>
+#include <cmath>
 
 namespace picsar{
 namespace multi_physics{
