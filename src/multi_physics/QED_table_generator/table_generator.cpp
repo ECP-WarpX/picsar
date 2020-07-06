@@ -10,32 +10,11 @@
 #include "../QED/src/physics/quantum_sync/quantum_sync_engine_tabulated_functions.hpp"
 #include "../QED/src/physics/breit_wheeler/breit_wheeler_engine_tables.hpp"
 #include "../QED/src/physics/breit_wheeler/breit_wheeler_engine_tabulated_functions.hpp"
+#include "../QED/src/utils/progress_bar.hpp"
 
 namespace px_bw = picsar::multi_physics::phys::breit_wheeler;
 namespace px_qs = picsar::multi_physics::phys::quantum_sync;
-
-void draw_progress(
-    const int i, const int how_many,
-    const std::string text, const int up_freq = 1)
-{
-    if (i % up_freq != 0 && i != how_many)
-        return;
-
-    const auto bar_width = 50;
-    const auto progress = (i*1.0/how_many);
-    const auto pos = static_cast<int>(bar_width*progress);
-    std::cout << text << " [";
-    for (int j = 0; j < bar_width; ++j) {
-        if (j < pos) std::cout << "=";
-        else if (j == pos) std::cout << ">";
-        else std::cout << " ";
-    }
-    std::cout << "] " << static_cast<int>(progress * 100.0);
-    if(i < how_many) std::cout <<" %\r";
-    else std::cout <<" %\n";
-    std::cout.flush();
-}
-
+namespace px_ut = picsar::multi_physics::utils;
 
 template<typename RealType>
 void generate_breit_wheeler_dndt_table(const std::string& file_name)
@@ -43,9 +22,7 @@ void generate_breit_wheeler_dndt_table(const std::string& file_name)
     px_bw::dndt_lookup_table_params<RealType> bw_params{1e-4,1e4,256};
 
     auto table = px_bw::dndt_lookup_table<
-        RealType, std::vector<RealType>,
-        px_bw::dndt_table_out_policy::approx>{
-            bw_params};
+        RealType, std::vector<RealType>{bw_params};
 
     const auto all_coords = table.get_all_coordinates();
     auto all_vals = std::vector<RealType>(all_coords.size());
@@ -58,10 +35,11 @@ void generate_breit_wheeler_dndt_table(const std::string& file_name)
         #pragma omp critical
         {
             count++;
-            draw_progress(count, all_vals.size(), "BW dndt:", 10);
+            px_ut::draw_progress(count, all_vals.size(), "BW dndt:", 10);
         }
     }
     auto t_end =  std::chrono::system_clock::now();
+    px_ut::draw_progress(count, count, "BW dndt:", 10, true);
     std::cout << "Done in " <<
         std::chrono::duration_cast<std::chrono::milliseconds>(
             t_end - t_start).count()/1000.0 << " seconds! \n" << std::endl;

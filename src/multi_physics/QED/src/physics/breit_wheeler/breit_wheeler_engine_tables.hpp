@@ -206,6 +206,8 @@ namespace breit_wheeler{
                 m_init_flag = true;
             };
 
+            void generate();
+
             dndt_lookup_table(std::vector<char>& raw_data)
             {
                 using namespace utils;
