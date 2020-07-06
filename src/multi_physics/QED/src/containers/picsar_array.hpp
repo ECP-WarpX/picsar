@@ -146,7 +146,7 @@ namespace containers{
         }
 
         private:
-            T m_data[N];
+            T m_data[N]; /* The underlying raw array */
 
         };
 #else

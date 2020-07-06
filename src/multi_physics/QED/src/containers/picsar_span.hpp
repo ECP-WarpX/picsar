@@ -10,6 +10,8 @@ namespace containers{
 
     /**
     * This class implements a non-owning array
+    *
+    * @tparam T element type
     */
     template <typename T>
     class picsar_span
@@ -17,13 +19,16 @@ namespace containers{
 
     public:
         /**
-        * Empty constructor
+        * Empty constructor.
         */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         picsar_span(){}
 
         /**
-        * Constructor requiring the size of the array and the pointer to raw data
+        * Constructor requiring the size of the array and the pointer to raw data.
+        *
+        * @param[in] t_size size of the array
+        * @param[in] ptr_data pointer to the first element of the array
         */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         picsar_span(size_t t_size, T* ptr_data):
@@ -31,7 +36,10 @@ namespace containers{
         {}
 
        /**
-        * Returs a reference to the i-th element
+        * Returns a reference to the i-th element of the array
+        *
+        * @param[in] i index of the desired element
+        * @return a reference to the i-th element
         */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         T& operator [] (int i) noexcept
@@ -41,6 +49,9 @@ namespace containers{
 
         /**
         * Returs a const reference to the i-th element
+        *
+        * @param[in] i index of the desired element
+        * @return a const reference to the i-th element
         */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         const T& operator [] (int i) const noexcept
@@ -50,6 +61,8 @@ namespace containers{
 
        /**
         * Returs a const pointer to the underlying raw data array
+        *
+        * @return a const pointer to the underlying raw data array
         */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         constexpr const T* data() const noexcept
@@ -59,6 +72,8 @@ namespace containers{
 
        /**
         * Returs the size of the array
+        *
+        * @return the size of the array
         */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         constexpr size_t size() const noexcept
@@ -68,6 +83,8 @@ namespace containers{
 
        /**
         * Returs a const pointer to the beginning of the array
+        *
+        * @return a const pointer to the first element of the array
         */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         constexpr const T* begin() const noexcept
@@ -77,6 +94,8 @@ namespace containers{
 
        /**
         * Returs a const pointer to the end of the array (i.e. the element after the last)
+        *
+        * @return a const pointer to the end of the array
         */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         constexpr const T* end() const noexcept
@@ -86,6 +105,8 @@ namespace containers{
 
        /**
         * Returs a pointer to the beginning of the array
+        *
+        * @return a pointer to the first element of the array
         */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         constexpr T* begin() noexcept
@@ -95,6 +116,8 @@ namespace containers{
 
        /**
         * Returs a pointer to the end of the array (i.e. the element after the last)
+        *
+        * @return a pointer to the end of the array
         */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         constexpr T* end() noexcept
@@ -105,9 +128,8 @@ namespace containers{
         typedef T value_type;
 
         protected:
-            size_t m_size = 0;
-            T* m_ptr_data = nullptr;
-
+            size_t m_size = 0;  /* Array size */
+            T* m_ptr_data = nullptr; /* Raw pointer to the array data */
         };
 }
 }
