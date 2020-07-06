@@ -1,15 +1,17 @@
 #ifndef PICSAR_MULTIPHYSICS_PHYS_CONSTANTS
 #define PICSAR_MULTIPHYSICS_PHYS_CONSTANTS
 
+//Should be included by all the src files of the library
 #include "../qed_commons.h"
+
+//Uses some mathematical constants
 #include "../math/math_constants.h"
 
 namespace picsar{
 namespace multi_physics{
 namespace phys{
 
-    // Physical constants in SI units
-
+    // Some useful physical constants in SI units
     template<typename RealType = double>
     constexpr auto electron_mass = RealType(9.1093837015e-31);
 
@@ -51,7 +53,6 @@ namespace phys{
 
     //Intermediate calculations of the following quantities are performed with
     //double precision to avoid numerical issues
-
     template<typename RealType = double>
     constexpr auto classical_electron_radius = RealType(
         elementary_charge<>*elementary_charge<> /
