@@ -1,5 +1,5 @@
-#ifndef PICSAR_MULTIPHYSICS_VIEW
-#define PICSAR_MULTIPHYSICS_VIEW
+#ifndef PICSAR_MULTIPHYSICS_SPAN
+#define PICSAR_MULTIPHYSICS_SPAN
 
 //Should be included by all the src files of the library
 #include "../qed_commons.h"
@@ -135,4 +135,4 @@ namespace containers{
 }
 }
 
-#endif //PICSAR_MULTIPHYSICS_VIEW
+#endif //PICSAR_MULTIPHYSICS_SPAN
