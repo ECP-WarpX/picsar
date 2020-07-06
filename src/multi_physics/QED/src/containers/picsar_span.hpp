@@ -1,13 +1,8 @@
 #ifndef PICSAR_MULTIPHYSICS_VIEW
 #define PICSAR_MULTIPHYSICS_VIEW
 
-#include <cstddef>
-#include <type_traits>
-
 //Should be included by all the src files of the library
 #include "../qed_commons.h"
-
-#include "picsar_array.hpp"
 
 namespace picsar{
 namespace multi_physics{

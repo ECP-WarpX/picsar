@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "picsar_span.hpp"
+#include "picsar_array.hpp"
 
 using namespace picsar::multi_physics::containers;
 
