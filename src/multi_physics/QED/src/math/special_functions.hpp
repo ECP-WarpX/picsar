@@ -1,13 +1,12 @@
 #ifndef PICSAR_MULTIPHYSICS_SPECIAL_FUNCTIONS
 #define PICSAR_MULTIPHYSICS_SPECIAL_FUNCTIONS
 
-//This .hpp file is an extremely thin wrapper around special functions
-//(Bessel functions for now) defined either in the STL (if C++17 is available)
-//or in Boost library as a fallback.
-
 //Should be included by all the src files of the library
 #include "../qed_commons.h"
 
+//This .hpp file is an extremely thin wrapper around special functions
+//(Bessel functions for now) defined either in the STL (if C++17 is available)
+//or in Boost library as a fallback.
 #ifdef PXRMP_INTERNAL_SPECFUNC_WITH_CXX17
     #include <cmath>
 #elif defined(PXRMP_INTERNAL_SPECFUNC_WITH_BOOST)

@@ -1,17 +1,17 @@
 #ifndef PICSAR_MULTIPHYSICS_QUADRATURE
 #define PICSAR_MULTIPHYSICS_QUADRATURE
 
-#include <cmath>
-#include <functional>
-#include <limits>
+//Should be included by all the src files of the library
+#include "../qed_commons.h"
 
 #include <boost/math/quadrature/trapezoidal.hpp>
 #include <boost/math/quadrature/tanh_sinh.hpp>
 #include <boost/math/quadrature/exp_sinh.hpp>
 #include <boost/math/quadrature/gauss_kronrod.hpp>
 
-//Should be included by all the src files of the library
-#include "../qed_commons.h"
+#include <cmath>
+#include <functional>
+#include <limits>
 
 namespace picsar{
 namespace multi_physics{
@@ -50,34 +50,42 @@ namespace math{
     constexpr RealType generic_quad_a_b(
         const std::function<RealType(RealType)>& f, RealType a, RealType b)
     {
-        if(QuadAlgo == quadrature_algorithm::trapezoidal){
+        PXRMP_INTERNAL_CONSTEXPR_IF (
+            QuadAlgo == quadrature_algorithm::trapezoidal){
             return boost::math::quadrature::trapezoidal(f, a, b);
         }
-        else if(QuadAlgo == quadrature_algorithm::tanh_sinh){
+        else PXRMP_INTERNAL_CONSTEXPR_IF (
+            QuadAlgo == quadrature_algorithm::tanh_sinh){
             boost::math::quadrature::tanh_sinh<RealType> integrator;
             return integrator.integrate(f, a, b);
         }
-        else if(QuadAlgo == quadrature_algorithm::exp_sinh){
+        else PXRMP_INTERNAL_CONSTEXPR_IF (
+            QuadAlgo == quadrature_algorithm::exp_sinh){
             boost::math::quadrature::exp_sinh<RealType> integrator;
             return integrator.integrate(f, a, b);
         }
-        else if(QuadAlgo == quadrature_algorithm::gauss_kronrod15){
+        else PXRMP_INTERNAL_CONSTEXPR_IF (
+            QuadAlgo == quadrature_algorithm::gauss_kronrod15){
             return boost::math::quadrature::gauss_kronrod<RealType, 15>
                 ::integrate(f, a, b);
         }
-        else if(QuadAlgo == quadrature_algorithm::gauss_kronrod31){
+        else PXRMP_INTERNAL_CONSTEXPR_IF (
+            QuadAlgo == quadrature_algorithm::gauss_kronrod31){
             return boost::math::quadrature::gauss_kronrod<RealType, 31>
                 ::integrate(f, a, b);
         }
-        else if(QuadAlgo == quadrature_algorithm::gauss_kronrod41){
+        else PXRMP_INTERNAL_CONSTEXPR_IF (
+            QuadAlgo == quadrature_algorithm::gauss_kronrod41){
             return boost::math::quadrature::gauss_kronrod<RealType, 41>
                 ::integrate(f, a, b);
         }
-        else if(QuadAlgo == quadrature_algorithm::gauss_kronrod51){
+        else PXRMP_INTERNAL_CONSTEXPR_IF (
+            QuadAlgo == quadrature_algorithm::gauss_kronrod51){
             return boost::math::quadrature::gauss_kronrod<RealType, 51>
                 ::integrate(f, a, b);
         }
-        else if(QuadAlgo == quadrature_algorithm::gauss_kronrod61){
+        else PXRMP_INTERNAL_CONSTEXPR_IF (
+            QuadAlgo == quadrature_algorithm::gauss_kronrod61){
             return boost::math::quadrature::gauss_kronrod<RealType, 61>
                 ::integrate(f, a, b);
         }
