@@ -69,7 +69,7 @@ namespace math{
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     float m_cbrt(const float x) noexcept
     {
-        return cbrt(x);
+        return cbrtf(x);
     }
 
     //________________________________________________________
