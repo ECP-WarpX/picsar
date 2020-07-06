@@ -543,40 +543,13 @@ namespace containers{
             return m_values;
         }
 
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        RealType interp_first_coord(RealType where_x, int j) const noexcept
-        {
-            auto idx_left = static_cast<int>(
-                floor((m_how_many_x-1)*(where_x-m_x_min)/m_x_size));
-            if (idx_left == (m_how_many_x-1))
-                idx_left = m_how_many_x-2;
-            const auto idx_right = idx_left + 1;
-
-            const auto xleft = (idx_left*m_x_size)/(m_how_many_x-1) + m_x_min;
-            const auto xright = (idx_right*m_x_size)/(m_how_many_x-1) + m_x_min;
-            const auto left_val = m_values[idx(idx_left,j)];
-            const auto right_val = m_values[idx(idx_right,j)];
-
-            return utils::linear_interp(xleft, xright, left_val, right_val, where_x);
-        }
-
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        RealType interp_second_coord(int i, RealType where_y) const noexcept
-        {
-            auto idx_left = static_cast<int>(
-                floor((m_how_many_y-1)*(where_y-m_y_min)/m_y_size));
-            if (idx_left == (m_how_many_y-1))
-                idx_left = m_how_many_y-2;
-            const auto idx_right = idx_left + 1;
-
-            const auto left_val = m_values[idx(i, idx_left)];
-            const auto right_val = m_values[idx(i, idx_right)];
-            const auto yleft = (idx_left*m_y_size)/(m_how_many_y-1) + m_y_min;
-            const auto yright = (idx_right*m_y_size)/(m_how_many_y-1) + m_y_min;
-
-            return utils::linear_interp(yleft, yright, left_val, right_val, where_y);
-        }
-
+        /**
+        * Performs an interpolation a bilinear interpolation at given position.
+        *
+        * @param[in] where_x the position along x
+        * @param[in] where_y the position along y
+        * @return the result of the interpolation
+        */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         RealType interp(const RealType where_x, const RealType where_y) const noexcept
         {
@@ -606,6 +579,66 @@ namespace containers{
                 where_x, where_y);
         }
 
+        /**
+        * Performs an interpolation a linear interpolation at given position,
+        * in the special case in which the second coordinate is exactly a grid
+        * point along y
+        *
+        * @param[in] where_x the position along x
+        * @param[in] j the index of the position along y
+        * @return the result of the interpolation
+        */
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        RealType interp_first_coord(RealType where_x, int j) const noexcept
+        {
+            auto idx_left = static_cast<int>(
+                floor((m_how_many_x-1)*(where_x-m_x_min)/m_x_size));
+            if (idx_left == (m_how_many_x-1))
+                idx_left = m_how_many_x-2;
+            const auto idx_right = idx_left + 1;
+
+            const auto xleft = (idx_left*m_x_size)/(m_how_many_x-1) + m_x_min;
+            const auto xright = (idx_right*m_x_size)/(m_how_many_x-1) + m_x_min;
+            const auto left_val = m_values[idx(idx_left,j)];
+            const auto right_val = m_values[idx(idx_right,j)];
+
+            return utils::linear_interp(xleft, xright, left_val, right_val, where_x);
+        }
+
+        /**
+        * Performs an interpolation a linear interpolation at given position,
+        * in the special case in which the first coordinate is exactly a grid
+        * point along x
+        *
+        * @param[in] i the position along x
+        * @param[in] where_y the position along y
+        * @return the result of the interpolation
+        */
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        RealType interp_second_coord(int i, RealType where_y) const noexcept
+        {
+            auto idx_left = static_cast<int>(
+                floor((m_how_many_y-1)*(where_y-m_y_min)/m_y_size));
+            if (idx_left == (m_how_many_y-1))
+                idx_left = m_how_many_y-2;
+            const auto idx_right = idx_left + 1;
+
+            const auto left_val = m_values[idx(i, idx_left)];
+            const auto right_val = m_values[idx(i, idx_right)];
+            const auto yleft = (idx_left*m_y_size)/(m_how_many_y-1) + m_y_min;
+            const auto yright = (idx_right*m_y_size)/(m_how_many_y-1) + m_y_min;
+
+            return utils::linear_interp(yleft, yright, left_val, right_val, where_y);
+        }
+
+        /**
+        * Overwrites the (i,j) value (not usable on GPUs)
+        * Warning: no safety check on i and j is performed!
+        *
+        * @param[in] i index of the value to be overwritten
+        * @param[in] j index of the value to be overwritten
+        * @param[in] what value to be written at position (i,j)
+        */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         void set_val(const int i, const int j, const RealType what)
         {
@@ -618,6 +651,12 @@ namespace containers{
             m_values[i] = what;
         }
 
+        /**
+        * Returns a byte vector containing all the raw data of the
+        * table (not usable on GPUs)
+        *
+        * @return a byte vector containing table data
+        */
         std::vector<char> serialize() const
         {
             auto raw_data = std::vector<char>{};
@@ -636,21 +675,32 @@ namespace containers{
             return raw_data;
         }
 
-            RealType m_x_min;
-            RealType m_x_max;
-            RealType m_y_min;
-            RealType m_y_max;
-            RealType m_x_size;
-            RealType m_y_size;
-            int m_how_many_x;
-            int m_how_many_y;
-            VectorType m_values;
+    protected:
 
-            PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-            int idx(int i, int j) const noexcept
-            {
-                return i*m_how_many_y + j;
-            }
+            RealType m_x_min; /* minimum x coordinate */
+            RealType m_x_max; /* maximum x coordinate */
+            RealType m_y_min; /* minimum y coordinate */
+            RealType m_y_max; /* maximum y coordinate */
+            RealType m_x_size; /* size along x */
+            RealType m_y_size; /* size along y */
+            int m_how_many_x; /* how many grid points along x */
+            int m_how_many_y; /* how many grid points along y */
+            VectorType m_values; /* values f(x,y) */
+
+        /**
+        * Function values are stored internally in a 1D vector.
+        * This function calculates the index along this vector
+        * from the coordinate indices i,j. Row major order is used.
+        *
+        * @param[in] i index along x
+        * @param[in] j index along y
+        * @return index along internal 1D vector
+        */
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        int idx(int i, int j) const noexcept
+        {
+            return i*m_how_many_y + j;
+        }
     };
 }
 }

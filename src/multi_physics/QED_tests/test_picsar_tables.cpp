@@ -361,7 +361,7 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_equality)
     auto tab_2d_2 = make_2d_table();
     BOOST_CHECK_EQUAL(tab_2d == tab_2d_2, true);
 
-    tab_2d.m_x_min = 23.;
+    tab_2d.set_val(0, 10.0);
     BOOST_CHECK_EQUAL(tab_2d == tab_2d_2, false);
 }
 
@@ -372,16 +372,17 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_serialization)
     auto raw_data = tab_2d.serialize();
     auto tab_2d_2 = equispaced_2d_table<double, std::vector<double>>{raw_data};
 
-    BOOST_CHECK_EQUAL(tab_2d.m_x_min, tab_2d_2.m_x_min);
-    BOOST_CHECK_EQUAL(tab_2d.m_x_max, tab_2d_2.m_x_max);
-    BOOST_CHECK_EQUAL(tab_2d.m_y_min, tab_2d_2.m_y_min);
-    BOOST_CHECK_EQUAL(tab_2d.m_y_max, tab_2d_2.m_y_max);
-    BOOST_CHECK_EQUAL(tab_2d.m_x_size, tab_2d_2.m_x_size);
-    BOOST_CHECK_EQUAL(tab_2d.m_y_size, tab_2d_2.m_y_size);
-    BOOST_CHECK_EQUAL(tab_2d.m_how_many_x, tab_2d_2.m_how_many_x);
-    BOOST_CHECK_EQUAL(tab_2d.m_how_many_y, tab_2d_2.m_how_many_y);
+    BOOST_CHECK_EQUAL(tab_2d.get_x_min(), tab_2d_2.get_x_min());
+    BOOST_CHECK_EQUAL(tab_2d.get_x_max(), tab_2d_2.get_x_max());
+    BOOST_CHECK_EQUAL(tab_2d.get_y_min(), tab_2d_2.get_y_min());
+    BOOST_CHECK_EQUAL(tab_2d.get_y_max(), tab_2d_2.get_y_max());
+    BOOST_CHECK_EQUAL(tab_2d.get_x_size(), tab_2d_2.get_x_size());
+    BOOST_CHECK_EQUAL(tab_2d.get_y_size(), tab_2d_2.get_y_size());
+    BOOST_CHECK_EQUAL(tab_2d.get_how_many_x(), tab_2d_2.get_how_many_x());
+    BOOST_CHECK_EQUAL(tab_2d.get_how_many_y(), tab_2d_2.get_how_many_y());
 
-    for(int i = 0; i < tab_2d.m_how_many_x*tab_2d.m_how_many_y; ++i){
-        BOOST_CHECK_EQUAL(tab_2d.m_values[i], tab_2d_2.m_values[i]);
+    for(int i = 0; i < tab_2d.get_how_many_x()*tab_2d.get_how_many_x(); ++i){
+        BOOST_CHECK_EQUAL(tab_2d.get_values_reference()[i],
+            tab_2d_2.get_values_reference()[i]);
     }
 }

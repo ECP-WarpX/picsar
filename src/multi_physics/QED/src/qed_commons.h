@@ -8,7 +8,7 @@
 
 
 /**
- * The core functions of the library should run also on GPUs.
+ * The core functions of the library run also on GPUs.
  * In order to do so, the user has to define PXRMP_GPU as follows:
  * #define PXRMP_GPU __host__ __device__
  * before including any file of the library.

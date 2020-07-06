@@ -273,7 +273,7 @@ namespace breit_wheeler{
     class pair_prod_lookup_table_logchi_linfrac{
         public:
             typedef const pair_prod_lookup_table_logchi_linfrac<
-                RealType, containers::picsar_span<RealType>> view_type;
+                RealType, containers::picsar_span<const RealType>> view_type;
 
             pair_prod_lookup_table_logchi_linfrac(
                 pair_prod_lookup_table_params<RealType> params):
@@ -346,9 +346,10 @@ namespace breit_wheeler{
             {
                 if(!m_init_flag)
                     throw "Can't generate a view of an uninitialized table";
-                const auto span = containers::picsar_span<RealType>{
+                const auto span = containers::picsar_span<const RealType>{
                     static_cast<size_t>(m_params.chi_phot_how_many *
-                        m_params.how_many_frac), m_table.m_values.data()
+                        m_params.how_many_frac),
+                        m_table.get_values_reference().data()
                 };
                 const view_type view{m_params, span};
                 return view;
