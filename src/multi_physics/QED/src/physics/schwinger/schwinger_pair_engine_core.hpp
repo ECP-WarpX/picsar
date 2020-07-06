@@ -27,9 +27,6 @@
 //Uses unit conversion"
 #include "../unit_conversion.hpp"
 
-//Uses Poisson's distribution
-#include "../../utils/rng_wrapper.hpp"
-
 namespace picsar{
 namespace multi_physics{
 namespace phys{

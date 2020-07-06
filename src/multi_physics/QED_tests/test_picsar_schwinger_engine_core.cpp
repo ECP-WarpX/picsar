@@ -15,8 +15,6 @@
 
 #include "schwinger_pair_engine_core.hpp"
 
-using namespace picsar::multi_physics::utils;
-
 using namespace picsar::multi_physics::phys;
 
 using namespace picsar::multi_physics::math;
