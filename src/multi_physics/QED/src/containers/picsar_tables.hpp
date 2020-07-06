@@ -272,10 +272,29 @@ namespace containers{
 
 //______________________________________________________________________________
 
+    /**
+    * This class implements a generic equispaced 2D lookup table
+    * for a function f(x, y)
+    *
+    * @tparam RealType the floating point type to be used (e.g. double or float)
+    * @tparam VectorType the vector type to be used (e.g. std::vector<double>)
+    */
     template <typename RealType, class VectorType>
     class equispaced_2d_table
     {
     public:
+
+        /**
+        * Constructor (not usable on GPUs)
+        *
+        * @param[in] x_min the leftmost extreme of the x coordinates
+        * @param[in] x_max the rightmost extreme of the x coordinates
+        * @param[in] y_min the leftmost extreme of the y coordinates
+        * @param[in] y_max the rightmost extreme of the y coordinates
+        * @param[in] how_many_x number of grid points along x
+        * @param[in] how_many_y number of grid points along y
+        * @param[in] values the values of the function that should be interpolated (row major order)
+        */
         equispaced_2d_table(
             RealType x_min, RealType x_max,
             RealType y_min, RealType y_max,
@@ -290,19 +309,27 @@ namespace containers{
                 m_y_size = y_max - y_min;
             };
 
+        /**
+        * Empty constructor
+        */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         equispaced_2d_table(){};
 
+        /**
+        * Constructor from byte array (not usable on GPUs)
+        *
+        * @param[in] raw_data a const reference to a byte vector
+        */
         equispaced_2d_table(const std::vector<char>& raw_data)
         {
             using namespace picsar::multi_physics::utils;
 
             constexpr size_t min_size =
-                sizeof(char)+//magic_number
-                sizeof(m_x_min)+sizeof(m_x_max)+//xmin, xmax
-                sizeof(m_y_min)+sizeof(m_y_max)+//ymin, ymax
-                sizeof(m_how_many_x)+//m_how_many_x
-                sizeof(m_how_many_y);//m_how_many_y
+                sizeof(char)+//double or float
+                sizeof(m_x_min)+sizeof(m_x_max)+
+                sizeof(m_y_min)+sizeof(m_y_max)+
+                sizeof(m_how_many_x)+
+                sizeof(m_how_many_y);
 
             if (raw_data.size() < min_size)
                 throw "Binary data is too small to be a 2D table.";
@@ -338,22 +365,182 @@ namespace containers{
             std::copy(vals.begin(), vals.end(), m_values.begin());
         };
 
+        /**
+        * Operator ==
+        *
+        * @param[in] rhs a const reference to a 2D table of the same type
+        * @return true if rhs and *this are equal. false otherwise
+        */
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        bool operator== (
+            const equispaced_2d_table<RealType, VectorType> &rhs) const
+        {
+            return
+                (m_x_min == rhs.m_x_min) &&
+                (m_x_max == rhs.m_x_max) &&
+                (m_y_min == rhs.m_y_min) &&
+                (m_y_max == rhs.m_y_max) &&
+                (m_x_size == rhs.m_x_size) &&
+                (m_y_size == rhs.m_y_size) &&
+                (m_how_many_x == rhs.m_how_many_x) &&
+                (m_how_many_y == rhs.m_how_many_y) &&
+                (m_values == rhs.m_values);
+        }
+
+        /**
+        * Returns the i-th coodinate along x axis
+        *
+        * @param[in] i the index of the desired coordinate
+        * @return the i-th coordinate
+        */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         RealType get_x_coord(int i) const noexcept
         {
             return i*m_x_size/(m_how_many_x-1) + m_x_min;
         }
 
+        /**
+        * Returns the j-th coodinate along y axis
+        *
+        * @param[in] j the index of the desired coordinate
+        * @return the j-th coordinate
+        */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         RealType get_y_coord(int j) const noexcept
         {
             return j*m_y_size/(m_how_many_y-1) + m_y_min;
         }
 
+        /**
+        * Returns the function value at (i, j)
+        *
+        * @param[in] i the index of the desired value along x
+        * @param[in] j the index of the desired value along y
+        * @return the value at (i,j)
+        */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         RealType get_val(int i, int j) const noexcept
         {
             return m_values[idx(i, j)];
+        }
+
+        /**
+        * Returns the number of points along x
+        *
+        * @return the number of points along x
+        */
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        int get_how_many_x() const noexcept
+        {
+            return m_how_many_x;
+        }
+
+        /**
+        * Returns the minimum x coordinate
+        *
+        * @return the minimum x coordinate
+        */
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        RealType get_x_min() const noexcept
+        {
+            return m_x_min;
+        }
+
+        /**
+        * Returns the maximum x coordinate
+        *
+        * @return the maximum x coordinate
+        */
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        RealType get_x_max() const noexcept
+        {
+            return m_x_max;
+        }
+
+        /**
+        * Returns the size along x
+        *
+        * @return the size along x
+        */
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        RealType get_x_size() const noexcept
+        {
+            return m_x_size;
+        }
+
+        /**
+        * Returns the number of points along y
+        *
+        * @return the number of points along y
+        */
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        int get_how_many_y() const noexcept
+        {
+            return m_how_many_y;
+        }
+
+        /**
+        * Returns the minimum y coordinate
+        *
+        * @return the minimum y coordinate
+        */
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        RealType get_y_min() const noexcept
+        {
+            return m_y_min;
+        }
+
+        /**
+        * Returns the maximum y coordinate
+        *
+        * @return the maximum y coordinate
+        */
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        RealType get_y_max() const noexcept
+        {
+            return m_y_max;
+        }
+
+        /**
+        * Returns the size along y
+        *
+        * @return the size along y
+        */
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        RealType get_y_size() const noexcept
+        {
+            return m_y_size;
+        }
+
+        /**
+        * Returns an std::vector containing all the coordinates (not usable on
+        * GPUs). Row major order is used.
+        *
+        * @return all the coordinates
+        */
+        std::vector<std::array<RealType,2>> get_all_coordinates() const noexcept
+        {
+            auto all_coords = std::vector<std::array<RealType,2>>(
+                m_how_many_x*m_how_many_y, {0,0});
+            int count = 0;
+            for (int i = 0; i < m_how_many_x; ++i){
+                for (int j = 0; j < m_how_many_y; ++j){
+                    all_coords[count][0] = get_x_coord(i);
+                    all_coords[count][1] = get_y_coord(j);
+                    count++;
+                }
+            }
+            return all_coords;
+        }
+
+        /**
+        * Returns a const refence to the underlying Vector holding value data
+        *
+        * @return a const refence to the underlying Vector holding value data
+        */
+        const VectorType& get_values_reference() const noexcept
+        {
+            return m_values;
         }
 
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
@@ -429,74 +616,6 @@ namespace containers{
         void set_val(const int i, const RealType what)
         {
             m_values[i] = what;
-        }
-
-
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        int get_how_many_x() const noexcept
-        {
-            return m_how_many_x;
-        }
-
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        RealType get_x_min() const noexcept
-        {
-            return m_x_min;
-        }
-
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        RealType get_x_max() const noexcept
-        {
-            return m_x_max;
-        }
-
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        int get_how_many_y() const noexcept
-        {
-            return m_how_many_y;
-        }
-
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        RealType get_y_min() const noexcept
-        {
-            return m_y_min;
-        }
-
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        RealType get_y_max() const noexcept
-        {
-            return m_y_max;
-        }
-
-        std::vector<std::array<RealType,2>> get_all_coordinates() const noexcept
-        {
-            auto all_coords = std::vector<std::array<RealType,2>>(
-                m_how_many_x*m_how_many_y, {0,0});
-            int count = 0;
-            for (int i = 0; i < m_how_many_x; ++i){
-                for (int j = 0; j < m_how_many_y; ++j){
-                    all_coords[count][0] = get_x_coord(i);
-                    all_coords[count][1] = get_y_coord(j);
-                    count++;
-                }
-            }
-            return all_coords;
-        }
-
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        bool operator== (
-            const equispaced_2d_table<RealType, VectorType> &b) const
-        {
-            return
-                (m_x_min == b.m_x_min) &&
-                (m_x_max == b.m_x_max) &&
-                (m_y_min == b.m_y_min) &&
-                (m_y_max == b.m_y_max) &&
-                (m_x_size == b.m_x_size) &&
-                (m_y_size == b.m_y_size) &&
-                (m_how_many_x == b.m_how_many_x) &&
-                (m_how_many_y == b.m_how_many_y) &&
-                (m_values == b.m_values);
         }
 
         std::vector<char> serialize() const

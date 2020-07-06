@@ -145,12 +145,19 @@ void check_table_2d(
     BOOST_CHECK_EQUAL(rxmax, xmax);
     const auto rhowmany_x =  tab.get_how_many_x();
     BOOST_CHECK_EQUAL(rhowmany_x, xsize);
+    const auto rxsize =  tab.get_x_size();
+    BOOST_CHECK_EQUAL(rxsize, xmax-xmin);
     const auto rymin = tab.get_y_min();
     BOOST_CHECK_EQUAL(rxmin, xmin);
     const auto rymax = tab.get_y_max();
     BOOST_CHECK_EQUAL(rxmax, xmax);
     const auto rhowmany_y =  tab.get_how_many_y();
     BOOST_CHECK_EQUAL(rhowmany_y, ysize);
+    const auto rysize =  tab.get_y_size();
+    BOOST_CHECK_EQUAL(rysize, ymax-ymin);
+
+    const auto first_val = tab.get_values_reference()[0];
+    BOOST_CHECK_EQUAL(first_val, linear_function(xmin, ymin));
 
     const auto x0 = tab.get_x_coord(0);
     const auto x1 = tab.get_x_coord(xsize/2);
