@@ -3,6 +3,8 @@
 
 //This .hpp file contais the implementation of the
 //core functions of the Schwinger pair engine.
+//Please have a look at the jupyter notebook in QED_tests/validation
+//for a more in-depth discussion.
 //
 // References:
 // 1) Schwinger. Phys. Rev. 82, 5 (1951)
@@ -36,7 +38,7 @@ namespace schwinger{
     * @param[in] t_em_e a vec3<RealType> containing the electric field
     * @param[in] t_em_b a vec3<RealType> containing the magnetic field
     * @param[in] ref_quantity reference quantity for unit conversion (lambda or omega)
-
+    *
     * @return the pair production rate
     */
     template<typename RealType, unit_system UnitSystem = unit_system::SI>
@@ -98,7 +100,7 @@ namespace schwinger{
     * @param[in] by a RealType containing the y component of the magnetic field
     * @param[in] bz a RealType containing the z component of the magnetic field
     * @param[in] ref_quantity reference quantity for unit conversion (lambda or omega)
-
+    *
     * @return the pair production rate
     */
     template<typename RealType, unit_system UnitSystem = unit_system::SI>
@@ -127,7 +129,7 @@ namespace schwinger{
     * @param[in] t_volume the volume of the physical region
     * @param[in] t_dt the temporal step
     * @param[in] ref_quantity reference quantity for unit conversion (lambda or omega)
-
+    *
     * @return the expected number of generated pairs
     */
     template<typename RealType, unit_system UnitSystem = unit_system::SI>
@@ -176,7 +178,7 @@ namespace schwinger{
     * @param[in] t_volume the volume of the physical region
     * @param[in] t_dt the temporal step
     * @param[in] ref_quantity reference quantity for unit conversion (lambda or omega)
-
+    *
     * @return the expected number of generated pairs
     */
     template<typename RealType, unit_system UnitSystem>
