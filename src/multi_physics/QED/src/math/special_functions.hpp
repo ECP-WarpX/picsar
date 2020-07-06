@@ -20,7 +20,7 @@ namespace math{
     /**
     * This function is a wrapper around the Bessel function
     * of the second kind defined either in the STL (if C++17 is available)
-    * or in Boost library as a fallback.
+    * or in Boost library as a fallback (not usable on GPUs).
     *
     * @tparam RealType the floating point type to be used
     * @param[in] v order of the function
@@ -28,7 +28,6 @@ namespace math{
     * @return K_v(x)
     */
     template<typename RealType>
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     RealType k_v(RealType v, RealType x)
     {
 #ifdef PXRMP_INTERNAL_SPECFUNC_WITH_CXX17

@@ -36,6 +36,7 @@ namespace math{
     /**
     * This function performs the integration of the function f(x)
     * in the interval (a,b) using the method specified in the template parameter
+    * (not usable on GPUs).
     *
     * @tparam RealType the floating point type to be used
     * @tparam QuadAlgo the quadrature method to be used
@@ -46,7 +47,6 @@ namespace math{
     */
     template<
         typename RealType, quadrature_algorithm QuadAlgo>
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     constexpr RealType generic_quad_a_b(
         const std::function<RealType(RealType)>& f, RealType a, RealType b)
     {
@@ -97,7 +97,8 @@ namespace math{
 
     /**
     * This function performs the integration of the function f(x)
-    * in the finite interval (a,b), using the "trapezoidal" quadrature method.
+    * in the finite interval (a,b), using the "trapezoidal" quadrature method
+    * (not usable on GPUs).
     *
     * @tparam RealType the floating point type to be used
     * @param[in] f the function which should be integrated
@@ -106,7 +107,6 @@ namespace math{
     * @return the integral of f in (a,b)
     */
     template<typename RealType>
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     constexpr RealType quad_a_b(
         const std::function<RealType(RealType)>& f, RealType a, RealType b)
     {
@@ -117,7 +117,8 @@ namespace math{
     /**
     * This function performs the integration of the function f(x)
     * in the finite interval (a,b) using the "tanh_sinh" quadrature method,
-    * to deal with possibile singularities at the boundaries.
+    * to deal with possibile singularities at the boundaries
+    * (not usable on GPUs).
     *
     * @tparam RealType the floating point type to be used
     * @param[in] f the function which should be integrated
@@ -126,7 +127,6 @@ namespace math{
     * @return the integral of f in (a,b)
     */
     template<typename RealType>
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     constexpr RealType quad_a_b_s(
         const std::function<RealType(RealType)>& f, RealType a, RealType b)
     {
@@ -136,7 +136,8 @@ namespace math{
 
     /**
     * This function performs the integration of the function f(x)
-    * in the semi-infinite interval (a,inf) using the "exp_sinh" quadrature method.
+    * in the semi-infinite interval (a,inf) using the "exp_sinh" quadrature method
+    * (not usable on GPUs).
     *
     * @tparam RealType the floating point type to be used
     * @param[in] a the left boundary of the integration region
