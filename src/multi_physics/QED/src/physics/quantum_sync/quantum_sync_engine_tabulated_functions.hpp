@@ -15,6 +15,8 @@
 #include "../../math/quadrature.hpp"
 
 #include "../../math/special_functions.hpp"
+//Uses sqrt and exp
+#include "../../math/cmath_overloads.hpp"
 
 namespace picsar{
 namespace multi_physics{
@@ -46,14 +48,14 @@ namespace quantum_sync{
                 const auto s4 = s2*s2;
                 const auto cc = (one<RealType> +
                     four<RealType>*one_third<RealType>*s2)*
-                    sqrt(one<RealType> + one_third<RealType>*s2);
+                    m_sqrt(one<RealType> + one_third<RealType>*s2);
                 const auto f1 = static_cast<RealType>(9.0) +
                     static_cast<RealType>(36.0) * s2 +
                     static_cast<RealType>(16.0) * s4;
                 if(isinf(f1) || isinf(cc))
                     return zero<RealType>;
-                return f1*exp(-y*cc)/cc/three<RealType>;},
-            zero<RealType>)/sqrt(three<RealType>);
+                return f1*m_exp(-y*cc)/cc/three<RealType>;},
+            zero<RealType>)/m_sqrt(three<RealType>);
     }
 
     template<typename RealType>
@@ -69,7 +71,7 @@ namespace quantum_sync{
 
         const auto yy = compute_y(chi_part, csi);
 
-        const RealType coeff = sqrt(three<>)/(two<>*pi<>);
+        const RealType coeff = m_sqrt(three<>)/(two<>*pi<>);
 
         const auto inner = inner_integral(yy);
 

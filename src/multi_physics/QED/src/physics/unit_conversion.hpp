@@ -9,8 +9,6 @@
 //Uses several mathematical constants
 #include "../math/math_constants.h"
 
-#include <cmath>
-
 namespace picsar{
 namespace multi_physics{
 namespace phys{

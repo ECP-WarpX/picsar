@@ -1,35 +1,36 @@
 #ifndef PICSAR_MULTIPHYSICS_BREIT_WHEELER_ENGINE_CORE
 #define PICSAR_MULTIPHYSICS_BREIT_WHEELER_ENGINE_CORE
 
-//This .hpp file contais the implementation of the
-//core functions of the nonlinear Breit Wheeler engine.
-//If desired, these functions can be used directly
-//without the higher-level interface.
-
-#include <cmath>
+//This .hpp file contais the implementation of the core
+//function of the Breit-Wheeler pair production engine.
+//Please have a look at the jupyter notebook "validation.ipynb"
+//in QED_tests/validation for a more in-depth discussion.
+//
+// References:
+// 1) A.I.Nikishov. & V.I. Ritus Sov. Phys. JETP 19, 2 (1964)
+// 2) T.Erber Rev. Mod. Phys. 38, 626 (1966)
+// 3) C.P.Ridgers et al. Journal of Computational Physics 260, 1 (2014)
+// 4) A.Gonoskov et al. Phys. Rev. E 92, 023305 (2015)
 
 //Should be included by all the src files of the library
 #include "../../qed_commons.h"
 
-//Uses picsar arrays
+//Uses GPU-friendly arrays
 #include "../../containers/picsar_array.hpp"
-
 //Uses vector functions
 #include "../../math/vec_functions.hpp"
-
 //Uses chi functions
 #include "../chi_functions.hpp"
-
 //Uses physical constants
 #include "../phys_constants.h"
-
-//Uses math constants
+//Uses mathematical constants
 #include "../../math/math_constants.h"
-
-//Uses unit conversion"
+//Uses unit conversion
 #include "../unit_conversion.hpp"
+//Uses sqrt and log
+#include "../../math/cmath_overloads.hpp"
 
-#include "breit_wheeler_engine_tables.hpp"
+#include <cmath>
 
 namespace picsar{
 namespace multi_physics{
@@ -45,7 +46,7 @@ namespace breit_wheeler{
     RealType get_optical_depth(const RealType unf_zero_one_minus_epsi)
     {
         using namespace math;
-        return -log(one<RealType> - unf_zero_one_minus_epsi);
+        return -m_log(one<RealType> - unf_zero_one_minus_epsi);
     }
 
 
@@ -73,8 +74,8 @@ namespace breit_wheeler{
         const auto TT = ref_dndt_table.interp(chi_phot);
 
         constexpr const auto pair_prod_rate_coeff = static_cast<RealType>(
-            fine_structure<> * heaviside_lorentz_electron_rest_energy<RealType>
-            * heaviside_lorentz_electron_rest_energy<RealType>);
+            fine_structure<> * phys::heaviside_lorentz_electron_rest_energy<RealType>
+            * phys::heaviside_lorentz_electron_rest_energy<RealType>);
 
         const auto dndt = pair_prod_rate_coeff * TT *(chi_phot/energy_phot);
 
@@ -158,10 +159,10 @@ namespace breit_wheeler{
             quantity::momentum, unit_system::heaviside_lorentz,
             UnitSystem, RealType>::fact(one<RealType>, ref_quantity);
 
-        ele_momentum = heaviside_lorentz_electron_rest_energy<RealType>*
-            v_dir_photon*sqrt(gamma_ele*gamma_ele - one<RealType>)*mom_hl2u;
-        pos_momentum = heaviside_lorentz_electron_rest_energy<RealType>*
-            v_dir_photon*sqrt(gamma_pos*gamma_pos - one<RealType>)*mom_hl2u;
+        ele_momentum = phys::heaviside_lorentz_electron_rest_energy<RealType>*
+            v_dir_photon*m_sqrt(gamma_ele*gamma_ele - one<RealType>)*mom_hl2u;
+        pos_momentum = phys::heaviside_lorentz_electron_rest_energy<RealType>*
+            v_dir_photon*m_sqrt(gamma_pos*gamma_pos - one<RealType>)*mom_hl2u;
     }
 
 }

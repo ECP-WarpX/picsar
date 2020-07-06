@@ -22,6 +22,9 @@
 
 #include "../../utils/picsar_algo.hpp"
 
+//Uses cbrt, log and exp
+#include "../../math/cmath_overloads.hpp"
+
 namespace picsar{
 namespace multi_physics{
 namespace phys{
@@ -65,7 +68,7 @@ namespace breit_wheeler{
     RealType dndt_approx_left(RealType chi_phot)
     {
         constexpr RealType coeff = 8./3.;
-        return erber_dndt_asynt_a<RealType>*exp(-coeff/chi_phot);
+        return erber_dndt_asynt_a<RealType>*math::m_exp(-coeff/chi_phot);
     }
 
     template <typename RealType>
@@ -73,7 +76,7 @@ namespace breit_wheeler{
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     RealType dndt_approx_right(RealType chi_phot)
     {
-        return erber_dndt_asynt_b<RealType>/cbrt(chi_phot);
+        return erber_dndt_asynt_b<RealType>/math::m_cbrt(chi_phot);
     }
 
     template<
@@ -93,8 +96,8 @@ namespace breit_wheeler{
             dndt_lookup_table(dndt_lookup_table_params<RealType> params):
             m_params{params},
             m_table{containers::equispaced_1d_table<RealType, VectorType>{
-                    log(params.chi_phot_min),
-                    log(params.chi_phot_max),
+                    math::m_log(params.chi_phot_min),
+                    math::m_log(params.chi_phot_max),
                     VectorType(params.chi_phot_how_many)}}
             {};
 
@@ -102,8 +105,8 @@ namespace breit_wheeler{
                 VectorType vals):
             m_params{params},
             m_table{containers::equispaced_1d_table<RealType, VectorType>{
-                    log(params.chi_phot_min),
-                    log(params.chi_phot_max),
+                    math::m_log(params.chi_phot_min),
+                    math::m_log(params.chi_phot_max),
                     vals}}
             {
                 m_init_flag = true;
@@ -183,7 +186,7 @@ namespace breit_wheeler{
                     }
                 }
 
-                return exp(m_table.interp(log(chi_phot)));
+                return math::m_exp(m_table.interp(math::m_log(chi_phot)));
             }
 
             PXRMP_INTERNAL_GPU_DECORATOR
@@ -201,7 +204,7 @@ namespace breit_wheeler{
             {
                 auto all_coords = m_table.get_all_coordinates();
                 std::transform(all_coords.begin(),all_coords.end(),all_coords.begin(),
-                    [](RealType a){return exp(a);});
+                    [](RealType a){return math::m_exp(a);});
                 return all_coords;
             }
 
@@ -209,7 +212,7 @@ namespace breit_wheeler{
             {
                 if(vals.size() == m_table.get_how_many_x()){
                     for(int i = 0; i < vals.size(); ++i){
-                        m_table.set_val(i, log(vals[i]));
+                        m_table.set_val(i, math::m_log(vals[i]));
                     }
                     m_init_flag = true;
                     return true;
@@ -279,8 +282,8 @@ namespace breit_wheeler{
                 pair_prod_lookup_table_params<RealType> params):
             m_params{params},
             m_table{containers::equispaced_2d_table<RealType, VectorType>{
-                    log(params.chi_phot_min),
-                    log(params.chi_phot_max),
+                    math::m_log(params.chi_phot_min),
+                    math::m_log(params.chi_phot_max),
                     math::zero<RealType>,
                     math::half<RealType>,
                     params.chi_phot_how_many, params.how_many_frac,
@@ -292,8 +295,8 @@ namespace breit_wheeler{
                 VectorType vals):
             m_params{params},
             m_table{containers::equispaced_2d_table<RealType, VectorType>{
-                    log(params.chi_phot_min),
-                    log(params.chi_phot_max),
+                    math::m_log(params.chi_phot_min),
+                    math::m_log(params.chi_phot_max),
                     math::zero<RealType>,
                     math::half<RealType>,
                     params.chi_phot_how_many, params.how_many_frac,
@@ -368,7 +371,7 @@ namespace breit_wheeler{
                     e_chi_phot = m_params.chi_phot_min;
                 else if (chi_phot > m_params.chi_phot_max)
                     e_chi_phot = m_params.chi_phot_max;
-                const auto log_e_chi_phot = log(e_chi_phot);
+                const auto log_e_chi_phot = m_log(e_chi_phot);
 
                 const auto prob = unf_zero_one_minus_epsi*half<RealType>;
 
@@ -417,7 +420,7 @@ namespace breit_wheeler{
                 auto all_coords = m_table.get_all_coordinates();
                 std::transform(all_coords.begin(),all_coords.end(),all_coords.begin(),
                     [](std::array<RealType,2> a){return
-                        std::array<RealType,2>{exp(a[0]), a[1]};});
+                        std::array<RealType,2>{math::m_exp(a[0]), a[1]};});
                 return all_coords;
             }
 

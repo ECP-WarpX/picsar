@@ -1,6 +1,7 @@
 #ifndef PICSAR_MULTIPHYSICS_MATH_CONSTANTS
 #define PICSAR_MULTIPHYSICS_MATH_CONSTANTS
 
+//Should be included by all the src files of the library
 #include "../qed_commons.h"
 
 namespace picsar{

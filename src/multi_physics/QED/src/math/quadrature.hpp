@@ -9,7 +9,6 @@
 #include <boost/math/quadrature/exp_sinh.hpp>
 #include <boost/math/quadrature/gauss_kronrod.hpp>
 
-#include <cmath>
 #include <functional>
 #include <limits>
 

@@ -1,28 +1,23 @@
 #ifndef PICSAR_MULTIPHYSICS_QUANTUM_SYNC_ENGINE_CORE
 #define PICSAR_MULTIPHYSICS_QUANTUM_SYNC_ENGINE_CORE
 
-#include <cmath>
-
 //Should be included by all the src files of the library
 #include "../../qed_commons.h"
 
 //Uses picsar arrays
 #include "../../containers/picsar_array.hpp"
-
 //Uses vector functions
 #include "../../math/vec_functions.hpp"
-
 //Uses chi functions
 #include "../chi_functions.hpp"
-
 //Uses physical constants
 #include "../phys_constants.h"
-
 //Uses math constants
 #include "../../math/math_constants.h"
-
 //Uses unit conversion"
 #include "../unit_conversion.hpp"
+//Uses sqrt
+#include "../../math/cmath_overloads.hpp"
 
 namespace picsar{
 namespace multi_physics{
@@ -142,7 +137,7 @@ namespace quantum_sync{
         const auto v_dir_particle = v_mom_particle/mom_particle;
         const auto norm_mom_particle = mom_particle/
             heaviside_lorentz_electron_rest_energy<RealType>;
-        const auto gamma_particle = sqrt(
+        const auto gamma_particle = m_sqrt(
                 one<RealType> + norm_mom_particle*norm_mom_particle);
 
         const auto chi_photon = ref_phot_prod_table.interp(

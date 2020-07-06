@@ -12,8 +12,6 @@
 // 3) C.P.Ridgers et al. Journal of Computational Physics 260, 1 (2014)
 // 4) A.Gonoskov et al. Phys. Rev. E 92, 023305 (2015)
 
-
-
 //Should be included by all the src files of the library
 #include "../../qed_commons.h"
 
@@ -25,8 +23,9 @@
 #include "../../math/quadrature.hpp"
 //Uses special functions
 #include "../../math/special_functions.hpp"
+//Uses sqrt and cbrt
+#include "../../math/cmath_overloads.hpp"
 
-#include <cmath>
 #include <algorithm>
 
 namespace picsar{
@@ -49,7 +48,7 @@ namespace breit_wheeler{
     constexpr RealType compute_x(
         const RealType chi_phot, const RealType chi_ele) noexcept
     {
-        const auto temp = cbrt(chi_phot/(chi_ele*(chi_phot-chi_ele)));
+        const auto temp = math::m_cbrt(chi_phot/(chi_ele*(chi_phot-chi_ele)));
         return temp*temp;
     }
 
@@ -76,12 +75,12 @@ namespace breit_wheeler{
             return zero<RealType>;
 
         const auto xx = compute_x(chi_phot, chi_ele);
-        const auto sqrt_xx = sqrt(xx);
+        const auto sqrt_xx = m_sqrt(xx);
         const auto xx_3_2 = sqrt_xx*sqrt_xx*sqrt_xx;
 
         const auto inner_integral = quad_a_inf<RealType>(
             [](RealType s){
-                const auto sqrt_s = sqrt(s);
+                const auto sqrt_s = m_sqrt(s);
                 const auto s_3_2 = sqrt_s*sqrt_s*sqrt_s;
 
                 return sqrt_s*math::k_v(one_third<RealType>,
@@ -114,7 +113,7 @@ namespace breit_wheeler{
         return coeff*math::quad_a_b_s<RealType>(
             [=](RealType cc){
                 return compute_T_integrand<RealType>(chi_phot, cc);},
-            math::zero<RealType>, chi_phot)/(chi_phot*chi_phot*sqrt(3.0));
+            math::zero<RealType>, chi_phot)/(chi_phot*chi_phot*m_sqrt(3.0));
     }
 
     /**
@@ -143,7 +142,7 @@ namespace breit_wheeler{
         return coeff*quad_a_b_s<RealType>(
             [=](RealType cc){
                 return compute_T_integrand<RealType>(chi_photon, cc);
-            },zero<RealType>, chi_ele)/(chi_photon*chi_photon*sqrt(3.0));
+            },zero<RealType>, chi_ele)/(chi_photon*chi_photon*m_sqrt(3.0));
     }
 
     /**

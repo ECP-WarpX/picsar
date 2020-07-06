@@ -23,6 +23,8 @@
 #include "../phys_constants.h"
 //Uses unit conversion"
 #include "../unit_conversion.hpp"
+//Uses sqrt, exp and tanh
+#include "../../math/cmath_overloads.hpp"
 
 namespace picsar{
 namespace multi_physics{
@@ -65,10 +67,10 @@ namespace schwinger{
         const auto ff =(norm2(em_e) - norm2(em_b))*one_half;
         const auto gg = dot(em_e, em_b);
 
-        const auto inner = sqrt(ff*ff+ gg*gg);
+        const auto inner = m_sqrt(ff*ff+ gg*gg);
 
-        const auto epsi = sqrt(fabs(inner + ff))*one_over_schwinger;
-        const auto eta = sqrt(fabs(inner - ff))*one_over_schwinger;
+        const auto epsi = m_sqrt(fabs(inner + ff))*one_over_schwinger;
+        const auto eta = m_sqrt(fabs(inner - ff))*one_over_schwinger;
 
         constexpr const auto coeff = static_cast<RealType>(
             heaviside_lorentz_elementary_charge<double>*
@@ -80,11 +82,11 @@ namespace schwinger{
             unit_system::heaviside_lorentz, UnitSystem, RealType>::fact(1.0, ref_quantity);
 
         if(epsi != zero<RealType> && eta != zero<RealType>)
-            return coeff*rate_conv*epsi*eta*exp(-pi<RealType>/epsi)/tanh(pi<RealType>*eta/epsi);
+            return coeff*rate_conv*epsi*eta*m_exp(-pi<RealType>/epsi)/m_tanh(pi<RealType>*eta/epsi);
         else if(epsi == zero<RealType>)
             return zero<RealType>;
         else
-            return coeff*rate_conv*epsi*epsi*exp(-pi<RealType>/epsi)/pi<RealType>;
+            return coeff*rate_conv*epsi*epsi*m_exp(-pi<RealType>/epsi)/pi<RealType>;
     }
 
     /**

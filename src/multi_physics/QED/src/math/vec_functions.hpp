@@ -6,8 +6,8 @@
 
 //Uses GPU-friendly arrays
 #include "../containers/picsar_array.hpp"
-
-#include <cmath>
+//Uses sqrt
+#include "cmath_overloads.hpp"
 
 namespace picsar{
 namespace multi_physics{
@@ -43,7 +43,7 @@ namespace math{
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     RealType norm(const vec3<RealType>& vec) noexcept
     {
-        return sqrt(norm2(vec));
+        return m_sqrt(norm2(vec));
     }
 
     /**

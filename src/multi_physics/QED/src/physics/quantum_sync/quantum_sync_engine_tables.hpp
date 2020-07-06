@@ -1,7 +1,6 @@
 #ifndef PICSAR_MULTIPHYSICS_QUANTUM_SYNC_ENGINE_TABLES
 #define PICSAR_MULTIPHYSICS_QUANTUM_SYNC_ENGINE_TABLES
 
-#include <math.h>
 #include <algorithm>
 #include <utility>
 #include <vector>
@@ -11,14 +10,14 @@
 
 //Uses picsar tables
 #include "../../containers/picsar_tables.hpp"
-
 #include "../../containers/picsar_array.hpp"
-
 #include "../../containers/picsar_span.hpp"
 
 #include "../../math/math_constants.h"
 
 #include "../../utils/serialization.hpp"
+//Uses exp and log
+#include "../../math/cmath_overloads.hpp"
 
 namespace picsar{
 namespace multi_physics{
@@ -57,8 +56,8 @@ namespace quantum_sync{
             dndt_lookup_table(dndt_lookup_table_params<RealType> params):
             m_params{params},
             m_table{containers::equispaced_1d_table<RealType, VectorType>{
-                    log(params.chi_part_min),
-                    log(params.chi_part_max),
+                    math::m_log(params.chi_part_min),
+                    math::m_log(params.chi_part_max),
                     VectorType(params.chi_part_how_many)}}
             {};
 
@@ -66,8 +65,8 @@ namespace quantum_sync{
                 VectorType vals):
             m_params{params},
             m_table{containers::equispaced_1d_table<RealType, VectorType>{
-                    log(params.chi_part_min),
-                    log(params.chi_part_max),
+                    math::m_log(params.chi_part_min),
+                    math::m_log(params.chi_part_max),
                     vals}}
             {
                 m_init_flag = true;
@@ -149,7 +148,7 @@ namespace quantum_sync{
                     }
                 }
 
-                return exp(m_table.interp(log(chi_part)));
+                return math::m_exp(m_table.interp(math::m_log(chi_part)));
             }
 
             PXRMP_INTERNAL_GPU_DECORATOR
@@ -167,7 +166,7 @@ namespace quantum_sync{
             {
                 auto all_coords = m_table.get_all_coordinates();
                 std::transform(all_coords.begin(),all_coords.end(),all_coords.begin(),
-                    [](RealType a){return exp(a);});
+                    [](RealType a){return math::m_exp(a);});
                 return all_coords;
             }
 
@@ -175,7 +174,7 @@ namespace quantum_sync{
             {
                 if(vals.size() == m_table.get_how_many_x()){
                     for(int i = 0; i < vals.size(); ++i){
-                        m_table.set_val(i, log(vals[i]));
+                        m_table.set_val(i, math::m_log(vals[i]));
                     }
                     m_init_flag = true;
                     return true;
@@ -247,10 +246,10 @@ public:
             photon_emission_lookup_table_params<RealType> params):
         m_params{params},
         m_table{containers::equispaced_2d_table<RealType, VectorType>{
-                log(params.chi_part_min),
-                log(params.chi_part_max),
-                log(params.frac_min),
-                log(math::one<RealType>),
+                math::m_log(params.chi_part_min),
+                math::m_log(params.chi_part_max),
+                math::m_log(params.frac_min),
+                math::m_log(math::one<RealType>),
                 params.chi_part_how_many, params.how_many_frac,
                 VectorType(params.chi_part_how_many * params.how_many_frac)}}
         {};
@@ -261,10 +260,10 @@ public:
         VectorType vals):
     m_params{params},
     m_table{containers::equispaced_2d_table<RealType, VectorType>{
-            log(params.chi_part_min),
-            log(params.chi_part_max),
-            log(params.frac_min),
-            log(math::one<RealType>),
+            math::m_log(params.chi_part_min),
+            math::m_log(params.chi_part_max),
+            math::m_log(params.frac_min),
+            math::m_log(math::one<RealType>),
             params.chi_part_how_many, params.how_many_frac,
             vals}}
     {
@@ -337,9 +336,9 @@ public:
             e_chi_part = m_params.chi_part_min;
         else if (chi_part > m_params.chi_part_max)
             e_chi_part = m_params.chi_part_max;
-        const auto log_e_chi_part = log(e_chi_part);
+        const auto log_e_chi_part = m_log(e_chi_part);
 
-        const auto log_prob = log(one<RealType>-unf_zero_one_minus_epsi);
+        const auto log_prob = m_log(one<RealType>-unf_zero_one_minus_epsi);
 
         const auto upper_frac_index = utils::picsar_upper_bound_functor(
             0, m_params.how_many_frac,log_prob,[&](int i){
@@ -366,7 +365,7 @@ public:
         const auto log_frac = utils::linear_interp(
             lower_log_prob, upper_log_prob, lower_log_frac, upper_log_frac,
             log_prob);
-        return  exp(log_frac)*chi_part;
+        return  m_exp(log_frac)*chi_part;
     }
 
     PXRMP_INTERNAL_GPU_DECORATOR
@@ -387,7 +386,7 @@ public:
         auto all_coords = m_table.get_all_coordinates();
         std::transform(all_coords.begin(),all_coords.end(),all_coords.begin(),
             [](std::array<RealType,2> a){return
-                std::array<RealType,2>{exp(a[0]), exp(a[1])};});
+                std::array<RealType,2>{math::m_exp(a[0]), math::m_exp(a[1])};});
         return all_coords;
     }
 
@@ -396,7 +395,7 @@ public:
         if(vals.size() == m_table.get_how_many_x()*
             m_table.get_how_many_y()){
             for(int i = 0; i < vals.size(); ++i){
-                m_table.set_val(i,log(vals[i]));
+                m_table.set_val(i,math::m_log(vals[i]));
             }
             m_init_flag = true;
             return true;

@@ -10,8 +10,8 @@
 #include "../math/vec_functions.hpp"
 //Uses unit conversion
 #include "unit_conversion.hpp"
-
-#include <cmath>
+//Uses sqrt
+#include "../math/cmath_overloads.hpp"
 
 namespace picsar{
 namespace multi_physics{
@@ -37,6 +37,8 @@ namespace phys{
         const math::vec3<RealType> t_em_b,
         const RealType reference_quantity = math::one<RealType>)
     {
+        using namespace math;
+
         const auto p = t_p *conv<
             quantity::momentum, UnitSystem,
             unit_system::heaviside_lorentz, RealType>::fact();
@@ -47,13 +49,13 @@ namespace phys{
             quantity::B, UnitSystem,
             unit_system::heaviside_lorentz, RealType>::fact(reference_quantity);
 
-        const auto norm_p = math::norm(p);
-        if(norm_p == math::zero<RealType>)
-            return math::zero<RealType>;
+        const auto norm_p = norm(p);
+        if(norm_p == zero<RealType>)
+            return zero<RealType>;
 
         const auto p_unit = p / norm_p;
-        const auto em_eperp = em_e - math::dot(p_unit,em_e)*p_unit;
-        const auto field = math::norm(em_eperp + math::cross(p_unit, em_b));
+        const auto em_eperp = em_e - dot(p_unit,em_e)*p_unit;
+        const auto field = norm(em_eperp + cross(p_unit, em_b));
 
         const auto gamma_phot = norm_p/
             heaviside_lorentz_electron_rest_energy<RealType>;
@@ -90,9 +92,11 @@ namespace phys{
         const RealType bx, const RealType by, const RealType bz,
         const RealType reference_quantity = math::one<RealType>)
     {
-        const auto p = math::vec3<RealType>{px, py, pz};
-        const auto em_e = math::vec3<RealType>{ex, ey, ez};
-        const auto em_b = math::vec3<RealType>{bx, by, bz};
+        using namespace math;
+
+        const auto p = vec3<RealType>{px, py, pz};
+        const auto em_e = vec3<RealType>{ex, ey, ez};
+        const auto em_b = vec3<RealType>{bx, by, bz};
         return chi_photon<RealType, UnitSystem>(
             p, em_e, em_b, reference_quantity);
     }
@@ -117,6 +121,8 @@ namespace phys{
         const math::vec3<RealType> t_em_b,
         const RealType reference_quantity = math::one<RealType>)
     {
+        using namespace math;
+
         const auto p = t_p * conv<
             quantity::momentum, UnitSystem,
             unit_system::heaviside_lorentz, RealType>::fact();
@@ -127,27 +133,26 @@ namespace phys{
             quantity::B, UnitSystem,
             unit_system::heaviside_lorentz, RealType>::fact(reference_quantity);
 
-        const auto norm_p = math::norm(p);
-        if(norm_p == math::zero<RealType>)
-            return math::zero<RealType>;
+        const auto norm_p = norm(p);
+        if(norm_p == zero<RealType>)
+            return zero<RealType>;
 
         const auto p_unit = p / norm_p;
 
-        constexpr auto one = math::one<RealType>;
         constexpr auto one_over_m2 = static_cast<RealType>(1.0/
             heaviside_lorentz_electron_rest_energy<double>/
             heaviside_lorentz_electron_rest_energy<double>);
-        const auto gamma_2 = one + norm_p*norm_p*one_over_m2;
-        const auto gamma = sqrt(gamma_2);
+        const auto gamma_2 = one<RealType> + norm_p*norm_p*one_over_m2;
+        const auto gamma = m_sqrt(gamma_2);
 
-        const auto beta = static_cast<RealType>(sqrt((gamma_2-one)/gamma_2));
+        const auto beta =m_sqrt((gamma_2-one<RealType>)/gamma_2);
         const auto beta_vec = beta * p_unit;
 
-        const auto beta_dot_e = math::dot(beta_vec, em_e);
+        const auto beta_dot_e = dot(beta_vec, em_e);
         const auto beta_dot_e_2 = beta_dot_e*beta_dot_e;
         const auto e_plus_beta_cross_b_2 =
-            math::norm2(em_e + math::cross(beta_vec, em_b));
-        const auto field = sqrt(fabs(beta_dot_e_2-e_plus_beta_cross_b_2));
+            norm2(em_e + cross(beta_vec, em_b));
+        const auto field = m_sqrt(fabs(beta_dot_e_2-e_plus_beta_cross_b_2));
 
         constexpr auto one_over_schwinger = static_cast<RealType>(1.0/
             heaviside_lorentz_schwinger_field<double>);
