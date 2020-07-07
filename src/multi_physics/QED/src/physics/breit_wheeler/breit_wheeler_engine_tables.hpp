@@ -253,7 +253,7 @@ namespace breit_wheeler{
                     (m_table == b.m_table);
             }
 
-            view_type get_view()
+            view_type get_view() const
             {
                 if(!m_init_flag)
                     throw "Can't generate a view of an uninitialized table";
@@ -442,7 +442,7 @@ namespace breit_wheeler{
                     (m_table == b.m_table);
             }
 
-            view_type get_view()
+            view_type get_view() const
             {
                 if(!m_init_flag)
                     throw "Can't generate a view of an uninitialized table";

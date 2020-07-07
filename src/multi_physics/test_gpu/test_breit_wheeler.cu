@@ -1,31 +1,23 @@
 #include <iostream>
-#include <vector>
-#include <array>
-#include <cstdio>
-#include <algorithm>
-#include <utility>
 #include <random>
-#include <tuple>
-#include <omp.h>
 
 #include <cuda.h>
 #include <curand.h>
+#include <curand_kernel.h>
 #include <thrust/device_vector.h>
 
 // PICSAR MULTIPHYSICS: BREIT WHEELER ENGINE
 #define PXRMP_GPU __host__ __device__
 #include "../QED/src/physics/breit_wheeler/breit_wheeler_engine_core.hpp"
 #include "../QED/src/physics/breit_wheeler/breit_wheeler_engine_tables.hpp"
-#include "../QED/src/physics/breit_wheeler/breit_wheeler_engine_tabulated_functions.hpp"
+#include "../QED/src/physics/breit_wheeler/breit_wheeler_engine_tables_generator.hpp"
 //__________________________________________________
-
 
 //Some namespace aliases
 namespace pxr =  picsar::multi_physics::phys;
 namespace pxr_bw = picsar::multi_physics::phys::breit_wheeler;
 namespace pxr_m =  picsar::multi_physics::math;
 //__________________________________________________
-
 
 //Some useful physical constants
 template<typename T = double>
@@ -38,23 +30,17 @@ const double Es = pxr::schwinger_field<>;
 const double Bs = pxr::schwinger_field<>/pxr::light_speed<>;
 //__________________________________________________
 
-
 //Parameters of the test case
 const int test_size = 20'000'000;
-//const int test_size = 5;
 const double dt_test = 1e-18;
-const double dndt_chi_min = 0.01;
-const double dndt_chi_max = 200.0;
-const double dndt_frac_out_low = 0.1;
-const double dndt_frac_out_high = 0.1;
-const double max_intable_normalized_momentum = 1000.0;
-const double max_intable_normalized_field = 0.02;
-const int dndt_table_size_1 = 128;
-const int dndt_table_size_2 = 256;
-const double ref_lambda = 800e-9;
-const double ref_omega = 2.0*pxr_m::pi<double>*pxr::light_speed<double>/ref_lambda;
+const double table_chi_min = 0.01;
+const double table_chi_max = 500.0;
+const int table_chi_size = 512;
+const int table_frac_size = 512;
+const double max_normalized_field = 0.02;
+const double max_normalized_momentum = 1000.0;
+const int random_seed = 22051988;
 //__________________________________________________
-
 
 //Templated tolerance for double and single precision
 const double double_tolerance = 5.0e-6;
@@ -69,7 +55,6 @@ T constexpr tolerance()
 }
 //__________________________________________________
 
-
 //A thin wrapper around thrust::device_vector
 template<typename RealType> 
 class ThrustDeviceWrapper : public thrust::device_vector<RealType>
@@ -78,8 +63,8 @@ class ThrustDeviceWrapper : public thrust::device_vector<RealType>
     template<typename... Args>
     ThrustDeviceWrapper(Args&&... args) : thrust::device_vector<RealType>(std::forward<Args>(args)...)
     {}
-
-    RealType* data()
+    
+    const RealType* data() const
     {
         return thrust::raw_pointer_cast(thrust::device_vector<RealType>::data());
     }
@@ -89,8 +74,11 @@ class ThrustDeviceWrapper : public thrust::device_vector<RealType>
 
 //Particle data structure
 template<typename Real>
-struct pdata
+struct part
 {
+    Real x;
+    Real y;
+    Real z;
     Real px;
     Real py;
     Real pz;
@@ -106,324 +94,210 @@ struct pdata
 
 
 //*********************** BREIT WHEELER ENGINE: optical depth evolution kernel ******************************
-template <typename Real, typename TableType, pxr::unit_system UnitSystem>
+template <typename Real, typename TableType>
 __global__ void bw_opt_depth_evol(
 	int n,
-	Real* p_data, Real dt, const TableType ref_table, Real ref = 1.0)
+	part<Real>* p_data, Real dt, const TableType ref_table)
 {
 	int i = blockIdx.x*blockDim.x + threadIdx.x;
-	
-	const Real ref_mom = mec<Real>*pxr::conv<
-        pxr::quantity::momentum,
-        pxr::unit_system::SI,
-        UnitSystem,
-        Real>::fact(1.0, ref);
-        
-    const Real ref_en = mec2<Real>*pxr::conv<
-        pxr::quantity::energy,
-        pxr::unit_system::SI,
-        UnitSystem,
-        Real>::fact(1.0, ref);
-	
+
 	if (i < n){
-	    const auto px = p_data[10*i+0];
-	    const auto py = p_data[10*i+1];
-	    const auto pz = p_data[10*i+2];
-	    const auto ex = p_data[10*i+3];
-	    const auto ey = p_data[10*i+4];
-	    const auto ez = p_data[10*i+5];
-	    const auto bx = p_data[10*i+6];
-	    const auto by = p_data[10*i+7];
-	    const auto bz = p_data[10*i+8];
-	    auto opt = p_data[10*i+9];
+	    const auto px = p_data[i].px;
+	    const auto py = p_data[i].py;
+	    const auto pz = p_data[i].pz;
+	    const auto ex = p_data[i].ex;
+	    const auto ey = p_data[i].ey;
+	    const auto ez = p_data[i].ez;
+	    const auto bx = p_data[i].bx;
+	    const auto by = p_data[i].by;
+	    const auto bz = p_data[i].bz;
+	    auto opt = p_data[i].opt;
 	    	    
-        const auto chi = pxr::chi_photon<Real, UnitSystem>(
-            px, py, pz, ex, ey, ez, bx, by, bz, ref);
+        const auto chi = pxr::chi_photon<Real, pxr::unit_system::SI>(
+            px, py, pz, ex, ey, ez, bx, by, bz);
             
-        const auto ppx = px/ref_mom;
-	    const auto ppy = py/ref_mom;
-	    const auto ppz = pz/ref_mom;        
-        const auto gamma = sqrt(ppx*ppx + ppy*ppy + ppz*ppz);        
+        const auto ppx = px/mec<Real>;
+	    const auto ppy = py/mec<Real>;
+	    const auto ppz = pz/mec<Real>;        
+        const auto en = (sqrt(1.0 + ppx*ppx + ppy*ppy + ppz*ppz))*mec2<Real>;        
    
-        pxr_bw::evolve_optical_depth<Real,TableType,UnitSystem>(
-            ref_en*gamma, chi, dt, opt,
-            ref_table, ref);
-            
-        //printf("GPU : %d %7.2e %7.2e %7.2e --> %7.2e \n", i, ref_en*gamma, chi, p_data[10*i+9], opt);
-            
-        p_data[10*i+9] = opt;
+        pxr_bw::evolve_optical_depth<Real,TableType>(
+            en, chi, dt, opt,
+            ref_table);            
+        
+        p_data[i].opt = opt;
 	}
 }
 //********************************************************************************************
 
-
-template <typename RealType, pxr::unit_system UnitSystem>
-std::vector<RealType>
-transform_data(const std::vector<pdata<double>>& t_data, RealType ref_quantity = 1.0)
+//*********************** BREIT WHEELER ENGINE: pair generation kernel ******************************
+template <typename Real, typename TableType>
+__global__ void bw_pair_gen(
+	int n,
+	const part<Real>* __restrict__ phot_data,
+	const Real* __restrict__ random_numbers,
+	part<Real>* __restrict__ ele_data,
+	part<Real>* __restrict__ pos_data,
+	const TableType ref_table)
 {
-    const auto factP = pxr::conv<
-        pxr::quantity::momentum,
-        pxr::unit_system::SI,
-        UnitSystem,
-        RealType>::fact(1.0, ref_quantity);
+	int i = blockIdx.x*blockDim.x + threadIdx.x;
 
-    const auto factE = pxr::conv<
-        pxr::quantity::E,
-        pxr::unit_system::SI,
-        UnitSystem,
-        RealType>::fact(1.0, ref_quantity);
+	if (i < n){
+	    const auto px = phot_data[i].px;
+	    const auto py = phot_data[i].py;
+	    const auto pz = phot_data[i].pz;
+	    const auto ex = phot_data[i].ex;
+	    const auto ey = phot_data[i].ey;
+	    const auto ez = phot_data[i].ez;
+	    const auto bx = phot_data[i].bx;
+	    const auto by = phot_data[i].by;
+	    const auto bz = phot_data[i].bz;
+	    	    
+        const auto chi = pxr::chi_photon<Real, pxr::unit_system::SI>(
+            px, py, pz, ex, ey, ez, bx, by, bz);
+                  
+        const auto phot_mom = pxr_m::vec3<Real>{px, py, pz};
+        auto ele_mom = pxr_m::vec3<Real>{};   
+        auto pos_mom = pxr_m::vec3<Real>{};
         
-    const auto factB = pxr::conv<
-        pxr::quantity::B,
-        pxr::unit_system::SI,
-        UnitSystem,
-        RealType>::fact(1.0, ref_quantity);
-
-    auto data_gpu = std::vector<RealType>(t_data.size()*10);
-
-    for(int i = 0; i < t_data.size() ; ++i)
-    {
-        data_gpu[10*i+0] =  static_cast<RealType>(factP * t_data[i].px);
-        data_gpu[10*i+1] =  static_cast<RealType>(factP * t_data[i].py);
-        data_gpu[10*i+2] =  static_cast<RealType>(factP * t_data[i].pz);
-        data_gpu[10*i+3] =  static_cast<RealType>(factE * t_data[i].ex);
-        data_gpu[10*i+4] =  static_cast<RealType>(factE * t_data[i].ey);
-        data_gpu[10*i+5] =  static_cast<RealType>(factE * t_data[i].ez);
-        data_gpu[10*i+6] =  static_cast<RealType>(factB * t_data[i].bx);
-        data_gpu[10*i+7] =  static_cast<RealType>(factB * t_data[i].by);
-        data_gpu[10*i+8] =  static_cast<RealType>(factB * t_data[i].bz);
-        data_gpu[10*i+9] = static_cast<RealType>(t_data[i].opt);
-    }
-    
-    return data_gpu;
+        const auto unf_zero_one_minus_epsi = random_numbers[i];           
+   
+        pxr_bw::generate_breit_wheeler_pairs<Real,TableType, pxr::unit_system::SI>(
+            chi, phot_mom, unf_zero_one_minus_epsi,
+            ref_table,
+            ele_mom, pos_mom);
+        
+        ele_data[i].x = phot_data[i].x;
+        ele_data[i].y = phot_data[i].y;
+        ele_data[i].z = phot_data[i].z;
+        ele_data[i].px = ele_mom[0];
+        ele_data[i].py = ele_mom[1];
+        ele_data[i].pz = ele_mom[2];
+        pos_data[i].ex = phot_data[i].x;
+        pos_data[i].ey = phot_data[i].y;
+        pos_data[i].ez = phot_data[i].z;
+        pos_data[i].bx = pos_mom[0];
+        pos_data[i].by = pos_mom[1];
+        pos_data[i].bz = pos_mom[2]; 
+	}
 }
+//********************************************************************************************
 
-
-template <typename RealType, typename TableViewType, pxr::unit_system UnitSystem>
-void do_dndt_test_units(
+template <typename TableViewType>
+void do_dndt_test(
     TableViewType table,
-    const std::vector<pdata<double>>& t_data, RealType dt, const std::vector<double>& sol,
-    RealType ref_quantity = 1.0)
+    const std::vector<part<double>>& t_data, double dt)
 {
-    auto how_many = t_data.size();
-    auto data_gpu = transform_data<RealType, UnitSystem>(t_data);
-    const auto bytesize = t_data.size()*10*sizeof(RealType);
-    RealType* d_data;
+    auto data = t_data;
+    auto how_many = data.size();
+    const auto bytesize = t_data.size()*sizeof(part<double>);
+    part<double>* d_data;
     cudaMalloc(&d_data, bytesize);
     
-    cudaMemcpy(d_data, data_gpu.data(), bytesize, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_data, data.data(), bytesize, cudaMemcpyHostToDevice);
     
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
 
     cudaEventRecord(start);    
-    bw_opt_depth_evol<RealType, TableViewType, UnitSystem>
+    bw_opt_depth_evol<double, TableViewType>
         <<<(how_many+255)/256, 256>>>(
-            how_many, d_data, dt, table, ref_quantity);
+            how_many, d_data, dt, table);
     cudaEventRecord(stop);
             
-    cudaMemcpy(data_gpu.data(), d_data, bytesize, cudaMemcpyDeviceToHost);
+    cudaMemcpy(data.data(), d_data, bytesize, cudaMemcpyDeviceToHost);
     
-    int fail_count = 0;
-    
-    #pragma omp parallel for
-    for(int i = 0; i < t_data.size(); ++i){
-        const auto diff = data_gpu[10*i+9] - sol[i];
-        const auto diff_norm = (sol[i] != 0.0 )?(diff):(diff/sol[i]); 
-        if (diff_norm > tolerance<RealType>()){
-            #pragma atomic
-            fail_count++;
-        }
-    }
-
     cudaEventSynchronize(stop);
     float milliseconds = 0;
     cudaEventElapsedTime(&milliseconds, start, stop);
-    std::cout << "      elapsed time : " << milliseconds << " ms ";
-    if (fail_count == 0)
-        std::cout << "[ OK! ]\n";
-    else
-        std::cout << "[ "<< fail_count*100.0/t_data.size() <<" % FAILS :-( ]\n"; 
+    std::cout << "      elapsed time : " << milliseconds << " ms \n";
     
+    //hack
+    if(data[0].px + data[how_many/2].py + data[how_many -1].pz != 0.0){
+        std::cout.flush();
+    }
+      
     cudaFree(d_data);
 }
 
-template <typename RealType, typename TableViewType>
-void do_dndt_test(
-    TableViewType table, std::vector<pdata<double>> data, RealType dt,
-    std::vector<double> sol, RealType rlambda, RealType romega)
+template <typename TableViewType>
+void do_pair_prod_test(
+    TableViewType table,
+    const std::vector<part<double>>& t_data, double dt)
 {
-    auto dt_l = dt * pxr::conv<
-        pxr::quantity::time,
-        pxr::unit_system::SI,
-        pxr::unit_system::norm_lambda,
-        RealType>::fact(1.0, rlambda);
-        
-    auto dt_o = dt * pxr::conv<
-        pxr::quantity::time,
-        pxr::unit_system::SI,
-        pxr::unit_system::norm_omega,
-        RealType>::fact(1.0, romega);
-        
-    auto dt_hl = dt * pxr::conv<
-        pxr::quantity::time,
-        pxr::unit_system::SI,
-        pxr::unit_system::heaviside_lorentz,
-        RealType>::fact();   
+    auto data = t_data;
+    auto ele_data = t_data;
+    auto pos_data = t_data;
+    auto how_many = data.size();
+    const auto bytesize = t_data.size()*sizeof(part<double>);
+    part<double>* d_data;
+    part<double>* d_ele_data;
+    part<double>* d_pos_data;
+    double* d_rand;
+    cudaMalloc(&d_data, bytesize);
+    cudaMalloc(&d_ele_data, bytesize);
+    cudaMalloc(&d_pos_data, bytesize);
+    cudaMalloc(&d_rand, sizeof(double)*how_many);
     
-    std::cout << "      performing test in SI units:          "; std::cout.flush();
-    do_dndt_test_units<RealType, TableViewType, pxr::unit_system::SI>(table, data, dt, sol);
+    cudaMemcpy(d_data, data.data(), bytesize, cudaMemcpyHostToDevice);
     
-    std::cout << "      performing test in norm_omega units:  "; std::cout.flush();
-    do_dndt_test_units<RealType, TableViewType, pxr::unit_system::norm_omega>(table, data, dt_o, sol, romega);
-    
-    std::cout << "      performing test in norm_lambda units: "; std::cout.flush();
-    do_dndt_test_units<RealType, TableViewType, pxr::unit_system::norm_lambda>(table, data, dt_l, sol, rlambda);
-    
-    std::cout << "      performing test in HL units:          "; std::cout.flush();
-    do_dndt_test_units<RealType, TableViewType, pxr::unit_system::heaviside_lorentz>(table, data, dt_hl, sol);
-}
+    curandGenerator_t gen;
+    curandCreateGenerator(&gen, CURAND_RNG_PSEUDO_DEFAULT);
+    curandSetPseudoRandomGeneratorSeed(gen, random_seed);
+   
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
 
-template<typename TableType>
-std::vector<double> dndt_calculate_solution(const std::vector<pdata<double>>& data, double dt, TableType table)
-{
-    std::vector<double> res(data.size());
-       
-    #pragma omp parallel for
-    for(int i = 0; i < data.size(); ++i)
-    {
-        auto opt = data[i].opt;
-        const auto chi = pxr::chi_photon<double, pxr::unit_system::SI>(
-            data[i].px, data[i].py, data[i].pz, data[i].ex, data[i].ey, data[i].ez,  data[i].bx, data[i].by, data[i].bz);
+    cudaEventRecord(start);
+    curandGenerateUniformDouble(gen, d_rand, how_many);  
+    bw_pair_gen<double, TableViewType>
+        <<<(how_many+255)/256, 256>>>(
+            how_many, d_data, d_rand, d_ele_data, d_pos_data, table);
+    cudaEventRecord(stop);
             
-        const double ppx = data[i].px/mec<>;
-	    const double ppy = data[i].py/mec<>;
-	    const double ppz = data[i].pz/mec<>;        
-        const double en = mec2<>*sqrt(ppx*ppx + ppy*ppy + ppz*ppz);   
+    cudaMemcpy(ele_data.data(), d_ele_data, bytesize, cudaMemcpyDeviceToHost);
+    cudaMemcpy(pos_data.data(), d_pos_data, bytesize, cudaMemcpyDeviceToHost);
     
-        pxr_bw::evolve_optical_depth<double, TableType, pxr::unit_system::SI>(
-             en, chi, dt, opt, 
-            table);
-            
-        //printf("CPU : %d %7.2e %7.2e %7.2e --> %7.2e \n", i, en, chi, data[i].opt, opt);
-        res[i] = opt;
-        
-        
-    } 
-    return res;
-}
-
-
-auto generate_dndt_table_cpu(double chi_min, double chi_max, int table_size)
-{
-    std::cout << "Preparing dndt table for CPU..."; std::cout.flush();
-    pxr_bw::dndt_lookup_table_params<double> bw_params{chi_min, chi_max, table_size};
-	
-	auto table = pxr_bw::dndt_lookup_table<
-        double, std::vector<double>,
-        pxr_bw::dndt_table_out_policy::approx>{bw_params};
-	
-    const auto all_coords = table.get_all_coordinates();
-    auto all_vals = std::vector<double>(all_coords.size());
+    cudaEventSynchronize(stop);
+    float milliseconds = 0;
+    cudaEventElapsedTime(&milliseconds, start, stop);
+    std::cout << "      elapsed time : " << milliseconds << " ms \n";
     
-    #pragma omp parallel for
-    for (int i = 0; i < all_vals.size(); ++i){
-        all_vals[i] = pxr_bw::compute_T_function(all_coords[i]);
+    //hack
+    if(ele_data[0].px + pos_data[how_many/2].py + ele_data[how_many -1].pz != 0.0){
+        std::cout.flush();
     }
-    
-    if(!table.set_all_vals(all_vals) )
-        throw "Fail!";
-        
-    auto table_extrema = pxr_bw::dndt_lookup_table<
-        double, std::vector<double>,
-		pxr_bw::dndt_table_out_policy::extrema>{bw_params};
-		
-    if(!table_extrema.set_all_vals(all_vals) )
-        throw "Fail!";	
-        
-    std::cout << "done! \n"; std::cout.flush();
-    return std::make_pair(table, table_extrema);
+      
+    cudaFree(d_data);
+    cudaFree(d_ele_data);
+    cudaFree(d_pos_data);
+    cudaFree(d_rand);
 }
 
-
-template <typename RealType>
-auto generate_dndt_table_gpu(RealType chi_min, RealType chi_max, int table_size)
-{
-    std::cout << "Preparing dndt table [" << typeid(RealType).name() << ", " << table_size <<"]..."; std::cout.flush();
-    pxr_bw::dndt_lookup_table_params<RealType> bw_params{chi_min, chi_max, table_size};
-	
-	auto table = pxr_bw::dndt_lookup_table<
-        RealType, ThrustDeviceWrapper<RealType>,
-		pxr_bw::dndt_table_out_policy::approx>{bw_params};
-	
-    const auto all_coords = table.get_all_coordinates();
-    auto all_vals = std::vector<RealType>(all_coords.size());
-    
-    #pragma omp parallel for
-    for (int i = 0; i < all_vals.size(); ++i){
-        all_vals[i] = pxr_bw::compute_T_function(all_coords[i]);
-    }
-    
-    if(!table.set_all_vals(all_vals) )
-        throw "Fail!";
-        
-    auto table_extrema = pxr_bw::dndt_lookup_table<
-        RealType, ThrustDeviceWrapper<RealType>,
-		pxr_bw::dndt_table_out_policy::extrema>{bw_params};
-		
-    if(!table_extrema.set_all_vals(all_vals) )
-        throw "Fail!";	
-        
-    std::cout << "done! \n"; std::cout.flush();
-    return std::make_pair(table, table_extrema);
-}
-
-
-std::vector<pdata<double>> dndt_prepare_data(
-    int how_many, double chi_min, double chi_max, double frac_out_low, double frac_out_high,
-    double pscale, double fscale)
+std::vector<part<double>>
+prepare_data(
+    int how_many, double pscale, double fscale)
 {
     std::cout << "Preparing data..."; std::cout.flush();    
     
-    auto data = std::vector<pdata<double>>(how_many);
+    auto data = std::vector<part<double>>(how_many);
     
     std::mt19937 rng{};
     std::uniform_real_distribution<double> pp{-pscale*mec<>,pscale*mec<>};
     std::uniform_real_distribution<double> ee{ -Es*fscale, Es*fscale};
     std::uniform_real_distribution<double> bb{ -Bs*fscale, Bs*fscale};
-    std::uniform_real_distribution<double> zero_one{0.0,1.0};
+    std::uniform_real_distribution<double> pos{0.0,1.0};
     auto exp_dist = std::exponential_distribution<double>(1.0);
     
     for(int i = 0; i < how_many; ++i){
-        double chi = 0.0;
-        double px,py,pz,ex,ey,ez,bx,by,bz,opt;
-        do{
-            px = pp(rng); py = pp(rng); pz = pp(rng);
-            ex = ee(rng); ey = ee(rng); ez = ee(rng);
-            bx = bb(rng); by = bb(rng); bz = bb(rng);
-            chi = pxr::chi_photon<double, pxr::unit_system::SI>(
-                px, py, pz, ex, ey, ez, bx, by, bz);
-        } while(chi < chi_min || chi > chi_max);
-        
-        double cumulative_prob = zero_one(rng);
-        
-        if(cumulative_prob < frac_out_low){
-            do{
-                px *= 0.5; py *= 0.5; pz *= 0.5;
-                chi = pxr::chi_photon<double, pxr::unit_system::SI>(
-                    px, py, pz, ex, ey, ez, bx, by, bz);
-            } while(chi >= chi_min);
-        }
-        else if(cumulative_prob < (frac_out_low+frac_out_high)){
-            do{
-                px = 2.0*px + mec<>; py = 2.0*py + mec<>; pz = 2.0*pz + mec<>;
-                chi = pxr::chi_photon<double, pxr::unit_system::SI>(
-                    px, py, pz, ex, ey, ez, bx, by, bz);
-            } while(chi <= chi_max);        
-        }
-        opt = exp_dist(rng);
-        data[i] = pdata<double>{px,py,pz,ex,ey,ez,bx,by,bz,opt};       
+        data[i] = part<double>{
+            pos(rng),pos(rng),pos(rng),
+            pp(rng),pp(rng),pp(rng),
+            ee(rng),ee(rng),ee(rng),
+            bb(rng),bb(rng),bb(rng),
+            exp_dist(rng)};               
     }
     
     std::cout << "done!\n"; std::cout.flush();    
@@ -431,91 +305,53 @@ std::vector<pdata<double>> dndt_prepare_data(
     return data;    
 }
 
-void do_dndt_test()
+template <typename RealType>
+auto generate_dndt_table_gpu(RealType chi_min, RealType chi_max, int chi_size)
 {
-    std::cout << "--- dndt table ---\n";
-     
-    const auto data = dndt_prepare_data(
-        test_size, dndt_chi_min, dndt_chi_max, dndt_frac_out_low, dndt_frac_out_high,
-        max_intable_normalized_momentum, max_intable_normalized_field);
+    std::cout << "Preparing dndt table [" << typeid(RealType).name() << ", " << chi_size <<"]...\n";
+    std::cout.flush();
+    
+    pxr_bw::dndt_lookup_table_params<RealType> bw_params{chi_min, chi_max, chi_size};
+	
+	auto table = pxr_bw::dndt_lookup_table<
+        RealType, ThrustDeviceWrapper<RealType>>{bw_params};
+        
+    table.template generate<pxr_bw::generation_policy::force_internal_double>();
+	
+    return table;
+}
 
-    auto tables_d1= generate_dndt_table_gpu<double>(dndt_chi_min, dndt_chi_max, dndt_table_size_1);
-    auto tables_f1= generate_dndt_table_gpu<float>(dndt_chi_min, dndt_chi_max, dndt_table_size_1);
-    auto tables_d2= generate_dndt_table_gpu<double>(dndt_chi_min, dndt_chi_max, dndt_table_size_2);
-    auto tables_f2= generate_dndt_table_gpu<float>(dndt_chi_min, dndt_chi_max, dndt_table_size_2);
+template <typename RealType>
+auto generate_pair_table_gpu(RealType chi_min, RealType chi_max, int chi_size, int frac_size)
+{
+    std::cout << "Preparing pair production table [" << typeid(RealType).name() << ", " << chi_size << " x " << frac_size <<"]...\n";
+    std::cout.flush();
     
-    auto dndt_d1_approx = tables_d1.first;
-    auto dndt_d1_extrema = tables_d1.second;
-    auto dndt_f1_approx = tables_f1.first;
-    auto dndt_f1_extrema = tables_f1.second;
-    auto dndt_d2_approx = tables_d2.first;
-    auto dndt_d2_extrema = tables_d2.second;
-    auto dndt_f2_approx = tables_f2.first;
-    auto dndt_f2_extrema = tables_f2.second;
-    
-    auto v_dndt_d1_approx = dndt_d1_approx.get_view();
-    auto v_dndt_d1_extrema= dndt_d1_extrema.get_view();
-    auto v_dndt_f1_approx = dndt_f1_approx.get_view();
-    auto v_dndt_f1_extrema= dndt_f1_extrema.get_view();
-    auto v_dndt_d2_approx = dndt_d2_approx.get_view();
-    auto v_dndt_d2_extrema= dndt_d2_extrema.get_view();
-    auto v_dndt_f2_approx = dndt_f2_approx.get_view();
-    auto v_dndt_f2_extrema= dndt_f2_extrema.get_view();
-    
-    auto tables_cpu_1 = generate_dndt_table_cpu(dndt_chi_min, dndt_chi_max, dndt_table_size_1);
-    auto tables_cpu_2 = generate_dndt_table_cpu(dndt_chi_min, dndt_chi_max, dndt_table_size_2);
-    auto dndt_dcpu_approx_1 = tables_cpu_1.first;
-    auto dndt_dcpu_extrema_1 = tables_cpu_1.second;
-    auto dndt_dcpu_approx_2 = tables_cpu_2.first;
-    auto dndt_dcpu_extrema_2 = tables_cpu_2.second;
-    std::cout << "Calculating solutions..."; std::cout.flush();
-    const auto sol_approx_1 = dndt_calculate_solution(data, dt_test, dndt_dcpu_approx_1.get_view());
-    const auto sol_extrema_1 = dndt_calculate_solution(data, dt_test, dndt_dcpu_extrema_1.get_view());
-    const auto sol_approx_2 = dndt_calculate_solution(data, dt_test, dndt_dcpu_approx_2.get_view());
-    const auto sol_extrema_2 = dndt_calculate_solution(data, dt_test, dndt_dcpu_extrema_2.get_view());
-    std::cout << "done!\n"; std::cout.flush();    
-    
-    
-    std::cout << "Performing test [double, table_size="<< dndt_table_size_1 <<", out_policy=approx]...\n"; std::cout.flush();
-    do_dndt_test<double,decltype(v_dndt_d1_approx)>(v_dndt_d1_approx, data, dt_test, sol_approx_1, ref_lambda, ref_omega);
-    std::cout << "...done! \n"; std::cout.flush();
-    
-    std::cout << "Performing test [float, table_size="<< dndt_table_size_1 <<", out_policy=approx]...\n"; std::cout.flush();
-    do_dndt_test<float,decltype(v_dndt_f1_approx)>(v_dndt_f1_approx, data, dt_test, sol_approx_1, ref_lambda, ref_omega);
-    std::cout << "...done! \n"; std::cout.flush();
-    
-    std::cout << "Performing test [double, table_size="<< dndt_table_size_1 <<", out_policy=extrema]...\n"; std::cout.flush();
-    do_dndt_test<double,decltype(v_dndt_d1_extrema)>(v_dndt_d1_extrema, data, dt_test, sol_extrema_1, ref_lambda, ref_omega);
-    std::cout << "...done! \n"; std::cout.flush();
-    
-    std::cout << "Performing test [float, table_size="<< dndt_table_size_1 <<", out_policy=extrema]...\n"; std::cout.flush();
-    do_dndt_test<float,decltype(v_dndt_f1_extrema)>(v_dndt_f1_extrema, data, dt_test, sol_extrema_1, ref_lambda, ref_omega);
-    std::cout << "...done! \n"; std::cout.flush();
+    pxr_bw::pair_prod_lookup_table_params<RealType> bw_params{
+        chi_min, chi_max, chi_size, frac_size};
+	
+	auto table = pxr_bw::pair_prod_lookup_table_logchi_linfrac<
+        RealType, ThrustDeviceWrapper<RealType>>{bw_params};
+        
+    table.template generate<pxr_bw::generation_policy::force_internal_double>();
+	
+    return table;
+}
 
-    std::cout << "Performing test [double, table_size="<< dndt_table_size_2 <<", out_policy=approx]...\n"; std::cout.flush();
-    do_dndt_test<double,decltype(v_dndt_d2_approx)>(v_dndt_d2_approx, data, dt_test, sol_approx_2, ref_lambda, ref_omega);
-    std::cout << "...done! \n"; std::cout.flush();
- 
-    std::cout << "Performing test [float, table_size="<< dndt_table_size_2 <<", out_policy=approx]...\n"; std::cout.flush();
-    do_dndt_test<float,decltype(v_dndt_f2_approx)>(v_dndt_f2_approx, data, dt_test, sol_approx_2, ref_lambda, ref_omega);
-    std::cout << "...done! \n"; std::cout.flush();
+void do_test()
+{
+    const auto data = prepare_data(test_size, max_normalized_momentum, max_normalized_field);
+    const auto dndt_d_table = generate_dndt_table_gpu<double>(table_chi_min, table_chi_max, table_chi_size);
+    const auto pair_d_table = generate_pair_table_gpu<double>(table_chi_min, table_chi_max, table_chi_size, table_frac_size);
     
-    std::cout << "Performing test [double, table_size="<< dndt_table_size_2 <<", out_policy=extrema]...\n"; std::cout.flush();
-    do_dndt_test<double,decltype(v_dndt_d2_extrema)>(v_dndt_d2_extrema, data, dt_test, sol_extrema_2, ref_lambda, ref_omega);
-    std::cout << "...done! \n"; std::cout.flush();
-
-    std::cout << "Performing test [float, table_size="<< dndt_table_size_2 <<", out_policy=extrema]...\n"; std::cout.flush();
-    do_dndt_test<float,decltype(v_dndt_f2_extrema)>(v_dndt_f2_extrema, data, dt_test, sol_extrema_2, ref_lambda, ref_omega);
-    std::cout << "...done! \n"; std::cout.flush();
-
-    
-    std::cout << "\n--- END ---\n";    
+    do_dndt_test(dndt_d_table.get_view(), data, dt_test);
+    do_pair_prod_test(pair_d_table.get_view(), data, dt_test);
 }
 
 int main()
 {
     std::cout << "*** Breit Wheeler engine GPU test *** \n \n";    
-    do_dndt_test();    
+    do_test();    
     std::cout << "\n*** END ***\n";
 	return 0;
 }
