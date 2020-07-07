@@ -47,7 +47,6 @@ namespace quantum_sync{
     constexpr RealType compute_y(
         const RealType chi_part, const RealType csi) noexcept
     {
-
         return math::two_thirds<RealType>*
             csi/(chi_part*(math::one<RealType> - csi));
     }
