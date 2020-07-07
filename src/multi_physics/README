@@ -1,21 +1,11 @@
-In order to test the PICSAR MULTIPHYSICS library
-(which is header only) just do in this folder:
+The PICSAR MULTIPHYSICS library is a header only libray.
+Unit tests can be compiled and run with the following commands:
 
-mkdir build
-cd build/
-cmake ../.
-make
-make test
+$ mkdir build
+$ cd build/
+$ cmake ../.
+$ make
+$ make test
 
-In order to test the integration of the PICSAR MULTIPHYSICS
-library with a test program, do the following:
-
-cd test_program/
-mkdir build
-cd build/
-cmake ../.
-make
-./bin_test_qed/testbed
-
-The first time the program will be VERY slow because
-it has to compute the lookup tables.
+QED_tests/validation contains a Jupyter notebook with details
+concerning the physical models used in the library.

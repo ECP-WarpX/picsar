@@ -37,9 +37,15 @@ namespace multi_physics{
 namespace phys{
 namespace breit_wheeler{
 
-    //______________________GPU
-    //get a single optical depth
-    //same as above but conceived for GPU usage
+    /**
+    * Computes the optical depth of a new photon (simply a number)
+    * extracted from an exponential distribution.
+    *
+    * @tparam RealType the floating point type to be used
+    * @param[in] unf_zero_one_minus_epsi a random number uniformly distributed in [0,1)
+    *
+    * @return an exponentially distributed random number
+    */
     template<typename RealType>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
@@ -50,8 +56,21 @@ namespace breit_wheeler{
     }
 
 
-    //______________________GPU
-    //Interp the dN_dt from table (with GPU use directly this one!)
+    /**
+    * Computes dN/dt for Breit-Wheeler pair production. Needs a
+    * lookup table to provide T(chi_photon).
+    *
+    * @tparam RealType the floating point type to be used
+    * @tparam TableType the type of the lookup table to be used. Must have an "interp" method.
+    * @tparam UnitSystem unit system to be used (default is SI)
+    *
+    * @param[in] t_energy_phot photon energy
+    * @param[in] chi_phot photon chi parameter
+    * @param[in] ref_dndt_table a reference to the lookup table
+    * @param[in] ref_quantity omega or lambda in SI units if norm_omega or norm_lambda unit systems are used
+    *
+    * @return total pair production cross section dN/dt in UnitSystem
+    */
     template<
         typename RealType,
         typename TableType,
@@ -83,8 +102,23 @@ namespace breit_wheeler{
             UnitSystem, RealType>::fact(math::one<RealType>,ref_quantity);
     }
 
-    //______________________GPU
-    //Evolve optical depth (with GPU use directly this one!)
+    /**
+    * Evolves the optical depth of a photon for Breit-Wheeler pair production.
+    * Needs a lookup table to provide T(chi_photon).
+    *
+    * @tparam RealType the floating point type to be used
+    * @tparam TableType the type of the lookup table to be used. Must have an "interp" method.
+    * @tparam UnitSystem unit system to be used (default is SI)
+    *
+    * @param[in] t_energy_phot photon energy
+    * @param[in] chi_phot photon chi parameter
+    * @param[in] t_dt timestep
+    * @param[in,out] the optical depth
+    * @param[in] ref_dndt_table a reference to the lookup table
+    * @param[in] ref_quantity omega or lambda in SI units if norm_omega or norm_lambda unit systems are used
+    *
+    * @return true if optical_depth becomes negative
+    */
     template<
         typename RealType,
         typename TableType,
@@ -114,10 +148,25 @@ namespace breit_wheeler{
         return (optical_depth <= math::zero<RealType>);
     }
 
-    //______________________GPU
-    //This function computes the properties of the electron-positron pairs
-    //generated in a BW process.
-    //Conceived for GPU usage.
+    /**
+    * Computes the properties of particles emitted in Breit-Wheeler pair production.
+    * Needs a lookup table storing a cumulative probability distribution to
+    * calculate the chi parameter of the emitted electron. This lookup table
+    * has to provide an "interp" method, accepting the chi of the photon and
+    * a uniformly distributed random number in [0,1) as parameters.
+    *
+    * @tparam RealType the floating point type to be used
+    * @tparam TableType the type of the lookup table to be used. Must have an "interp" method.
+    * @tparam UnitSystem unit system to be used (default is SI)
+    *
+    * @param[in] chi_phot photon chi parameter
+    * @param[in] t_v_momentum_photon 3-momentum of the photon
+    * @param[in] unf_zero_one_minus_epsi a random number uniformly distributed in [0,1)
+    * @param[out] ele_momentum momentum of the generated electron
+    * @param[out] pos_momentum momentum of the generated positron
+    * @param[in] ref_quantity omega or lambda in SI units if norm_omega or norm_lambda unit systems are used
+    *
+    */
     template<
         typename RealType, typename TableType,
         unit_system UnitSystem = unit_system::SI
