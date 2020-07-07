@@ -41,7 +41,7 @@ namespace breit_wheeler{
     //Reasonable default values for the dndt_lookup_table_params
     //and the pair_prod_lookup_table_params (see below)
     template <typename T>
-    constexpr T default_chi_phot_min = 1.0e-3; /*Default minimum photon chi parameter*/
+    constexpr T default_chi_phot_min = 1.0e-2; /*Default minimum photon chi parameter*/
     template <typename T>
     constexpr T default_chi_phot_max = 1.0e3; /* Default maximum photon chi parameter*/
     const int default_chi_phot_how_many = 256; /* Default number of grid points for photon chi */
@@ -75,7 +75,7 @@ namespace breit_wheeler{
     };
 
     /**
-    * The defaultd dndt_lookup_table_params
+    * The default dndt_lookup_table_params
     *
     * @tparam RealType the floating point type to be used
     */
@@ -133,6 +133,11 @@ namespace breit_wheeler{
     }
     //__________________________________________________________
 
+    /**
+    * generation_policy::force_internal_double can be used to force the
+    * calulcations of a lookup tables using double precision, even if
+    * the final result is stored in a single precision variable.
+    */
     enum class generation_policy{
         regular,
         force_internal_double
@@ -367,12 +372,12 @@ namespace breit_wheeler{
         template<
         typename RealType,
         typename VectorType>
-    class pair_prod_lookup_table_logchi_linfrac{
+    class pair_prod_lookup_table{
         public:
-            typedef const pair_prod_lookup_table_logchi_linfrac<
+            typedef const pair_prod_lookup_table<
                 RealType, containers::picsar_span<const RealType>> view_type;
 
-            pair_prod_lookup_table_logchi_linfrac(
+            pair_prod_lookup_table(
                 pair_prod_lookup_table_params<RealType> params):
             m_params{params},
             m_table{containers::equispaced_2d_table<RealType, VectorType>{
@@ -384,7 +389,7 @@ namespace breit_wheeler{
                     VectorType(params.chi_phot_how_many * params.how_many_frac)}}
             {};
 
-            pair_prod_lookup_table_logchi_linfrac(
+            pair_prod_lookup_table(
                 pair_prod_lookup_table_params<RealType> params,
                 VectorType vals):
             m_params{params},
@@ -402,7 +407,7 @@ namespace breit_wheeler{
             template <generation_policy Policy = generation_policy::regular>
             void generate(bool show_progress = true);
 
-            pair_prod_lookup_table_logchi_linfrac(std::vector<char>& raw_data)
+            pair_prod_lookup_table(std::vector<char>& raw_data)
             {
                 using namespace utils;
 
@@ -433,7 +438,7 @@ namespace breit_wheeler{
 
             PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
             bool operator== (
-                const pair_prod_lookup_table_logchi_linfrac<
+                const pair_prod_lookup_table<
                     RealType, VectorType> &b) const
             {
                 return

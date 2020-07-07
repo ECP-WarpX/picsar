@@ -82,7 +82,7 @@ namespace breit_wheeler{
     template<typename RealType, typename VectorType>
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     std::vector<RealType>
-    pair_prod_lookup_table_logchi_linfrac<RealType, VectorType>::
+    pair_prod_lookup_table<RealType, VectorType>::
     aux_generate_double(const RealType x, const std::vector<RealType>& y)
     {
         auto dtemp = std::vector<double>(y.size());
@@ -98,7 +98,7 @@ namespace breit_wheeler{
 
     template<typename RealType, typename VectorType>
     template<generation_policy Policy>
-    void pair_prod_lookup_table_logchi_linfrac<RealType, VectorType>::generate(
+    void pair_prod_lookup_table<RealType, VectorType>::generate(
         const bool show_progress)
     {
         constexpr bool use_internal_double =

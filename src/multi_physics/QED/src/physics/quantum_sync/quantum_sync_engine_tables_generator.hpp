@@ -82,7 +82,7 @@ namespace quantum_sync{
     template<typename RealType, typename VectorType>
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     std::vector<RealType>
-    photon_emission_lookup_table_logchi_logfrac<RealType, VectorType>::
+    photon_emission_lookup_table<RealType, VectorType>::
     aux_generate_double(const RealType x, const std::vector<RealType>& y)
     {
         auto dtemp = std::vector<double>(y.size());
@@ -98,7 +98,7 @@ namespace quantum_sync{
 
     template<typename RealType, typename VectorType>
     template<generation_policy Policy>
-    void photon_emission_lookup_table_logchi_logfrac<RealType, VectorType>::generate(
+    void photon_emission_lookup_table<RealType, VectorType>::generate(
         const bool show_progress)
     {
         constexpr bool use_internal_double =

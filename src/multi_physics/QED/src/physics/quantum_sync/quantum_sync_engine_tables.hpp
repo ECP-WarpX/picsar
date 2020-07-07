@@ -1,43 +1,94 @@
 #ifndef PICSAR_MULTIPHYSICS_QUANTUM_SYNC_ENGINE_TABLES
 #define PICSAR_MULTIPHYSICS_QUANTUM_SYNC_ENGINE_TABLES
 
-#include <algorithm>
-#include <utility>
-#include <vector>
+//This .hpp file contais the implementation of the lookup tables
+//for Quantum Synchrotron photon production.
+//Please have a look at the jupyter notebook "validation.ipynb"
+//in QED_tests/validation for a more in-depth discussion.
+//
+// References:
+// 1) C.P.Ridgers et al. Journal of Computational Physics 260, 1 (2014)
+// 2) A.Gonoskov et al. Phys. Rev. E 92, 023305 (2015)
 
 //Should be included by all the src files of the library
 #include "../../qed_commons.h"
 
 //Uses picsar tables
 #include "../../containers/picsar_tables.hpp"
+//Uses GPU-friendly arrays
 #include "../../containers/picsar_array.hpp"
+//Uses picsar_span
 #include "../../containers/picsar_span.hpp"
-
+//Uses mathematical constants
 #include "../../math/math_constants.h"
-
+//Uses serialization
 #include "../../utils/serialization.hpp"
-//Uses exp and log
+//Uses interpolation and upper_bound
+#include "../../utils/picsar_algo.hpp"
+//Uses log and exp
 #include "../../math/cmath_overloads.hpp"
+
+#include <algorithm>
+#include <vector>
 
 namespace picsar{
 namespace multi_physics{
 namespace phys{
 namespace quantum_sync{
 
+    //Reasonable default values for the dndt_lookup_table_params
+    //and the pair_prod_lookup_table_params (see below)
+    template <typename T>
+    constexpr T default_chi_part_min = 1.0e-3; /*Default minimum particle chi parameter*/
+    template <typename T>
+    constexpr T default_chi_part_max = 1.0e3; /* Default maximum particle chi parameter*/
+    const int default_chi_part_how_many = 256; /* Default number of grid points for particle chi */
+    const int default_how_many_frac = 256; /* Default number of grid points for photon chi */
+
+    /**
+    * This structure holds the parameters to generate a dN/dt
+    * lookup table. The dN/dt lookup table stores the values of the
+    * T function (see validation script)
+    *
+    * @tparam RealType the floating point type to be used
+    */
     template<typename RealType>
     struct dndt_lookup_table_params{
-        RealType chi_part_min; //Min chi_phot
-        RealType chi_part_max; //Max chi_phot
-        int chi_part_how_many; //How many points
+        RealType chi_part_min; /*Minimum particle chi parameter*/
+        RealType chi_part_max; /*Maximum particle chi parameter*/
+        int chi_part_how_many; /* Number of grid points for particle chi */
 
-        bool operator== (const dndt_lookup_table_params<RealType> &b) const
+        /**
+        * Operator==
+        *
+        * @param[in] rhs a structure of the same type
+        * @return true if rhs is equal to *this. false otherwise
+        */
+        bool operator== (const dndt_lookup_table_params<RealType> &rhs) const
         {
-            return (chi_part_min == b.chi_part_min) &&
-                (chi_part_max == b.chi_part_max) &&
-                (chi_part_how_many == b.chi_part_how_many);
+            return (chi_part_min == rhs.chi_part_min) &&
+                (chi_part_max == rhs.chi_part_max) &&
+                (chi_part_how_many == rhs.chi_part_how_many);
         }
     };
 
+    /**
+    * The default dndt_lookup_table_params
+    *
+    * @tparam RealType the floating point type to be used
+    */
+    template<typename RealType>
+    constexpr auto default_dndt_lookup_table_params =
+        dndt_lookup_table_params<RealType>{default_chi_part_min<RealType>,
+                                           default_chi_part_max<RealType>,
+                                           default_chi_part_how_many};
+    //__________________________________________________________
+
+    /**
+    * generation_policy::force_internal_double can be used to force the
+    * calulcations of a lookup tables using double precision, even if
+    * the final result is stored in a single precision variable.
+    */
     enum class generation_policy{
         regular,
         force_internal_double
@@ -228,14 +279,14 @@ namespace quantum_sync{
     };
 
 template<typename RealType, typename VectorType>
-class photon_emission_lookup_table_logchi_logfrac
+class photon_emission_lookup_table
 {
 public:
 
-    typedef const photon_emission_lookup_table_logchi_logfrac<
+    typedef const photon_emission_lookup_table<
         RealType, containers::picsar_span<const RealType>> view_type;
 
-    photon_emission_lookup_table_logchi_logfrac(
+    photon_emission_lookup_table(
             photon_emission_lookup_table_params<RealType> params):
         m_params{params},
         m_table{containers::equispaced_2d_table<RealType, VectorType>{
@@ -248,7 +299,7 @@ public:
         {};
 
 
-    photon_emission_lookup_table_logchi_logfrac(
+    photon_emission_lookup_table(
         photon_emission_lookup_table_params<RealType> params,
         VectorType vals):
     m_params{params},
@@ -266,7 +317,7 @@ public:
     template <generation_policy Policy = generation_policy::regular>
     void generate(bool show_progress = true);
 
-    photon_emission_lookup_table_logchi_logfrac(std::vector<char>& raw_data)
+    photon_emission_lookup_table(std::vector<char>& raw_data)
     {
         using namespace utils;
 
@@ -297,7 +348,7 @@ public:
 
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     bool operator== (
-        const photon_emission_lookup_table_logchi_logfrac<
+        const photon_emission_lookup_table<
             RealType, VectorType> &b) const
     {
         return
