@@ -71,7 +71,7 @@ auto get_pair_table()
             static_cast<RealType>(chi_max),
             how_many, how_many_frac};
 
-    return pair_prod_lookup_table_logchi_linfrac<RealType, VectorType>{params};
+    return pair_prod_lookup_table<RealType, VectorType>{params};
 }
 
 
@@ -137,7 +137,7 @@ void check_dndt_table()
     for(int i = 0 ; i < xxs.size() ; ++i){
         const RealType res = table.interp(xxs[i]);
         bool flag_out = false;
-        const RealType res2 = table.interp_flag_out(xxs[i], flag_out);
+        const RealType res2 = table.interp(xxs[i], &flag_out);
         BOOST_CHECK_EQUAL(flag_out, is_out[i]);
         BOOST_CHECK_EQUAL(res, res2);
 
@@ -327,12 +327,12 @@ void check_pair_production_table_serialization()
             static_cast<RealType>(0.1),static_cast<RealType>(10.0),
             3, 3};
 
-    auto table = pair_prod_lookup_table_logchi_linfrac<
+    auto table = pair_prod_lookup_table<
         RealType, VectorType>{params, {1.,2.,3.,4.,5.,6.,7.,8.,9.}};
 
     auto raw_data = table.serialize();
     auto new_table =
-        pair_prod_lookup_table_logchi_linfrac<RealType, VectorType>{raw_data};
+        pair_prod_lookup_table<RealType, VectorType>{raw_data};
 
     BOOST_CHECK_EQUAL(new_table.is_init(), true);
     BOOST_CHECK_EQUAL(new_table == table, true);

@@ -46,7 +46,7 @@ void generate_breit_wheeler_pair_prod_table(
     const int frac_size = 128;
     px_bw::pair_prod_lookup_table_params<RealType> bw_params{1e-4,1e4,chi_size,frac_size};
 
-    auto table = px_bw::pair_prod_lookup_table_logchi_linfrac<
+    auto table = px_bw::pair_prod_lookup_table<
         RealType, std::vector<RealType>>{
             bw_params};
 
@@ -92,7 +92,7 @@ void generate_quantum_sync_photem_table(
     px_qs::photon_emission_lookup_table_params<RealType> qs_params{
         1e-4,1e4,1e-5,chi_size,frac_size};
 
-    auto table = px_qs::photon_emission_lookup_table_logchi_logfrac<
+    auto table = px_qs::photon_emission_lookup_table<
         RealType, std::vector<RealType>>{
             qs_params};
 

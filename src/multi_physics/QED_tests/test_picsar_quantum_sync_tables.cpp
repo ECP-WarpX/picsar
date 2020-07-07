@@ -50,7 +50,7 @@ const double chi_min = 0.001;
 const double chi_max = 1000;
 const int how_many = 500;
 const int how_many_frac = 500;
-const double frac_min = 1e-4;
+const double frac_min = 1e-12;
 
 template <typename RealType, typename VectorType>
 auto get_table()
@@ -73,7 +73,7 @@ auto get_em_table()
             static_cast<RealType>(frac_min),
             how_many, how_many_frac};
 
-    return photon_emission_lookup_table_logchi_logfrac<RealType, VectorType>{params};
+    return photon_emission_lookup_table<RealType, VectorType>{params};
 }
 
 
@@ -140,7 +140,7 @@ void check_dndt_table()
     for(int i = 0 ; i < xxs.size() ; ++i){
         const RealType res = table.interp(xxs[i]);
         bool flag_out = false;
-        const RealType res2 = table.interp_flag_out(xxs[i], flag_out);
+        const RealType res2 = table.interp(xxs[i], &flag_out);
         BOOST_CHECK_EQUAL(flag_out, is_out[i]);
         BOOST_CHECK_EQUAL(res, res2);
 
@@ -296,12 +296,12 @@ void check_photon_emission_table_serialization()
             static_cast<RealType>(0.1),static_cast<RealType>(10.0),
             static_cast<RealType>(1e-5), 3, 3};
 
-    auto table = photon_emission_lookup_table_logchi_logfrac<
+    auto table = photon_emission_lookup_table<
         RealType, VectorType>{params, {1.,2.,3.,4.,5.,6.,7.,8.,9.}};
 
     auto raw_data = table.serialize();
     auto new_table =
-        photon_emission_lookup_table_logchi_logfrac<RealType, VectorType>{raw_data};
+        photon_emission_lookup_table<RealType, VectorType>{raw_data};
 
     BOOST_CHECK_EQUAL(new_table.is_init(), true);
     BOOST_CHECK_EQUAL(new_table == table, true);

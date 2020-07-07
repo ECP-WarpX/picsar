@@ -330,7 +330,7 @@ auto generate_pair_table_gpu(RealType chi_min, RealType chi_max, int chi_size, i
     pxr_bw::pair_prod_lookup_table_params<RealType> bw_params{
         chi_min, chi_max, chi_size, frac_size};
 	
-	auto table = pxr_bw::pair_prod_lookup_table_logchi_linfrac<
+	auto table = pxr_bw::pair_prod_lookup_table<
         RealType, ThrustDeviceWrapper<RealType>>{bw_params};
         
     table.template generate<pxr_bw::generation_policy::force_internal_double>();

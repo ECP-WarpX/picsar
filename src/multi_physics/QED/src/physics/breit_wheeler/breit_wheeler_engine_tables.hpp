@@ -135,7 +135,7 @@ namespace breit_wheeler{
 
     /**
     * generation_policy::force_internal_double can be used to force the
-    * calulcations of a lookup tables using double precision, even if
+    * calculations of a lookup tables using double precision, even if
     * the final result is stored in a single precision variable.
     */
     enum class generation_policy{
@@ -167,7 +167,7 @@ namespace breit_wheeler{
             /**
             * A view_type is essentially a dN/dt lookup table which
             * uses non-owning, constant, pointers to hold the data.
-            * The use of views is crucial for GPUs usage. As demonstrated
+            * The use of views is crucial for GPUs. As demonstrated
             * in test_gpu/test_breit_wheeler.cu, it is possible to:
             * - define a thin wrapper around a thrust::device_vector
             * - use this wrapper as a template parameter for a dndt_lookup_table
@@ -215,15 +215,31 @@ namespace breit_wheeler{
                 m_init_flag = true;
             };
 
+            /*
+            * Generates the content of the lookup table (not usable on GPUs).
+            * This function is implemented elsewhere
+            * (in breit_wheeler_engine_tables_generator.hpp)
+            * since it requires a recent version of the Boost library.
+            *
+            * @tparam Policy the generation policy (can force calculations in double precision)
+            *
+            * @param[in] show_progress if true a progress bar is shown
+            */
             template <generation_policy Policy = generation_policy::regular>
             void generate(const bool show_progress  = true);
 
+            /*
+            * Initializes the lookup table from a byte array.
+            * This method is not usable on GPUs.
+            *
+            * @param[in] raw_data the byte array
+            */
             dndt_lookup_table(std::vector<char>& raw_data)
             {
                 using namespace utils;
 
                 constexpr size_t min_size =
-                    sizeof(char)+//magic_number
+                    sizeof(char)+ //single or double precision
                     sizeof(m_params);
 
                 if (raw_data.size() < min_size)
@@ -247,6 +263,13 @@ namespace breit_wheeler{
                 m_init_flag = true;
             };
 
+            /**
+            * Operator==
+            *
+            * @param[in] rhs a structure of the same type
+            *
+            * @return true if rhs is equal to *this. false otherwise
+            */
             PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
             bool operator== (
                 const dndt_lookup_table<
@@ -258,6 +281,16 @@ namespace breit_wheeler{
                     (m_table == b.m_table);
             }
 
+            /*
+            * Returns a table view for the current table
+            * (i.e. a table built using non-owning picsar_span
+            * vectors). A view_type is very light weight and can
+            * be passed by copy to functions and GPU kernels.
+            * Indeed it contains non-owning pointers to the data
+            * held by the original table.
+            *
+            * @return a table view
+            */
             view_type get_view() const
             {
                 if(!m_init_flag)
@@ -270,29 +303,33 @@ namespace breit_wheeler{
                 return view;
             }
 
+            /*
+            * Uses the lookup table to interpolate T function
+            * at a given position chi_phot. If chi_phot is out
+            * of table an analytical approximation is used.
+            * In addition, it checks if chi_phot is out of table
+            * and stores the result in a bool variable.
+            *
+            * @param[in] chi_phot where the T function is interpolated
+            * @param[out] is_out set to true if chi_phot is out of table
+            *
+            * @return the value of the T function
+            */
             PXRMP_INTERNAL_GPU_DECORATOR
             PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-            RealType interp(RealType chi_phot)  const noexcept
+            RealType interp(
+                RealType chi_phot, bool* const is_out = nullptr) const noexcept
             {
                 if (chi_phot < m_params.chi_phot_min){
+                    if (is_out != nullptr) *is_out = true;
                     return dndt_approx_left<RealType>(chi_phot);
                 }
 
                 if(chi_phot > m_params.chi_phot_max){
+                    if (is_out != nullptr) *is_out = true;
                     return dndt_approx_right<RealType>(chi_phot);
                 }
                 return math::m_exp(m_table.interp(math::m_log(chi_phot)));
-            }
-
-            PXRMP_INTERNAL_GPU_DECORATOR
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-            RealType interp_flag_out(
-                const RealType chi_phot, bool& is_out) const noexcept
-            {
-                is_out = false;
-                if(chi_phot < m_params.chi_phot_min || chi_phot >  m_params.chi_phot_max)
-                    is_out = true;
-                return interp(chi_phot);
             }
 
             std::vector<RealType> get_all_coordinates() const noexcept

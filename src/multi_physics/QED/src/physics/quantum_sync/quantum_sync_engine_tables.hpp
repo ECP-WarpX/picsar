@@ -86,7 +86,7 @@ namespace quantum_sync{
 
     /**
     * generation_policy::force_internal_double can be used to force the
-    * calulcations of a lookup tables using double precision, even if
+    * calculations of a lookup tables using double precision, even if
     * the final result is stored in a single precision variable.
     */
     enum class generation_policy{
@@ -94,17 +94,50 @@ namespace quantum_sync{
         force_internal_double
     };
 
-
+    /**
+    * This class provides the lookup table for dN/dt,
+    * storing the values of the G function (see validation script)
+    * and providing methods to perform interpolations.
+    * It also provides methods for serialization (export to byte array,
+    * import from byte array) and to generate "table views" based on
+    * non-owning poynters (this is crucial in order to use the table
+    * in GPU kernels, as explained below).
+    *
+    * Internally, this table stores log(G(log(chi))).
+    *
+    * @tparam RealType the floating point type to be used
+    * @tparam VectorType the vector type to be used internally (e.g. std::vector)
+    */
     template<
         typename RealType,
         typename VectorType>
-    class dndt_lookup_table{
-
+    class dndt_lookup_table
+    {
         public:
 
+            /**
+            * A view_type is essentially a dN/dt lookup table which
+            * uses non-owning, constant, pointers to hold the data.
+            * The use of views is crucial for GPUs. As demonstrated
+            * in test_gpu/test_quantum_sync.cu, it is possible to:
+            * - define a thin wrapper around a thrust::device_vector
+            * - use this wrapper as a template parameter for a dndt_lookup_table
+            * - initialize the lookup table on the CPU
+            * - generate a view
+            * - pass by copy this view to a GPU kernel (see get_view() method)
+            *
+            * @tparam RealType the floating point type to be used
+            */
             typedef const dndt_lookup_table<
                 RealType, containers::picsar_span<const RealType>> view_type;
 
+            /**
+            * Constructor (not usable on GPUs).
+            * After construction the table is empty. The user has to generate
+            * the G function values before being able to use the table.
+            *
+            * @param params table parameters
+            */
             dndt_lookup_table(dndt_lookup_table_params<RealType> params):
             m_params{params},
             m_table{containers::equispaced_1d_table<RealType, VectorType>{
@@ -113,6 +146,14 @@ namespace quantum_sync{
                     VectorType(params.chi_part_how_many)}}
             {};
 
+            /**
+            * Constructor (not usable on GPUs).
+            * After construction the table is empty. The user has to generate
+            * the G function values before being able to use the table.
+            *
+            * @param params parameters for table generation
+            * @param vals values of the T function
+            */
             dndt_lookup_table(dndt_lookup_table_params<RealType> params,
                 VectorType vals):
             m_params{params},
@@ -124,15 +165,31 @@ namespace quantum_sync{
                 m_init_flag = true;
             };
 
+            /*
+            * Generates the content of the lookup table (not usable on GPUs).
+            * This function is implemented elsewhere
+            * (in breit_wheeler_engine_tables_generator.hpp)
+            * since it requires a recent version of the Boost library.
+            *
+            * @tparam Policy the generation policy (can force calculations in double precision)
+            *
+            * @param[in] show_progress if true a progress bar is shown
+            */
             template <generation_policy Policy = generation_policy::regular>
             void generate(const bool show_progress  = true);
 
+            /*
+            * Initializes the lookup table from a byte array.
+            * This method is not usable on GPUs.
+            *
+            * @param[in] raw_data the byte array
+            */
             dndt_lookup_table(std::vector<char>& raw_data)
             {
                 using namespace utils;
 
                 constexpr size_t min_size =
-                    sizeof(char)+//magic_number
+                    sizeof(char)+ //single or double precision
                     sizeof(m_params);
 
                 if (raw_data.size() < min_size)
@@ -156,6 +213,13 @@ namespace quantum_sync{
                 m_init_flag = true;
             };
 
+            /**
+            * Operator==
+            *
+            * @param[in] rhs a structure of the same type
+            *
+            * @return true if rhs is equal to *this. false otherwise
+            */
             PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
             bool operator== (
                 const dndt_lookup_table<RealType, VectorType> &b) const
@@ -166,6 +230,16 @@ namespace quantum_sync{
                     (m_table == b.m_table);
             }
 
+            /*
+            * Returns a table view for the current table
+            * (i.e. a table built using non-owning picsar_span
+            * vectors). A view_type is very light weight and can
+            * be passed by copy to functions and GPU kernels.
+            * Indeed it contains non-owning pointers to the data
+            * held by the original table.
+            *
+            * @return a table view
+            */
             view_type get_view()
             {
                 if(!m_init_flag)
@@ -178,27 +252,32 @@ namespace quantum_sync{
                 return view;
             }
 
+            /*
+            * Uses the lookup table to interpolate G function
+            * at a given position chi_phot. If chi_part is out
+            * of table either the minimum or the maximum value
+            * is used. In addition, it checks if chi_phot is out of table
+            * and stores the result in a bool variable.
+            *
+            * @param[in] chi_part where the G function is interpolated
+            * @param[out] is_out set to true if chi_part is out of table
+            *
+            * @return the value of the G function
+            */
             PXRMP_INTERNAL_GPU_DECORATOR
             PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-            RealType interp(RealType chi_part)  const noexcept
+            RealType interp(
+                RealType chi_part, bool* const is_out = nullptr) const noexcept
             {
-                if(chi_part<m_params.chi_part_min)
+                if(chi_part<m_params.chi_part_min){
                     chi_part = m_params.chi_part_min;
-                else if (chi_part > m_params.chi_part_max)
+                    if (is_out != nullptr) *is_out = true;
+                }
+                else if (chi_part > m_params.chi_part_max){
                     chi_part = m_params.chi_part_max;
-
+                    if (is_out != nullptr) *is_out = true;
+                }
                 return math::m_exp(m_table.interp(math::m_log(chi_part)));
-            }
-
-            PXRMP_INTERNAL_GPU_DECORATOR
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-            RealType interp_flag_out(
-                const RealType chi_part, bool& is_out) const noexcept
-            {
-                is_out = false;
-                if(chi_part < m_params.chi_part_min || chi_part >  m_params.chi_part_max)
-                    is_out = true;
-                return interp(chi_part);
             }
 
             std::vector<RealType> get_all_coordinates() const noexcept
