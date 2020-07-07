@@ -157,7 +157,7 @@ namespace breit_wheeler{
     *
     * @return the cumulative probability distribution calculated for all the chi parameters
     */
-    template<typename VectorType, typename RealType>
+    template<typename RealType, typename VectorType>
     VectorType compute_cumulative_prob(
         const RealType chi_photon, const VectorType& chis)
     {

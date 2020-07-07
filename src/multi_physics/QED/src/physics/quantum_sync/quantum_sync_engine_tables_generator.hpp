@@ -1,13 +1,13 @@
-#ifndef PICSAR_MULTIPHYSICS_BREIT_WHEELER_ENGINE_TABLES_GENERATOR
-#define PICSAR_MULTIPHYSICS_BREIT_WHEELER_ENGINE_TABLES_GENERATOR
+#ifndef PICSAR_MULTIPHYSICS_QUANTUM_SYNC_ENGINE_TABLES_GENERATOR
+#define PICSAR_MULTIPHYSICS_QUANTUM_SYNC_ENGINE_TABLES_GENERATOR
 
 //Should be included by all the src files of the library
 #include "../../qed_commons.h"
 
 //Implements methods of BW lookup tables
-#include "breit_wheeler_engine_tables.hpp"
+#include "quantum_sync_engine_tables.hpp"
 //Uses BW tabulated functions
-#include "breit_wheeler_engine_tabulated_functions.hpp"
+#include "quantum_sync_engine_tabulated_functions.hpp"
 //Uses progress bar
 #include "../../math/cmath_overloads.hpp"
 //Uses progress bar
@@ -23,7 +23,7 @@
 namespace picsar{
 namespace multi_physics{
 namespace phys{
-namespace breit_wheeler{
+namespace quantum_sync{
 
     template<typename RealType, typename VectorType>
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
@@ -31,7 +31,7 @@ namespace breit_wheeler{
     aux_generate_double(RealType x)
     {
         return static_cast<RealType>(
-            compute_T_function<double>(x));
+            compute_G_function<double>(x));
     }
 
     template<typename RealType, typename VectorType>
@@ -55,21 +55,21 @@ namespace breit_wheeler{
                 all_vals[i] = aux_generate_double(all_coords[i]);
             }
             else {
-                all_vals[i] = compute_T_function(all_coords[i]);
+                all_vals[i] = compute_G_function(all_coords[i]);
             }
 
             #pragma omp critical
             {
                 count++;
                 utils::draw_progress(count,
-                    all_vals.size(), "Breit-Wheeler dN/dt", 1);
+                    all_vals.size(), "Quantum sync dN/dt", 1);
             }
         }
         set_all_vals(all_vals);
 
         auto t_end =  std::chrono::system_clock::now();
         utils::draw_progress(
-            count, all_vals.size(), "Breit-Wheeler dN/dt", 1, true);
+            count, all_vals.size(), "Quantum sync dN/dt", 1, true);
         std::cout << " Done in " <<
             std::chrono::duration_cast<std::chrono::milliseconds>(
                 t_end - t_start).count()/1000.0 << " seconds. \n" << std::endl;
@@ -82,7 +82,7 @@ namespace breit_wheeler{
     template<typename RealType, typename VectorType>
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     std::vector<RealType>
-    pair_prod_lookup_table_logchi_linfrac<RealType, VectorType>::
+    photon_emission_lookup_table_logchi_logfrac<RealType, VectorType>::
     aux_generate_double(const RealType x, const std::vector<RealType>& y)
     {
         auto dtemp = std::vector<double>(y.size());
@@ -98,7 +98,7 @@ namespace breit_wheeler{
 
     template<typename RealType, typename VectorType>
     template<generation_policy Policy>
-    void pair_prod_lookup_table_logchi_linfrac<RealType, VectorType>::generate(
+    void photon_emission_lookup_table_logchi_logfrac<RealType, VectorType>::generate(
         const bool show_progress)
     {
         constexpr bool use_internal_double =
@@ -107,7 +107,7 @@ namespace breit_wheeler{
 
         auto t_start =  std::chrono::system_clock::now();
 
-        const int chi_size = m_params.chi_phot_how_many;
+        const int chi_size = m_params.chi_part_how_many;
         const int frac_size = m_params.how_many_frac;
 
         const auto all_coords = get_all_coordinates();
@@ -135,14 +135,14 @@ namespace breit_wheeler{
             #pragma omp critical
             {
                 count++;
-                utils::draw_progress(count, chi_size, "BW pair prod", 1);
+                utils::draw_progress(count, chi_size, "QS photon emission", 1);
             }
         }
 
         set_all_vals(all_vals);
         auto t_end =  std::chrono::system_clock::now();
         utils::draw_progress(
-            count, chi_size, "BW pair prod", 1, true);
+            count, chi_size, "QS photon emission", 1, true);
         std::cout << " Done in " <<
             std::chrono::duration_cast<std::chrono::milliseconds>(
                 t_end - t_start).count()/1000.0 << " seconds. \n" << std::endl;
@@ -154,4 +154,4 @@ namespace breit_wheeler{
 }
 }
 
-#endif //PICSAR_MULTIPHYSICS_BREIT_WHEELER_ENGINE_TABLES_GENERATOR
+#endif // PICSAR_MULTIPHYSICS_QUANTUM_SYNC_ENGINE_TABLES_GENERATOR

@@ -24,8 +24,6 @@ namespace multi_physics{
 namespace phys{
 namespace quantum_sync{
 
-    enum class dndt_table_out_policy {approx, extrema};
-
     template<typename RealType>
     struct dndt_lookup_table_params{
         RealType chi_part_min; //Min chi_phot
@@ -40,18 +38,21 @@ namespace quantum_sync{
         }
     };
 
+    enum class generation_policy{
+        regular,
+        force_internal_double
+    };
+
+
     template<
         typename RealType,
-        typename VectorType,
-        dndt_table_out_policy TableOutPolicy
-        >
+        typename VectorType>
     class dndt_lookup_table{
 
         public:
 
             typedef const dndt_lookup_table<
-                RealType, containers::picsar_span<const RealType>,
-                TableOutPolicy> view_type;
+                RealType, containers::picsar_span<const RealType>> view_type;
 
             dndt_lookup_table(dndt_lookup_table_params<RealType> params):
             m_params{params},
@@ -71,6 +72,9 @@ namespace quantum_sync{
             {
                 m_init_flag = true;
             };
+
+            template <generation_policy Policy = generation_policy::regular>
+            void generate(const bool show_progress  = true);
 
             dndt_lookup_table(std::vector<char>& raw_data)
             {
@@ -103,8 +107,7 @@ namespace quantum_sync{
 
             PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
             bool operator== (
-                const dndt_lookup_table<
-                    RealType, VectorType, TableOutPolicy> &b) const
+                const dndt_lookup_table<RealType, VectorType> &b) const
             {
                 return
                     (m_params == b.m_params) &&
@@ -128,25 +131,10 @@ namespace quantum_sync{
             PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
             RealType interp(RealType chi_part)  const noexcept
             {
-                PXRMP_INTERNAL_CONSTEXPR_IF
-                    (TableOutPolicy == dndt_table_out_policy::extrema){
-                        if(chi_part<m_params.chi_part_min)
-                            chi_part = m_params.chi_part_min;
-                        else if (chi_part > m_params.chi_part_max)
-                            chi_part = m_params.chi_part_max;
-                }
-                else
-                {
-                    if (chi_part < m_params.chi_part_min){
-                        /*TODO*/
-                        return math::zero<RealType>;
-                    }
-
-                    if(chi_part > m_params.chi_part_max){
-                        /*TODO*/
-                        return  math::zero<RealType>;
-                    }
-                }
+                if(chi_part<m_params.chi_part_min)
+                    chi_part = m_params.chi_part_min;
+                else if (chi_part > m_params.chi_part_max)
+                    chi_part = m_params.chi_part_max;
 
                 return math::m_exp(m_table.interp(math::m_log(chi_part)));
             }
@@ -207,10 +195,15 @@ namespace quantum_sync{
                 return res;
             }
 
-        private:
+        protected:
             dndt_lookup_table_params<RealType> m_params;
             bool m_init_flag = false;
             containers::equispaced_1d_table<RealType, VectorType> m_table;
+
+        private:
+            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            static RealType aux_generate_double(RealType x);
+
     };
 
     //________________________________________________________________________________
@@ -269,6 +262,9 @@ public:
     {
         m_init_flag = true;
     };
+
+    template <generation_policy Policy = generation_policy::regular>
+    void generate(bool show_progress = true);
 
     photon_emission_lookup_table_logchi_logfrac(std::vector<char>& raw_data)
     {
@@ -428,10 +424,16 @@ public:
         return res;
     }
 
-private:
+protected:
     photon_emission_lookup_table_params<RealType> m_params;
     bool m_init_flag = false;
     containers::equispaced_2d_table<RealType, VectorType> m_table;
+
+private:
+    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    static std::vector<RealType>
+    aux_generate_double(RealType x,
+        const std::vector<RealType>& y);
 };
 
 

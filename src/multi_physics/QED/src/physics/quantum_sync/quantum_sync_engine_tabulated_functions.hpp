@@ -111,7 +111,7 @@ namespace quantum_sync{
                 zero<RealType>, frac);
     }
 
-    template<typename VectorType, typename RealType>
+    template<typename RealType, typename VectorType>
     VectorType compute_cumulative_prob(
         const RealType chi_particle, const VectorType& chi_photons)
     {

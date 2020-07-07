@@ -133,6 +133,10 @@ namespace breit_wheeler{
     }
     //__________________________________________________________
 
+    enum class generation_policy{
+        regular,
+        force_internal_double
+    };
 
     /**
     * This class provides the lookup table for dN/dt,
@@ -206,7 +210,8 @@ namespace breit_wheeler{
                 m_init_flag = true;
             };
 
-            void generate();
+            template <generation_policy Policy = generation_policy::regular>
+            void generate(const bool show_progress  = true);
 
             dndt_lookup_table(std::vector<char>& raw_data)
             {
@@ -330,10 +335,14 @@ namespace breit_wheeler{
                 return res;
             }
 
-        private:
+        protected:
             dndt_lookup_table_params<RealType> m_params;
             bool m_init_flag = false;
             containers::equispaced_1d_table<RealType, VectorType> m_table;
+
+        private:
+            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            static RealType aux_generate_double(RealType x);
     };
 
     //________________________________________________________________________________
@@ -389,6 +398,9 @@ namespace breit_wheeler{
             {
                 m_init_flag = true;
             };
+
+            template <generation_policy Policy = generation_policy::regular>
+            void generate(bool show_progress = true);
 
             pair_prod_lookup_table_logchi_linfrac(std::vector<char>& raw_data)
             {
@@ -547,10 +559,16 @@ namespace breit_wheeler{
                 return res;
             }
 
-        private:
+        protected:
             pair_prod_lookup_table_params<RealType> m_params;
             bool m_init_flag = false;
             containers::equispaced_2d_table<RealType, VectorType> m_table;
+
+        private:
+            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            static std::vector<RealType>
+            aux_generate_double(RealType x,
+                const std::vector<RealType>& y);
     };
 
 }

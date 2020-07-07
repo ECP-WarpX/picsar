@@ -52,8 +52,7 @@ const int how_many = 500;
 const int how_many_frac = 500;
 const double frac_min = 1e-4;
 
-template <typename RealType, typename VectorType,
-    dndt_table_out_policy TablePolicy>
+template <typename RealType, typename VectorType>
 auto get_table()
 {
     const auto params =
@@ -61,8 +60,7 @@ auto get_table()
             static_cast<RealType>(chi_min),
             static_cast<RealType>(chi_max), how_many};
 
-    return dndt_lookup_table<
-        RealType, VectorType, TablePolicy>{params};
+    return dndt_lookup_table<RealType, VectorType>{params};
 }
 
 template <typename RealType, typename VectorType>
@@ -82,11 +80,10 @@ auto get_em_table()
 
 // ------------- Tests --------------
 
-template <typename RealType, typename VectorType,
-    dndt_table_out_policy TablePolicy>
+template <typename RealType, typename VectorType>
 void check_dndt_table()
 {
-    auto table = get_table<RealType, VectorType, TablePolicy>();
+    auto table = get_table<RealType, VectorType>();
     BOOST_CHECK_EQUAL(table.is_init(),false);
 
     VectorType coords = table.get_all_coordinates();
@@ -114,7 +111,7 @@ void check_dndt_table()
     BOOST_CHECK_EQUAL(result,true);
     BOOST_CHECK_EQUAL(table.is_init(),true);
 
-    auto table_2 = get_table<RealType, VectorType, TablePolicy>();
+    auto table_2 = get_table<RealType, VectorType>();
     BOOST_CHECK_EQUAL(table_2 == table, false);
     BOOST_CHECK_EQUAL(table == table, true);
     BOOST_CHECK_EQUAL(table_2 == table_2, true);
@@ -165,46 +162,12 @@ void check_dndt_table()
 // ***Test Quantum Synchrotron dndt table
 BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_dndt_table)
 {
-    check_dndt_table<double, std::vector<double>,
-        dndt_table_out_policy::extrema>();
-    check_dndt_table<float, std::vector<float>,
-        dndt_table_out_policy::extrema>();
+    check_dndt_table<double, std::vector<double>>();
+    check_dndt_table<float, std::vector<float>>();
 }
 
-/*
-template <typename RealType>
-void check_dndt_table_out_approx()
-{
-    const auto left_chi = std::array<RealType,4>{0.01,0.05,0.1,0.2};
-    const auto left_sol = std::array<RealType,4>{
-        2.9069621438923337e-117,
-        1.2969667695320204e-24,
-        4.944416339700773e-13,
-        3.0528686912504136e-07};
 
-    for(int i = 0; i < 4; i++){
-        const auto left_res = dndt_approx_left(left_chi[i]);
-        if(left_sol[i] < small<RealType>()){
-            BOOST_CHECK_SMALL(
-                left_res,small<RealType>());
-        }
-        else{
-            BOOST_CHECK_SMALL(
-                (left_res - left_sol[i])/left_sol[i],tolerance<RealType>());
-        }
-    }
-
-}
-
-// ***Test Quantum Synchrotron dndt table out range approximation
-BOOST_AUTO_TEST_CASE( picsar_quantum_sync_dndt_table_out_approx)
-{
-    check_dndt_table_out_approx<double>();
-    check_dndt_table_out_approx<float>();
-}*/
-
-template <typename RealType, typename VectorType,
-    dndt_table_out_policy TablePolicy>
+template <typename RealType, typename VectorType>
 void check_dndt_table_serialization()
 {
     const auto params =
@@ -213,11 +176,11 @@ void check_dndt_table_serialization()
             static_cast<RealType>(10.0), 3};
 
     auto table = dndt_lookup_table<
-        RealType, VectorType, TablePolicy>{params, {1.,2.,3.}};
+        RealType, VectorType>{params, {1.,2.,3.}};
 
     auto raw_data = table.serialize();
     auto new_table = dndt_lookup_table<
-        RealType, VectorType, TablePolicy>{raw_data};
+        RealType, VectorType>{raw_data};
 
     BOOST_CHECK_EQUAL(new_table.is_init(), true);
     BOOST_CHECK_EQUAL(new_table == table, true);
@@ -226,8 +189,7 @@ void check_dndt_table_serialization()
 // ***Test Quantum Synchrotron dndt table serialization
 BOOST_AUTO_TEST_CASE( picsar_quantum_sync_dndt_table_serialization)
 {
-    check_dndt_table_serialization<float, std::vector<float>,
-        dndt_table_out_policy::extrema>();
+    check_dndt_table_serialization<float, std::vector<float>>();
 }
 
 template <typename RealType, typename VectorType>
