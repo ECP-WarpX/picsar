@@ -38,8 +38,8 @@ namespace phys{
 namespace breit_wheeler{
 
     /**
-    * Computes the optical depth of a new photon (simply a number)
-    * extracted from an exponential distribution.
+    * Computes the optical depth of a new photon (simply a number
+    * extracted from an exponential distribution).
     *
     * @tparam RealType the floating point type to be used
     * @param[in] unf_zero_one_minus_epsi a random number uniformly distributed in [0,1)

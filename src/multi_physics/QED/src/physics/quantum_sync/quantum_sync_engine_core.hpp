@@ -24,9 +24,15 @@ namespace multi_physics{
 namespace phys{
 namespace quantum_sync{
 
-    //______________________GPU
-    //get a single optical depth
-    //same as above but conceived for GPU usage
+    /**
+    * Computes the optical depth of a new electron or positron (simply a number
+    * extracted from an exponential distribution).
+    *
+    * @tparam RealType the floating point type to be used
+    * @param[in] unf_zero_one_minus_epsi a random number uniformly distributed in [0,1)
+    *
+    * @return an exponentially distributed random number
+    */
     template<typename RealType>
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
@@ -36,8 +42,21 @@ namespace quantum_sync{
         return -log(one<RealType> - unf_zero_one_minus_epsi);
     }
 
-    //______________________GPU
-    //Interp the dN_dt from table (with GPU use directly this one!)
+    /**
+    * Computes dN/dt for Quantum Synchrotron photon emission. Needs a
+    * lookup table to provide G(chi_particle).
+    *
+    * @tparam RealType the floating point type to be used
+    * @tparam TableType the type of the lookup table to be used. Must have an "interp" method.
+    * @tparam UnitSystem unit system to be used (default is SI)
+    *
+    * @param[in] t_energy_part particle energy
+    * @param[in] chi_part photon chi parameter
+    * @param[in] ref_dndt_table a reference to the lookup table
+    * @param[in] ref_quantity omega or lambda in SI units if norm_omega or norm_lambda unit systems are used
+    *
+    * @return total pair production cross section dN/dt in UnitSystem
+    */
     template<
         typename RealType,
         typename TableType,
@@ -74,8 +93,23 @@ namespace quantum_sync{
             UnitSystem, RealType>::fact(math::one<RealType>,ref_quantity);
     }
 
-    //______________________GPU
-    //Evolve optical depth (with GPU use directly this one!)
+    /**
+    * Evolves the optical depth of a particle for Quantum Synchrotron pair production.
+    * Needs a lookup table to provide G(chi_particle).
+    *
+    * @tparam RealType the floating point type to be used
+    * @tparam TableType the type of the lookup table to be used. Must have an "interp" method.
+    * @tparam UnitSystem unit system to be used (default is SI)
+    *
+    * @param[in] t_energy_part particle energy
+    * @param[in] chi_part particle chi parameter
+    * @param[in] t_dt timestep
+    * @param[in,out] the optical depth
+    * @param[in] ref_dndt_table a reference to the lookup table
+    * @param[in] ref_quantity omega or lambda in SI units if norm_omega or norm_lambda unit systems are used
+    *
+    * @return true if optical_depth becomes negative
+    */
     template<
         typename RealType,
         typename TableType,
@@ -106,10 +140,25 @@ namespace quantum_sync{
         return (optical_depth <= math::zero<RealType>);
     }
 
-    //______________________GPU
-    //This function computes the properties of the photon
-    //generated in a QS process.
-    //Conceived for GPU usage.
+    /**
+    * Computes the properties of a photon emitted via Quantum Synchrotron photon emission.
+    * Updates also the momentum of the emitting particle.
+    * Needs a lookup table storing a cumulative probability distribution to
+    * calculate the chi parameter of the emitted photon. This lookup table
+    * has to provide an "interp" method, accepting the chi of the particle and
+    * a uniformly distributed random number in [0,1) as parameters.
+    *
+    * @tparam RealType the floating point type to be used
+    * @tparam TableType the type of the lookup table to be used. Must have an "interp" method.
+    * @tparam UnitSystem unit system to be used (default is SI)
+    *
+    * @param[in] chi_particle particle chi parameter
+    * @param[in, out] t_v_momentum_particle 3-momentum of the particle
+    * @param[in] unf_zero_one_minus_epsi a random number uniformly distributed in [0,1)
+    * @param[out] phot_momentum momentum of the generated photon
+    * @param[in] ref_quantity omega or lambda in SI units if norm_omega or norm_lambda unit systems are used
+    *
+    */
     template<
         typename RealType, typename TableType,
         unit_system UnitSystem = unit_system::SI
