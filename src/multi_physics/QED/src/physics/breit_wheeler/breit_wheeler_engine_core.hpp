@@ -58,7 +58,8 @@ namespace breit_wheeler{
 
     /**
     * Computes dN/dt for Breit-Wheeler pair production. Needs a
-    * lookup table to provide T(chi_photon).
+    * lookup table to provide T(chi_photon). See validation script
+    * for more details.
     *
     * @tparam RealType the floating point type to be used
     * @tparam TableType the type of the lookup table to be used. Must have an "interp" method.
@@ -104,7 +105,8 @@ namespace breit_wheeler{
 
     /**
     * Evolves the optical depth of a photon for Breit-Wheeler pair production.
-    * Needs a lookup table to provide T(chi_photon).
+    * Needs a lookup table to provide T(chi_photon). See validation script
+    * for more details.
     *
     * @tparam RealType the floating point type to be used
     * @tparam TableType the type of the lookup table to be used. Must have an "interp" method.
@@ -153,7 +155,8 @@ namespace breit_wheeler{
     * Needs a lookup table storing a cumulative probability distribution to
     * calculate the chi parameter of the emitted electron. This lookup table
     * has to provide an "interp" method, accepting the chi of the photon and
-    * a uniformly distributed random number in [0,1) as parameters.
+    * a uniformly distributed random number in [0,1) as parameters. See validation script
+    * for more details.
     *
     * @tparam RealType the floating point type to be used
     * @tparam TableType the type of the lookup table to be used. Must have an "interp" method.

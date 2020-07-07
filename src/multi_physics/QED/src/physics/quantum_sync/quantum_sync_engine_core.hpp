@@ -1,6 +1,16 @@
 #ifndef PICSAR_MULTIPHYSICS_QUANTUM_SYNC_ENGINE_CORE
 #define PICSAR_MULTIPHYSICS_QUANTUM_SYNC_ENGINE_CORE
 
+//This .hpp file contais the implementation of the core
+//function of the Quantum Synchrotron photon emission engine.
+//Please have a look at the jupyter notebook "validation.ipynb"
+//in QED_tests/validation for a more in-depth discussion.
+//
+// References:
+// 1) C.P.Ridgers et al. Journal of Computational Physics 260, 1 (2014)
+// 2) A.Gonoskov et al. Phys. Rev. E 92, 023305 (2015)
+
+
 //Should be included by all the src files of the library
 #include "../../qed_commons.h"
 
@@ -44,7 +54,8 @@ namespace quantum_sync{
 
     /**
     * Computes dN/dt for Quantum Synchrotron photon emission. Needs a
-    * lookup table to provide G(chi_particle).
+    * lookup table to provide G(chi_particle). See validation script
+    * for more details.
     *
     * @tparam RealType the floating point type to be used
     * @tparam TableType the type of the lookup table to be used. Must have an "interp" method.
@@ -95,7 +106,8 @@ namespace quantum_sync{
 
     /**
     * Evolves the optical depth of a particle for Quantum Synchrotron pair production.
-    * Needs a lookup table to provide G(chi_particle).
+    * Needs a lookup table to provide G(chi_particle). See validation script
+    * for more details.
     *
     * @tparam RealType the floating point type to be used
     * @tparam TableType the type of the lookup table to be used. Must have an "interp" method.
@@ -146,7 +158,8 @@ namespace quantum_sync{
     * Needs a lookup table storing a cumulative probability distribution to
     * calculate the chi parameter of the emitted photon. This lookup table
     * has to provide an "interp" method, accepting the chi of the particle and
-    * a uniformly distributed random number in [0,1) as parameters.
+    * a uniformly distributed random number in [0,1) as parameters. See validation script
+    * for more details.
     *
     * @tparam RealType the floating point type to be used
     * @tparam TableType the type of the lookup table to be used. Must have an "interp" method.

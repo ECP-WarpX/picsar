@@ -27,7 +27,6 @@
 #include "../../math/cmath_overloads.hpp"
 
 #include <algorithm>
-#include <cmath>
 
 namespace picsar{
 namespace multi_physics{
@@ -35,10 +34,11 @@ namespace phys{
 namespace breit_wheeler{
 
     /**
-    * This function computes the X parameter (see validation script).
+    * It computes the X parameter (see validation script).
     * This function is not designed to be run on GPUs.
     *
     * @tparam RealType the floating point type to be used
+    *
     * @param[in] chi_phot the chi parameter of the photon
     * @param[in] chi_ele the chi parameter of the electron
     *
@@ -59,10 +59,11 @@ namespace breit_wheeler{
     * on GPUs.
     *
     * @tparam RealType the floating point type to be used
+    *
     * @param[in] chi_phot the chi parameter of the photon
     * @param[in] chi_ele the chi parameter of the electron
     *
-    * @return the value of the integrand for the T function
+    * @return the value of the integrand of the T function
     */
     template<typename RealType>
     constexpr RealType compute_T_integrand(
@@ -101,6 +102,7 @@ namespace breit_wheeler{
     * It is not usable on GPUs.
     *
     * @tparam RealType the floating point type to be used
+    *
     * @param[in] chi_phot the chi parameter of the photon
     *
     * @return the value of the T function
@@ -119,10 +121,11 @@ namespace breit_wheeler{
 
     /**
     * Computes the numerator for the cumulative
-    * probability (see validation script).
+    * probability distribution (see validation script).
     * It is not usable on GPUs.
     *
     * @tparam RealType the floating point type to be used
+    *
     * @param[in] chi_phot the chi parameter of the photon
     * @param[in] chi_ele the chi parameter of the electron
     *
@@ -152,6 +155,7 @@ namespace breit_wheeler{
     * It is not usable on GPUs.
     *
     * @tparam RealType the floating point type to be used
+    *
     * @param[in] chi_phot the chi parameter of the photon
     * @param[in] chis the chi parameters of the particles
     *
