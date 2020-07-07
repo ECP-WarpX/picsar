@@ -21,6 +21,8 @@ namespace picsar{
 namespace multi_physics{
 namespace containers{
 
+    //________________ 1D equispaced table _____________________________________
+
     /**
     * This class implements a generic equispaced 1D lookup table
     * for a function f(x)
@@ -270,7 +272,9 @@ namespace containers{
         VectorType m_values; /* values f(x) */
     };
 
-//______________________________________________________________________________
+    //__________________________________________________________________________
+
+    //________________ 2D equispaced table _____________________________________
 
     /**
     * This class implements a generic equispaced 2D lookup table
@@ -702,6 +706,9 @@ namespace containers{
             return i*m_how_many_y + j;
         }
     };
+
+    //__________________________________________________________________________
+
 }
 }
 }

@@ -38,6 +38,8 @@ namespace multi_physics{
 namespace phys{
 namespace breit_wheeler{
 
+    //________________ Common parameters _______________________________________
+
     //Reasonable default values for the dndt_lookup_table_params
     //and the pair_prod_lookup_table_params (see below)
     template <typename T>
@@ -46,6 +48,10 @@ namespace breit_wheeler{
     constexpr T default_chi_phot_max = 1.0e3; /* Default maximum photon chi parameter*/
     const int default_chi_phot_how_many = 256; /* Default number of grid points for photon chi */
     const int default_how_many_frac = 256; /* Default number of grid points for particle chi */
+
+    //__________________________________________________________________________
+
+    //________________ dN/dt table _____________________________________________
 
     /**
     * This structure holds the parameters to generate a dN/dt
@@ -84,7 +90,6 @@ namespace breit_wheeler{
         dndt_lookup_table_params<RealType>{default_chi_phot_min<RealType>,
                                            default_chi_phot_max<RealType>,
                                            default_chi_phot_how_many};
-    //__________________________________________________________
 
     //If a photon has a chi parameter which is out of table,
     //a simple analytical approximation can be used to calculate
@@ -131,7 +136,6 @@ namespace breit_wheeler{
     {
         return erber_dndt_asynt_b<RealType>/math::m_cbrt(chi_phot);
     }
-    //__________________________________________________________
 
     /**
     * generation_policy::force_internal_double can be used to force the
@@ -332,6 +336,12 @@ namespace breit_wheeler{
                 return math::m_exp(m_table.interp(math::m_log(chi_phot)));
             }
 
+            /**
+            * Exports all the coordinates of the table to a std::vector
+            * (not usable on GPUs).
+            *
+            * @return a vector containing all the table coordinates
+            */
             std::vector<RealType> get_all_coordinates() const noexcept
             {
                 auto all_coords = m_table.get_all_coordinates();
@@ -340,6 +350,15 @@ namespace breit_wheeler{
                 return all_coords;
             }
 
+            /**
+            * Imports table values from an std::vector. Values
+            * should correspond to coordinates exported with
+            * get_all_coordinates(). Not usable on GPU.
+            *
+            * @param[in] a std::vector containing table values
+            *
+            * @return false if the value vector has the wrong length. True otherwise.
+            */
             bool set_all_vals(const std::vector<RealType>& vals)
             {
                 if(vals.size() == m_table.get_how_many_x()){
@@ -352,6 +371,11 @@ namespace breit_wheeler{
                 return false;
             }
 
+            /*
+            * Cheks if the table has been initialized.
+            *
+            * @return true if the table has been initialized, false otherwise
+            */
             PXRMP_INTERNAL_GPU_DECORATOR
             PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
             bool is_init()
@@ -359,12 +383,17 @@ namespace breit_wheeler{
                 return m_init_flag;
             }
 
+            /*
+            * Converts the table to a byte vector
+            *
+            * @return a byte vector
+            */
             std::vector<char> serialize()
             {
                 using namespace utils;
 
                 if(!m_init_flag)
-                    throw "Cannot serialize an unitialized table";
+                    throw "Cannot serialize an uninitialized table";
 
                 std::vector<char> res;
 
@@ -378,16 +407,25 @@ namespace breit_wheeler{
             }
 
         protected:
-            dndt_lookup_table_params<RealType> m_params;
-            bool m_init_flag = false;
-            containers::equispaced_1d_table<RealType, VectorType> m_table;
+            dndt_lookup_table_params<RealType> m_params; /* Table parameters*/
+            bool m_init_flag = false; /* Initialization flag*/
+            containers::equispaced_1d_table<
+                RealType, VectorType> m_table; /* Table data */
 
         private:
+            /*
+            * Auxiliary function used for the generation of the lookup table.
+            * (not usable on GPUs). This function is implemented elsewhere
+            * (in breit_wheeler_engine_tables_generator.hpp)
+            * since it requires a recent version of the Boost library.
+            */
             PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
             static RealType aux_generate_double(RealType x);
     };
 
-    //________________________________________________________________________________
+    //__________________________________________________________________________
+
+    //________________ Pair production table ___________________________________
 
     template<typename RealType>
     struct pair_prod_lookup_table_params{
@@ -612,6 +650,8 @@ namespace breit_wheeler{
             aux_generate_double(RealType x,
                 const std::vector<RealType>& y);
     };
+
+    //__________________________________________________________________________
 
 }
 }
