@@ -107,9 +107,9 @@ void check_table_1d(
     const auto x1 = tab.get_x_coord(xsize/2);
     const auto x2 = tab.get_x_coord(xsize-1);
     const auto x1exp = (xsize/2)*(xmax - xmin)/(xsize-1) + xmin;
-    BOOST_CHECK_SMALL(fabs((x0-xmin)/xmin), tolerance<double>());
-    BOOST_CHECK_SMALL(fabs(x1 - x1exp)/x1exp, tolerance<double>());
-    BOOST_CHECK_SMALL(fabs((x2 - xmax)/xmax), tolerance<double>());
+    BOOST_CHECK_SMALL((x0-xmin)/xmin, tolerance<double>());
+    BOOST_CHECK_SMALL((x1 - x1exp)/x1exp, tolerance<double>());
+    BOOST_CHECK_SMALL((x2 - xmax)/xmax, tolerance<double>());
 
     const auto x3 = 0.732*(x1-x0) + x0;
     const auto x4 = 0.118*(x2-x1) + x1;
@@ -126,7 +126,7 @@ void check_table_1d(
     {
         const auto val = tab.interp(xx);
         const auto expected = linear_function(xx);
-        BOOST_CHECK_SMALL(fabs((val - expected)/expected), tolerance<double>());
+        BOOST_CHECK_SMALL((val - expected)/expected, tolerance<double>());
     }
 
     const auto all_coords = tab.get_all_coordinates();
@@ -163,9 +163,9 @@ void check_table_2d(
     const auto x1 = tab.get_x_coord(xsize/2);
     const auto x2 = tab.get_x_coord(xsize-1);
     const auto x1exp = (xsize/2)*(xmax - xmin)/(xsize-1) + xmin;
-    BOOST_CHECK_SMALL(fabs((x0-xmin)/xmin), tolerance<double>());
-    BOOST_CHECK_SMALL(fabs(x1 - x1exp)/x1exp, tolerance<double>());
-    BOOST_CHECK_SMALL(fabs((x2 - xmax)/xmax), tolerance<double>());
+    BOOST_CHECK_SMALL((x0-xmin)/xmin, tolerance<double>());
+    BOOST_CHECK_SMALL((x1 - x1exp)/x1exp, tolerance<double>());
+    BOOST_CHECK_SMALL((x2 - xmax)/xmax, tolerance<double>());
 
     const auto x3 = 0.732*(x1-x0) + x0;
     const auto x4 = 0.118*(x2-x1) + x1;
@@ -175,9 +175,9 @@ void check_table_2d(
     const auto y1 = tab.get_y_coord(ysize/2);
     const auto y2 = tab.get_y_coord(ysize-1);
     const auto y1exp = (ysize/2)*(ymax - ymin)/(ysize-1) + ymin;
-    BOOST_CHECK_SMALL(fabs((y0-ymin)/ymin), tolerance<double>());
-    BOOST_CHECK_SMALL(fabs(y1 - y1exp)/y1exp, tolerance<double>());
-    BOOST_CHECK_SMALL(fabs((y2 - ymax)/ymax), tolerance<double>());
+    BOOST_CHECK_SMALL((y0-ymin)/ymin, tolerance<double>());
+    BOOST_CHECK_SMALL((y1 - y1exp)/y1exp, tolerance<double>());
+    BOOST_CHECK_SMALL((y2 - ymax)/ymax, tolerance<double>());
 
     const auto v00 = tab.get_val(0, 0);
     const auto v10 = tab.get_val(xsize/2, 0);
@@ -208,7 +208,7 @@ void check_table_2d(
         {
             const auto val = tab.interp(xx, yy);
             const auto expected = linear_function(xx, yy);
-            BOOST_CHECK_SMALL(fabs((val - expected)/expected), tolerance<double>());
+            BOOST_CHECK_SMALL((val - expected)/expected, tolerance<double>());
         }
     }
 
@@ -241,7 +241,7 @@ void check_table_2d_interp_one_coord(
             const auto yy = tab.get_y_coord(jj);
             const auto res = tab.interp_first_coord(xx, jj);
             const auto exp = linear_function(xx, yy);
-            BOOST_CHECK_SMALL(fabs((res - exp)/exp), tolerance<double>());
+            BOOST_CHECK_SMALL((res - exp)/exp, tolerance<double>());
         }
     }
 
@@ -260,7 +260,7 @@ void check_table_2d_interp_one_coord(
             const auto xx = tab.get_x_coord(ii);
             const auto res = tab.interp_second_coord(ii, yy);
             const auto exp = linear_function(xx, yy);
-            BOOST_CHECK_SMALL(fabs((res - exp)/exp), tolerance<double>());
+            BOOST_CHECK_SMALL((res - exp)/exp, tolerance<double>());
         }
     }
 }
@@ -287,7 +287,7 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_1d_table_constructor_setter)
     const auto x10 = tab_1d.get_x_coord(where);
     const auto res =tab_1d.interp(x10);
 
-    BOOST_CHECK_SMALL(fabs((res - val)/val), tolerance<double>());
+    BOOST_CHECK_SMALL((res - val)/val, tolerance<double>());
 
 }
 
@@ -351,7 +351,7 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_constructor_setter)
     const auto yy = tab_2d.get_y_coord(j);
     const auto res =tab_2d.interp(xx,yy);
 
-    BOOST_CHECK_SMALL(fabs((res - val)/val), tolerance<double>());
+    BOOST_CHECK_SMALL((res - val)/val, tolerance<double>());
 }
 
 // ***Test equispaced_2_table equality

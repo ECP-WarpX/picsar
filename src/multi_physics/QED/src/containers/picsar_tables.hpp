@@ -15,6 +15,7 @@
 #include <vector>
 #include <array>
 #include <algorithm>
+#include <cmath>
 
 namespace picsar{
 namespace multi_physics{
