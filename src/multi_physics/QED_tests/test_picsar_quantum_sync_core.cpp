@@ -53,7 +53,7 @@ struct fake_G_table
 {
     RealType interp(RealType chi, bool* is_out = nullptr) const {
         m_chi = chi;
-        *is_out = m_is_out;
+        if(is_out != nullptr) *is_out = m_is_out;
         return static_cast<RealType>(m_res);
     }
 

@@ -53,7 +53,7 @@ struct fake_T_table
 {
     RealType interp(RealType chi, bool* is_out = nullptr) const {
         m_chi = chi;
-        *is_out = m_is_out;
+        if(is_out != nullptr) *is_out = m_is_out;
         return static_cast<RealType>(m_res);
     }
 
@@ -406,4 +406,3 @@ BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_core_pair_production)
     check_pair_production<float, unit_system::norm_lambda>(reference_length);
     check_pair_production<float, unit_system::heaviside_lorentz>();
 }
-
