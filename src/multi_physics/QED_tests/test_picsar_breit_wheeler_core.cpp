@@ -51,12 +51,14 @@ T constexpr small()
 template<typename RealType>
 struct fake_T_table
 {
-    RealType interp(RealType chi) const {
+    RealType interp(RealType chi, bool* is_out = nullptr) const {
         m_chi = chi;
+        *is_out = m_is_out;
         return static_cast<RealType>(m_res);
     }
 
     RealType m_res;
+    bool m_is_out = false;
     mutable RealType m_chi;
 };
 
@@ -154,6 +156,17 @@ void check_dndt(RealType ref_q = one<RealType>)
             }
         }
     }
+
+    fake_table.m_res = 1.0;
+    fake_table.m_is_out = false;
+    bool is_out = false;
+    get_dN_dt<RealType,fake_T_table<RealType>,UnitSystem>(
+        1.0, 1.0, fake_table, ref_q, &is_out);
+    BOOST_CHECK_EQUAL(is_out, false);
+    fake_table.m_is_out = true;
+    get_dN_dt<RealType,fake_T_table<RealType>,UnitSystem>(
+        1.0, 1.0, fake_table, ref_q, &is_out);
+    BOOST_CHECK_EQUAL(is_out, true);
 }
 
 
@@ -222,13 +235,14 @@ void check_evolve_opt_depth(RealType ref_q = one<RealType>)
                     quantity::time, unit_system::SI,
                     UnitSystem, RealType>::fact(1.0, ref_q);
 
-                const bool ev_flag = evolve_optical_depth<
+                fake_table.m_is_out = false;
+                const bool in_table_flag = evolve_optical_depth<
                     RealType,
                     fake_T_table<RealType>,
                     UnitSystem>(en, chi, dt, opt_depth, fake_table, ref_q);
 
                 BOOST_CHECK_EQUAL(chi,fake_table.m_chi);
-                BOOST_CHECK_EQUAL(ev_flag, (opt_depth <= 0.0));
+                BOOST_CHECK_EQUAL(in_table_flag, true);
 
                 const auto sol_dndt = static_cast<RealType>(
                     dndt_SI[i][j]*conv<
@@ -238,6 +252,13 @@ void check_evolve_opt_depth(RealType ref_q = one<RealType>)
                 const RealType sol = init_opt - sol_dndt*dt;
 
                 BOOST_CHECK_SMALL((sol-opt_depth)/sol, tolerance<RealType>());
+
+                fake_table.m_is_out = true;
+                const bool in_table_flag_2 = evolve_optical_depth<
+                    RealType,
+                    fake_T_table<RealType>,
+                    UnitSystem>(en, chi, dt, opt_depth, fake_table, ref_q);
+                BOOST_CHECK_EQUAL(in_table_flag_2, false);
             }
         }
     }

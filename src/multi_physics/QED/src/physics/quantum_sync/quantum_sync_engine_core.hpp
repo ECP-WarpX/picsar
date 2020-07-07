@@ -65,6 +65,7 @@ namespace quantum_sync{
     * @param[in] chi_part photon chi parameter
     * @param[in] ref_dndt_table a reference to the lookup table
     * @param[in] ref_quantity omega or lambda in SI units if norm_omega or norm_lambda unit systems are used
+    * @param[out] is_out_of_table if provided it is set to true in case chi_phot is out of table
     *
     * @return total pair production cross section dN/dt in UnitSystem
     */
@@ -77,7 +78,8 @@ namespace quantum_sync{
     RealType get_dN_dt(const RealType t_energy_part,
         const RealType chi_part,
         const TableType& ref_dndt_table,
-        const RealType ref_quantity = math::one<RealType>)
+        const RealType ref_quantity = math::one<RealType>,
+        bool* const is_out_of_table = nullptr)
     {
         const auto energy_part = t_energy_part*conv<
             quantity::energy, UnitSystem,
@@ -91,7 +93,7 @@ namespace quantum_sync{
                 return  math::zero<RealType>;
         }
 
-        const auto GG = ref_dndt_table.interp(chi_part);
+        const auto GG = ref_dndt_table.interp(chi_part, is_out_of_table);
 
         constexpr const auto phot_emission_rate_coeff = static_cast<RealType>(
             math::two_thirds<double>*fine_structure<> *
@@ -120,7 +122,7 @@ namespace quantum_sync{
     * @param[in] ref_dndt_table a reference to the lookup table
     * @param[in] ref_quantity omega or lambda in SI units if norm_omega or norm_lambda unit systems are used
     *
-    * @return true if optical_depth becomes negative
+    * @return true if chi_phot was in the lookup table, false otherwise.
     */
     template<
         typename RealType,
@@ -143,13 +145,15 @@ namespace quantum_sync{
                 quantity::time, UnitSystem,
                 unit_system::heaviside_lorentz, RealType>::fact(ref_quantity);
 
+        bool is_out = false;
         const auto dndt = get_dN_dt<
             RealType, TableType, unit_system::heaviside_lorentz>(
-                energy_part, chi_part, ref_dndt_table, ref_quantity);
+                energy_part, chi_part, ref_dndt_table, ref_quantity,
+                &is_out);
 
         optical_depth -= dndt*dt;
 
-        return (optical_depth <= math::zero<RealType>);
+        return !is_out;
     }
 
     /**
