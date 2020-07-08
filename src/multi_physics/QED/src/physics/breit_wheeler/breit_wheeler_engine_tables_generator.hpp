@@ -163,7 +163,7 @@ namespace breit_wheeler{
         auto t_start =  std::chrono::system_clock::now();
 
         const int chi_size = m_params.chi_phot_how_many;
-        const int frac_size = m_params.how_many_frac;
+        const int frac_size = m_params.frac_how_many;
 
         const auto all_coords = get_all_coordinates();
         auto all_vals = std::vector<RealType>(all_coords.size());

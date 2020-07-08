@@ -471,7 +471,7 @@ namespace breit_wheeler{
     */
     template<typename RealType>
     constexpr auto default_pair_prod_lookup_table_params =
-        dndt_lookup_table_params<RealType>{default_chi_phot_min<RealType>,
+        pair_prod_lookup_table_params<RealType>{default_chi_phot_min<RealType>,
                                            default_chi_phot_max<RealType>,
                                            default_chi_phot_how_many,
                                            default_frac_how_many};

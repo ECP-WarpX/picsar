@@ -426,7 +426,7 @@ namespace quantum_sync{
     */
     template<typename RealType>
     constexpr auto default_photon_emission_lookup_table_params =
-        dndt_lookup_table_params<RealType>{default_chi_part_min<RealType>,
+        photon_emission_lookup_table_params<RealType>{default_chi_part_min<RealType>,
                                            default_chi_part_max<RealType>,
                                            default_frac_min<RealType>,
                                            default_chi_part_how_many,
