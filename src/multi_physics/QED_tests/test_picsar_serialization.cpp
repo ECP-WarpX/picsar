@@ -93,6 +93,7 @@ BOOST_AUTO_TEST_CASE( picsar_serialization_get_out)
 
 // *******************************
 
+// ***Test "get_out" (version for multiple variables)
 
 BOOST_AUTO_TEST_CASE( picsar_serialization_get_n_out)
 {
