@@ -232,12 +232,13 @@ namespace containers{
         }
 
         /**
-        * Overwrites the i-th value (not usable on GPUs)
+        * Overwrites the i-th value
         * Warning: no safety check on i is performed!
         *
         * @param[in] i index of the value to be overwritten
         * @param[in] what value to be written at position i
         */
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         void set_val(int i, RealType what)
         {
             m_values[i] = what;
@@ -636,7 +637,7 @@ namespace containers{
         }
 
         /**
-        * Overwrites the (i,j) value (not usable on GPUs)
+        * Overwrites the (i,j) value
         * Warning: no safety check on i and j is performed!
         *
         * @param[in] i index of the value to be overwritten
@@ -649,6 +650,13 @@ namespace containers{
             m_values[idx(i, j)] = what;
         }
 
+        /**
+        * Overwrites the i-th value
+        * Warning: no safety check on i is performed!
+        *
+        * @param[in] i index of the value to be overwritten
+        * @param[in] what value to be written at position i
+        */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         void set_val(const int i, const RealType what)
         {

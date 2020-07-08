@@ -185,14 +185,12 @@ namespace breit_wheeler{
                 RealType, containers::picsar_span<const RealType>> view_type;
 
             /**
-            * Constructor.
+            * Constructor (not designed for GPU)
             * After construction the table is empty. The user has to generate
             * the T function values before being able to use the table.
             *
             * @param params table parameters
             */
-            PXRMP_INTERNAL_GPU_DECORATOR
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
             dndt_lookup_table(
                 dndt_lookup_table_params<RealType> params = default_dndt_lookup_table_params<RealType>):
             m_params{params},
@@ -203,7 +201,7 @@ namespace breit_wheeler{
             {};
 
             /**
-            * Constructor.
+            * Constructor (not designed for GPU)
             * After construction the table is empty. The user has to generate
             * the T function values before being able to use the table.
             * This constructor allows the user to initialize the table with
@@ -212,8 +210,6 @@ namespace breit_wheeler{
             * @param params parameters for table generation
             * @param vals values of the T function
             */
-            PXRMP_INTERNAL_GPU_DECORATOR
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
             dndt_lookup_table(dndt_lookup_table_params<RealType> params,
                 VectorType vals):
             m_params{params},
@@ -517,14 +513,12 @@ namespace breit_wheeler{
                 RealType, containers::picsar_span<const RealType>> view_type;
 
             /**
-            * Constructor.
+            * Constructor (not designed for GPU)
             * After construction the table is empty. The user has to generate
             * the cumulative probability distribution before being able to use the table.
             *
             * @param params table parameters
             */
-            PXRMP_INTERNAL_GPU_DECORATOR
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
             pair_prod_lookup_table(
                 pair_prod_lookup_table_params<RealType> params):
                 m_params{params},
@@ -538,7 +532,7 @@ namespace breit_wheeler{
                 {};
 
             /**
-            * Constructor.
+            * Constructor (not designed for GPU)
             * After construction the table is empty. The user has to generate
             * the cumulative probability distribution before being able to use the table.
             * This constructor allows the user to initialize the table with
@@ -546,8 +540,6 @@ namespace breit_wheeler{
             *
             * @param params table parameters
             */
-            PXRMP_INTERNAL_GPU_DECORATOR
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
             pair_prod_lookup_table(
                 pair_prod_lookup_table_params<RealType> params,
                 VectorType vals):
