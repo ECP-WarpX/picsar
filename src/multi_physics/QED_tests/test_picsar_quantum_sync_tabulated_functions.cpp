@@ -1,4 +1,4 @@
-//####### Test module for picsar_tables ####################################
+//####### Test module for quantum sync tabulated functions ####################################
 
 //Define Module name
  #define BOOST_TEST_MODULE "phys/quantum_sync/tabulated_functions"
@@ -46,6 +46,8 @@ T constexpr small()
 
 // ------------- Tests --------------
 
+// ***Test replacement the integral of K(5/3, x)
+
 template <typename RealType>
 void check_int_K_5_3_replacement()
 {
@@ -65,16 +67,18 @@ void check_int_K_5_3_replacement()
 
 }
 
-// ***Test replacement of the integral of K_5_3
 BOOST_AUTO_TEST_CASE( picsar_quantum_sync_int_K_5_3_replacement)
 {
     check_int_K_5_3_replacement<double>();
     check_int_K_5_3_replacement<float>();
 }
 
+// *******************************
+
+// ***Test G function
 
 template <typename RealType>
-void check_dndt_table()
+void check_G_function()
 {
     const auto cases = std::array<std::pair<double,double>,9>{
         std::make_pair( 0.0001, 0.0002164863577428999),
@@ -95,13 +99,15 @@ void check_dndt_table()
     }
 }
 
-// ***Test Quantum Synchrotron dndt table
-BOOST_AUTO_TEST_CASE( picsar_quantum_sync_dndt_G_function)
+BOOST_AUTO_TEST_CASE( picsar_quantum_sync_G_function)
 {
-    check_dndt_table<double>();
-    check_dndt_table<float>();
+    check_G_function<double>();
+    check_G_function<float>();
 }
 
+// *******************************
+
+// ***Test cumulative probability distribution
 
 template <typename RealType>
 void check_cumulative_prob_1()
@@ -174,12 +180,15 @@ void check_cumulative_prob_1()
     }
 }
 
-// ***Test Quantum Synchrotron cumulative probability
 BOOST_AUTO_TEST_CASE( picsar_quantum_sync_cumulative_prob_1)
 {
     check_cumulative_prob_1<double>();
     check_cumulative_prob_1<float>();
 }
+
+// *******************************
+
+// ***Test cumulative probability distribution (vector of inputs)
 
 template <typename RealType>
 void check_cumulative_prob_vec()
@@ -210,9 +219,10 @@ void check_cumulative_prob_vec()
     }
 }
 
-// ***Test Quantum Synchrotron cumulative probability vector
 BOOST_AUTO_TEST_CASE( picsar_quantum_sync_cumulative_prob_vec)
 {
     check_cumulative_prob_vec<double>();
     check_cumulative_prob_vec<float>();
 }
+
+// *******************************

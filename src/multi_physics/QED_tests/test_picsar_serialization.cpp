@@ -1,4 +1,4 @@
-//####### Test module for rng_wrapper ####################################
+//####### Test module for serialization ####################################
 
 //Define Module name
  #define BOOST_TEST_MODULE "utils/serialization"
@@ -16,6 +16,8 @@
 using namespace picsar::multi_physics::utils::serialization;
 
 // ------------- Tests --------------
+
+// ***Test "put_in"
 
 BOOST_AUTO_TEST_CASE( picsar_serialization_put_in)
 {
@@ -60,6 +62,10 @@ BOOST_AUTO_TEST_CASE( picsar_serialization_put_in)
         cc);
 }
 
+// *******************************
+
+// ***Test "get_out"
+
 BOOST_AUTO_TEST_CASE( picsar_serialization_get_out)
 {
     std::vector<char> raw_data;
@@ -84,6 +90,9 @@ BOOST_AUTO_TEST_CASE( picsar_serialization_get_out)
     BOOST_CHECK_EQUAL(get_out<float>(it), data_float);
     BOOST_CHECK_EQUAL(get_out<char>(it), cc);
 }
+
+// *******************************
+
 
 BOOST_AUTO_TEST_CASE( picsar_serialization_get_n_out)
 {

@@ -39,6 +39,8 @@ T constexpr tolerance()
 
 // ------------- Tests --------------
 
+// ***Test expected_pair_number
+
 std::vector<std::array<double,3>> E =
     {std::array<double,3>{-3.96271330e+19,  3.23971426e+19, -3.64982966e+19},
     std::array<double,3>{ 1.56378273e+18 ,-2.75598844e+18 ,-6.36294219e+18},
@@ -109,3 +111,5 @@ BOOST_AUTO_TEST_CASE( picsar_schwinger_core_expected_pair_number )
     test_expected_pair_number <unit_system::norm_lambda, float>(reference_length);
     test_expected_pair_number <unit_system::heaviside_lorentz, float>();
 }
+
+// *******************************

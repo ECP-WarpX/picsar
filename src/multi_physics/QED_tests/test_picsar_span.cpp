@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "picsar_span.hpp"
-#include "picsar_array.hpp"
 
 using namespace picsar::multi_physics::containers;
 
@@ -35,7 +34,7 @@ BOOST_AUTO_TEST_CASE( picsar_span_empty_constructor )
 
 BOOST_AUTO_TEST_CASE( picsar_span_raw_pointers_constructor )
 {
-    auto arr = picsar_array<double,3>{1.0,2.0,3.0};
+    auto arr = std::array<double,3>{1.0,2.0,3.0};
     const auto span = picsar_span<const double>{arr.size(), arr.data()};
 
     BOOST_CHECK_EQUAL(span.size(), arr.size());
@@ -49,7 +48,7 @@ BOOST_AUTO_TEST_CASE( picsar_span_raw_pointers_constructor )
 
 BOOST_AUTO_TEST_CASE( picsar_span_range_based_loops )
 {
-    auto arr = picsar_array<int,3>();
+    auto arr = std::array<int,3>();
     int i = 0;
     for(auto& el : arr) el = ++i;
     const auto span = picsar_span<const int>{arr.size(), arr.data()};
@@ -65,7 +64,7 @@ BOOST_AUTO_TEST_CASE( picsar_span_range_based_loops )
 
 BOOST_AUTO_TEST_CASE( picsar_span_copy )
 {
-    auto arr = picsar_array<double,3>{1.0,2.0,3.0};
+    auto arr = std::array<double,3>{1.0,2.0,3.0};
     const auto span = picsar_span<double>{arr.size(), arr.data()};
     const auto cspan = span;
 

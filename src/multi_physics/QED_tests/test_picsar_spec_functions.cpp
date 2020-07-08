@@ -1,4 +1,4 @@
-//####### Test module for vec functions ####################################
+//####### Test module for special functions ####################################
 
 //Define Module name
  #define BOOST_TEST_MODULE "math/special_functions"
