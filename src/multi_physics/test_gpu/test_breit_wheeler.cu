@@ -1,3 +1,10 @@
+/**
+* This program tests the Schiwnger pair generaion process on GPU.
+* The test is performed in single and double precision. SI units
+* are used for this test.
+* Results are compared with those calculated on the CPU.
+*/
+
 #include <iostream>
 #include <random>
 
@@ -35,8 +42,8 @@ const int test_size = 20'000'000;
 const double dt_test = 1e-18;
 const double table_chi_min = 0.01;
 const double table_chi_max = 500.0;
-const int table_chi_size = 512;
-const int table_frac_size = 512;
+const int table_chi_size = 256;
+const int table_frac_size = 256;
 const double max_normalized_field = 0.02;
 const double max_normalized_momentum = 1000.0;
 const int random_seed = 22051988;
@@ -90,6 +97,19 @@ struct part
     Real bz;
     Real opt;
 };
+
+template<typename TIN, typename TOUT>
+part<TOUT>
+part_transform (const part<TIN>& in)
+{
+    part<TOUT> out;
+    out.x = in.x ; out.y = in.y ; out.z = in.z ;
+    out.px = in.px ; out.py = in.py ; out.pz = in.pz ;
+    out.ex = in.ex ; out.ey = in.ey ; out.ez = in.ez ;
+    out.bx = in.bx ; out.by = in.by ; out.bz = in.bz ;
+    out.opt = in.opt ;
+    return out;
+}
 //__________________________________________________
 
 
@@ -119,7 +139,7 @@ __global__ void bw_opt_depth_evol(
         const auto ppx = px/mec<Real>;
 	    const auto ppy = py/mec<Real>;
 	    const auto ppz = pz/mec<Real>;        
-        const auto en = (sqrt(1.0 + ppx*ppx + ppy*ppy + ppz*ppz))*mec2<Real>;        
+        const auto en = (sqrt(static_cast<Real>(1.0) + ppx*ppx + ppy*ppy + ppz*ppz))*mec2<Real>;        
    
         pxr_bw::evolve_optical_depth<Real,TableType>(
             en, chi, dt, opt,
@@ -183,15 +203,19 @@ __global__ void bw_pair_gen(
 }
 //********************************************************************************************
 
-template <typename TableViewType>
+template <typename RealType, typename TableViewType>
 void do_dndt_test(
     TableViewType table,
-    const std::vector<part<double>>& t_data, double dt)
+    const std::vector<part<double>>& t_data,
+    double dt, TableViewType cpu_table)
 {
-    auto data = t_data;
+    auto data = std::vector<part<RealType>>(t_data.size());
+    std::transform(t_data.begin(), t_data.end(), data.begin(),
+            part_transform<double, RealType>);
+  
     auto how_many = data.size();
-    const auto bytesize = t_data.size()*sizeof(part<double>);
-    part<double>* d_data;
+    const auto bytesize = t_data.size()*sizeof(part<RealType>);
+    part<RealType>* d_data;
     cudaMalloc(&d_data, bytesize);
     
     cudaMemcpy(d_data, data.data(), bytesize, cudaMemcpyHostToDevice);
@@ -201,8 +225,8 @@ void do_dndt_test(
     cudaEventCreate(&stop);
 
     cudaEventRecord(start);    
-    bw_opt_depth_evol<double, TableViewType>
-        <<<(how_many+255)/256, 256>>>(
+    bw_opt_depth_evol<RealType, TableViewType>
+        <<<(how_many+511)/512, 512>>>(
             how_many, d_data, dt, table);
     cudaEventRecord(stop);
             
@@ -221,24 +245,27 @@ void do_dndt_test(
     cudaFree(d_data);
 }
 
-template <typename TableViewType>
+template <typename RealType, typename TableViewType>
 void do_pair_prod_test(
     TableViewType table,
-    const std::vector<part<double>>& t_data, double dt)
+    const std::vector<part<double>>& t_data, double dt, TableViewType cpu_table)
 {
-    auto data = t_data;
+    auto data = std::vector<part<RealType>>(t_data.size());
+    std::transform(t_data.begin(), t_data.end(), data.begin(),
+            part_transform<double, RealType>);
+  
     auto ele_data = t_data;
     auto pos_data = t_data;
     auto how_many = data.size();
-    const auto bytesize = t_data.size()*sizeof(part<double>);
-    part<double>* d_data;
-    part<double>* d_ele_data;
-    part<double>* d_pos_data;
-    double* d_rand;
+    const auto bytesize = t_data.size()*sizeof(part<RealType>);
+    part<RealType>* d_data;
+    part<RealType>* d_ele_data;
+    part<RealType>* d_pos_data;
+    RealType* d_rand;
     cudaMalloc(&d_data, bytesize);
     cudaMalloc(&d_ele_data, bytesize);
     cudaMalloc(&d_pos_data, bytesize);
-    cudaMalloc(&d_rand, sizeof(double)*how_many);
+    cudaMalloc(&d_rand, sizeof(RealType)*how_many);
     
     cudaMemcpy(d_data, data.data(), bytesize, cudaMemcpyHostToDevice);
     
@@ -251,9 +278,14 @@ void do_pair_prod_test(
     cudaEventCreate(&stop);
 
     cudaEventRecord(start);
-    curandGenerateUniformDouble(gen, d_rand, how_many);  
-    bw_pair_gen<double, TableViewType>
-        <<<(how_many+255)/256, 256>>>(
+
+    if(std::is_same<RealType, double>::value)
+        curandGenerateUniformDouble(gen, reinterpret_cast<double*>(d_rand), how_many);
+    else
+        curandGenerateUniform(gen, reinterpret_cast<float*>(d_rand), how_many);
+ 
+    bw_pair_gen<RealType, TableViewType>
+        <<<(how_many+511)/512, 512>>>(
             how_many, d_data, d_rand, d_ele_data, d_pos_data, table);
     cudaEventRecord(stop);
             
@@ -276,23 +308,24 @@ void do_pair_prod_test(
     cudaFree(d_rand);
 }
 
-std::vector<part<double>>
+template<typename RealType>
+std::vector<part<RealType>>
 prepare_data(
-    int how_many, double pscale, double fscale)
+    int how_many, RealType pscale, RealType fscale)
 {
     std::cout << "Preparing data..."; std::cout.flush();    
     
-    auto data = std::vector<part<double>>(how_many);
+    auto data = std::vector<part<RealType>>(how_many);
     
     std::mt19937 rng{};
-    std::uniform_real_distribution<double> pp{-pscale*mec<>,pscale*mec<>};
-    std::uniform_real_distribution<double> ee{ -Es*fscale, Es*fscale};
-    std::uniform_real_distribution<double> bb{ -Bs*fscale, Bs*fscale};
-    std::uniform_real_distribution<double> pos{0.0,1.0};
-    auto exp_dist = std::exponential_distribution<double>(1.0);
+    std::uniform_real_distribution<RealType> pp{RealType(-pscale*mec<>),RealType(pscale*mec<>)};
+    std::uniform_real_distribution<RealType> ee{RealType(-Es*fscale), RealType(Es*fscale)};
+    std::uniform_real_distribution<RealType> bb{RealType(-Bs*fscale), RealType(Bs*fscale)};
+    std::uniform_real_distribution<RealType> pos{0.0,1.0};
+    auto exp_dist = std::exponential_distribution<RealType>(1.0);
     
     for(int i = 0; i < how_many; ++i){
-        data[i] = part<double>{
+        data[i] = part<RealType>{
             pos(rng),pos(rng),pos(rng),
             pp(rng),pp(rng),pp(rng),
             ee(rng),ee(rng),ee(rng),
@@ -305,8 +338,8 @@ prepare_data(
     return data;    
 }
 
-template <typename RealType>
-auto generate_dndt_table_gpu(RealType chi_min, RealType chi_max, int chi_size)
+template <typename RealType, typename VectorType>
+auto generate_dndt_table(RealType chi_min, RealType chi_max, int chi_size)
 {
     std::cout << "Preparing dndt table [" << typeid(RealType).name() << ", " << chi_size <<"]...\n";
     std::cout.flush();
@@ -314,15 +347,15 @@ auto generate_dndt_table_gpu(RealType chi_min, RealType chi_max, int chi_size)
     pxr_bw::dndt_lookup_table_params<RealType> bw_params{chi_min, chi_max, chi_size};
 	
 	auto table = pxr_bw::dndt_lookup_table<
-        RealType, ThrustDeviceWrapper<RealType>>{bw_params};
+        RealType, VectorType>{bw_params};
         
-    table.template generate<pxr_bw::generation_policy::force_internal_double>();
+    table.generate();
 	
     return table;
 }
 
-template <typename RealType>
-auto generate_pair_table_gpu(RealType chi_min, RealType chi_max, int chi_size, int frac_size)
+template <typename RealType, typename VectorType>
+auto generate_pair_table(RealType chi_min, RealType chi_max, int chi_size, int frac_size)
 {
     std::cout << "Preparing pair production table [" << typeid(RealType).name() << ", " << chi_size << " x " << frac_size <<"]...\n";
     std::cout.flush();
@@ -331,27 +364,61 @@ auto generate_pair_table_gpu(RealType chi_min, RealType chi_max, int chi_size, i
         chi_min, chi_max, chi_size, frac_size};
 	
 	auto table = pxr_bw::pair_prod_lookup_table<
-        RealType, ThrustDeviceWrapper<RealType>>{bw_params};
+        RealType, VectorType>{bw_params};
         
-    table.template generate<pxr_bw::generation_policy::force_internal_double>();
+    table.template generate();
 	
     return table;
 }
 
-void do_test()
+template<typename RealType>
+void do_test(const std::vector<part<double>>& data)
 {
-    const auto data = prepare_data(test_size, max_normalized_momentum, max_normalized_field);
-    const auto dndt_d_table = generate_dndt_table_gpu<double>(table_chi_min, table_chi_max, table_chi_size);
-    const auto pair_d_table = generate_pair_table_gpu<double>(table_chi_min, table_chi_max, table_chi_size, table_frac_size);
+    std::cout << "Generating tables...\n"; std::cout.flush();
+    const auto dndt_table =
+        generate_dndt_table<RealType, ThrustDeviceWrapper<RealType>>(
+            table_chi_min,
+            table_chi_max,
+            table_chi_size);
+        
+    const auto dndt_table_cpu =
+        generate_dndt_table<RealType,std::vector<RealType>>(
+            table_chi_min,
+            table_chi_max,
+            table_chi_size);
+        
+    const auto pair_table =
+        generate_pair_table<RealType,ThrustDeviceWrapper<RealType>>(
+            table_chi_min,
+            table_chi_max,
+            table_chi_size,
+            table_frac_size);
+            
+    const auto pair_table_cpu =
+        generate_pair_table<RealType,std::vector<RealType>>(
+            table_chi_min,
+            table_chi_max,
+            table_chi_size,
+            table_frac_size);
+    std::cout << "done!\n"; std::cout.flush();
     
-    do_dndt_test(dndt_d_table.get_view(), data, dt_test);
-    do_pair_prod_test(pair_d_table.get_view(), data, dt_test);
+    std::cout << "Performing tests...\n"; std::cout.flush();
+    do_dndt_test<RealType,typeof(dndt_table.get_view())>(dndt_table.get_view(), data, dt_test, dndt_table_cpu.get_view());
+    do_pair_prod_test<RealType,typeof(pair_table.get_view())>(pair_table.get_view(), data, dt_test, pair_table_cpu.get_view());
+    std::cout << "done!\n"; std::cout.flush();
 }
 
 int main()
 {
-    std::cout << "*** Breit Wheeler engine GPU test *** \n \n";    
-    do_test();    
+    std::cout << "*** Breit Wheeler engine GPU test *** \n \n"; std::cout.flush();
+    const auto data = prepare_data<double>(
+        test_size,
+        max_normalized_momentum,
+        max_normalized_field);
+    std::cout << "*** Performing test in double precision ***\n"; std::cout.flush();    
+    do_test<double>(data);
+    std::cout << "*** Performing test in single precision ***\n"; std::cout.flush();    
+    do_test<float>(data);
     std::cout << "\n*** END ***\n";
 	return 0;
 }

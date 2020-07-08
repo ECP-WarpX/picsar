@@ -90,7 +90,7 @@ This folder contains a Jupyter notebook with several details and references on t
 ### Integration tests
 
 #### QED_table_generator
-This folder contains a simple program which demonstrates how lookup tables can be generated.
+This folder contains a simple program which demonstrates how lookup tables can be generated. It can be compiled with cmake + make. On a few core system table generation is expected to require ~ 30-60 minutes.
 
 #### test_gpu
 This folder contains some simple programs which demonstrate the use of the library on a GPU and perform some benchmarks.
