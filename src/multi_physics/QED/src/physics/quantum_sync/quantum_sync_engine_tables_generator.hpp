@@ -1,6 +1,16 @@
 #ifndef PICSAR_MULTIPHYSICS_QUANTUM_SYNC_ENGINE_TABLES_GENERATOR
 #define PICSAR_MULTIPHYSICS_QUANTUM_SYNC_ENGINE_TABLES_GENERATOR
 
+//This .hpp file extends the implementation of the lookup tables
+//for Quantum Synchrotron photon production with methods to generate
+//the lookup tables.
+//Please have a look at the jupyter notebook "validation.ipynb"
+//in QED_tests/validation for a more in-depth discussion.
+//
+// References:
+// 1) C.P.Ridgers et al. Journal of Computational Physics 260, 1 (2014)
+// 2) A.Gonoskov et al. Phys. Rev. E 92, 023305 (2015)
+
 //Should be included by all the src files of the library
 #include "../../qed_commons.h"
 
@@ -14,7 +24,6 @@
 #include "../../utils/progress_bar.hpp"
 
 #include <omp.h>
-
 #include <vector>
 #include <chrono>
 #include <iostream>
@@ -25,6 +34,19 @@ namespace multi_physics{
 namespace phys{
 namespace quantum_sync{
 
+    //________________ dN/dt table _____________________________________________
+
+    /**
+    * Auxiliary function used to compute the G function in double precision
+    * with a single precision argument and to cast back the result to single precision
+    *
+    * @tparam RealType the floating point type to be used
+    * @tparam VectorType the vector type to be used (relevant for the class of which is a method is member)
+    *
+    * @param[in] x the value to be passed to compute_G_function
+    *
+    * @return the result of compute_G_function
+    */
     template<typename RealType, typename VectorType>
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     RealType dndt_lookup_table<RealType, VectorType>::
@@ -34,6 +56,15 @@ namespace quantum_sync{
             compute_G_function<double>(x));
     }
 
+    /**
+    * Generates the lookup table (not usable on GPUs).
+    *
+    * @tparam RealType the floating point type to be used
+    * @tparam VectorType the vector type to be used (relevant for the class of which is a method is member)
+    * @tparam Policy if set to generation_policy::force_internal_double it forces internal calculations in double precision
+    *
+    * @param[in] show_progress if true it shows a nice progress bar
+    */
     template<typename RealType, typename VectorType>
     template<generation_policy Policy>
     void dndt_lookup_table<RealType, VectorType>::generate(
@@ -77,8 +108,21 @@ namespace quantum_sync{
         m_init_flag = true;
     }
 
-    //__________________________________________________________
+    //__________________________________________________________________________
 
+    //________________ Photon emission table ___________________________________
+
+    /**
+    * Auxiliary function used to compute cumulative probability distribution in double precision
+    * with a single precision argument and to cast back the result to single precision
+    *
+    * @tparam RealType the floating point type to be used
+    * @tparam VectorType the vector type to be used (relevant for the class of which is a method is member)
+    *
+    * @param[in] x the value to be passed to compute_cumulative_prob
+    *
+    * @return the result of compute_cumulative_prob
+    */
     template<typename RealType, typename VectorType>
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     std::vector<RealType>
@@ -96,6 +140,15 @@ namespace quantum_sync{
         return res;
     }
 
+    /**
+    * Generates the lookup table (not usable on GPUs).
+    *
+    * @tparam RealType the floating point type to be used
+    * @tparam VectorType the vector type to be used (relevant for the class of which is a method is member)
+    * @tparam Policy if set to generation_policy::force_internal_double it forces internal calculations in double precision
+    *
+    * @param[in] show_progress if true it shows a nice progress bar
+    */
     template<typename RealType, typename VectorType>
     template<generation_policy Policy>
     void photon_emission_lookup_table<RealType, VectorType>::generate(
@@ -149,6 +202,9 @@ namespace quantum_sync{
 
         m_init_flag = true;
     }
+
+    //__________________________________________________________________________
+
 }
 }
 }
