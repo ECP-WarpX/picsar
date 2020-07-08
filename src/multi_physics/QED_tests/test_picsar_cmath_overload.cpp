@@ -19,7 +19,7 @@ using namespace picsar::multi_physics::math;
 
 // ------------- Tests --------------
 
-// ***Test math constants
+// ***Test cmath overloads
 
 template<typename RealType>
 void test_case_cmath_overloads()

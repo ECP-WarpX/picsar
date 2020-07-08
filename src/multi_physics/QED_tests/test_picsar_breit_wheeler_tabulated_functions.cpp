@@ -1,4 +1,4 @@
-//####### Test module for picsar_tables ####################################
+//####### Test module for breit wheeler tabulated functions ####################################
 
 //Define Module name
  #define BOOST_TEST_MODULE "phys/breit_wheeler/tabulated_functions"
@@ -46,6 +46,8 @@ T constexpr small()
 
 // ------------- Tests --------------
 
+// ***Test T function
+
 template <typename RealType>
 void check_T_func()
 {
@@ -84,12 +86,15 @@ void check_T_func()
     }
 }
 
-// ***Test Breit Wheeler T function
 BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_T_function)
 {
     check_T_func<double>();
     check_T_func<float>();
 }
+
+// *******************************
+
+// ***Test cumulative probability distribution
 
 template <typename RealType>
 void check_cumulative_prob_1()
@@ -162,12 +167,15 @@ void check_cumulative_prob_1()
     }
 }
 
-// ***Test Breit Wheeler cumulative probability
 BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_cumulative_prob_1)
 {
     check_cumulative_prob_1<double>();
     check_cumulative_prob_1<float>();
 }
+
+// *******************************
+
+// ***Test cumulative probability distribution (vector of inputs)
 
 template <typename RealType>
 void check_cumulative_prob_vec()
@@ -194,9 +202,11 @@ void check_cumulative_prob_vec()
     }
 }
 
-// ***Test Breit Wheeler cumulative probability vector
 BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_cumulative_prob_vec)
 {
     check_cumulative_prob_vec<double>();
     check_cumulative_prob_vec<float>();
 }
+
+// *******************************
+

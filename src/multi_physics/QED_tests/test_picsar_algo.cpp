@@ -19,6 +19,22 @@
 
 using namespace picsar::multi_physics::utils;
 
+//Tolerance for double precision calculations
+const double double_tolerance = 1.0e-12;
+
+//Tolerance for single precision calculations
+const float float_tolerance = 1.0e-6;
+
+//Templated tolerance
+template <typename T>
+T constexpr tolerance()
+{
+    if(std::is_same<T,float>::value)
+        return float_tolerance;
+    else
+        return double_tolerance;
+}
+
 // ------------- Tests --------------
 
 // ***Test upper_bound
@@ -49,6 +65,66 @@ BOOST_AUTO_TEST_CASE( picsar_upper_bound_functor_1 )
                 std::upper_bound(arr.begin(), arr.end(), nn)));
 
     }
+}
+
+// ***Test linear_interp
+
+template<typename RealType>
+void check_linear_interp()
+{
+    const auto linear_func = [](RealType x){
+        return static_cast<RealType>(11.3 - 7.9*x);
+    };
+
+    const RealType x0 = 3.1;
+    const RealType x1 = 4.9;
+    const RealType y0 = linear_func(x0);
+    const RealType y1 = linear_func(x1);
+    const RealType x = 4.1;
+    const RealType yexp = linear_func(x);
+    const RealType y = linear_interp(x0, x1, y0, y1, x);
+
+    BOOST_CHECK_SMALL((y-yexp)/y, tolerance<RealType>());
+}
+
+BOOST_AUTO_TEST_CASE( picsar_linear_interp )
+{
+    check_linear_interp<double>();
+    check_linear_interp<float>();
+}
+
+// *******************************
+
+// ***Test bilinear_interp
+
+template<typename RealType>
+void check_bilinear_interp()
+{
+    const auto bilinear_func = [](RealType x, RealType y){
+        return static_cast<RealType>(11.3 - 7.9*x + 5.0*y);
+    };
+
+    const RealType x0 = 3.1;
+    const RealType x1 = 4.9;
+    const RealType y0 = -1.9;
+    const RealType y1 = -1.0;
+    const RealType z00 = bilinear_func(x0,y0);
+    const RealType z01 = bilinear_func(x0,y1);
+    const RealType z10 = bilinear_func(x1,y0);
+    const RealType z11 = bilinear_func(x1,y1);
+    const RealType x = 4.1;
+    const RealType y = -1.5;
+    const RealType zexp = bilinear_func(x,y);
+    const RealType z = bilinear_interp(
+        x0, x1, y0, y1, z00, z01, z10, z11, x, y);
+
+    BOOST_CHECK_SMALL((z-zexp)/z, tolerance<RealType>());
+}
+
+BOOST_AUTO_TEST_CASE( picsar_bilinear_interp )
+{
+    check_bilinear_interp<double>();
+    check_bilinear_interp<float>();
 }
 
 // *******************************
