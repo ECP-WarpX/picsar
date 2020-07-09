@@ -140,14 +140,12 @@ namespace quantum_sync{
                 RealType, containers::picsar_span<const RealType>> view_type;
 
             /**
-            * Constructor.
+            * Constructor (not designed for GPU usage)
             * After construction the table is empty. The user has to generate
             * the G function values before being able to use the table.
             *
             * @param params table parameters
             */
-            PXRMP_INTERNAL_GPU_DECORATOR
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
             dndt_lookup_table(dndt_lookup_table_params<RealType> params):
             m_params{params},
             m_table{containers::equispaced_1d_table<RealType, VectorType>{
@@ -157,7 +155,7 @@ namespace quantum_sync{
             {};
 
             /**
-            * Constructor.
+            * Constructor (not designed for GPU usage)
             * After construction the table is empty. The user has to generate
             * the G function values before being able to use the table.
             * This constructor allows the user to initialize the table with
@@ -166,8 +164,6 @@ namespace quantum_sync{
             * @param params parameters for table generation
             * @param vals values of the G function
             */
-            PXRMP_INTERNAL_GPU_DECORATOR
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
             dndt_lookup_table(dndt_lookup_table_params<RealType> params,
                 VectorType vals):
             m_params{params},
@@ -255,7 +251,7 @@ namespace quantum_sync{
             *
             * @return a table view
             */
-            view_type get_view()
+            view_type get_view() const
             {
                 if(!m_init_flag)
                     throw "Can't generate a view of an uninitialized table";
@@ -470,14 +466,12 @@ namespace quantum_sync{
                 RealType, containers::picsar_span<const RealType>> view_type;
 
             /**
-            * Constructor.
+            * Constructor (not designed for GPU usage)
             * After construction the table is empty. The user has to generate
             * the cumulative probability distribution before being able to use the table.
             *
             * @param params table parameters
             */
-            PXRMP_INTERNAL_GPU_DECORATOR
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
             photon_emission_lookup_table(
                 photon_emission_lookup_table_params<RealType> params):
                 m_params{params},
@@ -491,7 +485,7 @@ namespace quantum_sync{
                 {};
 
             /**
-            * Constructor.
+            * Constructor (not designed for GPU usage)
             * After construction the table is empty. The user has to generate
             * the cumulative probability distribution before being able to use the table.
             * This constructor allows the user to initialize the table with
@@ -499,8 +493,6 @@ namespace quantum_sync{
             *
             * @param params table parameters
             */
-            PXRMP_INTERNAL_GPU_DECORATOR
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
             photon_emission_lookup_table(
                 photon_emission_lookup_table_params<RealType> params,
                 VectorType vals):
@@ -593,7 +585,7 @@ namespace quantum_sync{
             *
             * @return a table view
             */
-            view_type get_view()
+            view_type get_view() const
             {
                 if(!m_init_flag)
                     throw "Can't generate a view of an uninitialized table";

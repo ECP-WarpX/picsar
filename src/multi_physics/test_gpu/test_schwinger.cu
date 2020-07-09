@@ -1,3 +1,10 @@
+/**
+* This program tests the Schiwnger pair generaion process on GPU.
+* The test is performed in single and double precision and using all the
+* supported unit systems. Results are compared with those calculated
+* on the CPU.
+*/
+
 #include <iostream>
 #include <vector>
 #include <array>
@@ -5,6 +12,7 @@
 #include <algorithm>
 #include <utility>
 #include <random>
+#include <omp.h>
 
 #include <cuda.h>
 #include <curand.h>
@@ -17,7 +25,7 @@ namespace pxr =  picsar::multi_physics::phys;
 namespace pxrm =  picsar::multi_physics::math;
 
 //How many test cases
-const int test_size = 10'000'000;
+const int test_size = 40'000'000;
 
 //Tolerance for double precision calculations
 const double double_tolerance = 5.0e-10;
@@ -138,18 +146,18 @@ std::pair<bool, float> do_schwinger_test(
 
     bool is_ok = true;
 
+    #pragma omp parallel for
     for(int i = 0; i < size; ++i)
     {
+        if(!is_ok) continue;
         if(fabs(static_cast<Real>(exp_sol[i])) <  tolerance<Real>()){
             if(fabs(static_cast<Real>(exp_sol[i]) - sol[i]) >  tolerance<Real>()){
-                is_ok = false;
-                break;
+                is_ok = false;  
             }
         }
         else if(fabs(sol[i] - static_cast<Real>(exp_sol[i]))/static_cast<Real>(exp_sol[i]) > tolerance<Real>())
         {
             is_ok = false;
-            break;
         }
     }
 
@@ -164,10 +172,11 @@ std::pair<bool, float> do_schwinger_test(
     return std::make_pair(is_ok, milliseconds);
 }
 
-int main()
+int do_test()
 {
     //Generate data SI
 
+    std::cout << "Generating data on CPU..." << std::endl;
     const double dt = 1.0e-15;
     const double vol = 1.0e-27;
 
@@ -195,8 +204,12 @@ int main()
             return unf(rng)*pxr::schwinger_field<double>/pxr::light_speed<double>;
         });
     }
+    std::cout << "done !\n" << std::endl;
+    //____________________________________
 
-
+    //Calculate solution on CPU
+    std::cout << "Calculating solution on CPU..." << std::endl;    
+    #pragma omp parallel for
     for(int i = 0; i < test_size; ++i){
         sol[i] =
             pxr::schwinger::expected_pair_number<double, pxr::unit_system::SI>(
@@ -204,7 +217,11 @@ int main()
                 B_SI[0][i], B_SI[1][i], B_SI[2][i],
                 vol, dt);
     }
+    std::cout << "done !\n" << std::endl;
+    //____________________________________
 
+
+    //Perform tests
     auto resprint = [](const std::string& tname,std::pair<bool, float> res){
         auto ok = res.first;
         auto time = res.second;
@@ -238,7 +255,17 @@ int main()
             test_size, E_SI, B_SI, vol, dt, sol));
     resprint("HL, float", do_schwinger_test<float, pxr::unit_system::heaviside_lorentz>(
             test_size, E_SI, B_SI, vol, dt, sol));
-
+    //____________________________________
 
 	return 0;
 }
+
+int main()
+{
+    std::cout << "*** Schwinger pair generation engine GPU test *** \n \n";    
+    do_test();    
+    std::cout << "\n*** END ***\n";
+    
+    return 0;
+}
+
