@@ -71,7 +71,7 @@ picsar_upper_bound
 * In order to be completely general, the sequence is given by a functor
 * f(size_t i) --> T res, which should respect the property "res2 >= res1 if i2 >= i1".
 *
-* @tparam the type of 'val'
+* @tparam T the type of 'val'
 * @tparam Functor the type of Functor
 * @param[in] first the first index (a size_t)
 * @param[in] last the last index (a size_t)
