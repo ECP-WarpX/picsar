@@ -16,7 +16,7 @@ namespace picsar{
 namespace multi_physics{
 namespace math{
     /**
-    * This module is a wrapper is a wrapper aroud the trapezoidal,
+    * This module is a wrapper around the trapezoidal,
     * gauss_kronrod, tanh_sinh & exp_sinh quadrature methods provided by the Boost library.
     * All the functions provided here accept a quadrature_algorithm template
     * parameter to choose which method will be used.
