@@ -48,6 +48,7 @@ namespace containers{
             {
                 m_how_many_x = static_cast<int>(values.size());
                 m_x_size = x_max - x_min;
+                m_dx = m_x_size/(m_how_many_x-1);
             };
 
         /**
@@ -68,7 +69,7 @@ namespace containers{
             constexpr size_t min_size =
                 sizeof(char)+//double or float
                 sizeof(m_x_min)+sizeof(m_x_max)+
-                sizeof(m_how_many_x);
+                sizeof(m_how_many_x) + sizeof(m_dx);
 
             if (raw_data.size() < min_size)
                 throw "Binary data is too small to be a 1D table.";
@@ -80,13 +81,15 @@ namespace containers{
                 throw "Mismatch between RealType used to write and to read the 1D table";
             }
 
-            m_x_min = serialization::get_out<RealType>(it_raw_data);
-            m_x_max = serialization::get_out<RealType>(it_raw_data);
+            m_x_min = serialization::get_out<decltype(m_x_min)>(it_raw_data);
+            m_x_max = serialization::get_out<decltype(m_x_max)>(it_raw_data);
             m_x_size = m_x_max - m_x_min;
             if(m_x_size < 0)
                 throw "raw_data contains invalid data.";
 
-            m_how_many_x = serialization::get_out<int>(it_raw_data);
+            m_how_many_x =
+                serialization::get_out<decltype(m_how_many_x)>(it_raw_data);
+            m_dx = serialization::get_out<decltype(m_dx)>(it_raw_data);
             if(m_how_many_x <= 0)
                 throw "raw_data contains invalid data.";
             m_values = VectorType(m_how_many_x);
@@ -110,6 +113,7 @@ namespace containers{
                 (m_x_max == rhs.m_x_max) &&
                 (m_x_size == rhs.m_x_size) &&
                 (m_how_many_x == rhs.m_how_many_x) &&
+                (m_dx == rhs.m_dx) &&
                 (m_values == rhs.m_values);
         }
 
@@ -122,7 +126,7 @@ namespace containers{
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         RealType get_x_coord(const int i) const noexcept
         {
-                return i*m_x_size/(m_how_many_x-1) + m_x_min;
+                return i*m_dx + m_x_min;
         }
 
         /**
@@ -179,6 +183,17 @@ namespace containers{
         RealType get_x_size() const noexcept
         {
             return m_x_size;
+        }
+
+        /**
+        * Returns the size of the steps along x
+        *
+        * @return the size of the steps along x
+        */
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        RealType get_dx() const noexcept
+        {
+            return m_dx;
         }
 
         /**
@@ -259,6 +274,7 @@ namespace containers{
             utils::serialization::put_in(m_x_min, raw_data);
             utils::serialization::put_in(m_x_max, raw_data);
             utils::serialization::put_in(m_how_many_x, raw_data);
+            utils::serialization::put_in(m_dx, raw_data);
             for (auto val : m_values)
                 utils::serialization::put_in(val, raw_data);
 
@@ -270,6 +286,7 @@ namespace containers{
         RealType m_x_max = 0.0; /* maximum x coordinate */
         RealType m_x_size = 0.0; /* size along x */
         int m_how_many_x = 0; /* how many values are stored in the table */
+        RealType m_dx = 0.0; /* size of the step along x */
         VectorType m_values; /* values f(x) */
     };
 
@@ -312,6 +329,8 @@ namespace containers{
             {
                 m_x_size = x_max - x_min;
                 m_y_size = y_max - y_min;
+                m_dx = m_x_size/(m_how_many_x-1);
+                m_dy = m_y_size/(m_how_many_y-1);
             };
 
         /**
@@ -334,7 +353,8 @@ namespace containers{
                 sizeof(m_x_min)+sizeof(m_x_max)+
                 sizeof(m_y_min)+sizeof(m_y_max)+
                 sizeof(m_how_many_x)+
-                sizeof(m_how_many_y);
+                sizeof(m_how_many_y)+
+                sizeof(m_dx) + sizeof(m_dy);
 
             if (raw_data.size() < min_size)
                 throw "Binary data is too small to be a 2D table.";
@@ -346,10 +366,10 @@ namespace containers{
                 throw "Mismatch between RealType used to write and to read the 1D table";
             }
 
-            m_x_min = serialization::get_out<RealType>(it_raw_data);
-            m_x_max = serialization::get_out<RealType>(it_raw_data);
-            m_y_min = serialization::get_out<RealType>(it_raw_data);
-            m_y_max = serialization::get_out<RealType>(it_raw_data);
+            m_x_min = serialization::get_out<decltype(m_x_min)>(it_raw_data);
+            m_x_max = serialization::get_out<decltype(m_x_max)>(it_raw_data);
+            m_y_min = serialization::get_out<decltype(m_y_min)>(it_raw_data);
+            m_y_max = serialization::get_out<decltype(m_y_max)>(it_raw_data);
             m_x_size = m_x_max - m_x_min;
             m_y_size = m_y_max - m_y_min;
             if(m_x_size < 0)
@@ -357,8 +377,12 @@ namespace containers{
             if(m_y_size < 0)
                 throw "raw_data contains invalid data.";
 
-            m_how_many_x = serialization::get_out<int>(it_raw_data);
-            m_how_many_y = serialization::get_out<int>(it_raw_data);
+            m_how_many_x =
+                serialization::get_out<decltype(m_how_many_x)>(it_raw_data);
+            m_how_many_y =
+                serialization::get_out<decltype(m_how_many_y)>(it_raw_data);
+            m_dx = serialization::get_out<decltype(m_dx)>(it_raw_data);
+            m_dy = serialization::get_out<decltype(m_dy)>(it_raw_data);
             if(m_how_many_x <= 0)
                 throw "raw_data contains invalid data.";
             if(m_how_many_y <= 0)
@@ -389,6 +413,8 @@ namespace containers{
                 (m_y_size == rhs.m_y_size) &&
                 (m_how_many_x == rhs.m_how_many_x) &&
                 (m_how_many_y == rhs.m_how_many_y) &&
+                (m_dx == rhs.m_dx) &&
+                (m_dy == rhs.m_dy) &&
                 (m_values == rhs.m_values);
         }
 
@@ -401,7 +427,7 @@ namespace containers{
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         RealType get_x_coord(int i) const noexcept
         {
-            return i*m_x_size/(m_how_many_x-1) + m_x_min;
+            return i*m_dx + m_x_min;
         }
 
         /**
@@ -413,7 +439,7 @@ namespace containers{
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         RealType get_y_coord(int j) const noexcept
         {
-            return j*m_y_size/(m_how_many_y-1) + m_y_min;
+            return j*m_dy + m_y_min;
         }
 
         /**
@@ -474,6 +500,17 @@ namespace containers{
         }
 
         /**
+        * Returns the size of the steps along x
+        *
+        * @return the size of the steps along x
+        */
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        RealType get_dx() const noexcept
+        {
+            return m_dx;
+        }
+
+        /**
         * Returns the number of points along y
         *
         * @return the number of points along y
@@ -515,6 +552,17 @@ namespace containers{
         RealType get_y_size() const noexcept
         {
             return m_y_size;
+        }
+
+        /**
+        * Returns the size of the steps along y
+        *
+        * @return the size of the steps along y
+        */
+        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        RealType get_dy() const noexcept
+        {
+            return m_dy;
         }
 
         /**
@@ -602,8 +650,8 @@ namespace containers{
                 idx_left = m_how_many_x-2;
             const auto idx_right = idx_left + 1;
 
-            const auto xleft = (idx_left*m_x_size)/(m_how_many_x-1) + m_x_min;
-            const auto xright = (idx_right*m_x_size)/(m_how_many_x-1) + m_x_min;
+            const auto xleft = idx_left*m_dx + m_x_min;
+            const auto xright = idx_right*m_dx + m_x_min;
             const auto left_val = m_values[idx(idx_left,j)];
             const auto right_val = m_values[idx(idx_right,j)];
 
@@ -630,8 +678,8 @@ namespace containers{
 
             const auto left_val = m_values[idx(i, idx_left)];
             const auto right_val = m_values[idx(i, idx_right)];
-            const auto yleft = (idx_left*m_y_size)/(m_how_many_y-1) + m_y_min;
-            const auto yright = (idx_right*m_y_size)/(m_how_many_y-1) + m_y_min;
+            const auto yleft = idx_left*m_dy + m_y_min;
+            const auto yright = idx_right*m_dy + m_y_min;
 
             return utils::linear_interp(yleft, yright, left_val, right_val, where_y);
         }
@@ -681,6 +729,8 @@ namespace containers{
             utils::serialization::put_in(m_y_max, raw_data);
             utils::serialization::put_in(m_how_many_x, raw_data);
             utils::serialization::put_in(m_how_many_y, raw_data);
+            utils::serialization::put_in(m_dx, raw_data);
+            utils::serialization::put_in(m_dy, raw_data);
             for (auto val : m_values)
                 utils::serialization::put_in(val, raw_data);
 
@@ -697,6 +747,8 @@ namespace containers{
             RealType m_y_size; /* size along y */
             int m_how_many_x; /* how many grid points along x */
             int m_how_many_y; /* how many grid points along y */
+            RealType m_dx; /* step size along x */
+            RealType m_dy; /* step size along y */
             VectorType m_values; /* values f(x,y) */
 
         /**
