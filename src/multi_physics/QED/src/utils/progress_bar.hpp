@@ -31,11 +31,11 @@ namespace utils{
             if (i % up_freq != 0 && i != how_many)
             return;
 
-            const auto bar_width = 50;
+            const auto bar_length = 50;
             const auto progress = (i*1.0/how_many);
-            const auto pos = static_cast<int>(bar_width*progress);
+            const auto pos = static_cast<int>(bar_length*progress);
             out << " [";
-            for (int j = 0; j < bar_width; ++j) {
+            for (int j = 0; j < bar_length; ++j) {
                 if (j < pos) out << "=";
                 else if (j == pos) out << ">";
                 else out << " ";
