@@ -539,9 +539,9 @@ namespace containers{
         }
 
         /**
-        * Returns a const refence to the underlying Vector holding value data
+        * Returns a const reference to the underlying Vector holding value data
         *
-        * @return a const refence to the underlying Vector holding value data
+        * @return a const reference to the underlying Vector holding value data
         */
         const VectorType& get_values_reference() const noexcept
         {
