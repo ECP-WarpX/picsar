@@ -27,7 +27,7 @@ namespace math{
     */
     template <typename RealType>
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    RealType norm2(const vec3<RealType>& vec) noexcept
+    RealType norm_square(const vec3<RealType>& vec) noexcept
     {
         return vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2];
     }
@@ -43,7 +43,7 @@ namespace math{
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     RealType norm(const vec3<RealType>& vec) noexcept
     {
-        return m_sqrt(norm2(vec));
+        return m_sqrt(norm_square(vec));
     }
 
     /**

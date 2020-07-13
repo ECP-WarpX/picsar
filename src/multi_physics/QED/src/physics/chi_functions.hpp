@@ -151,7 +151,7 @@ namespace phys{
         const auto beta_dot_e = dot(beta_vec, em_e);
         const auto beta_dot_e_2 = beta_dot_e*beta_dot_e;
         const auto e_plus_beta_cross_b_2 =
-            norm2(em_e + cross(beta_vec, em_b));
+            norm_square(em_e + cross(beta_vec, em_b));
         const auto field = m_sqrt(fabs(beta_dot_e_2-e_plus_beta_cross_b_2));
 
         constexpr auto one_over_schwinger = static_cast<RealType>(1.0/
