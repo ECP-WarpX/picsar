@@ -148,7 +148,7 @@ void generate_breit_wheeler_pair_prod_table(
 
 
     write_csv_2d_table(table, bw_params.chi_phot_min*0.1f, bw_params.chi_phot_max*10.f,
-        RealType(0.0), RealType(1.0), bw_params.chi_phot_how_many*3,
+        RealType(0.0), RealType(0.9999), bw_params.chi_phot_how_many*3,
         bw_params.frac_how_many*3, true, false, file_name + ".csv");
 
 }
@@ -196,8 +196,8 @@ void generate_quantum_sync_photem_table(
     of.close();
 
     write_csv_2d_table(table, qs_params.chi_part_min*0.1f, qs_params.chi_part_max*10.f,
-        qs_params.frac_min, RealType(1.0), qs_params.chi_part_how_many*3,
-        qs_params.frac_how_many*3, true, true, file_name + ".csv");
+        RealType(0.0), RealType(0.9999), qs_params.chi_part_how_many*3,
+        qs_params.frac_how_many*3, true, false, file_name + ".csv");
 }
 
 
