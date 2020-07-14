@@ -13,10 +13,15 @@ include_directories(../QED)
 
 add_executable(qed_table_generator table_generator.cpp)
 
-find_package(OpenMP)
-if(OpenMP_CXX_FOUND)
-    target_link_libraries(qed_table_generator PUBLIC OpenMP::OpenMP_CXX)
+#Compile with openMP support
+option(WITH_OPENMP "If supported, build with OpenMP support" OFF)
+if(WITH_OPENMP)
+    find_package(OpenMP)
+    if(OpenMP_CXX_FOUND)
+        target_link_libraries(qed_table_generator PUBLIC OpenMP::OpenMP_CXX)
+    endif()
 endif()
+#_______________________________________
 
 #Optimize build for machine architecture 
 option(OPTIMIZE_FOR_NATIVE "If supported, build with -march=native" OFF)
