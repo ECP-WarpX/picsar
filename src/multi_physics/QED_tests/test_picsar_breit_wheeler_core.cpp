@@ -274,10 +274,6 @@ void check_evolve_opt_depth(RealType ref_q = one<RealType>)
     }
 }
 
-// *******************************
-
-// ***Test Breit Wheeler pair production
-
 BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_core_evolve_opt_depth)
 {
     const double reference_length = 800.0e-9;
@@ -293,6 +289,10 @@ BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_core_evolve_opt_depth)
     check_evolve_opt_depth<float, unit_system::norm_lambda>(reference_length);
     check_evolve_opt_depth<float, unit_system::heaviside_lorentz>();
 }
+
+// *******************************
+
+// ***Test Breit Wheeler pair production
 
 template <typename RealType>
 void aux_check_small_or_zero(vec3<RealType> res, vec3<RealType> expected)
