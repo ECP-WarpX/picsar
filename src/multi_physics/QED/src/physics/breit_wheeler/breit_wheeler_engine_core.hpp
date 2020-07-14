@@ -173,6 +173,7 @@ namespace breit_wheeler{
     * @param[out] pos_momentum momentum of the generated positron
     * @param[in] ref_quantity omega or lambda in SI units if norm_omega or norm_lambda unit systems are used
     *
+    * @return true if chi_phot was in the lookup table, false otherwise.
     */
     template<
         typename RealType, typename TableType,
@@ -180,7 +181,7 @@ namespace breit_wheeler{
         >
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    void generate_breit_wheeler_pairs(
+    bool generate_breit_wheeler_pairs(
         const RealType chi_photon,
         const math::vec3<RealType>& t_v_momentum_photon,
         const RealType unf_zero_one_minus_epsi,
@@ -203,8 +204,10 @@ namespace breit_wheeler{
         const auto gamma_photon = mom_photon/
             heaviside_lorentz_electron_rest_energy<RealType>;
 
+        bool is_out = false;
         const auto chi_ele = ref_pair_prod_table.interp(
-                chi_photon, unf_zero_one_minus_epsi);
+                chi_photon, unf_zero_one_minus_epsi,
+                &is_out);
         const auto chi_pos = chi_photon - chi_ele;
 
         const auto coeff =  (gamma_photon - two<RealType>)/chi_photon;
@@ -219,6 +222,8 @@ namespace breit_wheeler{
             v_dir_photon*m_sqrt(gamma_ele*gamma_ele - one<RealType>)*mom_hl2u;
         pos_momentum = phys::heaviside_lorentz_electron_rest_energy<RealType>*
             v_dir_photon*m_sqrt(gamma_pos*gamma_pos - one<RealType>)*mom_hl2u;
+
+        return !is_out;
     }
 
 }
