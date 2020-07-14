@@ -122,7 +122,7 @@ namespace quantum_sync{
     * @param[in] ref_dndt_table a reference to the lookup table
     * @param[in] ref_quantity omega or lambda in SI units if norm_omega or norm_lambda unit systems are used
     *
-    * @return true if chi_phot was in the lookup table, false otherwise.
+    * @return true if chi_particle was in the lookup table, false otherwise.
     */
     template<
         typename RealType,
@@ -175,6 +175,7 @@ namespace quantum_sync{
     * @param[out] phot_momentum momentum of the generated photon
     * @param[in] ref_quantity omega or lambda in SI units if norm_omega or norm_lambda unit systems are used
     *
+    * @return true if chi_particle was in the lookup table, false otherwise.
     */
     template<
         typename RealType, typename TableType,
@@ -182,7 +183,7 @@ namespace quantum_sync{
         >
     PXRMP_INTERNAL_GPU_DECORATOR
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-    void generate_photon_update_momentum(
+    bool generate_photon_update_momentum(
         const RealType chi_particle,
         math::vec3<RealType>& t_v_momentum_particle,
         const RealType unf_zero_one_minus_epsi,
@@ -206,18 +207,23 @@ namespace quantum_sync{
         const auto gamma_particle = m_sqrt(
                 one<RealType> + norm_mom_particle*norm_mom_particle);
 
+        bool is_out = false;
         const auto chi_photon = ref_phot_prod_table.interp(
-                chi_particle, unf_zero_one_minus_epsi);
+                chi_particle, unf_zero_one_minus_epsi,
+                &is_out);
 
-        const auto gamma_photon =  gamma_particle/chi_particle;
+        const auto gamma_photon = (gamma_particle - one<RealType>)*
+            chi_photon/chi_particle;
 
         const auto mom_hl2u = conv<
             quantity::momentum, unit_system::heaviside_lorentz,
             UnitSystem, RealType>::fact(one<RealType>, ref_quantity);
 
         phot_momentum = heaviside_lorentz_electron_rest_energy<RealType>*
-            v_mom_particle*gamma_photon*mom_hl2u;
+            v_dir_particle*gamma_photon*mom_hl2u;
         t_v_momentum_particle = t_v_momentum_particle - phot_momentum;
+
+        return !is_out;
     }
 
 }
