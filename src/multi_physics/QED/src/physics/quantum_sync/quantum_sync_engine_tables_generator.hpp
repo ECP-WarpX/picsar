@@ -172,7 +172,7 @@ namespace quantum_sync{
         }
 
         int count = 0;
-        #pragma omp parallel for
+        #pragma omp parallel for schedule(dynamic, 1)
         for (int i = 0; i < chi_size; ++i){
             std::vector<RealType> temp;
             PXRMP_INTERNAL_CONSTEXPR_IF (use_internal_double){
