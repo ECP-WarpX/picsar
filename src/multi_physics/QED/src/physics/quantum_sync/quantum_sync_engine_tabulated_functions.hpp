@@ -144,6 +144,44 @@ namespace quantum_sync{
     }
 
     /**
+    * Auxiliary function to compute the numerator for the cumulative
+    * probability distribution (see validation script).
+    * It performs the integration from chi_start to chi_end.
+    * It is not usable on GPUs.
+    *
+    * @tparam RealType the floating point type to be used
+    *
+    * @param[in] chi_particle the chi parameter of the particle
+    * @param[in] chi_photon_start starting point of the integral
+    * @param[in] chi_photon_end end point of the integral
+    *
+    * @return the value of the numerator of the cumulative probability distribution
+    */
+    template<typename RealType>
+    RealType compute_cumulative_prob_numerator_a_b(
+        const RealType chi_particle,
+        RealType chi_photon_start,
+        RealType chi_photon_end)
+    {
+        using namespace math;
+
+        if(chi_particle  <= math::zero<RealType>) return math::zero<RealType>;
+        if(chi_photon_end <= math::zero<RealType>) return math::zero<RealType>;
+
+        if(chi_photon_end > chi_particle) chi_photon_end = chi_particle;
+        if(chi_photon_start >= chi_photon_end) return zero<RealType>;
+
+        auto frac_end = chi_photon_end/chi_particle;
+        if(frac_end > math::one<RealType>) frac_end =  math::one<RealType>;
+        auto frac_start = chi_photon_start/chi_particle;
+
+        return math::quad_a_b_s<RealType>(
+            [=](RealType csi){
+                return compute_G_integrand<RealType>(chi_particle, csi)/csi;},
+                frac_start, frac_end);
+    }
+
+    /**
     * Computes the numerator for the cumulative
     * probability distribution (see validation script).
     * It is not usable on GPUs.
@@ -160,16 +198,8 @@ namespace quantum_sync{
         const RealType chi_particle, RealType chi_photon)
     {
         using namespace math;
-        if(chi_photon <= math::zero<RealType>) return math::zero<RealType>;
-        if(chi_particle  <= math::zero<RealType>) return math::zero<RealType>;
-
-        auto frac = chi_photon/chi_particle;
-        if(frac > math::one<RealType>) frac =  math::one<RealType>;
-
-        return math::quad_a_b_s<RealType>(
-            [=](RealType csi){
-                return compute_G_integrand<RealType>(chi_particle, csi)/csi;},
-                zero<RealType>, frac);
+        return compute_cumulative_prob_numerator_a_b(
+            chi_particle, zero<RealType>, chi_photon);
     }
 
     /**
@@ -205,6 +235,55 @@ namespace quantum_sync{
 
         return res;
     }
+
+    /**
+    * Computes the cumulative probability distribution
+    * (see validation script) for a vector of chi parameters.
+    * Variant optimized for an ordered sequence of chi_photons.
+    * It is not usable on GPUs.
+    *
+    * @tparam RealType the floating point type to be used
+    *
+    * @param[in] chi_phot the chi parameter of the particle
+    * @param[in] chis the chi parameters of the photons (must be sorted)
+    *
+    * @return the cumulative probability distribution calculated for all the chi parameters
+    */
+    template<typename RealType, typename VectorType>
+    VectorType compute_cumulative_prob_opt(
+        const RealType chi_particle, const VectorType& chi_photons)
+    {
+        if(!std::is_sorted(chi_photons.begin(), chi_photons.end()))
+            throw("Chi vector is not sorted!");
+
+        using namespace math;
+        const auto den = compute_G_function(chi_particle);
+        auto res = VectorType(chi_photons.size());
+
+        if(chi_particle <= zero<RealType> || den <= zero<RealType>){
+            for (auto& el: res ) el = zero<RealType>;
+            return res;
+        }
+
+        RealType old_chi = zero<RealType>;
+        RealType sum = zero<RealType>;
+        RealType c =  zero<RealType>;
+        for (int i = 0; i < chi_photons.size(); ++i){
+            //Kahan summation algorithm is used
+            const auto y = compute_cumulative_prob_numerator_a_b(
+                chi_particle, old_chi, chi_photons[i])/den - c;
+            const auto t = sum + y;
+            c = (t - sum) - y;
+            sum = t;
+            res[i] = sum;
+            if(res[i] > one<RealType>) res[i] = one<RealType>;
+            old_chi = chi_photons[i];
+        }
+
+
+        return res;
+    }
+
 
 }
 }

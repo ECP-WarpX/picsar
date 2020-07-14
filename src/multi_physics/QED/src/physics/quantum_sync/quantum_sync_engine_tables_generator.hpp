@@ -132,7 +132,7 @@ namespace quantum_sync{
         auto dtemp = std::vector<double>(y.size());
         std::transform(y.begin(), y.end(), dtemp.begin(),
             [](RealType yy){ return static_cast<double>(yy); });
-        const auto dres = compute_cumulative_prob<
+        const auto dres = compute_cumulative_prob_opt<
             double, std::vector<double>>(x,dtemp);
         auto res = std::vector<RealType>(y.size());
         std::transform(dres.begin(), dres.end(), res.begin(),
@@ -179,7 +179,7 @@ namespace quantum_sync{
                 temp = aux_generate_double(
                     all_coords[i*frac_size][0],fracs);
             } else {
-                temp = compute_cumulative_prob(
+                temp = compute_cumulative_prob_opt(
                     all_coords[i*frac_size][0],fracs);
             }
 

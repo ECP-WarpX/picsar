@@ -122,20 +122,22 @@ namespace breit_wheeler{
     /**
     * Auxiliary function to compute the numerator for the cumulative
     * probability distribution (see validation script).
-    * It performs the integration from chi_start to chi_end.
+    * It performs the integration from chi_ele_start to chi_ele_end.
     * It is not usable on GPUs.
     *
     * @tparam RealType the floating point type to be used
     *
     * @param[in] chi_phot the chi parameter of the photon
     * @param[in] chi_ele_start starting point of the integral
-    * @param[in] chi_ele_stop end point of the integral
+    * @param[in] chi_ele_end end point of the integral
     *
     * @return the value of the numerator of the cumulative probability distribution
     */
     template<typename RealType>
     RealType compute_cumulative_prob_numerator_a_b(
-        const RealType chi_photon, RealType chi_ele_start, RealType chi_ele_end)
+        const RealType chi_photon,
+        RealType chi_ele_start,
+        RealType chi_ele_end)
     {
         using namespace math;
 
@@ -230,7 +232,7 @@ namespace breit_wheeler{
     * @tparam RealType the floating point type to be used
     *
     * @param[in] chi_phot the chi parameter of the photon
-    * @param[in] chis the chi parameters of the particles
+    * @param[in] chis the chi parameters of the particles (must be sorted)
     *
     * @return the cumulative probability distribution calculated for all the chi parameters
     */
@@ -238,7 +240,6 @@ namespace breit_wheeler{
     VectorType compute_cumulative_prob_opt(
         const RealType chi_photon, const VectorType& chis)
     {
-
         if(!std::is_sorted(chis.begin(), chis.end()))
             throw("Chi vector is not sorted!");
 
@@ -264,8 +265,6 @@ namespace breit_wheeler{
             return res;
         }
 
-        constexpr auto coeff = static_cast<RealType>(1./pi<>);
-
         RealType old_chi = zero<RealType>;
         RealType sum = zero<RealType>;
         RealType c =  zero<RealType>;
@@ -273,7 +272,6 @@ namespace breit_wheeler{
             //Kahan summation algorithm is used
             const auto y = compute_cumulative_prob_numerator_a_b(
                 chi_photon, old_chi, chis[i])/den - c;
-            std::cout.flush();
             const auto t = sum + y;
             c = (t - sum) - y;
             sum = t;
