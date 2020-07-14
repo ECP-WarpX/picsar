@@ -1,0 +1,11 @@
+This folder contains a simple program which demonstrates how lookup tables can be generated. 
+It can be compiled with cmake + make. On a few cores system table generation is expected to require ~ 30-60 minutes.
+
+It might be useful to compile the table generator enabling machine-specific instructions for better performances:
+
+ $ mkdir build
+ $ cd build/
+ $ cmake ../. -DOPTIMIZE_FOR_NATIVE=ON
+ $ make 
+ $ ./bin/qed_table_generator 
+
