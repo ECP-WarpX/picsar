@@ -102,6 +102,8 @@ BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_core_opt_depth)
     check_opt_depth<float>();
 }
 
+// *******************************
+
 // ***Test Breit Wheeler dNdt
 
 template <typename RealType, unit_system UnitSystem>
@@ -191,6 +193,8 @@ BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_core_get_dndt)
     check_dndt<float, unit_system::heaviside_lorentz>();
 }
 
+// *******************************
+
 // ***Test Breit Wheeler optical depth evolution
 
 template <typename RealType, unit_system UnitSystem>
@@ -269,6 +273,8 @@ void check_evolve_opt_depth(RealType ref_q = one<RealType>)
         }
     }
 }
+
+// *******************************
 
 // ***Test Breit Wheeler pair production
 
@@ -425,3 +431,5 @@ BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_core_pair_production)
     check_pair_production<float, unit_system::norm_lambda>(reference_length);
     check_pair_production<float, unit_system::heaviside_lorentz>();
 }
+
+// *******************************
