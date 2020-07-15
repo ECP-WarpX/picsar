@@ -28,6 +28,7 @@
 #include <chrono>
 #include <iostream>
 #include <type_traits>
+#include <stdexcept>
 
 namespace picsar{
 namespace multi_physics{
@@ -99,7 +100,7 @@ namespace quantum_sync{
 
         for (auto& val : all_vals){
             if(std::isnan(val))
-                throw "Error: nan detected in generated table!";
+                throw std::runtime_error("Error: nan detected in generated table!");
         }
 
         set_all_vals(all_vals);
@@ -200,7 +201,7 @@ namespace quantum_sync{
 
         for (auto& val : all_vals){
             if(std::isnan(val))
-                throw "Error: nan detected in generated table!";
+                throw std::runtime_error("Error: nan detected in generated table!");
         }
 
         set_all_vals(all_vals);

@@ -30,6 +30,7 @@
 #include <chrono>
 #include <iostream>
 #include <type_traits>
+#include <stdexcept>
 
 namespace picsar{
 namespace multi_physics{
@@ -101,7 +102,7 @@ namespace breit_wheeler{
 
         for (auto& val : all_vals){
             if(std::isnan(val))
-                throw "Error: nan detected in generated table!";
+                throw std::runtime_error("Error: nan detected in generated table!");
         }
 
         set_all_vals(all_vals);
@@ -174,24 +175,24 @@ namespace breit_wheeler{
         const auto all_coords = get_all_coordinates();
         auto all_vals = std::vector<RealType>(all_coords.size());
 
-        auto fracs = std::vector<RealType>(frac_size);
-        for(int j = 0; j < frac_size; ++j){
-            fracs[j] = all_coords[j][1];
-        }
-
         int count = 0;
         #pragma omp parallel for schedule(dynamic, 1)
         for (int i = 0; i < chi_size; ++i){
-            std::vector<RealType> temp;
+            const auto chi_phot = all_coords[i*frac_size][0];
+            auto chi_parts = std::vector<RealType>(frac_size);
+            for(int j = 0; j < frac_size; ++j){
+                chi_parts[j] = all_coords[j][i];
+            }
+            std::vector<RealType> vals = std::vector<RealType>(frac_size);
             PXRMP_INTERNAL_CONSTEXPR_IF (use_internal_double){
-                temp = aux_generate_double(
-                    all_coords[i*frac_size][0],fracs);
+                vals = aux_generate_double(
+                    chi_phot, chi_parts);
             } else {
-                temp = compute_cumulative_prob_opt(
-                    all_coords[i*frac_size][0],fracs);
+                vals = compute_cumulative_prob_opt(
+                   chi_phot, chi_parts);
             }
 
-            std::copy(temp.begin(), temp.end(), all_vals.begin()+i*frac_size);
+            std::copy(vals.begin(), vals.end(), all_vals.begin()+i*frac_size);
 
             #pragma omp critical
             {
@@ -202,7 +203,7 @@ namespace breit_wheeler{
 
         for (auto& val : all_vals){
             if(std::isnan(val))
-                throw "Error: nan detected in generated table!";
+                throw std::runtime_error("Error: nan detected in generated table!");
         }
 
         set_all_vals(all_vals);

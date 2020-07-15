@@ -16,6 +16,7 @@
 #include <array>
 #include <algorithm>
 #include <cmath>
+#include <stdexcept>
 
 namespace picsar{
 namespace multi_physics{
@@ -72,26 +73,28 @@ namespace containers{
                 sizeof(m_how_many_x) + sizeof(m_dx);
 
             if (raw_data.size() < min_size)
-                throw "Binary data is too small to be a 1D table.";
+                throw std::runtime_error("Binary data is too small \
+                to be a 1D table.");
 
             auto it_raw_data = raw_data.begin();
 
             if (serialization::get_out<char>(it_raw_data) !=
                 static_cast<char>(sizeof(RealType))){
-                throw "Mismatch between RealType used to write and to read the 1D table";
+                throw std::runtime_error("Mismatch between RealType \
+                used to write and to read the 1D table");
             }
 
             m_x_min = serialization::get_out<decltype(m_x_min)>(it_raw_data);
             m_x_max = serialization::get_out<decltype(m_x_max)>(it_raw_data);
             m_x_size = m_x_max - m_x_min;
             if(m_x_size < 0)
-                throw "raw_data contains invalid data.";
+                throw std::runtime_error("raw_data contains invalid data.");
 
             m_how_many_x =
                 serialization::get_out<decltype(m_how_many_x)>(it_raw_data);
             m_dx = serialization::get_out<decltype(m_dx)>(it_raw_data);
             if(m_how_many_x <= 0)
-                throw "raw_data contains invalid data.";
+                throw std::runtime_error("raw_data contains invalid data.");
             m_values = VectorType(m_how_many_x);
             auto vals =
                 serialization::get_n_out<RealType>(it_raw_data, m_how_many_x);
@@ -357,13 +360,15 @@ namespace containers{
                 sizeof(m_dx) + sizeof(m_dy);
 
             if (raw_data.size() < min_size)
-                throw "Binary data is too small to be a 2D table.";
+                throw std::runtime_error("Binary data is too small \
+                to be a 2D table.");
 
             auto it_raw_data = raw_data.begin();
 
             if (serialization::get_out<char>(it_raw_data) !=
                 static_cast<char>(sizeof(RealType))){
-                throw "Mismatch between RealType used to write and to read the 1D table";
+                throw std::runtime_error("Mismatch between RealType \
+                used to write and to read the 1D table");
             }
 
             m_x_min = serialization::get_out<decltype(m_x_min)>(it_raw_data);
@@ -373,9 +378,9 @@ namespace containers{
             m_x_size = m_x_max - m_x_min;
             m_y_size = m_y_max - m_y_min;
             if(m_x_size < 0)
-                throw "raw_data contains invalid data.";
+                throw std::runtime_error("raw_data contains invalid data.");
             if(m_y_size < 0)
-                throw "raw_data contains invalid data.";
+                throw std::runtime_error("raw_data contains invalid data.");
 
             m_how_many_x =
                 serialization::get_out<decltype(m_how_many_x)>(it_raw_data);
@@ -384,9 +389,9 @@ namespace containers{
             m_dx = serialization::get_out<decltype(m_dx)>(it_raw_data);
             m_dy = serialization::get_out<decltype(m_dy)>(it_raw_data);
             if(m_how_many_x <= 0)
-                throw "raw_data contains invalid data.";
+                throw std::runtime_error("raw_data contains invalid data.");
             if(m_how_many_y <= 0)
-                throw "raw_data contains invalid data.";
+                throw std::runtime_error("raw_data contains invalid data.");
             m_values = VectorType(m_how_many_x*m_how_many_y);
             auto vals = serialization::get_n_out<RealType>(
                     it_raw_data,

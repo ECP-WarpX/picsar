@@ -27,6 +27,7 @@
 #include "../../math/cmath_overloads.hpp"
 
 #include <algorithm>
+#include <stdexcept>
 
 namespace picsar{
 namespace multi_physics{
@@ -241,7 +242,7 @@ namespace breit_wheeler{
         const RealType chi_photon, const VectorType& chis)
     {
         if(!std::is_sorted(chis.begin(), chis.end()))
-            throw("Chi vector is not sorted!");
+            throw std::runtime_error("Chi vector is not sorted!");
 
         using namespace math;
         const auto den = compute_T_function(chi_photon);
@@ -278,8 +279,6 @@ namespace breit_wheeler{
             res[i] = sum;
             if(res[i] > one<RealType>) res[i] = one<RealType>;
             old_chi = chis[i];
-
-            std::cout << " ** " << chi_photon << " " << chis[i] << " " << res[i] << std::endl;
         }
 
 

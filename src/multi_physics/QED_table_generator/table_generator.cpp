@@ -100,7 +100,6 @@ void write_csv_2d_table(const TableType& table,
     for(int i = 0 ; i < how_many_x; ++i){
         for(int j = 0 ; j < how_many_y; ++j){
             of << coords_x[i] << ", " << coords_y[j] << ", " << res[i*how_many_y+j] << "\n";
-            std::cout << coords_x[i] << ", " << coords_y[j] << ", " << res[i*how_many_y+j] << "\n";
         }
     }
     of.close();
@@ -205,20 +204,20 @@ void generate_quantum_sync_photem_table(
 int main(int argc, char** argv)
 {
 
-    std::cout << "** Double precision tables ** \n" << std::endl;
+    /*std::cout << "** Double precision tables ** \n" << std::endl;
     generate_breit_wheeler_dndt_table<double>(
         px_bw::default_dndt_lookup_table_params<double>,
-        "bw_dndt_d");
+        "bw_dndt_d");*/
     generate_breit_wheeler_pair_prod_table<double>(
         px_bw::default_pair_prod_lookup_table_params<double>,
         "bw_pairprod_d");
-    generate_quantum_sync_dndt_table<double>(
+    /*generate_quantum_sync_dndt_table<double>(
         px_qs::default_dndt_lookup_table_params<double>,
         "qs_dndt_d");
     generate_quantum_sync_photem_table<double>(
         px_qs::default_photon_emission_lookup_table_params<double>,
         "qs_photem_d");
-    std::cout << "____________________________ \n" << std::endl;
+    std::cout << "____________________________ \n" << std::endl;*/
 
     /*
     std::cout << "** Single precision tables calculated in double precision ** \n" << std::endl;
@@ -242,7 +241,7 @@ int main(int argc, char** argv)
     std::cout << "____________________________ \n" << std::endl;
     */
 
-    std::cout << "** Single precision tables ** \n" << std::endl;
+    /*std::cout << "** Single precision tables ** \n" << std::endl;
     generate_breit_wheeler_dndt_table<float>(
         px_bw::default_dndt_lookup_table_params<float>,
         "bw_dndt_f");
@@ -256,7 +255,7 @@ int main(int argc, char** argv)
         px_qs::default_photon_emission_lookup_table_params<float>,
         "qs_photem_f");
 
-    std::cout << "____________________________ \n" << std::endl;
+    std::cout << "____________________________ \n" << std::endl;*/
 
     return 0;
 }

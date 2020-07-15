@@ -34,6 +34,7 @@
 #include <vector>
 #include <cmath>
 #include <limits>
+#include <stdexcept>
 
 namespace picsar{
 namespace multi_physics{
@@ -251,15 +252,15 @@ namespace breit_wheeler{
                     sizeof(m_params);
 
                 if (raw_data.size() < min_size)
-                    throw "Binary data is too small to be a Breit Wheeler \
-                     T-function lookup-table.";
+                    throw std::runtime_error("Binary data is too small to be a Breit Wheeler \
+                     T-function lookup-table.");
 
                 auto it_raw_data = raw_data.begin();
 
                 if (serialization::get_out<char>(it_raw_data) !=
                     static_cast<char>(sizeof(RealType))){
-                    throw "Mismatch between RealType used to write and to read \
-                        the Breit Wheeler T-function lookup-table";
+                    throw std::runtime_error("Mismatch between RealType used to write and to read \
+                        the Breit Wheeler T-function lookup-table");
                 }
 
                 m_params = serialization::get_out<
@@ -303,7 +304,8 @@ namespace breit_wheeler{
             view_type get_view() const
             {
                 if(!m_init_flag)
-                    throw "Can't generate a view of an uninitialized table";
+                    throw std::runtime_error("Can't generate a view of an \
+                    uninitialized table");
                 const auto span = containers::picsar_span<const RealType>{
                     static_cast<size_t>(m_params.chi_phot_how_many),
                     m_table.get_values_reference().data()
@@ -401,7 +403,7 @@ namespace breit_wheeler{
                 using namespace utils;
 
                 if(!m_init_flag)
-                    throw "Cannot serialize an uninitialized table";
+                    throw std::runtime_error("Cannot serialize an uninitialized table");
 
                 std::vector<char> res;
 
@@ -588,15 +590,15 @@ namespace breit_wheeler{
                     sizeof(m_params);
 
                 if (raw_data.size() < min_size)
-                    throw "Binary data is too small to be a Breit Wheeler \
-                        pair production lookup-table.";
+                    throw std::runtime_error("Binary data is too small to be a \
+                    Breit Wheeler pair production lookup-table.");
 
                 auto it_raw_data = raw_data.begin();
 
                 if (serialization::get_out<char>(it_raw_data) !=
                     static_cast<char>(sizeof(RealType))){
-                    throw "Mismatch between RealType used to write and to read \
-                        the Breit pair production lookup-table";
+                    throw std::runtime_error("Mismatch between RealType used \
+                    to write and to read the Breit pair production lookup-table");
                 }
 
                 m_params = serialization::get_out<
@@ -640,7 +642,8 @@ namespace breit_wheeler{
             view_type get_view() const
             {
                 if(!m_init_flag)
-                    throw "Can't generate a view of an uninitialized table";
+                    throw std::runtime_error("Can't generate a view of an \
+                    uninitialized table");
                 const auto span = containers::picsar_span<const RealType>{
                     static_cast<size_t>(m_params.chi_phot_how_many *
                         m_params.frac_how_many),

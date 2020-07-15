@@ -25,6 +25,7 @@
 #include "../../math/cmath_overloads.hpp"
 
 #include <algorithm>
+#include <stdexcept>
 
 namespace picsar{
 namespace multi_physics{
@@ -254,7 +255,7 @@ namespace quantum_sync{
         const RealType chi_particle, const VectorType& chi_photons)
     {
         if(!std::is_sorted(chi_photons.begin(), chi_photons.end()))
-            throw("Chi vector is not sorted!");
+            throw std::runtime_error("Chi vector is not sorted!");
 
         using namespace math;
         const auto den = compute_G_function(chi_particle);
