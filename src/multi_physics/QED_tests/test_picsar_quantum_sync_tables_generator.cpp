@@ -119,23 +119,38 @@ void check_photon_emission_table_generation()
     table.generate();
 
     const auto chi_chi_P_vector = std::vector<std::array<RealType,3>>{
-        std::array<RealType,3>{ 1.0 , 0.3 , 0.1345442547767904 },
-        std::array<RealType,3>{ 1.0 , 0.5 , 0.5 },
-        std::array<RealType,3>{ 1.0 , 0.7 , 0.8654557452351763 },
-        std::array<RealType,3>{ 10.0 , 1.0 , 0.07575595226082421 },
-        std::array<RealType,3>{ 10.0 , 3.0 , 0.3096952419129383 },
-        std::array<RealType,3>{ 10.0 , 5.0 , 0.5 },
-        std::array<RealType,3>{ 10.0 , 7.0 , 0.6903047580870976 },
-        std::array<RealType,3>{ 10.0 , 9.0 , 0.924244047739035 },
-        std::array<RealType,3>{ 100.0 , 10.0 , 0.16909092328399775 },
-        std::array<RealType,3>{ 100.0 , 30.0 , 0.36646213315061366 },
-        std::array<RealType,3>{ 100.0 , 50.0 , 0.5000000000000001 },
-        std::array<RealType,3>{ 100.0 , 70.0 , 0.633537866849343 },
-        std::array<RealType,3>{ 100.0 , 90.0 , 0.8309090767162309 },
+        // OUT OF TABLE, USE VALUES FOR CHI = 0.1
+        std::array<RealType,3>{ 0.01 , 0.00001 , 0.246635968071763 },
+        std::array<RealType,3>{ 0.01 , 0.0001 , 0.5111462944662963 },
+        std::array<RealType,3>{ 0.01 , 0.0010000000000000002 , 0.9029456666866598 },
+        //_______________________________________
+        std::array<RealType,3>{ 0.1 , 0.0001 , 0.246635968071763 },
+        std::array<RealType,3>{ 0.1 , 0.001 , 0.5111462944662963 },
+        std::array<RealType,3>{ 0.1 , 0.010000000000000002 , 0.9029456666866598 },
+        std::array<RealType,3>{ 1.0 , 0.001 , 0.1498504179995893 },
+        std::array<RealType,3>{ 1.0 , 0.01 , 0.31983031171402876 },
+        std::array<RealType,3>{ 1.0 , 0.1 , 0.6537737809484806 },
+        std::array<RealType,3>{ 1.0 , 0.2 , 0.7870086703462721 },
+        std::array<RealType,3>{ 1.0 , 0.5 , 0.9509588179865093 },
+        std::array<RealType,3>{ 10.0 , 0.01 , 0.11782827804283932 },
+        std::array<RealType,3>{ 10.0 , 0.1 , 0.25304594229286587 },
+        std::array<RealType,3>{ 10.0 , 1.0 , 0.5329925008830805 },
+        std::array<RealType,3>{ 10.0 , 2.0 , 0.65721264691597 },
+        std::array<RealType,3>{ 10.0 , 5.0 , 0.8452405292352005 },
+        std::array<RealType,3>{ 10.0 , 9.0 , 0.9837225233708096 },
+        std::array<RealType,3>{ 100.0 , 0.1 , 0.10901296836655985 },
+        std::array<RealType,3>{ 100.0 , 1.0 , 0.2344249952917742 },
+        std::array<RealType,3>{ 100.0 , 10.0 , 0.49689370771825486 },
+        std::array<RealType,3>{ 100.0 , 20.0 , 0.6157367664025167 },
+        std::array<RealType,3>{ 100.0 , 50.0 , 0.8017131199967799 },
+        std::array<RealType,3>{ 100.0 , 90.0 , 0.9545809417165405 },
         // OUT OF TABLE, USE VALUES FOR CHI = 100
-        std::array<RealType,3>{ 1000.0 , 500.0 , 0.5000000000000001 },
-        std::array<RealType,3>{ 1000.0 , 700.0 , 0.633537866849343 },
-        std::array<RealType,3>{ 1000.0 , 900.0 , 0.8309090767162309 }
+        std::array<RealType,3>{ 1000.0 , 1.0 , 0.10901296836655985 },
+        std::array<RealType,3>{ 1000.0 , 10.0 , 0.2344249952917742 },
+        std::array<RealType,3>{ 1000.0 , 100.0 , 0.49689370771825486 },
+        std::array<RealType,3>{ 1000.0 , 200.0 , 0.6157367664025167 },
+        std::array<RealType,3>{ 1000.0 , 500.0 , 0.8017131199967799 },
+        std::array<RealType,3>{ 1000.0 , 900.0 , 0.9545809417165405 }
         //_______________________________________
         };
 
