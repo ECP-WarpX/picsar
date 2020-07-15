@@ -278,6 +278,8 @@ namespace breit_wheeler{
             res[i] = sum;
             if(res[i] > one<RealType>) res[i] = one<RealType>;
             old_chi = chis[i];
+
+            std::cout << " ** " << chi_photon << " " << chis[i] << " " << res[i] << std::endl;
         }
 
 

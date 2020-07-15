@@ -214,7 +214,7 @@ void check_photon_emission_table()
          auto expected_1 = static_cast<RealType>(
              exp(log_chi_min +ii*(log_chi_max-log_chi_min)/(how_many-1)));
         auto expected_2 = static_cast<RealType>(
-             exp(log_frac_min +jj*(0.0-log_frac_min)/(how_many_frac-1)));
+             expected_1*exp(log_frac_min +jj*(0.0-log_frac_min)/(how_many_frac-1)));
 
          BOOST_CHECK_SMALL((res_1-expected_1)/expected_1, tolerance<RealType>());
          if(expected_2 != static_cast<RealType>(0.0))
@@ -226,7 +226,7 @@ void check_photon_emission_table()
     auto vals = VectorType(coords.size());
 
     auto functor = [=](std::array<RealType,2> x){
-        return static_cast<RealType>(1.0*pow(x[1], 4.0 + log10(x[0])));};
+        return static_cast<RealType>(1.0*pow(x[1]/x[0], 4.0 + log10(x[0])));};
 
     auto inverse_functor = [=](std::array<RealType,2> x){
             return static_cast<RealType>(1.0*pow((1-x[1]), 1.0/(4.0 + log10(x[0]))));};

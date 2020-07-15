@@ -252,7 +252,7 @@ void check_pair_production_table()
          const auto jj = i%how_many_frac;
          auto expected_1 = static_cast<RealType>(
              exp(log_chi_min +ii*(log_chi_max-log_chi_min)/(how_many-1)));
-        auto expected_2 = static_cast<RealType>(
+        auto expected_2 = expected_1*static_cast<RealType>(
              0.0 +jj*0.5/(how_many_frac-1));
 
          BOOST_CHECK_SMALL((res_1-expected_1)/expected_1, tolerance<RealType>());
@@ -265,7 +265,7 @@ void check_pair_production_table()
     auto vals = VectorType(coords.size());
 
     auto functor = [=](std::array<RealType,2> x){
-        return static_cast<RealType>(0.5*pow(2*x[1], 8.0 + log(x[0])));};
+        return static_cast<RealType>(0.5*pow(2*(x[1]/x[0]), 8.0 + log(x[0])));};
 
     auto inverse_functor = [=](std::array<RealType,2> x){
             return static_cast<RealType>(0.5*pow(2*x[1], 1.0/(8.0 + log(x[0]))));};

@@ -100,6 +100,7 @@ void write_csv_2d_table(const TableType& table,
     for(int i = 0 ; i < how_many_x; ++i){
         for(int j = 0 ; j < how_many_y; ++j){
             of << coords_x[i] << ", " << coords_y[j] << ", " << res[i*how_many_y+j] << "\n";
+            std::cout << coords_x[i] << ", " << coords_y[j] << ", " << res[i*how_many_y+j] << "\n";
         }
     }
     of.close();

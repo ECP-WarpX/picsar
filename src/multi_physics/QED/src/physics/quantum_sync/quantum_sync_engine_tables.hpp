@@ -294,7 +294,7 @@ namespace quantum_sync{
             }
 
             /**
-            * Exports all the coordinates of the table to a std::vector
+            * Exports all the coordinates (chi_particle) of the table to a std::vector
             * (not usable on GPUs)
             *
             * @return a vector containing all the table coordinates
@@ -669,7 +669,8 @@ namespace quantum_sync{
             }
 
             /**
-            * Exports all the coordinates of the table to a std::vector
+            * Exports all the coordinates (chi_particle, chi_photon)
+            * of the table to a std::vector
             * of 2-elements arrays (not usable on GPUs).
             *
             * @return a vector containing all the table coordinates
@@ -679,7 +680,7 @@ namespace quantum_sync{
                 auto all_coords = m_table.get_all_coordinates();
                 std::transform(all_coords.begin(),all_coords.end(),all_coords.begin(),
                     [](std::array<RealType,2> a){return
-                        std::array<RealType,2>{math::m_exp(a[0]), math::m_exp(a[1])};});
+                        std::array<RealType,2>{math::m_exp(a[0]), math::m_exp(a[1]) * math::m_exp(a[0]) };});
                 return all_coords;
             }
 
