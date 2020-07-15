@@ -79,8 +79,11 @@ void check_dndt_table_generation()
             std::array<RealType,2>{1000.0,46.02341774244706}}; // out of table: 100 is used
 
     for (const auto chi_G : chi_G_vector){
+        bool is_out = false;
         const auto res = table.interp(chi_G[0]);
         const auto exp = chi_G[1];
+
+        BOOST_CHECK_EQUAL(is_out, (chi_G[0] < chi_min ) || (chi_G[0] > chi_max) );
 
         if(exp > small<RealType>()){
             BOOST_CHECK_SMALL((res-exp)/exp,tolerance<RealType>());
@@ -115,7 +118,41 @@ void check_photon_emission_table_generation()
 
     table.generate();
 
+    const auto chi_chi_P_vector = std::vector<std::array<RealType,3>>{
+        std::array<RealType,3>{ 1.0 , 0.3 , 0.1345442547767904 },
+        std::array<RealType,3>{ 1.0 , 0.5 , 0.5 },
+        std::array<RealType,3>{ 1.0 , 0.7 , 0.8654557452351763 },
+        std::array<RealType,3>{ 10.0 , 1.0 , 0.07575595226082421 },
+        std::array<RealType,3>{ 10.0 , 3.0 , 0.3096952419129383 },
+        std::array<RealType,3>{ 10.0 , 5.0 , 0.5 },
+        std::array<RealType,3>{ 10.0 , 7.0 , 0.6903047580870976 },
+        std::array<RealType,3>{ 10.0 , 9.0 , 0.924244047739035 },
+        std::array<RealType,3>{ 100.0 , 10.0 , 0.16909092328399775 },
+        std::array<RealType,3>{ 100.0 , 30.0 , 0.36646213315061366 },
+        std::array<RealType,3>{ 100.0 , 50.0 , 0.5000000000000001 },
+        std::array<RealType,3>{ 100.0 , 70.0 , 0.633537866849343 },
+        std::array<RealType,3>{ 100.0 , 90.0 , 0.8309090767162309 },
+        // OUT OF TABLE, USE VALUES FOR CHI = 100
+        std::array<RealType,3>{ 1000.0 , 500.0 , 0.5000000000000001 },
+        std::array<RealType,3>{ 1000.0 , 700.0 , 0.633537866849343 },
+        std::array<RealType,3>{ 1000.0 , 900.0 , 0.8309090767162309 }
+        //_______________________________________
+        };
 
+    for (const auto chi_chi_P : chi_chi_P_vector){
+        bool is_out = false;
+        const auto res = table.interp(chi_chi_P[0], chi_chi_P[2], &is_out);
+        const auto exp = chi_chi_P[1];
+
+        BOOST_CHECK_EQUAL(is_out, false);
+
+        if(exp > small<RealType>()){
+            BOOST_CHECK_SMALL((res-exp)/exp,tolerance<RealType>());
+        }
+        else{
+            BOOST_CHECK_SMALL(res,small<RealType>());
+        }
+    }
 
     BOOST_CHECK_EQUAL(true,true);
 }
