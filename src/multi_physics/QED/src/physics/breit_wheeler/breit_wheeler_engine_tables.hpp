@@ -43,7 +43,7 @@ namespace breit_wheeler{
     //Reasonable default values for the dndt_lookup_table_params
     //and the pair_prod_lookup_table_params (see below)
     template <typename T>
-    constexpr T default_chi_phot_min = 1.0e-2; /*Default minimum photon chi parameter*/
+    constexpr T default_chi_phot_min = 2.0e-2; /*Default minimum photon chi parameter*/
     template <typename T>
     constexpr T default_chi_phot_max = 1.0e3; /* Default maximum photon chi parameter*/
     const int default_chi_phot_how_many = 256; /* Default number of grid points for photon chi */

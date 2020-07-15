@@ -1,4 +1,4 @@
-//####### Test module for picsar_tables ####################################
+//####### Test module for Quantum Synchrotron tables ###########################
 
 //Define Module name
  #define BOOST_TEST_MODULE "phys/quantum_sync/tables"

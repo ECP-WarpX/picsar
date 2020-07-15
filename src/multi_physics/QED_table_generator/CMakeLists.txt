@@ -13,6 +13,8 @@ include_directories(../QED)
 
 add_executable(qed_table_generator table_generator.cpp)
 
+configure_file(table_inspector.ipynb table_inspector.ipynb COPYONLY)
+
 #Compile with openMP support
 option(WITH_OPENMP "If supported, build with OpenMP support" OFF)
 if(WITH_OPENMP)
