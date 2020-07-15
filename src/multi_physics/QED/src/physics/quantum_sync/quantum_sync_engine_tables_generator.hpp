@@ -173,24 +173,28 @@ namespace quantum_sync{
         const auto all_coords = get_all_coordinates();
         auto all_vals = std::vector<RealType>(all_coords.size());
 
-        auto fracs = std::vector<RealType>(frac_size);
-        for(int j = 0; j < frac_size; ++j){
-            fracs[j] = all_coords[j][1];
-        }
-
         int count = 0;
         #pragma omp parallel for schedule(dynamic, 1)
         for (int i = 0; i < chi_size; ++i){
-            std::vector<RealType> temp;
+            const auto chi_part = all_coords[i*frac_size][0];
+            auto chi_phots = std::vector<RealType>(frac_size);
+            std::transform(
+                all_coords.begin()+i*frac_size,
+                all_coords.begin()+(i+1)*frac_size,
+                chi_phots.begin(),
+                [](auto el){return el[1];}
+            );
+
+            std::vector<RealType> vals = std::vector<RealType>(frac_size);
             PXRMP_INTERNAL_CONSTEXPR_IF (use_internal_double){
-                temp = aux_generate_double(
-                    all_coords[i*frac_size][0],fracs);
+                vals = aux_generate_double(
+                    chi_part, chi_phots);
             } else {
-                temp = compute_cumulative_prob_opt(
-                    all_coords[i*frac_size][0],fracs);
+                vals = compute_cumulative_prob_opt(
+                    chi_part, chi_phots);
             }
 
-            std::copy(temp.begin(), temp.end(), all_vals.begin()+i*frac_size);
+            std::copy(vals.begin(), vals.end(), all_vals.begin()+i*frac_size);
 
             #pragma omp critical
             {

@@ -180,9 +180,13 @@ namespace breit_wheeler{
         for (int i = 0; i < chi_size; ++i){
             const auto chi_phot = all_coords[i*frac_size][0];
             auto chi_parts = std::vector<RealType>(frac_size);
-            for(int j = 0; j < frac_size; ++j){
-                chi_parts[j] = all_coords[j][i];
-            }
+            std::transform(
+                all_coords.begin()+i*frac_size,
+                all_coords.begin()+(i+1)*frac_size,
+                chi_parts.begin(),
+                [](auto el){return el[1];}
+            );
+
             std::vector<RealType> vals = std::vector<RealType>(frac_size);
             PXRMP_INTERNAL_CONSTEXPR_IF (use_internal_double){
                 vals = aux_generate_double(
