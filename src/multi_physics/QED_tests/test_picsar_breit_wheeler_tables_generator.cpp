@@ -47,8 +47,8 @@ T constexpr small()
         return double_small;
 }
 
-const double chi_min = 0.2;
-const double chi_max = 200;
+const double chi_min = 0.1;
+const double chi_max = 100;
 const int how_many = 47;
 const int how_many_frac = 29;
 
@@ -69,13 +69,13 @@ void check_dndt_table_generation()
     table.generate();
 
     const auto chi_T_vector = std::vector<std::array<RealType,2>>{
-            std::array<RealType,2>{0.002, 0.0},
-            std::array<RealType,2>{0.02, 2.842097742000249e-59},
-            std::array<RealType,2>{0.2, 3.6048542879037333e-07},
-            std::array<RealType,2>{2.0, 0.04967294301665189},
-            std::array<RealType,2>{20.0, 0.1051793079305969},
-            std::array<RealType,2>{200.0, 0.06149654305294337},
-            std::array<RealType,2>{2000.0, 0.029794115415094434}};
+            std::array<RealType,2>{0.001, 0.0},
+            std::array<RealType,2>{0.01, 3.535432626057024e-117},
+            std::array<RealType,2>{0.1, 5.92605753015639e-13},
+            std::array<RealType,2>{1.0, 0.014135754351952334},
+            std::array<RealType,2>{10.0, 0.10848609251601983},
+            std::array<RealType,2>{100.0, 0.07489672111818155},
+            std::array<RealType,2>{1000.0, 0.03728739404639084}};
 
     for (const auto chi_T : chi_T_vector){
         bool is_out = false;

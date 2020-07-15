@@ -30,6 +30,8 @@
 
 #include <algorithm>
 #include <vector>
+#include <cmath>
+#include <limits>
 
 namespace picsar{
 namespace multi_physics{
@@ -695,7 +697,10 @@ namespace quantum_sync{
                 if(vals.size() == m_table.get_how_many_x()*
                     m_table.get_how_many_y()){
                     for(int i = 0; i < vals.size(); ++i){
-                        m_table.set_val(i,math::m_log(vals[i]));
+                        auto val = math::m_log(vals[i]);
+                        if(std::isinf(val))
+                            val = std::numeric_limits<RealType>::lowest();
+                        m_table.set_val(i, val);
                     }
                     m_init_flag = true;
                     return true;

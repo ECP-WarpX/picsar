@@ -98,6 +98,12 @@ namespace breit_wheeler{
                     all_vals.size(), "Breit-Wheeler dN/dt", 1);
             }
         }
+
+        for (auto& val : all_vals){
+            if(std::isnan(val))
+                throw "Error: nan detected in generated table!";
+        }
+
         set_all_vals(all_vals);
 
         auto t_end =  std::chrono::system_clock::now();
@@ -192,6 +198,11 @@ namespace breit_wheeler{
                 count++;
                 utils::draw_progress(count, chi_size, "BW pair prod", 1);
             }
+        }
+
+        for (auto& val : all_vals){
+            if(std::isnan(val))
+                throw "Error: nan detected in generated table!";
         }
 
         set_all_vals(all_vals);

@@ -96,6 +96,12 @@ namespace quantum_sync{
                     all_vals.size(), "Quantum sync dN/dt", 1);
             }
         }
+
+        for (auto& val : all_vals){
+            if(std::isnan(val))
+                throw "Error: nan detected in generated table!";
+        }
+
         set_all_vals(all_vals);
 
         auto t_end =  std::chrono::system_clock::now();
@@ -190,6 +196,11 @@ namespace quantum_sync{
                 count++;
                 utils::draw_progress(count, chi_size, "QS photon emission", 1);
             }
+        }
+
+        for (auto& val : all_vals){
+            if(std::isnan(val))
+                throw "Error: nan detected in generated table!";
         }
 
         set_all_vals(all_vals);
