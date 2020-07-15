@@ -56,12 +56,12 @@ void write_csv_1d_table(const TableType& table,
 template<typename RealType, typename TableType>
 void write_csv_2d_table(const TableType& table,
     const RealType x1, const RealType x2,
-    const RealType y1, const RealType y2,
-    const int how_many_x, const int how_many_y,
+    const RealType frac1, const RealType frac2,
+    const int how_many_x, const int how_many_frac,
     bool log_scale_x, bool log_scale_y, const std::string& file_name)
 {
     auto coords_x = std::vector<RealType>(how_many_x);
-    auto coords_y = std::vector<RealType>(how_many_y);
+    auto coords_y = std::vector<RealType>(how_many_frac);
     if(log_scale_x){
             std::generate(coords_x.begin(), coords_x.end(), [=,i = 0]() mutable{
             return std::exp(
@@ -78,28 +78,28 @@ void write_csv_2d_table(const TableType& table,
     if(log_scale_y){
             std::generate(coords_y.begin(), coords_y.end(), [=,i = 0]() mutable{
             return std::exp(
-                std::log(y1) + (i++)*(std::log(y2)-std::log(y1))/(how_many_y-1));
+                std::log(frac1) + (i++)*(std::log(frac2)-std::log(frac1))/(how_many_frac-1));
         });
     }
     else
     {
         std::generate(coords_y.begin(), coords_y.end(), [=,i = 0]() mutable{
-            return y1 + (i++)*(y2-y1)/(how_many_y-1);
+            return frac1 + (i++)*(frac2-frac1)/(how_many_frac-1);
         });
     }
 
-    auto res = std::vector<RealType>(how_many_x * how_many_y);
+    auto res = std::vector<RealType>(how_many_x * how_many_frac);
     #pragma omp parallel
     for(int i = 0 ; i < how_many_x; ++i){
-        for(int j = 0 ; j < how_many_y; ++j){
-            res[i*how_many_y + j] = table.interp(coords_x[i], coords_y[j]);
+        for(int j = 0 ; j < how_many_frac; ++j){
+            res[i*how_many_frac + j] = table.interp(coords_x[i], coords_x[i]*coords_y[j]);
         }
     }
 
     std::ofstream of{file_name};
     for(int i = 0 ; i < how_many_x; ++i){
-        for(int j = 0 ; j < how_many_y; ++j){
-            of << coords_x[i] << ", " << coords_y[j] << ", " << res[i*how_many_y+j] << "\n";
+        for(int j = 0 ; j < how_many_frac; ++j){
+            of << coords_x[i] << ", " << res[i*how_many_frac+j]/coords_x[i] << ", " << coords_y[j] << "\n";
         }
     }
     of.close();
@@ -204,22 +204,22 @@ void generate_quantum_sync_photem_table(
 int main(int argc, char** argv)
 {
 
-    /*std::cout << "** Double precision tables ** \n" << std::endl;
+    std::cout << "** Double precision tables ** \n" << std::endl;
     generate_breit_wheeler_dndt_table<double>(
         px_bw::default_dndt_lookup_table_params<double>,
         "bw_dndt_d");*/
     generate_breit_wheeler_pair_prod_table<double>(
         px_bw::default_pair_prod_lookup_table_params<double>,
         "bw_pairprod_d");
-    /*generate_quantum_sync_dndt_table<double>(
+    generate_quantum_sync_dndt_table<double>(
         px_qs::default_dndt_lookup_table_params<double>,
         "qs_dndt_d");
     generate_quantum_sync_photem_table<double>(
         px_qs::default_photon_emission_lookup_table_params<double>,
         "qs_photem_d");
-    std::cout << "____________________________ \n" << std::endl;*/
+    std::cout << "____________________________ \n" << std::endl;
 
-    /*
+/*
     std::cout << "** Single precision tables calculated in double precision ** \n" << std::endl;
     generate_breit_wheeler_dndt_table<float,
         px_bw::generation_policy::force_internal_double>(
@@ -241,7 +241,7 @@ int main(int argc, char** argv)
     std::cout << "____________________________ \n" << std::endl;
     */
 
-    /*std::cout << "** Single precision tables ** \n" << std::endl;
+    std::cout << "** Single precision tables ** \n" << std::endl;
     generate_breit_wheeler_dndt_table<float>(
         px_bw::default_dndt_lookup_table_params<float>,
         "bw_dndt_f");
@@ -255,7 +255,7 @@ int main(int argc, char** argv)
         px_qs::default_photon_emission_lookup_table_params<float>,
         "qs_photem_f");
 
-    std::cout << "____________________________ \n" << std::endl;*/
+    std::cout << "____________________________ \n" << std::endl;
 
     return 0;
 }
