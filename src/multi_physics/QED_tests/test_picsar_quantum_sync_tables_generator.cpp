@@ -19,11 +19,11 @@
 
 //Tolerance for double precision calculations
 const double double_tolerance = 1.0e-2;
-const double double_small = 1e-16;
+const double double_small = 1e-12;
 
 //Tolerance for single precision calculations
 const float float_tolerance = 1.0e-2;
-const float float_small = 1e-8;
+const float float_small = 1e-6;
 
 
 using namespace picsar::multi_physics::phys::quantum_sync;
@@ -80,10 +80,10 @@ void check_dndt_table_generation()
 
     for (const auto chi_G : chi_G_vector){
         bool is_out = false;
-        const auto res = table.interp(chi_G[0]);
+        const auto res = table.interp(chi_G[0],&is_out);
         const auto exp = chi_G[1];
 
-        BOOST_CHECK_EQUAL(is_out, (chi_G[0] < chi_min ) || (chi_G[0] > chi_max) );
+        BOOST_CHECK_EQUAL(is_out, (chi_G[0] < RealType(chi_min) ) || (chi_G[0] > RealType(chi_max)) );
 
         if(exp > small<RealType>()){
             BOOST_CHECK_SMALL((res-exp)/exp,tolerance<RealType>());
@@ -159,7 +159,8 @@ void check_photon_emission_table_generation()
         const auto res = table.interp(chi_chi_P[0], chi_chi_P[2], &is_out);
         const auto exp = chi_chi_P[1];
 
-        BOOST_CHECK_EQUAL(is_out, false);
+        BOOST_CHECK_EQUAL(is_out, (chi_chi_P[0] < RealType(chi_min) ) || (chi_chi_P[0] > RealType(chi_max)) );
+
 
         if(exp > small<RealType>()){
             BOOST_CHECK_SMALL((res-exp)/exp,tolerance<RealType>());
