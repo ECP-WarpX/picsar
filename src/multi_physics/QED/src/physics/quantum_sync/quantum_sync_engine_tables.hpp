@@ -669,6 +669,7 @@ namespace quantum_sync{
                 const auto log_frac = utils::linear_interp(
                     lower_log_prob, upper_log_prob, lower_log_frac, upper_log_frac,
                     log_prob);
+
                 return  m_exp(log_frac)*chi_part;
             }
 

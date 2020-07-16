@@ -194,6 +194,9 @@ namespace quantum_sync{
                     chi_part, chi_phots);
             }
 
+            //make sure that the last point is exactly 1.0
+            vals.back() = math::one<RealType>;
+
             std::copy(vals.begin(), vals.end(), all_vals.begin()+i*frac_size);
 
             #pragma omp critical

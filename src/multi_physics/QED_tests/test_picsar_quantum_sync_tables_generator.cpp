@@ -18,11 +18,11 @@
 #include "quantum_sync_engine_tables_generator.hpp"
 
 //Tolerance for double precision calculations
-const double double_tolerance = 1.0e-2;
+const double double_tolerance = 3.0e-2;
 const double double_small = 1e-12;
 
 //Tolerance for single precision calculations
-const float float_tolerance = 1.0e-2;
+const float float_tolerance = 3.0e-2;
 const float float_small = 1e-6;
 
 
@@ -49,9 +49,9 @@ T constexpr small()
 
 const double chi_min = 0.01;
 const double chi_max = 100;
-const int how_many = 29;
-const int how_many_frac = 47;
-const double frac_min = 1e-12;
+const int how_many = 73;
+const int how_many_frac = 75;
+const double frac_min = 1e-6;
 
 // ------------- Tests --------------
 
@@ -119,11 +119,6 @@ void check_photon_emission_table_generation()
     table.generate();
 
     const auto chi_chi_P_vector = std::vector<std::array<RealType,3>>{
-        // OUT OF TABLE, USE VALUES FOR CHI = 0.1
-        std::array<RealType,3>{ 0.01 , 0.00001 , 0.246635968071763 },
-        std::array<RealType,3>{ 0.01 , 0.0001 , 0.5111462944662963 },
-        std::array<RealType,3>{ 0.01 , 0.0010000000000000002 , 0.9029456666866598 },
-        //_______________________________________
         std::array<RealType,3>{ 0.1 , 0.0001 , 0.246635968071763 },
         std::array<RealType,3>{ 0.1 , 0.001 , 0.5111462944662963 },
         std::array<RealType,3>{ 0.1 , 0.010000000000000002 , 0.9029456666866598 },
@@ -156,11 +151,10 @@ void check_photon_emission_table_generation()
 
     for (const auto chi_chi_P : chi_chi_P_vector){
         bool is_out = false;
-        const auto res = table.interp(chi_chi_P[0], chi_chi_P[2], &is_out);
+        const auto res = table.interp(chi_chi_P[0], RealType(1.) - chi_chi_P[2], &is_out);
         const auto exp = chi_chi_P[1];
 
         BOOST_CHECK_EQUAL(is_out, (chi_chi_P[0] < RealType(chi_min) ) || (chi_chi_P[0] > RealType(chi_max)) );
-
 
         if(exp > small<RealType>()){
             BOOST_CHECK_SMALL((res-exp)/exp,tolerance<RealType>());
@@ -169,8 +163,6 @@ void check_photon_emission_table_generation()
             BOOST_CHECK_SMALL(res,small<RealType>());
         }
     }
-
-    BOOST_CHECK_EQUAL(true,true);
 }
 
 BOOST_AUTO_TEST_CASE( picsar_quantum_sync_photon_emission_table_generation)
