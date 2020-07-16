@@ -309,7 +309,8 @@ void check_pair_production_table()
             auto rxx = xx;
             if(rxx < chi_min) rxx = chi_min;
             if(rxx > chi_max) rxx = chi_max;
-            auto expected = inverse_functor(std::array<RealType,2>{rxx, rr/2})*xx;
+            auto eff_rr = (rr > 0.5)?(static_cast<RealType>(1.0) - rr):rr;
+            auto expected = inverse_functor(std::array<RealType,2>{rxx, eff_rr})*xx;
             if(rr >= 0.5) expected = xx - expected;
 
             if(expected != static_cast<RealType>(0.0))

@@ -195,6 +195,8 @@ namespace breit_wheeler{
                 vals = compute_cumulative_prob_opt(
                    chi_phot, chi_parts);
             }
+            //make sure that the last point is exactly 0.5
+            vals.back() = math::half<RealType>;
 
             std::copy(vals.begin(), vals.end(), all_vals.begin()+i*frac_size);
 

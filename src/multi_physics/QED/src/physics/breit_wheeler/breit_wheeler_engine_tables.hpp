@@ -694,7 +694,10 @@ namespace breit_wheeler{
                 }
                 const auto log_e_chi_phot = m_log(e_chi_phot);
 
-                const auto prob = unf_zero_one_minus_epsi*half<RealType>;
+                const auto prob =
+                    (unf_zero_one_minus_epsi <= half<RealType>)?
+                    unf_zero_one_minus_epsi:
+                    one<RealType> - unf_zero_one_minus_epsi;
 
                 const auto upper_frac_index = utils::picsar_upper_bound_functor(
                     0, m_params.frac_how_many,prob,[&](int i){

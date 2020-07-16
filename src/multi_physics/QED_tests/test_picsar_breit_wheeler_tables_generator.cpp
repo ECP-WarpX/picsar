@@ -142,7 +142,7 @@ void check_pair_prod_table_generation()
         const auto res = table.interp(chi_chi_P[0], chi_chi_P[2], &is_out);
         const auto exp = chi_chi_P[1];
 
-        BOOST_CHECK_EQUAL(is_out, false);
+        BOOST_CHECK_EQUAL(is_out, (chi_chi_P[0] < chi_min) || (chi_chi_P[0] > chi_max) );
 
         if(exp > small<RealType>()){
             BOOST_CHECK_SMALL((res-exp)/exp,tolerance<RealType>());
