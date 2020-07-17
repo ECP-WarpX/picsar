@@ -1,7 +1,7 @@
 #ifndef PICSAR_MULTIPHYSICS_QUANTUM_SYNC_ENGINE_TABLES
 #define PICSAR_MULTIPHYSICS_QUANTUM_SYNC_ENGINE_TABLES
 
-//This .hpp file contais the implementation of the lookup tables
+//This .hpp file contains the implementation of the lookup tables
 //for Quantum Synchrotron photon production.
 //Please have a look at the jupyter notebook "validation.ipynb"
 //in QED_tests/validation for a more in-depth discussion.
