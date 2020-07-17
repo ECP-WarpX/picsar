@@ -606,7 +606,7 @@ namespace quantum_sync{
             /*
             * Uses the lookup table to extract the chi value of
             * the generated photon from a cumulative probability
-            * distribution, given the chi paramter of the particle and a
+            * distribution, given the chi parameter of the particle and a
             * random number uniformly distributed in [0,1). If chi_part is out
             * of table either the minimum or the maximum value is used.
             * The method uses the lookup table to invert the equation:
