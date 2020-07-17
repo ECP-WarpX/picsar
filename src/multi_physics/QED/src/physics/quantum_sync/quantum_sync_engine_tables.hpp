@@ -715,7 +715,7 @@ namespace quantum_sync{
             }
 
             /*
-            * Cheks if the table has been initialized.
+            * Checks if the table has been initialized.
             *
             * @return true if the table has been initialized, false otherwise
             */
