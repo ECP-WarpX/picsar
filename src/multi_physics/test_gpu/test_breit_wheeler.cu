@@ -38,10 +38,10 @@ const double Bs = pxr::schwinger_field<>/pxr::light_speed<>;
 //__________________________________________________
 
 //Parameters of the test case
-const int test_size = 40'000'000;
+const int test_size = 100'000'000;
 const double dt_test = 1e-18;
 const double table_chi_min = 0.01;
-const double table_chi_max = 500.0;
+const double table_chi_max = 1000.0;
 const int table_chi_size = 256;
 const int table_frac_size = 256;
 const double max_normalized_field = 0.02;
@@ -50,8 +50,8 @@ const int random_seed = 22051988;
 //__________________________________________________
 
 //Templated tolerance for double and single precision
-const double double_tolerance = 5.0e-6;
-const float float_tolerance = 2.0e-2;
+const double double_tolerance = 1.0e-6;
+const float float_tolerance = 1.0e-3;
 template <typename T>
 T constexpr tolerance()
 {
@@ -59,6 +59,18 @@ T constexpr tolerance()
         return float_tolerance;
     else
         return double_tolerance;
+}
+
+//Templated small number for double and single precision
+const double double_small = 1.0e-10;
+const float float_small = 1.0e-4;
+template <typename T>
+T constexpr small()
+{
+    if(std::is_same<T,float>::value)
+        return float_small;
+    else
+        return double_small;
 }
 //__________________________________________________
 
@@ -304,7 +316,7 @@ void do_dndt_test(
 
     cudaEventRecord(start);
     bw_opt_depth_evol<RealType, TableViewType>
-        <<<(how_many+511)/512, 512>>>(
+        <<<(how_many+255)/256, 256>>>(
             how_many, d_data, dt, table);
     cudaEventRecord(stop);
 
@@ -323,16 +335,23 @@ void do_dndt_test(
         auto original_data = part_transform<double, RealType>(t_data[i]);
         cpu_check_depth_evol_kernel(original_data, static_cast<RealType>(dt), cpu_table);
         const auto exp_opt = original_data.opt;
-
-        if(exp_opt == 0.0){
-            if(fabs(exp_opt - res_opt) >  tolerance<RealType>()){
+        if(exp_opt < small<RealType>()){
+            if(fabs(exp_opt - res_opt) >  small<RealType>()){
                 is_ok = false;
+                #pragma omp critical
+                {
+                    std::cout << exp_opt << " " << res_opt << std::endl;
+                }
             }
         }
         else if(fabs((exp_opt - res_opt)/exp_opt) > tolerance<RealType>())
         {
             is_ok = false;
-        }
+            #pragma omp critical
+            {
+                std::cout << exp_opt << " " << res_opt << std::endl;
+            }
+        }        
     }
 
     cudaEventElapsedTime(&milliseconds, start, stop);
@@ -386,7 +405,7 @@ void do_pair_prod_test(
         curandGenerateUniform(gen, reinterpret_cast<float*>(d_rand), how_many);
 
     bw_pair_gen<RealType, TableViewType>
-        <<<(how_many+511)/512, 512>>>(
+        <<<(how_many+255)/256, 256>>>(
             how_many, d_data, d_rand, d_ele_data, d_pos_data, table);
     cudaEventRecord(stop);
 
