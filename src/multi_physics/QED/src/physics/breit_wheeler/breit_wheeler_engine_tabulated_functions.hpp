@@ -84,7 +84,7 @@ namespace breit_wheeler{
         const auto inner_integral = quad_a_inf<RealType>(
             [](RealType s){
                 const auto sqrt_s = m_sqrt(s);
-                const auto s_3_2 = sqrt_s*sqrt_s*sqrt_s;
+                const auto s_3_2 = s*sqrt_s;
 
                 return sqrt_s*math::k_v(one_third<RealType>,
                     two_thirds<RealType>*s_3_2);
