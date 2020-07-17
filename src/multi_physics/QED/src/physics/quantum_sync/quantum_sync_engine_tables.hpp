@@ -439,7 +439,7 @@ namespace quantum_sync{
     * (see validation script) and providing methods to perform interpolations.
     * It also provides methods for serialization (export to byte array,
     * import from byte array) and to generate "table views" based on
-    * non-owning poynters (this is crucial in order to use the table
+    * non-owning pointers (this is crucial in order to use the table
     * in GPU kernels, as explained below).
     *
     * Internally, this table stores
