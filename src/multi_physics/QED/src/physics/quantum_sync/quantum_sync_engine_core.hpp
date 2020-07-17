@@ -2,7 +2,7 @@
 #define PICSAR_MULTIPHYSICS_QUANTUM_SYNC_ENGINE_CORE
 
 //This .hpp file contais the implementation of the core
-//function of the Quantum Synchrotron photon emission engine.
+//functions of the Quantum Synchrotron photon emission engine.
 //Please have a look at the jupyter notebook "validation.ipynb"
 //in QED_tests/validation for a more in-depth discussion.
 //
