@@ -99,6 +99,8 @@ void check_table_1d(
     BOOST_CHECK_EQUAL(rxsize, xmax-xmin);
     const auto rhowmany =  tab.get_how_many_x();
     BOOST_CHECK_EQUAL(rhowmany, xsize);
+    const auto rdx = tab.get_dx();
+    BOOST_CHECK_EQUAL(rdx, (xmax-xmin)/(xsize-1));
 
     const auto first_val = tab.get_values_reference()[0];
     BOOST_CHECK_EQUAL(first_val, linear_function(xmin));
@@ -147,6 +149,8 @@ void check_table_2d(
     BOOST_CHECK_EQUAL(rhowmany_x, xsize);
     const auto rxsize =  tab.get_x_size();
     BOOST_CHECK_EQUAL(rxsize, xmax-xmin);
+    const auto rdx =  tab.get_dx();
+    BOOST_CHECK_EQUAL(rdx, (xmax-xmin)/(rhowmany_x-1));
     const auto rymin = tab.get_y_min();
     BOOST_CHECK_EQUAL(rxmin, xmin);
     const auto rymax = tab.get_y_max();
@@ -155,6 +159,8 @@ void check_table_2d(
     BOOST_CHECK_EQUAL(rhowmany_y, ysize);
     const auto rysize =  tab.get_y_size();
     BOOST_CHECK_EQUAL(rysize, ymax-ymin);
+    const auto rdy =  tab.get_dy();
+    BOOST_CHECK_EQUAL(rdy, (ymax-ymin)/(rhowmany_y-1));
 
     const auto first_val = tab.get_values_reference()[0];
     BOOST_CHECK_EQUAL(first_val, linear_function(xmin, ymin));

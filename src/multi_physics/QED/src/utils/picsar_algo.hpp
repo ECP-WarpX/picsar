@@ -26,7 +26,7 @@ namespace utils{
 * be forced defining PXRMP_FORCE_PICSAR_UPPER_BOUND.
 *
 * @tparam ForwardIt the iterator type
-* @tparam the type of 'val'
+* @tparam T the type of 'val'
 * @param[in] first a ForwardIt pointing to the first element of the container
 * @param[in] last a ForwardIt pointing to the end of the container (i.e. beyond the last element)
 * @param[in] val the value to use to find the upper bound
@@ -71,7 +71,7 @@ picsar_upper_bound
 * In order to be completely general, the sequence is given by a functor
 * f(size_t i) --> T res, which should respect the property "res2 >= res1 if i2 >= i1".
 *
-* @tparam the type of 'val'
+* @tparam T the type of 'val'
 * @tparam Functor the type of Functor
 * @param[in] first the first index (a size_t)
 * @param[in] last the last index (a size_t)

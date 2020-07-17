@@ -64,7 +64,7 @@ namespace schwinger{
         constexpr auto one_over_schwinger = static_cast<RealType>(
             1.0/heaviside_lorentz_schwinger_field<double>);
 
-        const auto ff =(norm2(em_e) - norm2(em_b))*one_half;
+        const auto ff =(norm_square(em_e) - norm_square(em_b))*one_half;
         const auto gg = dot(em_e, em_b);
 
         const auto inner = m_sqrt(ff*ff+ gg*gg);

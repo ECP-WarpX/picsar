@@ -1,4 +1,4 @@
-//####### Test module for picsar_tables ####################################
+//####### Test module for Breit-Wheeler tables #################################
 
 //Define Module name
  #define BOOST_TEST_MODULE "phys/breit_wheeler/tables"
@@ -46,13 +46,15 @@ T constexpr small()
         return double_small;
 }
 
-const double chi_min = 0.001;
+// ------------- Helper functions --------------
+
+const double chi_min = 0.01;
 const double chi_max = 1000;
 const int how_many = 256;
 const int how_many_frac = 256;
 
 template <typename RealType, typename VectorType>
-auto get_table()
+auto get_fake_dndt_table()
 {
     const auto params =
         dndt_lookup_table_params<RealType>{
@@ -63,7 +65,7 @@ auto get_table()
 }
 
 template <typename RealType, typename VectorType>
-auto get_pair_table()
+auto get_fake_pair_table()
 {
     const auto params =
         pair_prod_lookup_table_params<RealType>{
@@ -77,10 +79,12 @@ auto get_pair_table()
 
 // ------------- Tests --------------
 
+// ***Test Breit Wheeler dndt table
+
 template <typename RealType, typename VectorType>
 void check_dndt_table()
 {
-    auto table = get_table<RealType, VectorType>();
+    auto table = get_fake_dndt_table<RealType, VectorType>();
     BOOST_CHECK_EQUAL(table.is_init(),false);
 
     VectorType coords = table.get_all_coordinates();
@@ -108,7 +112,7 @@ void check_dndt_table()
     BOOST_CHECK_EQUAL(result,true);
     BOOST_CHECK_EQUAL(table.is_init(),true);
 
-    auto table_2 = get_table<RealType, VectorType>();
+    auto table_2 = get_fake_dndt_table<RealType, VectorType>();
     BOOST_CHECK_EQUAL(table_2 == table, false);
     BOOST_CHECK_EQUAL(table == table, true);
     BOOST_CHECK_EQUAL(table_2 == table_2, true);
@@ -156,12 +160,15 @@ void check_dndt_table()
     }
 }
 
-// ***Test Breit Wheeler dndt table
 BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_dndt_table)
 {
     check_dndt_table<double, std::vector<double>>();
     check_dndt_table<float, std::vector<float>>();
 }
+
+// *******************************
+
+// ***Test Breit Wheeler dndt table out range approximation
 
 template <typename RealType>
 void check_dndt_table_out_approx()
@@ -187,23 +194,25 @@ void check_dndt_table_out_approx()
 
 }
 
-// ***Test Breit Wheeler dndt table out range approximation
 BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_dndt_table_out_approx)
 {
     check_dndt_table_out_approx<double>();
     check_dndt_table_out_approx<float>();
 }
 
+// *******************************
+
+// ***Test Breit Wheeler dndt table serialization
+
 template <typename RealType, typename VectorType>
 void check_dndt_table_serialization()
 {
     const auto params =
         dndt_lookup_table_params<RealType>{
-            static_cast<RealType>(0.1),
-            static_cast<RealType>(10.0), 3};
+            static_cast<RealType>(0.1),static_cast<RealType>(10.0),6};
 
     auto table = dndt_lookup_table<
-        RealType, VectorType>{params, {1.,2.,3.}};
+        RealType, VectorType>{params, {1.,2.,3.,4.,5.,6.}};
 
     auto raw_data = table.serialize();
     auto new_table = dndt_lookup_table<
@@ -213,17 +222,20 @@ void check_dndt_table_serialization()
     BOOST_CHECK_EQUAL(new_table == table, true);
 }
 
-// ***Test Breit Wheeler dndt table serialization
 BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_dndt_table_serialization)
 {
     check_dndt_table_serialization<double, std::vector<double>>();
     check_dndt_table_serialization<float, std::vector<float>>();
 }
 
+// *******************************
+
+// ***Test Breit Wheeler pair production table
+
 template <typename RealType, typename VectorType>
 void check_pair_production_table()
 {
-    auto table = get_pair_table<RealType, VectorType>();
+    auto table = get_fake_pair_table<RealType, VectorType>();
     BOOST_CHECK_EQUAL(table.is_init(),false);
 
     auto coords = table.get_all_coordinates();
@@ -240,7 +252,7 @@ void check_pair_production_table()
          const auto jj = i%how_many_frac;
          auto expected_1 = static_cast<RealType>(
              exp(log_chi_min +ii*(log_chi_max-log_chi_min)/(how_many-1)));
-        auto expected_2 = static_cast<RealType>(
+        auto expected_2 = expected_1*static_cast<RealType>(
              0.0 +jj*0.5/(how_many_frac-1));
 
          BOOST_CHECK_SMALL((res_1-expected_1)/expected_1, tolerance<RealType>());
@@ -253,7 +265,7 @@ void check_pair_production_table()
     auto vals = VectorType(coords.size());
 
     auto functor = [=](std::array<RealType,2> x){
-        return static_cast<RealType>(0.5*pow(2*x[1], 8.0 + log(x[0])));};
+        return static_cast<RealType>(0.5*pow(2*(x[1]/x[0]), 8.0 + log(x[0])));};
 
     auto inverse_functor = [=](std::array<RealType,2> x){
             return static_cast<RealType>(0.5*pow(2*x[1], 1.0/(8.0 + log(x[0]))));};
@@ -265,11 +277,10 @@ void check_pair_production_table()
     BOOST_CHECK_EQUAL(table.is_init(),true);
 
 
-    auto table_2 = get_pair_table<RealType, VectorType>();
+    auto table_2 = get_fake_pair_table<RealType, VectorType>();
     BOOST_CHECK_EQUAL(table_2 == table, false);
     BOOST_CHECK_EQUAL(table == table, true);
     BOOST_CHECK_EQUAL(table_2 == table_2, true);
-
 
     const RealType xo0 = chi_min*0.1;
     const RealType xo1 = chi_max*10;
@@ -283,19 +294,29 @@ void check_pair_production_table()
     const auto rrs = std::array<RealType, 11>
             {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.99};
 
-    for (const auto xx : xxs){
+    const auto is_out = std::array<bool, 5>
+            {true, false, false, false, true};
+
+    for (int i = 0; i < xxs.size(); ++i){
+        const auto xx = xxs[i];
         for (const auto rr : rrs){
             auto res = table.interp(xx, rr);
+            bool flag_out = false;
+            const RealType res2 = table.interp(xx, rr, &flag_out);
+            BOOST_CHECK_EQUAL(flag_out, is_out[i]);
+            BOOST_CHECK_EQUAL(res, res2);
+
             auto rxx = xx;
             if(rxx < chi_min) rxx = chi_min;
             if(rxx > chi_max) rxx = chi_max;
-            auto expected = inverse_functor(std::array<RealType,2>{rxx, rr/2})*xx;
+            auto eff_rr = (rr > 0.5)?(static_cast<RealType>(1.0) - rr):rr;
+            auto expected = inverse_functor(std::array<RealType,2>{rxx, eff_rr})*xx;
             if(rr >= 0.5) expected = xx - expected;
 
             if(expected != static_cast<RealType>(0.0))
                 BOOST_CHECK_SMALL((res-expected)/expected, tolerance<RealType>());
             else
-                BOOST_CHECK_SMALL((res-expected), tolerance<RealType>());
+                BOOST_CHECK_SMALL(res, small<RealType>());
 
         }
     }
@@ -309,7 +330,6 @@ void check_pair_production_table()
     }
 }
 
-// ***Test Breit Wheeler dndt table
 BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_pair_production_table)
 {
     check_pair_production_table<double, std::vector<double>>();
@@ -318,6 +338,9 @@ BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_pair_production_table)
     check_pair_production_table<float, std::vector<float>>();
 }
 
+// *******************************
+
+// ***Test Breit Wheeler pair production table serialization
 
 template <typename RealType, typename VectorType>
 void check_pair_production_table_serialization()
@@ -338,10 +361,10 @@ void check_pair_production_table_serialization()
     BOOST_CHECK_EQUAL(new_table == table, true);
 }
 
-
-// ***Test Breit Wheeler pair production table serialization
 BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_pair_production_table_serialization)
 {
     check_pair_production_table_serialization<double, std::vector<double>>();
     check_pair_production_table_serialization<float, std::vector<float>>();
 }
+
+// *******************************

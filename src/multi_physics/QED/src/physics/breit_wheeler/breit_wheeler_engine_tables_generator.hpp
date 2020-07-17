@@ -30,6 +30,7 @@
 #include <chrono>
 #include <iostream>
 #include <type_traits>
+#include <stdexcept>
 
 namespace picsar{
 namespace multi_physics{
@@ -98,6 +99,12 @@ namespace breit_wheeler{
                     all_vals.size(), "Breit-Wheeler dN/dt", 1);
             }
         }
+
+        for (auto& val : all_vals){
+            if(std::isnan(val))
+                throw std::runtime_error("Error: nan detected in generated table!");
+        }
+
         set_all_vals(all_vals);
 
         auto t_end =  std::chrono::system_clock::now();
@@ -134,7 +141,7 @@ namespace breit_wheeler{
         auto dtemp = std::vector<double>(y.size());
         std::transform(y.begin(), y.end(), dtemp.begin(),
             [](RealType yy){ return static_cast<double>(yy); });
-        const auto dres = compute_cumulative_prob<
+        const auto dres = compute_cumulative_prob_opt<
             double, std::vector<double>>(x,dtemp);
         auto res = std::vector<RealType>(y.size());
         std::transform(dres.begin(), dres.end(), res.begin(),
@@ -168,30 +175,41 @@ namespace breit_wheeler{
         const auto all_coords = get_all_coordinates();
         auto all_vals = std::vector<RealType>(all_coords.size());
 
-        auto fracs = std::vector<RealType>(frac_size);
-        for(int j = 0; j < frac_size; ++j){
-            fracs[j] = all_coords[j][1];
-        }
-
         int count = 0;
-        #pragma omp parallel for
+        #pragma omp parallel for schedule(dynamic, 1)
         for (int i = 0; i < chi_size; ++i){
-            std::vector<RealType> temp;
-            PXRMP_INTERNAL_CONSTEXPR_IF (use_internal_double){
-                temp = aux_generate_double(
-                    all_coords[i*frac_size][0],fracs);
-            } else {
-                temp = compute_cumulative_prob(
-                    all_coords[i*frac_size][0],fracs);
-            }
+            const auto chi_phot = all_coords[i*frac_size][0];
+            auto chi_parts = std::vector<RealType>(frac_size);
+            std::transform(
+                all_coords.begin()+i*frac_size,
+                all_coords.begin()+(i+1)*frac_size,
+                chi_parts.begin(),
+                [](auto el){return el[1];}
+            );
 
-            std::copy(temp.begin(), temp.end(), all_vals.begin()+i*frac_size);
+            std::vector<RealType> vals = std::vector<RealType>(frac_size);
+            PXRMP_INTERNAL_CONSTEXPR_IF (use_internal_double){
+                vals = aux_generate_double(
+                    chi_phot, chi_parts);
+            } else {
+                vals = compute_cumulative_prob_opt(
+                   chi_phot, chi_parts);
+            }
+            //make sure that the last point is exactly 0.5
+            vals.back() = math::half<RealType>;
+
+            std::copy(vals.begin(), vals.end(), all_vals.begin()+i*frac_size);
 
             #pragma omp critical
             {
                 count++;
                 utils::draw_progress(count, chi_size, "BW pair prod", 1);
             }
+        }
+
+        for (auto& val : all_vals){
+            if(std::isnan(val))
+                throw std::runtime_error("Error: nan detected in generated table!");
         }
 
         set_all_vals(all_vals);

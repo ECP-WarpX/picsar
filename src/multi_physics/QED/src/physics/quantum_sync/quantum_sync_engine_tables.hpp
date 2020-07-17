@@ -30,6 +30,9 @@
 
 #include <algorithm>
 #include <vector>
+#include <cmath>
+#include <limits>
+#include <stdexcept>
 
 namespace picsar{
 namespace multi_physics{
@@ -203,15 +206,15 @@ namespace quantum_sync{
                     sizeof(m_params);
 
                 if (raw_data.size() < min_size)
-                    throw "Binary data is too small to be a Quantum Synchrotron \
-                     G-function lookup-table.";
+                    throw std::runtime_error("Binary data is too small \
+                    to be a Quantum Synchrotron G-function lookup-table.");
 
                 auto it_raw_data = raw_data.begin();
 
                 if (serialization::get_out<char>(it_raw_data) !=
                     static_cast<char>(sizeof(RealType))){
-                    throw "Mismatch between RealType used to write and to read \
-                        the Quantum Synchrotron G-function lookup-table";
+                    throw std::runtime_error("Mismatch between RealType used \
+                    to write and to read the Quantum Synchrotron G-function lookup-table");
                 }
 
                 m_params = serialization::get_out<
@@ -254,7 +257,8 @@ namespace quantum_sync{
             view_type get_view() const
             {
                 if(!m_init_flag)
-                    throw "Can't generate a view of an uninitialized table";
+                    throw std::runtime_error("Can't generate a view of an \
+                    uninitialized table");
                 const auto span = containers::picsar_span<const RealType>{
                     static_cast<size_t>(m_params.chi_part_how_many),
                     m_table.get_values_reference().data()
@@ -292,7 +296,7 @@ namespace quantum_sync{
             }
 
             /**
-            * Exports all the coordinates of the table to a std::vector
+            * Exports all the coordinates (chi_particle) of the table to a std::vector
             * (not usable on GPUs)
             *
             * @return a vector containing all the table coordinates
@@ -348,7 +352,8 @@ namespace quantum_sync{
                 using namespace utils;
 
                 if(!m_init_flag)
-                    throw "Cannot serialize an uninitialized table";
+                    throw std::runtime_error("Cannot serialize \
+                    an uninitialized table");
 
                 std::vector<char> res;
 
@@ -536,15 +541,15 @@ namespace quantum_sync{
                     sizeof(m_params);
 
                 if (raw_data.size() < min_size)
-                    throw "Binary data is too small to be a Quantum Synchrotron \
-                        emisson lookup-table.";
+                    throw std::runtime_error("Binary data is too small \
+                    to be a Quantum Synchrotron emisson lookup-table.");
 
                 auto it_raw_data = raw_data.begin();
 
                 if (serialization::get_out<char>(it_raw_data) !=
                     static_cast<char>(sizeof(RealType))){
-                    throw "Mismatch between RealType used to write and to read \
-                    the Quantum Synchrotron lookup-table";
+                    throw std::runtime_error("Mismatch between RealType \
+                    used to write and to read the Quantum Synchrotron lookup-table");
                 }
 
                 m_params = serialization::get_out<
@@ -588,7 +593,8 @@ namespace quantum_sync{
             view_type get_view() const
             {
                 if(!m_init_flag)
-                    throw "Can't generate a view of an uninitialized table";
+                    throw std::runtime_error("Can't generate a view of an \
+                    uninitialized table");
                 const auto span = containers::picsar_span<const RealType>{
                     static_cast<size_t>(m_params.chi_part_how_many *
                         m_params.frac_how_many),
@@ -663,11 +669,13 @@ namespace quantum_sync{
                 const auto log_frac = utils::linear_interp(
                     lower_log_prob, upper_log_prob, lower_log_frac, upper_log_frac,
                     log_prob);
+
                 return  m_exp(log_frac)*chi_part;
             }
 
             /**
-            * Exports all the coordinates of the table to a std::vector
+            * Exports all the coordinates (chi_particle, chi_photon)
+            * of the table to a std::vector
             * of 2-elements arrays (not usable on GPUs).
             *
             * @return a vector containing all the table coordinates
@@ -677,7 +685,7 @@ namespace quantum_sync{
                 auto all_coords = m_table.get_all_coordinates();
                 std::transform(all_coords.begin(),all_coords.end(),all_coords.begin(),
                     [](std::array<RealType,2> a){return
-                        std::array<RealType,2>{math::m_exp(a[0]), math::m_exp(a[1])};});
+                        std::array<RealType,2>{math::m_exp(a[0]), math::m_exp(a[1]) * math::m_exp(a[0]) };});
                 return all_coords;
             }
 
@@ -695,7 +703,10 @@ namespace quantum_sync{
                 if(vals.size() == m_table.get_how_many_x()*
                     m_table.get_how_many_y()){
                     for(int i = 0; i < vals.size(); ++i){
-                        m_table.set_val(i,math::m_log(vals[i]));
+                        auto val = math::m_log(vals[i]);
+                        if(std::isinf(val))
+                            val = std::numeric_limits<RealType>::lowest();
+                        m_table.set_val(i, val);
                     }
                     m_init_flag = true;
                     return true;
@@ -725,7 +736,7 @@ namespace quantum_sync{
                 using namespace utils;
 
                 if(!m_init_flag)
-                    throw "Cannot serialize an unitialized table";
+                    throw std::runtime_error("Cannot serialize an unitialized table");
 
                 std::vector<char> res;
 

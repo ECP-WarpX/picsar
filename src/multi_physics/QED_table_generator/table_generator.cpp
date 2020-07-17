@@ -99,7 +99,7 @@ void write_csv_2d_table(const TableType& table,
     std::ofstream of{file_name};
     for(int i = 0 ; i < how_many_x; ++i){
         for(int j = 0 ; j < how_many_y; ++j){
-            of << coords_x[i] << ", " << coords_y[j] << ", " << res[i] << "\n";
+            of << coords_x[i] << ", " <<  coords_y[j]  << ", " << res[i*how_many_y+j]/coords_x[i] << "\n";
         }
     }
     of.close();
@@ -148,7 +148,7 @@ void generate_breit_wheeler_pair_prod_table(
 
 
     write_csv_2d_table(table, bw_params.chi_phot_min*0.1f, bw_params.chi_phot_max*10.f,
-        RealType(0.0), RealType(1.0), bw_params.chi_phot_how_many*3,
+        RealType(0.0), RealType(1.0)-std::numeric_limits<RealType>::epsilon(), bw_params.chi_phot_how_many*3,
         bw_params.frac_how_many*3, true, false, file_name + ".csv");
 
 }
@@ -196,8 +196,8 @@ void generate_quantum_sync_photem_table(
     of.close();
 
     write_csv_2d_table(table, qs_params.chi_part_min*0.1f, qs_params.chi_part_max*10.f,
-        qs_params.frac_min, RealType(1.0), qs_params.chi_part_how_many*3,
-        qs_params.frac_how_many*3, true, true, file_name + ".csv");
+        std::numeric_limits<RealType>::epsilon(), RealType(1.0), qs_params.chi_part_how_many*3,
+        qs_params.frac_how_many*3, true, false, file_name + ".csv");
 }
 
 
@@ -219,7 +219,7 @@ int main(int argc, char** argv)
         "qs_photem_d");
     std::cout << "____________________________ \n" << std::endl;
 
-    /*
+/*
     std::cout << "** Single precision tables calculated in double precision ** \n" << std::endl;
     generate_breit_wheeler_dndt_table<float,
         px_bw::generation_policy::force_internal_double>(

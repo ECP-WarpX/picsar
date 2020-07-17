@@ -1,4 +1,4 @@
-//####### Test module for picsar_tables ####################################
+//####### Test module for Breit-Wheeler core functions #########################
 
 //Define Module name
  #define BOOST_TEST_MODULE "phys/breit_wheeler/core"
@@ -65,18 +65,23 @@ struct fake_T_table
 template<typename RealType>
 struct fake_P_table
 {
-    RealType interp(RealType chi, RealType random) const {
+    RealType interp(RealType chi, RealType random, bool* is_out = nullptr) const {
         m_chi = chi;
         m_random = random;
+        if(is_out != nullptr) *is_out = m_is_out;
         return static_cast<RealType>(m_res);
     }
 
     RealType m_res;
+    bool m_is_out = false;
     mutable RealType m_chi;
     mutable RealType m_random;
 };
 
 // ------------- Tests --------------
+
+// ***Test Breit Wheeler optical depth
+
 template <typename RealType>
 void check_opt_depth()
 {
@@ -91,12 +96,15 @@ void check_opt_depth()
 
 }
 
-// ***Test Breit Wheeler dndt table
 BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_core_opt_depth)
 {
     check_opt_depth<double>();
     check_opt_depth<float>();
 }
+
+// *******************************
+
+// ***Test Breit Wheeler dNdt
 
 template <typename RealType, unit_system UnitSystem>
 void check_dndt(RealType ref_q = one<RealType>)
@@ -148,7 +156,7 @@ void check_dndt(RealType ref_q = one<RealType>)
                     quantity::rate,unit_system::SI,
                     UnitSystem, double>::fact(1.0,ref_q));
 
-            if(sol_dndt < small<RealType>()){
+            if(sol_dndt == static_cast<RealType>(0.0)){
                 BOOST_CHECK_SMALL(dndt, small<RealType>());
             }
             else{
@@ -169,8 +177,6 @@ void check_dndt(RealType ref_q = one<RealType>)
     BOOST_CHECK_EQUAL(is_out, true);
 }
 
-
-// ***Test Breit Wheeler dndt table
 BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_core_get_dndt)
 {
     const double reference_length = 800.0e-9;
@@ -186,6 +192,10 @@ BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_core_get_dndt)
     check_dndt<float, unit_system::norm_lambda>(reference_length);
     check_dndt<float, unit_system::heaviside_lorentz>();
 }
+
+// *******************************
+
+// ***Test Breit Wheeler optical depth evolution
 
 template <typename RealType, unit_system UnitSystem>
 void check_evolve_opt_depth(RealType ref_q = one<RealType>)
@@ -264,7 +274,6 @@ void check_evolve_opt_depth(RealType ref_q = one<RealType>)
     }
 }
 
-// ***Test Breit Wheeler optical depth evolution
 BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_core_evolve_opt_depth)
 {
     const double reference_length = 800.0e-9;
@@ -281,12 +290,16 @@ BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_core_evolve_opt_depth)
     check_evolve_opt_depth<float, unit_system::heaviside_lorentz>();
 }
 
+// *******************************
+
+// ***Test Breit Wheeler pair production
+
 template <typename RealType>
 void aux_check_small_or_zero(vec3<RealType> res, vec3<RealType> expected)
 {
     for(int i = 0; i < 3; ++i){
         if(expected[i] == zero<RealType>){
-            BOOST_CHECK_SMALL(expected[i]-res[i], tolerance<RealType>());
+            BOOST_CHECK_SMALL(expected[i]-res[i], small<RealType>());
         }
         else{
             BOOST_CHECK_SMALL((expected[i]-res[i])/res[i], tolerance<RealType>());
@@ -327,6 +340,7 @@ void check_pair_production(RealType ref_q = one<RealType>)
                         const RealType chi_photon = tchi_phot;
                         const RealType chi_ele = chi_ele_frac*tchi_phot;
                         fake_table.m_res = chi_ele;
+                        fake_table.m_is_out = false;
 
                         const RealType pmom = static_cast<RealType>(mom);
 
@@ -345,7 +359,7 @@ void check_pair_production(RealType ref_q = one<RealType>)
                         vec3<RealType> mom_ele;
                         vec3<RealType> mom_pos;
 
-                        generate_breit_wheeler_pairs<
+                        const bool is_in_table = generate_breit_wheeler_pairs<
                             RealType,
                             fake_P_table<RealType>,
                             UnitSystem>(
@@ -354,6 +368,7 @@ void check_pair_production(RealType ref_q = one<RealType>)
 
                         BOOST_CHECK_EQUAL(fake_table.m_random,rand_num);
                         BOOST_CHECK_EQUAL(fake_table.m_chi,chi_photon);
+                        BOOST_CHECK_EQUAL(!fake_table.m_is_out, is_in_table);
 
                         const auto me_c = electron_mass<>*light_speed<>;
                         const auto gamma_phot = mom/(me_c);
@@ -383,14 +398,24 @@ void check_pair_production(RealType ref_q = one<RealType>)
 
                         aux_check_small_or_zero(mom_ele, exp_mom_ele);
                         aux_check_small_or_zero(mom_pos, exp_mom_pos);
+
+                        fake_table.m_is_out = true;
+                        const bool is_in_table_2 = generate_breit_wheeler_pairs<
+                            RealType,
+                            fake_P_table<RealType>,
+                            UnitSystem>(
+                                chi_photon, photon_momentum, rand_num,
+                                fake_table, mom_ele, mom_pos, ref_q);
+                        BOOST_CHECK_EQUAL(!fake_table.m_is_out, is_in_table_2);
                     }
                 }
             }
         }
+
+
     }
 }
 
-// ***Test Breit Wheeler pair production
 BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_core_pair_production)
 {
     const double reference_length = 800.0e-9;
@@ -406,3 +431,5 @@ BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_core_pair_production)
     check_pair_production<float, unit_system::norm_lambda>(reference_length);
     check_pair_production<float, unit_system::heaviside_lorentz>();
 }
+
+// *******************************

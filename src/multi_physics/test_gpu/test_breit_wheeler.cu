@@ -63,14 +63,14 @@ T constexpr tolerance()
 //__________________________________________________
 
 //A thin wrapper around thrust::device_vector
-template<typename RealType> 
+template<typename RealType>
 class ThrustDeviceWrapper : public thrust::device_vector<RealType>
 {
-    public:    
+    public:
     template<typename... Args>
     ThrustDeviceWrapper(Args&&... args) : thrust::device_vector<RealType>(std::forward<Args>(args)...)
     {}
-    
+
     const RealType* data() const
     {
         return thrust::raw_pointer_cast(thrust::device_vector<RealType>::data());
@@ -132,19 +132,19 @@ __global__ void bw_opt_depth_evol(
 	    const auto by = p_data[i].by;
 	    const auto bz = p_data[i].bz;
 	    auto opt = p_data[i].opt;
-	    	    
+
         const auto chi = pxr::chi_photon<Real, pxr::unit_system::SI>(
             px, py, pz, ex, ey, ez, bx, by, bz);
-            
+
         const auto ppx = px/mec<Real>;
 	    const auto ppy = py/mec<Real>;
-	    const auto ppz = pz/mec<Real>;        
-        const auto en = (sqrt(ppx*ppx + ppy*ppy + ppz*ppz))*mec2<Real>;        
-   
+	    const auto ppz = pz/mec<Real>;
+        const auto en = (sqrt(ppx*ppx + ppy*ppy + ppz*ppz))*mec2<Real>;
+
         pxr_bw::evolve_optical_depth<Real,TableType>(
             en, chi, dt, opt,
-            ref_table);            
-        
+            ref_table);
+
         p_data[i].opt = opt;
 	}
 }
@@ -162,19 +162,19 @@ void cpu_check_depth_evol_kernel(part<Real>& p_data, Real dt, const TableType re
 	const auto by = p_data.by;
 	const auto bz = p_data.bz;
 	auto opt = p_data.opt;
-	    	    
+
     const auto chi = pxr::chi_photon<Real, pxr::unit_system::SI>(
             px, py, pz, ex, ey, ez, bx, by, bz);
-            
+
     const auto ppx = px/mec<Real>;
 	const auto ppy = py/mec<Real>;
-	const auto ppz = pz/mec<Real>;        
-    const auto en = (sqrt(ppx*ppx + ppy*ppy + ppz*ppz))*mec2<Real>;        
-   
+	const auto ppz = pz/mec<Real>;
+    const auto en = (sqrt(ppx*ppx + ppy*ppy + ppz*ppz))*mec2<Real>;
+
     pxr_bw::evolve_optical_depth<Real,TableType>(
         en, chi, dt, opt,
-        ref_table);            
-        
+        ref_table);
+
     p_data.opt = opt;
 }
 
@@ -202,21 +202,21 @@ __global__ void bw_pair_gen(
 	    const auto bx = phot_data[i].bx;
 	    const auto by = phot_data[i].by;
 	    const auto bz = phot_data[i].bz;
-	    	    
+
         const auto chi = pxr::chi_photon<Real, pxr::unit_system::SI>(
             px, py, pz, ex, ey, ez, bx, by, bz);
-                  
+
         const auto phot_mom = pxr_m::vec3<Real>{px, py, pz};
-        auto ele_mom = pxr_m::vec3<Real>{};   
+        auto ele_mom = pxr_m::vec3<Real>{};
         auto pos_mom = pxr_m::vec3<Real>{};
-        
-        const auto unf_zero_one_minus_epsi = random_numbers[i];           
-   
+
+        const auto unf_zero_one_minus_epsi = random_numbers[i];
+
         pxr_bw::generate_breit_wheeler_pairs<Real,TableType, pxr::unit_system::SI>(
             chi, phot_mom, unf_zero_one_minus_epsi,
             ref_table,
             ele_mom, pos_mom);
-        
+
         ele_data[i].x = phot_data[i].x;
         ele_data[i].y = phot_data[i].y;
         ele_data[i].z = phot_data[i].z;
@@ -228,7 +228,7 @@ __global__ void bw_pair_gen(
         pos_data[i].z = phot_data[i].z;
         pos_data[i].px = pos_mom[0];
         pos_data[i].py = pos_mom[1];
-        pos_data[i].pz = pos_mom[2]; 
+        pos_data[i].pz = pos_mom[2];
 	}
 }
 
@@ -249,21 +249,21 @@ void cpu_check_pair_gen_kernel(
 	const auto bx = p_data.bx;
 	const auto by = p_data.by;
 	const auto bz = p_data.bz;
-	
+
     const auto chi = pxr::chi_photon<Real, pxr::unit_system::SI>(
         px, py, pz, ex, ey, ez, bx, by, bz);
-                  
+
     const auto phot_mom = pxr_m::vec3<Real>{px, py, pz};
-    auto ele_mom = pxr_m::vec3<Real>{};   
+    auto ele_mom = pxr_m::vec3<Real>{};
     auto pos_mom = pxr_m::vec3<Real>{};
-        
-    const auto unf_zero_one_minus_epsi = random_number;           
-   
+
+    const auto unf_zero_one_minus_epsi = random_number;
+
     pxr_bw::generate_breit_wheeler_pairs<Real,TableType, pxr::unit_system::SI>(
         chi, phot_mom, unf_zero_one_minus_epsi,
         ref_table,
         ele_mom, pos_mom);
-        
+
     ele_data.x = p_data.x;
     ele_data.y = p_data.y;
     ele_data.z = p_data.z;
@@ -275,7 +275,7 @@ void cpu_check_pair_gen_kernel(
     pos_data.z = p_data.z;
     pos_data.px = pos_mom[0];
     pos_data.py = pos_mom[1];
-    pos_data.pz = pos_mom[2]; 
+    pos_data.pz = pos_mom[2];
 }
 
 
@@ -290,40 +290,40 @@ void do_dndt_test(
     auto data = std::vector<part<RealType>>(t_data.size());
     std::transform(t_data.begin(), t_data.end(), data.begin(),
             part_transform<double, RealType>);
-  
+
     auto how_many = data.size();
     const auto bytesize = t_data.size()*sizeof(part<RealType>);
     part<RealType>* d_data;
     cudaMalloc(&d_data, bytesize);
-    
+
     cudaMemcpy(d_data, data.data(), bytesize, cudaMemcpyHostToDevice);
-    
+
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
 
-    cudaEventRecord(start);    
+    cudaEventRecord(start);
     bw_opt_depth_evol<RealType, TableViewType>
         <<<(how_many+511)/512, 512>>>(
             how_many, d_data, dt, table);
     cudaEventRecord(stop);
-            
+
     cudaMemcpy(data.data(), d_data, bytesize, cudaMemcpyDeviceToHost);
-    
+
     cudaEventSynchronize(stop);
     float milliseconds = 0;
-    
+
     bool is_ok = true;
     #pragma omp parallel for
     for(int i = 0; i < t_data.size(); ++i)
     {
         if(!is_ok) continue;
-        
-        const auto res_opt = data[i].opt;        
-        auto original_data = part_transform<double, RealType>(t_data[i]);        
+
+        const auto res_opt = data[i].opt;
+        auto original_data = part_transform<double, RealType>(t_data[i]);
         cpu_check_depth_evol_kernel(original_data, static_cast<RealType>(dt), cpu_table);
         const auto exp_opt = original_data.opt;
-        
+
         if(exp_opt == 0.0){
             if(fabs(exp_opt - res_opt) >  tolerance<RealType>()){
                 is_ok = false;
@@ -334,14 +334,14 @@ void do_dndt_test(
             is_ok = false;
         }
     }
-    
+
     cudaEventElapsedTime(&milliseconds, start, stop);
     if (is_ok)
         std::cout << "  [OK]  ";
     else
-        std::cout << " [FAIL] "; 
+        std::cout << " [FAIL] ";
     std::cout << "elapsed time : " << milliseconds << " ms \n";
-    
+
     cudaFree(d_data);
 }
 
@@ -353,7 +353,7 @@ void do_pair_prod_test(
     auto data = std::vector<part<RealType>>(t_data.size());
     std::transform(t_data.begin(), t_data.end(), data.begin(),
             part_transform<double, RealType>);
-  
+
     auto ele_data = t_data;
     auto pos_data = t_data;
     auto how_many = data.size();
@@ -367,13 +367,13 @@ void do_pair_prod_test(
     cudaMalloc(&d_ele_data, bytesize);
     cudaMalloc(&d_pos_data, bytesize);
     cudaMalloc(&d_rand, sizeof(RealType)*how_many);
-    
+
     cudaMemcpy(d_data, data.data(), bytesize, cudaMemcpyHostToDevice);
-    
+
     curandGenerator_t gen;
     curandCreateGenerator(&gen, CURAND_RNG_PSEUDO_DEFAULT);
     curandSetPseudoRandomGeneratorSeed(gen, random_seed);
-   
+
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
@@ -384,26 +384,26 @@ void do_pair_prod_test(
         curandGenerateUniformDouble(gen, reinterpret_cast<double*>(d_rand), how_many);
     else
         curandGenerateUniform(gen, reinterpret_cast<float*>(d_rand), how_many);
- 
+
     bw_pair_gen<RealType, TableViewType>
         <<<(how_many+511)/512, 512>>>(
             how_many, d_data, d_rand, d_ele_data, d_pos_data, table);
     cudaEventRecord(stop);
-            
+
     cudaMemcpy(ele_data.data(), d_ele_data, bytesize, cudaMemcpyDeviceToHost);
     cudaMemcpy(pos_data.data(), d_pos_data, bytesize, cudaMemcpyDeviceToHost);
     cudaMemcpy(rand_nums.data(), d_rand, sizeof(RealType)*rand_nums.size(), cudaMemcpyDeviceToHost);
-    
-    
+
+
     cudaEventSynchronize(stop);
     float milliseconds = 0;
-    
+
     bool is_ok = true;
     #pragma omp parallel for
     for(int i = 0; i < t_data.size(); ++i)
     {
         if(!is_ok) continue;
-        
+
         auto res_mom_ele = pxr_m::vec3<RealType>{
             ele_data[i].px,
             ele_data[i].py,
@@ -411,10 +411,10 @@ void do_pair_prod_test(
         auto res_mom_pos = pxr_m::vec3<RealType>{
             pos_data[i].px,
             pos_data[i].py,
-            pos_data[i].pz};        
-        auto original_data = part_transform<double, RealType>(t_data[i]);      
+            pos_data[i].pz};
+        auto original_data = part_transform<double, RealType>(t_data[i]);
         part<RealType> exp_ele_data;
-        part<RealType> exp_pos_data;  
+        part<RealType> exp_pos_data;
         cpu_check_pair_gen_kernel(original_data, rand_nums[i], exp_ele_data, exp_pos_data, cpu_table);
         auto exp_mom_ele = pxr_m::vec3<RealType>{
             exp_ele_data.px,
@@ -424,32 +424,32 @@ void do_pair_prod_test(
             exp_pos_data.px,
             exp_pos_data.py,
             exp_pos_data.pz};
-            
+
         using namespace pxr_m;
-            
+
         auto diff1 = res_mom_ele-exp_mom_ele;
         auto diff2 = res_mom_pos-exp_mom_pos;
         const auto dd = pxr_m::norm<RealType>(diff1)+pxr_m::norm<RealType>(diff2);
-                    
+
         if(fabs(dd) >  tolerance<RealType>()){
             is_ok = false;
         }
     }
-    
+
     cudaEventElapsedTime(&milliseconds, start, stop);
     if (is_ok)
         std::cout << "  [OK]  ";
     else
-        std::cout << " [FAIL] "; 
-    
+        std::cout << " [FAIL] ";
+
     cudaEventElapsedTime(&milliseconds, start, stop);
     std::cout << "      elapsed time : " << milliseconds << " ms \n";
-    
+
     //hack
     if(ele_data[0].px + pos_data[how_many/2].py + ele_data[how_many -1].pz != 0.0){
         std::cout.flush();
     }
-      
+
     cudaFree(d_data);
     cudaFree(d_ele_data);
     cudaFree(d_pos_data);
@@ -461,29 +461,29 @@ std::vector<part<RealType>>
 prepare_data(
     int how_many, RealType pscale, RealType fscale)
 {
-    std::cout << "Preparing data..."; std::cout.flush();    
-    
+    std::cout << "Preparing data..."; std::cout.flush();
+
     auto data = std::vector<part<RealType>>(how_many);
-    
+
     std::mt19937 rng{};
     std::uniform_real_distribution<RealType> pp{RealType(-pscale*mec<>),RealType(pscale*mec<>)};
     std::uniform_real_distribution<RealType> ee{RealType(-Es*fscale), RealType(Es*fscale)};
     std::uniform_real_distribution<RealType> bb{RealType(-Bs*fscale), RealType(Bs*fscale)};
     std::uniform_real_distribution<RealType> pos{0.0,1.0};
     auto exp_dist = std::exponential_distribution<RealType>(1.0);
-    
+
     for(int i = 0; i < how_many; ++i){
         data[i] = part<RealType>{
             pos(rng),pos(rng),pos(rng),
             pp(rng),pp(rng),pp(rng),
             ee(rng),ee(rng),ee(rng),
             bb(rng),bb(rng),bb(rng),
-            exp_dist(rng)};               
+            exp_dist(rng)};
     }
-    
-    std::cout << "done!\n"; std::cout.flush();    
-    
-    return data;    
+
+    std::cout << "done!\n"; std::cout.flush();
+
+    return data;
 }
 
 template <typename RealType, typename VectorType>
@@ -491,14 +491,14 @@ auto generate_dndt_table(RealType chi_min, RealType chi_max, int chi_size)
 {
     std::cout << "Preparing dndt table [" << typeid(RealType).name() << ", " << chi_size <<"]...\n";
     std::cout.flush();
-    
+
     pxr_bw::dndt_lookup_table_params<RealType> bw_params{chi_min, chi_max, chi_size};
-	
+
 	auto table = pxr_bw::dndt_lookup_table<
         RealType, VectorType>{bw_params};
-        
+
     table.generate();
-	
+
     return table;
 }
 
@@ -507,15 +507,15 @@ auto generate_pair_table(RealType chi_min, RealType chi_max, int chi_size, int f
 {
     std::cout << "Preparing pair production table [" << typeid(RealType).name() << ", " << chi_size << " x " << frac_size <<"]...\n";
     std::cout.flush();
-    
+
     pxr_bw::pair_prod_lookup_table_params<RealType> bw_params{
         chi_min, chi_max, chi_size, frac_size};
-	
+
 	auto table = pxr_bw::pair_prod_lookup_table<
         RealType, VectorType>{bw_params};
-        
+
     table.template generate();
-	
+
     return table;
 }
 
@@ -528,20 +528,20 @@ void do_test(const std::vector<part<double>>& data)
             table_chi_min,
             table_chi_max,
             table_chi_size);
-        
+
     const auto dndt_table_cpu =
         generate_dndt_table<RealType,std::vector<RealType>>(
             table_chi_min,
             table_chi_max,
             table_chi_size);
-        
+
     const auto pair_table =
         generate_pair_table<RealType,ThrustDeviceWrapper<RealType>>(
             table_chi_min,
             table_chi_max,
             table_chi_size,
             table_frac_size);
-            
+
     const auto pair_table_cpu =
         generate_pair_table<RealType,std::vector<RealType>>(
             table_chi_min,
@@ -549,7 +549,7 @@ void do_test(const std::vector<part<double>>& data)
             table_chi_size,
             table_frac_size);
     std::cout << "done!\n"; std::cout.flush();
-    
+
     std::cout << "Performing tests...\n"; std::cout.flush();
     do_dndt_test<RealType,typeof(dndt_table.get_view())>(dndt_table.get_view(), data, dt_test, dndt_table_cpu.get_view());
     do_pair_prod_test<RealType,typeof(pair_table.get_view())>(pair_table.get_view(), data, dt_test, pair_table_cpu.get_view());
@@ -563,9 +563,9 @@ int main()
         test_size,
         max_normalized_momentum,
         max_normalized_field);
-    std::cout << "*** Performing test in double precision ***\n"; std::cout.flush();    
+    std::cout << "*** Performing test in double precision ***\n"; std::cout.flush();
     do_test<double>(data);
-    std::cout << "*** Performing test in single precision ***\n"; std::cout.flush();    
+    std::cout << "*** Performing test in single precision ***\n"; std::cout.flush();
     do_test<float>(data);
     std::cout << "\n*** END ***\n";
 	return 0;

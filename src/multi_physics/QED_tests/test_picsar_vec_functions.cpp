@@ -32,10 +32,10 @@ T constexpr tolerance()
 
 // ------------- Tests --------------
 
-// ***Test norm2
+// ***Test norm_square
 
 template<typename RealType>
-void test_norm2()
+void test_norm_square()
 {
     const auto c0 = static_cast<RealType>(1.0);
     const auto c1 = static_cast<RealType>(2.0);
@@ -44,13 +44,13 @@ void test_norm2()
 
     const auto vec = vec3<RealType>{c0, c1, c2};
 
-    BOOST_CHECK_SMALL((norm2(vec)-expected)/expected, tolerance<RealType>());
+    BOOST_CHECK_SMALL((norm_square(vec)-expected)/expected, tolerance<RealType>());
 }
 
-BOOST_AUTO_TEST_CASE( picsar_vec_functions_norm2 )
+BOOST_AUTO_TEST_CASE( picsar_vec_functions_norm_square )
 {
-    test_norm2<double>();
-    test_norm2<float>();
+    test_norm_square<double>();
+    test_norm_square<float>();
 }
 
 // *******************************

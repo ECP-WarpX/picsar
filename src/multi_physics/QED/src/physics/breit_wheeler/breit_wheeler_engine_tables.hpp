@@ -32,6 +32,9 @@
 
 #include <algorithm>
 #include <vector>
+#include <cmath>
+#include <limits>
+#include <stdexcept>
 
 namespace picsar{
 namespace multi_physics{
@@ -43,7 +46,7 @@ namespace breit_wheeler{
     //Reasonable default values for the dndt_lookup_table_params
     //and the pair_prod_lookup_table_params (see below)
     template <typename T>
-    constexpr T default_chi_phot_min = 1.0e-2; /*Default minimum photon chi parameter*/
+    constexpr T default_chi_phot_min = 2.0e-2; /*Default minimum photon chi parameter*/
     template <typename T>
     constexpr T default_chi_phot_max = 1.0e3; /* Default maximum photon chi parameter*/
     const int default_chi_phot_how_many = 256; /* Default number of grid points for photon chi */
@@ -249,15 +252,15 @@ namespace breit_wheeler{
                     sizeof(m_params);
 
                 if (raw_data.size() < min_size)
-                    throw "Binary data is too small to be a Breit Wheeler \
-                     T-function lookup-table.";
+                    throw std::runtime_error("Binary data is too small to be a Breit Wheeler \
+                     T-function lookup-table.");
 
                 auto it_raw_data = raw_data.begin();
 
                 if (serialization::get_out<char>(it_raw_data) !=
                     static_cast<char>(sizeof(RealType))){
-                    throw "Mismatch between RealType used to write and to read \
-                        the Breit Wheeler T-function lookup-table";
+                    throw std::runtime_error("Mismatch between RealType used to write and to read \
+                        the Breit Wheeler T-function lookup-table");
                 }
 
                 m_params = serialization::get_out<
@@ -301,7 +304,8 @@ namespace breit_wheeler{
             view_type get_view() const
             {
                 if(!m_init_flag)
-                    throw "Can't generate a view of an uninitialized table";
+                    throw std::runtime_error("Can't generate a view of an \
+                    uninitialized table");
                 const auto span = containers::picsar_span<const RealType>{
                     static_cast<size_t>(m_params.chi_phot_how_many),
                     m_table.get_values_reference().data()
@@ -340,8 +344,8 @@ namespace breit_wheeler{
             }
 
             /**
-            * Exports all the coordinates of the table to a std::vector
-            * (not usable on GPUs).
+            * Exports all the coordinates (chi_photon) of the table
+            * to a std::vector (not usable on GPUs).
             *
             * @return a vector containing all the table coordinates
             */
@@ -366,7 +370,10 @@ namespace breit_wheeler{
             {
                 if(vals.size() == m_table.get_how_many_x()){
                     for(int i = 0; i < vals.size(); ++i){
-                        m_table.set_val(i, math::m_log(vals[i]));
+                        auto val = math::m_log(vals[i]);
+                        if(std::isinf(val))
+                            val = std::numeric_limits<RealType>::lowest();
+                        m_table.set_val(i, val);
                     }
                     m_init_flag = true;
                     return true;
@@ -396,7 +403,7 @@ namespace breit_wheeler{
                 using namespace utils;
 
                 if(!m_init_flag)
-                    throw "Cannot serialize an uninitialized table";
+                    throw std::runtime_error("Cannot serialize an uninitialized table");
 
                 std::vector<char> res;
 
@@ -583,15 +590,15 @@ namespace breit_wheeler{
                     sizeof(m_params);
 
                 if (raw_data.size() < min_size)
-                    throw "Binary data is too small to be a Breit Wheeler \
-                        pair production lookup-table.";
+                    throw std::runtime_error("Binary data is too small to be a \
+                    Breit Wheeler pair production lookup-table.");
 
                 auto it_raw_data = raw_data.begin();
 
                 if (serialization::get_out<char>(it_raw_data) !=
                     static_cast<char>(sizeof(RealType))){
-                    throw "Mismatch between RealType used to write and to read \
-                        the Breit pair production lookup-table";
+                    throw std::runtime_error("Mismatch between RealType used \
+                    to write and to read the Breit pair production lookup-table");
                 }
 
                 m_params = serialization::get_out<
@@ -635,7 +642,8 @@ namespace breit_wheeler{
             view_type get_view() const
             {
                 if(!m_init_flag)
-                    throw "Can't generate a view of an uninitialized table";
+                    throw std::runtime_error("Can't generate a view of an \
+                    uninitialized table");
                 const auto span = containers::picsar_span<const RealType>{
                     static_cast<size_t>(m_params.chi_phot_how_many *
                         m_params.frac_how_many),
@@ -686,7 +694,10 @@ namespace breit_wheeler{
                 }
                 const auto log_e_chi_phot = m_log(e_chi_phot);
 
-                const auto prob = unf_zero_one_minus_epsi*half<RealType>;
+                const auto prob =
+                    (unf_zero_one_minus_epsi <= half<RealType>)?
+                    unf_zero_one_minus_epsi:
+                    one<RealType> - unf_zero_one_minus_epsi;
 
                 const auto upper_frac_index = utils::picsar_upper_bound_functor(
                     0, m_params.frac_how_many,prob,[&](int i){
@@ -716,7 +727,8 @@ namespace breit_wheeler{
             }
 
             /**
-            * Exports all the coordinates of the table to a std::vector
+            * Exports all the coordinates (chi_photon, chi_particle)
+            * of the table to a std::vector
             * of 2-elements arrays (not usable on GPUs).
             *
             * @return a vector containing all the table coordinates
@@ -726,7 +738,7 @@ namespace breit_wheeler{
                 auto all_coords = m_table.get_all_coordinates();
                 std::transform(all_coords.begin(),all_coords.end(),all_coords.begin(),
                     [](std::array<RealType,2> a){return
-                        std::array<RealType,2>{math::m_exp(a[0]), a[1]};});
+                        std::array<RealType,2>{math::m_exp(a[0]), a[1]*math::m_exp(a[0])};});
                 return all_coords;
             }
 

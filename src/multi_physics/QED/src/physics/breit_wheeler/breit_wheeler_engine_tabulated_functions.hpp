@@ -27,6 +27,7 @@
 #include "../../math/cmath_overloads.hpp"
 
 #include <algorithm>
+#include <stdexcept>
 
 namespace picsar{
 namespace multi_physics{
@@ -120,6 +121,41 @@ namespace breit_wheeler{
     }
 
     /**
+    * Auxiliary function to compute the numerator for the cumulative
+    * probability distribution (see validation script).
+    * It performs the integration from chi_ele_start to chi_ele_end.
+    * It is not usable on GPUs.
+    *
+    * @tparam RealType the floating point type to be used
+    *
+    * @param[in] chi_phot the chi parameter of the photon
+    * @param[in] chi_ele_start starting point of the integral
+    * @param[in] chi_ele_end end point of the integral
+    *
+    * @return the value of the numerator of the cumulative probability distribution
+    */
+    template<typename RealType>
+    RealType compute_cumulative_prob_numerator_a_b(
+        const RealType chi_photon,
+        RealType chi_ele_start,
+        RealType chi_ele_end)
+    {
+        using namespace math;
+
+        if(chi_photon <= zero<RealType>) return zero<RealType>;
+        if(chi_ele_end  <= zero<RealType>) return zero<RealType>;
+
+        if(chi_ele_end > chi_photon) chi_ele_end = chi_photon;
+        if(chi_ele_start >= chi_ele_end) return zero<RealType>;
+
+        constexpr auto coeff = static_cast<RealType>(1./pi<>);
+        return coeff*quad_a_b_s<RealType>(
+            [=](RealType cc){
+                return compute_T_integrand<RealType>(chi_photon, cc);
+            },chi_ele_start, chi_ele_end)/(chi_photon*chi_photon*m_sqrt(3.0));
+    }
+
+    /**
     * Computes the numerator for the cumulative
     * probability distribution (see validation script).
     * It is not usable on GPUs.
@@ -136,22 +172,14 @@ namespace breit_wheeler{
         const RealType chi_photon, RealType chi_ele)
     {
         using namespace math;
-        constexpr auto coeff = static_cast<RealType>(1./pi<>);
 
-        if(chi_photon <= zero<RealType>) return zero<RealType>;
-        if(chi_ele  <= zero<RealType>) return zero<RealType>;
-
-        if(chi_ele >= chi_photon) chi_ele = chi_photon;
-
-        return coeff*quad_a_b_s<RealType>(
-            [=](RealType cc){
-                return compute_T_integrand<RealType>(chi_photon, cc);
-            },zero<RealType>, chi_ele)/(chi_photon*chi_photon*m_sqrt(3.0));
+        return compute_cumulative_prob_numerator_a_b(
+            chi_photon, zero<RealType>, chi_ele);
     }
 
     /**
     * Computes the cumulative probability distribution
-    * (see validation script) for a vector of chi paramters
+    * (see validation script) for a vector of chi parameters
     * It is not usable on GPUs.
     *
     * @tparam RealType the floating point type to be used
@@ -193,6 +221,67 @@ namespace breit_wheeler{
                     compute_cumulative_prob_numerator(chi_photon, chi_part)/den;
                 if(val <= one<RealType>) return val;
                 return one<RealType>;});
+        return res;
+    }
+
+    /**
+    * Computes the cumulative probability distribution
+    * (see validation script) for a vector of chi parameters.
+    * Variant optimized for an ordered sequence of chi_particles.
+    * It is not usable on GPUs.
+    *
+    * @tparam RealType the floating point type to be used
+    *
+    * @param[in] chi_phot the chi parameter of the photon
+    * @param[in] chis the chi parameters of the particles (must be sorted)
+    *
+    * @return the cumulative probability distribution calculated for all the chi parameters
+    */
+    template<typename RealType, typename VectorType>
+    VectorType compute_cumulative_prob_opt(
+        const RealType chi_photon, const VectorType& chis)
+    {
+        if(!std::is_sorted(chis.begin(), chis.end()))
+            throw std::runtime_error("Chi vector is not sorted!");
+
+        using namespace math;
+        const auto den = compute_T_function(chi_photon);
+        auto res = VectorType(chis.size());
+
+        if(chi_photon <= zero<RealType>){
+            for (auto& el: res ) el = zero<RealType>;
+            return res;
+        }
+
+        //This may happen for chi_photon very small and single precision
+        if (den <= zero<RealType>){
+            std::transform(chis.begin(), chis.end(),
+            res.begin(), [=](auto chi_part){
+                if(chi_part < half<RealType>*chi_photon - std::numeric_limits<RealType>::epsilon())
+                    return zero<RealType>;
+                if(chi_part > half<RealType>*chi_photon + std::numeric_limits<RealType>::epsilon())
+                    return one<RealType>;
+                return half<RealType>;
+            });
+            return res;
+        }
+
+        RealType old_chi = zero<RealType>;
+        RealType sum = zero<RealType>;
+        RealType c =  zero<RealType>;
+        for (int i = 0; i < chis.size(); ++i){
+            //Kahan summation algorithm is used
+            const auto y = compute_cumulative_prob_numerator_a_b(
+                chi_photon, old_chi, chis[i])/den - c;
+            const auto t = sum + y;
+            c = (t - sum) - y;
+            sum = t;
+            res[i] = sum;
+            if(res[i] > one<RealType>) res[i] = one<RealType>;
+            old_chi = chis[i];
+        }
+
+
         return res;
     }
 
