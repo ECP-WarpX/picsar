@@ -235,12 +235,12 @@ namespace quantum_sync{
             */
             PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
             bool operator== (
-                const dndt_lookup_table<RealType, VectorType> &b) const
+                const dndt_lookup_table<RealType, VectorType> &rhs) const
             {
                 return
-                    (m_params == b.m_params) &&
-                    (m_init_flag == b.m_init_flag) &&
-                    (m_table == b.m_table);
+                    (m_params == rhs.m_params) &&
+                    (m_init_flag == rhs.m_init_flag) &&
+                    (m_table == rhs.m_table);
             }
 
             /*
