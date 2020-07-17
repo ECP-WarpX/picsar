@@ -194,11 +194,11 @@ namespace quantum_sync{
         using namespace math;
         using namespace containers;
 
-        const auto mon_u2hl = conv<
+        const auto mom_u2hl = conv<
             quantity::momentum, UnitSystem,
             unit_system::heaviside_lorentz, RealType>::fact(ref_quantity);
 
-        const auto v_mom_particle = t_v_momentum_particle *mon_u2hl;
+        const auto v_mom_particle = t_v_momentum_particle *mom_u2hl;
 
         const auto mom_particle = norm(v_mom_particle);
         const auto v_dir_particle = v_mom_particle/mom_particle;
