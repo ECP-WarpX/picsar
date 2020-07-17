@@ -184,7 +184,7 @@ namespace breit_wheeler{
     *
     * @tparam RealType the floating point type to be used
     *
-    * @param[in] chi_phot the chi parameter of the photon
+    * @param[in] chi_photon the chi parameter of the photon
     * @param[in] chis the chi parameters of the particles
     *
     * @return the cumulative probability distribution calculated for all the chi parameters
