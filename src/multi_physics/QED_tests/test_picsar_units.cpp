@@ -3,9 +3,6 @@
 //Define Module name
  #define BOOST_TEST_MODULE "phys/unit_conversion"
 
-//Will automatically define a main for this test
- #define BOOST_TEST_DYN_LINK
-
 #include <array>
 #include <algorithm>
 #include <functional>

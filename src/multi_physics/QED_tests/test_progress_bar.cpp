@@ -3,9 +3,6 @@
 //Define Module name
  #define BOOST_TEST_MODULE "utils/progress_bar"
 
-//Will automatically define a main for this test
- #define BOOST_TEST_DYN_LINK
-
 //Include Boost unit tests library & library for out stream tests
 #include <boost/test/unit_test.hpp>
 #include <boost/test/tools/output_test_stream.hpp>

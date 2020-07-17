@@ -3,9 +3,6 @@
 //Define Module name
  #define BOOST_TEST_MODULE "math/constants"
 
-//Will automatically define a main for this test
- #define BOOST_TEST_DYN_LINK
-
 #include <cmath>
 
 //Include Boost unit tests library & library for floating point comparison

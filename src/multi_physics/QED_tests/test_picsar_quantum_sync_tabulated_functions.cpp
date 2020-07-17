@@ -3,9 +3,6 @@
 //Define Module name
  #define BOOST_TEST_MODULE "phys/quantum_sync/tabulated_functions"
 
-//Will automatically define a main for this test
- #define BOOST_TEST_DYN_LINK
-
  #include<array>
  #include<utility>
 

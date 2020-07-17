@@ -3,9 +3,6 @@
 //Define Module name
  #define BOOST_TEST_MODULE "utils/serialization"
 
-//Will automatically define a main for this test
-#define BOOST_TEST_DYN_LINK
-
 #include <vector>
 
 //Include Boost unit tests library

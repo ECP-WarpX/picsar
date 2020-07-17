@@ -3,9 +3,6 @@
 //Define Module name
  #define BOOST_TEST_MODULE "utils/picsar_algo"
 
-//Will automatically define a main for this test
- #define BOOST_TEST_DYN_LINK
-
 //Include Boost unit tests library & library for floating point comparison
 #include <boost/test/unit_test.hpp>
 #include <boost/test/tools/floating_point_comparison.hpp>
