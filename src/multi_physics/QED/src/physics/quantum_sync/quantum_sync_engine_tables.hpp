@@ -582,7 +582,7 @@ namespace quantum_sync{
             /*
             * Returns a table view for the current table
             * (i.e. a table built using non-owning picsar_span
-            * vectors). A view_type is very light weight and can
+            * vectors). A view_type is very lightweight and can
             * be passed by copy to functions and GPU kernels.
             * Indeed it contains non-owning pointers to the data
             * held by the original table.
