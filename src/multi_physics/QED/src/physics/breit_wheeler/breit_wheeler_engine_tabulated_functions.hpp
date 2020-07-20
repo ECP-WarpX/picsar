@@ -149,10 +149,23 @@ namespace breit_wheeler{
         if(chi_ele_start >= chi_ele_end) return zero<RealType>;
 
         constexpr auto coeff = static_cast<RealType>(1./pi<>);
-        return coeff*quad_a_b_s<RealType>(
-            [=](RealType cc){
-                return compute_T_integrand<RealType>(chi_photon, cc);
-            },chi_ele_start, chi_ele_end)/(chi_photon*chi_photon*m_sqrt(3.0));
+
+        //The default quadrature method is very fast but in some rare cases
+        //it is prone to numerical instabilities. If this is the case, an exception
+        //is thrown and the problematic integral is performed with a more robust
+        //(and slower) technique.
+        try{
+            return coeff*quad_a_b_s<RealType>(
+                [=](RealType cc){
+                    return compute_T_integrand<RealType>(chi_photon, cc);
+                },chi_ele_start, chi_ele_end)/(chi_photon*chi_photon*m_sqrt(3.0));
+        }
+        catch(std::exception&){
+            return coeff*quad_a_b<RealType>(
+                [=](RealType cc){
+                    return compute_T_integrand<RealType>(chi_photon, cc);
+                },chi_ele_start, chi_ele_end)/(chi_photon*chi_photon*m_sqrt(3.0));
+        }
     }
 
     /**

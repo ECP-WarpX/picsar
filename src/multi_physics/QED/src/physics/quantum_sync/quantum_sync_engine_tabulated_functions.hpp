@@ -176,10 +176,23 @@ namespace quantum_sync{
         if(frac_end > math::one<RealType>) frac_end =  math::one<RealType>;
         auto frac_start = chi_photon_start/chi_particle;
 
-        return math::quad_a_b_s<RealType>(
-            [=](RealType csi){
-                return compute_G_integrand<RealType>(chi_particle, csi)/csi;},
-                frac_start, frac_end);
+        //The default quadrature method is very fast but in some rare cases
+        //it is prone to numerical instabilities. If this is the case, an exception
+        //is thrown and the problematic integral is performed with a more robust
+        //(and slower) technique.
+        try{
+            return math::quad_a_b_s<RealType>(
+                [=](RealType csi){
+                    return compute_G_integrand<RealType>(chi_particle, csi)/csi;},
+                    frac_start, frac_end);
+        }
+        catch(std::exception&){
+            return math::quad_a_b<RealType>(
+                [=](RealType csi){
+                    return compute_G_integrand<RealType>(chi_particle, csi)/csi;},
+                    frac_start, frac_end);
+        }
+
     }
 
     /**

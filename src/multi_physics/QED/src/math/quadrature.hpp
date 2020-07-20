@@ -4,6 +4,11 @@
 //Should be included by all the src files of the library
 #include "../qed_commons.h"
 
+// Override BOOST_ASSERT so that an exception is thrown.
+// This is used to deal with some possible numerical
+// instabilities of the tanh_sinh integration method
+#define BOOST_ENABLE_ASSERT_HANDLER
+#include <boost/assert.hpp>
 #include <boost/math/quadrature/trapezoidal.hpp>
 #include <boost/math/quadrature/tanh_sinh.hpp>
 #include <boost/math/quadrature/exp_sinh.hpp>
@@ -11,6 +16,25 @@
 
 #include <functional>
 #include <limits>
+#include <stdexcept>
+#include <sstream>
+
+// Override BOOST_ASSERT so that an exception is thrown.
+namespace boost
+{
+    void assertion_failed(char const * expr,
+        char const * function,
+        char const * file, long line)
+        {
+            auto ss = std::stringstream();
+            ss << "Error in " << function <<
+            " (" << file << ", line " << line <<
+            "): " << expr;
+            throw std::runtime_error(ss.str());
+        }
+}
+//______________________________________________________
+
 
 namespace picsar{
 namespace multi_physics{
@@ -154,5 +178,11 @@ namespace math{
 }
 }
 }
+
+// Resets BOOST_ASSERT to default behaviour.
+// boost/assert.hpp can be included multiple times
+// in the same translation unit.
+#undef BOOST_ENABLE_ASSERT_HANDLER
+#include<boost/assert.hpp>
 
 #endif //PICSAR_MULTIPHYSICS_QUADRATURE
