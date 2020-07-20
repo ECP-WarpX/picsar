@@ -1,8 +1,8 @@
 #ifndef PICSAR_MULTIPHYSICS_BREIT_WHEELER_ENGINE_CORE
 #define PICSAR_MULTIPHYSICS_BREIT_WHEELER_ENGINE_CORE
 
-//This .hpp file contais the implementation of the core
-//function of the Breit-Wheeler pair production engine.
+//This .hpp file contains the implementation of the core
+//functions of the Breit-Wheeler pair production engine.
 //Please have a look at the jupyter notebook "validation.ipynb"
 //in QED_tests/validation for a more in-depth discussion.
 //
@@ -193,11 +193,11 @@ namespace breit_wheeler{
         using namespace math;
         using namespace containers;
 
-        const auto mon_u2hl = conv<
+        const auto mom_u2hl = conv<
             quantity::momentum, UnitSystem,
             unit_system::heaviside_lorentz, RealType>::fact(ref_quantity);
 
-        const auto v_mom_photon = t_v_momentum_photon *mon_u2hl;
+        const auto v_mom_photon = t_v_momentum_photon *mom_u2hl;
 
         const auto mom_photon = norm(v_mom_photon);
         const auto v_dir_photon = v_mom_photon/mom_photon;

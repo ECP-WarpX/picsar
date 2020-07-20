@@ -156,7 +156,7 @@ namespace breit_wheeler{
     * and providing methods to perform interpolations.
     * It also provides methods for serialization (export to byte array,
     * import from byte array) and to generate "table views" based on
-    * non-owning poynters (this is crucial in order to use the table
+    * non-owning pointers (this is crucial in order to use the table
     * in GPU kernels, as explained below).
     *
     * Internally, this table stores log(T(log(chi))).
@@ -282,18 +282,18 @@ namespace breit_wheeler{
             PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
             bool operator== (
                 const dndt_lookup_table<
-                    RealType, VectorType> &b) const
+                    RealType, VectorType> &rhs) const
             {
                 return
-                    (m_params == b.m_params) &&
-                    (m_init_flag == b.m_init_flag) &&
-                    (m_table == b.m_table);
+                    (m_params == rhs.m_params) &&
+                    (m_init_flag == rhs.m_init_flag) &&
+                    (m_table == rhs.m_table);
             }
 
             /*
             * Returns a table view for the current table
             * (i.e. a table built using non-owning picsar_span
-            * vectors). A view_type is very light weight and can
+            * vectors). A view_type is very lightweight and can
             * be passed by copy to functions and GPU kernels.
             * Indeed it contains non-owning pointers to the data
             * held by the original table.
@@ -485,7 +485,7 @@ namespace breit_wheeler{
     * (see validation script) and providing methods to perform interpolations.
     * It also provides methods for serialization (export to byte array,
     * import from byte array) and to generate "table views" based on
-    * non-owning poynters (this is crucial in order to use the table
+    * non-owning pointers (this is crucial in order to use the table
     * in GPU kernels, as explained below).
     *
     * Internally, this table stores
@@ -631,7 +631,7 @@ namespace breit_wheeler{
             /*
             * Returns a table view for the current table
             * (i.e. a table built using non-owning picsar_span
-            * vectors). A view_type is very light weight and can
+            * vectors). A view_type is very lightweight and can
             * be passed by copy to functions and GPU kernels.
             * Indeed it contains non-owning pointers to the data
             * held by the original table.
@@ -655,7 +655,7 @@ namespace breit_wheeler{
             /*
             * Uses the lookup table to extract the chi value of
             * one of the generated particles from a cumulative probability
-            * distribution, given the chi paramter of the photon and a
+            * distribution, given the chi parameter of the photon and a
             * random number uniformly distributed in [0,1). If chi_phot is out
             * of table either the minimum or the maximum value is used.
             * The method uses the lookup table to invert the equation:
@@ -765,7 +765,7 @@ namespace breit_wheeler{
             }
 
             /*
-            * Cheks if the table has been initialized.
+            * Checks if the table has been initialized.
             *
             * @return true if the table has been initialized, false otherwise
             */
