@@ -38,8 +38,8 @@ namespace quantum_sync{
     *
     * @tparam RealType the floating point type to be used
     *
-    * @param[in] chi_phot the chi parameter of the photon
-    * @param[in] chi_ele the chi parameter of the electron
+    * @param[in] chi_part the chi parameter of the particle
+    * @param[in] csi the ratio between the chi parameter of the photon and chi_part
     *
     * @return the parameter X
     */
