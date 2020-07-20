@@ -189,7 +189,7 @@ namespace breit_wheeler{
 
             /**
             * Constructor (not designed for GPU)
-            * After construction the table is empty. The user has to generate
+            * After construction the table is uninitialized. The user has to generate
             * the T function values before being able to use the table.
             *
             * @param params table parameters
@@ -205,7 +205,7 @@ namespace breit_wheeler{
 
             /**
             * Constructor (not designed for GPU)
-            * After construction the table is empty. The user has to generate
+            * After construction the table is uninitialized. The user has to generate
             * the T function values before being able to use the table.
             * This constructor allows the user to initialize the table with
             * a vector of values.
@@ -521,7 +521,7 @@ namespace breit_wheeler{
 
             /**
             * Constructor (not designed for GPU)
-            * After construction the table is empty. The user has to generate
+            * After construction the table is uninitialized. The user has to generate
             * the cumulative probability distribution before being able to use the table.
             *
             * @param params table parameters
@@ -540,7 +540,7 @@ namespace breit_wheeler{
 
             /**
             * Constructor (not designed for GPU)
-            * After construction the table is empty. The user has to generate
+            * After construction the table is uninitialized. The user has to generate
             * the cumulative probability distribution before being able to use the table.
             * This constructor allows the user to initialize the table with
             * a vector of values.

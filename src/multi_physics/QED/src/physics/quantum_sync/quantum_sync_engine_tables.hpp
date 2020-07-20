@@ -144,7 +144,7 @@ namespace quantum_sync{
 
             /**
             * Constructor (not designed for GPU usage)
-            * After construction the table is empty. The user has to generate
+            * After construction the table is uninitialized. The user has to generate
             * the G function values before being able to use the table.
             *
             * @param params table parameters
@@ -159,7 +159,7 @@ namespace quantum_sync{
 
             /**
             * Constructor (not designed for GPU usage)
-            * After construction the table is empty. The user has to generate
+            * After construction the table is uninitialized. The user has to generate
             * the G function values before being able to use the table.
             * This constructor allows the user to initialize the table with
             * a vector of values.
@@ -472,7 +472,7 @@ namespace quantum_sync{
 
             /**
             * Constructor (not designed for GPU usage)
-            * After construction the table is empty. The user has to generate
+            * After construction the table is uninitialized. The user has to generate
             * the cumulative probability distribution before being able to use the table.
             *
             * @param params table parameters
@@ -491,7 +491,7 @@ namespace quantum_sync{
 
             /**
             * Constructor (not designed for GPU usage)
-            * After construction the table is empty. The user has to generate
+            * After construction the table is uninitialized. The user has to generate
             * the cumulative probability distribution before being able to use the table.
             * This constructor allows the user to initialize the table with
             * a vector of values.
