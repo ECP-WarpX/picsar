@@ -205,42 +205,42 @@ __global__ void bw_pair_gen(
 	int i = blockIdx.x*blockDim.x + threadIdx.x;
 
 	if (i < n){
-	    const auto px = phot_data[i].px;
-	    const auto py = phot_data[i].py;
-	    const auto pz = phot_data[i].pz;
-	    const auto ex = phot_data[i].ex;
-	    const auto ey = phot_data[i].ey;
-	    const auto ez = phot_data[i].ez;
-	    const auto bx = phot_data[i].bx;
-	    const auto by = phot_data[i].by;
-	    const auto bz = phot_data[i].bz;
+            const auto px = phot_data[i].px;
+            const auto py = phot_data[i].py;
+            const auto pz = phot_data[i].pz;
+            const auto ex = phot_data[i].ex;
+            const auto ey = phot_data[i].ey;
+            const auto ez = phot_data[i].ez;
+            const auto bx = phot_data[i].bx;
+            const auto by = phot_data[i].by;
+            const auto bz = phot_data[i].bz;
 
-        const auto chi = pxr::chi_photon<Real, pxr::unit_system::SI>(
-            px, py, pz, ex, ey, ez, bx, by, bz);
+            const auto chi = pxr::chi_photon<Real, pxr::unit_system::SI>(
+                px, py, pz, ex, ey, ez, bx, by, bz);
 
-        const auto phot_mom = pxr_m::vec3<Real>{px, py, pz};
-        auto ele_mom = pxr_m::vec3<Real>{};
-        auto pos_mom = pxr_m::vec3<Real>{};
+            const auto phot_mom = pxr_m::vec3<Real>{px, py, pz};
+            auto ele_mom = pxr_m::vec3<Real>{};
+            auto pos_mom = pxr_m::vec3<Real>{};
 
-        const auto unf_zero_one_minus_epsi = random_numbers[i];
+            const auto unf_zero_one_minus_epsi = random_numbers[i];
 
-        pxr_bw::generate_breit_wheeler_pairs<Real,TableType, pxr::unit_system::SI>(
-            chi, phot_mom, unf_zero_one_minus_epsi,
-            ref_table,
-            ele_mom, pos_mom);
+            pxr_bw::generate_breit_wheeler_pairs<Real,TableType, pxr::unit_system::SI>(
+                chi, phot_mom, unf_zero_one_minus_epsi,
+                ref_table,
+                ele_mom, pos_mom);
 
-        ele_data[i].x = phot_data[i].x;
-        ele_data[i].y = phot_data[i].y;
-        ele_data[i].z = phot_data[i].z;
-        ele_data[i].px = ele_mom[0];
-        ele_data[i].py = ele_mom[1];
-        ele_data[i].pz = ele_mom[2];
-        pos_data[i].x = phot_data[i].x;
-        pos_data[i].y = phot_data[i].y;
-        pos_data[i].z = phot_data[i].z;
-        pos_data[i].px = pos_mom[0];
-        pos_data[i].py = pos_mom[1];
-        pos_data[i].pz = pos_mom[2];
+            ele_data[i].x = phot_data[i].x;
+            ele_data[i].y = phot_data[i].y;
+            ele_data[i].z = phot_data[i].z;
+            ele_data[i].px = ele_mom[0];
+            ele_data[i].py = ele_mom[1];
+            ele_data[i].pz = ele_mom[2];
+            pos_data[i].x = phot_data[i].x;
+            pos_data[i].y = phot_data[i].y;
+            pos_data[i].z = phot_data[i].z;
+            pos_data[i].px = pos_mom[0];
+            pos_data[i].py = pos_mom[1];
+            pos_data[i].pz = pos_mom[2];
 	}
 }
 
