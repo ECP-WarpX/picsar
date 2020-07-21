@@ -133,30 +133,30 @@ __global__ void qs_opt_depth_evol(
 	int i = blockIdx.x*blockDim.x + threadIdx.x;
 
 	if (i < n){
-	    const auto px = p_data[i].px;
-	    const auto py = p_data[i].py;
-	    const auto pz = p_data[i].pz;
-	    const auto ex = p_data[i].ex;
-	    const auto ey = p_data[i].ey;
-	    const auto ez = p_data[i].ez;
-	    const auto bx = p_data[i].bx;
-	    const auto by = p_data[i].by;
-	    const auto bz = p_data[i].bz;
-	    auto opt = p_data[i].opt;
-	    	    
-        const auto chi = pxr::chi_ele_pos<Real, pxr::unit_system::SI>(
-            px, py, pz, ex, ey, ez, bx, by, bz);
-            
-        const auto ppx = px/mec<Real>;
-	    const auto ppy = py/mec<Real>;
-	    const auto ppz = pz/mec<Real>;        
-        const auto en = (sqrt(static_cast<Real>(1.0) + ppx*ppx + ppy*ppy + ppz*ppz))*mec2<Real>;        
+            const auto px = p_data[i].px;
+            const auto py = p_data[i].py;
+            const auto pz = p_data[i].pz;
+            const auto ex = p_data[i].ex;
+            const auto ey = p_data[i].ey;
+            const auto ez = p_data[i].ez;
+            const auto bx = p_data[i].bx;
+            const auto by = p_data[i].by;
+            const auto bz = p_data[i].bz;
+            auto opt = p_data[i].opt;
+    	    
+            const auto chi = pxr::chi_ele_pos<Real, pxr::unit_system::SI>(
+                px, py, pz, ex, ey, ez, bx, by, bz);
+
+            const auto ppx = px/mec<Real>;
+            const auto ppy = py/mec<Real>;
+            const auto ppz = pz/mec<Real>;        
+            const auto en = (sqrt(static_cast<Real>(1.0) + ppx*ppx + ppy*ppy + ppz*ppz))*mec2<Real>;        
    
-        pxr_qs::evolve_optical_depth<Real,TableType>(
-            en, chi, dt, opt,
-            ref_table);            
+            pxr_qs::evolve_optical_depth<Real,TableType>(
+                en, chi, dt, opt,
+                ref_table);            
         
-        p_data[i].opt = opt;
+            p_data[i].opt = opt;
 	}
 }
 
