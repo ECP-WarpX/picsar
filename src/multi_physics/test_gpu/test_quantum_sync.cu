@@ -203,38 +203,38 @@ __global__ void qs_phot_em(
 	int i = blockIdx.x*blockDim.x + threadIdx.x;
 
 	if (i < n){
-	    const auto px = p_data[i].px;
-	    const auto py = p_data[i].py;
-	    const auto pz = p_data[i].pz;
-	    const auto ex = p_data[i].ex;
-	    const auto ey = p_data[i].ey;
-	    const auto ez = p_data[i].ez;
-	    const auto bx = p_data[i].bx;
-	    const auto by = p_data[i].by;
-	    const auto bz = p_data[i].bz;
-	    	    
-        const auto chi = pxr::chi_ele_pos<Real, pxr::unit_system::SI>(
-            px, py, pz, ex, ey, ez, bx, by, bz);
-                  
-        auto p_mom = pxr_m::vec3<Real>{px, py, pz};
-        auto phot_mom = pxr_m::vec3<Real>{};
-        
-        const auto unf_zero_one_minus_epsi = random_numbers[i];           
-   
-        pxr_qs::generate_photon_update_momentum<Real,TableType, pxr::unit_system::SI>(
-            chi, p_mom, unf_zero_one_minus_epsi,
-            ref_table,
-            phot_mom);
-        
-        p_data[i].px = p_mom[0];
-        p_data[i].py = p_mom[1];
-        p_data[i].pz = p_mom[2];
-        phot_data[i].x = p_data[i].x;
-        phot_data[i].y = p_data[i].y;
-        phot_data[i].z = p_data[i].z;
-        phot_data[i].px = phot_mom[0];
-        phot_data[i].py = phot_mom[1];
-        phot_data[i].pz = phot_mom[2]; 
+            const auto px = p_data[i].px;
+            const auto py = p_data[i].py;
+            const auto pz = p_data[i].pz;
+            const auto ex = p_data[i].ex;
+            const auto ey = p_data[i].ey;
+            const auto ez = p_data[i].ez;
+            const auto bx = p_data[i].bx;
+            const auto by = p_data[i].by;
+            const auto bz = p_data[i].bz;
+    	    
+            const auto chi = pxr::chi_ele_pos<Real, pxr::unit_system::SI>(
+                px, py, pz, ex, ey, ez, bx, by, bz);
+
+            auto p_mom = pxr_m::vec3<Real>{px, py, pz};
+            auto phot_mom = pxr_m::vec3<Real>{};
+
+            const auto unf_zero_one_minus_epsi = random_numbers[i];
+
+            pxr_qs::generate_photon_update_momentum<Real,TableType, pxr::unit_system::SI>(
+                chi, p_mom, unf_zero_one_minus_epsi,
+                ref_table,
+                phot_mom);
+
+            p_data[i].px = p_mom[0];
+            p_data[i].py = p_mom[1];
+            p_data[i].pz = p_mom[2];
+            phot_data[i].x = p_data[i].x;
+            phot_data[i].y = p_data[i].y;
+            phot_data[i].z = p_data[i].z;
+            phot_data[i].px = phot_mom[0];
+            phot_data[i].py = phot_mom[1];
+            phot_data[i].pz = phot_mom[2]; 
 	}
 }
 
