@@ -1,5 +1,5 @@
 /**
-* This program tests the Schiwnger pair generaion process on GPU.
+* This program tests the Schiwnger pair generation process on GPU.
 * The test is performed in single and double precision and using all the
 * supported unit systems. Results are compared with those calculated
 * on the CPU.
@@ -268,4 +268,3 @@ int main()
     
     return 0;
 }
-
