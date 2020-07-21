@@ -41,7 +41,7 @@ namespace quantum_sync{
     * @param[in] chi_part the chi parameter of the particle
     * @param[in] csi the ratio between the chi parameter of the photon and chi_part
     *
-    * @return the parameter X
+    * @return the parameter Y
     */
     template<typename RealType>
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
