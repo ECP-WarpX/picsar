@@ -60,10 +60,6 @@ The library implements the following physical processes: Breit-Wheeler pair prod
 
 #### src/physics/quantum_sync
 
-- schwinger_pair_engine_core.hpp : methods implementing Schwinger pair production
-
-#### src/physics/breit_wheeler
-
 - quantum_sync_engine_core.hpp :  methods implementing Quantum Synchrotron photon emission
 
 - quantum_sync_engine_tables.hpp : lookup tables used by methods implementing Quantum Synchrotron photon emission
