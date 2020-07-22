@@ -188,6 +188,11 @@ namespace breit_wheeler{
                 RealType, containers::picsar_span<const RealType>> view_type;
 
             /**
+            * Empty constructor (not designed for GPU)
+            **/
+            dndt_lookup_table(){};
+
+            /**
             * Constructor (not designed for GPU)
             * After construction the table is uninitialized. The user has to generate
             * the T function values before being able to use the table.
@@ -516,6 +521,12 @@ namespace breit_wheeler{
             */
             typedef const pair_prod_lookup_table<
                 RealType, containers::picsar_span<const RealType>> view_type;
+
+            /**
+            * Empty constructor (not designed for GPU usage)
+            */
+            pair_prod_lookup_table(){};
+
 
             /**
             * Constructor (not designed for GPU)

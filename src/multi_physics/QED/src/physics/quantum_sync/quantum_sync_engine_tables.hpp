@@ -143,6 +143,11 @@ namespace quantum_sync{
                 RealType, containers::picsar_span<const RealType>> view_type;
 
             /**
+            * Empty constructor (not designed for GPU)
+            **/
+            dndt_lookup_table(){};
+
+            /**
             * Constructor (not designed for GPU usage)
             * After construction the table is uninitialized. The user has to generate
             * the G function values before being able to use the table.
@@ -467,6 +472,11 @@ namespace quantum_sync{
             */
             typedef const photon_emission_lookup_table<
                 RealType, containers::picsar_span<const RealType>> view_type;
+
+            /**
+            * Empty constructor (not designed for GPU usage)
+            */
+            photon_emission_lookup_table(){};
 
             /**
             * Constructor (not designed for GPU usage)
