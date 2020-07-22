@@ -22,6 +22,7 @@
 // Override BOOST_ASSERT so that an exception is thrown.
 namespace boost
 {
+    inline
     void assertion_failed(char const * expr,
         char const * function,
         char const * file, long line)
@@ -70,7 +71,7 @@ namespace math{
     */
     template<
         typename RealType, quadrature_algorithm QuadAlgo>
-    constexpr RealType generic_quad_a_b(
+    inline constexpr RealType generic_quad_a_b(
         const std::function<RealType(RealType)>& f, RealType a, RealType b)
     {
         PXRMP_INTERNAL_CONSTEXPR_IF (
@@ -130,7 +131,7 @@ namespace math{
     * @return the integral of f in (a,b)
     */
     template<typename RealType>
-    constexpr RealType quad_a_b(
+    inline constexpr RealType quad_a_b(
         const std::function<RealType(RealType)>& f, RealType a, RealType b)
     {
         return generic_quad_a_b<
@@ -150,7 +151,7 @@ namespace math{
     * @return the integral of f in (a,b)
     */
     template<typename RealType>
-    constexpr RealType quad_a_b_s(
+    inline constexpr RealType quad_a_b_s(
         const std::function<RealType(RealType)>& f, RealType a, RealType b)
     {
          return generic_quad_a_b<RealType,

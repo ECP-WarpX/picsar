@@ -1,7 +1,7 @@
 #ifndef PICSAR_MULTIPHYSICS_SCHWINGER_PAIR_ENGINE_CORE
 #define PICSAR_MULTIPHYSICS_SCHWINGER_PAIR_ENGINE_CORE
 
-//This .hpp file contais the implementation of the
+//This .hpp file contains the implementation of the
 //core functions of the Schwinger pair engine.
 //Please have a look at the jupyter notebook in QED_tests/validation
 //for a more in-depth discussion.

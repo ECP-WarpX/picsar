@@ -28,7 +28,7 @@ namespace math{
     * @return K_v(x)
     */
     template<typename RealType>
-    RealType k_v(RealType v, RealType x)
+    inline RealType k_v(RealType v, RealType x)
     {
 #ifdef PXRMP_INTERNAL_SPECFUNC_WITH_CXX17
         return std::cyl_bessel_k(v, x);

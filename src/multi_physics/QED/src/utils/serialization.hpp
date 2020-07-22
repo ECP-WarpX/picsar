@@ -23,7 +23,7 @@ namespace serialization{
     * @param[in, out] vec a reference to the vector to which the byte representation of val is appended
     */
     template<typename T>
-    void put_in(T val, std::vector<char>& vec)
+    inline void put_in(T val, std::vector<char>& vec)
     {
         static_assert(std::is_pod<T>(), "Cannot serialize \
             non-POD types.");
@@ -44,7 +44,7 @@ namespace serialization{
     * @return the variable extracted from the byte array
     */
     template<typename T, typename CharIter=std::vector<char>::const_iterator>
-    T get_out(CharIter& it)
+    inline T get_out(CharIter& it)
     {
         static_assert(std::is_pod<T>(), "Cannot extract \
             non-POD types from char vectors.");
@@ -67,7 +67,7 @@ namespace serialization{
     * @return an std::vector<T> containing the extracted variables.
     */
     template<typename T, typename CharIter=std::vector<char>::const_iterator>
-    std::vector<T> get_n_out(
+    inline std::vector<T> get_n_out(
         CharIter& it,
         int how_many)
     {

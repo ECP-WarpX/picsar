@@ -21,6 +21,7 @@ namespace utils{
     * @param[in] last if true the last character is a new line instead of a carriage return
     * @param[in] out the std::ostream where the progress bar is drawn
     */
+    inline
     void draw_progress(
         const int i, const int how_many,
         const std::string text = "",

@@ -67,7 +67,7 @@ namespace breit_wheeler{
     * @return the value of the integrand of the T function
     */
     template<typename RealType>
-    constexpr RealType compute_T_integrand(
+    constexpr inline RealType compute_T_integrand(
         const RealType chi_phot, const RealType chi_ele)
     {
         using namespace math;
@@ -109,7 +109,7 @@ namespace breit_wheeler{
     * @return the value of the T function
     */
     template<typename RealType>
-    RealType compute_T_function(const RealType chi_phot)
+    inline RealType compute_T_function(const RealType chi_phot)
     {
         using namespace math;
         if(chi_phot <= math::zero<RealType>) return math::zero<RealType>;
@@ -135,7 +135,7 @@ namespace breit_wheeler{
     * @return the value of the numerator of the cumulative probability distribution
     */
     template<typename RealType>
-    RealType compute_cumulative_prob_numerator_a_b(
+    inline RealType compute_cumulative_prob_numerator_a_b(
         const RealType chi_photon,
         RealType chi_ele_start,
         RealType chi_ele_end)
@@ -181,7 +181,7 @@ namespace breit_wheeler{
     * @return the value of the numerator of the cumulative probability distribution
     */
     template<typename RealType>
-    RealType compute_cumulative_prob_numerator(
+    inline RealType compute_cumulative_prob_numerator(
         const RealType chi_photon, RealType chi_ele)
     {
         using namespace math;
@@ -203,7 +203,7 @@ namespace breit_wheeler{
     * @return the cumulative probability distribution calculated for all the chi parameters
     */
     template<typename RealType, typename VectorType>
-    VectorType compute_cumulative_prob(
+    inline VectorType compute_cumulative_prob(
         const RealType chi_photon, const VectorType& chis)
     {
         using namespace math;
@@ -251,7 +251,7 @@ namespace breit_wheeler{
     * @return the cumulative probability distribution calculated for all the chi parameters
     */
     template<typename RealType, typename VectorType>
-    VectorType compute_cumulative_prob_opt(
+    inline VectorType compute_cumulative_prob_opt(
         const RealType chi_photon, const VectorType& chis)
     {
         if(!std::is_sorted(chis.begin(), chis.end()))
