@@ -200,7 +200,7 @@ namespace breit_wheeler{
             * @param params table parameters
             */
             dndt_lookup_table(
-                dndt_lookup_table_params<RealType> params = default_dndt_lookup_table_params<RealType>):
+                dndt_lookup_table_params<RealType> params):
             m_params{params},
             m_table{containers::equispaced_1d_table<RealType, VectorType>{
                     math::m_log(params.chi_phot_min),
