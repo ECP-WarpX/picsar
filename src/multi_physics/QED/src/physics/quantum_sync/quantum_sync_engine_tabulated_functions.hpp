@@ -282,7 +282,7 @@ namespace quantum_sync{
         RealType old_chi = zero<RealType>;
         RealType sum = zero<RealType>;
         RealType c =  zero<RealType>;
-        for (int i = 0; i < chi_photons.size(); ++i){
+        for (int i = 0; i < static_cast<int>(chi_photons.size()); ++i){
             //Kahan summation algorithm is used
             const auto y = compute_cumulative_prob_numerator_a_b(
                 chi_particle, old_chi, chi_photons[i])/den - c;

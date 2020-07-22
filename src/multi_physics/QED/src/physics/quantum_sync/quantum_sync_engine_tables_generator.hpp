@@ -82,7 +82,7 @@ namespace quantum_sync{
 
         int count = 0;
         #pragma omp parallel for
-        for (int i = 0; i < all_coords.size(); ++i){
+        for (int i = 0; i < static_cast<int>(all_coords.size()); ++i){
             PXRMP_INTERNAL_CONSTEXPR_IF (use_internal_double){
                 all_vals[i] = aux_generate_double(all_coords[i]);
             }

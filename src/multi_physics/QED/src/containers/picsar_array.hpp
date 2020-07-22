@@ -40,7 +40,7 @@ namespace containers{
         */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         picsar_array(const picsar_array<T, N>& t_array){
-            for(size_t i = 0; i < N ; ++i)
+            for(int i = 0; i < static_cast<int>(N) ; ++i)
                 m_data[i] = t_array.m_data[i];
         }
 
@@ -96,9 +96,9 @@ namespace containers{
         * @return the size of the array
         */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        constexpr size_t size() const noexcept
+        constexpr int size() const noexcept
         {
-            return N;
+            return static_cast<int>(N);
         }
 
        /**

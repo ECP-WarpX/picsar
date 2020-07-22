@@ -69,22 +69,22 @@ picsar_upper_bound
 * the first element in a sequence which compares greater than val.
 * If no element in the range compares greater than val, the function returns last.
 * In order to be completely general, the sequence is given by a functor
-* f(size_t i) --> T res, which should respect the property "res2 >= res1 if i2 >= i1".
+* f(int i) --> T res, which should respect the property "res2 >= res1 if i2 >= i1".
 *
 * @tparam T the type of 'val'
 * @tparam Functor the type of Functor
-* @param[in] first the first index (a size_t)
-* @param[in] last the last index (a size_t)
+* @param[in] first the first index (an int)
+* @param[in] last the last index (an int)
 * @param[in] val the value to use to find the upper bound
-* @param[in] functor a functor f(size_t i) --> T res, respecting "res2 >= res1 if i2 >= i1"
+* @param[in] functor a functor f(int i) --> T res, respecting "res2 >= res1 if i2 >= i1"
 * @return a ForwardIt to the upper bound
 */
 template<typename T, typename Functor>
 PXRMP_INTERNAL_GPU_DECORATOR
 PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-size_t
+int
 picsar_upper_bound_functor
-(size_t first, const size_t last, const T& val, Functor&& functor)
+(int first, const int last, const T& val, Functor&& functor)
 {
     int count = last-first;
     do{

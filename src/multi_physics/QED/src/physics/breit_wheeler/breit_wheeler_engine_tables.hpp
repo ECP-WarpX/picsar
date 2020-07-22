@@ -371,8 +371,8 @@ namespace breit_wheeler{
             */
             bool set_all_vals(const std::vector<RealType>& vals)
             {
-                if(vals.size() == m_table.get_how_many_x()){
-                    for(int i = 0; i < vals.size(); ++i){
+                if(static_cast<int>(vals.size()) == m_table.get_how_many_x()){
+                    for(int i = 0; i < static_cast<int>(vals.size()); ++i){
                         auto val = math::m_log(vals[i]);
                         if(std::isinf(val))
                             val = std::numeric_limits<RealType>::lowest();
@@ -727,8 +727,6 @@ namespace breit_wheeler{
 
                 const auto chi = frac*chi_phot;
 
-                auto res = (unf_zero_one_minus_epsi < half<RealType>)?chi:(chi_phot - chi);
-
                 return (unf_zero_one_minus_epsi < half<RealType>)?
                     chi:(chi_phot - chi);
             }
@@ -760,9 +758,9 @@ namespace breit_wheeler{
             */
             bool set_all_vals(const std::vector<RealType>& vals)
             {
-                if(vals.size() == m_table.get_how_many_x()*
+                if(static_cast<int>(vals.size()) == m_table.get_how_many_x()*
                     m_table.get_how_many_y()){
-                    for(int i = 0; i < vals.size(); ++i){
+                    for(int i = 0; i < static_cast<int>(vals.size()); ++i){
                         m_table.set_val(i,vals[i]);
                     }
                     m_init_flag = true;

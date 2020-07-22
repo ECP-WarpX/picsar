@@ -282,7 +282,7 @@ namespace breit_wheeler{
         RealType old_chi = zero<RealType>;
         RealType sum = zero<RealType>;
         RealType c =  zero<RealType>;
-        for (int i = 0; i < chis.size(); ++i){
+        for (int i = 0; i < static_cast<int>(chis.size()); ++i){
             //Kahan summation algorithm is used
             const auto y = compute_cumulative_prob_numerator_a_b(
                 chi_photon, old_chi, chis[i])/den - c;

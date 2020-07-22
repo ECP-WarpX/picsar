@@ -323,8 +323,8 @@ namespace quantum_sync{
             */
             bool set_all_vals(const std::vector<RealType>& vals)
             {
-                if(vals.size() == m_table.get_how_many_x()){
-                    for(int i = 0; i < vals.size(); ++i){
+                if(static_cast<int>(vals.size()) == m_table.get_how_many_x()){
+                    for(int i = 0; i < static_cast<int>(vals.size()); ++i){
                         m_table.set_val(i, math::m_log(vals[i]));
                     }
                     m_init_flag = true;
@@ -706,9 +706,9 @@ namespace quantum_sync{
             */
             bool set_all_vals(const std::vector<RealType>& vals)
             {
-                if(vals.size() == m_table.get_how_many_x()*
+                if(static_cast<int>(vals.size()) == m_table.get_how_many_x()*
                     m_table.get_how_many_y()){
-                    for(int i = 0; i < vals.size(); ++i){
+                    for(int i = 0; i < static_cast<int>(vals.size()); ++i){
                         auto val = math::m_log(vals[i]);
                         if(std::isinf(val))
                             val = std::numeric_limits<RealType>::lowest();
