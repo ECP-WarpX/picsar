@@ -18,7 +18,7 @@
 #include "quantum_sync_engine_tables.hpp"
 //Uses BW tabulated functions
 #include "quantum_sync_engine_tabulated_functions.hpp"
-//Uses progress bar
+//Uses cmath overloads
 #include "../../math/cmath_overloads.hpp"
 //Uses progress bar
 #include "../../utils/progress_bar.hpp"

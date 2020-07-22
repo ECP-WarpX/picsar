@@ -20,7 +20,7 @@
 #include "breit_wheeler_engine_tables.hpp"
 //Uses BW tabulated functions
 #include "breit_wheeler_engine_tabulated_functions.hpp"
-//Uses progress bar
+//Uses cmath overloads
 #include "../../math/cmath_overloads.hpp"
 //Uses progress bar
 #include "../../utils/progress_bar.hpp"
