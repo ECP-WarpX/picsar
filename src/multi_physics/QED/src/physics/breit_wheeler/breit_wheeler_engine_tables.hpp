@@ -246,7 +246,7 @@ namespace breit_wheeler{
             *
             * @param[in] raw_data the byte array
             */
-            dndt_lookup_table(std::vector<char>& raw_data)
+            dndt_lookup_table(const std::vector<char>& raw_data)
             {
                 using namespace utils;
 
@@ -588,7 +588,7 @@ namespace breit_wheeler{
             *
             * @param[in] raw_data the byte array
             */
-            pair_prod_lookup_table(std::vector<char>& raw_data)
+            pair_prod_lookup_table(const std::vector<char>& raw_data)
             {
                 using namespace utils;
 
