@@ -401,7 +401,7 @@ namespace breit_wheeler{
             *
             * @return a byte vector
             */
-            std::vector<char> serialize()
+            std::vector<char> serialize() const
             {
                 using namespace utils;
 
@@ -788,7 +788,7 @@ namespace breit_wheeler{
             *
             * @return a byte vector
             */
-            std::vector<char> serialize()
+            std::vector<char> serialize() const
             {
                 using namespace utils;
 

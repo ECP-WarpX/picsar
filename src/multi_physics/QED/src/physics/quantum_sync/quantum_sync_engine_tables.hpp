@@ -350,7 +350,7 @@ namespace quantum_sync{
             *
             * @return a byte vector
             */
-            std::vector<char> serialize()
+            std::vector<char> serialize() const
             {
                 using namespace utils;
 
@@ -737,7 +737,7 @@ namespace quantum_sync{
             *
             * @return a byte vector
             */
-            std::vector<char> serialize()
+            std::vector<char> serialize() const
             {
                 using namespace utils;
 
