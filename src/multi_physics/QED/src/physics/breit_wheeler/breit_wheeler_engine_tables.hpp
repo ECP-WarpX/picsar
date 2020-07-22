@@ -184,7 +184,7 @@ namespace breit_wheeler{
             *
             * @tparam RealType the floating point type to be used
             */
-            typedef const dndt_lookup_table<
+            typedef dndt_lookup_table<
                 RealType, containers::picsar_span<const RealType>> view_type;
 
             /**
@@ -519,7 +519,7 @@ namespace breit_wheeler{
             *
             * @tparam RealType the floating point type to be used
             */
-            typedef const pair_prod_lookup_table<
+            typedef pair_prod_lookup_table<
                 RealType, containers::picsar_span<const RealType>> view_type;
 
             /**

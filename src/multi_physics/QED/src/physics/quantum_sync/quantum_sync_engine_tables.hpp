@@ -470,7 +470,7 @@ namespace quantum_sync{
             *
             * @tparam RealType the floating point type to be used
             */
-            typedef const photon_emission_lookup_table<
+            typedef photon_emission_lookup_table<
                 RealType, containers::picsar_span<const RealType>> view_type;
 
             /**
