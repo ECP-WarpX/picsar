@@ -92,11 +92,13 @@ namespace breit_wheeler{
                 all_vals[i] = compute_T_function(all_coords[i]);
             }
 
-            #pragma omp critical
-            {
-                count++;
-                utils::draw_progress(count,
-                    all_vals.size(), "Breit-Wheeler dN/dt", 1);
+            if(show_progress){
+                #pragma omp critical
+                {
+                    count++;
+                    utils::draw_progress(count,
+                        all_vals.size(), "Breit-Wheeler dN/dt", 1);
+                }
             }
         }
 
@@ -108,11 +110,14 @@ namespace breit_wheeler{
         set_all_vals(all_vals);
 
         auto t_end =  std::chrono::system_clock::now();
-        utils::draw_progress(
-            count, all_vals.size(), "Breit-Wheeler dN/dt", 1, true);
-        std::cout << " Done in " <<
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                t_end - t_start).count()/1000.0 << " seconds. \n" << std::endl;
+        if(show_progress){
+            utils::draw_progress(
+                count, all_vals.size(), "Breit-Wheeler dN/dt", 1, true);
+
+            std::cout << " Done in " <<
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                    t_end - t_start).count()/1000.0 << " seconds. \n" << std::endl;
+        }
 
         m_init_flag = true;
     }
@@ -200,10 +205,12 @@ namespace breit_wheeler{
 
             std::copy(vals.begin(), vals.end(), all_vals.begin()+i*frac_size);
 
-            #pragma omp critical
-            {
-                count++;
-                utils::draw_progress(count, chi_size, "BW pair prod", 1);
+            if(show_progress){
+                #pragma omp critical
+                {
+                    count++;
+                    utils::draw_progress(count, chi_size, "BW pair prod", 1);
+                }
             }
         }
 
@@ -214,11 +221,14 @@ namespace breit_wheeler{
 
         set_all_vals(all_vals);
         auto t_end =  std::chrono::system_clock::now();
-        utils::draw_progress(
-            count, chi_size, "BW pair prod", 1, true);
-        std::cout << " Done in " <<
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                t_end - t_start).count()/1000.0 << " seconds. \n" << std::endl;
+        if(show_progress){
+            utils::draw_progress(
+                count, chi_size, "BW pair prod", 1, true);
+
+            std::cout << " Done in " <<
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                    t_end - t_start).count()/1000.0 << " seconds. \n" << std::endl;
+        }
 
         m_init_flag = true;
     }

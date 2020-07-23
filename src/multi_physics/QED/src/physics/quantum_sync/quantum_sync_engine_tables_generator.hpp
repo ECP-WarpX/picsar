@@ -90,11 +90,13 @@ namespace quantum_sync{
                 all_vals[i] = compute_G_function(all_coords[i]);
             }
 
-            #pragma omp critical
-            {
-                count++;
-                utils::draw_progress(count,
-                    all_vals.size(), "Quantum sync dN/dt", 1);
+            if(show_progress){
+                #pragma omp critical
+                {
+                    count++;
+                    utils::draw_progress(count,
+                        all_vals.size(), "Quantum sync dN/dt", 1);
+                }
             }
         }
 
@@ -106,11 +108,14 @@ namespace quantum_sync{
         set_all_vals(all_vals);
 
         auto t_end =  std::chrono::system_clock::now();
-        utils::draw_progress(
-            count, all_vals.size(), "Quantum sync dN/dt", 1, true);
-        std::cout << " Done in " <<
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                t_end - t_start).count()/1000.0 << " seconds. \n" << std::endl;
+        if(show_progress){
+            utils::draw_progress(
+                count, all_vals.size(), "Quantum sync dN/dt", 1, true);
+
+            std::cout << " Done in " <<
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                    t_end - t_start).count()/1000.0 << " seconds. \n" << std::endl;
+        }
 
         m_init_flag = true;
     }
@@ -199,10 +204,12 @@ namespace quantum_sync{
 
             std::copy(vals.begin(), vals.end(), all_vals.begin()+i*frac_size);
 
-            #pragma omp critical
-            {
-                count++;
-                utils::draw_progress(count, chi_size, "QS photon emission", 1);
+            if(show_progress){
+                #pragma omp critical
+                {
+                    count++;
+                    utils::draw_progress(count, chi_size, "QS photon emission", 1);
+                }
             }
         }
 
@@ -213,11 +220,14 @@ namespace quantum_sync{
 
         set_all_vals(all_vals);
         auto t_end =  std::chrono::system_clock::now();
-        utils::draw_progress(
-            count, chi_size, "QS photon emission", 1, true);
-        std::cout << " Done in " <<
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                t_end - t_start).count()/1000.0 << " seconds. \n" << std::endl;
+        if(show_progress){
+            utils::draw_progress(
+                count, chi_size, "QS photon emission", 1, true);
+
+            std::cout << " Done in " <<
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                    t_end - t_start).count()/1000.0 << " seconds. \n" << std::endl;
+        }
 
         m_init_flag = true;
     }
