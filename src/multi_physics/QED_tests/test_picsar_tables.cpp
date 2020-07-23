@@ -149,9 +149,9 @@ void check_table_2d(
     const auto rdx =  tab.get_dx();
     BOOST_CHECK_EQUAL(rdx, (xmax-xmin)/(rhowmany_x-1));
     const auto rymin = tab.get_y_min();
-    BOOST_CHECK_EQUAL(rxmin, xmin);
+    BOOST_CHECK_EQUAL(rymin, ymin);
     const auto rymax = tab.get_y_max();
-    BOOST_CHECK_EQUAL(rxmax, xmax);
+    BOOST_CHECK_EQUAL(rymax, ymax);
     const auto rhowmany_y =  tab.get_how_many_y();
     BOOST_CHECK_EQUAL(rhowmany_y, ysize);
     const auto rysize =  tab.get_y_size();

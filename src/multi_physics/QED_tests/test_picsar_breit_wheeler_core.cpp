@@ -132,11 +132,11 @@ void check_dndt(RealType ref_q = one<RealType>)
         std::array<double,4>{4.2430912853903355e+18, 4.2430912853903366e+17, 4.243091285390336e+16, 4243091285390336.0},
         std::array<double,4>{2.112426477035044e+19, 2.1124264770350446e+18, 2.1124264770350442e+17, 2.1124264770350444e+16}};
 
-    for (int i = 0; i < chi_T_pairs.size(); ++i){
+    for (int i = 0; i < static_cast<int>(chi_T_pairs.size()); ++i){
         const auto chi = static_cast<RealType>(chi_T_pairs[i].first);
         fake_table.m_res = static_cast<RealType>(chi_T_pairs[i].second);
 
-        for (int j = 0; j < en_vals_SI.size(); ++j ){
+        for (int j = 0; j < static_cast<int>(en_vals_SI.size()); ++j ){
             const auto en = en_vals_SI[j]*conv<
                 quantity::energy, unit_system::SI,
                 UnitSystem, RealType>::fact(1.0, ref_q);
@@ -225,11 +225,11 @@ void check_evolve_opt_depth(RealType ref_q = one<RealType>)
 
     const auto dt_SI =  std::array<double,4>{1e-18, 1e-15, 1e-12, 1e-9};
 
-    for (int i = 0; i < chi_T_pairs.size(); ++i){
+    for (int i = 0; i < static_cast<int>(chi_T_pairs.size()); ++i){
         const auto chi = static_cast<RealType>(chi_T_pairs[i].first);
         fake_table.m_res = static_cast<RealType>(chi_T_pairs[i].second);
 
-        for (int j = 0; j < en_vals_SI.size(); ++j ){
+        for (int j = 0; j < static_cast<int>(en_vals_SI.size()); ++j ){
             const auto en = en_vals_SI[j]*conv<
                 quantity::energy, unit_system::SI,
                 UnitSystem, RealType>::fact(1.0, ref_q);

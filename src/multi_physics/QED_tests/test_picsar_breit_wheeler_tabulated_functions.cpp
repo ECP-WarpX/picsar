@@ -70,7 +70,7 @@ void check_T_func()
         std::make_pair( 3792.690190732246, 0.02416544874852762),
         std::make_pair( 10000.0, 0.017553195930973545)};
 
-    for (const auto cc : cases)
+    for (const auto& cc : cases)
     {
         const auto res = compute_T_function(static_cast<RealType>(cc.first));
         if(cc.second < small<RealType>()){
@@ -148,7 +148,7 @@ void check_cumulative_prob_1()
         std::array<double,3>{1000.0, 999.0, 0.9975037163713809},
         std::array<double,3>{1000.0, 1000.0, 1.0}};
 
-    for (const auto cc : chiphot_chipart_res)
+    for (const auto& cc : chiphot_chipart_res)
     {
         const auto chi_phot = static_cast<RealType>(cc[0]);
         const auto chi_part = static_cast<RealType>(cc[1]);
@@ -188,7 +188,7 @@ void check_cumulative_prob_vec()
         0.9999877023668319,0.9999999999997944,0.9999999999999992,1.0};
     const auto res = compute_cumulative_prob(chiphot, chipart);
 
-    for (int i = 0 ; i < expected.size(); ++i)
+    for (int i = 0 ; i < static_cast<int>(expected.size()); ++i)
     {
         if(expected[i] < small<RealType>()){
             BOOST_CHECK_SMALL( (res[i] - expected[i]), small<RealType>());

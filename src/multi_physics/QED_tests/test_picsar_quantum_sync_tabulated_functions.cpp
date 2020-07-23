@@ -88,7 +88,7 @@ void check_G_function()
         std::make_pair( 1000.0, 217.8438638968691),
         std::make_pair( 10000.0, 1015.6105987224346)};
 
-    for (const auto cc : cases)
+    for (const auto& cc : cases)
     {
         const auto res = compute_G_function(static_cast<RealType>(cc.first));
             BOOST_CHECK_SMALL((res - static_cast<RealType>(cc.second))/
@@ -205,7 +205,7 @@ void check_cumulative_prob_vec()
         1.0000000000002132,1.0};
     const auto res = compute_cumulative_prob(chipart, chiphot);
 
-    for (int i = 0 ; i < expected.size(); ++i)
+    for (int i = 0 ; i < static_cast<int>(expected.size()); ++i)
     {
         if(expected[i] < small<RealType>()){
             BOOST_CHECK_SMALL( (res[i] - expected[i]), small<RealType>());

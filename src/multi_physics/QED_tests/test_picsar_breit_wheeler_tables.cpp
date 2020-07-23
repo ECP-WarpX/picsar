@@ -91,7 +91,7 @@ void check_dndt_table()
     const RealType log_chi_min = log(chi_min);
     const RealType log_chi_max = log(chi_max);
 
-     for (int i = 0 ; i < coords.size(); ++i){
+     for (int i = 0 ; i < static_cast<int>(coords.size()); ++i){
          auto res = coords[i];
          auto expected = static_cast<RealType>(
              exp(log_chi_min + i*(log_chi_max-log_chi_min)/(how_many-1)));
@@ -135,7 +135,7 @@ void check_dndt_table()
     const auto is_out = std::array<bool, 5>
         {true, false, false, false, true};
 
-    for(int i = 0 ; i < xxs.size() ; ++i){
+    for(int i = 0 ; i < static_cast<int>(xxs.size()) ; ++i){
         const RealType res = table.interp(xxs[i]);
         bool flag_out = false;
         const RealType res2 = table.interp(xxs[i], &flag_out);
@@ -152,7 +152,7 @@ void check_dndt_table()
 
     const auto table_view = table.get_view();
 
-    for(int i = 0 ; i < xxs.size() ; ++i){
+    for(int i = 0 ; i < static_cast<int>(xxs.size()) ; ++i){
         BOOST_CHECK_EQUAL(table_view.interp(xxs[i]), table.interp(xxs[i]));
     }
 }
@@ -294,7 +294,7 @@ void check_pair_production_table()
     const auto is_out = std::array<bool, 5>
             {true, false, false, false, true};
 
-    for (int i = 0; i < xxs.size(); ++i){
+    for (int i = 0; i < static_cast<int>(xxs.size()); ++i){
         const auto xx = xxs[i];
         for (const auto rr : rrs){
             auto res = table.interp(xx, rr);
@@ -321,7 +321,7 @@ void check_pair_production_table()
 
     const auto ff = std::array<double,4>{0.0, 0.1, 0.5, 0.99};
 
-    for(int i = 0 ; i < xxs.size() ; ++i){
+    for(int i = 0 ; i < static_cast<int>(xxs.size()) ; ++i){
         for (auto f : ff)
             BOOST_CHECK_EQUAL(table_view.interp(xxs[i],f ), table.interp(xxs[i], f));
     }

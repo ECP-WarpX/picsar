@@ -73,7 +73,7 @@ double dt = 1.0e-15;
 template<unit_system UnitSystem, typename RealType>
 void test_expected_pair_number(RealType ref = zero<RealType>)
 {
-    for(int i = 0 ; i < E.size(); ++i){
+    for(int i = 0 ; i < static_cast<int>(E.size()); ++i){
         const auto fe = conv<quantity::E, unit_system::SI, UnitSystem, RealType>::
             fact(1.0, ref);
         const auto fb = conv<quantity::B, unit_system::SI, UnitSystem, RealType>::

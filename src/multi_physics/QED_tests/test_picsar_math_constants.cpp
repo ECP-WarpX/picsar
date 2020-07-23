@@ -13,22 +13,6 @@
 
 using namespace picsar::multi_physics::math;
 
-//Tolerance for double precision calculations
-const double double_tolerance = 1.0e-14;
-
-//Tolerance for single precision calculations
-const float float_tolerance = 1.0e-7;
-
-//Templated tolerance
-template <typename T>
-T constexpr tolerance()
-{
-    if(std::is_same<T,float>::value)
-        return float_tolerance;
-    else
-        return double_tolerance;
-}
-
 // ------------- Tests --------------
 
 // ***Test math constants
