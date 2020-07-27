@@ -212,6 +212,12 @@ namespace quantum_sync{
                 chi_particle, unf_zero_one_minus_epsi,
                 &is_out);
 
+        if (chi_photon == zero<RealType>){
+            phot_momentum = math::vec3<RealType>{
+                zero<RealType>, zero<RealType>, zero<RealType>};
+            return false;
+        }
+
         const auto gamma_photon = (gamma_particle - one<RealType>)*
             chi_photon/chi_particle;
 

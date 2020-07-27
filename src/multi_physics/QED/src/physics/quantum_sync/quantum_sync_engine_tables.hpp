@@ -618,7 +618,8 @@ namespace quantum_sync{
             * The method uses the lookup table to invert the equation:
             * unf_zero_one_minus_epsi = P(chi_part, X)
             * where X is the ratio between chi_photon and chi_particle.
-            * If X is out of table, frac_min is used.
+            * If X is out of table, 0 is returned (i.e. a photon with
+            * very low energy is emitted, so it can be disregarded)
             * The method also checks if chi_phot is out of table
             * and stores the result in a bool variable.
             *
@@ -657,7 +658,7 @@ namespace quantum_sync{
                         });
 
                 if(upper_frac_index == 0)
-                    return m_params.frac_min*chi_part;
+                    return zero<RealType>;
 
                 if(upper_frac_index ==  m_params.frac_how_many)
                     return chi_part;
