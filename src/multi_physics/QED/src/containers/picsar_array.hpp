@@ -23,37 +23,10 @@ namespace containers{
     * @tparam N (size_t) the array size
     */
     template <typename T, size_t N>
-    class picsar_array
+    struct picsar_array
     {
 
-    public:
-        /**
-        * Empty constructor
-        */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        picsar_array() noexcept {}
-
-        /**
-        * Copy constructor. A deep copy is performed.
-        *
-        * @param[in] t_array array to be copied
-        */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        picsar_array(const picsar_array<T, N>& t_array){
-            for(int i = 0; i < static_cast<int>(N) ; ++i)
-                m_data[i] = t_array.m_data[i];
-        }
-
-       /**
-        * Constructor to allow initialization with a list {a,b,c,d,...}.
-        */
-        template<typename ... V>
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        picsar_array(V ... args):
-        m_data{args...}
-        {
-            static_assert(sizeof...(args) == N, "Wrong number of elements");
-        }
+        T m_data[N]; /* The underlying raw array */
 
        /**
         * Returs a const reference to the i-th element.
@@ -144,9 +117,6 @@ namespace containers{
         {
             return m_data+N;
         }
-
-        private:
-            T m_data[N]; /* The underlying raw array */
 
         };
 #else
