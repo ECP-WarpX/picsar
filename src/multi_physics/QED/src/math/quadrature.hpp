@@ -9,6 +9,7 @@
 // instabilities of the tanh_sinh integration method
 #define BOOST_ENABLE_ASSERT_HANDLER
 #include <boost/assert.hpp>
+#undef BOOST_ENABLE_ASSERT_HANDLER
 #include <boost/math/quadrature/trapezoidal.hpp>
 #include <boost/math/quadrature/tanh_sinh.hpp>
 #include <boost/math/quadrature/exp_sinh.hpp>
@@ -179,11 +180,5 @@ namespace math{
 }
 }
 }
-
-// Resets BOOST_ASSERT to default behaviour.
-// boost/assert.hpp can be included multiple times
-// in the same translation unit.
-#undef BOOST_ENABLE_ASSERT_HANDLER
-#include<boost/assert.hpp>
 
 #endif //PICSAR_MULTIPHYSICS_QUADRATURE
