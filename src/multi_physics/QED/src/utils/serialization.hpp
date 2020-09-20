@@ -5,6 +5,7 @@
 #include "../qed_commons.h"
 
 #include <vector>
+#include <array>
 #include <algorithm>
 #include <type_traits>
 
@@ -49,9 +50,10 @@ namespace serialization{
         static_assert(std::is_pod<T>(), "Cannot extract \
             non-POD types from char vectors.");
 
-        auto ptr_res = reinterpret_cast<const T*>(&(*it));
+        auto temp = std::array<char, sizeof(T)>{};
+        std::copy(it, it + sizeof(T), temp.begin());
         it += sizeof(T);
-        return *ptr_res;
+        return *reinterpret_cast<const T*>(temp.data());
     }
 
     /**
@@ -77,9 +79,10 @@ namespace serialization{
         auto res = std::vector<T>(how_many);
         std::generate(res.begin(), res.end(),
             [&](){
-                auto el = *reinterpret_cast<const T*>(&(*it));
+                auto temp = std::array<char, sizeof(T)>{};
+                std::copy(it, it + sizeof(T), temp.begin());
                 it += sizeof(T);
-                return el;});
+                return *reinterpret_cast<const T*>(temp.data());});
         return res;
     }
 
