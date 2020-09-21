@@ -83,6 +83,14 @@ namespace breit_wheeler{
 
         const auto inner_integral = quad_a_inf<RealType>(
             [](RealType s){
+                if (s == zero<RealType>){
+                    // Asymptotic value for s -> 0.
+                    // ( k_1/3(x) -> gamma(1/3)*(2/x)^(1/3)/2 for x -> 0 )
+                    constexpr auto asymptotic_small_s =
+                        static_cast<RealType>(1.931848975281103);
+                    return asymptotic_small_s;
+                }
+
                 const auto sqrt_s = m_sqrt(s);
                 const auto s_3_2 = s*sqrt_s;
 
