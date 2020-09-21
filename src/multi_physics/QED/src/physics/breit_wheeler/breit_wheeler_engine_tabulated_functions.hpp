@@ -83,14 +83,13 @@ namespace breit_wheeler{
 
         const auto inner_integral = quad_a_inf<RealType>(
             [](RealType s){
-                if (std::isinf(s))
-                    return zero<RealType>;
-
                 const auto sqrt_s = m_sqrt(s);
                 const auto s_3_2 = s*sqrt_s;
 
-                return sqrt_s*math::k_v(one_third<RealType>,
-                    two_thirds<RealType>*s_3_2);
+                const auto arg = two_thirds<RealType>*s_3_2;
+                if (std::isinf(arg))
+                    return zero<RealType>;
+                return sqrt_s*math::k_v(one_third<RealType>, arg);
             }, xx);
 
         auto prod = (two<RealType>-chi_phot*xx_3_2)
