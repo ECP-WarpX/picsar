@@ -1,21 +1,92 @@
-In order to test the PICSAR MULTIPHYSICS library
-(which is header only) just do in this folder:
+## PICSAR MULTIPHYSICS
 
-mkdir build
-cd build/
-cmake ../.
-make
-make test
+### Library
+The QED library is a header only library. Its only external dependency is Boost (a recent version is needed). Boost is absolutely necessary to generate lookup tables, but it's not needed at runtime if lookup tables have been previously generated.
 
-In order to test the integration of the PICSAR MULTIPHYSICS
-library with a test program, do the following:
+C++14 standard is followed. The core functions of the library can be included in GPU kernels, provided that the user sets the `PXRMP_GPU` before including any file of the library (e.g. `#define PXRMP_GPU __host__ __device__`).
 
-cd test_program/
-mkdir build
-cd build/
-cmake ../.
-make
-./bin_test_qed/testbed
+The library implements the following physical processes: Breit-Wheeler pair production, Quantum Synchrotron photon emission and Schwinger pair production.
 
-The first time the program will be VERY slow because
-it has to compute the lookup tables.
+#### src
+- qed_commons.h : defines some macros which influence the behaviour of the library
+
+#### src/containers
+- picsar_array.hpp : a GPU-friendly version of std::array (falls back to std::array if GPUs are not used)
+
+- picsar_span.hpp :  inspired by `std::span` which will be available in C++20. It provides a convenient way to access a previously allocated contiguous region of memory
+
+- picsar_tables.hpp : it provides 1D and 2D equispaced tables.
+
+####  src/math
+- math_constants.h : several useful mathematical constants
+
+- cmath_overloads.hpp : defines some overloads to correctly use the right version of the mathematical functions in `cmath` (e.g. `sqrt` in double precision and `sqrtf` in single precision). This is done automatically when
+`std::sqrt` is used, but STL is incompatible with GPU kernels.
+
+- quadrature.hpp [needs Boost] : contains wrappers for integration routines provided by Boost library
+
+- special_functions.hpp [needs Boost or C++17] : contains wrappers for special functions (Bessel functions)
+
+- vec_functions.hpp : contains methods to perform operations on 3-vectors (e.g. scalar product, norm...)
+
+#### src/utils
+- progress_bar.hpp : a simple progress bar
+
+- picsar_algo.hpp : a collection of useful algorithms (linear interpolation, upper_bound...)
+
+- serialization.hpp : provides some helper functions to convert objects into byte vectors and vice versa
+
+#### src/physics
+
+- phys_constants.h : some physical constants
+
+- chi_functions.hpp : functions to calculate the quantum parameters of photons, electrons and positrons
+
+- unit_conversion.hpp : provides helper functions useful to support several unit systems.
+
+#### src/physics/schwinger
+
+- schwinger_pair_engine_core.hpp : methods implementing Schwinger pair production
+
+#### src/physics/breit_wheeler
+
+- breit_wheeler_engine_core.hpp :  methods implementing Breit-Wheeler pair production
+
+- breit_wheeler_engine_tables.hpp : lookup tables used by methods implementing Breit-Wheeler pair production
+
+- breit_wheeler_engine_tables_generator.hpp [needs Boost]: extends lookup tables with methods to support table generation
+
+- breit_wheeler_engine_tabulated_functions.hpp [needs Boost]: contains the functions which are stored in the lookup tables
+
+#### src/physics/quantum_sync
+
+- quantum_sync_engine_core.hpp :  methods implementing Quantum Synchrotron photon emission
+
+- quantum_sync_engine_tables.hpp : lookup tables used by methods implementing Quantum Synchrotron photon emission
+
+- quantum_sync_engine_tables_generator.hpp [needs Boost]: extends lookup tables with methods to support table generation
+
+- quantum_sync_engine_tabulated_functions.hpp [needs Boost]: contains the functions which are stored in the lookup tables
+
+### Unit tests & validation
+
+#### QED_tests
+This folder contains several unit tests. They can be run from the multi_physics folder by doing 
+```
+$ mkdir build
+$ cd build/
+$ cmake ../.
+$ make
+$ make test
+```
+
+#### QED_tests/validation
+This folder contains a Jupyter notebook with several details and references on the physical models implemented in the library.
+
+### Integration tests
+
+#### QED_table_generator
+This folder contains a simple program which demonstrates how lookup tables can be generated. It can be compiled with cmake + make. On a few cores system table generation is expected to require just few minutes.
+
+#### test_gpu
+This folder contains some simple programs which demonstrate the use of the library on a GPU and perform some benchmarks.

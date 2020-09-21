@@ -8,4 +8,6 @@ enable_testing()
 project (qed)
 
 add_subdirectory(QED)
+
+add_definitions(-DBOOST_TEST_DYN_LINK)
 add_subdirectory(QED_tests)
