@@ -147,7 +147,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     template<typename RealType>
@@ -157,7 +157,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return static_cast<RealType>(1.0/electron_mass<double>);};
+        {return static_cast<RealType>(1.0/electron_mass<double>);}
     };
 
     template<typename RealType>
@@ -167,7 +167,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return static_cast<RealType>(1.0/electron_mass<double>);};
+        {return static_cast<RealType>(1.0/electron_mass<double>);}
     };
 
     template<typename RealType>
@@ -179,7 +179,7 @@ namespace phys{
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(
             (light_speed<double>*light_speed<double>)/
-            heaviside_lorentz_reference_energy<double>);};
+            heaviside_lorentz_reference_energy<double>);}
     };
 
     template<typename RealType>
@@ -189,7 +189,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return electron_mass<RealType>;};
+        {return electron_mass<RealType>;}
     };
 
     template<typename RealType>
@@ -199,7 +199,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     template<typename RealType>
@@ -212,7 +212,7 @@ namespace phys{
         {return static_cast<RealType>(
             electron_mass<double>*
             (light_speed<double>*light_speed<double>)/
-            heaviside_lorentz_reference_energy<double>);};
+            heaviside_lorentz_reference_energy<double>);}
     };
 
     template<typename RealType>
@@ -222,7 +222,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return electron_mass<RealType>;};
+        {return electron_mass<RealType>;}
     };
 
     template<typename RealType>
@@ -232,7 +232,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     template<typename RealType>
@@ -245,7 +245,7 @@ namespace phys{
         {return static_cast<RealType>(
             electron_mass<double>*
             (light_speed<double>*light_speed<double>)/
-            heaviside_lorentz_reference_energy<double>);};
+            heaviside_lorentz_reference_energy<double>);}
     };
 
     template<typename RealType>
@@ -257,7 +257,7 @@ namespace phys{
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(
             heaviside_lorentz_reference_energy<double>/
-            (light_speed<double>*light_speed<double>));};
+            (light_speed<double>*light_speed<double>));}
     };
 
     template<typename RealType>
@@ -270,7 +270,7 @@ namespace phys{
         {return static_cast<RealType>(
             heaviside_lorentz_reference_energy<double>/
             (light_speed<double>*light_speed<double>)/
-            electron_mass<double>);};
+            electron_mass<double>);}
     };
 
     template<typename RealType>
@@ -283,7 +283,7 @@ namespace phys{
         {return static_cast<RealType>(
             heaviside_lorentz_reference_energy<double>/
             (light_speed<double>*light_speed<double>)/
-            electron_mass<double>);};
+            electron_mass<double>);}
     };
 
     // __________________________ charge ____________________________
@@ -295,7 +295,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     template<typename RealType>
@@ -305,7 +305,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return static_cast<RealType>(1.0/elementary_charge<double>);};
+        {return static_cast<RealType>(1.0/elementary_charge<double>);}
     };
 
     template<typename RealType>
@@ -315,7 +315,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return static_cast<RealType>(1.0/elementary_charge<double>);};
+        {return static_cast<RealType>(1.0/elementary_charge<double>);}
     };
 
     template<typename RealType>
@@ -327,7 +327,7 @@ namespace phys{
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(
             sqrt_4_pi_fine_structure<double>/
-            elementary_charge<double>);};
+            elementary_charge<double>);}
     };
 
     template<typename RealType>
@@ -337,7 +337,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return elementary_charge<RealType>;};
+        {return elementary_charge<RealType>;}
     };
 
     template<typename RealType>
@@ -347,7 +347,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     template<typename RealType>
@@ -357,7 +357,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return sqrt_4_pi_fine_structure<RealType>;};
+        {return sqrt_4_pi_fine_structure<RealType>;}
     };
 
     template<typename RealType>
@@ -367,7 +367,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return elementary_charge<RealType>;};
+        {return elementary_charge<RealType>;}
     };
 
     template<typename RealType>
@@ -377,7 +377,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     template<typename RealType>
@@ -387,7 +387,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return sqrt_4_pi_fine_structure<RealType>;};
+        {return sqrt_4_pi_fine_structure<RealType>;}
     };
 
     template<typename RealType>
@@ -398,7 +398,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(
-                elementary_charge<double>/sqrt_4_pi_fine_structure<double>);};
+                elementary_charge<double>/sqrt_4_pi_fine_structure<double>);}
     };
 
     template<typename RealType>
@@ -408,7 +408,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return static_cast<RealType>(1.0/sqrt_4_pi_fine_structure<double>);};
+        {return static_cast<RealType>(1.0/sqrt_4_pi_fine_structure<double>);}
     };
 
     template<typename RealType>
@@ -418,7 +418,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return static_cast<RealType>(1.0/sqrt_4_pi_fine_structure<double>);};
+        {return static_cast<RealType>(1.0/sqrt_4_pi_fine_structure<double>);}
     };
 
     // __________________________ velocity ____________________________
@@ -430,7 +430,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     template<typename RealType>
@@ -440,7 +440,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return static_cast<RealType>(1.0/light_speed<double>);};
+        {return static_cast<RealType>(1.0/light_speed<double>);}
     };
 
     template<typename RealType>
@@ -450,7 +450,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return static_cast<RealType>(1.0/light_speed<double>);};
+        {return static_cast<RealType>(1.0/light_speed<double>);}
     };
 
     template<typename RealType>
@@ -460,7 +460,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return static_cast<RealType>(1.0/light_speed<double>);};
+        {return static_cast<RealType>(1.0/light_speed<double>);}
     };
 
     template<typename RealType>
@@ -470,7 +470,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return light_speed<RealType>;};
+        {return light_speed<RealType>;}
     };
 
     template<typename RealType>
@@ -480,7 +480,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     template<typename RealType>
@@ -490,7 +490,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     template<typename RealType>
@@ -500,7 +500,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return light_speed<RealType>;};
+        {return light_speed<RealType>;}
     };
 
     template<typename RealType>
@@ -510,7 +510,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     template<typename RealType>
@@ -520,7 +520,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     template<typename RealType>
@@ -530,7 +530,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return light_speed<RealType>;};
+        {return light_speed<RealType>;}
     };
 
     template<typename RealType>
@@ -540,7 +540,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     template<typename RealType>
@@ -550,7 +550,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     // __________________________ momentum ____________________________
@@ -562,7 +562,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     template<typename RealType>
@@ -573,7 +573,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(1.0/
-            (electron_mass<double>*light_speed<double>));};
+            (electron_mass<double>*light_speed<double>));}
     };
 
     template<typename RealType>
@@ -584,7 +584,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(1.0/
-            (electron_mass<double>*light_speed<double>));};
+            (electron_mass<double>*light_speed<double>));}
     };
 
     template<typename RealType>
@@ -595,7 +595,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(light_speed<double>/
-            heaviside_lorentz_reference_energy<double>);};
+            heaviside_lorentz_reference_energy<double>);}
     };
 
     template<typename RealType>
@@ -606,7 +606,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(
-                electron_mass<double>*light_speed<double>);};
+                electron_mass<double>*light_speed<double>);}
     };
 
     template<typename RealType>
@@ -616,7 +616,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     template<typename RealType>
@@ -627,7 +627,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(electron_mass<double>*light_speed<double>
-            *light_speed<double>/heaviside_lorentz_reference_energy<double>);};
+            *light_speed<double>/heaviside_lorentz_reference_energy<double>);}
     };
 
     template<typename RealType>
@@ -638,7 +638,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(
-                electron_mass<double>*light_speed<double>);};
+                electron_mass<double>*light_speed<double>);}
     };
 
     template<typename RealType>
@@ -648,7 +648,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     template<typename RealType>
@@ -659,7 +659,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(electron_mass<double>*light_speed<double>
-            *light_speed<double>/heaviside_lorentz_reference_energy<double>);};
+            *light_speed<double>/heaviside_lorentz_reference_energy<double>);}
     };
 
     template<typename RealType>
@@ -670,7 +670,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(
-            heaviside_lorentz_reference_energy<double>/light_speed<double>);};
+            heaviside_lorentz_reference_energy<double>/light_speed<double>);}
     };
 
     template<typename RealType>
@@ -681,7 +681,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(heaviside_lorentz_reference_energy<double>/
-            electron_mass<double>/light_speed<double>/light_speed<double>);};
+            electron_mass<double>/light_speed<double>/light_speed<double>);}
     };
 
     template<typename RealType>
@@ -692,7 +692,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(heaviside_lorentz_reference_energy<double>/
-            electron_mass<double>/light_speed<double>/light_speed<double>);};
+            electron_mass<double>/light_speed<double>/light_speed<double>);}
     };
 
     // __________________________ energy ____________________________
@@ -704,7 +704,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     template<typename RealType>
@@ -715,7 +715,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(1.0/
-            (electron_mass<double>*light_speed<double>*light_speed<double>));};
+            (electron_mass<double>*light_speed<double>*light_speed<double>));}
     };
 
     template<typename RealType>
@@ -726,7 +726,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(1.0/
-            (electron_mass<double>*light_speed<double>*light_speed<double>));};
+            (electron_mass<double>*light_speed<double>*light_speed<double>));}
     };
 
     template<typename RealType>
@@ -737,7 +737,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(1.0/
-            heaviside_lorentz_reference_energy<double>);};
+            heaviside_lorentz_reference_energy<double>);}
     };
 
     template<typename RealType>
@@ -748,7 +748,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(
-                electron_mass<double>*light_speed<double>*light_speed<double>);};
+                electron_mass<double>*light_speed<double>*light_speed<double>);}
     };
 
     template<typename RealType>
@@ -758,7 +758,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     template<typename RealType>
@@ -769,7 +769,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(electron_mass<double>*light_speed<double>*
-            light_speed<double>/heaviside_lorentz_reference_energy<double>);};
+            light_speed<double>/heaviside_lorentz_reference_energy<double>);}
     };
 
     template<typename RealType>
@@ -780,7 +780,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(
-                electron_mass<double>*light_speed<double>*light_speed<double>);};
+                electron_mass<double>*light_speed<double>*light_speed<double>);}
     };
 
     template<typename RealType>
@@ -790,7 +790,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     template<typename RealType>
@@ -801,7 +801,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(electron_mass<double>*light_speed<double>
-            *light_speed<double>/heaviside_lorentz_reference_energy<double>);};
+            *light_speed<double>/heaviside_lorentz_reference_energy<double>);}
     };
 
     template<typename RealType>
@@ -811,7 +811,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return heaviside_lorentz_reference_energy<double>;};
+        {return heaviside_lorentz_reference_energy<double>;}
     };
 
     template<typename RealType>
@@ -822,7 +822,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(heaviside_lorentz_reference_energy<double>/
-            electron_mass<double>/light_speed<double>/light_speed<double>);};
+            electron_mass<double>/light_speed<double>/light_speed<double>);}
     };
 
     template<typename RealType>
@@ -833,7 +833,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(heaviside_lorentz_reference_energy<double>/
-            electron_mass<double>/light_speed<double>/light_speed<double>);};
+            electron_mass<double>/light_speed<double>/light_speed<double>);}
     };
 
     // __________________________ length ____________________________
@@ -845,7 +845,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     template<typename RealType>
@@ -858,7 +858,7 @@ namespace phys{
         {
             constexpr auto ff = static_cast<RealType>(1.0/light_speed<RealType>);
             return reference_quantity_to*ff;
-        };
+        }
     };
 
     template<typename RealType>
@@ -868,7 +868,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
-        {return math::one<RealType>/reference_quantity_to;};
+        {return math::one<RealType>/reference_quantity_to;}
     };
 
     template<typename RealType>
@@ -879,7 +879,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(heaviside_lorentz_reference_energy<double>/
-            (reduced_plank<double>*light_speed<double>));};
+            (reduced_plank<double>*light_speed<double>));}
     };
 
     template<typename RealType>
@@ -889,7 +889,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return light_speed<RealType>/reference_quantity_from;};
+        {return light_speed<RealType>/reference_quantity_from;}
     };
 
     template<typename RealType>
@@ -899,7 +899,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
-        {return reference_quantity_to/reference_quantity_from;};
+        {return reference_quantity_to/reference_quantity_from;}
     };
 
     template<typename RealType>
@@ -910,7 +910,7 @@ namespace phys{
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
         {return light_speed<RealType>/
-            (reference_quantity_from*reference_quantity_to);};
+            (reference_quantity_from*reference_quantity_to);}
     };
 
     template<typename RealType>
@@ -923,7 +923,7 @@ namespace phys{
         {
             constexpr auto ff = static_cast<RealType>(
             heaviside_lorentz_reference_energy<double>/reduced_plank<double>);
-            return ff/reference_quantity_from;};
+            return ff/reference_quantity_from;}
     };
 
     template<typename RealType>
@@ -933,7 +933,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return reference_quantity_from;};
+        {return reference_quantity_from;}
     };
 
     template<typename RealType>
@@ -971,7 +971,7 @@ namespace phys{
             constexpr auto ff = static_cast<RealType>(heaviside_lorentz_reference_energy<double>/
             (reduced_plank<double>*light_speed<double>));
             return reference_quantity_from*ff;
-        };
+        }
     };
 
     template<typename RealType>
@@ -982,7 +982,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>((reduced_plank<double>*light_speed<double>)/
-            heaviside_lorentz_reference_energy<double>);};
+            heaviside_lorentz_reference_energy<double>);}
     };
 
     template<typename RealType>
@@ -997,7 +997,7 @@ namespace phys{
                 reduced_plank<double>/
                 heaviside_lorentz_reference_energy<double>);
             return ff*reference_quantity_to;
-       };
+       }
     };
 
     template<typename RealType>
@@ -1012,7 +1012,7 @@ namespace phys{
                 reduced_plank<double>*light_speed<double>/
                 heaviside_lorentz_reference_energy<double>);
             return ff/reference_quantity_to;
-        };
+        }
     };
 
     template<typename RealType>
@@ -1022,7 +1022,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     // __________________________ area ____________________________
@@ -1034,7 +1034,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     template<typename RealType>
@@ -1047,7 +1047,7 @@ namespace phys{
         {
             constexpr auto ff = static_cast<RealType>(1.0/light_speed<RealType>);
             return (reference_quantity_to*ff)*(reference_quantity_to*ff);
-        };
+        }
     };
 
     template<typename RealType>
@@ -1058,7 +1058,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
         {return math::one<RealType>/
-            (reference_quantity_to*reference_quantity_to);};
+            (reference_quantity_to*reference_quantity_to);}
     };
 
     template<typename RealType>
@@ -1072,7 +1072,7 @@ namespace phys{
             heaviside_lorentz_reference_energy<double>*
             heaviside_lorentz_reference_energy<double>/
             (reduced_plank<double>*light_speed<double>)/
-            (reduced_plank<double>*light_speed<double>));};
+            (reduced_plank<double>*light_speed<double>));}
     };
 
     template<typename RealType>
@@ -1086,7 +1086,7 @@ namespace phys{
             constexpr auto ff = static_cast<RealType>(
                 light_speed<RealType>*light_speed<RealType>);
             return ff/reference_quantity_from/reference_quantity_from;
-        };
+        }
     };
 
     template<typename RealType>
@@ -1097,7 +1097,7 @@ namespace phys{
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
         {return (reference_quantity_to/reference_quantity_from)*
-             (reference_quantity_to/reference_quantity_from);};
+             (reference_quantity_to/reference_quantity_from);}
     };
 
     template<typename RealType>
@@ -1112,7 +1112,7 @@ namespace phys{
                 light_speed<double>*light_speed<double>);
             return ff/(
                 (reference_quantity_from*reference_quantity_to)*
-                (reference_quantity_from*reference_quantity_to));};
+                (reference_quantity_from*reference_quantity_to));}
     };
 
     template<typename RealType>
@@ -1125,7 +1125,7 @@ namespace phys{
         {
             constexpr auto ff = static_cast<RealType>(
                 heaviside_lorentz_reference_energy<double>/reduced_plank<double>);
-            return (ff/reference_quantity_from)*(ff/reference_quantity_from);};
+            return (ff/reference_quantity_from)*(ff/reference_quantity_from);}
     };
 
     template<typename RealType>
@@ -1135,7 +1135,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return reference_quantity_from*reference_quantity_from;};
+        {return reference_quantity_from*reference_quantity_from;}
     };
 
     template<typename RealType>
@@ -1177,7 +1177,7 @@ namespace phys{
             heaviside_lorentz_reference_energy<double>/
             (reduced_plank<double>*light_speed<double>));
             return (reference_quantity_from*ff)*(reference_quantity_from*ff);
-        };
+        }
     };
 
     template<typename RealType>
@@ -1191,7 +1191,7 @@ namespace phys{
             (reduced_plank<double>*light_speed<double>)*
             (reduced_plank<double>*light_speed<double>)/
             heaviside_lorentz_reference_energy<double>/
-            heaviside_lorentz_reference_energy<double>);};
+            heaviside_lorentz_reference_energy<double>);}
     };
 
     template<typename RealType>
@@ -1206,7 +1206,7 @@ namespace phys{
                 reduced_plank<double>/
                 heaviside_lorentz_reference_energy<double>);
             return (ff*reference_quantity_to)*(ff*reference_quantity_to);
-       };
+       }
     };
 
     template<typename RealType>
@@ -1221,7 +1221,7 @@ namespace phys{
                 reduced_plank<double>*light_speed<double>/
                 heaviside_lorentz_reference_energy<double>);
             return (ff/reference_quantity_to)*(ff/reference_quantity_to);
-        };
+        }
     };
 
     template<typename RealType>
@@ -1231,7 +1231,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     // __________________________ volume ____________________________
@@ -1243,7 +1243,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     template<typename RealType>
@@ -1257,7 +1257,7 @@ namespace phys{
             constexpr auto ff = static_cast<RealType>(1.0/light_speed<double>);
             return (reference_quantity_to*ff)*(reference_quantity_to*ff)*
                 (reference_quantity_to*ff);
-        };
+        }
     };
 
     template<typename RealType>
@@ -1268,7 +1268,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
         {return math::one<RealType>/
-            (reference_quantity_to*reference_quantity_to*reference_quantity_to);};
+            (reference_quantity_to*reference_quantity_to*reference_quantity_to);}
     };
 
     template<typename RealType>
@@ -1284,7 +1284,7 @@ namespace phys{
             heaviside_lorentz_reference_energy<double>/
             (reduced_plank<double>*light_speed<double>)/
             (reduced_plank<double>*light_speed<double>)/
-            (reduced_plank<double>*light_speed<double>));};
+            (reduced_plank<double>*light_speed<double>));}
     };
 
     template<typename RealType>
@@ -1298,7 +1298,7 @@ namespace phys{
             constexpr auto ff = static_cast<RealType>(
                 light_speed<RealType>*light_speed<RealType>*light_speed<RealType>);
             return ff/reference_quantity_from/reference_quantity_from/reference_quantity_from;
-        };
+        }
     };
 
     template<typename RealType>
@@ -1310,7 +1310,7 @@ namespace phys{
             const RealType reference_quantity_to) noexcept
         {return (reference_quantity_to/reference_quantity_from)*
              (reference_quantity_to/reference_quantity_from)*
-             (reference_quantity_to/reference_quantity_from);};
+             (reference_quantity_to/reference_quantity_from);}
     };
 
     template<typename RealType>
@@ -1326,7 +1326,7 @@ namespace phys{
             return ff/(
                 (reference_quantity_from*reference_quantity_to)*
                 (reference_quantity_from*reference_quantity_to)*
-                (reference_quantity_from*reference_quantity_to));};
+                (reference_quantity_from*reference_quantity_to));}
     };
 
     template<typename RealType>
@@ -1340,7 +1340,7 @@ namespace phys{
             constexpr auto ff = static_cast<RealType>(
                 heaviside_lorentz_reference_energy<double>/reduced_plank<double>);
             return (ff/reference_quantity_from)*(ff/reference_quantity_from)*
-                (ff/reference_quantity_from);};
+                (ff/reference_quantity_from);}
     };
 
     template<typename RealType>
@@ -1350,7 +1350,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return reference_quantity_from*reference_quantity_from*reference_quantity_from;};
+        {return reference_quantity_from*reference_quantity_from*reference_quantity_from;}
     };
 
     template<typename RealType>
@@ -1395,7 +1395,7 @@ namespace phys{
             (reduced_plank<double>*light_speed<double>));
             return (reference_quantity_from*ff)*(reference_quantity_from*ff)*
                 (reference_quantity_from*ff);
-        };
+        }
     };
 
     template<typename RealType>
@@ -1411,7 +1411,7 @@ namespace phys{
             (reduced_plank<double>*light_speed<double>)/
             heaviside_lorentz_reference_energy<double>/
             heaviside_lorentz_reference_energy<double>/
-            heaviside_lorentz_reference_energy<double>);};
+            heaviside_lorentz_reference_energy<double>);}
     };
 
     template<typename RealType>
@@ -1427,7 +1427,7 @@ namespace phys{
                 heaviside_lorentz_reference_energy<double>);
             return (ff*reference_quantity_to)*(ff*reference_quantity_to)*
                 (ff*reference_quantity_to);
-       };
+       }
     };
 
     template<typename RealType>
@@ -1443,7 +1443,7 @@ namespace phys{
                 heaviside_lorentz_reference_energy<double>);
             return (ff/reference_quantity_to)*(ff/reference_quantity_to)*
                 (ff/reference_quantity_to);
-        };
+        }
     };
 
     template<typename RealType>
@@ -1453,7 +1453,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     // __________________________ time ____________________________
@@ -1465,7 +1465,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     template<typename RealType>
@@ -1477,7 +1477,7 @@ namespace phys{
             const RealType reference_quantity_to) noexcept
         {
             return reference_quantity_to;
-        };
+        }
     };
 
     template<typename RealType>
@@ -1487,7 +1487,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
-        {return light_speed<RealType>/reference_quantity_to;};
+        {return light_speed<RealType>/reference_quantity_to;}
     };
 
     template<typename RealType>
@@ -1499,7 +1499,7 @@ namespace phys{
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(
                 heaviside_lorentz_reference_energy<double>/
-                reduced_plank<double>);};
+                reduced_plank<double>);}
     };
 
     template<typename RealType>
@@ -1509,7 +1509,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>/reference_quantity_from;};
+        {return math::one<RealType>/reference_quantity_from;}
     };
 
     template<typename RealType>
@@ -1519,7 +1519,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
-        {return reference_quantity_to/reference_quantity_from;};
+        {return reference_quantity_to/reference_quantity_from;}
     };
 
     template<typename RealType>
@@ -1530,7 +1530,7 @@ namespace phys{
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
         {return light_speed<RealType>/
-            (reference_quantity_from*reference_quantity_to);};
+            (reference_quantity_from*reference_quantity_to);}
     };
 
     template<typename RealType>
@@ -1543,7 +1543,7 @@ namespace phys{
         {
             constexpr auto ff = static_cast<RealType>(
             heaviside_lorentz_reference_energy<double>/reduced_plank<double>);
-            return ff/reference_quantity_from;};
+            return ff/reference_quantity_from;}
     };
 
     template<typename RealType>
@@ -1553,7 +1553,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return reference_quantity_from/light_speed<RealType>;};
+        {return reference_quantity_from/light_speed<RealType>;}
     };
 
     template<typename RealType>
@@ -1591,7 +1591,7 @@ namespace phys{
             constexpr auto ff = static_cast<RealType>(heaviside_lorentz_reference_energy<double>/
             (reduced_plank<double>*light_speed<double>));
             return reference_quantity_from*ff;
-        };
+        }
     };
 
     template<typename RealType>
@@ -1602,7 +1602,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(reduced_plank<double>/
-            heaviside_lorentz_reference_energy<double>);};
+            heaviside_lorentz_reference_energy<double>);}
     };
 
     template<typename RealType>
@@ -1617,7 +1617,7 @@ namespace phys{
                 reduced_plank<double>/
                 heaviside_lorentz_reference_energy<double>);
             return ff*reference_quantity_to;
-       };
+       }
     };
 
     template<typename RealType>
@@ -1632,7 +1632,7 @@ namespace phys{
                 reduced_plank<double>*light_speed<double>/
                 heaviside_lorentz_reference_energy<double>);
             return ff/reference_quantity_to;
-        };
+        }
     };
 
     template<typename RealType>
@@ -1642,7 +1642,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     // __________________________ rate ____________________________
@@ -1654,7 +1654,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     template<typename RealType>
@@ -1664,7 +1664,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
-        {return math::one<RealType>/reference_quantity_to;};
+        {return math::one<RealType>/reference_quantity_to;}
     };
 
     template<typename RealType>
@@ -1674,7 +1674,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
-        {return reference_quantity_to/light_speed<RealType>;};
+        {return reference_quantity_to/light_speed<RealType>;}
     };
 
     template<typename RealType>
@@ -1685,7 +1685,7 @@ namespace phys{
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(reduced_plank<double>/
-                heaviside_lorentz_reference_energy<double>);};
+                heaviside_lorentz_reference_energy<double>);}
     };
 
     template<typename RealType>
@@ -1695,7 +1695,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return reference_quantity_from;};
+        {return reference_quantity_from;}
     };
 
     template<typename RealType>
@@ -1705,7 +1705,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
-        {return reference_quantity_from/reference_quantity_to;};
+        {return reference_quantity_from/reference_quantity_to;}
     };
 
     template<typename RealType>
@@ -1718,7 +1718,7 @@ namespace phys{
         {
             constexpr auto ff = static_cast<RealType>(1.0/light_speed<double>);
             return ff*(reference_quantity_from*reference_quantity_to);
-        };
+        }
     };
 
     template<typename RealType>
@@ -1731,7 +1731,7 @@ namespace phys{
         {
             constexpr auto ff = static_cast<RealType>(
             heaviside_lorentz_reference_energy<double>/reduced_plank<double>);
-            return reference_quantity_from/ff;};
+            return reference_quantity_from/ff;}
     };
 
     template<typename RealType>
@@ -1741,7 +1741,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return light_speed<RealType>/reference_quantity_from;};
+        {return light_speed<RealType>/reference_quantity_from;}
     };
 
     template<typename RealType>
@@ -1777,7 +1777,7 @@ namespace phys{
                 (reduced_plank<double>*light_speed<double>)/
                 heaviside_lorentz_reference_energy<double>);
             return ff/reference_quantity_from;
-        };
+        }
     };
 
     template<typename RealType>
@@ -1789,7 +1789,7 @@ namespace phys{
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
         {return static_cast<RealType>(
             heaviside_lorentz_reference_energy<double>)/
-            reduced_plank<double>;};
+            reduced_plank<double>;}
     };
 
     template<typename RealType>
@@ -1804,7 +1804,7 @@ namespace phys{
                 heaviside_lorentz_reference_energy<double>/
                 reduced_plank<double>);
             return ff/reference_quantity_to;
-       };
+       }
     };
 
     template<typename RealType>
@@ -1819,7 +1819,7 @@ namespace phys{
                 heaviside_lorentz_reference_energy<double>/
                 reduced_plank<double>/light_speed<double>);
             return ff*reference_quantity_to;
-        };
+        }
     };
 
     template<typename RealType>
@@ -1829,7 +1829,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     // __________________________ E field ____________________________
@@ -1841,7 +1841,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     template<typename RealType>
@@ -1856,7 +1856,7 @@ namespace phys{
                 elementary_charge<double>/electron_mass<double>/
                 light_speed<double>);
             return ff/reference_quantity_to;
-        };
+        }
     };
 
     template<typename RealType>
@@ -1871,7 +1871,7 @@ namespace phys{
                 elementary_charge<double>/electron_mass<double>/
                 light_speed<double>/light_speed<double>);
             return ff*reference_quantity_to;
-        };
+        }
     };
 
     template<typename RealType>
@@ -1886,7 +1886,7 @@ namespace phys{
             light_speed<double>)/
             heaviside_lorentz_reference_energy<double>/
             heaviside_lorentz_reference_energy<double>/
-            sqrt_4_pi_fine_structure<double>);};
+            sqrt_4_pi_fine_structure<double>);}
     };
 
     template<typename RealType>
@@ -1900,7 +1900,7 @@ namespace phys{
             constexpr auto ff = static_cast<RealType>(electron_mass<double>*
                 light_speed<double>/elementary_charge<double>);
             return ff*reference_quantity_from;
-        };
+        }
     };
 
     template<typename RealType>
@@ -1910,7 +1910,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
-        {return reference_quantity_from/reference_quantity_to;};
+        {return reference_quantity_from/reference_quantity_to;}
     };
 
     template<typename RealType>
@@ -1923,7 +1923,7 @@ namespace phys{
         {
             constexpr auto ff = static_cast<RealType>(1.0/light_speed<double>);
             return ff*(reference_quantity_from*reference_quantity_to);
-        };
+        }
     };
 
     template<typename RealType>
@@ -1940,7 +1940,7 @@ namespace phys{
                 heaviside_lorentz_reference_energy<double>/
                 sqrt_4_pi_fine_structure<double>);
             return ff*reference_quantity_from;
-        };
+        }
     };
 
     template<typename RealType>
@@ -1955,7 +1955,7 @@ namespace phys{
                 electron_mass<double>*light_speed<double>*light_speed<double>/
                 (elementary_charge<double>));
             return ff/reference_quantity_from;
-        };
+        }
     };
 
     template<typename RealType>
@@ -1994,7 +1994,7 @@ namespace phys{
                 heaviside_lorentz_reference_energy<double>/
                 sqrt_4_pi_fine_structure<double>);
             return ff/reference_quantity_from;
-        };
+        }
     };
 
     template<typename RealType>
@@ -2009,7 +2009,7 @@ namespace phys{
                 heaviside_lorentz_reference_energy<double>*
                 sqrt_4_pi_fine_structure<double>/
                 (elementary_charge<double>*reduced_plank<double>*
-                light_speed<double>));};
+                light_speed<double>));}
     };
 
     template<typename RealType>
@@ -2026,7 +2026,7 @@ namespace phys{
                 sqrt_4_pi_fine_structure<double>/reduced_plank<double>/
                 light_speed<double>/electron_mass<double>/light_speed<double>);
             return ff /reference_quantity_to;
-       };
+       }
     };
 
     template<typename RealType>
@@ -2044,7 +2044,7 @@ namespace phys{
                 light_speed<double>/electron_mass<double>/light_speed<double>/
                 light_speed<double>);
             return ff*reference_quantity_to;
-        };
+        }
     };
 
     template<typename RealType>
@@ -2054,7 +2054,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     // __________________________ B field ____________________________
@@ -2066,7 +2066,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     template<typename RealType>
@@ -2080,7 +2080,7 @@ namespace phys{
             constexpr auto ff = static_cast<RealType>(
                 elementary_charge<double>/electron_mass<double>);
             return ff/reference_quantity_to;
-        };
+        }
     };
 
     template<typename RealType>
@@ -2095,7 +2095,7 @@ namespace phys{
                 elementary_charge<double>/electron_mass<double>/
                 light_speed<double>);
             return ff*reference_quantity_to;
-        };
+        }
     };
 
     template<typename RealType>
@@ -2110,7 +2110,7 @@ namespace phys{
             light_speed<double>)*light_speed<double>/
             heaviside_lorentz_reference_energy<double>/
             heaviside_lorentz_reference_energy<double>/
-            sqrt_4_pi_fine_structure<double>);};
+            sqrt_4_pi_fine_structure<double>);}
     };
 
     template<typename RealType>
@@ -2124,7 +2124,7 @@ namespace phys{
             constexpr auto ff = static_cast<RealType>(electron_mass<double>/
                 elementary_charge<double>);
             return ff*reference_quantity_from;
-        };
+        }
     };
 
     template<typename RealType>
@@ -2134,7 +2134,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
-        {return reference_quantity_from/reference_quantity_to;};
+        {return reference_quantity_from/reference_quantity_to;}
     };
 
     template<typename RealType>
@@ -2147,7 +2147,7 @@ namespace phys{
         {
             constexpr auto ff = static_cast<RealType>(1.0/light_speed<double>);
             return ff*(reference_quantity_from*reference_quantity_to);
-        };
+        }
     };
 
     template<typename RealType>
@@ -2164,7 +2164,7 @@ namespace phys{
                 heaviside_lorentz_reference_energy<double>/
                 sqrt_4_pi_fine_structure<double>);
             return ff*reference_quantity_from;
-        };
+        }
     };
 
     template<typename RealType>
@@ -2179,7 +2179,7 @@ namespace phys{
                 electron_mass<double>*light_speed<double>/
                 (elementary_charge<double>));
             return ff/reference_quantity_from;
-        };
+        }
     };
 
     template<typename RealType>
@@ -2218,7 +2218,7 @@ namespace phys{
                 heaviside_lorentz_reference_energy<double>/
                 sqrt_4_pi_fine_structure<double>);
             return ff/reference_quantity_from;
-        };
+        }
     };
 
     template<typename RealType>
@@ -2233,7 +2233,7 @@ namespace phys{
                 heaviside_lorentz_reference_energy<double>*
                 sqrt_4_pi_fine_structure<double>/
                 (elementary_charge<double>*reduced_plank<double>*
-                light_speed<double>*light_speed<double>));};
+                light_speed<double>*light_speed<double>));}
     };
 
     template<typename RealType>
@@ -2250,7 +2250,7 @@ namespace phys{
                 sqrt_4_pi_fine_structure<double>/reduced_plank<double>/
                 light_speed<double>/electron_mass<double>/light_speed<double>);
             return ff /reference_quantity_to;
-       };
+       }
     };
 
     template<typename RealType>
@@ -2268,7 +2268,7 @@ namespace phys{
                 light_speed<double>/electron_mass<double>/light_speed<double>/
                 light_speed<double>);
             return ff*reference_quantity_to;
-        };
+        }
     };
 
     template<typename RealType>
@@ -2278,7 +2278,7 @@ namespace phys{
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
-        {return math::one<RealType>;};
+        {return math::one<RealType>;}
     };
 
     //____________________________
