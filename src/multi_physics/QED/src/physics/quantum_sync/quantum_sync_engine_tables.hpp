@@ -145,7 +145,7 @@ namespace quantum_sync{
             /**
             * Empty constructor (not designed for GPU)
             **/
-            dndt_lookup_table(){};
+            dndt_lookup_table(){}
 
             /**
             * Constructor (not designed for GPU usage)
@@ -160,7 +160,7 @@ namespace quantum_sync{
                     math::m_log(params.chi_part_min),
                     math::m_log(params.chi_part_max),
                     VectorType(params.chi_part_how_many)}}
-            {};
+            {}
 
             /**
             * Constructor (not designed for GPU usage)
@@ -179,7 +179,7 @@ namespace quantum_sync{
                     vals}}
             {
                 m_init_flag = true;
-            };
+            }
 
             /*
             * Generates the content of the lookup table (not usable on GPUs).
@@ -227,7 +227,7 @@ namespace quantum_sync{
                         raw_data.end())};
 
                 m_init_flag = true;
-            };
+            }
 
             /**
             * Operator==
@@ -476,7 +476,7 @@ namespace quantum_sync{
             /**
             * Empty constructor (not designed for GPU usage)
             */
-            photon_emission_lookup_table(){};
+            photon_emission_lookup_table(){}
 
             /**
             * Constructor (not designed for GPU usage)
@@ -495,7 +495,7 @@ namespace quantum_sync{
                     math::m_log(math::one<RealType>),
                     params.chi_part_how_many, params.frac_how_many,
                     VectorType(params.chi_part_how_many * params.frac_how_many)}}
-                {};
+                {}
 
             /**
             * Constructor (not designed for GPU usage)
@@ -517,7 +517,7 @@ namespace quantum_sync{
                     vals}}
             {
                 m_init_flag = true;
-            };
+            }
 
             /*
             * Generates the content of the lookup table (not usable on GPUs).
@@ -565,7 +565,7 @@ namespace quantum_sync{
                     raw_data.end())};
 
                 m_init_flag = true;
-            };
+            }
 
             /**
             * Operator==
