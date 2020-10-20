@@ -190,7 +190,7 @@ namespace breit_wheeler{
             /**
             * Empty constructor (not designed for GPU)
             **/
-            dndt_lookup_table(){};
+            dndt_lookup_table(){}
 
             /**
             * Constructor (not designed for GPU)
@@ -206,7 +206,7 @@ namespace breit_wheeler{
                     math::m_log(params.chi_phot_min),
                     math::m_log(params.chi_phot_max),
                     VectorType(params.chi_phot_how_many)}}
-            {};
+            {}
 
             /**
             * Constructor (not designed for GPU)
@@ -225,7 +225,7 @@ namespace breit_wheeler{
                     vals}}
             {
                 m_init_flag = true;
-            };
+            }
 
             /*
             * Generates the content of the lookup table (not usable on GPUs).
@@ -273,7 +273,7 @@ namespace breit_wheeler{
                         raw_data.end())};
 
                 m_init_flag = true;
-            };
+            }
 
             /**
             * Operator==
@@ -525,7 +525,7 @@ namespace breit_wheeler{
             /**
             * Empty constructor (not designed for GPU usage)
             */
-            pair_prod_lookup_table(){};
+            pair_prod_lookup_table(){}
 
 
             /**
@@ -545,7 +545,7 @@ namespace breit_wheeler{
                     math::half<RealType>,
                     params.chi_phot_how_many, params.frac_how_many,
                     VectorType(params.chi_phot_how_many * params.frac_how_many)}}
-                {};
+                {}
 
             /**
             * Constructor (not designed for GPU)
@@ -567,7 +567,7 @@ namespace breit_wheeler{
                         vals}}
             {
                 m_init_flag = true;
-            };
+            }
 
             /*
             * Generates the content of the lookup table (not usable on GPUs).
@@ -615,7 +615,7 @@ namespace breit_wheeler{
                     raw_data.end())};
 
                 m_init_flag = true;
-            };
+            }
 
             /**
             * Operator==

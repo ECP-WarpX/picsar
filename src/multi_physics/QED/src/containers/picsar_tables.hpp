@@ -50,13 +50,13 @@ namespace containers{
                 m_how_many_x = static_cast<int>(values.size());
                 m_x_size = x_max - x_min;
                 m_dx = m_x_size/(m_how_many_x-1);
-            };
+            }
 
         /**
         * Empty constructor
         */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        equispaced_1d_table(){};
+        equispaced_1d_table(){}
 
         /**
         * Constructor from byte array (not usable on GPUs)
@@ -99,7 +99,7 @@ namespace containers{
             auto vals =
                 serialization::get_n_out<RealType>(it_raw_data, m_how_many_x);
             std::copy(vals.begin(), vals.end(), m_values.begin());
-        };
+        }
 
         /**
         * Operator ==
@@ -334,13 +334,13 @@ namespace containers{
                 m_y_size = y_max - y_min;
                 m_dx = m_x_size/(m_how_many_x-1);
                 m_dy = m_y_size/(m_how_many_y-1);
-            };
+            }
 
         /**
         * Empty constructor
         */
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
-        equispaced_2d_table(){};
+        equispaced_2d_table(){}
 
         /**
         * Constructor from byte array (not usable on GPUs)
@@ -397,7 +397,7 @@ namespace containers{
                     it_raw_data,
                     m_how_many_x*m_how_many_y);
             std::copy(vals.begin(), vals.end(), m_values.begin());
-        };
+        }
 
         /**
         * Operator ==
