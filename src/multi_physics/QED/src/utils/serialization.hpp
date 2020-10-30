@@ -8,6 +8,7 @@
 #include <array>
 #include <algorithm>
 #include <type_traits>
+#include <cstring>
 
 namespace picsar{
 namespace multi_physics{
@@ -53,7 +54,9 @@ namespace serialization{
         auto temp = std::array<char, sizeof(T)>{};
         std::copy(it, it + sizeof(T), temp.begin());
         it += sizeof(T);
-        return *reinterpret_cast<const T*>(temp.data());
+        T res;
+        std::memcpy(&res, temp.data(), sizeof(T));
+        return res;
     }
 
     /**
@@ -82,7 +85,9 @@ namespace serialization{
                 auto temp = std::array<char, sizeof(T)>{};
                 std::copy(it, it + sizeof(T), temp.begin());
                 it += sizeof(T);
-                return *reinterpret_cast<const T*>(temp.data());});
+                T el;
+                std::memcpy(&el, temp.data(), sizeof(T));
+                return el;});
         return res;
     }
 
