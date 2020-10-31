@@ -9,7 +9,7 @@ set(
     ${CMAKE_BINARY_DIR}/bin
     )
 
-include_directories(../QED)
+include_directories(../.)
 
 add_executable(qed_table_generator table_generator.cpp)
 
