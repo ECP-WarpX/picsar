@@ -1,8 +1,7 @@
-cmake_minimum_required(VERSION 3.5)
-
 #Check if unit_test package is available
 find_package(Boost COMPONENTS unit_test_framework REQUIRED)
-include_directories (${Boost_INCLUDE_DIRS})
+include_directories(${Boost_INCLUDE_DIRS})
+add_definitions(-DBOOST_TEST_DYN_LINK)
 
 file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 
@@ -23,11 +22,7 @@ foreach(test_src ${TEST_SRCS})
 
         #Enforce C++14
         set(CMAKE_CXX_EXTENSIONS OFF)
-        if(NOT ${CMAKE_VERSION} VERSION_LESS "3.8.0")
-          target_compile_features(${test_name} PUBLIC cxx_std_14)
-        else()
-          set_target_properties(${test_name} PROPERTIES CXX_STANDARD 14)
-        endif()
+        target_compile_features(${test_name} PUBLIC cxx_std_14)
 
         #Finally add it to test execution
         message(${test_name})
