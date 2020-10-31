@@ -1,4 +1,4 @@
-find_package(Boost REQUIRED)
+find_package(Boost)
 include_directories(${Boost_INCLUDE_DIRS})
 
 target_include_directories(${PROJECT_NAME} INTERFACE src/)
