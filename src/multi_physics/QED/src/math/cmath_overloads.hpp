@@ -177,7 +177,7 @@ namespace math{
     *
     * @tparam RealType the floating point type to be used
     * @param[in] x argument
-    * @return the exponential of x
+    * @return the floor of x
     */
     template<typename RealType>
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
