@@ -1,5 +1,5 @@
 # Check if unit_test package is available
-find_package(Boost 1.65.1 REQUIRED COMPONENTS unit_test_framework)
+find_package(Boost 1.66.0 REQUIRED COMPONENTS unit_test_framework)
 
 set(TEST_NAMES
     picsar_algo

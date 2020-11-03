@@ -13,7 +13,7 @@ if(PXRMP_QED_OMP)
 endif()
 
 if(PXRMP_QED_TABLEGEN)
-    find_package(Boost 1.65.1 REQUIRED)
+    find_package(Boost 1.66.0 REQUIRED)
     target_link_libraries(QED INTERFACE Boost::boost)
     target_compile_definitions(QED INTERFACE PXRMP_HAS_BOOST=1)
     target_compile_definitions(QED INTERFACE PXRMP_HAS_OPENMP=1) # FIXME: in-source definition guards

@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   QED:
     name: QED with tablegen [lib]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env: {CXXFLAGS: "-Werror -Wshadow -Woverloaded-virtual -Wunreachable-code"}
     steps:
     - uses: actions/checkout@v2
