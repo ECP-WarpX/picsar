@@ -1,6 +1,6 @@
-find_package(Boost 1.65.1 COMPONENTS math)
+find_package(Boost 1.65.1)
 if(Boost_FOUND)
-    target_link_libraries(pxrmp_qed INTERFACE Boost::Boost Boost::math)
+    target_link_libraries(pxrmp_qed INTERFACE Boost::boost)
     target_compile_definitions(pxrmp_qed PUBLIC PXRMP_HAS_BOOST=1)
 endif()
 
