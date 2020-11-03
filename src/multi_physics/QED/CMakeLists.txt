@@ -1,4 +1,4 @@
-find_package(Boost)
+find_package(Boost 1.65.1 COMPONENTS math)
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
     # TODO: define a preprocessor variable to let the library know if Boost is available or not
