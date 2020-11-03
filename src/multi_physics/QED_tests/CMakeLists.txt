@@ -1,5 +1,5 @@
 #Check if unit_test package is available
-find_package(Boost COMPONENTS unit_test_framework REQUIRED)
+find_package(Boost <MIN_VERSION> COMPONENTS unit_test_framework REQUIRED)
 
 file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 
