@@ -21,6 +21,7 @@ foreach(test_src ${TEST_SRCS})
         #Enforce C++14
         set(CMAKE_CXX_EXTENSIONS OFF)
         target_compile_features(${test_name} PUBLIC cxx_std_14)
+        target_link_libraries(${test_name} PRIVATE Boost::unit_test_framework)
 
         #Finally add it to test execution
         message(${test_name})
