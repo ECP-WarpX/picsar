@@ -11,6 +11,8 @@
 #include "../utils/serialization.hpp"
 // Some mathematical constants are used
 #include "../math/math_constants.h"
+//Uses floor
+#include "../math/cmath_overloads.hpp"
 
 #include <vector>
 #include <array>
@@ -235,8 +237,10 @@ namespace containers{
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         RealType interp(const RealType where_x) const noexcept
         {
+            using namespace picsar::multi_physics::math;
+
             const auto idx_left = static_cast<int>(
-                floor((m_how_many_x-1)*(where_x-m_x_min)/m_x_size));
+                m_floor((m_how_many_x-1)*(where_x-m_x_min)/m_x_size));
             if (idx_left == (m_how_many_x-1))
                 return  m_values[m_how_many_x-1];
             const auto idx_right = idx_left + 1;
@@ -611,13 +615,15 @@ namespace containers{
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         RealType interp(const RealType where_x, const RealType where_y) const noexcept
         {
+            using namespace picsar::multi_physics::math;
+
             auto idx_x_left = static_cast<int>(
-                floor((m_how_many_x-1)*(where_x-m_x_min)/m_x_size));
+                m_floor((m_how_many_x-1)*(where_x-m_x_min)/m_x_size));
             if (idx_x_left == (m_how_many_x-1))
                 idx_x_left = m_how_many_x-2;
             const auto idx_x_right = idx_x_left + 1;
             auto idx_y_left = static_cast<int>(
-                floor((m_how_many_y-1)*(where_y-m_y_min)/m_y_size));
+                m_floor((m_how_many_y-1)*(where_y-m_y_min)/m_y_size));
             if (idx_y_left == (m_how_many_y-1))
                 idx_y_left = m_how_many_y-2;
             const auto idx_y_right = idx_y_left + 1;
@@ -649,8 +655,10 @@ namespace containers{
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         RealType interp_first_coord(RealType where_x, int j) const noexcept
         {
+            using namespace picsar::multi_physics::math;
+
             auto idx_left = static_cast<int>(
-                floor((m_how_many_x-1)*(where_x-m_x_min)/m_x_size));
+                m_floor((m_how_many_x-1)*(where_x-m_x_min)/m_x_size));
             if (idx_left == (m_how_many_x-1))
                 idx_left = m_how_many_x-2;
             const auto idx_right = idx_left + 1;
@@ -675,8 +683,10 @@ namespace containers{
         PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
         RealType interp_second_coord(int i, RealType where_y) const noexcept
         {
+            using namespace picsar::multi_physics::math;
+
             auto idx_left = static_cast<int>(
-                floor((m_how_many_y-1)*(where_y-m_y_min)/m_y_size));
+                m_floor((m_how_many_y-1)*(where_y-m_y_min)/m_y_size));
             if (idx_left == (m_how_many_y-1))
                 idx_left = m_how_many_y-2;
             const auto idx_right = idx_left + 1;

@@ -33,6 +33,14 @@ void test_case_cmath_overloads()
         BOOST_CHECK_EQUAL(m_tanh(val), std::tanh(val));
         BOOST_CHECK_EQUAL(m_tanh(-val), std::tanh(-val));
      }
+
+     const auto vals_floor = std::vector<RealType>{0.0, 0.001, 0.3, 0.7,
+         1.11, 1.5, 1.55, 20.9, 100.56, 1000.24};
+
+    for (const auto val : vals_floor){
+        BOOST_CHECK_EQUAL(m_floor(val), std::floor(val));
+        BOOST_CHECK_EQUAL(m_floor(-val), std::floor(-val));
+    }
 }
 
 BOOST_AUTO_TEST_CASE( picsar_cmath_overloads )
