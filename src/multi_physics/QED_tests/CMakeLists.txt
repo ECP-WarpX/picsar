@@ -12,7 +12,7 @@ foreach(test_src ${TEST_SRCS})
         add_executable(${test_name} ${test_src})
 
         #link to Boost libraries AND your targets and dependencies
-        target_link_libraries(${test_name} ${Boost_LIBRARIES} pxrmp_qed)
+        target_link_libraries(${test_name} PRIVATE  ${Boost_LIBRARIES} pxrmp_qed)
 
         #Move testing binaries in a test_bin subdirectory
         set_target_properties(${test_name} PROPERTIES
