@@ -8,6 +8,7 @@ project(
   LANGUAGES CXX)
   
 add_library(${PROJECT_NAME} INTERFACE)
+add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   set(IS_TOPLEVEL TRUE)
@@ -25,7 +26,6 @@ if(pxrmp_qed_test)
   enable_testing()
   add_subdirectory(QED_tests)
 endif()
-
 
 
 
