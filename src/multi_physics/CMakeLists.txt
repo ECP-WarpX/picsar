@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 
 project(
-  pxrmp
+  PXRMP
   DESCRIPTION
     "A header only c++ library (part of the PICSAR library) providing QED modules for Particle-In-Cell codes."
   HOMEPAGE_URL "https://github.com/ECP-WarpX/picsar"
@@ -13,15 +13,7 @@ else()
   set(IS_TOPLEVEL FALSE)
 endif()
 
+enable_testing()
+
 add_subdirectory(QED)
-
-#Setup CMake to run tests
-if(pxrmp_qed_test)
-  enable_testing()
-  add_subdirectory(QED_tests)
-endif()
-
-
-
-
 

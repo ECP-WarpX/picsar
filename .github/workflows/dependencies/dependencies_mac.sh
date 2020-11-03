@@ -14,5 +14,5 @@ brew untap local/python2
 brew update
 brew install boost
 brew install cmake
-#brew install libomp
+brew install libomp
 #brew install open-mpi

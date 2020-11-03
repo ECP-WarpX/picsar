@@ -14,10 +14,11 @@ jobs:
     - uses: actions/checkout@v2
     - name: Dependencies
       run: .github/workflows/dependencies/dependencies_mac.sh
-    - name: Build & Install
+    - name: Build & Test
       run: |
         cmake -S src/multi_physics                \
             -B build                              \
-            -DCMAKE_VERBOSE_MAKEFILE=ON
+            -DCMAKE_VERBOSE_MAKEFILE=ON           \
+            -DPXRMP_QED_TEST=ON
         cmake --build build -j 2
         cmake --build build --target test

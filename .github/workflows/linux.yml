@@ -4,17 +4,18 @@ on: [push, pull_request]
 
 jobs:
   QED:
-    name: GNU@7.5 C++17 Release [lib]
+    name: QED with tablegen [lib]
     runs-on: ubuntu-latest
     env: {CXXFLAGS: "-Werror -Wshadow -Woverloaded-virtual -Wunreachable-code"}
     steps:
     - uses: actions/checkout@v2
     - name: Dependencies
       run: .github/workflows/dependencies/dependencies.sh
-    - name: Build & Install
+    - name: Build & Test
       run: |
         cmake -S src/multi_physics                \
             -B build                              \
-            -DCMAKE_VERBOSE_MAKEFILE=ON
+            -DCMAKE_VERBOSE_MAKEFILE=ON           \
+            -DPXRMP_QED_TEST=ON
         cmake --build build -j 2
         cmake --build build --target test
