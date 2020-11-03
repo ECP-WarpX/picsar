@@ -1,7 +1,5 @@
 #Check if unit_test package is available
 find_package(Boost COMPONENTS unit_test_framework REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
-add_definitions(-DBOOST_TEST_DYN_LINK)
 
 file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 
