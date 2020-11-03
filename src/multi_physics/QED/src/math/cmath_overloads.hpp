@@ -145,7 +145,7 @@ namespace math{
     *
     * @tparam RealType the floating point type to be used
     * @param[in] x argument
-    * @return the exponential of x
+    * @return tanh of x
     */
     template<typename RealType>
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
@@ -166,6 +166,38 @@ namespace math{
     float m_tanh(const float x) noexcept
     {
         return tanhf(x);
+    }
+
+    //________________________________________________________
+
+    /**
+    * This function replaces the overload of floor provided
+    * by the Standard Template Library. It calls either
+    * floor or floorf in cmath depending on the variable type.
+    *
+    * @tparam RealType the floating point type to be used
+    * @param[in] x argument
+    * @return the floor of x
+    */
+    template<typename RealType>
+    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    RealType m_floor(const RealType x) noexcept
+    {
+        return floor(x);
+    }
+
+    template<>
+    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    double m_floor(const double x) noexcept
+    {
+        return floor(x);
+    }
+
+    template<>
+    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    float m_floor(const float x) noexcept
+    {
+        return floorf(x);
     }
 
 }
