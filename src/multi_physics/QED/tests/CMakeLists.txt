@@ -51,6 +51,14 @@ foreach(name ${TEST_NAMES})
     target_compile_features(${name} PUBLIC cxx_std_14)
     set_target_properties(${name} PROPERTIES CXX_EXTENSIONS OFF)
 
+    # Enable warnings
+    if(MSVC)
+        target_compile_options(${name} PRIVATE /W4)
+    else()
+        target_compile_options(${name} PRIVATE -Wall -Wextra -pedantic)
+    endif()
+
+
     # Finally add it to test execution
     message(STATUS "Test: ${name} (${src})")
     add_test(NAME ${name}
