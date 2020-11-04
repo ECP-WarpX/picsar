@@ -25,7 +25,10 @@
 //Uses progress bar
 #include "../../utils/progress_bar.hpp"
 
-#include <omp.h>
+#ifdef PXRMP_HAS_OPENMP
+    #include <omp.h>
+#endif
+
 #include <vector>
 #include <chrono>
 #include <iostream>
@@ -83,7 +86,9 @@ namespace breit_wheeler{
         auto all_vals = std::vector<RealType>(all_coords.size());
 
         int count = 0;
+#ifdef PXRMP_HAS_OPENMP
         #pragma omp parallel for
+#endif
         for (int i = 0; i < static_cast<int>(all_coords.size()); ++i){
             PXRMP_INTERNAL_CONSTEXPR_IF (use_internal_double){
                 all_vals[i] = aux_generate_double(all_coords[i]);
@@ -181,7 +186,9 @@ namespace breit_wheeler{
         auto all_vals = std::vector<RealType>(all_coords.size());
 
         int count = 0;
+    #ifdef PXRMP_HAS_OPENMP
         #pragma omp parallel for schedule(dynamic, 1)
+    #endif
         for (int i = 0; i < chi_size; ++i){
             const auto chi_phot = all_coords[i*frac_size][0];
             auto chi_parts = std::vector<RealType>(frac_size);
