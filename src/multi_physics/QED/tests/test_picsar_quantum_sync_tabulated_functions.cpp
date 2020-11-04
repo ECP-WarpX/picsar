@@ -55,7 +55,7 @@ void check_int_K_5_3_replacement()
         std::make_pair<RealType,RealType>( 1, 0.651422815355309),
         std::make_pair<RealType,RealType>( 10, 1.9223826430338323e-05)};
 
-    for (const auto cc : cases)
+    for (const auto& cc : cases)
     {
         const auto res = inner_integral(cc.first);
         const auto sol = cc.second;
