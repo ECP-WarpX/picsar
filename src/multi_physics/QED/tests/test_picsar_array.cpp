@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE( picsar_array_copy )
     int j = 0;
     for(auto& el : arr) el = ++j;
     auto c_arr = arr;
-    for(size_t i = 0; i < arr.size(); ++i)
+    for(int i = 0; i < arr.size(); ++i)
         BOOST_CHECK_EQUAL(arr[i], c_arr[i]);
 }
 
