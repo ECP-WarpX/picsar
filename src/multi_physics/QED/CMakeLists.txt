@@ -1,10 +1,6 @@
 add_library(QED INTERFACE)
 add_library(${PROJECT_NAME}::QED ALIAS QED)
 
-option(PXRMP_QED_OMP      "Enable OpenMP support" ON) # TODO: implement definitions
-option(PXRMP_QED_TABLEGEN "Enable table generation (needs Boost)" ON)
-option(PXRMP_QED_TEST     "Build PICSAR QED tests " ${IS_TOPLEVEL})
-
 target_compile_features(QED INTERFACE cxx_std_14)
 
 if(PXRMP_QED_OMP)
