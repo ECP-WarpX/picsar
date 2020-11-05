@@ -9,12 +9,15 @@
 #include <vector>
 #include <algorithm>
 #include <fstream>
-#include <omp.h>
 
-#include "../QED/src/physics/quantum_sync/quantum_sync_engine_tables.hpp"
-#include "../QED/src/physics/quantum_sync/quantum_sync_engine_tables_generator.hpp"
-#include "../QED/src/physics/quantum_sync/quantum_sync_engine_tabulated_functions.hpp"
-#include "../QED/src/physics/breit_wheeler/breit_wheeler_engine_tables_generator.hpp"
+#ifdef PXRMP_TABLE_GEN_HAS_OPENMP
+    #include <omp.h>
+#endif
+
+#include "physics/quantum_sync/quantum_sync_engine_tables.hpp"
+#include "physics/quantum_sync/quantum_sync_engine_tables_generator.hpp"
+#include "physics/quantum_sync/quantum_sync_engine_tabulated_functions.hpp"
+#include "physics/breit_wheeler/breit_wheeler_engine_tables_generator.hpp"
 
 namespace px_bw = picsar::multi_physics::phys::breit_wheeler;
 namespace px_qs = picsar::multi_physics::phys::quantum_sync;
@@ -41,7 +44,9 @@ void write_csv_1d_table(const TableType& table,
     }
 
     auto res = std::vector<RealType>(how_many);
+#ifdef PXRMP_TABLE_GEN_HAS_OPENMP
     #pragma omp parallel
+#endif
     for(int i = 0 ; i < how_many; ++i){
         res[i] = table.interp(coords[i]);
     }
@@ -89,7 +94,9 @@ void write_csv_2d_table(const TableType& table,
     }
 
     auto res = std::vector<RealType>(how_many_x * how_many_y);
+#ifdef PXRMP_TABLE_GEN_HAS_OPENMP
     #pragma omp parallel
+#endif
     for(int i = 0 ; i < how_many_x; ++i){
         for(int j = 0 ; j < how_many_y; ++j){
             res[i*how_many_y + j] = table.interp(coords_x[i], coords_y[j]);

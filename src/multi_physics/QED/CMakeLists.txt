@@ -35,3 +35,10 @@ if(PXRMP_QED_TEST)
   add_subdirectory(tests)
 endif()
 
+# Setup CMake to build tools
+if(PXRMP_QED_TOOLS)
+    if(NOT PXRMP_QED_TABLEGEN)
+         message( FATAL_ERROR "Tools require to enable table generation!" )
+    endif()
+  add_subdirectory(table_generator)
+endif()
