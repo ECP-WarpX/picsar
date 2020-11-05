@@ -208,7 +208,7 @@ void generate_quantum_sync_photem_table(
 }
 
 
-int main(int argc, char** argv)
+int main()
 {
 
     std::cout << "** Double precision tables ** \n" << std::endl;
