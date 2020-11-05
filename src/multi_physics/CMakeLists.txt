@@ -4,8 +4,7 @@ project(
   PXRMP
   DESCRIPTION
     "A header only c++ library (part of the PICSAR library) providing QED modules for Particle-In-Cell codes."
-  HOMEPAGE_URL "https://github.com/ECP-WarpX/picsar"
-  LANGUAGES CXX)
+  HOMEPAGE_URL "https://github.com/ECP-WarpX/picsar")
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   set(IS_TOPLEVEL TRUE)
@@ -20,4 +19,3 @@ option(PXRMP_QED_TABLEGEN "Enable table generation (needs Boost)" ON)
 option(PXRMP_QED_TEST     "Build PICSAR QED tests " ${IS_TOPLEVEL})
 
 add_subdirectory(QED)
-
