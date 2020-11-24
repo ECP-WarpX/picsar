@@ -10,6 +10,102 @@ namespace picsar{
 namespace multi_physics{
 namespace math{
 
+#ifdef PXRMP_INTERNAL_USE_STD_FOR_MATH
+
+    /**
+    * This function wraps the overload of sqrt provided
+    * by the Standard Template Library.
+    *
+    * @tparam RealType the floating point type to be used
+    * @param[in] x argument
+    * @return the square root of x
+    */
+    template<typename RealType>
+    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    RealType m_sqrt(const RealType x) noexcept
+    {
+        return std::sqrt(x);
+    }
+
+    /**
+    * This function wraps the overload of cbrt provided
+    * by the Standard Template Library.
+    *
+    * @tparam RealType the floating point type to be used
+    * @param[in] x argument
+    * @return the cubic root of x
+    */
+    template<typename RealType>
+    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    RealType m_cbrt(const RealType x) noexcept
+    {
+        return std::cbrt(x);
+    }
+
+    /**
+    * This function wraps the overload of log provided
+    * by the Standard Template Library.
+    *
+    * @tparam RealType the floating point type to be used
+    * @param[in] x argument
+    * @return the log of x
+    */
+    template<typename RealType>
+    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    RealType m_log(const RealType x) noexcept
+    {
+        return std::log(x);
+    }
+
+    /**
+    * This function wraps the overload of exp provided
+    * by the Standard Template Library.
+    *
+    * @tparam RealType the floating point type to be used
+    * @param[in] x argument
+    * @return the exponential of x
+    */
+    template<typename RealType>
+    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    RealType m_exp(const RealType x) noexcept
+    {
+        return std::exp(x);
+    }
+
+    /**
+    * This function wraps the overload of tanh provided
+    * by the Standard Template Library.
+    *
+    * @tparam RealType the floating point type to be used
+    * @param[in] x argument
+    * @return tanh of x
+    */
+    template<typename RealType>
+    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    RealType m_tanh(const RealType x) noexcept
+    {
+        return std::tanh(x);
+    }
+
+    /**
+    * This function wraps the overload of floor provided
+    * by the Standard Template Library.
+    *
+    * @tparam RealType the floating point type to be used
+    * @param[in] x argument
+    * @return the floor of x
+    */
+    template<typename RealType>
+    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    RealType m_floor(const RealType x) noexcept
+    {
+        return std::floor(x);
+    }
+
+
+#else
+
+
     /**
     * This function replaces the overload of sqrt provided
     * by the Standard Template Library. It calls either
@@ -199,6 +295,8 @@ namespace math{
     {
         return floorf(x);
     }
+
+#endif
 
 }
 }
