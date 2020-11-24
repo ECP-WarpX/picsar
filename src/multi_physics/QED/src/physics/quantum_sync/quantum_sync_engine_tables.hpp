@@ -143,8 +143,9 @@ namespace quantum_sync{
                 RealType, containers::picsar_span<const RealType>> view_type;
 
             /**
-            * Empty constructor (not designed for GPU)
+            * Empty constructor
             **/
+            PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
             dndt_lookup_table(){}
 
             /**
@@ -474,8 +475,9 @@ namespace quantum_sync{
                 RealType, containers::picsar_span<const RealType>> view_type;
 
             /**
-            * Empty constructor (not designed for GPU usage)
+            * Empty constructor
             */
+            PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
             photon_emission_lookup_table(){}
 
             /**
