@@ -66,9 +66,9 @@ namespace quantum_sync{
     */
     template<typename RealType>
     struct dndt_lookup_table_params{
-        RealType chi_part_min; /*Minimum particle chi parameter*/
-        RealType chi_part_max; /*Maximum particle chi parameter*/
-        int chi_part_how_many; /* Number of grid points for particle chi */
+        RealType chi_part_min = static_cast<RealType>(0.0); /*Minimum particle chi parameter*/
+        RealType chi_part_max = static_cast<RealType>(0.0);; /*Maximum particle chi parameter*/
+        int chi_part_how_many = 0; /* Number of grid points for particle chi */
 
         /**
         * Operator==
@@ -145,7 +145,7 @@ namespace quantum_sync{
             /**
             * Empty constructor
             **/
-            PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            constexpr
             dndt_lookup_table(){}
 
             /**
@@ -401,11 +401,11 @@ namespace quantum_sync{
     */
     template<typename RealType>
     struct photon_emission_lookup_table_params{
-        RealType chi_part_min; /*Minimum particle chi parameter*/
-        RealType chi_part_max; /*Maximum particle chi parameter*/
-        RealType frac_min; /*Minimum chi photon fraction to be stored*/
-        int chi_part_how_many; /* Number of grid points for particle chi */
-        int frac_how_many; /* Number of grid points for photon chi fraction */
+        RealType chi_part_min = static_cast<RealType>(0.0); /*Minimum particle chi parameter*/
+        RealType chi_part_max = static_cast<RealType>(0.0); /*Maximum particle chi parameter*/
+        RealType frac_min = static_cast<RealType>(0.0); /*Minimum chi photon fraction to be stored*/
+        int chi_part_how_many = 0; /* Number of grid points for particle chi */
+        int frac_how_many = 0; /* Number of grid points for photon chi fraction */
 
         /**
         * Operator==
@@ -477,7 +477,7 @@ namespace quantum_sync{
             /**
             * Empty constructor
             */
-            PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            constexpr
             photon_emission_lookup_table(){}
 
             /**

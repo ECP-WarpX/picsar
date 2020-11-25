@@ -65,9 +65,9 @@ namespace breit_wheeler{
     */
     template<typename RealType>
     struct dndt_lookup_table_params{
-        RealType chi_phot_min; /*Minimum photon chi parameter*/
-        RealType chi_phot_max;/*Maximum photon chi parameter*/
-        int chi_phot_how_many; /* Number of grid points for photon chi */
+        RealType chi_phot_min = static_cast<RealType>(0.0);/*Minimum photon chi parameter*/
+        RealType chi_phot_max = static_cast<RealType>(0.0);/*Maximum photon chi parameter*/
+        int chi_phot_how_many = 0; /* Number of grid points for photon chi */
 
         /**
         * Operator==
@@ -190,7 +190,7 @@ namespace breit_wheeler{
             /**
             * Empty constructor
             **/
-            PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            constexpr
             dndt_lookup_table(){}
 
             /**
@@ -450,10 +450,10 @@ namespace breit_wheeler{
     */
     template<typename RealType>
     struct pair_prod_lookup_table_params{
-        RealType chi_phot_min; /*Minimum photon chi parameter*/
-        RealType chi_phot_max; /*Maximum photon chi parameter*/
-        int chi_phot_how_many; /* Number of grid points for photon chi */
-        int frac_how_many; /* Number of grid points for particle chi fraction */
+        RealType chi_phot_min = static_cast<RealType>(0.0); /*Minimum photon chi parameter*/
+        RealType chi_phot_max = static_cast<RealType>(0.0); /*Maximum photon chi parameter*/
+        int chi_phot_how_many = 0; /* Number of grid points for photon chi */
+        int frac_how_many = 0; /* Number of grid points for particle chi fraction */
 
         /**
         * Operator==
@@ -526,7 +526,7 @@ namespace breit_wheeler{
             /**
             * Empty constructor
             */
-            PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            constexpr
             pair_prod_lookup_table(){}
 
 
