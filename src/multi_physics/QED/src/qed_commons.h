@@ -120,4 +120,13 @@
     #define PXRMP_INTERNAL_CONSTEXPR_IF if
   #endif
 
+ /**
+ * Unless PXRMP_PREVENT_USE_STD_FOR_MATH is defined by the
+ * user, std::floor, std::sqrt, std::cbrt mathematical functions
+ * are used. 
+ */
+#ifndef PXRMP_PREVENT_USE_STD_FOR_MATH
+  #define PXRMP_INTERNAL_USE_STD_FOR_MATH
+#endif
+
 #endif// PICSAR_MULTIPHYSICS_QED_COMMONS

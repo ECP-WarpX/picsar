@@ -10,6 +10,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/tools/floating_point_comparison.hpp>
 
+#define PXRMP_PREVENT_USE_STD_FOR_MATH
 #include "cmath_overloads.hpp"
 
 using namespace picsar::multi_physics::math;
@@ -34,12 +35,15 @@ void test_case_cmath_overloads()
         BOOST_CHECK_EQUAL(m_tanh(-val), std::tanh(-val));
      }
 
-    const auto vals_floor = std::vector<RealType>{0.0, 0.001, 0.3, 0.7,
+    const auto vals_floor_fabs = std::vector<RealType>{0.0, 0.001, 0.3, 0.7,
          1.11, 1.5, 1.55, 20.9, 100.56, 1000.24};
 
-    for (const auto val : vals_floor){
+    for (const auto val : vals_floor_fabs){
         BOOST_CHECK_EQUAL(m_floor(val), std::floor(val));
         BOOST_CHECK_EQUAL(m_floor(-val), std::floor(-val));
+
+        BOOST_CHECK_EQUAL(m_fabs(val), std::fabs(val));
+        BOOST_CHECK_EQUAL(m_fabs(-val), std::fabs(-val));
     }
 }
 
