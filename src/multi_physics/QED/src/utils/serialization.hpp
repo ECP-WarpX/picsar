@@ -18,17 +18,17 @@ namespace serialization{
     /**
     * This function transform a variable of type T into a vector of chars holding its
     * byte representation and it appends this vector at the end of an
-    * existing vector of chars. T must be a POD type. This functions is not
+    * existing vector of chars. T must be a trivially copyable type. This functions is not
     * usable on GPUs.
     *
-    * @tparam T the variable type (must be POD)
+    * @tparam T the variable type (must be trivially copyable)
     * @param[in, out] vec a reference to the vector to which the byte representation of val is appended
     */
     template<typename T>
     inline void put_in(T val, std::vector<char>& vec)
     {
-        static_assert(std::is_pod<T>(), "Cannot serialize \
-            non-POD types.");
+        static_assert(std::is_trivially_copyable<T>(), "Cannot serialize \
+            non-trivally copyable types.");
 
         const auto* ptr_val = reinterpret_cast<char*>(&val);
         vec.insert(vec.end(), ptr_val, ptr_val+sizeof(T));
@@ -37,10 +37,10 @@ namespace serialization{
     /**
     * This function extract a variable of type T from a byte vector, at the position
     * given by an iterator. The iterator is then advanced according to
-    * the number of bytes read from the byte vector. T must be a POD type.
+    * the number of bytes read from the byte vector. T must be a trivially copyable type.
     * This functions is not usable on GPUs.
     *
-    * @tparam T the variable type (must be POD)
+    * @tparam T the variable type (must be trivially copyable)
     * @tparam CharIter the iterator type
     * @param[in, out] it the iterator to a byte vector
     * @return the variable extracted from the byte array
@@ -48,8 +48,8 @@ namespace serialization{
     template<typename T, typename CharIter=std::vector<char>::const_iterator>
     inline T get_out(CharIter& it)
     {
-        static_assert(std::is_pod<T>(), "Cannot extract \
-            non-POD types from char vectors.");
+        static_assert(std::is_trivially_copyable<T>(), "Cannot extract \
+            non-trivally copyable types from char vectors.");
 
         auto temp = std::array<char, sizeof(T)>{};
         std::copy(it, it + sizeof(T), temp.begin());
@@ -62,10 +62,10 @@ namespace serialization{
     /**
     * This function extract several variables of type T from a byte vector,
     * at the position given by an iterator. The iterator is then advanced according to
-    * the number of bytes read from the byte vector. T must be a POD type.
+    * the number of bytes read from the byte vector. T must be a trivially copyable type.
     * This functions is not usable on GPUs.
     *
-    * @tparam T the variable type (must be POD)
+    * @tparam T the variable type (must be trivially copyable)
     * @tparam CharIter the iterator type
     * @param[in, out] it the iterator to a byte vector
     * @param[in] how_many how many variables should be extracted
@@ -76,8 +76,8 @@ namespace serialization{
         CharIter& it,
         int how_many)
     {
-        static_assert(std::is_pod<T>(), "Cannot extract \
-            non-POD types from char vectors.");
+        static_assert(std::is_trivially_copyable<T>(), "Cannot extract \
+            non-trivally copyable types from char vectors.");
 
         auto res = std::vector<T>(how_many);
         std::generate(res.begin(), res.end(),
