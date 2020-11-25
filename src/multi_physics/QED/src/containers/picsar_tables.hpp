@@ -57,7 +57,7 @@ namespace containers{
         /**
         * Empty constructor
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        constexpr
         equispaced_1d_table(){}
 
         /**
@@ -289,11 +289,11 @@ namespace containers{
         }
 
     protected:
-        RealType m_x_min = 0.0; /* minimum x coordinate */
-        RealType m_x_max = 0.0; /* maximum x coordinate */
-        RealType m_x_size = 0.0; /* size along x */
+        RealType m_x_min = static_cast<RealType>(0.0); /* minimum x coordinate */
+        RealType m_x_max = static_cast<RealType>(0.0);/* maximum x coordinate */
+        RealType m_x_size = static_cast<RealType>(0.0); /* size along x */
         int m_how_many_x = 0; /* how many values are stored in the table */
-        RealType m_dx = 0.0; /* size of the step along x */
+        RealType m_dx = static_cast<RealType>(0.0); /* size of the step along x */
         VectorType m_values; /* values f(x) */
     };
 
@@ -343,7 +343,7 @@ namespace containers{
         /**
         * Empty constructor
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        constexpr
         equispaced_2d_table(){}
 
         /**
@@ -754,16 +754,16 @@ namespace containers{
 
     protected:
 
-            RealType m_x_min; /* minimum x coordinate */
-            RealType m_x_max; /* maximum x coordinate */
-            RealType m_y_min; /* minimum y coordinate */
-            RealType m_y_max; /* maximum y coordinate */
-            RealType m_x_size; /* size along x */
-            RealType m_y_size; /* size along y */
-            int m_how_many_x; /* how many grid points along x */
-            int m_how_many_y; /* how many grid points along y */
-            RealType m_dx; /* step size along x */
-            RealType m_dy; /* step size along y */
+            RealType m_x_min = static_cast<RealType>(0.0); /* minimum x coordinate */
+            RealType m_x_max = static_cast<RealType>(0.0); /* maximum x coordinate */
+            RealType m_y_min = static_cast<RealType>(0.0); /* minimum y coordinate */
+            RealType m_y_max = static_cast<RealType>(0.0); /* maximum y coordinate */
+            RealType m_x_size = static_cast<RealType>(0.0); /* size along x */
+            RealType m_y_size = static_cast<RealType>(0.0); /* size along y */
+            int m_how_many_x = 0; /* how many grid points along x */
+            int m_how_many_y = 0; /* how many grid points along y */
+            RealType m_dx = static_cast<RealType>(0.0); /* step size along x */
+            RealType m_dy = static_cast<RealType>(0.0); /* step size along y */
             VectorType m_values; /* values f(x,y) */
 
         /**
