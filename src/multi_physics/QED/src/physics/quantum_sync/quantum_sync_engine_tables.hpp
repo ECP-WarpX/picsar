@@ -67,7 +67,7 @@ namespace quantum_sync{
     template<typename RealType>
     struct dndt_lookup_table_params{
         RealType chi_part_min = static_cast<RealType>(0.0); /*Minimum particle chi parameter*/
-        RealType chi_part_max = static_cast<RealType>(0.0);; /*Maximum particle chi parameter*/
+        RealType chi_part_max = static_cast<RealType>(0.0); /*Maximum particle chi parameter*/
         int chi_part_how_many = 0; /* Number of grid points for particle chi */
 
         /**

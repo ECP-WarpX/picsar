@@ -762,8 +762,8 @@ namespace containers{
             RealType m_y_size = static_cast<RealType>(0.0); /* size along y */
             int m_how_many_x = 0; /* how many grid points along x */
             int m_how_many_y = 0; /* how many grid points along y */
-            RealType m_dx = static_cast<RealType>(0.0);; /* step size along x */
-            RealType m_dy = static_cast<RealType>(0.0);; /* step size along y */
+            RealType m_dx = static_cast<RealType>(0.0); /* step size along x */
+            RealType m_dy = static_cast<RealType>(0.0); /* step size along y */
             VectorType m_values; /* values f(x,y) */
 
         /**
