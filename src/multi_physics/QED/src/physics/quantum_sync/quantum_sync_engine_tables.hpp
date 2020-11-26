@@ -44,13 +44,13 @@ namespace quantum_sync{
     //Reasonable default values for the dndt_lookup_table_params
     //and the pair_prod_lookup_table_params (see below)
     template <typename T>
-    constexpr T default_chi_part_min = 1.0e-3; /*Default minimum particle chi parameter*/
+    constexpr T default_chi_part_min = static_cast<T>(1.0e-3); /*Default minimum particle chi parameter*/
     template <typename T>
-    constexpr T default_chi_part_max = 1.0e3; /* Default maximum particle chi parameter*/
+    constexpr T default_chi_part_max = static_cast<T>(1.0e3); /* Default maximum particle chi parameter*/
     const int default_chi_part_how_many = 256; /* Default number of grid points for particle chi */
     const int default_frac_how_many = 256; /* Default number of grid points for photon chi */
     template <typename T>
-    constexpr T default_frac_min = 1e-12; /* Default value of the minimum chi_photon fraction */
+    constexpr T default_frac_min = static_cast<T>(1e-12); /* Default value of the minimum chi_photon fraction */
 
     //__________________________________________________________________________
 
