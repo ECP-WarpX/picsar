@@ -46,9 +46,9 @@ namespace breit_wheeler{
     //Reasonable default values for the dndt_lookup_table_params
     //and the pair_prod_lookup_table_params (see below)
     template <typename T>
-    constexpr T default_chi_phot_min = 2.0e-2; /*Default minimum photon chi parameter*/
+    constexpr T default_chi_phot_min = static_cast<T>(2.0e-2); /*Default minimum photon chi parameter*/
     template <typename T>
-    constexpr T default_chi_phot_max = 1.0e3; /* Default maximum photon chi parameter*/
+    constexpr T default_chi_phot_max = static_cast<T>(1.0e3); /* Default maximum photon chi parameter*/
     const int default_chi_phot_how_many = 256; /* Default number of grid points for photon chi */
     const int default_frac_how_many = 256; /* Default number of grid points for particle chi */
 
@@ -103,9 +103,9 @@ namespace breit_wheeler{
 
     //Coefficients for che asymptotic behaviour of the T function
     template <typename T> //0.16*pi*(3/8)
-    constexpr T erber_dndt_asynt_a = 0.1884955592153876; /*Coefficient a of the Erber approximation*/
+    constexpr T erber_dndt_asynt_a = static_cast<T>(0.1884955592153876); /*Coefficient a of the Erber approximation*/
     template <typename T> //0.16*(gamma(1/3)*(3/2)**(1/3) /2)**2
-    constexpr T erber_dndt_asynt_b = 0.37616610710114734; /*Coefficient b of the Erber approximation*/
+    constexpr T erber_dndt_asynt_b = static_cast<T>(0.37616610710114734); /*Coefficient b of the Erber approximation*/
 
     /**
     * This function provides an approximation for the T function
@@ -120,7 +120,7 @@ namespace breit_wheeler{
     PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     RealType dndt_approx_left(RealType chi_phot)
     {
-        constexpr RealType coeff = 8./3.;
+        constexpr RealType coeff = static_cast<RealType>(8./3.);
         return erber_dndt_asynt_a<RealType>*math::m_exp(-coeff/chi_phot);
     }
 

@@ -49,7 +49,7 @@ namespace quantum_sync{
     RealType get_optical_depth(const RealType unf_zero_one_minus_epsi)
     {
         using namespace math;
-        return -log(one<RealType> - unf_zero_one_minus_epsi);
+        return -m_log(one<RealType> - unf_zero_one_minus_epsi);
     }
 
     /**
