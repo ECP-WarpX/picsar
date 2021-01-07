@@ -9,11 +9,11 @@
 // instabilities of the tanh_sinh integration method
 #define BOOST_ENABLE_ASSERT_HANDLER
 #include <boost/assert.hpp>
-#undef BOOST_ENABLE_ASSERT_HANDLER
 #include <boost/math/quadrature/trapezoidal.hpp>
 #include <boost/math/quadrature/tanh_sinh.hpp>
 #include <boost/math/quadrature/exp_sinh.hpp>
 #include <boost/math/quadrature/gauss_kronrod.hpp>
+#undef BOOST_ENABLE_ASSERT_HANDLER
 
 #include <functional>
 #include <limits>
