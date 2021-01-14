@@ -23,7 +23,6 @@ endif()
 
 target_include_directories(QED INTERFACE src/)
 target_include_directories(QED INTERFACE src/containers)
-target_include_directories(QED INTERFACE src/math)
 target_include_directories(QED INTERFACE src/utils)
 target_include_directories(QED INTERFACE src/physics)
 target_include_directories(QED INTERFACE src/physics/schwinger)
