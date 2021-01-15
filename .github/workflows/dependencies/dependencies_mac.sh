@@ -7,9 +7,6 @@
 
 set -eu -o pipefail
 
-brew uninstall python@2.7.17
-brew untap local/openssl
-brew untap local/python2
 brew update
 brew install boost
 brew install cmake
