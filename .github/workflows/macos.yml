@@ -16,7 +16,7 @@ jobs:
       run: .github/workflows/dependencies/dependencies_mac.sh
     - name: Build & Test
       run: |
-        cmake -S src/multi_physics                \
+        cmake -S multi_physics/QED                \
             -B build                              \
             -DCMAKE_VERBOSE_MAKEFILE=ON           \
             -DPXRMP_QED_TEST=ON
