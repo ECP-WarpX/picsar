@@ -13,22 +13,22 @@
 // 4) A.Gonoskov et al. Phys. Rev. E 92, 023305 (2015)
 
 //Should be included by all the src files of the library
-#include "../../qed_commons.h"
+#include "picsar/src/multi_physics/QED/src/qed_commons.h"
 
 //Uses picsar tables
-#include "../../containers/picsar_tables.hpp"
+#include "picsar/src/multi_physics/QED/src/containers/picsar_tables.hpp"
 //Uses GPU-friendly arrays
-#include "../../containers/picsar_array.hpp"
+#include "picsar/src/multi_physics/QED/src/containers/picsar_array.hpp"
 //Uses picsar_span
-#include "../../containers/picsar_span.hpp"
+#include "picsar/src/multi_physics/QED/src/containers/picsar_span.hpp"
 //Uses mathematical constants
-#include "../../math/math_constants.h"
+#include "picsar/src/multi_physics/QED/src/math/math_constants.h"
 //Uses serialization
-#include "../../utils/serialization.hpp"
+#include "picsar/src/multi_physics/QED/src/utils/serialization.hpp"
 //Uses interpolation and upper_bound
-#include "../../utils/picsar_algo.hpp"
+#include "picsar/src/multi_physics/QED/src/utils/picsar_algo.hpp"
 //Uses cbrt, log and exp
-#include "../../math/cmath_overloads.hpp"
+#include "picsar/src/multi_physics/QED/src/math/cmath_overloads.hpp"
 
 #include <algorithm>
 #include <vector>

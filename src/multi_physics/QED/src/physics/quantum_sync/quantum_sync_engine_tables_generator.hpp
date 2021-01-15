@@ -12,16 +12,16 @@
 // 2) A.Gonoskov et al. Phys. Rev. E 92, 023305 (2015)
 
 //Should be included by all the src files of the library
-#include "../../qed_commons.h"
+#include "picsar/src/multi_physics/QED/src/physics/qed_commons.h"
 
 //Implements methods of BW lookup tables
-#include "quantum_sync_engine_tables.hpp"
+#include "picsar/src/multi_physics/QED/src/physics/quantum_sync/quantum_sync_engine_tables.hpp"
 //Uses BW tabulated functions
-#include "quantum_sync_engine_tabulated_functions.hpp"
+#include "picsar/src/multi_physics/QED/src/physics/quantum_sync/quantum_sync_engine_tabulated_functions.hpp"
 //Uses cmath overloads
-#include "../../math/cmath_overloads.hpp"
+#include "picsar/src/multi_physics/QED/srcmath/cmath_overloads.hpp"
 //Uses progress bar
-#include "../../utils/progress_bar.hpp"
+#include "picsar/src/multi_physics/QED/src/utils/progress_bar.hpp"
 
 #ifdef PXRMP_HAS_OPENMP
     #include <omp.h>

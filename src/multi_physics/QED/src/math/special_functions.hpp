@@ -2,7 +2,7 @@
 #define PICSAR_MULTIPHYSICS_SPECIAL_FUNCTIONS
 
 //Should be included by all the src files of the library
-#include "../qed_commons.h"
+#include "picsar/src/multi_physics/QED/src/qed_commons.h"
 
 //This .hpp file is an extremely thin wrapper around special functions
 //(Bessel functions for now) defined either in the STL (if C++17 is available)

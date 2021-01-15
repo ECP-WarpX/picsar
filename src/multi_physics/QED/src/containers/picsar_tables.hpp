@@ -2,17 +2,17 @@
 #define PICSAR_TABLES
 
 //Should be included by all the src files of the library
-#include "../qed_commons.h"
+#include "picsar/src/multi_physics/QED/src/qed_commons.h"
 
 // Interpolation is used
-#include "../utils/picsar_algo.hpp"
+#include "picsar/src/multi_physics/QED/src/utils/picsar_algo.hpp"
 // Serialization is used to export tables to byte vectors
 // and to read tables from byte arrays
-#include "../utils/serialization.hpp"
+#include "picsar/src/multi_physics/QED/src/utils/serialization.hpp"
 // Some mathematical constants are used
-#include "../math/math_constants.h"
+#include "picsar/src/multi_physics/QED/src/math/math_constants.h"
 //Uses floor
-#include "../math/cmath_overloads.hpp"
+#include "picsar/src/multi_physics/QED/src/math/cmath_overloads.hpp"
 
 #include <vector>
 #include <array>

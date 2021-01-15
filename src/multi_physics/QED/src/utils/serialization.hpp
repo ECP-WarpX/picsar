@@ -2,7 +2,7 @@
 #define PICSAR_MULTIPHYSICS_SERIALIZATION
 
 //Should be included by all the src files of the library
-#include "../qed_commons.h"
+#include "picsar/src/multi_physics/QED/src/qed_commons.h"
 
 #include <vector>
 #include <array>

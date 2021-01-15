@@ -13,22 +13,22 @@
 // 4) A.Gonoskov et al. Phys. Rev. E 92, 023305 (2015)
 
 //Should be included by all the src files of the library
-#include "../../qed_commons.h"
+#include "picsar/src/multi_physics/QED/src/qed_commons.h"
 
 //Uses GPU-friendly arrays
-#include "../../containers/picsar_array.hpp"
+#include "picsar/src/multi_physics/QED/src/containers/picsar_array.hpp"
 //Uses vector functions
-#include "../../math/vec_functions.hpp"
+#include "picsar/src/multi_physics/QED/src/math/vec_functions.hpp"
 //Uses chi functions
-#include "../chi_functions.hpp"
+#include "picsar/src/multi_physics/QED/src/physics/chi_functions.hpp"
 //Uses physical constants
-#include "../phys_constants.h"
+#include "picsar/src/multi_physics/QED/src/physics/phys_constants.h"
 //Uses mathematical constants
-#include "../../math/math_constants.h"
+#include "picsar/src/multi_physics/QED/src/math/math_constants.h"
 //Uses unit conversion
-#include "../unit_conversion.hpp"
+#include "picsar/src/multi_physics/QED/src/physics/unit_conversion.hpp"
 //Uses sqrt and log
-#include "../../math/cmath_overloads.hpp"
+#include "picsar/src/multi_physics/QED/src/math/cmath_overloads.hpp"
 
 #include <cmath>
 

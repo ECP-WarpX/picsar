@@ -11,18 +11,18 @@
 // 2) A.Gonoskov et al. Phys. Rev. E 92, 023305 (2015)
 
 //Should be included by all the src files of the library
-#include "../../qed_commons.h"
+#include "picsar/src/multi_physics/QED/src/qed_commons.h"
 
 //Uses physical constants
-#include "../phys_constants.h"
+#include "picsar/src/multi_physics/QED/src/physics/phys_constants.h"
 //Uses mathematical constants
-#include "../../math/math_constants.h"
+#include "picsar/src/multi_physics/QED/src/math/math_constants.h"
 //Uses integration routines
-#include "../../math/quadrature.hpp"
+#include "picsar/src/multi_physics/QED/src/math/quadrature.hpp"
 //Uses special functions
-#include "../../math/special_functions.hpp"
+#include "picsar/src/multi_physics/QED/src/math/special_functions.hpp"
 //Uses sqrt and cbrt
-#include "../../math/cmath_overloads.hpp"
+#include "picsar/src/multi_physics/QED/src/math/cmath_overloads.hpp"
 
 #include <algorithm>
 #include <stdexcept>

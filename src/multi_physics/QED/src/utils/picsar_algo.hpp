@@ -2,7 +2,7 @@
 #define PICSAR_MULTIPHYSICS_ALGO
 
 //Should be included by all the src files of the library
-#include "../qed_commons.h"
+#include "picsar/src/multi_physics/QED/src/qed_commons.h"
 
 #ifdef PXRMP_INTERNAL_STL_UPPER_BOUND
     #include <algorithm>

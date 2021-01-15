@@ -2,7 +2,7 @@
 #define PICSAR_MULTIPHYSICS_ARRAY
 
 //Should be included by all the src files of the library
-#include "../qed_commons.h"
+#include "picsar/src/multi_physics/QED/src/qed_commons.h"
 
 #include <cstddef>
 //If GPUs are not used, picsar_arrays are just an alias for std::array

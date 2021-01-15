@@ -2,12 +2,12 @@
 #define PICSAR_MULTIPHYSICS_PHYS_UNIT_CONVERSION
 
 //Should be included by all the src files of the library
-#include "../qed_commons.h"
+#include "picsar/src/multi_physics/QED/src/qed_commons.h"
 
 //Uses several physical constants
-#include "phys_constants.h"
+#include "picsar/src/multi_physics/QED/src/physics/phys_constants.h"
 //Uses several mathematical constants
-#include "../math/math_constants.h"
+#include "picsar/src/multi_physics/QED/src/math/math_constants.h"
 
 namespace picsar{
 namespace multi_physics{

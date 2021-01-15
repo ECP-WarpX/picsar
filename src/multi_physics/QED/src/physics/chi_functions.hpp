@@ -2,16 +2,16 @@
 #define PICSAR_MULTIPHYSICS_CHI_FUNCTIONS
 
 //Should be included by all the src files of the library
-#include "../qed_commons.h"
+#include "picsar/src/multi_physics/QED/src/qed_commons.h"
 
 //Uses GPU-friendly array
-#include "../containers/picsar_array.hpp"
+#include "picsar/src/multi_physics/QED/src/containers/picsar_array.hpp"
 //Uses operations on 3-vectors
-#include "../math/vec_functions.hpp"
+#include "picsar/src/multi_physics/QED/src/math/vec_functions.hpp"
 //Uses unit conversion
-#include "unit_conversion.hpp"
+#include "picsar/src/multi_physics/QED/src/physics/unit_conversion.hpp"
 //Uses sqrt
-#include "../math/cmath_overloads.hpp"
+#include "picsar/src/multi_physics/QED/src/math/cmath_overloads.hpp"
 
 namespace picsar{
 namespace multi_physics{

@@ -2,9 +2,9 @@
 #define PICSAR_MULTIPHYSICS_SPAN
 
 //Should be included by all the src files of the library
-#include "../qed_commons.h"
+#include "picsar/src/multi_physics/QED/src/qed_commons.h"
 
-#include<cstddef>
+#include <cstddef>
 
 namespace picsar{
 namespace multi_physics{

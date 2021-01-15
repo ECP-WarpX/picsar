@@ -2,12 +2,12 @@
 #define PICSAR_MULTIPHYSICS_VEC_FUNCTIONS
 
 //Should be included by all the src files of the library
-#include "../qed_commons.h"
+#include "picsar/src/multi_physics/QED/src/qed_commons.h"
 
 //Uses GPU-friendly arrays
-#include "../containers/picsar_array.hpp"
+#include "picsar/src/multi_physics/QED/src/containers/picsar_array.hpp"
 //Uses sqrt
-#include "cmath_overloads.hpp"
+#include "picsar/src/multi_physics/QED/src/math/cmath_overloads.hpp"
 
 namespace picsar{
 namespace multi_physics{
