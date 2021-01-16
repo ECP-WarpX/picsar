@@ -99,7 +99,11 @@ namespace math{
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     RealType m_floor(const RealType x) noexcept
     {
+#ifdef PXRMP_INTERNAL_SYCL_DEVICE
+    return std::floor(static_cast<double>(x)));
+#else
         return std::floor(x);
+#endif
     }
 
     /**
@@ -306,7 +310,11 @@ namespace math{
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     float m_floor(const float x) noexcept
     {
+#ifdef PXRMP_INTERNAL_SYCL_DEVICE
+            return floor(x);
+#else
         return floorf(x);
+#endif
     }
 
     /**
