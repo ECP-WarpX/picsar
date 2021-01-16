@@ -63,7 +63,6 @@ foreach(name ${TEST_NAMES})
 
     # Finally add it to test execution
     message(STATUS "Test: ${name} (${src})")
-    message(STATUS "############### ${CMAKE_BINARY_DIR}/bin/${name} " )
     add_test(NAME ${name}
         COMMAND ${name}
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
