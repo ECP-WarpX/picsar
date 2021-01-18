@@ -21,6 +21,8 @@ option(PXRMP_QED_TABLEGEN         "Enable table generation (needs Boost)" ON)
 option(PXRMP_QED_TEST             "Build PICSAR QED tests " ${IS_TOPLEVEL})
 option(PXRMP_QED_TOOLS            "Build PICSAR QED tools " ${IS_TOPLEVEL})
 option(PXRMP_BOOST_TEST_DYN_LINK  "Link against the Boost Unit Test Framework shared library" ON)
+option(PXRMP_DPCPP_FIX            "Use floor instead of std::floor() or floor/floorf (fixes some issues with DPC++) " ON)
+option(PXRMP_SPEC_FUNC_WITH_BOOST "Use special functions provided by Boost even if STL version is available" ON)
 
 
 ########
@@ -47,6 +49,14 @@ if(PXRMP_QED_TABLEGEN)
     if(NOT Boost_FOUND)
          message( FATAL_ERROR "Table generation requires Boost (>= 1.66)!" )
     endif()
+endif()
+
+if(PXRMP_DPCPP_FIX)
+    target_compile_definitions(PXRMP_QED INTERFACE PXRMP_DPCPP_FIX=1)
+endif()
+
+if(PXRMP_SPEC_FUNC_WITH_BOOST)
+    target_compile_definitions(PXRMP_QED INTERFACE PXRMP_FORCE_BOOST_FOR_SPECFUNC=1)
 endif()
 
 target_include_directories(
