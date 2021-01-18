@@ -21,8 +21,8 @@ option(PXRMP_QED_TABLEGEN         "Enable table generation (needs Boost)" ON)
 option(PXRMP_QED_TEST             "Build PICSAR QED tests " ${IS_TOPLEVEL})
 option(PXRMP_QED_TOOLS            "Build PICSAR QED tools " ${IS_TOPLEVEL})
 option(PXRMP_BOOST_TEST_DYN_LINK  "Link against the Boost Unit Test Framework shared library" ON)
-option(PXRMP_DPCPP_FIX            "Use floor instead of std::floor() or floor/floorf (fixes some issues with DPC++) " ON)
 option(PXRMP_SPEC_FUNC_WITH_BOOST "Use special functions provided by Boost even if STL version is available" ON)
+option(PXRMP_DPCPP_FIX            "Use cl::sycl::floor cl::sycl::floorf on device" OFF)
 
 
 ########

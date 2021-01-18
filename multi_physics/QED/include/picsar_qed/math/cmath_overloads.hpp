@@ -6,6 +6,10 @@
 
 #include <cmath>
 
+#if defined(PXRMP_INTERNAL_DPCPP_FIX) && defined(__SYCL_DEVICE_ONLY__)
+    #include <CL/sycl.hpp>
+#endif
+
 namespace picsar{
 namespace multi_physics{
 namespace math{
@@ -99,8 +103,8 @@ namespace math{
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     RealType m_floor(const RealType x) noexcept
     {
-#ifdef PXRMP_INTERNAL_DPCPP_FIX
-    return static_cast<RealType>(floor(x));
+#if defined(PXRMP_INTERNAL_DPCPP_FIX) && defined(__SYCL_DEVICE_ONLY__)
+    return cl::sycl::floor(x);
 #else
         return std::floor(x);
 #endif
@@ -310,8 +314,8 @@ namespace math{
     PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
     float m_floor(const float x) noexcept
     {
-#ifdef PXRMP_INTERNAL_DPCPP_FIX
-            return floor(x);
+#if defined(PXRMP_INTERNAL_DPCPP_FIX) && defined(__SYCL_DEVICE_ONLY__)
+            return cl::sycl::floorf(x);
 #else
         return floorf(x);
 #endif
