@@ -122,13 +122,18 @@
 
  /**
  * Unless PXRMP_PREVENT_USE_STD_FOR_MATH is defined by the
- * user, std::floor, std::sqrt, std::cbrt... mathematical functions
+ * user std::sqrt, std::cbrt... mathematical functions
  * are used.
  */
 #ifndef PXRMP_PREVENT_USE_STD_FOR_MATH
   #define PXRMP_INTERNAL_USE_STD_FOR_MATH
 #endif
 
+/**
+* PXRMP_DPCPP_FIX enables a workaround to allow compilation with
+* DPC++, which apparently has issues with floorf or std::floor(x) when
+* x is a float
+*/
 #ifdef PXRMP_DPCPP_FIX
     #define PXRMP_INTERNAL_DPCPP_FIX
 #endif
