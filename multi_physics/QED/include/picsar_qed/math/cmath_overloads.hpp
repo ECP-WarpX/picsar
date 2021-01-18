@@ -100,7 +100,7 @@ namespace math{
     RealType m_floor(const RealType x) noexcept
     {
 #ifdef PXRMP_INTERNAL_DPCPP_FIX
-    return std::floor(static_cast<double>(x));
+    return static_cast<RealType>(floor(x));
 #else
         return std::floor(x);
 #endif
