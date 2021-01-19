@@ -49,7 +49,7 @@ foreach(name ${TEST_NAMES})
     set_target_properties(${name} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-    # Enforce C++14
+    # Require C++14 or newer
     target_compile_features(${name} PUBLIC cxx_std_14)
     set_target_properties(${name} PROPERTIES CXX_EXTENSIONS OFF)
 
