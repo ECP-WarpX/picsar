@@ -5,7 +5,7 @@ add_executable(${name} "${name}.cpp")
 
 target_link_libraries(${name} PRIVATE PXRMP_QED)
 
-#OpenMP support support
+# OpenMP support
 if(PXRMP_QED_OMP)
    find_package(OpenMP REQUIRED)
    target_link_libraries(${name} PRIVATE OpenMP::OpenMP_CXX)
