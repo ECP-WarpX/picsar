@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.12)
 project(
   PXRMP_QED
   DESCRIPTION
-    "A header only c++ library (part of the PICSAR library) providing QED modules for Particle-In-Cell codes."
+    "A header only C++ library (part of the PICSAR library) providing QED modules for Particle-In-Cell codes."
   HOMEPAGE_URL "https://github.com/ECP-WarpX/picsar")
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
