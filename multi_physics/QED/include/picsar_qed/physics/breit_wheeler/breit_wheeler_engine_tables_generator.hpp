@@ -186,9 +186,9 @@ namespace breit_wheeler{
         auto all_vals = std::vector<RealType>(all_coords.size());
 
         int count = 0;
-    #ifdef PXRMP_HAS_OPENMP
+#ifdef PXRMP_HAS_OPENMP
         #pragma omp parallel for schedule(dynamic, 1)
-    #endif
+#endif
         for (int i = 0; i < chi_size; ++i){
             const auto chi_phot = all_coords[i*frac_size][0];
             auto chi_parts = std::vector<RealType>(frac_size);
