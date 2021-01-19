@@ -315,7 +315,7 @@ namespace math{
     float m_floor(const float x) noexcept
     {
 #if defined(PXRMP_INTERNAL_DPCPP_FIX) && defined(__SYCL_DEVICE_ONLY__)
-            return cl::sycl::floorf(x);
+        return cl::sycl::floorf(x);
 #else
         return floorf(x);
 #endif
