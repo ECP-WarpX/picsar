@@ -104,7 +104,7 @@ namespace math{
     RealType m_floor(const RealType x) noexcept
     {
 #if defined(PXRMP_INTERNAL_DPCPP_FIX) && defined(__SYCL_DEVICE_ONLY__)
-    return cl::sycl::floor(x);
+        return cl::sycl::floor(x);
 #else
         return std::floor(x);
 #endif
