@@ -74,22 +74,16 @@
 
 /**
  * By doing
- * #define PXRMP_FORCE_BOOST_FOR_SPECFUNC
- * the user can force the use of Boost library for
- * special functions. Otherwise, a choice based on
- * the C++ language standard in use is made.
- * C++17 has several special functions defined in its standard
- * library.
+ * #define PXRMP_USE_CXX17_FOR_SPECIAL_FUNCTIONS
+ * the user can choose to use special functions provided by the C++17
+ * standard library if C++17 is available. Otherwise, special functions
+ * provided by Boost are used.
  */
-  #ifdef PXRMP_FORCE_BOOST_FOR_SPECFUNC
-    #define PXRMP_INTERNAL_SPECFUNC_WITH_BOOST
-  #else
-    #if __cplusplus > 201402L
-      #define PXRMP_INTERNAL_SPECFUNC_WITH_CXX17
-    #else
-      #define PXRMP_INTERNAL_SPECFUNC_WITH_BOOST
-    #endif
-  #endif
+ #if (__cplusplus > 201402L) && defined(PXRMP_USE_CXX17_FOR_SPECIAL_FUNCTIONS)
+   #define PXRMP_INTERNAL_SPECFUNC_WITH_CXX17
+ #else
+   #define PXRMP_INTERNAL_SPECFUNC_WITH_BOOST
+ #endif
 
 /**
  * By doing
