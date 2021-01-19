@@ -7,7 +7,7 @@ C++14 standard is followed. The core functions of the library can be included in
 
 The library implements the following physical processes: Breit-Wheeler pair production, Quantum Synchrotron photon emission and Schwinger pair production.
 
-#### src
+#### include/picsar_qed
 - qed_commons.h : defines some macros which influence the behaviour of the library
 
 #### src/containers
@@ -17,7 +17,7 @@ The library implements the following physical processes: Breit-Wheeler pair prod
 
 - picsar_tables.hpp : it provides 1D and 2D equispaced tables.
 
-####  src/math
+####  include/picsar_qed/math
 - math_constants.h : several useful mathematical constants
 
 - cmath_overloads.hpp : defines some overloads to correctly use the right version of the mathematical functions in `cmath` (e.g. `sqrt` in double precision and `sqrtf` in single precision). This is done automatically when
@@ -29,14 +29,14 @@ The library implements the following physical processes: Breit-Wheeler pair prod
 
 - vec_functions.hpp : contains methods to perform operations on 3-vectors (e.g. scalar product, norm...)
 
-#### src/utils
+#### include/picsar_qed/utils
 - progress_bar.hpp : a simple progress bar
 
 - picsar_algo.hpp : a collection of useful algorithms (linear interpolation, upper_bound...)
 
 - serialization.hpp : provides some helper functions to convert objects into byte vectors and vice versa
 
-#### src/physics
+#### include/picsar_qed/physics
 
 - phys_constants.h : some physical constants
 
@@ -44,11 +44,11 @@ The library implements the following physical processes: Breit-Wheeler pair prod
 
 - unit_conversion.hpp : provides helper functions useful to support several unit systems.
 
-#### src/physics/schwinger
+#### include/picsar_qed/physics/schwinger
 
 - schwinger_pair_engine_core.hpp : methods implementing Schwinger pair production
 
-#### src/physics/breit_wheeler
+#### include/picsar_qed/physics/breit_wheeler
 
 - breit_wheeler_engine_core.hpp :  methods implementing Breit-Wheeler pair production
 
@@ -58,7 +58,7 @@ The library implements the following physical processes: Breit-Wheeler pair prod
 
 - breit_wheeler_engine_tabulated_functions.hpp [needs Boost]: contains the functions which are stored in the lookup tables
 
-#### src/physics/quantum_sync
+#### include/picsar_qed/physics/quantum_sync
 
 - quantum_sync_engine_core.hpp :  methods implementing Quantum Synchrotron photon emission
 
@@ -71,7 +71,7 @@ The library implements the following physical processes: Breit-Wheeler pair prod
 ### Unit tests & validation
 
 #### QED_tests
-This folder contains several unit tests. They can be run from the multi_physics folder by doing 
+This folder contains several unit tests. They can be run from the multi_physics folder by doing
 ```
 $ mkdir build
 $ cd build/
