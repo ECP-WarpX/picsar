@@ -4,7 +4,7 @@
 //Should be included by all the src files of the library
 #include "picsar_qed/qed_commons.h"
 
-#ifdef PXRMP_INTERNAL_STL_UPPER_BOUND
+#ifndef PXRMP_PICSAR_UPPER_BOUND
     #include <algorithm>
 #endif
 
@@ -17,13 +17,12 @@ namespace utils{
 * to the first element in the range [first,last)
 * which compares greater than val. If no element in the range compares
 * greater than val, the function returns last.
-* If the internal preprocessor variable PXRMP_INTERNAL_PICSAR_UPPER_BOUND
-* is defined, a GPU-compatible version is used. Otherwise, if the
-* internal preprocessor variable PXRMP_INTERNAL_STL_UPPER_BOUND is defined,
+* If the preprocessor variable PXRMP_PICSAR_UPPER_BOUND
+* is defined, a GPU-compatible version is used. Otherwise,
 * the upper_bound function of the standard template library is used.
 * The choice should be made automatically by the library depending on if
 * the code is compiled for GPU. However, the PICSAR implementation can
-* be forced defining PXRMP_FORCE_PICSAR_UPPER_BOUND.
+* be forced defining PXRMP_PICSAR_UPPER_BOUND.
 *
 * @tparam ForwardIt the iterator type
 * @tparam T the type of 'val'
@@ -33,13 +32,13 @@ namespace utils{
 * @return a ForwardIt to the upper bound
 */
 template<typename ForwardIt, typename T>
-PXRMP_INTERNAL_GPU_DECORATOR
-PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+PXRMP_GPU_QUALIFIER
+PXRMP_FORCE_INLINE
 ForwardIt
 picsar_upper_bound
 (ForwardIt first, ForwardIt last, const T& val)
 {
-#ifdef PXRMP_INTERNAL_PICSAR_UPPER_BOUND
+#ifdef PXRMP_PICSAR_UPPER_BOUND
 
     size_t count = last-first;
     do{
@@ -57,10 +56,8 @@ picsar_upper_bound
 
     return first;
 
-#elif defined(PXRMP_INTERNAL_STL_UPPER_BOUND)
-    return std::upper_bound(first, last, val);
 #else
-    #error Wrong preprocessor variable for picsar_upper_bound
+    return std::upper_bound(first, last, val);
 #endif
 }
 
@@ -80,8 +77,8 @@ picsar_upper_bound
 * @return a ForwardIt to the upper bound
 */
 template<typename T, typename Functor>
-PXRMP_INTERNAL_GPU_DECORATOR
-PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+PXRMP_GPU_QUALIFIER
+PXRMP_FORCE_INLINE
 int
 picsar_upper_bound_functor
 (int first, const int last, const T& val, Functor&& functor)
@@ -116,8 +113,8 @@ picsar_upper_bound_functor
  * @return the interpolation result
  */
 template<typename RealType>
-PXRMP_INTERNAL_GPU_DECORATOR
-PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+PXRMP_GPU_QUALIFIER
+PXRMP_FORCE_INLINE
 RealType linear_interp(
     RealType x0, RealType x1,
     RealType f0, RealType f1, RealType x)
@@ -144,8 +141,8 @@ RealType linear_interp(
  * @return the interpolation result
  */
 template<typename RealType>
-PXRMP_INTERNAL_GPU_DECORATOR
-PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+PXRMP_GPU_QUALIFIER
+PXRMP_FORCE_INLINE
 RealType bilinear_interp(
     RealType x0, RealType x1,
     RealType y0, RealType y1,

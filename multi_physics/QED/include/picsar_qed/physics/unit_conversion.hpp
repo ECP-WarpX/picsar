@@ -130,7 +130,7 @@ namespace phys{
         * @param[in] reference_quantity_to reference quantity needed for To  (if needed)
         * @return the conversion factor
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept;
@@ -143,7 +143,7 @@ namespace phys{
     template<unit_system UnitSystem, typename RealType>
     struct conv<quantity::mass, UnitSystem, UnitSystem, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -153,7 +153,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::mass, unit_system::SI, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -163,7 +163,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::mass, unit_system::SI, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -173,7 +173,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::mass, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -185,7 +185,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::mass, unit_system::norm_omega, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -195,7 +195,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::mass, unit_system::norm_omega, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -205,7 +205,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::mass, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -218,7 +218,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::mass, unit_system::norm_lambda, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -228,7 +228,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::mass, unit_system::norm_lambda, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -238,7 +238,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::mass, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -251,7 +251,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::mass, unit_system::heaviside_lorentz, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -263,7 +263,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::mass, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -276,7 +276,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::mass, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -291,7 +291,7 @@ namespace phys{
     template<unit_system UnitSystem, typename RealType>
     struct conv<quantity::charge, UnitSystem, UnitSystem, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -301,7 +301,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::charge, unit_system::SI, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -311,7 +311,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::charge, unit_system::SI, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -321,7 +321,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::charge, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -333,7 +333,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::charge, unit_system::norm_omega, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -343,7 +343,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::charge, unit_system::norm_omega, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -353,7 +353,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::charge, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -363,7 +363,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::charge, unit_system::norm_lambda, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -373,7 +373,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::charge, unit_system::norm_lambda, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -383,7 +383,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::charge, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -393,7 +393,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::charge, unit_system::heaviside_lorentz, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -404,7 +404,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::charge, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -414,7 +414,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::charge, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -426,7 +426,7 @@ namespace phys{
     template<unit_system UnitSystem, typename RealType>
     struct conv<quantity::velocity, UnitSystem, UnitSystem, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -436,7 +436,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::velocity, unit_system::SI, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -446,7 +446,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::velocity, unit_system::SI, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -456,7 +456,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::velocity, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -466,7 +466,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::velocity, unit_system::norm_omega, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -476,7 +476,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::velocity, unit_system::norm_omega, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -486,7 +486,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::velocity, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -496,7 +496,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::velocity, unit_system::norm_lambda, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -506,7 +506,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::velocity, unit_system::norm_lambda, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -516,7 +516,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::velocity, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -526,7 +526,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::velocity, unit_system::heaviside_lorentz, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -536,7 +536,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::velocity, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -546,7 +546,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::velocity, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -558,7 +558,7 @@ namespace phys{
     template<unit_system UnitSystem, typename RealType>
     struct conv<quantity::momentum, UnitSystem, UnitSystem, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -568,7 +568,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::momentum, unit_system::SI, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -579,7 +579,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::momentum, unit_system::SI, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -590,7 +590,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::momentum, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -601,7 +601,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::momentum, unit_system::norm_omega, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -612,7 +612,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::momentum, unit_system::norm_omega, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -622,7 +622,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::momentum, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -633,7 +633,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::momentum, unit_system::norm_lambda, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -644,7 +644,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::momentum, unit_system::norm_lambda, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -654,7 +654,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::momentum, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -665,7 +665,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::momentum, unit_system::heaviside_lorentz, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -676,7 +676,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::momentum, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -687,7 +687,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::momentum, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -700,7 +700,7 @@ namespace phys{
     template<unit_system UnitSystem, typename RealType>
     struct conv<quantity::energy, UnitSystem, UnitSystem, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -710,7 +710,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::energy, unit_system::SI, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -721,7 +721,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::energy, unit_system::SI, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -732,7 +732,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::energy, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -743,7 +743,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::energy, unit_system::norm_omega, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -754,7 +754,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::energy, unit_system::norm_omega, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -764,7 +764,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::energy, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -775,7 +775,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::energy, unit_system::norm_lambda, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -786,7 +786,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::energy, unit_system::norm_lambda, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -796,7 +796,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::energy, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -807,7 +807,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::energy, unit_system::heaviside_lorentz, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -817,7 +817,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::energy, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -828,7 +828,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::energy, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -841,7 +841,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::length, unit_system::SI, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -851,7 +851,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::length, unit_system::SI, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -864,7 +864,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::length, unit_system::SI, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -874,7 +874,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::length, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -885,7 +885,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::length, unit_system::norm_omega, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -895,7 +895,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::length, unit_system::norm_omega, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -905,7 +905,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::length, unit_system::norm_omega, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -916,7 +916,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::length, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -929,7 +929,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::length, unit_system::norm_lambda, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -939,7 +939,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::length, unit_system::norm_lambda, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -952,7 +952,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::length, unit_system::norm_lambda, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -963,7 +963,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::length, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_from*/) noexcept
@@ -977,7 +977,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::length, unit_system::heaviside_lorentz, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -988,7 +988,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::length, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -1003,7 +1003,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::length, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -1018,7 +1018,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::length, unit_system::heaviside_lorentz, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1030,7 +1030,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::area, unit_system::SI, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1040,7 +1040,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::area, unit_system::SI, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -1053,7 +1053,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::area, unit_system::SI, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -1064,7 +1064,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::area, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1078,7 +1078,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::area, unit_system::norm_omega, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1092,7 +1092,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::area, unit_system::norm_omega, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -1103,7 +1103,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::area, unit_system::norm_omega, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -1118,7 +1118,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::area, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1131,7 +1131,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::area, unit_system::norm_lambda, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1141,7 +1141,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::area, unit_system::norm_lambda, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -1156,7 +1156,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::area, unit_system::norm_lambda, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -1168,7 +1168,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::area, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1183,7 +1183,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::area, unit_system::heaviside_lorentz, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1197,7 +1197,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::area, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -1212,7 +1212,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::area, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -1227,7 +1227,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::area, unit_system::heaviside_lorentz, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1239,7 +1239,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::volume, unit_system::SI, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1249,7 +1249,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::volume, unit_system::SI, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -1263,7 +1263,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::volume, unit_system::SI, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -1274,7 +1274,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::volume, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1290,7 +1290,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::volume, unit_system::norm_omega, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1304,7 +1304,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::volume, unit_system::norm_omega, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -1316,7 +1316,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::volume, unit_system::norm_omega, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -1332,7 +1332,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::volume, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1346,7 +1346,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::volume, unit_system::norm_lambda, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1356,7 +1356,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::volume, unit_system::norm_lambda, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -1372,7 +1372,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::volume, unit_system::norm_lambda, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -1385,7 +1385,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::volume, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1401,7 +1401,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::volume, unit_system::heaviside_lorentz, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1417,7 +1417,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::volume, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -1433,7 +1433,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::volume, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -1449,7 +1449,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::volume, unit_system::heaviside_lorentz, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1461,7 +1461,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::time, unit_system::SI, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1471,7 +1471,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::time, unit_system::SI, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -1483,7 +1483,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::time, unit_system::SI, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -1493,7 +1493,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::time, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1505,7 +1505,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::time, unit_system::norm_omega, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1515,7 +1515,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::time, unit_system::norm_omega, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -1525,7 +1525,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::time, unit_system::norm_omega, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -1536,7 +1536,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::time, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1549,7 +1549,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::time, unit_system::norm_lambda, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1559,7 +1559,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::time, unit_system::norm_lambda, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -1572,7 +1572,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::time, unit_system::norm_lambda, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -1583,7 +1583,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::time, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1597,7 +1597,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::time, unit_system::heaviside_lorentz, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1608,7 +1608,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::time, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -1623,7 +1623,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::time, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -1638,7 +1638,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::time, unit_system::heaviside_lorentz, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1650,7 +1650,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::rate, unit_system::SI, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1660,7 +1660,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::rate, unit_system::SI, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -1670,7 +1670,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::rate, unit_system::SI, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -1680,7 +1680,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::rate, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1691,7 +1691,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::rate, unit_system::norm_omega, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1701,7 +1701,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::rate, unit_system::norm_omega, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -1711,7 +1711,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::rate, unit_system::norm_omega, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -1724,7 +1724,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::rate, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1737,7 +1737,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::rate, unit_system::norm_lambda, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1747,7 +1747,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::rate, unit_system::norm_lambda, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -1758,7 +1758,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::rate, unit_system::norm_lambda, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -1768,7 +1768,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::rate, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1783,7 +1783,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::rate, unit_system::heaviside_lorentz, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1795,7 +1795,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::rate, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ ,
             const RealType reference_quantity_to) noexcept
@@ -1810,7 +1810,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::rate, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -1825,7 +1825,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::rate, unit_system::heaviside_lorentz, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1837,7 +1837,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::E, unit_system::SI, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1847,7 +1847,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::E, unit_system::SI, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -1862,7 +1862,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::E, unit_system::SI, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -1877,7 +1877,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::E, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1892,7 +1892,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::E, unit_system::norm_omega, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1906,7 +1906,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::E, unit_system::norm_omega, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -1916,7 +1916,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::E, unit_system::norm_omega, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -1929,7 +1929,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::E, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1946,7 +1946,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::E, unit_system::norm_lambda, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -1961,7 +1961,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::E, unit_system::norm_lambda, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -1972,7 +1972,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::E, unit_system::norm_lambda, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -1982,7 +1982,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::E, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -2000,7 +2000,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::E, unit_system::heaviside_lorentz, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -2015,7 +2015,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::E, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -2032,7 +2032,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::E, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -2050,7 +2050,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::E, unit_system::heaviside_lorentz, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -2062,7 +2062,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::B, unit_system::SI, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -2072,7 +2072,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::B, unit_system::SI, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -2086,7 +2086,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::B, unit_system::SI, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -2101,7 +2101,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::B, unit_system::SI, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -2116,7 +2116,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::B, unit_system::norm_omega, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -2130,7 +2130,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::B, unit_system::norm_omega, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -2140,7 +2140,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::B, unit_system::norm_omega, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -2153,7 +2153,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::B, unit_system::norm_omega, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -2170,7 +2170,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::B, unit_system::norm_lambda, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -2185,7 +2185,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::B, unit_system::norm_lambda, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -2196,7 +2196,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::B, unit_system::norm_lambda, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType reference_quantity_to) noexcept
@@ -2206,7 +2206,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::B, unit_system::norm_lambda, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType reference_quantity_from,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -2224,7 +2224,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::B, unit_system::heaviside_lorentz, unit_system::SI, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept
@@ -2239,7 +2239,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::B, unit_system::heaviside_lorentz, unit_system::norm_omega, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -2256,7 +2256,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::B, unit_system::heaviside_lorentz, unit_system::norm_lambda, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/,
             const RealType reference_quantity_to) noexcept
@@ -2274,7 +2274,7 @@ namespace phys{
     template<typename RealType>
     struct conv<quantity::B, unit_system::heaviside_lorentz, unit_system::heaviside_lorentz, RealType>
     {
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         static constexpr RealType fact(
             const RealType /*reference_quantity_from*/ = math::one<RealType>,
             const RealType /*reference_quantity_to*/ = math::one<RealType>) noexcept

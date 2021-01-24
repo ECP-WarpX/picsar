@@ -14,7 +14,8 @@
 #include <thrust/device_vector.h>
 
 // PICSAR MULTIPHYSICS: BREIT WHEELER ENGINE
-#define PXRMP_GPU __host__ __device__
+#define PXRMP_WITH_GPU
+#define PXRMP_GPU_QUALIFIER __host__ __device__
 #include <picsar_qed/physics/breit_wheeler/breit_wheeler_engine_core.hpp>
 #include <picsar_qed/physics/breit_wheeler/breit_wheeler_engine_tables.hpp>
 #include <picsar_qed/physics/breit_wheeler/breit_wheeler_engine_tables_generator.hpp>

@@ -6,7 +6,7 @@
 
 #include <cstddef>
 //If GPUs are not used, picsar_arrays are just an alias for std::array
-#ifndef PXRMP_INTERNAL_ENABLE_GPU_FRIENDLY_ARRAY
+#ifndef PXRMP_ENABLE_GPU_FRIENDLY_ARRAY
     #include <array>
 #endif
 
@@ -14,7 +14,7 @@ namespace picsar{
 namespace multi_physics{
 namespace containers{
 
-#ifdef PXRMP_INTERNAL_ENABLE_GPU_FRIENDLY_ARRAY
+#ifdef PXRMP_ENABLE_GPU_FRIENDLY_ARRAY
 
     /**
     * This class implements a GPU-friendly STL-like array.
@@ -34,7 +34,7 @@ namespace containers{
         * @param[in] i the index of the element
         * @return a const reference to the i-th element
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         const T& operator [] (int i) const noexcept
         {
             return m_data[i];
@@ -46,7 +46,7 @@ namespace containers{
         * @param[in] i the index of the element
         * @return a reference to the i-th element
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         T& operator [] (int i) noexcept
         {
             return m_data[i];
@@ -57,7 +57,7 @@ namespace containers{
         *
         * @return a const pointer to the underlying raw data array
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         const T* data() const noexcept
         {
             return m_data;
@@ -68,7 +68,7 @@ namespace containers{
         *
         * @return the size of the array
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         constexpr int size() const noexcept
         {
             return static_cast<int>(N);
@@ -79,7 +79,7 @@ namespace containers{
         *
         * @return a const pointer to the first element of the array
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         constexpr const T* begin() const noexcept
         {
             return m_data;
@@ -90,7 +90,7 @@ namespace containers{
         *
         * @return a const pointer to the end of the array
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         constexpr const T* end() const noexcept
         {
             return m_data+N;
@@ -101,7 +101,7 @@ namespace containers{
         *
         * @return a pointer to the first element of the array
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         constexpr T* begin() noexcept
         {
             return m_data;
@@ -112,7 +112,7 @@ namespace containers{
         *
         * @return a pointer to the end of the array
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         constexpr T* end() noexcept
         {
             return m_data+N;
@@ -121,7 +121,7 @@ namespace containers{
         };
 #else
 
-    // If PXRMP_INTERNAL_ENABLE_GPU_FRIENDLY_ARRAY is not defined,
+    // If PXRMP_ENABLE_GPU_FRIENDLY_ARRAY is not defined,
     // picsar_array is just an alias for std::array
     template <typename T, size_t N>
     using picsar_array = std::array<T, N>;

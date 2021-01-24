@@ -10,7 +10,6 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/tools/floating_point_comparison.hpp>
 
-#define PXRMP_PREVENT_USE_STD_FOR_MATH
 #include <picsar_qed/math/cmath_overloads.hpp>
 
 using namespace picsar::multi_physics::math;

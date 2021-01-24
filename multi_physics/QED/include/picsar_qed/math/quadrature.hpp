@@ -75,41 +75,41 @@ namespace math{
     inline constexpr RealType generic_quad_a_b(
         const std::function<RealType(RealType)>& f, RealType a, RealType b)
     {
-        PXRMP_INTERNAL_CONSTEXPR_IF (
+        PXRMP_CONSTEXPR_IF (
             QuadAlgo == quadrature_algorithm::trapezoidal){
             return boost::math::quadrature::trapezoidal(f, a, b);
         }
-        else PXRMP_INTERNAL_CONSTEXPR_IF (
+        else PXRMP_CONSTEXPR_IF (
             QuadAlgo == quadrature_algorithm::tanh_sinh){
             boost::math::quadrature::tanh_sinh<RealType> integrator;
             return integrator.integrate(f, a, b);
         }
-        else PXRMP_INTERNAL_CONSTEXPR_IF (
+        else PXRMP_CONSTEXPR_IF (
             QuadAlgo == quadrature_algorithm::exp_sinh){
             boost::math::quadrature::exp_sinh<RealType> integrator;
             return integrator.integrate(f, a, b);
         }
-        else PXRMP_INTERNAL_CONSTEXPR_IF (
+        else PXRMP_CONSTEXPR_IF (
             QuadAlgo == quadrature_algorithm::gauss_kronrod15){
             return boost::math::quadrature::gauss_kronrod<RealType, 15>
                 ::integrate(f, a, b);
         }
-        else PXRMP_INTERNAL_CONSTEXPR_IF (
+        else PXRMP_CONSTEXPR_IF (
             QuadAlgo == quadrature_algorithm::gauss_kronrod31){
             return boost::math::quadrature::gauss_kronrod<RealType, 31>
                 ::integrate(f, a, b);
         }
-        else PXRMP_INTERNAL_CONSTEXPR_IF (
+        else PXRMP_CONSTEXPR_IF (
             QuadAlgo == quadrature_algorithm::gauss_kronrod41){
             return boost::math::quadrature::gauss_kronrod<RealType, 41>
                 ::integrate(f, a, b);
         }
-        else PXRMP_INTERNAL_CONSTEXPR_IF (
+        else PXRMP_CONSTEXPR_IF (
             QuadAlgo == quadrature_algorithm::gauss_kronrod51){
             return boost::math::quadrature::gauss_kronrod<RealType, 51>
                 ::integrate(f, a, b);
         }
-        else PXRMP_INTERNAL_CONSTEXPR_IF (
+        else PXRMP_CONSTEXPR_IF (
             QuadAlgo == quadrature_algorithm::gauss_kronrod61){
             return boost::math::quadrature::gauss_kronrod<RealType, 61>
                 ::integrate(f, a, b);
@@ -170,7 +170,7 @@ namespace math{
     * @return the integral of f in (a,b)
     */
     template<typename RealType>
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_FORCE_INLINE
     constexpr RealType quad_a_inf(
         const std::function<RealType(RealType)>& f, RealType a)
     {

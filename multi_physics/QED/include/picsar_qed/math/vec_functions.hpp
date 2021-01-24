@@ -26,7 +26,7 @@ namespace math{
     * @return the squared norm
     */
     template <typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
     RealType norm_square(const vec3<RealType>& vec) noexcept
     {
         return vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2];
@@ -40,7 +40,7 @@ namespace math{
     * @return the norm
     */
     template <typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
     RealType norm(const vec3<RealType>& vec) noexcept
     {
         return m_sqrt(norm_square(vec));
@@ -55,7 +55,7 @@ namespace math{
     * @return the dot product between va and vb
     */
     template <typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
     RealType dot(const vec3<RealType>& va, const vec3<RealType>& vb) noexcept
     {
         return va[0]*vb[0] + va[1]*vb[1] + va[2]*vb[2];
@@ -70,7 +70,7 @@ namespace math{
     * @return the cross product between va and vb
     */
     template <typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
     vec3<RealType> cross(const vec3<RealType>& va, const vec3<RealType>& vb) noexcept
     {
         vec3<RealType> out;
@@ -89,7 +89,7 @@ namespace math{
     * @return the scalar product between v and s
     */
     template <typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
     vec3<RealType> operator*(const vec3<RealType>& v, const RealType s) noexcept
     {
         vec3<RealType> out;
@@ -108,7 +108,7 @@ namespace math{
     * @return the scalar product between s and v
     */
     template <typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
     vec3<RealType> operator*(const RealType s, const vec3<RealType>& v) noexcept
     {
         vec3<RealType> out;
@@ -127,7 +127,7 @@ namespace math{
     * @return v/s
     */
     template <typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
     vec3<RealType> operator/(const vec3<RealType>& v, const RealType s) noexcept
     {
         vec3<RealType> out;
@@ -146,7 +146,7 @@ namespace math{
     * @return va+vb
     */
     template <typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
     vec3<RealType> operator+(const vec3<RealType>& va, const vec3<RealType>& vb) noexcept
     {
         vec3<RealType> out;
@@ -165,7 +165,7 @@ namespace math{
     * @return va-vb
     */
     template <typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
     vec3<RealType> operator-(const vec3<RealType>& va, const vec3<RealType>& vb) noexcept
     {
         vec3<RealType> out;

@@ -14,7 +14,8 @@
 #include <thrust/device_vector.h>
 
 // PICSAR MULTIPHYSICS: QUANTUM SYNCHROTRON ENGINE
-#define PXRMP_GPU __host__ __device__
+#define PXRMP_WITH_GPU
+#define PXRMP_GPU_QUALIFIER __host__ __device__
 #include "../include/picsar_qed/physics/quantum_sync/quantum_sync_engine_core.hpp"
 #include "../include/picsar_qed/physics/quantum_sync/quantum_sync_engine_tables.hpp"
 #include "../include/picsar_qed/physics/quantum_sync/quantum_sync_engine_tables_generator.hpp"

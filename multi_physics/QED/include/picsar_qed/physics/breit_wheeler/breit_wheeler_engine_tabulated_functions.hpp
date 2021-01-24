@@ -46,7 +46,7 @@ namespace breit_wheeler{
     * @return the parameter X
     */
     template<typename RealType>
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_FORCE_INLINE
     constexpr RealType compute_x(
         const RealType chi_phot, const RealType chi_ele) noexcept
     {

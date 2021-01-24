@@ -23,7 +23,7 @@ namespace containers{
         /**
         * Empty constructor.
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         picsar_span(){}
 
         /**
@@ -32,7 +32,7 @@ namespace containers{
         * @param[in] t_size size of the array
         * @param[in] ptr_data pointer to the first element of the array
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         picsar_span(size_t t_size, T* ptr_data):
             m_size{t_size}, m_ptr_data{ptr_data}
         {}
@@ -43,7 +43,7 @@ namespace containers{
         * @param[in] i index of the desired element
         * @return a reference to the i-th element
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         T& operator [] (int i) noexcept
         {
             return m_ptr_data[i];
@@ -55,7 +55,7 @@ namespace containers{
         * @param[in] i index of the desired element
         * @return a const reference to the i-th element
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         const T& operator [] (int i) const noexcept
         {
             return m_ptr_data[i];
@@ -66,7 +66,7 @@ namespace containers{
         *
         * @return a const pointer to the underlying raw data array
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         constexpr const T* data() const noexcept
         {
             return m_ptr_data;
@@ -77,7 +77,7 @@ namespace containers{
         *
         * @return the size of the array
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         constexpr size_t size() const noexcept
         {
             return m_size;
@@ -88,7 +88,7 @@ namespace containers{
         *
         * @return a const pointer to the first element of the array
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         constexpr const T* begin() const noexcept
         {
             return m_ptr_data;
@@ -99,7 +99,7 @@ namespace containers{
         *
         * @return a const pointer to the end of the array
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         constexpr const T* end() const noexcept
         {
             return m_ptr_data+m_size;
@@ -110,7 +110,7 @@ namespace containers{
         *
         * @return a pointer to the first element of the array
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         constexpr T* begin() noexcept
         {
             return m_ptr_data;
@@ -121,7 +121,7 @@ namespace containers{
         *
         * @return a pointer to the end of the array
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         constexpr T* end() noexcept
         {
             return m_ptr_data+m_size;

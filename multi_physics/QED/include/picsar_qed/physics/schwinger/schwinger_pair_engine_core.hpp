@@ -44,8 +44,8 @@ namespace schwinger{
     * @return the pair production rate
     */
     template<typename RealType, unit_system UnitSystem = unit_system::SI>
-    PXRMP_INTERNAL_GPU_DECORATOR
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER
+    PXRMP_FORCE_INLINE
     RealType pair_production_rate(
         const math::vec3<RealType> t_em_e,
         const math::vec3<RealType> t_em_b,
@@ -106,8 +106,8 @@ namespace schwinger{
     * @return the pair production rate
     */
     template<typename RealType, unit_system UnitSystem = unit_system::SI>
-    PXRMP_INTERNAL_GPU_DECORATOR
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER
+    PXRMP_FORCE_INLINE
     RealType pair_production_rate(
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,
@@ -135,8 +135,8 @@ namespace schwinger{
     * @return the expected number of generated pairs
     */
     template<typename RealType, unit_system UnitSystem = unit_system::SI>
-    PXRMP_INTERNAL_GPU_DECORATOR
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER
+    PXRMP_FORCE_INLINE
     RealType expected_pair_number(
         const math::vec3<RealType> t_em_e,
         const math::vec3<RealType> t_em_b,
@@ -184,8 +184,8 @@ namespace schwinger{
     * @return the expected number of generated pairs
     */
     template<typename RealType, unit_system UnitSystem>
-    PXRMP_INTERNAL_GPU_DECORATOR
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER
+    PXRMP_FORCE_INLINE
     RealType expected_pair_number(
         const RealType ex, const RealType ey, const RealType ez,
         const RealType bx, const RealType by, const RealType bz,

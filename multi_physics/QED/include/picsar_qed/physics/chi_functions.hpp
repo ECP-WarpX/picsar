@@ -29,8 +29,8 @@ namespace phys{
     * @return the chi parameter
     */
     template<typename RealType, unit_system UnitSystem = unit_system::SI>
-    PXRMP_INTERNAL_GPU_DECORATOR
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER
+    PXRMP_FORCE_INLINE
     RealType chi_photon(
         const math::vec3<RealType> t_p,
         const math::vec3<RealType> t_em_e,
@@ -84,8 +84,8 @@ namespace phys{
     * @return the chi parameter
     */
     template<typename RealType, unit_system UnitSystem>
-    PXRMP_INTERNAL_GPU_DECORATOR
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER
+    PXRMP_FORCE_INLINE
     RealType chi_photon(
         const RealType px, const RealType py, const RealType pz,
         const RealType ex, const RealType ey, const RealType ez,
@@ -113,8 +113,8 @@ namespace phys{
     * @return the chi parameter
     */
     template<typename RealType, unit_system UnitSystem>
-    PXRMP_INTERNAL_GPU_DECORATOR
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER
+    PXRMP_FORCE_INLINE
     RealType chi_ele_pos(
         const math::vec3<RealType> t_p,
         const math::vec3<RealType> t_em_e,
@@ -179,8 +179,8 @@ namespace phys{
     * @return the chi parameter
     */
     template<typename RealType, unit_system UnitSystem>
-    PXRMP_INTERNAL_GPU_DECORATOR
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER
+    PXRMP_FORCE_INLINE
     RealType chi_ele_pos(
         const RealType px, const RealType py, const RealType pz,
         const RealType ex, const RealType ey, const RealType ez,

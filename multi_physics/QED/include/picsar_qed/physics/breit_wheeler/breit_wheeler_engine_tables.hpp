@@ -116,8 +116,8 @@ namespace breit_wheeler{
     * @return the Erber approximation for T when chi << 1
     */
     template <typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER
+    PXRMP_FORCE_INLINE
     RealType dndt_approx_left(RealType chi_phot)
     {
         constexpr RealType coeff = static_cast<RealType>(8./3.);
@@ -133,8 +133,8 @@ namespace breit_wheeler{
     * @return the Erber approximation for T when chi >> 1
     */
     template <typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER
+    PXRMP_FORCE_INLINE
     RealType dndt_approx_right(RealType chi_phot)
     {
         return erber_dndt_asynt_b<RealType>/math::m_cbrt(chi_phot);
@@ -283,7 +283,7 @@ namespace breit_wheeler{
             *
             * @return true if rhs is equal to *this. false otherwise
             */
-            PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
             bool operator== (
                 const dndt_lookup_table<
                     RealType, VectorType> &rhs) const
@@ -330,8 +330,8 @@ namespace breit_wheeler{
             *
             * @return the value of the T function
             */
-            PXRMP_INTERNAL_GPU_DECORATOR
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            PXRMP_GPU_QUALIFIER
+            PXRMP_FORCE_INLINE
             RealType interp(
                 RealType chi_phot, bool* const is_out = nullptr) const noexcept
             {
@@ -390,8 +390,8 @@ namespace breit_wheeler{
             *
             * @return true if the table has been initialized, false otherwise
             */
-            PXRMP_INTERNAL_GPU_DECORATOR
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            PXRMP_GPU_QUALIFIER
+            PXRMP_FORCE_INLINE
             bool is_init()
             {
                 return m_init_flag;
@@ -433,7 +433,7 @@ namespace breit_wheeler{
             * (in breit_wheeler_engine_tables_generator.hpp)
             * since it requires the Boost library.
             */
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            PXRMP_FORCE_INLINE
             static RealType aux_generate_double(RealType x);
     };
 
@@ -626,7 +626,7 @@ namespace breit_wheeler{
             *
             * @return true if rhs is equal to *this. false otherwise
             */
-            PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
             bool operator== (
                 const pair_prod_lookup_table<
                     RealType, VectorType> &rhs) const
@@ -683,8 +683,8 @@ namespace breit_wheeler{
             *
             * @return chi of one of the generated particles
             */
-            PXRMP_INTERNAL_GPU_DECORATOR
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            PXRMP_GPU_QUALIFIER
+            PXRMP_FORCE_INLINE
             RealType interp(
                 const RealType chi_phot,
                 const RealType unf_zero_one_minus_epsi,
@@ -776,8 +776,8 @@ namespace breit_wheeler{
             *
             * @return true if the table has been initialized, false otherwise
             */
-            PXRMP_INTERNAL_GPU_DECORATOR
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            PXRMP_GPU_QUALIFIER
+            PXRMP_FORCE_INLINE
             bool is_init()
             {
                 return m_init_flag;
@@ -819,7 +819,7 @@ namespace breit_wheeler{
             * (in breit_wheeler_engine_tables_generator.hpp)
             * since it requires the Boost library.
             */
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            PXRMP_FORCE_INLINE
             static std::vector<RealType>
             aux_generate_double(RealType x,
                 const std::vector<RealType>& y);

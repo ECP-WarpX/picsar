@@ -17,7 +17,8 @@
 #include <cuda.h>
 #include <curand.h>
 
-#define PXRMP_GPU __host__ __device__
+#define PXRMP_WITH_GPU
+#define PXRMP_GPU_QUALIFIER __host__ __device__
 #include "../include/picsar_qed/physics/schwinger/schwinger_pair_engine_core.hpp"
 
 //Alias for the picsar::multi_physics namespace

@@ -54,7 +54,7 @@ namespace breit_wheeler{
     * @return the result of compute_T_function
     */
     template<typename RealType, typename VectorType>
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_FORCE_INLINE
     RealType dndt_lookup_table<RealType, VectorType>::
     aux_generate_double(RealType x)
     {
@@ -90,7 +90,7 @@ namespace breit_wheeler{
         #pragma omp parallel for
 #endif
         for (int i = 0; i < static_cast<int>(all_coords.size()); ++i){
-            PXRMP_INTERNAL_CONSTEXPR_IF (use_internal_double){
+            PXRMP_CONSTEXPR_IF (use_internal_double){
                 all_vals[i] = aux_generate_double(all_coords[i]);
             }
             else {
@@ -143,7 +143,7 @@ namespace breit_wheeler{
     * @return the result of compute_cumulative_prob
     */
     template<typename RealType, typename VectorType>
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_FORCE_INLINE
     std::vector<RealType>
     pair_prod_lookup_table<RealType, VectorType>::
     aux_generate_double(const RealType x, const std::vector<RealType>& y)
@@ -200,7 +200,7 @@ namespace breit_wheeler{
             );
 
             std::vector<RealType> vals = std::vector<RealType>(frac_size);
-            PXRMP_INTERNAL_CONSTEXPR_IF (use_internal_double){
+            PXRMP_CONSTEXPR_IF (use_internal_double){
                 vals = aux_generate_double(
                     chi_phot, chi_parts);
             } else {

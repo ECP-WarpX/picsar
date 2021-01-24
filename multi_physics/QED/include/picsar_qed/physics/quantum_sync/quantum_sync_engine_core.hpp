@@ -44,8 +44,8 @@ namespace quantum_sync{
     * @return an exponentially distributed random number
     */
     template<typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER
+    PXRMP_FORCE_INLINE
     RealType get_optical_depth(const RealType unf_zero_one_minus_epsi)
     {
         using namespace math;
@@ -73,8 +73,8 @@ namespace quantum_sync{
         typename RealType,
         typename TableType,
         unit_system UnitSystem = unit_system::SI>
-    PXRMP_INTERNAL_GPU_DECORATOR
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER
+    PXRMP_FORCE_INLINE
     RealType get_dN_dt(const RealType t_energy_part,
         const RealType chi_part,
         const TableType& ref_dndt_table,
@@ -128,8 +128,8 @@ namespace quantum_sync{
         typename RealType,
         typename TableType,
         unit_system UnitSystem = unit_system::SI>
-    PXRMP_INTERNAL_GPU_DECORATOR
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER
+    PXRMP_FORCE_INLINE
     bool evolve_optical_depth(
         const RealType t_energy_part,
         const RealType chi_part,
@@ -181,8 +181,8 @@ namespace quantum_sync{
         typename RealType, typename TableType,
         unit_system UnitSystem = unit_system::SI
         >
-    PXRMP_INTERNAL_GPU_DECORATOR
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER
+    PXRMP_FORCE_INLINE
     bool generate_photon_update_momentum(
         const RealType chi_particle,
         math::vec3<RealType>& t_v_momentum_particle,

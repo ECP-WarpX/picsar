@@ -109,7 +109,7 @@ namespace containers{
         * @param[in] rhs a const reference to a 1D table of the same type
         * @return true if rhs and *this are equal. false otherwise
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         bool operator== (
             const equispaced_1d_table<RealType, VectorType> &rhs) const
         {
@@ -128,7 +128,7 @@ namespace containers{
         * @param[in] i the index of the desired coordinate
         * @return the i-th coordinate
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_x_coord(const int i) const noexcept
         {
                 return i*m_dx + m_x_min;
@@ -140,7 +140,7 @@ namespace containers{
         * @param[in] i the index of the desired value
         * @return the i-th value
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_val(const size_t i) const noexcept
         {
                 return m_values[i];
@@ -151,7 +151,7 @@ namespace containers{
         *
         * @return the number of points along x
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         int get_how_many_x() const noexcept
         {
             return m_how_many_x;
@@ -162,7 +162,7 @@ namespace containers{
         *
         * @return the minimum x coordinate
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_x_min() const noexcept
         {
             return m_x_min;
@@ -173,7 +173,7 @@ namespace containers{
         *
         * @return the maximum x coordinate
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_x_max() const noexcept
         {
             return m_x_max;
@@ -184,7 +184,7 @@ namespace containers{
         *
         * @return the size along x
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_x_size() const noexcept
         {
             return m_x_size;
@@ -195,7 +195,7 @@ namespace containers{
         *
         * @return the size of the steps along x
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_dx() const noexcept
         {
             return m_dx;
@@ -234,7 +234,7 @@ namespace containers{
         * @param[in] where_x where to perform the interpolation
         * @return the interpolated value
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType interp(const RealType where_x) const noexcept
         {
             using namespace picsar::multi_physics::math;
@@ -260,7 +260,7 @@ namespace containers{
         * @param[in] i index of the value to be overwritten
         * @param[in] what value to be written at position i
         */
-        PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_FORCE_INLINE
         void set_val(int i, RealType what)
         {
             m_values[i] = what;
@@ -409,7 +409,7 @@ namespace containers{
         * @param[in] rhs a const reference to a 2D table of the same type
         * @return true if rhs and *this are equal. false otherwise
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         bool operator== (
             const equispaced_2d_table<RealType, VectorType> &rhs) const
         {
@@ -433,7 +433,7 @@ namespace containers{
         * @param[in] i the index of the desired coordinate
         * @return the i-th coordinate
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_x_coord(int i) const noexcept
         {
             return i*m_dx + m_x_min;
@@ -445,7 +445,7 @@ namespace containers{
         * @param[in] j the index of the desired coordinate
         * @return the j-th coordinate
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_y_coord(int j) const noexcept
         {
             return j*m_dy + m_y_min;
@@ -458,7 +458,7 @@ namespace containers{
         * @param[in] j the index of the desired value along y
         * @return the value at (i,j)
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_val(int i, int j) const noexcept
         {
             return m_values[idx(i, j)];
@@ -469,7 +469,7 @@ namespace containers{
         *
         * @return the number of points along x
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         int get_how_many_x() const noexcept
         {
             return m_how_many_x;
@@ -480,7 +480,7 @@ namespace containers{
         *
         * @return the minimum x coordinate
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_x_min() const noexcept
         {
             return m_x_min;
@@ -491,7 +491,7 @@ namespace containers{
         *
         * @return the maximum x coordinate
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_x_max() const noexcept
         {
             return m_x_max;
@@ -502,7 +502,7 @@ namespace containers{
         *
         * @return the size along x
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_x_size() const noexcept
         {
             return m_x_size;
@@ -513,7 +513,7 @@ namespace containers{
         *
         * @return the size of the steps along x
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_dx() const noexcept
         {
             return m_dx;
@@ -524,7 +524,7 @@ namespace containers{
         *
         * @return the number of points along y
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         int get_how_many_y() const noexcept
         {
             return m_how_many_y;
@@ -535,7 +535,7 @@ namespace containers{
         *
         * @return the minimum y coordinate
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_y_min() const noexcept
         {
             return m_y_min;
@@ -546,7 +546,7 @@ namespace containers{
         *
         * @return the maximum y coordinate
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_y_max() const noexcept
         {
             return m_y_max;
@@ -557,7 +557,7 @@ namespace containers{
         *
         * @return the size along y
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_y_size() const noexcept
         {
             return m_y_size;
@@ -568,7 +568,7 @@ namespace containers{
         *
         * @return the size of the steps along y
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_dy() const noexcept
         {
             return m_dy;
@@ -612,7 +612,7 @@ namespace containers{
         * @param[in] where_y the position along y
         * @return the result of the interpolation
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType interp(const RealType where_x, const RealType where_y) const noexcept
         {
             using namespace picsar::multi_physics::math;
@@ -652,7 +652,7 @@ namespace containers{
         * @param[in] j the index of the position along y
         * @return the result of the interpolation
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType interp_first_coord(RealType where_x, int j) const noexcept
         {
             using namespace picsar::multi_physics::math;
@@ -680,7 +680,7 @@ namespace containers{
         * @param[in] where_y the position along y
         * @return the result of the interpolation
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType interp_second_coord(int i, RealType where_y) const noexcept
         {
             using namespace picsar::multi_physics::math;
@@ -707,7 +707,7 @@ namespace containers{
         * @param[in] j index of the value to be overwritten
         * @param[in] what value to be written at position (i,j)
         */
-        PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_FORCE_INLINE
         void set_val(const int i, const int j, const RealType what)
         {
             m_values[idx(i, j)] = what;
@@ -720,7 +720,7 @@ namespace containers{
         * @param[in] i index of the value to be overwritten
         * @param[in] what value to be written at position i
         */
-        PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_FORCE_INLINE
         void set_val(const int i, const RealType what)
         {
             m_values[i] = what;
@@ -775,7 +775,7 @@ namespace containers{
         * @param[in] j index along y
         * @return index along internal 1D vector
         */
-        PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         int idx(int i, int j) const noexcept
         {
             return i*m_how_many_y + j;

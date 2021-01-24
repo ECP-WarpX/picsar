@@ -52,7 +52,7 @@ namespace quantum_sync{
     * @return the result of compute_G_function
     */
     template<typename RealType, typename VectorType>
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_FORCE_INLINE
     RealType dndt_lookup_table<RealType, VectorType>::
     aux_generate_double(RealType x)
     {
@@ -88,7 +88,7 @@ namespace quantum_sync{
         #pragma omp parallel for
 #endif
         for (int i = 0; i < static_cast<int>(all_coords.size()); ++i){
-            PXRMP_INTERNAL_CONSTEXPR_IF (use_internal_double){
+            PXRMP_CONSTEXPR_IF (use_internal_double){
                 all_vals[i] = aux_generate_double(all_coords[i]);
             }
             else {
@@ -141,7 +141,7 @@ namespace quantum_sync{
     * @return the result of compute_cumulative_prob
     */
     template<typename RealType, typename VectorType>
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_FORCE_INLINE
     std::vector<RealType>
     photon_emission_lookup_table<RealType, VectorType>::
     aux_generate_double(const RealType x, const std::vector<RealType>& y)
@@ -198,7 +198,7 @@ namespace quantum_sync{
             );
 
             std::vector<RealType> vals = std::vector<RealType>(frac_size);
-            PXRMP_INTERNAL_CONSTEXPR_IF (use_internal_double){
+            PXRMP_CONSTEXPR_IF (use_internal_double){
                 vals = aux_generate_double(
                     chi_part, chi_phots);
             } else {

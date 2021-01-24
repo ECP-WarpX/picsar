@@ -44,7 +44,7 @@ namespace quantum_sync{
     * @return the parameter Y
     */
     template<typename RealType>
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_FORCE_INLINE
     constexpr RealType compute_y(
         const RealType chi_part, const RealType csi) noexcept
     {

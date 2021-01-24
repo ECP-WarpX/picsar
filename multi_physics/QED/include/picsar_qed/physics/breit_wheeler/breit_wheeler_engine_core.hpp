@@ -47,8 +47,8 @@ namespace breit_wheeler{
     * @return an exponentially distributed random number
     */
     template<typename RealType>
-    PXRMP_INTERNAL_GPU_DECORATOR
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER
+    PXRMP_FORCE_INLINE
     RealType get_optical_depth(const RealType unf_zero_one_minus_epsi)
     {
         using namespace math;
@@ -77,8 +77,8 @@ namespace breit_wheeler{
         typename RealType,
         typename TableType,
         unit_system UnitSystem = unit_system::SI>
-    PXRMP_INTERNAL_GPU_DECORATOR
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER
+    PXRMP_FORCE_INLINE
     RealType get_dN_dt(
         const RealType t_energy_phot, const RealType chi_phot,
         const TableType& ref_dndt_table,
@@ -127,8 +127,8 @@ namespace breit_wheeler{
         typename RealType,
         typename TableType,
         unit_system UnitSystem = unit_system::SI>
-    PXRMP_INTERNAL_GPU_DECORATOR
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER
+    PXRMP_FORCE_INLINE
     bool evolve_optical_depth(
         const RealType t_energy_phot, const RealType chi_phot,
         const RealType t_dt, RealType& optical_depth,
@@ -179,8 +179,8 @@ namespace breit_wheeler{
         typename RealType, typename TableType,
         unit_system UnitSystem = unit_system::SI
         >
-    PXRMP_INTERNAL_GPU_DECORATOR
-    PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+    PXRMP_GPU_QUALIFIER
+    PXRMP_FORCE_INLINE
     bool generate_breit_wheeler_pairs(
         const RealType chi_photon,
         const math::vec3<RealType>& t_v_momentum_photon,

@@ -7,9 +7,9 @@
 //This .hpp file is an extremely thin wrapper around special functions
 //(Bessel functions for now) defined either in the STL (if C++17 is available)
 //or in Boost library as a fallback.
-#ifdef PXRMP_INTERNAL_SPECFUNC_WITH_CXX17
+#ifdef PXRMP_USE_CXX17_FOR_SPECIAL_FUNCTIONS
     #include <cmath>
-#elif defined(PXRMP_INTERNAL_SPECFUNC_WITH_BOOST)
+#else
     #include <boost/math/special_functions/bessel.hpp>
 #endif
 
@@ -30,9 +30,9 @@ namespace math{
     template<typename RealType>
     inline RealType k_v(RealType v, RealType x)
     {
-#ifdef PXRMP_INTERNAL_SPECFUNC_WITH_CXX17
+#ifdef PXRMP_USE_CXX17_FOR_SPECIAL_FUNCTIONS
         return std::cyl_bessel_k(v, x);
-#elif defined(PXRMP_INTERNAL_SPECFUNC_WITH_BOOST)
+#else
         return boost::math::cyl_bessel_k(v, x);
 #endif
     }

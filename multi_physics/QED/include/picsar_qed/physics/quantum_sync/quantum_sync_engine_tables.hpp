@@ -237,7 +237,7 @@ namespace quantum_sync{
             *
             * @return true if rhs is equal to *this. false otherwise
             */
-            PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
             bool operator== (
                 const dndt_lookup_table<RealType, VectorType> &rhs) const
             {
@@ -283,8 +283,8 @@ namespace quantum_sync{
             *
             * @return the value of the G function
             */
-            PXRMP_INTERNAL_GPU_DECORATOR
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            PXRMP_GPU_QUALIFIER
+            PXRMP_FORCE_INLINE
             RealType interp(
                 RealType chi_part, bool* const is_out = nullptr) const noexcept
             {
@@ -339,8 +339,8 @@ namespace quantum_sync{
             *
             * @return true if the table has been initialized, false otherwise
             */
-            PXRMP_INTERNAL_GPU_DECORATOR
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            PXRMP_GPU_QUALIFIER
+            PXRMP_FORCE_INLINE
             bool is_init()
             {
                 return m_init_flag;
@@ -383,7 +383,7 @@ namespace quantum_sync{
             * (in quantum_sync_engine_tables_generator.hpp)
             * since it requires the Boost library.
             */
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            PXRMP_FORCE_INLINE
             static RealType aux_generate_double(RealType x);
 
     };
@@ -576,7 +576,7 @@ namespace quantum_sync{
             *
             * @return true if rhs is equal to *this. false otherwise
             */
-            PXRMP_INTERNAL_GPU_DECORATOR PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
             bool operator== (
                 const photon_emission_lookup_table<
                     RealType, VectorType> &rhs) const
@@ -631,8 +631,8 @@ namespace quantum_sync{
             *
             * @return chi of one of the generated particles
             */
-            PXRMP_INTERNAL_GPU_DECORATOR
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            PXRMP_GPU_QUALIFIER
+            PXRMP_FORCE_INLINE
             RealType interp(
                 const RealType chi_part,
                 const RealType unf_zero_one_minus_epsi,
@@ -728,8 +728,8 @@ namespace quantum_sync{
             *
             * @return true if the table has been initialized, false otherwise
             */
-            PXRMP_INTERNAL_GPU_DECORATOR
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            PXRMP_GPU_QUALIFIER
+            PXRMP_FORCE_INLINE
             bool is_init()
             {
                 return m_init_flag;
@@ -771,7 +771,7 @@ namespace quantum_sync{
             * (in breit_wheeler_engine_tables_generator.hpp)
             * since it requires the Boost library.
             */
-            PXRMP_INTERNAL_FORCE_INLINE_DECORATOR
+            PXRMP_FORCE_INLINE
             static std::vector<RealType>
             aux_generate_double(RealType x,
                 const std::vector<RealType>& y);
