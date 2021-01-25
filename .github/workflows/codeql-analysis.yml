@@ -1,16 +1,11 @@
 name: "CodeQL"
 
-on:
-  push:
-    branches: [ development ]
-  pull_request:
-    # The branches below must be a subset of the branches above
-    branches: [ development ]
+on: [push, pull_request]
 
 jobs:
   analyze:
     name: Analyze
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     strategy:
       fail-fast: false
@@ -21,8 +16,9 @@ jobs:
         # https://docs.github.com/en/free-pro-team@latest/github/finding-security-vulnerabilities-and-errors-in-your-code/configuring-code-scanning#changing-the-languages-that-are-analyzed
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+    - uses: actions/checkout@v2
+    - name: Dependencies
+      run: .github/workflows/dependencies/dependencies.sh
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
@@ -46,9 +42,13 @@ jobs:
     #    and modify them (or add more) to build your code if your project
     #    uses a compiled language
 
-    - run: |
-       cmake -B build_qed -S multi_physics/QED/
-       cmake --build build_qed
+      run: |
+        cmake -S multi_physics/QED                \
+            -B build                              \
+            -DCMAKE_VERBOSE_MAKEFILE=ON           \
+            -DPXRMP_QED_TEST=ON
+        cmake --build build -j 2
+        cmake --build build --target test
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
