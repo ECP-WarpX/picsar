@@ -16,8 +16,11 @@ extraction:
 
     configure:
       command:
-        - $CMAKE -S multi_physics/QED -B build
+        - cmake -S multi_physics/QED                \
+            -B build                              \
+            -DCMAKE_VERBOSE_MAKEFILE=ON           \
+            -DPXRMP_QED_TEST=ON
     index:
       build_command:
-        - $CMAKE --build build -j 2
+        - cmake --build build -j 2
 
