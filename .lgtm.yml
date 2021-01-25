@@ -1,0 +1,23 @@
+# Copyright 2019 Luca Fedeli
+#
+# This file is part of picsar
+#
+# License: BSD-3-Clause-LBNL
+
+# docs:
+#   https://help.semmle.com/lgtm-enterprise/user/help/lgtm.yml-configuration-file.html#example-of-complete-lgtmyml-file
+
+extraction:
+  cpp:
+    prepare:
+      packages:
+        - cmake
+        - libboost-all-dev
+
+    configure:
+      command:
+        - $CMAKE -S multi_physics/QED -B build
+    index:
+      build_command:
+        - $CMAKE --build build -j 2
+
