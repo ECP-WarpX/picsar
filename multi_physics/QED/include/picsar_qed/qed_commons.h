@@ -94,7 +94,7 @@
 
 
 /**
- * If GPU support is enables, the library uses an internal, GPU-friendly,
+ * If GPU support is enabled, the library uses an internal, GPU-friendly,
  * implementation of the upper_bound algorithm. For test purposes, this implementation
  * can be used also on CPU, instead of the implementation provided by the STL.
  * This can be achieved by doing:
