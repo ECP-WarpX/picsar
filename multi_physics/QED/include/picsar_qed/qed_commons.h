@@ -110,7 +110,7 @@
  * picsar makes use of "if constexpr". Otherwise, the
  * expression falls back to a regular "if".
  */
-  #if __cplusplus > 201402L
+  #if __cplusplus >= 201703L
     #define PXRMP_CONSTEXPR_IF if constexpr
   #else
     #define PXRMP_CONSTEXPR_IF if
