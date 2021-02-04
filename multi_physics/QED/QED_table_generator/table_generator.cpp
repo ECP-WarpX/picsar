@@ -14,10 +14,10 @@
     #include <omp.h>
 #endif
 
-#include <picsar_qed/physics/quantum_sync/quantum_sync_engine_tables.hpp>
-#include <picsar_qed/physics/quantum_sync/quantum_sync_engine_tables_generator.hpp>
-#include <picsar_qed/physics/quantum_sync/quantum_sync_engine_tabulated_functions.hpp>
-#include <picsar_qed/physics/breit_wheeler/breit_wheeler_engine_tables_generator.hpp>
+#include "picsar_qed/physics/quantum_sync/quantum_sync_engine_tables.hpp"
+#include "picsar_qed/physics/quantum_sync/quantum_sync_engine_tables_generator.hpp"
+#include "picsar_qed/physics/quantum_sync/quantum_sync_engine_tabulated_functions.hpp"
+#include "picsar_qed/physics/breit_wheeler/breit_wheeler_engine_tables_generator.hpp"
 
 namespace px_bw = picsar::multi_physics::phys::breit_wheeler;
 namespace px_qs = picsar::multi_physics::phys::quantum_sync;
