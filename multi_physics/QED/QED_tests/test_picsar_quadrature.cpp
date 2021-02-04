@@ -7,10 +7,10 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/tools/floating_point_comparison.hpp>
 
-#include <array>
-
 #include <picsar_qed/math/math_constants.h>
 #include <picsar_qed/math/quadrature.hpp>
+
+#include <array>
 
 using namespace picsar::multi_physics::math;
 

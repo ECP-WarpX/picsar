@@ -7,10 +7,10 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/tools/floating_point_comparison.hpp>
 
+#include <picsar_qed/containers/picsar_span.hpp>
+
 #include <array>
 #include <vector>
-
-#include <picsar_qed/containers/picsar_span.hpp>
 
 using namespace picsar::multi_physics::containers;
 

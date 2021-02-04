@@ -3,14 +3,14 @@
 //Define Module name
  #define BOOST_TEST_MODULE "math/cmath_overload"
 
-#include <cmath>
-#include <vector>
-
 //Include Boost unit tests library & library for floating point comparison
 #include <boost/test/unit_test.hpp>
 #include <boost/test/tools/floating_point_comparison.hpp>
 
 #include <picsar_qed/math/cmath_overloads.hpp>
+
+#include <cmath>
+#include <vector>
 
 using namespace picsar::multi_physics::math;
 

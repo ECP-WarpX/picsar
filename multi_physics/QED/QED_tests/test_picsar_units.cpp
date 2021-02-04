@@ -3,10 +3,6 @@
 //Define Module name
  #define BOOST_TEST_MODULE "phys/unit_conversion"
 
-#include <array>
-#include <algorithm>
-#include <functional>
-
 //Include Boost unit tests library & library for floating point comparison
 #include <boost/test/unit_test.hpp>
 #include <boost/test/tools/floating_point_comparison.hpp>
@@ -14,6 +10,10 @@
 #include <picsar_qed/math/math_constants.h>
 #include <picsar_qed/physics/phys_constants.h>
 #include <picsar_qed/physics/unit_conversion.hpp>
+
+#include <array>
+#include <algorithm>
+#include <functional>
 
 using namespace picsar::multi_physics::phys;
 using namespace picsar::multi_physics::math;

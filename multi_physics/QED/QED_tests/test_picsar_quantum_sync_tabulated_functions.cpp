@@ -3,14 +3,14 @@
 //Define Module name
  #define BOOST_TEST_MODULE "phys/quantum_sync/tabulated_functions"
 
- #include<array>
- #include<utility>
-
 //Include Boost unit tests library & library for floating point comparison
 #include <boost/test/unit_test.hpp>
 #include <boost/test/tools/floating_point_comparison.hpp>
 
 #include <picsar_qed/physics/quantum_sync/quantum_sync_engine_tabulated_functions.hpp>
+
+#include<array>
+#include<utility>
 
 //Tolerance for double precision calculations
 const double double_tolerance = 1.0e-7;

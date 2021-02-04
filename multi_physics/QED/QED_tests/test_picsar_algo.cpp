@@ -7,12 +7,12 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/tools/floating_point_comparison.hpp>
 
-#include <array>
-#include <algorithm>
-
 //Force the use of PICSAR implementation of upper_bound for debug purposes
 #define PXRMP_PICSAR_UPPER_BOUND
 #include <picsar_qed/utils/picsar_algo.hpp>
+
+#include <array>
+#include <algorithm>
 
 using namespace picsar::multi_physics::utils;
 

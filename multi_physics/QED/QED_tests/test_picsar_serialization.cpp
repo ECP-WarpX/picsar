@@ -5,12 +5,12 @@
 
 #include <vector>
 
+using namespace picsar::multi_physics::utils::serialization;
+
 //Include Boost unit tests library
 #include <boost/test/unit_test.hpp>
 
 #include <picsar_qed/utils/serialization.hpp>
-
-using namespace picsar::multi_physics::utils::serialization;
 
 // ------------- Tests --------------
 

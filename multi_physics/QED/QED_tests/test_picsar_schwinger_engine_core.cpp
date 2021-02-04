@@ -7,10 +7,10 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/tools/floating_point_comparison.hpp>
 
+#include <picsar_qed/physics/schwinger/schwinger_pair_engine_core.hpp>
+
 #include <vector>
 #include <array>
-
-#include <picsar_qed/physics/schwinger/schwinger_pair_engine_core.hpp>
 
 using namespace picsar::multi_physics::phys;
 

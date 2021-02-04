@@ -3,14 +3,14 @@
 //Define Module name
  #define BOOST_TEST_MODULE "phys/breit_wheeler/tabulated_functions"
 
- #include<array>
- #include<utility>
-
 //Include Boost unit tests library & library for floating point comparison
 #include <boost/test/unit_test.hpp>
 #include <boost/test/tools/floating_point_comparison.hpp>
 
 #include <picsar_qed/physics/breit_wheeler/breit_wheeler_engine_tabulated_functions.hpp>
+
+#include<array>
+#include<utility>
 
 //Tolerance for double precision calculations
 const double double_tolerance = 1.0e-7;

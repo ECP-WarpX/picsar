@@ -7,12 +7,12 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/tools/floating_point_comparison.hpp>
 
+#include <picsar_qed/physics/breit_wheeler/breit_wheeler_engine_tables.hpp>
+#include <picsar_qed/physics/breit_wheeler/breit_wheeler_engine_tables_generator.hpp>
+
 #include <vector>
 #include <algorithm>
 #include <array>
-
-#include <picsar_qed/physics/breit_wheeler/breit_wheeler_engine_tables.hpp>
-#include <picsar_qed/physics/breit_wheeler/breit_wheeler_engine_tables_generator.hpp>
 
 //Tolerance for double precision calculations
 const double double_tolerance = 1.0e-2;

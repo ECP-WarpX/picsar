@@ -7,9 +7,9 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/tools/floating_point_comparison.hpp>
 
-#include <array>
-
 #include <picsar_qed/math/special_functions.hpp>
+
+#include <array>
 
 using namespace picsar::multi_physics::math;
 
