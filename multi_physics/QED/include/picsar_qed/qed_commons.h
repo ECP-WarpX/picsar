@@ -87,7 +87,7 @@
  * provided by Boost are used.
  */
  #ifdef PXRMP_USE_CXX17_FOR_SPECIAL_FUNCTIONS
-     #if !(__cplusplus > 201402L)
+     #if __cplusplus < 201703L
         #error C++17 or above is needed to enable special functions from the standard C++ library
      #endif
  #endif
