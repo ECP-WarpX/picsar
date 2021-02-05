@@ -1,0 +1,24 @@
+name: macos
+
+on: [push, pull_request]
+
+env:
+  CXXFLAGS: "-Werror -Wshadow -Woverloaded-virtual -Wextra-semi -Wunreachable-code"
+
+jobs:
+  # Build libamrex and all tutorials
+  tutorials-macos:
+    name: AppleClang@11.0 GFortran@9.3 [tutorials]
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Dependencies
+      run: .github/workflows/dependencies/dependencies_mac.sh
+    - name: Build & Test
+      run: |
+        cmake -S multi_physics/QED                \
+            -B build                              \
+            -DCMAKE_VERBOSE_MAKEFILE=ON           \
+            -DPXRMP_QED_TEST=ON
+        cmake --build build -j 2
+        cmake --build build --target test

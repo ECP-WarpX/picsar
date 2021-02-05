@@ -23,6 +23,7 @@ picsar
 python_bin/
 fortran_bin/
 src/build/
+multi_physics/QED/build
 src/picsar.v
 src/picsar.F90
 src/picsar_modules.F90
