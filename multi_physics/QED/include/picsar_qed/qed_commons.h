@@ -131,7 +131,9 @@
 */
 //
 #ifdef __SYCL_DEVICE_ONLY__
-    #define PXRMP_DPCPP_FIX
+#   ifndef PXRMP_DPCPP_FIX
+#       define PXRMP_DPCPP_FIX 1
+#   endif
 #endif
 
 /**
