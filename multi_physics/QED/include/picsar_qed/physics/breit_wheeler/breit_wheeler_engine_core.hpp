@@ -95,9 +95,9 @@ namespace breit_wheeler{
 
         const auto TT = ref_dndt_table.interp(chi_phot, is_out_of_table);
 
+        constexpr const auto rest_energy = phys::heaviside_lorentz_electron_rest_energy<RealType>;
         constexpr const auto pair_prod_rate_coeff = static_cast<RealType>(
-            fine_structure<> * phys::heaviside_lorentz_electron_rest_energy<RealType>
-            * phys::heaviside_lorentz_electron_rest_energy<RealType>);
+            fine_structure<> * rest_energy * rest_energy);
 
         const auto dndt = pair_prod_rate_coeff * TT *(chi_phot/energy_phot);
 
