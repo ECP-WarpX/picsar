@@ -42,7 +42,6 @@ const std::string OPT_TABLE_QUANTUM_SYNC = "quantum_synchrotron";
 const std::string OPT_PRECISION_DOUBLE = "double";
 const std::string OPT_PRECISION_SINGLE = "single";
 const std::string OPT_PRECISION_SINGLE_WITH_DOUBLE_COMP = "single_with_double_comp";
-const int MAX_CMD_SIZE = 26;
 //___________________________________________________________________________________
 
 enum Precision {double_precision, single_precision, single_prec_out_double_prec_comp};
@@ -505,6 +504,9 @@ void do_quantum_sync(QuantumSyncTableParams<RealType> params, const std::string&
 */
 void print_help_message()
 {
+    // Max size of a CMD field in the help message
+    const int MAX_CMD_SIZE = 26;
+
     std::cout << " ***** QED table generator HELP *****" << std::endl;
 
     std::cout << std::setw(MAX_CMD_SIZE) << CMD_HELP_S <<
