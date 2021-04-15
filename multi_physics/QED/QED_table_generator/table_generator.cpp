@@ -65,6 +65,17 @@ struct QuantumSyncTableParams{
 };
 
 /**
+* Prints an error message
+*
+* @param[in] str the error message
+*/
+void print_error(const std::string& str)
+{
+    std::cout << "\n [ERROR!] " << str << "\n" << std::endl;
+}
+
+
+/**
 * Writes a 1D lookup table in csv format
 *
 * @tparam RealType the floating point type to be used
@@ -307,6 +318,42 @@ void generate_quantum_sync_photem_table(
 }
 
 /**
+* Wraps the call to std::stod, checking if the string has been correctly parsed.
+* If conversion fails, it prints an error message and exits the program.
+*
+* @param[in] str the string to be parsed
+* @return std::stod(str) if conversion succeeds
+*/
+double stod_wrapper(const std::string& str)
+{
+    size_t idx = 0;
+    double val = std::stod(str, &idx);
+    if (idx != str.length()){
+        print_error("Failed to parse '" + str + "' as a floating point number!");
+        exit(EXIT_FAILURE);
+    }
+    return val;
+}
+
+/**
+* Wraps the call to std::stoi, checking if the string has been correctly parsed.
+* If conversion fails, it prints an error message and exits the program.
+*
+* @param[in] str the string to be parsed
+* @return std::stoi(str) if conversion succeeds
+*/
+int stoi_wrapper(const std::string& str)
+{
+    size_t idx = 0;
+    int val = std::stoi(str, &idx);
+    if (idx != str.length()){
+        print_error("Failed to parse '" + str + "' as an integer number!");
+        exit(EXIT_FAILURE);
+    }
+    return val;
+}
+
+/**
 * Parses arguments to set parameters for Breit-Wheeler lookup tables generation
 *
 * @tparam RealType the floating point type to be used
@@ -326,19 +373,19 @@ parse_breit_wheeler_params(std::map<std::string, std::string> args)
 
     auto s_cmin = args.find(CMD_CHI_MIN);
     if(s_cmin != args.end())
-        params.chi_min = static_cast<RealType>(std::stod(s_cmin->second));
+        params.chi_min = static_cast<RealType>(stod_wrapper(s_cmin->second));
 
     auto s_cmax = args.find(CMD_CHI_MAX);
     if( s_cmax != args.end())
-        params.chi_max = static_cast<RealType>(std::stod(s_cmax->second));
+        params.chi_max = static_cast<RealType>(stod_wrapper(s_cmax->second));
 
     auto s_csize = args.find(CMD_CHI_SIZE);
     if( s_csize != args.end())
-        params.chi_size = std::stoi(s_csize->second);
+        params.chi_size = stoi_wrapper(s_csize->second);
 
     auto s_fsize = args.find(CMD_FRAC_SIZE);
     if(s_fsize != args.end())
-        params.frac_size = std::stoi(s_fsize->second);
+        params.frac_size = stoi_wrapper(s_fsize->second);
 
     return params;
 }
@@ -419,23 +466,23 @@ parse_quantum_sync_params(std::map<std::string, std::string> args)
 
     auto s_cmin = args.find(CMD_CHI_MIN);
     if(s_cmin != args.end())
-        params.chi_min = static_cast<RealType>(std::stod(s_cmin->second));
+        params.chi_min = static_cast<RealType>(stod_wrapper(s_cmin->second));
 
     auto s_cmax = args.find(CMD_CHI_MAX);
     if(s_cmax != args.end())
-        params.chi_max = static_cast<RealType>(std::stod(s_cmax->second));
+        params.chi_max = static_cast<RealType>(stod_wrapper(s_cmax->second));
 
     auto s_fmin = args.find(CMD_FRAC_MIN);
     if(s_fmin != args.end())
-        params.frac_min = static_cast<RealType>(std::stod(s_fmin->second));
+        params.frac_min = static_cast<RealType>(stod_wrapper(s_fmin->second));
 
     auto s_csize = args.find(CMD_CHI_SIZE);
     if(s_csize != args.end())
-        params.chi_size = std::stoi(s_csize->second);
+        params.chi_size = stoi_wrapper(s_csize->second);
 
     auto s_fsize = args.find(CMD_FRAC_SIZE);
     if(s_fsize != args.end())
-        params.frac_size = std::stoi(s_fsize->second);
+        params.frac_size = stoi_wrapper(s_fsize->second);
 
     return params;
 }
@@ -581,16 +628,6 @@ void print_help_message()
     print_default_values();
 
     std::cout << " ____________________________" << std::endl;
-}
-
-/**
-* Prints an error message
-*
-* @param[in] str the error message
-*/
-void print_error(const std::string& str)
-{
-    std::cout << "\n [ERROR!] " << str << "\n" << std::endl;
 }
 
 /**
