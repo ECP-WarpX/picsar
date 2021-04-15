@@ -276,7 +276,7 @@ void generate_quantum_sync_dndt_table(
 }
 
 /**
-* Generates a phton emission lookup table for the Quantum Synchrotron process
+* Generates a photon emission lookup table for the Quantum Synchrotron process
 *
 * @tparam RealType the floating point type to be used
 * @tparam Policy the table generation policy (it can be used to force calculations in double precision with a single precision table)
