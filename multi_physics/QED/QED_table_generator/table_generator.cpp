@@ -501,7 +501,7 @@ void do_quantum_sync(QuantumSyncTableParams<RealType> params, const std::string&
 }
 
 /**
-* Prints an help message
+* Prints a help message
 */
 void print_help_message()
 {
