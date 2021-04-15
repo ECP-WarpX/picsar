@@ -373,7 +373,7 @@ void do_breit_wheeler(BreitWheelerTableParams<RealType> params, const std::strin
             (Policy == px_bw::generation_policy::force_internal_double) ?
             "double" : "single";
         std::cout << " Tables will be calculated in " << prec <<
-            " precision and table will be saved in single precision." << std::endl;
+            " precision and will be saved in single precision." << std::endl;
     }
 
     std::cout << " Table parameters:\n"
