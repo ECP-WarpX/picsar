@@ -1,5 +1,5 @@
 /**
-* This program generatesthe lookup tables of the QED library and saves them both
+* This program generates the lookup tables of the QED library and saves them both
 * in binary format and as a csv file which can be inspected with pyplot
 * or gnuplot.
 */
