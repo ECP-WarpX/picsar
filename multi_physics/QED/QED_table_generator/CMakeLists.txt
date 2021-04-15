@@ -12,12 +12,11 @@ if(PXRMP_QED_OMP)
    target_compile_definitions(${name} PRIVATE PXRMP_TABLE_GEN_HAS_OPENMP=1)
 endif()
 
-configure_file(table_inspector.ipynb table_inspector.ipynb COPYONLY)
-
-
 # Move table generator and verification script in a tools subdirectory
 set_target_properties(${name} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tools)
+configure_file(table_inspector.ipynb
+    ${CMAKE_BINARY_DIR}/tools/table_inspector.ipynb COPYONLY)
 
 # Require C++14 or newer
 target_compile_features(${name} PUBLIC cxx_std_14)
