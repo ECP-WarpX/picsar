@@ -500,6 +500,36 @@ void do_quantum_sync(QuantumSyncTableParams<RealType> params, const std::string&
 }
 
 /**
+* Prints default values of optional parameters in the help message
+*/
+void print_default_values()
+{  
+    std::cout << "   Breit-Wheeler tables: " << std::endl;
+    std::cout << "       " << CMD_CHI_MIN << " : "
+        << px_bw::default_chi_phot_min<double> << std::endl;
+    std::cout << "       " << CMD_CHI_MAX << " : "
+        << px_bw::default_chi_phot_max<double> << std::endl;
+    std::cout << "       " << CMD_FRAC_MIN << " : "
+        << "(unused)" << std::endl;
+    std::cout << "       " << CMD_CHI_SIZE << " : "
+        << px_bw::default_chi_phot_how_many << std::endl;
+    std::cout << "       " << CMD_FRAC_SIZE << " : "
+        << px_bw::default_frac_how_many << std::endl;
+
+    std::cout << "   Quantum Synchrotron tables: " << std::endl;
+    std::cout << "       " << CMD_CHI_MIN << " : "
+        << px_qs::default_chi_part_min<double> << std::endl;
+    std::cout << "       " << CMD_CHI_MAX << " : "
+        << px_qs::default_chi_part_max<double> << std::endl;
+    std::cout << "       " << CMD_FRAC_MIN << " : "
+        << px_qs::default_frac_min<double> << std::endl;
+    std::cout << "       " << CMD_CHI_SIZE << " : "
+        << px_qs::default_chi_part_how_many << std::endl;
+    std::cout << "       " << CMD_FRAC_SIZE << " : "
+        << px_qs::default_frac_how_many << std::endl;
+}
+
+/**
 * Prints a help message
 */
 void print_help_message()
@@ -547,7 +577,8 @@ void print_help_message()
     std::cout << std::setw(MAX_CMD_SIZE) << CMD_FILENAME <<
         " : sets output file name (string)" << std::endl;
 
-    std::cout << " * Optional parameters have default values." << std::endl;
+    std::cout << " * Optional parameters have default values: " << std::endl;
+    print_default_values();
 
     std::cout << " ____________________________" << std::endl;
 }
