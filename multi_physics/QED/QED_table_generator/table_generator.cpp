@@ -641,6 +641,11 @@ std::map<std::string, std::string> read_arg_pairs (int argc, char** argv)
     auto arg_map = std::map<std::string, std::string>{};
 
     for (int i = 1; i < argc; i += 2){
+        if ( arg_map.find(argv[i]) != arg_map.end() ){
+            print_error("Command line argument '" + 
+                std::string{argv[i]} + "' is duplicated!" );
+            exit(EXIT_FAILURE);
+        }
         arg_map[argv[i]] = argv[i+1];
     }
 
