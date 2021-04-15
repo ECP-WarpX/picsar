@@ -470,7 +470,7 @@ void do_quantum_sync(QuantumSyncTableParams<RealType> params, const std::string&
             (Policy == px_qs::generation_policy::force_internal_double) ?
             "double" : "single";
         std::cout << " Tables will be calculated in " << prec <<
-            " precision and table will be saved in single precision." << std::endl;
+            " precision and will be saved in single precision." << std::endl;
     }
 
     std::cout << " Table parameters:\n"
