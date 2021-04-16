@@ -20,6 +20,7 @@ option(PXRMP_QED_OMP              "Enable OpenMP support" ON)
 option(PXRMP_QED_TABLEGEN         "Enable table generation (needs Boost)" ON)
 option(PXRMP_QED_TEST             "Build PICSAR QED tests " ${IS_TOPLEVEL})
 option(PXRMP_QED_TOOLS            "Build PICSAR QED tools " ${IS_TOPLEVEL})
+option(PXRMP_QED_PYTHON_BINDINGS  "Build PICSAR QED python bindings " ${IS_TOPLEVEL})
 option(PXRMP_BOOST_TEST_DYN_LINK  "Link against the Boost Unit Test Framework shared library" ON)
 option(PXRMP_DPCPP_FIX            "Use cl::sycl::floor cl::sycl::floorf on device" OFF)
 
@@ -48,6 +49,10 @@ if(PXRMP_QED_TABLEGEN)
     if(NOT Boost_FOUND)
          message( FATAL_ERROR "Table generation requires Boost (>= 1.66)!" )
     endif()
+endif()
+
+if(PXRMP_QED_PYTHON_BINDINGS)
+  add_subdirectory(python)
 endif()
 
 if(PXRMP_DPCPP_FIX)
