@@ -13,6 +13,10 @@
 #include "picsar_qed/physics/schwinger/schwinger_pair_engine_core.hpp"
 
 #include <vector>
+#include <algorithm>
+#include <string>
+#include <array>
+#include <tuple>
 
 namespace py = pybind11;
 
@@ -21,37 +25,205 @@ namespace pxr_bw = picsar::multi_physics::phys::breit_wheeler;
 namespace pxr_qs = picsar::multi_physics::phys::quantum_sync;
 namespace pxr_sc = picsar::multi_physics::phys::schwinger;
 
-PYBIND11_MODULE(pxr_qed, m) {
-    m.doc() = "pybind11 pxr_qed plugin";
+#define PXRQEDPY_DOUBLE_PRECISION 1
 
 #ifdef PXRQEDPY_DOUBLE_PRECISION
-    using PXRQEDPY_REAL = double;
-    m.attr("PRECISION") = py::str("double");
+    using REAL = double;
+    const auto PXRQEDPY_PRECISION_STRING = std::string{"double"};
 #else
-    using PXRQEDPY_REAL = float;
-    m.attr("PRECISION") = py::str("float");
+    using REAL = float;
+    const auto PXRQEDPY_PRECISION_STRING = std::string{"float"};
+#endif
+
+#ifdef PXRMP_HAS_OPENMP
+    template <typename Func>
+    void PXRQEDPY_FOR(int N, const Func& func){
+        #pragma omp parallel for
+        for (int i = 0; i < N; ++i) func(i);
+    }
+    const auto PXRQEDPY_OPENMP_FLAG = true;
+#else
+    template <typename Func>
+    void PXRQEDPY_FOR(int N, const Func& func){
+        for (int i = 0; i < N; ++i) func(i);
+    }
+    const auto PXRQEDPY_OPENMP_FLAG = true;
 #endif
 
 #if PXRQEDPY_UNITS == SI
-    constexpr auto PXRQEDPY_UU = pxr_phys::unit_system::SI;
-    m.attr("UNITS") = py::str("SI");
+    const auto UU = pxr_phys::unit_system::SI;
+    const auto PXRQEDPY_USTRING = std::string{"SI"};
 #elif PXRQEDPY_UNITS == NORM_OMEGA
-    constexpr auto PXRQEDPY_UU = pxr_phys::unit_system::norm_omega;
-    m.attr("UNITS") = py::str("NORM_OMEGA");
+    const auto UU = pxr_phys::unit_system::norm_omega;
+    const auto PXRQEDPY_USTRING = std::string{"NORM_OMEGA"};
 #elif PXRQEDPY_UNITS == NORM_LAMBDA
-    constexpr auto PXRQEDPY_UU = pxr_phys::unit_system::norm_lambda;
-    m.attr("UNITS") = py::str("NORM_LAMBDA");
+    const auto UU = pxr_phys::unit_system::norm_lambda;
+    const auto PXRQEDPY_USTRING = std::string{"NORM_LAMBDA"};
 #elif PXRQEDPY_UNITS == HEAVISIDE_LORENTZ
-    constexpr auto PXRQEDPY_UU = pxr_phys::unit_system::heaviside_lorentz;
-    m.attr("UNITS") = py::str("HEAVISIDE_LORENTZ");
+    const auto UU = pxr_phys::unit_system::heaviside_lorentz;
+    const auto PXRQEDPY_USTRING = std::string{"HEAVISIDE_LORENTZ"};
 #else
     #error PXRQEDPY_UNITS is incorrectly defined!
 #endif
 
-    using VECTOR = std::vector<PXRQEDPY_REAL>;
+template <typename Int>
+inline int as_int(Int num)
+{
+    return static_cast<int>(num);
+}
+
+using pyArr = py::array_t<REAL>;
+using pyBufInfo = py::buffer_info;
+using stdVec = std::vector<REAL>;
+
+void throw_error(const std::string& err_msg)
+{
+    throw std::runtime_error(" [ Error! ] " + err_msg);
+}
+
+bool aux_check_bufs(
+    const long int dims, const long int len, const pyBufInfo& last)
+{
+    return (last.ndim == dims) && (last.shape[0] == len) ;
+}
+
+template<typename ...Args>
+bool aux_check_bufs(
+    const long int dims, const long int len, const pyBufInfo& first, const Args&... args)
+{
+    return aux_check_bufs(dims, len, first) && aux_check_bufs(dims, len, args...);
+}
+
+bool check_bufs(
+    const pyBufInfo& first)
+{   
+    return (first.ndim == 1);
+}
+
+template<typename ...Args>
+bool check_bufs(
+    const pyBufInfo& first, const Args&... args)
+{   
+    if (first.ndim != 1)
+        return false;
+    
+    const auto len = first.shape[0];    
+
+    return aux_check_bufs(1, len, args...);
+}
+
+auto aux_fill(const pyBufInfo& last)
+{
+    const auto cptr = static_cast<REAL*>(last.ptr);
+    return std::make_tuple(cptr);
+}
+
+template<typename ...Args>
+auto aux_fill(const pyBufInfo& first, const Args&... args)
+{
+    const auto cptr = static_cast<REAL*>(first.ptr);
+    return std::tuple_cat(std::make_tuple(cptr), aux_fill(args...));
+}
+
+template<typename ...Args>
+auto
+check_and_get_pointers(const Args& ...args)
+{
+    if(!check_bufs(args...))
+         throw_error("All arrays must be one-dimensional with equal size");
+
+    return aux_fill(args...);
+}
+
+// ******************************* Chi parameters ***********************************************
+
+pyArr
+chi_photon_wrapper(
+    const pyArr& px, const pyArr& py, const pyArr& pz,
+    const pyArr& ex, const pyArr& ey, const pyArr& ez,
+    const pyArr& bx, const pyArr& by, const pyArr& bz,
+    const REAL ref_quantity)
+{
+
+    const auto b_px = px.request(); const REAL* p_px = nullptr;
+    const auto b_py = py.request(); const REAL* p_py = nullptr;
+    const auto b_pz = pz.request(); const REAL* p_pz = nullptr;
+    const auto b_ex = ex.request(); const REAL* p_ex = nullptr;
+    const auto b_ey = ey.request(); const REAL* p_ey = nullptr;
+    const auto b_ez = ez.request(); const REAL* p_ez = nullptr;
+    const auto b_bx = bx.request(); const REAL* p_bx = nullptr;
+    const auto b_by = by.request(); const REAL* p_by = nullptr;
+    const auto b_bz = bz.request(); const REAL* p_bz = nullptr;
+
+    std::tie(
+        p_px, p_py, p_pz,
+        p_ex, p_ey, p_ez,
+        p_bx, p_by, p_bz) =
+            check_and_get_pointers(
+                b_px, b_py, b_pz,
+                b_ex, b_ey, b_ez,
+                b_bx, b_by, b_bz);
+
+    auto res = pyArr(b_px.shape);
+    auto b_res = res.request();
+    auto p_res = static_cast<REAL*>(b_res.ptr);
+
+    const auto how_many = static_cast<int> (b_px.shape[0]);
+    PXRQEDPY_FOR(how_many, [&](int i){
+        p_res[i] =
+            pxr_phys::chi_photon<REAL, UU>(
+                p_px[i], p_py[i], p_pz[i],
+                p_ex[i], p_ey[i], p_ez[i],
+                p_bx[i], p_by[i], p_bz[i],
+                ref_quantity);
+    });
+
+    return res;
+}
+
+// ______________________________________________________________________________________________
+
+
+// ******************************* Python module *************************************************
+
+
+PYBIND11_MODULE(pxr_qed, m) {
+    m.doc() = "pybind11 pxr_qed plugin";
+
+    m.attr("PRECISION") = py::str(PXRQEDPY_PRECISION_STRING);
+    m.attr("HAS_OPENMP") = py::bool_(PXRQEDPY_OPENMP_FLAG);
+    m.attr("UNITS") = py::str(PXRQEDPY_USTRING);
+
+    m.def(
+        "chi_photon",
+        &chi_photon_wrapper,
+        py::arg("px").noconvert(true), py::arg("py").noconvert(true), py::arg("pz").noconvert(true),
+        py::arg("ex").noconvert(true), py::arg("ey").noconvert(true), py::arg("ez").noconvert(true),
+        py::arg("bx").noconvert(true), py::arg("by").noconvert(true), py::arg("bz").noconvert(true),
+        py::arg("ref_quantity") = py::float_(1.0)
+        );
+}
+
+// ______________________________________________________________________________________________
+
+
+
+#ifdef ABABABABABABABABBA
+
+// ______________________________________________________________________________________________
+
+PYBIND11_MODULE(pxr_qed, m) {
+    m.doc() = "pybind11 pxr_qed plugin";
+
+    m.attr("PRECISION") = py::str(PXRQEDPY_PRECISION_STRING);
+    m.attr("HAS_OPENMP") = py::bool_(PXRQEDPY_OPENMP_FLAG);
+    m.attr("UNITS") = py::str(PXRQEDPY_USTRING);
+
+    
     using RAW_DATA = std::vector<char>;
 
 // ******************************* Chi parameters ***********************************************
+
     m.def("chi_photon",
         py::vectorize(       
             py::overload_cast<
@@ -112,33 +284,53 @@ PYBIND11_MODULE(pxr_qed, m) {
         .def_readwrite("chi_phot_how_many", &bw_pair_prod_lookup_table_params::chi_phot_how_many)
         .def_readwrite("frac_how_many", &bw_pair_prod_lookup_table_params::frac_how_many);
 
-    bw.def("get_optical_depth", 
-        py::vectorize(pxr_bw::get_optical_depth<PXRQEDPY_REAL>), 
+    bw.def("get_optical_depth",
+            [](const std::vector<PXRQEDPY_REAL>& unf_zero_one_minus_epsi){
+                const auto size = unf_zero_one_minus_epsi.size();
+                auto res = std::vector<PXRQEDPY_REAL>(size);          
+
+                PXRQEDPY_FOR(as_int(size), [&](int i){
+                    res[i] = pxr_bw::get_optical_depth<PXRQEDPY_REAL>(
+                        unf_zero_one_minus_epsi[i]);
+                });
+            return res;},
         "Computes the optical depth of a new photon");
 
     bw.def("get_dn_dt", 
-            [](std::vector<PXRQEDPY_REAL> energy_phot, std::vector<PXRQEDPY_REAL> chi_phot,
+            [](const std::vector<PXRQEDPY_REAL>& energy_phot, const std::vector<PXRQEDPY_REAL>& chi_phot,
                 const bw_dndt_lookup_table& ref_table, PXRQEDPY_REAL ref_quantity){
-                    assert(energy_phot.size() == chi_phot.size());
+                    const auto size = static_cast<int>(chi_phot.size());
+                    assert(energy_phot.size() == size);
                     assert(ref_table.is_init());
 
-                    auto res = std::vector<PXRQEDPY_REAL>(energy_phot.size());
-
-                    std::transform(
-                        energy_phot.begin(),
-                        energy_phot.end(), 
-                        chi_phot.begin(), 
-                        res.begin(), 
-                        [&](PXRQEDPY_REAL ee, PXRQEDPY_REAL chi){
-                            return pxr_bw::get_dN_dt<
-                                PXRQEDPY_REAL, bw_dndt_lookup_table, PXRQEDPY_UU>(
-                                ee, chi,
+                    auto res = std::vector<PXRQEDPY_REAL>(size);          
+                    
+                    PXRQEDPY_FOR(as_int(size), [&](int i){
+                         res[i] = pxr_bw::get_dN_dt<
+                                PXRQEDPY_REAL, 
+                                bw_dndt_lookup_table, 
+                                PXRQEDPY_UU>(
+                                energy_phot[i], chi_phot[i],
                                 ref_table, ref_quantity,nullptr);
-                        });
-
+                    });
                     return res;                   
                 ;}, 
         "Computes dN/dt for Breit-Wheeler pair production");
+/*
+        bw.def("evolve_optical_depth", 
+            [](const std::vector<PXRQEDPY_REAL>& energy_phot, const std::vector<PXRQEDPY_REAL>& chi_phot,
+                PXRQEDPY_REAL dt, std::vector<PXRQEDPY_REAL>& optical_depth,
+                const bw_dndt_lookup_table& ref_table, PXRQEDPY_REAL ref_quantity){
+                    assert(energy_phot.size() == chi_phot.size());
+                    assert(optical_depth.size() == chi_phot.size());
+                    assert(ref_table.is_init());
+
+                const auto size = static_cast<int>(chi_phot.size());
+                PXRQEDPY_FOR(size,[&](int i){
+
+                };),
+        "Computes dN/dt for Breit-Wheeler pair production");
+        */
 // ______________________________________________________________________________________________
 
 
@@ -177,3 +369,5 @@ PYBIND11_MODULE(pxr_qed, m) {
 // ______________________________________________________________________________________________
 
 }
+
+#endif
