@@ -12,9 +12,8 @@
 #include "picsar_qed/physics/schwinger/schwinger_pair_engine_core.hpp"
 
 #include <vector>
-#include <algorithm>
 #include <string>
-#include <array>
+#include <sstream>
 #include <tuple>
 
 namespace py = pybind11;
@@ -65,10 +64,12 @@ namespace pxr_sc = picsar::multi_physics::phys::schwinger;
     #error PXRQEDPY_UNITS is incorrectly defined!
 #endif
 
-template <typename Int>
-inline int as_int(Int num)
+template <typename Real>
+inline std::string float_to_string(Real num)
 {
-    return static_cast<int>(num);
+    std::stringstream ss;
+    ss << num;
+    return ss.str();
 }
 
 using pyArr = py::array_t<REAL>;
@@ -406,7 +407,15 @@ PYBIND11_MODULE(pxr_qed, m) {
         .def("__eq__", &bw_dndt_lookup_table_params::operator==)
         .def_readwrite("chi_phot_min", &bw_dndt_lookup_table_params::chi_phot_min)
         .def_readwrite("chi_phot_max", &bw_dndt_lookup_table_params::chi_phot_max)
-        .def_readwrite("chi_phot_how_many", &bw_dndt_lookup_table_params::chi_phot_how_many);
+        .def_readwrite("chi_phot_how_many", &bw_dndt_lookup_table_params::chi_phot_how_many)
+        .def("__repr__",
+            [](const bw_dndt_lookup_table_params &a) {
+                return 
+                    std::string("bw.dndt_lookup_table_params:\n")+
+                    std::string("\tchi_phot_min     : ") + float_to_string(a.chi_phot_min)+"\n"+
+                    std::string("\tchi_phot_max     : ") + float_to_string(a.chi_phot_max)+"\n"+
+                    std::string("\tchi_phot_how_many: ") + std::to_string(a.chi_phot_how_many);
+        });
 
     py::class_<bw_pair_prod_lookup_table_params>(bw,
         "pair_prod_lookup_table_params")
@@ -416,7 +425,17 @@ PYBIND11_MODULE(pxr_qed, m) {
         .def_readwrite("chi_phot_min", &bw_pair_prod_lookup_table_params::chi_phot_min)
         .def_readwrite("chi_phot_max", &bw_pair_prod_lookup_table_params::chi_phot_max)
         .def_readwrite("chi_phot_how_many", &bw_pair_prod_lookup_table_params::chi_phot_how_many)
-        .def_readwrite("frac_how_many", &bw_pair_prod_lookup_table_params::frac_how_many);
+        .def_readwrite("frac_how_many", &bw_pair_prod_lookup_table_params::frac_how_many)
+        .def("__repr__",
+            [](const bw_pair_prod_lookup_table_params &a) {
+                return 
+                    std::string("bw.pair_prod_lookup_table_params:\n")+
+                    std::string("\tchi_phot_min     : ") + float_to_string(a.chi_phot_min)+"\n"+
+                    std::string("\tchi_phot_max     : ") + float_to_string(a.chi_phot_max)+"\n"+
+                    std::string("\tchi_phot_how_many: ") + std::to_string(a.chi_phot_how_many)+"\n"+
+                    std::string("\tfrac_how_many    : ") + std::to_string(a.frac_how_many);
+
+        });
 
     auto qs = m.def_submodule( "qs" );
 
@@ -434,7 +453,15 @@ PYBIND11_MODULE(pxr_qed, m) {
         .def("__eq__", &qs_dndt_lookup_table_params::operator==)
         .def_readwrite("chi_part_min", &qs_dndt_lookup_table_params::chi_part_min)
         .def_readwrite("chi_part_max", &qs_dndt_lookup_table_params::chi_part_max)
-        .def_readwrite("chi_part_how_many", &qs_dndt_lookup_table_params::chi_part_how_many);
+        .def_readwrite("chi_part_how_many", &qs_dndt_lookup_table_params::chi_part_how_many)
+        .def("__repr__",
+            [](const qs_dndt_lookup_table_params &a) {
+                return 
+                    std::string("qs.dndt_lookup_table_params:\n")+
+                    std::string("\tchi_part_min     : ") + float_to_string(a.chi_part_min)+"\n"+
+                    std::string("\tchi_part_max     : ") + float_to_string(a.chi_part_max)+"\n"+
+                    std::string("\tchi_part_how_many: ") + std::to_string(a.chi_part_how_many);
+        });
 
     py::class_<qs_photon_emission_lookup_table_params>(qs,
         "photon_emission_lookup_table_params")
@@ -445,7 +472,18 @@ PYBIND11_MODULE(pxr_qed, m) {
         .def_readwrite("chi_part_max", &qs_photon_emission_lookup_table_params::chi_part_max)
         .def_readwrite("frac_min", &qs_photon_emission_lookup_table_params::frac_min)
         .def_readwrite("chi_part_how_many", &qs_photon_emission_lookup_table_params::chi_part_how_many)
-        .def_readwrite("frac_how_many", &qs_photon_emission_lookup_table_params::frac_how_many);
+        .def_readwrite("frac_how_many", &qs_photon_emission_lookup_table_params::frac_how_many)
+        .def("__repr__",
+            [](const qs_photon_emission_lookup_table_params &a) {
+                return 
+                    std::string("qs.photon_emission_lookup_table_params:\n")+
+                    std::string("\tchi_part_min     : ") + float_to_string(a.chi_part_min)+"\n"+
+                    std::string("\tchi_part_max     : ") + float_to_string(a.chi_part_max)+"\n"+
+                    std::string("\tfrac_min         : ") + float_to_string(a.frac_min)+"\n"+
+                    std::string("\tchi_part_how_many: ") + std::to_string(a.chi_part_how_many)+"\n"+
+                    std::string("\tfrac_how_many    : ") + std::to_string(a.frac_how_many);
+        });
+
 
     auto sc = m.def_submodule( "sc" );
 
