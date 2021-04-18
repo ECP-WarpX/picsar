@@ -1,6 +1,5 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
-#include <pybind11/stl.h>
 
 #include "picsar_qed/physics/chi_functions.hpp"
 
@@ -202,6 +201,81 @@ chi_ele_pos_wrapper(
 // ______________________________________________________________________________________________
 
 
+// ******************************* Schwinger pair production *************************************
+
+pyArr
+sc_pair_production_rate_wrapper(
+    const pyArr& ex, const pyArr& ey, const pyArr& ez,
+    const pyArr& bx, const pyArr& by, const pyArr& bz,
+    const REAL ref_quantity)
+{
+    const REAL
+        *p_ex = nullptr, *p_ey = nullptr, *p_ez = nullptr,
+        *p_bx = nullptr, *p_by = nullptr, *p_bz = nullptr;
+    
+    size_t how_many = 0;
+
+    std::tie(
+        how_many,
+        p_ex, p_ey, p_ez,
+        p_bx, p_by, p_bz) =
+            check_and_get_pointers(
+                ex, ey, ez,
+                bx, by, bz);
+
+    auto res = pyArr(how_many);
+    auto p_res = static_cast<REAL*>(res.request().ptr);
+
+    PXRQEDPY_FOR(how_many, [&](int i){
+        p_res[i] =
+            pxr_sc::pair_production_rate<REAL, UU>(
+                p_ex[i], p_ey[i], p_ez[i],
+                p_bx[i], p_by[i], p_bz[i],
+                ref_quantity);
+    });
+
+    return res;
+}
+
+pyArr
+sc_expected_pair_number_wrapper(
+    const pyArr& ex, const pyArr& ey, const pyArr& ez,
+    const pyArr& bx, const pyArr& by, const pyArr& bz,
+    const REAL volume, const REAL dt,
+    const REAL ref_quantity)
+{
+    const REAL
+        *p_ex = nullptr, *p_ey = nullptr, *p_ez = nullptr,
+        *p_bx = nullptr, *p_by = nullptr, *p_bz = nullptr;
+    
+    size_t how_many = 0;
+
+    std::tie(
+        how_many,
+        p_ex, p_ey, p_ez,
+        p_bx, p_by, p_bz) =
+            check_and_get_pointers(
+                ex, ey, ez,
+                bx, by, bz);
+
+    auto res = pyArr(how_many);
+    auto p_res = static_cast<REAL*>(res.request().ptr);
+
+    PXRQEDPY_FOR(how_many, [&](int i){
+        p_res[i] =
+            pxr_sc::expected_pair_number<REAL, UU>(
+                p_ex[i], p_ey[i], p_ez[i],
+                p_bx[i], p_by[i], p_bz[i],
+                volume, dt,
+                ref_quantity);
+    });
+
+    return res;
+}
+
+// ______________________________________________________________________________________________
+
+
 // ******************************* Python module *************************************************
 
 
@@ -229,6 +303,28 @@ PYBIND11_MODULE(pxr_qed, m) {
         py::arg("bx").noconvert(true), py::arg("by").noconvert(true), py::arg("bz").noconvert(true),
         py::arg("ref_quantity") = py::float_(1.0)
         );
+
+    
+    auto sc = m.def_submodule( "sc" );
+
+    sc.def("pair_production_rate",
+        &sc_pair_production_rate_wrapper,
+        "Computes the Schwinger pair production rate using the Nikishov formula",
+        py::arg("ex").noconvert(true), py::arg("ey").noconvert(true), py::arg("ez").noconvert(true),
+        py::arg("bx").noconvert(true), py::arg("by").noconvert(true), py::arg("bz").noconvert(true),
+        py::arg("ref_quantity") = py::float_(1.0)
+        );
+
+    sc.def("expected_pair_number",
+        &sc_expected_pair_number_wrapper,
+        "Computes the expected number of Schwinger pairs using the Nikishov formula",
+        py::arg("ex").noconvert(true), py::arg("ey").noconvert(true), py::arg("ez").noconvert(true),
+        py::arg("bx").noconvert(true), py::arg("by").noconvert(true), py::arg("bz").noconvert(true),
+        py::arg("volume"), py::arg("dt"),
+        py::arg("ref_quantity") = py::float_(1.0)
+        );
+
+
 }
 
 // ______________________________________________________________________________________________
@@ -336,30 +432,6 @@ PYBIND11_MODULE(pxr_qed, m) {
         py::vectorize(pxr_qs::get_optical_depth<PXRQEDPY_REAL>), 
         "Computes the optical depth of a new electron or positron");
 
-// ______________________________________________________________________________________________
-
-
-
-// ******************************* Schwinger pair production *************************************
-    auto sc = m.def_submodule( "sc" );
-
-    sc.def("pair_production_rate",
-        py::vectorize(       
-            py::overload_cast<
-                PXRQEDPY_REAL,PXRQEDPY_REAL,PXRQEDPY_REAL,
-                PXRQEDPY_REAL,PXRQEDPY_REAL,PXRQEDPY_REAL,
-                PXRQEDPY_REAL>(
-                    &pxr_sc::pair_production_rate<PXRQEDPY_REAL, PXRQEDPY_UU>)),
-        "Computes the Schwinger pair production rate using the Nikishov formula");
-
-    sc.def("expected_pair_number",
-        py::vectorize(       
-            py::overload_cast<
-                PXRQEDPY_REAL,PXRQEDPY_REAL,PXRQEDPY_REAL,
-                PXRQEDPY_REAL,PXRQEDPY_REAL,PXRQEDPY_REAL,
-                PXRQEDPY_REAL,PXRQEDPY_REAL,PXRQEDPY_REAL>(
-                    &pxr_sc::expected_pair_number<PXRQEDPY_REAL, PXRQEDPY_UU>)),
-        "Computes the Schwinger pair production rate using the Nikishov formula");
 // ______________________________________________________________________________________________
 
 }
