@@ -242,6 +242,12 @@ bw_get_optical_depth_wrapper(
     return res;
 }
 
+using bw_dndt_lookup_table_params =
+    pxr_bw::dndt_lookup_table_params<REAL>;
+
+using bw_pair_prod_lookup_table_params =
+        pxr_bw::pair_prod_lookup_table_params<REAL>;
+
 // ______________________________________________________________________________________________
 
 
@@ -270,6 +276,12 @@ qs_get_optical_depth_wrapper(
 
     return res;
 }
+
+using qs_dndt_lookup_table_params =
+    pxr_qs::dndt_lookup_table_params<REAL>;
+
+using qs_photon_emission_lookup_table_params =
+    pxr_qs::photon_emission_lookup_table_params<REAL>;
 
 // ______________________________________________________________________________________________
 
@@ -386,6 +398,26 @@ PYBIND11_MODULE(pxr_qed, m) {
         "Computes the optical depth of a new photon",
         py::arg("unf_zero_one_minus_epsi").noconvert(true));
 
+    py::class_<bw_dndt_lookup_table_params>(bw,
+        "dndt_lookup_table_params",
+        "Parameters to generate a dN/dt lookup table")
+        .def(py::init<>())
+        .def(py::init<REAL,REAL,int>())
+        .def("__eq__", &bw_dndt_lookup_table_params::operator==)
+        .def_readwrite("chi_phot_min", &bw_dndt_lookup_table_params::chi_phot_min)
+        .def_readwrite("chi_phot_max", &bw_dndt_lookup_table_params::chi_phot_max)
+        .def_readwrite("chi_phot_how_many", &bw_dndt_lookup_table_params::chi_phot_how_many);
+
+    py::class_<bw_pair_prod_lookup_table_params>(bw,
+        "pair_prod_lookup_table_params")
+        .def(py::init<>())
+        .def(py::init<REAL,REAL,int,int>())
+        .def("__eq__", &bw_pair_prod_lookup_table_params::operator==)
+        .def_readwrite("chi_phot_min", &bw_pair_prod_lookup_table_params::chi_phot_min)
+        .def_readwrite("chi_phot_max", &bw_pair_prod_lookup_table_params::chi_phot_max)
+        .def_readwrite("chi_phot_how_many", &bw_pair_prod_lookup_table_params::chi_phot_how_many)
+        .def_readwrite("frac_how_many", &bw_pair_prod_lookup_table_params::frac_how_many);
+
     auto qs = m.def_submodule( "qs" );
 
     qs.def(
@@ -394,6 +426,26 @@ PYBIND11_MODULE(pxr_qed, m) {
         "Computes the optical depth of a new electron or positron",
         py::arg("unf_zero_one_minus_epsi").noconvert(true));
 
+    py::class_<qs_dndt_lookup_table_params>(qs,
+        "dndt_lookup_table_params",
+        "Parameters to generate a dN/dt lookup table")
+        .def(py::init<>())
+        .def(py::init<REAL,REAL,int>())
+        .def("__eq__", &qs_dndt_lookup_table_params::operator==)
+        .def_readwrite("chi_part_min", &qs_dndt_lookup_table_params::chi_part_min)
+        .def_readwrite("chi_part_max", &qs_dndt_lookup_table_params::chi_part_max)
+        .def_readwrite("chi_part_how_many", &qs_dndt_lookup_table_params::chi_part_how_many);
+
+    py::class_<qs_photon_emission_lookup_table_params>(qs,
+        "photon_emission_lookup_table_params")
+        .def(py::init<>())
+        .def(py::init<REAL,REAL,int,int>())
+        .def("__eq__", &qs_photon_emission_lookup_table_params::operator==)
+        .def_readwrite("chi_part_min", &qs_photon_emission_lookup_table_params::chi_part_min)
+        .def_readwrite("chi_part_max", &qs_photon_emission_lookup_table_params::chi_part_max)
+        .def_readwrite("frac_min", &qs_photon_emission_lookup_table_params::frac_min)
+        .def_readwrite("chi_part_how_many", &qs_photon_emission_lookup_table_params::chi_part_how_many)
+        .def_readwrite("frac_how_many", &qs_photon_emission_lookup_table_params::frac_how_many);
 
     auto sc = m.def_submodule( "sc" );
 
@@ -426,55 +478,18 @@ PYBIND11_MODULE(pxr_qed, m) {
 
 
 // ******************************* Breit-Wheeler pair production ********************************
-    auto bw = m.def_submodule( "bw" );
+ 
+ using bw_dndt_lookup_table =
+    pxr_bw::dndt_lookup_table<REAL, stdVec>;
 
-    using bw_dndt_lookup_table_params =
-        pxr_bw::dndt_lookup_table_params<PXRQEDPY_REAL>;
-
-    py::class_<bw_dndt_lookup_table_params>(bw,
-        "dndt_lookup_table_params",
-        "Parameters to generate a dN/dt lookup table")
-        .def(py::init<>())
-        .def(py::init<PXRQEDPY_REAL,PXRQEDPY_REAL,int>())
-        .def("__eq__", &bw_dndt_lookup_table_params::operator==)
-        .def_readwrite("chi_phot_min", &bw_dndt_lookup_table_params::chi_phot_min)
-        .def_readwrite("chi_phot_max", &bw_dndt_lookup_table_params::chi_phot_max)
-        .def_readwrite("chi_phot_how_many", &bw_dndt_lookup_table_params::chi_phot_how_many);
-
-    using bw_dndt_lookup_table =
-        pxr_bw::dndt_lookup_table<PXRQEDPY_REAL, VECTOR>;
-
+ 
     py::class_<bw_dndt_lookup_table>(bw,
         "dndt_lookup_table",
         "dN/dt lookup table")
         .def(py::init<bw_dndt_lookup_table_params>())
         .def("__eq__", &bw_dndt_lookup_table::operator==)
         .def("generate", &bw_dndt_lookup_table::generate)
-        .def("serialize", &bw_dndt_lookup_table::serialize);    
-
-    using bw_pair_prod_lookup_table_params =
-        pxr_bw::pair_prod_lookup_table_params<PXRQEDPY_REAL>;
-
-    py::class_<bw_pair_prod_lookup_table_params>(bw, "pair_prod_lookup_table_params")
-        .def(py::init<>())
-        .def(py::init<PXRQEDPY_REAL,PXRQEDPY_REAL,int,int>())
-        .def("__eq__", &bw_pair_prod_lookup_table_params::operator==)
-        .def_readwrite("chi_phot_min", &bw_pair_prod_lookup_table_params::chi_phot_min)
-        .def_readwrite("chi_phot_max", &bw_pair_prod_lookup_table_params::chi_phot_max)
-        .def_readwrite("chi_phot_how_many", &bw_pair_prod_lookup_table_params::chi_phot_how_many)
-        .def_readwrite("frac_how_many", &bw_pair_prod_lookup_table_params::frac_how_many);
-
-    bw.def("get_optical_depth",
-            [](const std::vector<PXRQEDPY_REAL>& unf_zero_one_minus_epsi){
-                const auto size = unf_zero_one_minus_epsi.size();
-                auto res = std::vector<PXRQEDPY_REAL>(size);          
-
-                PXRQEDPY_FOR(as_int(size), [&](int i){
-                    res[i] = pxr_bw::get_optical_depth<PXRQEDPY_REAL>(
-                        unf_zero_one_minus_epsi[i]);
-                });
-            return res;},
-        "Computes the optical depth of a new photon");
+        .def("serialize", &bw_dndt_lookup_table::serialize);
 
     bw.def("get_dn_dt", 
             [](const std::vector<PXRQEDPY_REAL>& energy_phot, const std::vector<PXRQEDPY_REAL>& chi_phot,
