@@ -118,6 +118,20 @@ auto check_and_get_pointers(const pyArr& first, const Args& ...args)
             aux_check_and_get_pointers(len, args...));
 }
 
+auto check_and_get_pointers(const pyArr& arr)
+{
+    const auto arr_buf = arr.request();
+    if (arr_buf.ndim != 1)
+        throw_error("Array must be one-dimensional");
+    
+    const auto len = arr_buf.shape[0];
+
+    const auto cptr = static_cast<REAL*>(arr_buf.ptr);
+
+    return std::make_tuple(len, cptr);
+}
+
+
 // ******************************* Chi parameters ***********************************************
 
 pyArr
@@ -193,6 +207,65 @@ chi_ele_pos_wrapper(
                 p_ex[i], p_ey[i], p_ez[i],
                 p_bx[i], p_by[i], p_bz[i],
                 ref_quantity);
+    });
+
+    return res;
+}
+
+// ______________________________________________________________________________________________
+
+
+
+// ******************************* Breit-Wheeler pair production ********************************
+pyArr
+bw_get_optical_depth_wrapper(
+    const pyArr& unf_zero_one_minus_epsi)
+{
+    const REAL
+        *p_unf_zero_one_minus_epsi = nullptr;
+    
+    size_t how_many = 0;
+
+    std::tie(
+        how_many, p_unf_zero_one_minus_epsi)=
+            check_and_get_pointers(unf_zero_one_minus_epsi);
+
+    auto res = pyArr(how_many);
+    auto p_res = static_cast<REAL*>(res.request().ptr);
+
+    PXRQEDPY_FOR(how_many, [&](int i){
+        p_res[i] =
+            pxr_bw::get_optical_depth<REAL>(
+                p_unf_zero_one_minus_epsi[i]);
+    });
+
+    return res;
+}
+
+// ______________________________________________________________________________________________
+
+
+// ******************************* Quantum syncrhotron emission *********************************
+pyArr
+qs_get_optical_depth_wrapper(
+    const pyArr& unf_zero_one_minus_epsi)
+{
+    const REAL
+        *p_unf_zero_one_minus_epsi = nullptr;
+    
+    size_t how_many = 0;
+
+    std::tie(
+        how_many, p_unf_zero_one_minus_epsi)=
+            check_and_get_pointers(unf_zero_one_minus_epsi);
+
+    auto res = pyArr(how_many);
+    auto p_res = static_cast<REAL*>(res.request().ptr);
+
+    PXRQEDPY_FOR(how_many, [&](int i){
+        p_res[i] =
+            pxr_qs::get_optical_depth<REAL>(
+                p_unf_zero_one_minus_epsi[i]);
     });
 
     return res;
@@ -304,7 +377,24 @@ PYBIND11_MODULE(pxr_qed, m) {
         py::arg("ref_quantity") = py::float_(1.0)
         );
 
-    
+
+    auto bw = m.def_submodule( "bw" );
+
+    bw.def(
+        "get_optical_depth",
+        &bw_get_optical_depth_wrapper,
+        "Computes the optical depth of a new photon",
+        py::arg("unf_zero_one_minus_epsi").noconvert(true));
+
+    auto qs = m.def_submodule( "qs" );
+
+    qs.def(
+        "get_optical_depth", 
+         &bw_get_optical_depth_wrapper,
+        "Computes the optical depth of a new electron or positron",
+        py::arg("unf_zero_one_minus_epsi").noconvert(true));
+
+
     auto sc = m.def_submodule( "sc" );
 
     sc.def("pair_production_rate",
@@ -421,17 +511,6 @@ PYBIND11_MODULE(pxr_qed, m) {
                 };),
         "Computes dN/dt for Breit-Wheeler pair production");
         */
-// ______________________________________________________________________________________________
-
-
-
-// ******************************* Quantum syncrhotron emission *********************************
-    auto qs = m.def_submodule( "qs" );
-
-    qs.def("get_optical_depth", 
-        py::vectorize(pxr_qs::get_optical_depth<PXRQEDPY_REAL>), 
-        "Computes the optical depth of a new electron or positron");
-
 // ______________________________________________________________________________________________
 
 }
