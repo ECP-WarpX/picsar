@@ -32,7 +32,7 @@ namespace pxr_sc = picsar::multi_physics::phys::schwinger;
     const auto PXRQEDPY_PRECISION_STRING = std::string{"double"};
 #else
     using REAL = float;
-    const auto PXRQEDPY_PRECISION_STRING = std::string{"float"};
+    const auto PXRQEDPY_PRECISION_STRING = std::string{"single"};
 #endif
 
 #ifdef PXRMP_HAS_OPENMP
@@ -81,58 +81,42 @@ void throw_error(const std::string& err_msg)
     throw std::runtime_error(" [ Error! ] " + err_msg);
 }
 
-bool aux_check_bufs(
-    const long int dims, const long int len, const pyBufInfo& last)
-{
-    return (last.ndim == dims) && (last.shape[0] == len) ;
-}
-
 template<typename ...Args>
-bool aux_check_bufs(
-    const long int dims, const long int len, const pyBufInfo& first, const Args&... args)
+auto aux_check_and_get_pointers(const long int len, const pyArr& last)
 {
-    return aux_check_bufs(dims, len, first) && aux_check_bufs(dims, len, args...);
-}
+    const auto last_buf = last.request();
+    if (last_buf.ndim != 1 || last_buf.shape[0] != len)
+        throw_error("All arrays must be one-dimensional with equal size");
 
-bool check_bufs(
-    const pyBufInfo& first)
-{   
-    return (first.ndim == 1);
-}
-
-template<typename ...Args>
-bool check_bufs(
-    const pyBufInfo& first, const Args&... args)
-{   
-    if (first.ndim != 1)
-        return false;
-    
-    const auto len = first.shape[0];    
-
-    return aux_check_bufs(1, len, args...);
-}
-
-auto aux_fill(const pyBufInfo& last)
-{
-    const auto cptr = static_cast<REAL*>(last.ptr);
+    const auto cptr = static_cast<REAL*>(last_buf.ptr);
     return std::make_tuple(cptr);
 }
 
 template<typename ...Args>
-auto aux_fill(const pyBufInfo& first, const Args&... args)
+auto aux_check_and_get_pointers(const long int len, const pyArr& arg, const Args& ...args)
 {
-    const auto cptr = static_cast<REAL*>(first.ptr);
-    return std::tuple_cat(std::make_tuple(cptr), aux_fill(args...));
+    const auto arg_buf = arg.request();
+    if (arg_buf.ndim != 1 || arg_buf.shape[0] != len)
+        throw_error("All arrays must be one-dimensional with equal size");
+
+    const auto cptr = static_cast<REAL*>(arg_buf.ptr);
+    return std::tuple_cat(std::make_tuple(cptr), 
+        aux_check_and_get_pointers(len, args...));
 }
 
 template<typename ...Args>
-auto
-check_and_get_pointers(const Args& ...args)
+auto check_and_get_pointers(const pyArr& first, const Args& ...args)
 {
-    if(!check_bufs(args...))
-         throw_error("All arrays must be one-dimensional with equal size");
+    const auto first_buf = first.request();
+    if (first_buf.ndim != 1)
+        throw_error("All arrays must be one-dimensional with equal size");
+    
+    const auto len = first_buf.shape[0];
 
-    return aux_fill(args...);
+    const auto cptr = static_cast<REAL*>(first_buf.ptr);
+
+    return std::tuple_cat(std::make_tuple(len, cptr),
+            aux_check_and_get_pointers(len, args...));
 }
 
 // ******************************* Chi parameters ***********************************************
@@ -144,34 +128,68 @@ chi_photon_wrapper(
     const pyArr& bx, const pyArr& by, const pyArr& bz,
     const REAL ref_quantity)
 {
-
-    const auto b_px = px.request(); const REAL* p_px = nullptr;
-    const auto b_py = py.request(); const REAL* p_py = nullptr;
-    const auto b_pz = pz.request(); const REAL* p_pz = nullptr;
-    const auto b_ex = ex.request(); const REAL* p_ex = nullptr;
-    const auto b_ey = ey.request(); const REAL* p_ey = nullptr;
-    const auto b_ez = ez.request(); const REAL* p_ez = nullptr;
-    const auto b_bx = bx.request(); const REAL* p_bx = nullptr;
-    const auto b_by = by.request(); const REAL* p_by = nullptr;
-    const auto b_bz = bz.request(); const REAL* p_bz = nullptr;
+    const REAL
+        *p_px = nullptr, *p_py = nullptr, *p_pz = nullptr,
+        *p_ex = nullptr, *p_ey = nullptr, *p_ez = nullptr,
+        *p_bx = nullptr, *p_by = nullptr, *p_bz = nullptr;
+    
+    size_t how_many = 0;
 
     std::tie(
+        how_many,
         p_px, p_py, p_pz,
         p_ex, p_ey, p_ez,
         p_bx, p_by, p_bz) =
             check_and_get_pointers(
-                b_px, b_py, b_pz,
-                b_ex, b_ey, b_ez,
-                b_bx, b_by, b_bz);
+                px, py, pz,
+                ex, ey, ez,
+                bx, by, bz);
 
-    auto res = pyArr(b_px.shape);
-    auto b_res = res.request();
-    auto p_res = static_cast<REAL*>(b_res.ptr);
+    auto res = pyArr(how_many);
+    auto p_res = static_cast<REAL*>(res.request().ptr);
 
-    const auto how_many = static_cast<int> (b_px.shape[0]);
     PXRQEDPY_FOR(how_many, [&](int i){
         p_res[i] =
             pxr_phys::chi_photon<REAL, UU>(
+                p_px[i], p_py[i], p_pz[i],
+                p_ex[i], p_ey[i], p_ez[i],
+                p_bx[i], p_by[i], p_bz[i],
+                ref_quantity);
+    });
+
+    return res;
+}
+
+pyArr
+chi_ele_pos_wrapper(
+    const pyArr& px, const pyArr& py, const pyArr& pz,
+    const pyArr& ex, const pyArr& ey, const pyArr& ez,
+    const pyArr& bx, const pyArr& by, const pyArr& bz,
+    const REAL ref_quantity)
+{
+    const REAL
+        *p_px = nullptr, *p_py = nullptr, *p_pz = nullptr,
+        *p_ex = nullptr, *p_ey = nullptr, *p_ez = nullptr,
+        *p_bx = nullptr, *p_by = nullptr, *p_bz = nullptr;
+    
+    size_t how_many = 0;
+
+    std::tie(
+        how_many,
+        p_px, p_py, p_pz,
+        p_ex, p_ey, p_ez,
+        p_bx, p_by, p_bz) =
+            check_and_get_pointers(
+                px, py, pz,
+                ex, ey, ez,
+                bx, by, bz);
+
+    auto res = pyArr(how_many);
+    auto p_res = static_cast<REAL*>(res.request().ptr);
+
+    PXRQEDPY_FOR(how_many, [&](int i){
+        p_res[i] =
+            pxr_phys::chi_ele_pos<REAL, UU>(
                 p_px[i], p_py[i], p_pz[i],
                 p_ex[i], p_ey[i], p_ez[i],
                 p_bx[i], p_by[i], p_bz[i],
@@ -202,6 +220,15 @@ PYBIND11_MODULE(pxr_qed, m) {
         py::arg("bx").noconvert(true), py::arg("by").noconvert(true), py::arg("bz").noconvert(true),
         py::arg("ref_quantity") = py::float_(1.0)
         );
+
+    m.def(
+        "chi_ele_pos",
+        &chi_ele_pos_wrapper,
+        py::arg("px").noconvert(true), py::arg("py").noconvert(true), py::arg("pz").noconvert(true),
+        py::arg("ex").noconvert(true), py::arg("ey").noconvert(true), py::arg("ez").noconvert(true),
+        py::arg("bx").noconvert(true), py::arg("by").noconvert(true), py::arg("bz").noconvert(true),
+        py::arg("ref_quantity") = py::float_(1.0)
+        );
 }
 
 // ______________________________________________________________________________________________
@@ -209,39 +236,6 @@ PYBIND11_MODULE(pxr_qed, m) {
 
 
 #ifdef ABABABABABABABABBA
-
-// ______________________________________________________________________________________________
-
-PYBIND11_MODULE(pxr_qed, m) {
-    m.doc() = "pybind11 pxr_qed plugin";
-
-    m.attr("PRECISION") = py::str(PXRQEDPY_PRECISION_STRING);
-    m.attr("HAS_OPENMP") = py::bool_(PXRQEDPY_OPENMP_FLAG);
-    m.attr("UNITS") = py::str(PXRQEDPY_USTRING);
-
-    
-    using RAW_DATA = std::vector<char>;
-
-// ******************************* Chi parameters ***********************************************
-
-    m.def("chi_photon",
-        py::vectorize(       
-            py::overload_cast<
-                PXRQEDPY_REAL,PXRQEDPY_REAL,PXRQEDPY_REAL,
-                PXRQEDPY_REAL,PXRQEDPY_REAL,PXRQEDPY_REAL,
-                PXRQEDPY_REAL,PXRQEDPY_REAL,PXRQEDPY_REAL,PXRQEDPY_REAL>(
-                &pxr_phys::chi_photon<PXRQEDPY_REAL, PXRQEDPY_UU>)),
-        "Returns the chi parameter for a photon");
-
-    m.def("chi_ele_pos",
-        py::vectorize(       
-            py::overload_cast<
-                PXRQEDPY_REAL,PXRQEDPY_REAL,PXRQEDPY_REAL,
-                PXRQEDPY_REAL,PXRQEDPY_REAL,PXRQEDPY_REAL,
-                PXRQEDPY_REAL,PXRQEDPY_REAL,PXRQEDPY_REAL,PXRQEDPY_REAL>(
-                &pxr_phys::chi_ele_pos<PXRQEDPY_REAL, PXRQEDPY_UU>)),
-        "Returns the chi parameter for an electron or a positron");
-// ______________________________________________________________________________________________
 
 
 
