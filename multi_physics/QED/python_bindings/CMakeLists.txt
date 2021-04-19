@@ -1,7 +1,7 @@
 set(name pxr_qed)
 
 option(
-    PXRQEDPY_DOUBLE_PRECISION 
+    PXRQEDPY_DOUBLE_PRECISION
     "Compile pxr_qed python module in double precision" ON)
 
 set(PXRQEDPY_UNITS_VALUES SI NORM_OMEGA NORM_LAMBDA HEAVISIDE_LORENTZ)
@@ -34,6 +34,8 @@ endif()
 set_target_properties(${name} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/python_bindings)
 
+configure_file(demo_python_bindings.ipynb
+    ${CMAKE_BINARY_DIR}/python_bindings/demo_python_bindings.ipynb COPYONLY)
 
 # Require C++14 or newer
 target_compile_features(${name} PUBLIC cxx_std_14)

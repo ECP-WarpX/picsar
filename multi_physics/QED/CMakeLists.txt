@@ -52,7 +52,7 @@ if(PXRMP_QED_TABLEGEN)
 endif()
 
 if(PXRMP_QED_PYTHON_BINDINGS)
-  add_subdirectory(python)
+  add_subdirectory(python_bindings)
 endif()
 
 if(PXRMP_DPCPP_FIX)
