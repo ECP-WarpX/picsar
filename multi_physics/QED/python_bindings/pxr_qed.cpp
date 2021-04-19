@@ -29,14 +29,16 @@
 #include <iostream>
 #include <fstream>
 
-namespace py = pybind11;
-
+// Some useful aliases
 namespace pxr_phys = picsar::multi_physics::phys;
 namespace pxr_math = picsar::multi_physics::math;
 namespace pxr_bw = picsar::multi_physics::phys::breit_wheeler;
 namespace pxr_qs = picsar::multi_physics::phys::quantum_sync;
 namespace pxr_sc = picsar::multi_physics::phys::schwinger;
+//___________________________________________________________________________________
 
+
+// Double or single precision
 #ifdef PXRQEDPY_DOUBLE_PRECISION
     using REAL = double;
     const auto PXRQEDPY_PRECISION_STRING = std::string{"double"};
@@ -44,22 +46,10 @@ namespace pxr_sc = picsar::multi_physics::phys::schwinger;
     using REAL = float;
     const auto PXRQEDPY_PRECISION_STRING = std::string{"single"};
 #endif
+//___________________________________________________________________________________
 
-#ifdef PXQEDPY_HAS_OPENMP
-    template <typename Func>
-    void PXRQEDPY_FOR(int N, const Func& func){
-        #pragma omp parallel for
-        for (int i = 0; i < N; ++i) func(i);
-    }
-    const auto PXRQEDPY_OPENMP_FLAG = true;
-#else
-    template <typename Func>
-    void PXRQEDPY_FOR(int N, const Func& func){
-        for (int i = 0; i < N; ++i) func(i);
-    }
-    const auto PXRQEDPY_OPENMP_FLAG = true;
-#endif
 
+// Choice of physical units
 #if defined(PXRQEDPY_SI)
     const auto UU = pxr_phys::unit_system::SI;
     const auto PXRQEDPY_USTRING = std::string{"SI"};
@@ -75,31 +65,89 @@ namespace pxr_sc = picsar::multi_physics::phys::schwinger;
 #else
     #error Incorrect units choice!
 #endif
+//___________________________________________________________________________________
 
+
+// PXRQEDPY_FOR can replace a for cycle and uses
+// openMP if the library is compiled with openMP support.
+#ifdef PXQEDPY_HAS_OPENMP
+    template <typename Func>
+    void PXRQEDPY_FOR(int N, const Func& func){
+        #pragma omp parallel for
+        for (int i = 0; i < N; ++i) func(i);
+    }
+    const auto PXRQEDPY_OPENMP_FLAG = true;
+#else
+    template <typename Func>
+    void PXRQEDPY_FOR(int N, const Func& func){
+        for (int i = 0; i < N; ++i) func(i);
+    }
+    const auto PXRQEDPY_OPENMP_FLAG = true;
+#endif
+//___________________________________________________________________________________
+
+
+// Few helper functions
+
+/**
+* Converts a real number into a string using stringstream
+* (std::to_string has only 6-digits precision)
+*
+* @tparam RealType the floating point type
+* @param[in] num the number
+* @return num as a string
+*/
 template <typename Real>
-inline std::string float_to_string(Real num)
+std::string float_to_string(Real num)
 {
     std::stringstream ss;
     ss << num;
     return ss.str();
 }
 
-inline std::string bool_to_string(bool val)
+/**
+* Converts a bool into a string
+*
+* @param[in] val the bool
+* @return either True or False
+*/
+std::string bool_to_string(bool val)
 {
     return (val)?"True":"False";
 }
 
-using pyArr = py::array_t<REAL>;
-using pyBufInfo = py::buffer_info;
-using stdVec = std::vector<REAL>;
-using rawVec = std::vector<char>;
-
+/**
+* Throws an error message
+*
+* @param[in] err_msg the error message
+*/
 void throw_error(const std::string& err_msg)
 {
     throw std::runtime_error(" [ Error! ] " + err_msg);
 }
+//___________________________________________________________________________________
 
-template<typename ...Args>
+
+// Other useful aliases
+namespace py = pybind11;
+using pyArr = py::array_t<REAL>;
+using pyBufInfo = py::buffer_info;
+using stdVec = std::vector<REAL>;
+using rawVec = std::vector<char>;
+//___________________________________________________________________________________
+
+
+// Helper functions to get raw data pointers from pyArr objects
+
+/**
+* Checks that 'last' is one-dimensional with length len and returns
+* a tuple containing a pointer to 'last' raw data
+* (uses recursive template metaprogramming, see below)
+*
+* @param[in] len the length of the array
+* @param[in] last a py::array_t<REAL> object
+* @return a tuple containing a pointer to the raw data of last
+*/
 auto aux_check_and_get_pointers(const long int len, const pyArr& last)
 {
     const auto last_buf = last.request();
@@ -110,6 +158,17 @@ auto aux_check_and_get_pointers(const long int len, const pyArr& last)
     return std::make_tuple(cptr);
 }
 
+/**
+* Checks that 'arg' and 'args' are one-dimensional with length len
+* and puts pointers to their raw data into a tuple
+* (uses recursive template metaprogramming, see above and below)
+*
+* @tparam ...Args a variable number of const py::array_t<REAL> &
+* @param[in] len the length of the arrays
+* @param[in] arg the first py::array_t<REAL> in the argument list
+* @param[in] args the other arguments
+* @return a tuple containing pointers to 'arg' and 'args' raw data
+*/
 template<typename ...Args>
 auto aux_check_and_get_pointers(const long int len, const pyArr& arg, const Args& ...args)
 {
@@ -122,6 +181,17 @@ auto aux_check_and_get_pointers(const long int len, const pyArr& arg, const Args
         aux_check_and_get_pointers(len, args...));
 }
 
+/**
+* Checks that 'first' and 'args' are one-dimensional with the same length
+* and puts pointers to their raw data into a tuple
+* (uses recursive template metaprogramming, see above)
+*
+* @tparam ...Args a variable number of const py::array_t<REAL> &
+* @param[in] len the length of the arrays
+* @param[in] first the first py::array_t<REAL> in the argument list
+* @param[in] args the other arguments
+* @return a tuple containing the length of the arrays and pointers to 'first' and 'args' raw data
+*/
 template<typename ...Args>
 auto check_and_get_pointers(const pyArr& first, const Args& ...args)
 {
@@ -137,6 +207,13 @@ auto check_and_get_pointers(const pyArr& first, const Args& ...args)
             aux_check_and_get_pointers(len, args...));
 }
 
+/**
+* Overload of 'check_and_get_pointers' for one array: checks that
+* the array is one-dimensional and returns a tuple
+*
+* @param[in] arr a py::array_t<REAL>
+* @return a tuple containing the length of the array and a pointer to 'arr' raw data
+*/
 auto check_and_get_pointers(const pyArr& arr)
 {
     const auto arr_buf = arr.request();
@@ -150,20 +227,44 @@ auto check_and_get_pointers(const pyArr& arr)
     return std::make_tuple(len, cptr);
 }
 
+/**
+* Checks that arr has a given length and returs a pointer to
+* its raw data.
+*
+* @param[in] arr a py::array_t<REAL>
+* @param[in] len the array length
+* @return a pointer to 'arr' raw data
+*/
 auto check_and_get_pointer_nonconst(pyArr& arr, const long int len)
 {
     const auto arr_buf = arr.request();
     if (arr_buf.ndim != 1 || arr_buf.shape[0] != len)
-        throw_error("All arrays must be one-dimensional with equal size");
+        throw_error("Array must be one-dimensional with size " + std::to_string(len));
 
     const auto cptr = static_cast<REAL*>(arr_buf.ptr);
 
     return cptr;
 }
+//___________________________________________________________________________________
 
 
-// ******************************* Chi parameters ***********************************************
+// ******************************* Chi parameters wrappers **************************
 
+/**
+* Wrapper for chi_photon function
+*
+* @param[in] px x components of photon momenta
+* @param[in] py y components of photon momenta
+* @param[in] pz z components of photon momenta
+* @param[in] ex x components of electric field
+* @param[in] ey y components of electric field
+* @param[in] ez z components of electric field
+* @param[in] bx x components of magnetic field
+* @param[in] by y components of magnetic field
+* @param[in] bz z components of magnetic field
+* @param[in] ref_quantity reference quantity (for NORM_LAMBDA or NORM_OMEGA units)
+* @return the chi parameter of the photons
+*/
 pyArr
 chi_photon_wrapper(
     const pyArr& px, const pyArr& py, const pyArr& pz,
@@ -203,6 +304,21 @@ chi_photon_wrapper(
     return res;
 }
 
+/**
+* Wrapper for chi_ele_pos function
+*
+* @param[in] px x components of particle momenta
+* @param[in] py y components of particle momenta
+* @param[in] pz z components of particle momenta
+* @param[in] ex x components of electric field
+* @param[in] ey y components of electric field
+* @param[in] ez z components of electric field
+* @param[in] bx x components of magnetic field
+* @param[in] by y components of magnetic field
+* @param[in] bz z components of magnetic field
+* @param[in] ref_quantity reference quantity (for NORM_LAMBDA or NORM_OMEGA units)
+* @return the chi parameter of the particles
+*/
 pyArr
 chi_ele_pos_wrapper(
     const pyArr& px, const pyArr& py, const pyArr& pz,
@@ -241,12 +357,12 @@ chi_ele_pos_wrapper(
 
     return res;
 }
-
 // ______________________________________________________________________________________________
 
 
+// ******************************* Breit-Wheeler pair production wrappers ***********************
 
-// ******************************* Breit-Wheeler pair production ********************************
+// Aliases for table objects and parameter structs
 using bw_dndt_lookup_table_params =
     pxr_bw::dndt_lookup_table_params<REAL>;
 
@@ -259,12 +375,19 @@ using bw_dndt_lookup_table =
 using bw_pair_prod_lookup_table =
     pxr_bw::pair_prod_lookup_table<REAL, stdVec>;
 
+// Aliases for table generation policies
 const auto bw_regular =
     pxr_bw::generation_policy::regular;
 
 const auto bw_force_double =
     pxr_bw::generation_policy::force_internal_double;
 
+/**
+* Wrapper for Breit-Wheeler get_optical_depth function
+*
+* @param[in] unf_zero_one_minus_epsi an array of random numbers uniformly distributed in [0,1)
+* @return the optical depths drawn from an exponential distribution
+*/
 pyArr
 bw_get_optical_depth_wrapper(
     const pyArr& unf_zero_one_minus_epsi)
@@ -290,6 +413,15 @@ bw_get_optical_depth_wrapper(
     return res;
 }
 
+/**
+* Wrapper for Breit-Wheeler get_dn_dt function
+*
+* @param[in] energy_phot the energy of the photons
+* @param[in] chi_phot the chi parameters of the photons
+* @param[in] ref_table the dn_dt lookup table
+* @param[in] ref_quantity reference quantity (for NORM_LAMBDA or NORM_OMEGA units)
+* @return the Breit-Wheeler pair production rates
+*/
 pyArr
 bw_get_dn_dt_wrapper(
     const pyArr& energy_phot, const pyArr& chi_phot,
@@ -320,6 +452,16 @@ bw_get_dn_dt_wrapper(
     return res;
 }
 
+/**
+* Wrapper for Breit-Wheeler evolve_optical_depth function
+*
+* @param[in] energy_phot the energy of the photons
+* @param[in] chi_phot the chi parameters of the photons
+* @param[in] dt the timestep
+* @param[in, out] optical_depth the optical depth of the photons
+* @param[in] ref_table the dn_dt lookup table
+* @param[in] ref_quantity reference quantity (for NORM_LAMBDA or NORM_OMEGA units)
+*/
 void
 bw_evolve_optical_depth_wrapper(
     const pyArr& energy_phot, const pyArr& chi_phot,
@@ -349,6 +491,18 @@ bw_evolve_optical_depth_wrapper(
     });
 }
 
+/**
+* Wrapper for Breit-Wheeler generate_breit_wheeler_pairs function
+*
+* @param[in] chi_phot the chi parameters of the photons
+* @param[in] phot_px x components of photon momenta
+* @param[in] phot_py y components of photon momenta
+* @param[in] phot_pz z components of photon momenta
+* @param[in] unf_zero_one_minus_epsi an array of random numbers uniformly distributed in [0,1)
+* @param[in] ref_table the pair production lookup table
+* @param[in] ref_quantity reference quantity (for NORM_LAMBDA or NORM_OMEGA units)
+* @return a tuple containing the components of the momenta of the generated particles (ele_px, ele_py,..,pos_pz)
+*/
 auto
 bw_generate_breit_wheeler_pairs_wrapper(
     const pyArr& chi_phot,
@@ -411,7 +565,9 @@ bw_generate_breit_wheeler_pairs_wrapper(
 // ______________________________________________________________________________________________
 
 
-// ******************************* Quantum syncrhotron emission *********************************
+// ******************************* Quantum synchrotron emission wrappers ************************
+
+// Aliases for table objects and parameter structs
 using qs_dndt_lookup_table_params =
     pxr_qs::dndt_lookup_table_params<REAL>;
 
@@ -424,12 +580,19 @@ using qs_dndt_lookup_table =
 using qs_photon_emission_lookup_table =
     pxr_qs::photon_emission_lookup_table<REAL, stdVec>;
 
+// Aliases for table generation policies
 const auto qs_regular =
     pxr_qs::generation_policy::regular;
 
 const auto qs_force_double =
     pxr_qs::generation_policy::force_internal_double;
 
+/**
+* Wrapper for Quantum Synchrotron get_optical_depth function
+*
+* @param[in] unf_zero_one_minus_epsi an array of random numbers uniformly distributed in [0,1)
+* @return the optical depths drawn from an exponential distribution
+*/
 pyArr
 qs_get_optical_depth_wrapper(
     const pyArr& unf_zero_one_minus_epsi)
@@ -455,6 +618,15 @@ qs_get_optical_depth_wrapper(
     return res;
 }
 
+/**
+* Wrapper for Quantum Synchrotron get_dn_dt function
+*
+* @param[in] energy_part the energy of the particles
+* @param[in] chi_part the chi parameters of the particles
+* @param[in] ref_table the dn_dt lookup table
+* @param[in] ref_quantity reference quantity (for NORM_LAMBDA or NORM_OMEGA units)
+* @return the Quantum Synchrotron photon emission
+*/
 pyArr
 qs_get_dn_dt_wrapper(
     const pyArr& energy_part, const pyArr& chi_part,
@@ -485,6 +657,16 @@ qs_get_dn_dt_wrapper(
     return res;
 }
 
+/**
+* Wrapper for Quantum Synchrotron evolve_optical_depth function
+*
+* @param[in] energy_part the energy of the particles
+* @param[in] chi_phot the chi parameters of the particles
+* @param[in] dt the timestep
+* @param[in, out] optical_depth the optical depth of the particles
+* @param[in] ref_table the dn_dt lookup table
+* @param[in] ref_quantity reference quantity (for NORM_LAMBDA or NORM_OMEGA units)
+*/
 void
 qs_evolve_optical_depth_wrapper(
     const pyArr& energy_part, const pyArr& chi_part,
@@ -514,6 +696,18 @@ qs_evolve_optical_depth_wrapper(
     });
 }
 
+/**
+* Wrapper for Quantum Synchrotron enerate_photon_update_momentum function
+*
+* @param[in] chi_part the chi parameters of the particles
+* @param[in,out] part_px x components of particle momenta
+* @param[in,out] part_py y components of particle momenta
+* @param[in,out] part_pz z components of particle momenta
+* @param[in] unf_zero_one_minus_epsi an array of random numbers uniformly distributed in [0,1)
+* @param[in] ref_table the photon emission lookup table
+* @param[in] ref_quantity reference quantity (for NORM_LAMBDA or NORM_OMEGA units)
+* @return a tuple containing the components of the momenta of the generated photons
+*/
 auto
 qs_generate_photon_update_momentum_wrapper(
     const pyArr& chi_part,
@@ -574,6 +768,18 @@ qs_generate_photon_update_momentum_wrapper(
 
 // ******************************* Schwinger pair production *************************************
 
+/**
+* Wrapper for Schwinger pair_production_rate function
+*
+* @param[in] ex x components of electric field
+* @param[in] ey y components of electric field
+* @param[in] ez z components of electric field
+* @param[in] bx x components of magnetic field
+* @param[in] by y components of magnetic field
+* @param[in] bz z components of magnetic field
+* @param[in] ref_quantity reference quantity (for NORM_LAMBDA or NORM_OMEGA units)
+* @return the Schwinger pair production rate per unit volume
+*/
 pyArr
 sc_pair_production_rate_wrapper(
     const pyArr& ex, const pyArr& ey, const pyArr& ez,
@@ -608,6 +814,20 @@ sc_pair_production_rate_wrapper(
     return res;
 }
 
+/**
+* Wrapper for Schwinger expected_pair_number function
+*
+* @param[in] ex x components of electric field
+* @param[in] ey y components of electric field
+* @param[in] ez z components of electric field
+* @param[in] bx x components of magnetic field
+* @param[in] by y components of magnetic field
+* @param[in] bz z components of magnetic field
+* @param[in] volume the volume of the region where pair production takes place
+* @param[in] dt the timestep
+* @param[in] ref_quantity reference quantity (for NORM_LAMBDA or NORM_OMEGA units)
+* @return the expected number of Schwinger pairs
+*/
 pyArr
 sc_expected_pair_number_wrapper(
     const pyArr& ex, const pyArr& ey, const pyArr& ez,
@@ -649,14 +869,17 @@ sc_expected_pair_number_wrapper(
 
 // ******************************* Python module *************************************************
 
-
 PYBIND11_MODULE(pxr_qed, m) {
+    // A doc string and few useful variables
     m.doc() = "pybind11 pxr_qed plugin";
 
     m.attr("PRECISION") = py::str(PXRQEDPY_PRECISION_STRING);
     m.attr("HAS_OPENMP") = py::bool_(PXRQEDPY_OPENMP_FLAG);
     m.attr("UNITS") = py::str(PXRQEDPY_USTRING);
+    //________________________________________
 
+
+    // Functions to calculate chi parameters
     m.def(
         "chi_photon",
         &chi_photon_wrapper,
@@ -674,8 +897,9 @@ PYBIND11_MODULE(pxr_qed, m) {
         py::arg("bx").noconvert(true), py::arg("by").noconvert(true), py::arg("bz").noconvert(true),
         py::arg("ref_quantity") = py::float_(1.0)
         );
+    //________________________________________
 
-
+    // Breit-Wheeler submodule
     auto bw = m.def_submodule( "bw" );
 
     bw.def(
@@ -886,6 +1110,10 @@ PYBIND11_MODULE(pxr_qed, m) {
         py::arg("ref_table"), py::arg("ref_quantity") = py::float_(1.0)
         );
 
+    //________________________________________
+
+
+    //Quantum Synchrotron submodule
     auto qs = m.def_submodule( "qs" );
 
     qs.def(
@@ -1096,7 +1324,9 @@ PYBIND11_MODULE(pxr_qed, m) {
         py::arg("unf_zero_one_minus_epsi").noconvert(true),
         py::arg("ref_table"), py::arg("ref_quantity") = py::float_(1.0)
         );
+    //________________________________________
 
+    //Schwinger submodule
     auto sc = m.def_submodule( "sc" );
 
     sc.def("pair_production_rate",
@@ -1115,7 +1345,7 @@ PYBIND11_MODULE(pxr_qed, m) {
         py::arg("volume"), py::arg("dt"),
         py::arg("ref_quantity") = py::float_(1.0)
         );
-
+    //________________________________________
 
 }
 
