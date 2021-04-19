@@ -506,6 +506,61 @@ qs_evolve_optical_depth_wrapper(
     });
 }
 
+auto
+qs_generate_photon_update_momentum_wrapper(
+    const pyArr& chi_part,
+    pyArr& part_px, pyArr& part_py, pyArr& part_pz,
+    const pyArr& unf_zero_one_minus_epsi,
+    const qs_photon_emission_lookup_table& ref_table,
+    const REAL ref_quantity)
+{
+    const REAL
+        *p_chi_part = nullptr, *p_unf_zero_one_minus_epsi = nullptr;
+
+    size_t how_many = 0;
+
+    std::tie(
+        how_many,
+        p_chi_part, p_unf_zero_one_minus_epsi) =
+            check_and_get_pointers(chi_part, unf_zero_one_minus_epsi);
+
+    auto p_part_px =
+        check_and_get_pointer_nonconst(part_px, how_many);
+    auto p_part_py =
+        check_and_get_pointer_nonconst(part_py, how_many);
+    auto p_part_pz =
+        check_and_get_pointer_nonconst(part_pz, how_many);
+
+    auto phot_px = pyArr(how_many);
+    auto phot_py = pyArr(how_many);
+    auto phot_pz = pyArr(how_many);
+    auto p_phot_px = static_cast<REAL*>(phot_px.request().ptr);
+    auto p_phot_py = static_cast<REAL*>(phot_py.request().ptr);
+    auto p_phot_pz = static_cast<REAL*>(phot_pz.request().ptr);
+
+    PXRQEDPY_FOR(how_many, [&](int i){
+        auto part_mom = pxr_math::vec3<REAL>{p_part_px[i], p_part_py[i], p_part_pz[i]};
+        auto phot_mom = pxr_math::vec3<REAL>{};
+        pxr_qs::generate_photon_update_momentum<REAL, qs_photon_emission_lookup_table, UU>(
+            p_chi_part[i],
+            part_mom,
+            p_unf_zero_one_minus_epsi[i],
+            ref_table,
+            phot_mom,
+            ref_quantity);
+
+        p_part_px[i] = part_mom[0];
+        p_part_py[i] = part_mom[1];
+        p_part_pz[i] = part_mom[2];
+        p_phot_px[i] = phot_mom[0];
+        p_phot_py[i] = phot_mom[1];
+        p_phot_pz[i] = phot_mom[2];
+    });
+
+    return std::make_tuple(
+        std::move(phot_px),std::move(phot_py), std::move(phot_pz));
+}
+
 // ______________________________________________________________________________________________
 
 
@@ -1020,6 +1075,17 @@ PYBIND11_MODULE(pxr_qed, m) {
         py::arg("energy_part").noconvert(true),
         py::arg("chi_part").noconvert(true),
         py::arg("dt"), py::arg("optical_depth").noconvert(true),
+        py::arg("ref_table"), py::arg("ref_quantity") = py::float_(1.0)
+        );
+
+    qs.def(
+        "generate_photon_update_momentum",
+        &qs_generate_photon_update_momentum_wrapper,
+        py::arg("chi_part").noconvert(true),
+        py::arg("part_px").noconvert(true),
+        py::arg("part_py").noconvert(true),
+        py::arg("part_pz").noconvert(true),
+        py::arg("unf_zero_one_minus_epsi").noconvert(true),
         py::arg("ref_table"), py::arg("ref_quantity") = py::float_(1.0)
         );
 
