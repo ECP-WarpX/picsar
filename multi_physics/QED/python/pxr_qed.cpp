@@ -1,5 +1,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+#include <pybind11/stl.h>
 
 #include "picsar_qed/physics/chi_functions.hpp"
 
@@ -15,6 +16,8 @@
 #include <string>
 #include <sstream>
 #include <tuple>
+#include <iostream>
+#include <fstream>
 
 namespace py = pybind11;
 
@@ -72,9 +75,15 @@ inline std::string float_to_string(Real num)
     return ss.str();
 }
 
+inline std::string bool_to_string(bool val)
+{
+    return (val)?"True":"False";
+}
+
 using pyArr = py::array_t<REAL>;
 using pyBufInfo = py::buffer_info;
 using stdVec = std::vector<REAL>;
+using rawVec = std::vector<char>;
 
 void throw_error(const std::string& err_msg)
 {
@@ -247,7 +256,19 @@ using bw_dndt_lookup_table_params =
     pxr_bw::dndt_lookup_table_params<REAL>;
 
 using bw_pair_prod_lookup_table_params =
-        pxr_bw::pair_prod_lookup_table_params<REAL>;
+    pxr_bw::pair_prod_lookup_table_params<REAL>;
+
+using bw_dndt_lookup_table =
+    pxr_bw::dndt_lookup_table<REAL, stdVec>;
+
+using bw_pair_prod_lookup_table =
+    pxr_bw::pair_prod_lookup_table<REAL, stdVec>;
+
+const auto bw_regular =
+    pxr_bw::generation_policy::regular;
+
+const auto bw_force_double =
+    pxr_bw::generation_policy::force_internal_double;
 
 // ______________________________________________________________________________________________
 
@@ -415,7 +436,7 @@ PYBIND11_MODULE(pxr_qed, m) {
                     std::string("\tchi_phot_min     : ") + float_to_string(a.chi_phot_min)+"\n"+
                     std::string("\tchi_phot_max     : ") + float_to_string(a.chi_phot_max)+"\n"+
                     std::string("\tchi_phot_how_many: ") + std::to_string(a.chi_phot_how_many);
-        });
+            });
 
     py::class_<bw_pair_prod_lookup_table_params>(bw,
         "pair_prod_lookup_table_params")
@@ -435,7 +456,111 @@ PYBIND11_MODULE(pxr_qed, m) {
                     std::string("\tchi_phot_how_many: ") + std::to_string(a.chi_phot_how_many)+"\n"+
                     std::string("\tfrac_how_many    : ") + std::to_string(a.frac_how_many);
 
-        });
+            });
+
+    py::class_<bw_dndt_lookup_table>(bw,
+        "dndt_lookup_table",
+        "dN/dt lookup table")
+        .def(py::init<>())
+        .def(py::init<bw_dndt_lookup_table_params>())
+        .def("__eq__", &bw_dndt_lookup_table::operator==)
+        .def("generate",
+            [&](bw_dndt_lookup_table &self,
+                bool do_regular, bool verbose){
+                    if(do_regular)
+                        self.generate<bw_regular>(verbose);
+                    else
+                        self.generate<bw_force_double>(verbose);
+            },
+            py::arg("do_regular") = py::bool_(true),
+            py::arg("verbose") = py::bool_(true))
+        .def("save_as",
+            [&](const bw_dndt_lookup_table &self, const std::string file_name){
+                if(!self.is_init())
+                    throw_error("Table must be initialized!");
+                const auto raw = self.serialize();
+                auto of = std::fstream(file_name,
+                    std::ios::out | std::ios::binary);
+                if( !of )
+                    throw_error("Opening file failed!");
+                of.write(raw.data(), raw.size());
+                of.close();
+            },
+            py::arg("file_name"))
+        .def("load_from",
+            [&](bw_dndt_lookup_table &self, const std::string file_name){
+                auto input = std::ifstream(file_name,
+                    std::ios::ate | std::ios::binary);
+                if( !input )
+                    throw_error("Opening file failed!");
+                const auto pos = input.tellg();
+                auto raw = rawVec(pos);
+                
+                input.seekg(0, std::ios::beg);
+                input.read(raw.data(), pos);
+
+                self = bw_dndt_lookup_table{raw};
+                input.close();
+            },
+            py::arg("file_name"))
+        .def("__repr__",
+            [](const bw_dndt_lookup_table &a) {
+                return 
+                    std::string("bw.dndt_lookup_table:\n")+
+                    std::string("\tis initialized? : ") + bool_to_string(a.is_init())+"\n";
+            });
+
+    py::class_<bw_pair_prod_lookup_table>(bw,
+        "pair_prod_lookup_table",
+        "Pair production lookup table")
+        .def(py::init<>())
+        .def(py::init<bw_pair_prod_lookup_table_params>())
+        .def("__eq__", &bw_pair_prod_lookup_table::operator==)
+        .def("generate",
+            [&](bw_pair_prod_lookup_table &self,
+                bool do_regular, bool verbose){
+                    if(do_regular)
+                        self.generate<bw_regular>(verbose);
+                    else
+                        self.generate<bw_force_double>(verbose);
+            },
+            py::arg("do_regular") = py::bool_(true),
+            py::arg("verbose") = py::bool_(true))
+        .def("save_as",
+            [&](const bw_pair_prod_lookup_table &self, const std::string file_name){
+                if(!self.is_init())
+                    throw_error("Table must be initialized!");
+                const auto raw = self.serialize();
+                auto of = std::fstream(file_name,
+                    std::ios::out | std::ios::binary);
+                if( !of )
+                    throw_error("Opening file failed!");
+                of.write(raw.data(), raw.size());
+                of.close();
+            },
+            py::arg("file_name"))
+        .def("load_from",
+            [&](bw_pair_prod_lookup_table &self, const std::string file_name){
+                auto input = std::ifstream(file_name,
+                    std::ios::ate | std::ios::binary);
+                if( !input )
+                    throw_error("Opening file failed!");
+                const auto pos = input.tellg();
+                auto raw = rawVec(pos);
+                
+                input.seekg(0, std::ios::beg);
+                input.read(raw.data(), pos);
+
+                self = bw_pair_prod_lookup_table{raw};
+                input.close();
+            },
+            py::arg("file_name"))
+        .def("__repr__",
+            [](const bw_pair_prod_lookup_table &a) {
+                return 
+                    std::string("bw.pair_prod_lookup_table:\n")+
+                    std::string("\tis initialized? : ") + bool_to_string(a.is_init())+"\n";
+            });
 
     auto qs = m.def_submodule( "qs" );
 
@@ -461,7 +586,7 @@ PYBIND11_MODULE(pxr_qed, m) {
                     std::string("\tchi_part_min     : ") + float_to_string(a.chi_part_min)+"\n"+
                     std::string("\tchi_part_max     : ") + float_to_string(a.chi_part_max)+"\n"+
                     std::string("\tchi_part_how_many: ") + std::to_string(a.chi_part_how_many);
-        });
+            });
 
     py::class_<qs_photon_emission_lookup_table_params>(qs,
         "photon_emission_lookup_table_params")
@@ -482,7 +607,7 @@ PYBIND11_MODULE(pxr_qed, m) {
                     std::string("\tfrac_min         : ") + float_to_string(a.frac_min)+"\n"+
                     std::string("\tchi_part_how_many: ") + std::to_string(a.chi_part_how_many)+"\n"+
                     std::string("\tfrac_how_many    : ") + std::to_string(a.frac_how_many);
-        });
+            });
 
 
     auto sc = m.def_submodule( "sc" );
@@ -516,19 +641,6 @@ PYBIND11_MODULE(pxr_qed, m) {
 
 
 // ******************************* Breit-Wheeler pair production ********************************
- 
- using bw_dndt_lookup_table =
-    pxr_bw::dndt_lookup_table<REAL, stdVec>;
-
- 
-    py::class_<bw_dndt_lookup_table>(bw,
-        "dndt_lookup_table",
-        "dN/dt lookup table")
-        .def(py::init<bw_dndt_lookup_table_params>())
-        .def("__eq__", &bw_dndt_lookup_table::operator==)
-        .def("generate", &bw_dndt_lookup_table::generate)
-        .def("serialize", &bw_dndt_lookup_table::serialize);
-
     bw.def("get_dn_dt", 
             [](const std::vector<PXRQEDPY_REAL>& energy_phot, const std::vector<PXRQEDPY_REAL>& chi_phot,
                 const bw_dndt_lookup_table& ref_table, PXRQEDPY_REAL ref_quantity){
