@@ -141,6 +141,17 @@ auto check_and_get_pointers(const pyArr& arr)
     return std::make_tuple(len, cptr);
 }
 
+auto check_and_get_pointer_nonconst(pyArr& arr, const long int len)
+{
+    const auto arr_buf = arr.request();
+    if (arr_buf.ndim != 1 || arr_buf.shape[0] != len)
+        throw_error("All arrays must be one-dimensional with equal size");
+
+    const auto cptr = static_cast<REAL*>(arr_buf.ptr);
+
+    return cptr;
+}
+
 
 // ******************************* Chi parameters ***********************************************
 
@@ -227,6 +238,24 @@ chi_ele_pos_wrapper(
 
 
 // ******************************* Breit-Wheeler pair production ********************************
+using bw_dndt_lookup_table_params =
+    pxr_bw::dndt_lookup_table_params<REAL>;
+
+using bw_pair_prod_lookup_table_params =
+    pxr_bw::pair_prod_lookup_table_params<REAL>;
+
+using bw_dndt_lookup_table =
+    pxr_bw::dndt_lookup_table<REAL, stdVec>;
+
+using bw_pair_prod_lookup_table =
+    pxr_bw::pair_prod_lookup_table<REAL, stdVec>;
+
+const auto bw_regular =
+    pxr_bw::generation_policy::regular;
+
+const auto bw_force_double =
+    pxr_bw::generation_policy::force_internal_double;
+
 pyArr
 bw_get_optical_depth_wrapper(
     const pyArr& unf_zero_one_minus_epsi)
@@ -252,28 +281,86 @@ bw_get_optical_depth_wrapper(
     return res;
 }
 
-using bw_dndt_lookup_table_params =
-    pxr_bw::dndt_lookup_table_params<REAL>;
+pyArr
+bw_get_dn_dt_wrapper(
+    const pyArr& energy_phot, const pyArr& chi_phot,
+    const bw_dndt_lookup_table& ref_table,
+    const REAL ref_quantity)
+{
+    const REAL
+        *p_energy_phot = nullptr, *p_chi_phot = nullptr;
+    
+    size_t how_many = 0;
 
-using bw_pair_prod_lookup_table_params =
-    pxr_bw::pair_prod_lookup_table_params<REAL>;
+    std::tie(
+        how_many,
+        p_energy_phot, p_chi_phot) =
+            check_and_get_pointers(
+                energy_phot, chi_phot);
 
-using bw_dndt_lookup_table =
-    pxr_bw::dndt_lookup_table<REAL, stdVec>;
+    auto res = pyArr(how_many);
+    auto p_res = static_cast<REAL*>(res.request().ptr);
 
-using bw_pair_prod_lookup_table =
-    pxr_bw::pair_prod_lookup_table<REAL, stdVec>;
+    PXRQEDPY_FOR(how_many, [&](int i){
+        p_res[i] =
+            pxr_bw::get_dN_dt<REAL, bw_dndt_lookup_table, UU>(
+                p_energy_phot[i], p_chi_phot[i],
+                ref_table, ref_quantity);
+    });
 
-const auto bw_regular =
-    pxr_bw::generation_policy::regular;
+    return res;
+}
 
-const auto bw_force_double =
-    pxr_bw::generation_policy::force_internal_double;
+void
+bw_evolve_optical_depth_wrapper(
+    const pyArr& energy_phot, const pyArr& chi_phot,
+    const REAL dt, pyArr& optical_depth,
+    const bw_dndt_lookup_table& ref_table,
+    const REAL ref_quantity)
+{
+    const REAL
+        *p_energy_phot = nullptr, *p_chi_phot = nullptr;
+    
+    size_t how_many = 0;
 
+    std::tie(
+        how_many,
+        p_energy_phot, p_chi_phot) =
+            check_and_get_pointers(
+                energy_phot, chi_phot);
+
+    auto p_optical_depth =
+        check_and_get_pointer_nonconst(optical_depth, how_many);
+
+    PXRQEDPY_FOR(how_many, [&](int i)->void{
+        pxr_bw::evolve_optical_depth<REAL, bw_dndt_lookup_table, UU>(
+            p_energy_phot[i], p_chi_phot[i],
+            dt, p_optical_depth[i],
+            ref_table, ref_quantity);
+    });
+}
 // ______________________________________________________________________________________________
 
 
 // ******************************* Quantum syncrhotron emission *********************************
+using qs_dndt_lookup_table_params =
+    pxr_qs::dndt_lookup_table_params<REAL>;
+
+using qs_photon_emission_lookup_table_params =
+    pxr_qs::photon_emission_lookup_table_params<REAL>;
+
+using qs_dndt_lookup_table =
+    pxr_qs::dndt_lookup_table<REAL, stdVec>;
+
+using qs_photon_emission_lookup_table =
+    pxr_qs::photon_emission_lookup_table<REAL, stdVec>;
+
+const auto qs_regular =
+    pxr_qs::generation_policy::regular;
+
+const auto qs_force_double =
+    pxr_qs::generation_policy::force_internal_double;
+
 pyArr
 qs_get_optical_depth_wrapper(
     const pyArr& unf_zero_one_minus_epsi)
@@ -298,24 +385,6 @@ qs_get_optical_depth_wrapper(
 
     return res;
 }
-
-using qs_dndt_lookup_table_params =
-    pxr_qs::dndt_lookup_table_params<REAL>;
-
-using qs_photon_emission_lookup_table_params =
-    pxr_qs::photon_emission_lookup_table_params<REAL>;
-
-using qs_dndt_lookup_table =
-    pxr_qs::dndt_lookup_table<REAL, stdVec>;
-
-using qs_photon_emission_lookup_table =
-    pxr_qs::photon_emission_lookup_table<REAL, stdVec>;
-
-const auto qs_regular =
-    pxr_qs::generation_policy::regular;
-
-const auto qs_force_double =
-    pxr_qs::generation_policy::force_internal_double;
 
 // ______________________________________________________________________________________________
 
@@ -606,6 +675,23 @@ PYBIND11_MODULE(pxr_qed, m) {
                     std::string("\tis initialized? : ") + bool_to_string(a.is_init())+"\n";
             });
 
+    bw.def(
+        "get_dn_dt",
+        &bw_get_dn_dt_wrapper,
+        py::arg("energy_phot").noconvert(true),
+        py::arg("chi_phot").noconvert(true),
+        py::arg("ref_table"), py::arg("ref_quantity") = py::float_(1.0)
+        );
+
+    bw.def(
+        "evolve_optical_depth",
+        &bw_evolve_optical_depth_wrapper,
+        py::arg("energy_phot").noconvert(true),
+        py::arg("chi_phot").noconvert(true),
+        py::arg("dt"), py::arg("optical_depth").noconvert(true),
+        py::arg("ref_table"), py::arg("ref_quantity") = py::float_(1.0)
+        );
+
     auto qs = m.def_submodule( "qs" );
 
     qs.def(
@@ -812,51 +898,3 @@ PYBIND11_MODULE(pxr_qed, m) {
 }
 
 // ______________________________________________________________________________________________
-
-
-
-#ifdef ABABABABABABABABBA
-
-
-
-// ******************************* Breit-Wheeler pair production ********************************
-    bw.def("get_dn_dt", 
-            [](const std::vector<PXRQEDPY_REAL>& energy_phot, const std::vector<PXRQEDPY_REAL>& chi_phot,
-                const bw_dndt_lookup_table& ref_table, PXRQEDPY_REAL ref_quantity){
-                    const auto size = static_cast<int>(chi_phot.size());
-                    assert(energy_phot.size() == size);
-                    assert(ref_table.is_init());
-
-                    auto res = std::vector<PXRQEDPY_REAL>(size);          
-                    
-                    PXRQEDPY_FOR(as_int(size), [&](int i){
-                         res[i] = pxr_bw::get_dN_dt<
-                                PXRQEDPY_REAL, 
-                                bw_dndt_lookup_table, 
-                                PXRQEDPY_UU>(
-                                energy_phot[i], chi_phot[i],
-                                ref_table, ref_quantity,nullptr);
-                    });
-                    return res;                   
-                ;}, 
-        "Computes dN/dt for Breit-Wheeler pair production");
-/*
-        bw.def("evolve_optical_depth", 
-            [](const std::vector<PXRQEDPY_REAL>& energy_phot, const std::vector<PXRQEDPY_REAL>& chi_phot,
-                PXRQEDPY_REAL dt, std::vector<PXRQEDPY_REAL>& optical_depth,
-                const bw_dndt_lookup_table& ref_table, PXRQEDPY_REAL ref_quantity){
-                    assert(energy_phot.size() == chi_phot.size());
-                    assert(optical_depth.size() == chi_phot.size());
-                    assert(ref_table.is_init());
-
-                const auto size = static_cast<int>(chi_phot.size());
-                PXRQEDPY_FOR(size,[&](int i){
-
-                };),
-        "Computes dN/dt for Breit-Wheeler pair production");
-        */
-// ______________________________________________________________________________________________
-
-}
-
-#endif
