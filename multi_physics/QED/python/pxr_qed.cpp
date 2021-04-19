@@ -305,6 +305,18 @@ using qs_dndt_lookup_table_params =
 using qs_photon_emission_lookup_table_params =
     pxr_qs::photon_emission_lookup_table_params<REAL>;
 
+using qs_dndt_lookup_table =
+    pxr_qs::dndt_lookup_table<REAL, stdVec>;
+
+using qs_photon_emission_lookup_table =
+    pxr_qs::photon_emission_lookup_table<REAL, stdVec>;
+
+const auto qs_regular =
+    pxr_qs::generation_policy::regular;
+
+const auto qs_force_double =
+    pxr_qs::generation_policy::force_internal_double;
+
 // ______________________________________________________________________________________________
 
 
@@ -503,6 +515,21 @@ PYBIND11_MODULE(pxr_qed, m) {
                 input.close();
             },
             py::arg("file_name"))
+        .def("interp",
+            [&](bw_dndt_lookup_table &self, const pyArr& chi_phot){            
+                const REAL* p_chi_phot = nullptr;    
+                size_t how_many = 0;
+                std::tie(how_many, p_chi_phot)=
+                    check_and_get_pointers(chi_phot);
+
+                auto res = pyArr(how_many);
+                auto p_res = static_cast<REAL*>(res.request().ptr);
+
+                PXRQEDPY_FOR(how_many, [&](int i){
+                    p_res[i] = self.interp(p_chi_phot[i]);
+                });
+                return res;
+            })
         .def("__repr__",
             [](const bw_dndt_lookup_table &a) {
                 return 
@@ -555,6 +582,23 @@ PYBIND11_MODULE(pxr_qed, m) {
                 input.close();
             },
             py::arg("file_name"))
+        .def("interp",
+            [&](bw_pair_prod_lookup_table &self,
+                    const pyArr& chi_phot, const pyArr& unf_zero_one_minus_epsi){            
+                const REAL
+                    *p_chi_phot = nullptr, *p_unf_zero_one_minus_epsi = nullptr;
+                size_t how_many = 0;
+                std::tie(how_many, p_chi_phot, p_unf_zero_one_minus_epsi)=
+                    check_and_get_pointers(chi_phot, unf_zero_one_minus_epsi);
+
+                auto res = pyArr(how_many);
+                auto p_res = static_cast<REAL*>(res.request().ptr);
+
+                PXRQEDPY_FOR(how_many, [&](int i){
+                    p_res[i] = self.interp(p_chi_phot[i], p_unf_zero_one_minus_epsi[i]);
+                });
+                return res;
+            })
         .def("__repr__",
             [](const bw_pair_prod_lookup_table &a) {
                 return 
@@ -609,6 +653,141 @@ PYBIND11_MODULE(pxr_qed, m) {
                     std::string("\tfrac_how_many    : ") + std::to_string(a.frac_how_many);
             });
 
+    py::class_<qs_dndt_lookup_table>(qs,
+        "dndt_lookup_table",
+        "dN/dt lookup table")
+        .def(py::init<>())
+        .def(py::init<qs_dndt_lookup_table_params>())
+        .def("__eq__", &qs_dndt_lookup_table::operator==)
+        .def("generate",
+            [&](qs_dndt_lookup_table &self,
+                bool do_regular, bool verbose){
+                    if(do_regular)
+                        self.generate<qs_regular>(verbose);
+                    else
+                        self.generate<qs_force_double>(verbose);
+            },
+            py::arg("do_regular") = py::bool_(true),
+            py::arg("verbose") = py::bool_(true))
+        .def("save_as",
+            [&](const qs_dndt_lookup_table &self, const std::string file_name){
+                if(!self.is_init())
+                    throw_error("Table must be initialized!");
+                const auto raw = self.serialize();
+                auto of = std::fstream(file_name,
+                    std::ios::out | std::ios::binary);
+                if( !of )
+                    throw_error("Opening file failed!");
+                of.write(raw.data(), raw.size());
+                of.close();
+            },
+            py::arg("file_name"))
+        .def("load_from",
+            [&](qs_dndt_lookup_table &self, const std::string file_name){
+                auto input = std::ifstream(file_name,
+                    std::ios::ate | std::ios::binary);
+                if( !input )
+                    throw_error("Opening file failed!");
+                const auto pos = input.tellg();
+                auto raw = rawVec(pos);
+                
+                input.seekg(0, std::ios::beg);
+                input.read(raw.data(), pos);
+
+                self = qs_dndt_lookup_table{raw};
+                input.close();
+            },
+            py::arg("file_name"))
+        .def("interp",
+            [&](qs_dndt_lookup_table &self, const pyArr& chi_part){            
+                const REAL* p_chi_part = nullptr;    
+                size_t how_many = 0;
+                std::tie(how_many, p_chi_part)=
+                    check_and_get_pointers(chi_part);
+
+                auto res = pyArr(how_many);
+                auto p_res = static_cast<REAL*>(res.request().ptr);
+
+                PXRQEDPY_FOR(how_many, [&](int i){
+                    p_res[i] = self.interp(p_chi_part[i]);
+                });
+                return res;
+            })
+        .def("__repr__",
+            [](const qs_dndt_lookup_table &a) {
+                return 
+                    std::string("qs.dndt_lookup_table:\n")+
+                    std::string("\tis initialized? : ") + bool_to_string(a.is_init())+"\n";
+            });
+
+    py::class_<qs_photon_emission_lookup_table>(qs,
+        "photon_emission_lookup_table",
+        "Photon emission lookup table")
+        .def(py::init<>())
+        .def(py::init<qs_photon_emission_lookup_table_params>())
+        .def("__eq__", &qs_photon_emission_lookup_table::operator==)
+        .def("generate",
+            [&](qs_photon_emission_lookup_table &self,
+                bool do_regular, bool verbose){
+                    if(do_regular)
+                        self.generate<qs_regular>(verbose);
+                    else
+                        self.generate<qs_force_double>(verbose);
+            },
+            py::arg("do_regular") = py::bool_(true),
+            py::arg("verbose") = py::bool_(true))
+        .def("save_as",
+            [&](const qs_photon_emission_lookup_table &self, const std::string file_name){
+                if(!self.is_init())
+                    throw_error("Table must be initialized!");
+                const auto raw = self.serialize();
+                auto of = std::fstream(file_name,
+                    std::ios::out | std::ios::binary);
+                if( !of )
+                    throw_error("Opening file failed!");
+                of.write(raw.data(), raw.size());
+                of.close();
+            },
+            py::arg("file_name"))
+        .def("load_from",
+            [&](qs_photon_emission_lookup_table &self, const std::string file_name){
+                auto input = std::ifstream(file_name,
+                    std::ios::ate | std::ios::binary);
+                if( !input )
+                    throw_error("Opening file failed!");
+                const auto pos = input.tellg();
+                auto raw = rawVec(pos);
+                
+                input.seekg(0, std::ios::beg);
+                input.read(raw.data(), pos);
+
+                self = qs_photon_emission_lookup_table{raw};
+                input.close();
+            },
+            py::arg("file_name"))
+        .def("interp",
+            [&](qs_photon_emission_lookup_table &self,
+                    const pyArr& chi_part, const pyArr& unf_zero_one_minus_epsi){            
+                const REAL
+                    *p_chi_part = nullptr, *p_unf_zero_one_minus_epsi = nullptr;
+                size_t how_many = 0;
+                std::tie(how_many, p_chi_part, p_unf_zero_one_minus_epsi)=
+                    check_and_get_pointers(chi_part, unf_zero_one_minus_epsi);
+
+                auto res = pyArr(how_many);
+                auto p_res = static_cast<REAL*>(res.request().ptr);
+
+                PXRQEDPY_FOR(how_many, [&](int i){
+                    p_res[i] = self.interp(p_chi_part[i], p_unf_zero_one_minus_epsi[i]);
+                });
+                return res;
+            })
+        .def("__repr__",
+            [](const qs_photon_emission_lookup_table &a) {
+                return 
+                    std::string("qs.pair_prod_lookup_table:\n")+
+                    std::string("\tis initialized? : ") + bool_to_string(a.is_init())+"\n";
+        });
 
     auto sc = m.def_submodule( "sc" );
 
