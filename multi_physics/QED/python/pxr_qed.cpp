@@ -22,6 +22,7 @@
 namespace py = pybind11;
 
 namespace pxr_phys = picsar::multi_physics::phys;
+namespace pxr_math = picsar::multi_physics::math;
 namespace pxr_bw = picsar::multi_physics::phys::breit_wheeler;
 namespace pxr_qs = picsar::multi_physics::phys::quantum_sync;
 namespace pxr_sc = picsar::multi_physics::phys::schwinger;
@@ -338,6 +339,66 @@ bw_evolve_optical_depth_wrapper(
             dt, p_optical_depth[i],
             ref_table, ref_quantity);
     });
+}
+
+auto
+bw_generate_breit_wheeler_pairs_wrapper(
+    const pyArr& chi_phot,
+    const pyArr& phot_px, const pyArr& phot_py, const pyArr& phot_pz,
+    const pyArr& unf_zero_one_minus_epsi,
+    const bw_pair_prod_lookup_table& ref_table,
+    const REAL ref_quantity)
+{
+    const REAL
+        *p_chi_phot = nullptr,
+        *p_phot_px = nullptr, *p_phot_py = nullptr, *p_phot_pz = nullptr,
+        *p_unf_zero_one_minus_epsi;
+    
+    size_t how_many = 0;
+
+    std::tie(
+        how_many,
+        p_chi_phot, p_phot_px, p_phot_py, p_phot_pz,
+        p_unf_zero_one_minus_epsi) =
+            check_and_get_pointers(
+                chi_phot, phot_px, phot_py, phot_pz, unf_zero_one_minus_epsi);
+
+    auto ele_px = pyArr(how_many);
+    auto ele_py = pyArr(how_many);
+    auto ele_pz = pyArr(how_many);
+    auto pos_px = pyArr(how_many);
+    auto pos_py = pyArr(how_many);
+    auto pos_pz = pyArr(how_many);
+    auto p_ele_px = static_cast<REAL*>(ele_px.request().ptr);
+    auto p_ele_py = static_cast<REAL*>(ele_py.request().ptr);
+    auto p_ele_pz = static_cast<REAL*>(ele_pz.request().ptr);
+    auto p_pos_px = static_cast<REAL*>(pos_px.request().ptr);
+    auto p_pos_py = static_cast<REAL*>(pos_py.request().ptr);
+    auto p_pos_pz = static_cast<REAL*>(pos_pz.request().ptr);
+
+    PXRQEDPY_FOR(how_many, [&](int i){
+        auto ele_mom = pxr_math::vec3<REAL>{};
+        auto pos_mom = pxr_math::vec3<REAL>{};
+        pxr_bw::generate_breit_wheeler_pairs<REAL, bw_pair_prod_lookup_table, UU>(
+            p_chi_phot[i],
+            pxr_math::vec3<REAL>{p_phot_px[i], p_phot_py[i], p_phot_pz[i]},
+            p_unf_zero_one_minus_epsi[i],
+            ref_table,
+            ele_mom, pos_mom,
+            ref_quantity);
+
+        p_ele_px[i] = ele_mom[0];
+        p_ele_py[i] = ele_mom[1];
+        p_ele_pz[i] = ele_mom[2];
+
+        p_pos_px[i] = pos_mom[0];
+        p_pos_py[i] = pos_mom[1];
+        p_pos_pz[i] = pos_mom[2];
+    });
+
+    return std::make_tuple(
+        std::move(ele_px),std::move(ele_py), std::move(ele_pz),
+        std::move(pos_px),std::move(pos_py), std::move(pos_pz));
 }
 // ______________________________________________________________________________________________
 
@@ -748,6 +809,17 @@ PYBIND11_MODULE(pxr_qed, m) {
         py::arg("energy_phot").noconvert(true),
         py::arg("chi_phot").noconvert(true),
         py::arg("dt"), py::arg("optical_depth").noconvert(true),
+        py::arg("ref_table"), py::arg("ref_quantity") = py::float_(1.0)
+        );
+
+    bw.def(
+        "generate_breit_wheeler_pairs",
+        &bw_generate_breit_wheeler_pairs_wrapper,
+        py::arg("chi_phot").noconvert(true),
+        py::arg("phot_px").noconvert(true),
+        py::arg("phot_py").noconvert(true),
+        py::arg("phot_pz").noconvert(true),
+        py::arg("unf_zero_one_minus_epsi").noconvert(true),
         py::arg("ref_table"), py::arg("ref_quantity") = py::float_(1.0)
         );
 
