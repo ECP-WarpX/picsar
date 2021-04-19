@@ -341,7 +341,7 @@ namespace quantum_sync{
             */
             PXRMP_GPU_QUALIFIER
             PXRMP_FORCE_INLINE
-            bool is_init()
+            bool is_init() const
             {
                 return m_init_flag;
             }
@@ -730,7 +730,7 @@ namespace quantum_sync{
             */
             PXRMP_GPU_QUALIFIER
             PXRMP_FORCE_INLINE
-            bool is_init()
+            bool is_init() const
             {
                 return m_init_flag;
             }
