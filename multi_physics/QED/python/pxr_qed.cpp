@@ -332,7 +332,7 @@ bw_evolve_optical_depth_wrapper(
     auto p_optical_depth =
         check_and_get_pointer_nonconst(optical_depth, how_many);
 
-    PXRQEDPY_FOR(how_many, [&](int i)->void{
+    PXRQEDPY_FOR(how_many, [&](int i){
         pxr_bw::evolve_optical_depth<REAL, bw_dndt_lookup_table, UU>(
             p_energy_phot[i], p_chi_phot[i],
             dt, p_optical_depth[i],
@@ -384,6 +384,65 @@ qs_get_optical_depth_wrapper(
     });
 
     return res;
+}
+
+pyArr
+qs_get_dn_dt_wrapper(
+    const pyArr& energy_part, const pyArr& chi_part,
+    const qs_dndt_lookup_table& ref_table,
+    const REAL ref_quantity)
+{
+    const REAL
+        *p_energy_part = nullptr, *p_chi_part = nullptr;
+    
+    size_t how_many = 0;
+
+    std::tie(
+        how_many,
+        p_energy_part, p_chi_part) =
+            check_and_get_pointers(
+                energy_part, chi_part);
+
+    auto res = pyArr(how_many);
+    auto p_res = static_cast<REAL*>(res.request().ptr);
+
+    PXRQEDPY_FOR(how_many, [&](int i){
+        p_res[i] =
+            pxr_qs::get_dN_dt<REAL, qs_dndt_lookup_table, UU>(
+                p_energy_part[i], p_chi_part[i],
+                ref_table, ref_quantity);
+    });
+
+    return res;
+}
+
+void
+qs_evolve_optical_depth_wrapper(
+    const pyArr& energy_part, const pyArr& chi_part,
+    const REAL dt, pyArr& optical_depth,
+    const qs_dndt_lookup_table& ref_table,
+    const REAL ref_quantity)
+{
+    const REAL
+        *p_energy_part = nullptr, *p_chi_part = nullptr;
+    
+    size_t how_many = 0;
+
+    std::tie(
+        how_many,
+        p_energy_part, p_chi_part) =
+            check_and_get_pointers(
+                energy_part, chi_part);
+
+    auto p_optical_depth =
+        check_and_get_pointer_nonconst(optical_depth, how_many);
+
+    PXRQEDPY_FOR(how_many, [&](int i){
+        pxr_qs::evolve_optical_depth<REAL, qs_dndt_lookup_table, UU>(
+            p_energy_part[i], p_chi_part[i],
+            dt, p_optical_depth[i],
+            ref_table, ref_quantity);
+    });
 }
 
 // ______________________________________________________________________________________________
@@ -874,6 +933,23 @@ PYBIND11_MODULE(pxr_qed, m) {
                     std::string("qs.pair_prod_lookup_table:\n")+
                     std::string("\tis initialized? : ") + bool_to_string(a.is_init())+"\n";
         });
+
+    qs.def(
+        "get_dn_dt",
+        &qs_get_dn_dt_wrapper,
+        py::arg("energy_part").noconvert(true),
+        py::arg("chi_part").noconvert(true),
+        py::arg("ref_table"), py::arg("ref_quantity") = py::float_(1.0)
+        );
+
+    qs.def(
+        "evolve_optical_depth",
+        &qs_evolve_optical_depth_wrapper,
+        py::arg("energy_part").noconvert(true),
+        py::arg("chi_part").noconvert(true),
+        py::arg("dt"), py::arg("optical_depth").noconvert(true),
+        py::arg("ref_table"), py::arg("ref_quantity") = py::float_(1.0)
+        );
 
     auto sc = m.def_submodule( "sc" );
 
