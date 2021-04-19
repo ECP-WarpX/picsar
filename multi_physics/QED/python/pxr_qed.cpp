@@ -110,7 +110,7 @@ auto aux_check_and_get_pointers(const long int len, const pyArr& arg, const Args
         throw_error("All arrays must be one-dimensional with equal size");
 
     const auto cptr = static_cast<REAL*>(arg_buf.ptr);
-    return std::tuple_cat(std::make_tuple(cptr), 
+    return std::tuple_cat(std::make_tuple(cptr),
         aux_check_and_get_pointers(len, args...));
 }
 
@@ -120,7 +120,7 @@ auto check_and_get_pointers(const pyArr& first, const Args& ...args)
     const auto first_buf = first.request();
     if (first_buf.ndim != 1)
         throw_error("All arrays must be one-dimensional with equal size");
-    
+
     const auto len = first_buf.shape[0];
 
     const auto cptr = static_cast<REAL*>(first_buf.ptr);
@@ -134,7 +134,7 @@ auto check_and_get_pointers(const pyArr& arr)
     const auto arr_buf = arr.request();
     if (arr_buf.ndim != 1)
         throw_error("Array must be one-dimensional");
-    
+
     const auto len = arr_buf.shape[0];
 
     const auto cptr = static_cast<REAL*>(arr_buf.ptr);
@@ -167,7 +167,7 @@ chi_photon_wrapper(
         *p_px = nullptr, *p_py = nullptr, *p_pz = nullptr,
         *p_ex = nullptr, *p_ey = nullptr, *p_ez = nullptr,
         *p_bx = nullptr, *p_by = nullptr, *p_bz = nullptr;
-    
+
     size_t how_many = 0;
 
     std::tie(
@@ -206,7 +206,7 @@ chi_ele_pos_wrapper(
         *p_px = nullptr, *p_py = nullptr, *p_pz = nullptr,
         *p_ex = nullptr, *p_ey = nullptr, *p_ez = nullptr,
         *p_bx = nullptr, *p_by = nullptr, *p_bz = nullptr;
-    
+
     size_t how_many = 0;
 
     std::tie(
@@ -263,7 +263,7 @@ bw_get_optical_depth_wrapper(
 {
     const REAL
         *p_unf_zero_one_minus_epsi = nullptr;
-    
+
     size_t how_many = 0;
 
     std::tie(
@@ -290,7 +290,7 @@ bw_get_dn_dt_wrapper(
 {
     const REAL
         *p_energy_phot = nullptr, *p_chi_phot = nullptr;
-    
+
     size_t how_many = 0;
 
     std::tie(
@@ -321,7 +321,7 @@ bw_evolve_optical_depth_wrapper(
 {
     const REAL
         *p_energy_phot = nullptr, *p_chi_phot = nullptr;
-    
+
     size_t how_many = 0;
 
     std::tie(
@@ -353,7 +353,7 @@ bw_generate_breit_wheeler_pairs_wrapper(
         *p_chi_phot = nullptr,
         *p_phot_px = nullptr, *p_phot_py = nullptr, *p_phot_pz = nullptr,
         *p_unf_zero_one_minus_epsi;
-    
+
     size_t how_many = 0;
 
     std::tie(
@@ -428,7 +428,7 @@ qs_get_optical_depth_wrapper(
 {
     const REAL
         *p_unf_zero_one_minus_epsi = nullptr;
-    
+
     size_t how_many = 0;
 
     std::tie(
@@ -455,7 +455,7 @@ qs_get_dn_dt_wrapper(
 {
     const REAL
         *p_energy_part = nullptr, *p_chi_part = nullptr;
-    
+
     size_t how_many = 0;
 
     std::tie(
@@ -486,7 +486,7 @@ qs_evolve_optical_depth_wrapper(
 {
     const REAL
         *p_energy_part = nullptr, *p_chi_part = nullptr;
-    
+
     size_t how_many = 0;
 
     std::tie(
@@ -520,7 +520,7 @@ sc_pair_production_rate_wrapper(
     const REAL
         *p_ex = nullptr, *p_ey = nullptr, *p_ez = nullptr,
         *p_bx = nullptr, *p_by = nullptr, *p_bz = nullptr;
-    
+
     size_t how_many = 0;
 
     std::tie(
@@ -555,7 +555,7 @@ sc_expected_pair_number_wrapper(
     const REAL
         *p_ex = nullptr, *p_ey = nullptr, *p_ez = nullptr,
         *p_bx = nullptr, *p_by = nullptr, *p_bz = nullptr;
-    
+
     size_t how_many = 0;
 
     std::tie(
@@ -632,7 +632,7 @@ PYBIND11_MODULE(pxr_qed, m) {
         .def_readwrite("chi_phot_how_many", &bw_dndt_lookup_table_params::chi_phot_how_many)
         .def("__repr__",
             [](const bw_dndt_lookup_table_params &a) {
-                return 
+                return
                     std::string("bw.dndt_lookup_table_params:\n")+
                     std::string("\tchi_phot_min     : ") + float_to_string(a.chi_phot_min)+"\n"+
                     std::string("\tchi_phot_max     : ") + float_to_string(a.chi_phot_max)+"\n"+
@@ -650,7 +650,7 @@ PYBIND11_MODULE(pxr_qed, m) {
         .def_readwrite("frac_how_many", &bw_pair_prod_lookup_table_params::frac_how_many)
         .def("__repr__",
             [](const bw_pair_prod_lookup_table_params &a) {
-                return 
+                return
                     std::string("bw.pair_prod_lookup_table_params:\n")+
                     std::string("\tchi_phot_min     : ") + float_to_string(a.chi_phot_min)+"\n"+
                     std::string("\tchi_phot_max     : ") + float_to_string(a.chi_phot_max)+"\n"+
@@ -696,7 +696,7 @@ PYBIND11_MODULE(pxr_qed, m) {
                     throw_error("Opening file failed!");
                 const auto pos = input.tellg();
                 auto raw = rawVec(pos);
-                
+
                 input.seekg(0, std::ios::beg);
                 input.read(raw.data(), pos);
 
@@ -705,8 +705,8 @@ PYBIND11_MODULE(pxr_qed, m) {
             },
             py::arg("file_name"))
         .def("interp",
-            [&](bw_dndt_lookup_table &self, const pyArr& chi_phot){            
-                const REAL* p_chi_phot = nullptr;    
+            [&](bw_dndt_lookup_table &self, const pyArr& chi_phot){
+                const REAL* p_chi_phot = nullptr;
                 size_t how_many = 0;
                 std::tie(how_many, p_chi_phot)=
                     check_and_get_pointers(chi_phot);
@@ -721,7 +721,7 @@ PYBIND11_MODULE(pxr_qed, m) {
             })
         .def("__repr__",
             [](const bw_dndt_lookup_table &a) {
-                return 
+                return
                     std::string("bw.dndt_lookup_table:\n")+
                     std::string("\tis initialized? : ") + bool_to_string(a.is_init())+"\n";
             });
@@ -763,7 +763,7 @@ PYBIND11_MODULE(pxr_qed, m) {
                     throw_error("Opening file failed!");
                 const auto pos = input.tellg();
                 auto raw = rawVec(pos);
-                
+
                 input.seekg(0, std::ios::beg);
                 input.read(raw.data(), pos);
 
@@ -773,7 +773,7 @@ PYBIND11_MODULE(pxr_qed, m) {
             py::arg("file_name"))
         .def("interp",
             [&](bw_pair_prod_lookup_table &self,
-                    const pyArr& chi_phot, const pyArr& unf_zero_one_minus_epsi){            
+                    const pyArr& chi_phot, const pyArr& unf_zero_one_minus_epsi){
                 const REAL
                     *p_chi_phot = nullptr, *p_unf_zero_one_minus_epsi = nullptr;
                 size_t how_many = 0;
@@ -790,7 +790,7 @@ PYBIND11_MODULE(pxr_qed, m) {
             })
         .def("__repr__",
             [](const bw_pair_prod_lookup_table &a) {
-                return 
+                return
                     std::string("bw.pair_prod_lookup_table:\n")+
                     std::string("\tis initialized? : ") + bool_to_string(a.is_init())+"\n";
             });
@@ -826,7 +826,7 @@ PYBIND11_MODULE(pxr_qed, m) {
     auto qs = m.def_submodule( "qs" );
 
     qs.def(
-        "get_optical_depth", 
+        "get_optical_depth",
          &bw_get_optical_depth_wrapper,
         "Computes the optical depth of a new electron or positron",
         py::arg("unf_zero_one_minus_epsi").noconvert(true));
@@ -842,7 +842,7 @@ PYBIND11_MODULE(pxr_qed, m) {
         .def_readwrite("chi_part_how_many", &qs_dndt_lookup_table_params::chi_part_how_many)
         .def("__repr__",
             [](const qs_dndt_lookup_table_params &a) {
-                return 
+                return
                     std::string("qs.dndt_lookup_table_params:\n")+
                     std::string("\tchi_part_min     : ") + float_to_string(a.chi_part_min)+"\n"+
                     std::string("\tchi_part_max     : ") + float_to_string(a.chi_part_max)+"\n"+
@@ -861,7 +861,7 @@ PYBIND11_MODULE(pxr_qed, m) {
         .def_readwrite("frac_how_many", &qs_photon_emission_lookup_table_params::frac_how_many)
         .def("__repr__",
             [](const qs_photon_emission_lookup_table_params &a) {
-                return 
+                return
                     std::string("qs.photon_emission_lookup_table_params:\n")+
                     std::string("\tchi_part_min     : ") + float_to_string(a.chi_part_min)+"\n"+
                     std::string("\tchi_part_max     : ") + float_to_string(a.chi_part_max)+"\n"+
@@ -907,7 +907,7 @@ PYBIND11_MODULE(pxr_qed, m) {
                     throw_error("Opening file failed!");
                 const auto pos = input.tellg();
                 auto raw = rawVec(pos);
-                
+
                 input.seekg(0, std::ios::beg);
                 input.read(raw.data(), pos);
 
@@ -916,8 +916,8 @@ PYBIND11_MODULE(pxr_qed, m) {
             },
             py::arg("file_name"))
         .def("interp",
-            [&](qs_dndt_lookup_table &self, const pyArr& chi_part){            
-                const REAL* p_chi_part = nullptr;    
+            [&](qs_dndt_lookup_table &self, const pyArr& chi_part){
+                const REAL* p_chi_part = nullptr;
                 size_t how_many = 0;
                 std::tie(how_many, p_chi_part)=
                     check_and_get_pointers(chi_part);
@@ -932,7 +932,7 @@ PYBIND11_MODULE(pxr_qed, m) {
             })
         .def("__repr__",
             [](const qs_dndt_lookup_table &a) {
-                return 
+                return
                     std::string("qs.dndt_lookup_table:\n")+
                     std::string("\tis initialized? : ") + bool_to_string(a.is_init())+"\n";
             });
@@ -974,7 +974,7 @@ PYBIND11_MODULE(pxr_qed, m) {
                     throw_error("Opening file failed!");
                 const auto pos = input.tellg();
                 auto raw = rawVec(pos);
-                
+
                 input.seekg(0, std::ios::beg);
                 input.read(raw.data(), pos);
 
@@ -984,7 +984,7 @@ PYBIND11_MODULE(pxr_qed, m) {
             py::arg("file_name"))
         .def("interp",
             [&](qs_photon_emission_lookup_table &self,
-                    const pyArr& chi_part, const pyArr& unf_zero_one_minus_epsi){            
+                    const pyArr& chi_part, const pyArr& unf_zero_one_minus_epsi){
                 const REAL
                     *p_chi_part = nullptr, *p_unf_zero_one_minus_epsi = nullptr;
                 size_t how_many = 0;
@@ -1001,7 +1001,7 @@ PYBIND11_MODULE(pxr_qed, m) {
             })
         .def("__repr__",
             [](const qs_photon_emission_lookup_table &a) {
-                return 
+                return
                     std::string("qs.pair_prod_lookup_table:\n")+
                     std::string("\tis initialized? : ") + bool_to_string(a.is_init())+"\n";
         });
