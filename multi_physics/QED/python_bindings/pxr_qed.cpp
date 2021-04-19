@@ -1,6 +1,16 @@
+/**
+* This file contains the python bindings for the PICSAR QED library
+*/
+
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
+
+#ifdef PXQEDPY_HAS_OPENMP
+    #include <omp.h>
+#endif
+
+#include "picsar_qed/math/vec_functions.hpp"
 
 #include "picsar_qed/physics/chi_functions.hpp"
 
@@ -27,8 +37,6 @@ namespace pxr_bw = picsar::multi_physics::phys::breit_wheeler;
 namespace pxr_qs = picsar::multi_physics::phys::quantum_sync;
 namespace pxr_sc = picsar::multi_physics::phys::schwinger;
 
-#define PXRQEDPY_DOUBLE_PRECISION 1
-
 #ifdef PXRQEDPY_DOUBLE_PRECISION
     using REAL = double;
     const auto PXRQEDPY_PRECISION_STRING = std::string{"double"};
@@ -37,7 +45,7 @@ namespace pxr_sc = picsar::multi_physics::phys::schwinger;
     const auto PXRQEDPY_PRECISION_STRING = std::string{"single"};
 #endif
 
-#ifdef PXRMP_HAS_OPENMP
+#ifdef PXQEDPY_HAS_OPENMP
     template <typename Func>
     void PXRQEDPY_FOR(int N, const Func& func){
         #pragma omp parallel for
@@ -52,20 +60,20 @@ namespace pxr_sc = picsar::multi_physics::phys::schwinger;
     const auto PXRQEDPY_OPENMP_FLAG = true;
 #endif
 
-#if PXRQEDPY_UNITS == SI
+#if defined(PXRQEDPY_SI)
     const auto UU = pxr_phys::unit_system::SI;
     const auto PXRQEDPY_USTRING = std::string{"SI"};
-#elif PXRQEDPY_UNITS == NORM_OMEGA
+#elif defined(PXRQEDPY_NORM_OMEGA)
     const auto UU = pxr_phys::unit_system::norm_omega;
     const auto PXRQEDPY_USTRING = std::string{"NORM_OMEGA"};
-#elif PXRQEDPY_UNITS == NORM_LAMBDA
+#elif defined(PXRQEDPY_NORM_LAMBDA)
     const auto UU = pxr_phys::unit_system::norm_lambda;
     const auto PXRQEDPY_USTRING = std::string{"NORM_LAMBDA"};
-#elif PXRQEDPY_UNITS == HEAVISIDE_LORENTZ
+#elif defined(PXRQEDPY_UNITS)
     const auto UU = pxr_phys::unit_system::heaviside_lorentz;
     const auto PXRQEDPY_USTRING = std::string{"HEAVISIDE_LORENTZ"};
 #else
-    #error PXRQEDPY_UNITS is incorrectly defined!
+    #error Incorrect units choice!
 #endif
 
 template <typename Real>
