@@ -7,8 +7,6 @@ pybind11_add_module(${name} "${name}.cpp")
 
 target_link_libraries(${name} PRIVATE PXRMP_QED)
 
-target_link_libraries(${name} PRIVATE pybind11::headers)
-
 option(
     PXRQEDPY_DOUBLE_PRECISION
     "Compile pxr_qed python module in double precision" ON)
