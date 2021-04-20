@@ -1,6 +1,32 @@
-#include <iostream>
 
 #include <Kokkos_Core.hpp>
+
+#include <iostream>
+
+// PICSAR MULTIPHYSICS: BREIT WHEELER ENGINE
+#define PXRMP_WITH_GPU
+#define PXRMP_GPU_QUALIFIER
+#include <picsar_qed/physics/breit_wheeler/breit_wheeler_engine_core.hpp>
+#include <picsar_qed/physics/breit_wheeler/breit_wheeler_engine_tables.hpp>
+#include <picsar_qed/physics/breit_wheeler/breit_wheeler_engine_tables_generator.hpp>
+//__________________________________________________
+
+//Some namespace aliases
+namespace pxr =  picsar::multi_physics::phys;
+namespace pxr_bw = picsar::multi_physics::phys::breit_wheeler;
+namespace pxr_m =  picsar::multi_physics::math;
+//__________________________________________________
+
+//Some useful physical constants
+template<typename T = double>
+constexpr T mec = static_cast<T>(pxr::electron_mass<> * pxr::light_speed<>);
+
+template<typename T = double>
+constexpr T mec2= static_cast<T>(pxr::electron_mass<> * pxr::light_speed<> * pxr::light_speed<>);
+
+const double Es = pxr::schwinger_field<>;
+const double Bs = pxr::schwinger_field<>/pxr::light_speed<>;
+//__________________________________________________
 
 const int HOW_MANY_PARTICLES = 10'000'000;
 const int HOW_MANY_REPETITIONS = 10;
