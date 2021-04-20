@@ -228,7 +228,7 @@ auto check_and_get_pointers(const pyArr& arr)
 }
 
 /**
-* Checks that arr has a given length and returs a pointer to
+* Checks that arr has a given length and returns a pointer to
 * its raw data.
 *
 * @param[in] arr a py::array_t<REAL>
@@ -697,7 +697,7 @@ qs_evolve_optical_depth_wrapper(
 }
 
 /**
-* Wrapper for Quantum Synchrotron enerate_photon_update_momentum function
+* Wrapper for Quantum Synchrotron generate_photon_update_momentum function
 *
 * @param[in] chi_part the chi parameters of the particles
 * @param[in,out] part_px x components of particle momenta
@@ -1060,7 +1060,7 @@ PYBIND11_MODULE(pxr_qed, m) {
             py::arg("file_name"))
         .def("interp",
             [&](bw_pair_prod_lookup_table &self,
-                    const pyArr& chi_phot, const pyArr& unf_zero_one_minus_epsi){
+                const pyArr& chi_phot, const pyArr& unf_zero_one_minus_epsi){
                 const REAL
                     *p_chi_phot = nullptr, *p_unf_zero_one_minus_epsi = nullptr;
                 size_t how_many = 0;
@@ -1275,7 +1275,7 @@ PYBIND11_MODULE(pxr_qed, m) {
             py::arg("file_name"))
         .def("interp",
             [&](qs_photon_emission_lookup_table &self,
-                    const pyArr& chi_part, const pyArr& unf_zero_one_minus_epsi){
+                const pyArr& chi_part, const pyArr& unf_zero_one_minus_epsi){
                 const REAL
                     *p_chi_part = nullptr, *p_unf_zero_one_minus_epsi = nullptr;
                 size_t how_many = 0;
