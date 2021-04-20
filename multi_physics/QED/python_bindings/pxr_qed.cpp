@@ -1220,7 +1220,8 @@ PYBIND11_MODULE(pxr_qed, m) {
                     p_res[i] = self.interp(p_chi_part[i]);
                 });
                 return res;
-            })
+            },
+            py::arg("chi_part"))
         .def("__repr__",
             [](const qs_dndt_lookup_table &a) {
                 return
