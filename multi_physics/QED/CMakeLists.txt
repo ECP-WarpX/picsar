@@ -22,6 +22,7 @@ option(PXRMP_QED_TEST             "Build PICSAR QED tests " ${IS_TOPLEVEL})
 option(PXRMP_QED_TOOLS            "Build PICSAR QED tools " ${IS_TOPLEVEL})
 option(PXRMP_BOOST_TEST_DYN_LINK  "Link against the Boost Unit Test Framework shared library" ON)
 option(PXRMP_DPCPP_FIX            "Use cl::sycl::floor cl::sycl::floorf on device" OFF)
+option(PXRMP_KOKKOS_EXAMPLE       "Build example using Kokkos" OFF)
 
 
 ########
@@ -82,4 +83,14 @@ if(PXRMP_QED_TOOLS)
          message( FATAL_ERROR "Tools require to enable table generation!" )
     endif()
     add_subdirectory(QED_table_generator)
+endif()
+
+########
+# Setup CMake to build Kokkos example
+########
+if(PXRMP_KOKKOS_EXAMPLE)
+    if(NOT PXRMP_QED_TABLEGEN)
+         message( FATAL_ERROR "Kokkos example require to enable table generation!" )
+    endif()
+    add_subdirectory(kokkos_example)
 endif()
