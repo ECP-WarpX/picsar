@@ -42,9 +42,6 @@ else()
     message(FATAL_ERROR "PXRQEDPY_UNITS is incorrectly defined")
 endif()
 
-set_target_properties(${name} PROPERTIES
-                              INTERPROCEDURAL_OPTIMIZATION ON)
-
 # OpenMP support
 if(PXRMP_QED_OMP)
    find_package(OpenMP REQUIRED)
