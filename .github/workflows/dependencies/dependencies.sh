@@ -18,4 +18,4 @@ sudo apt-get install -y --no-install-recommends \
     g++ gfortran      \
     python3-dev
 
-pip install pybind11
+pip install "pybind11[global]"
