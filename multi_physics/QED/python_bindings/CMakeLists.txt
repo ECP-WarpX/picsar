@@ -1,6 +1,13 @@
 set(name pxr_qed)
 
-find_package(Python COMPONENTS Interpreter Development REQUIRED)
+set(_PY_DEV_MODULE Development.Module)
+if(CMAKE_VERSION VERSION_LESS 3.18.0)
+    # over-specification needed for CMake<3.18
+    #   https://pybind11.readthedocs.io/en/latest/compiling.html#findpython-mode
+    #   https://cmake.org/cmake/help/v3.18/module/FindPython.html
+    set(_PY_DEV_MODULE Development)
+endif()
+find_package(Python COMPONENTS Interpreter ${_PY_DEV_MODULE} REQUIRED)
 find_package(pybind11 CONFIG REQUIRED)
 
 pybind11_add_module(${name} "${name}.cpp")
