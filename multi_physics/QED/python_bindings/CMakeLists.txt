@@ -42,6 +42,8 @@ else()
     message(FATAL_ERROR "PXRQEDPY_UNITS is incorrectly defined")
 endif()
 
+target_link_libraries(${name} PRIVATE pybind11::module pybind11::lto pybind11::windows_extras)
+
 # OpenMP support
 if(PXRMP_QED_OMP)
    find_package(OpenMP REQUIRED)
