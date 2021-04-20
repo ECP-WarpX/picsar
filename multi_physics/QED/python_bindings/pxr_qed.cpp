@@ -1143,7 +1143,7 @@ PYBIND11_MODULE(pxr_qed, m) {
     py::class_<qs_photon_emission_lookup_table_params>(qs,
         "photon_emission_lookup_table_params")
         .def(py::init<>())
-        .def(py::init<REAL,REAL,int,int>())
+        .def(py::init<REAL,REAL,REAL,int,int>())
         .def("__eq__", &qs_photon_emission_lookup_table_params::operator==)
         .def_readwrite("chi_part_min", &qs_photon_emission_lookup_table_params::chi_part_min)
         .def_readwrite("chi_part_max", &qs_photon_emission_lookup_table_params::chi_part_max)
