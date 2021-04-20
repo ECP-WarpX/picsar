@@ -8,7 +8,7 @@ if(CMAKE_VERSION VERSION_LESS 3.18.0)
     set(_PY_DEV_MODULE Development)
 endif()
 find_package(Python COMPONENTS Interpreter ${_PY_DEV_MODULE} REQUIRED)
-find_package(pybind11 2.4 CONFIG REQUIRED)
+find_package(pybind11 2.6 CONFIG REQUIRED)
 
 pybind11_add_module(${name} "${name}.cpp")
 

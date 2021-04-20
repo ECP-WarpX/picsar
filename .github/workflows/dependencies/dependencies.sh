@@ -16,6 +16,6 @@ sudo apt-get install -y --no-install-recommends \
     libboost-math-dev \
     libboost-test-dev \
     g++ gfortran      \
-    pybind11-dev      \
-    python3-pybind11  \
     python3-dev
+
+pip install pybind11
