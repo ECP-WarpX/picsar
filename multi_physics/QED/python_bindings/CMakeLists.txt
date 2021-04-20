@@ -52,8 +52,9 @@ if(PXRMP_QED_OMP)
 endif()
 
 # Move module in "python_bindings" subdirectory
+set(PXRQEDPY_INSTALL_DIR ${CMAKE_BINARY_DIR}/python_bindings CACHE PATH "Installation directory for the python bindings")
 set_target_properties(${name} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/python_bindings)
+    RUNTIME_OUTPUT_DIRECTORY ${PXRQEDPY_INSTALL_DIR})
 
 configure_file(demo_python_bindings.ipynb
     ${CMAKE_BINARY_DIR}/python_bindings/demo_python_bindings.ipynb COPYONLY)
