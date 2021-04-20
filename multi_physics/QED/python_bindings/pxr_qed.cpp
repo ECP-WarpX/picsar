@@ -1275,7 +1275,7 @@ PYBIND11_MODULE(pxr_qed, m) {
             py::arg("file_name"))
         .def("interp",
             [&](qs_photon_emission_lookup_table &self,
-                    const pyArr& chi_part, const pyArr& unf_zero_one_minus_epsi){
+                const pyArr& chi_part, const pyArr& unf_zero_one_minus_epsi){
                 const REAL
                     *p_chi_part = nullptr, *p_unf_zero_one_minus_epsi = nullptr;
                 size_t how_many = 0;
