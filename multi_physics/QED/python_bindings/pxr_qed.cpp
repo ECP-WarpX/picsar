@@ -697,7 +697,7 @@ qs_evolve_optical_depth_wrapper(
 }
 
 /**
-* Wrapper for Quantum Synchrotron enerate_photon_update_momentum function
+* Wrapper for Quantum Synchrotron generate_photon_update_momentum function
 *
 * @param[in] chi_part the chi parameters of the particles
 * @param[in,out] part_px x components of particle momenta
