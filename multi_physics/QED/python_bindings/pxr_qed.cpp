@@ -228,7 +228,7 @@ auto check_and_get_pointers(const pyArr& arr)
 }
 
 /**
-* Checks that arr has a given length and returs a pointer to
+* Checks that arr has a given length and returns a pointer to
 * its raw data.
 *
 * @param[in] arr a py::array_t<REAL>
