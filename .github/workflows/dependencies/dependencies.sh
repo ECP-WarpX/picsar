@@ -3,7 +3,7 @@
 # Copyright 2020 The PICSAR Community
 #
 # License: BSD-3-Clause-LBNL
-# Authors: Axel Huebl
+# Authors: Axel Huebl, Luca Fedeli
 
 set -eu -o pipefail
 
@@ -15,4 +15,7 @@ sudo apt-get install -y --no-install-recommends \
     libboost-dev      \
     libboost-math-dev \
     libboost-test-dev \
-    g++ gfortran
+    g++ gfortran      \
+    python3-dev
+
+pip install "pybind11[global]"
