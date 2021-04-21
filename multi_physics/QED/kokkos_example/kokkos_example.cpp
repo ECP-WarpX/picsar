@@ -20,21 +20,29 @@ namespace pxr_bw = picsar::multi_physics::phys::breit_wheeler;
 namespace pxr_m =  picsar::multi_physics::math;
 //__________________________________________________
 
-//Some useful physical constants
+//Some useful physical constants and functions
 template<typename T = double>
 constexpr T mec = static_cast<T>(pxr::electron_mass<> * pxr::light_speed<>);
 
 template<typename T = double>
 constexpr T mec2= static_cast<T>(pxr::electron_mass<> * pxr::light_speed<> * pxr::light_speed<>);
 
+template<typename T>
+KOKKOS_INLINE_FUNCTION
+constexpr T energy_phot(T px, T py, T pz)
+{
+    const auto p2 = px*px + py*py + pz*pz;
+    return std::sqrt(p2)*pxr::light_speed<T>;
+}
+
 const double Es = pxr::schwinger_field<>;
 const double Bs = pxr::schwinger_field<>/pxr::light_speed<>;
 //__________________________________________________
 
 //Parameters of the test case
-const unsigned int how_many_particles = 10'000'000;
-const unsigned int how_many_repetitions = 10;
-const double dt_test = 1e-18;
+const unsigned int how_many_particles = 1'000'000;
+const unsigned int how_many_repetitions = 1;
+const double dt_test= 1e-18;
 const double table_chi_min = 0.01;
 const double table_chi_max = 1000.0;
 const int table_chi_size = 128;
@@ -162,22 +170,55 @@ bool check_not_nan(Kokkos::View<Real *> field){
            temp += std::isnan(field(i));},
         num_nans);
 
-
     return (num_nans == 0);
 }
 
 template <typename Real>
-bool fill_opt_test(ParticleData<Real>& pdata, const int repetitions)
+bool fill_opt_test(
+    ParticleData<Real>& pdata,
+    const int repetitions,
+    Kokkos::Random_XorShift64_Pool<>& rand_pool)
 {
     for(int rr = 0; rr < repetitions; ++rr){
         const auto num_particles = pdata.num_particles;
         Kokkos::parallel_for("FillOpt", num_particles, KOKKOS_LAMBDA(int i){
-            pdata.m_fields.opt(i) = pxr_bw::get_optical_depth<Real>(0.5);
+            auto rand_gen = rand_pool.get_state();
+            pdata.m_fields.opt(i) =
+                pxr_bw::get_optical_depth<Real>(rand_gen.drand());
         });
     }
 
     return check_not_nan(pdata.m_fields.opt);
 }
+
+template <typename Real, typename TableType>
+bool evolve_optical_depth(
+    ParticleData<Real>& pdata, const TableType& ref_table, Real dt, const int repetitions)
+{
+    for(int rr = 0; rr < repetitions; ++rr){
+        const auto num_particles = pdata.num_particles;
+        Kokkos::parallel_for("EvolveOpt", num_particles, KOKKOS_LAMBDA(int i){
+            const auto px = pdata.m_momentum(i,0);
+            const auto py = pdata.m_momentum(i,1);
+            const auto pz = pdata.m_momentum(i,2);
+            const auto ex = pdata.m_fields.Ex(i);
+            const auto ey = pdata.m_fields.Ey(i);
+            const auto ez = pdata.m_fields.Ez(i);
+            const auto bx = pdata.m_fields.Bx(i);
+            const auto by = pdata.m_fields.By(i);
+            const auto bz = pdata.m_fields.Bz(i);
+            auto& opt = pdata.m_fields.opt(i);
+            const auto ee = energy_phot(px, py, pz);
+            const auto chi = pxr::chi_photon<Real, pxr::unit_system::SI>(
+                px, py ,pz, ex, ey, ez, bx, by, bz);
+            pxr_bw::evolve_optical_depth<Real, TableType>(
+                ee, chi, dt, opt, ref_table);
+        });
+    }
+
+    return check_not_nan(pdata.m_fields.opt);
+}
+
 
 template <typename Real>
 void do_test(Kokkos::Random_XorShift64_Pool<>& rand_pool)
@@ -200,9 +241,17 @@ void do_test(Kokkos::Random_XorShift64_Pool<>& rand_pool)
     const auto dndt_table_view = dndt_table.get_view();
     const auto pair_table_view = pair_table.get_view();
 
-    bool fill_opt_success = fill_opt_test(particle_data, how_many_repetitions);
+    const auto fill_opt_success =
+        fill_opt_test<Real>(particle_data, how_many_repetitions, rand_pool);
 
     std::cout << ( fill_opt_success? "[ OK ]":"[ FAIL ]" )
+        << std::endl;
+
+    const auto evolve_opt_success =
+        evolve_optical_depth<Real>(
+            particle_data, dndt_table.get_view(), dt_test, how_many_repetitions);
+
+    std::cout << ( evolve_opt_success? "[ OK ]":"[ FAIL ]" )
         << std::endl;
 }
 
