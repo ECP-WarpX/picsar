@@ -1293,7 +1293,9 @@ PYBIND11_MODULE(pxr_qed, m) {
                     p_res[i] = self.interp(p_chi_part[i], p_unf_zero_one_minus_epsi[i]);
                 });
                 return res;
-            })
+            },
+            py::arg("chi_part"),
+            py::arg("unf_zero_one_minus_epsi"))
         .def("__repr__",
             [](const qs_photon_emission_lookup_table &a) {
                 return
