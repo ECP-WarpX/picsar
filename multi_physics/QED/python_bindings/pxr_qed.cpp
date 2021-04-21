@@ -1005,7 +1005,8 @@ PYBIND11_MODULE(pxr_qed, m) {
                     p_res[i] = self.interp(p_chi_phot[i]);
                 });
                 return res;
-            })
+            },
+            py::arg("chi_phot"))
         .def("__repr__",
             [](const bw_dndt_lookup_table &a) {
                 return
