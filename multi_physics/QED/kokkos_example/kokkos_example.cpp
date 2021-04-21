@@ -1,5 +1,6 @@
 #include <Kokkos_Core.hpp>
 #include <Kokkos_Vector.hpp>
+#include <Kokkos_Random.hpp>
 
 // PICSAR MULTIPHYSICS: BREIT WHEELER ENGINE
 #define PXRMP_FORCE_INLINE
@@ -11,6 +12,7 @@
 //__________________________________________________
 
 #include <iostream>
+#include <string>
 
 //Some namespace aliases
 namespace pxr =  picsar::multi_physics::phys;
@@ -30,22 +32,29 @@ const double Bs = pxr::schwinger_field<>/pxr::light_speed<>;
 //__________________________________________________
 
 //Parameters of the test case
-const int how_many_particles = 10'000'000;
-const int how_many_repetitions = 10;
+const unsigned int how_many_particles = 10'000'000;
+const unsigned int how_many_repetitions = 10;
 const double dt_test = 1e-18;
 const double table_chi_min = 0.01;
 const double table_chi_max = 1000.0;
-const int table_chi_size = 256;
-const int table_frac_size = 256;
+const int table_chi_size = 128;
+const int table_frac_size = 128;
 const double max_normalized_field = 0.02;
 const double max_normalized_momentum = 1000.0;
 const int random_seed = 22051988;
+const double E_min = -0.01*Es;
+const double E_max = 0.01*Es;
+const double B_min = E_min/pxr::light_speed<>;
+const double B_max = E_max/pxr::light_speed<>;
+const double P_min = -mec<>;
+const double P_max = mec<>;
 //__________________________________________________
 
 
 template<typename Real>
-struct particle_data{
+struct ParticleData{
     static constexpr int num_components = 3;
+    int num_particles = 0;
     Kokkos::View<Real * [num_components]> m_momentum;
     struct {
         Kokkos::View<Real *> Ex;
@@ -58,20 +67,54 @@ struct particle_data{
     } m_fields;
 };
 
-template<typename Real>
-particle_data<Real> create_particles(int how_many)
+template <typename Real>
+auto init_multi_comp_view_with_random_content(
+    const std::string& label,
+    const Real min_val, const Real max_val,
+    const int N,
+    Kokkos::Random_XorShift64_Pool<>& rand_pool)
 {
-    particle_data<Real> pdata;
+    auto view = Kokkos::View<Real * [ParticleData<Real>::num_components]>{label, static_cast<unsigned int>(N)};
+
+    Kokkos::fill_random(view, rand_pool, min_val, max_val);
+
+    return view;
+}
+
+template <typename Real>
+auto init_view_with_random_content(
+    const std::string& label,
+    const Real min_val, const Real max_val,
+    const int N,
+    Kokkos::Random_XorShift64_Pool<>& rand_pool)
+{
+    auto view = Kokkos::View<Real *>{label, N};
+    Kokkos::fill_random(view, rand_pool, min_val, max_val);
+    return view;
+}
+
+template<typename Real>
+ParticleData<Real> create_particles(const int N, Kokkos::Random_XorShift64_Pool<>& rand_pool)
+{
+    ParticleData<Real> pdata;
+    pdata.num_particles = N;
 
     pdata.m_momentum =
-        Kokkos::View<Real * [particle_data<Real>::num_components]>{"mom", how_many};
-    pdata.m_fields.Ex = Kokkos::View<Real *>{"Ex", how_many};
-    pdata.m_fields.Ey = Kokkos::View<Real *>{"Ey", how_many};
-    pdata.m_fields.Ez = Kokkos::View<Real *>{"Ez", how_many};
-    pdata.m_fields.Bx = Kokkos::View<Real *>{"Bx", how_many};
-    pdata.m_fields.By = Kokkos::View<Real *>{"By", how_many};
-    pdata.m_fields.Bz = Kokkos::View<Real *>{"Bz", how_many};
-    pdata.m_fields.opt = Kokkos::View<Real *>{"opt", how_many};
+        init_multi_comp_view_with_random_content<Real>("mom", P_min, P_max, N, rand_pool);
+    pdata.m_fields.Ex =
+        init_view_with_random_content<Real>("Ex", E_min, E_max, N, rand_pool);
+    pdata.m_fields.Ey =
+        init_view_with_random_content<Real>("Ey", E_min, E_max, N, rand_pool);
+    pdata.m_fields.Ez =
+        init_view_with_random_content<Real>("Ez", E_min, E_max, N, rand_pool);
+    pdata.m_fields.Bx =
+        init_view_with_random_content<Real>("Bx", B_min, B_max, N, rand_pool);
+    pdata.m_fields.By =
+        init_view_with_random_content<Real>("By", B_min, B_max, N, rand_pool);
+    pdata.m_fields.Bz =
+        init_view_with_random_content<Real>("Bz", B_min, B_max, N, rand_pool);
+    pdata.m_fields.opt =
+        init_view_with_random_content<Real>("opt", 0.0, 0.0, N, rand_pool);
     return pdata;
 }
 
@@ -110,9 +153,36 @@ auto generate_pair_table(Real chi_min, Real chi_max, int chi_size, int frac_size
 }
 
 template <typename Real>
-void do_test()
+bool check_not_nan(Kokkos::View<Real *> field){
+
+   int num_nans = 0;
+   Kokkos::parallel_reduce(
+       "HowManyNaNs", field.size(),
+        KOKKOS_LAMBDA (const int& i, int& temp ) {
+           temp += std::isnan(field(i));},
+        num_nans);
+
+
+    return (num_nans == 0);
+}
+
+template <typename Real>
+bool fill_opt_test(ParticleData<Real>& pdata, const int repetitions)
 {
-    particle_data<Real> particle_data;
+    for(int rr = 0; rr < repetitions; ++rr){
+        const auto num_particles = pdata.num_particles;
+        Kokkos::parallel_for("FillOpt", num_particles, KOKKOS_LAMBDA(int i){
+            pdata.m_fields.opt(i) = pxr_bw::get_optical_depth<Real>(0.5);
+        });
+    }
+
+    return check_not_nan(pdata.m_fields.opt);
+}
+
+template <typename Real>
+void do_test(Kokkos::Random_XorShift64_Pool<>& rand_pool)
+{
+    auto particle_data = create_particles<Real>(how_many_particles, rand_pool);
 
     const auto dndt_table =
         generate_dndt_table<Real, Kokkos::vector<Real>>(
@@ -129,25 +199,32 @@ void do_test()
 
     const auto dndt_table_view = dndt_table.get_view();
     const auto pair_table_view = pair_table.get_view();
+
+    bool fill_opt_success = fill_opt_test(particle_data, how_many_repetitions);
+
+    std::cout << ( fill_opt_success? "[ OK ]":"[ FAIL ]" )
+        << std::endl;
 }
 
 
 int main(int argc, char** argv)
 {
     Kokkos::initialize(argc, argv);
+    {
+        Kokkos::Random_XorShift64_Pool<> rand_pool{random_seed};
 
-    std::cout << "*** Kokko example: begin ***" << std::endl;
+        std::cout << "*** Kokko example: begin ***" << std::endl;
 
-    std::cout << "   --- Double precision test ---" << std::endl;
-    do_test<double>();
-    std::cout << "   --- END ---" << std::endl;
+        std::cout << "   --- Double precision test ---" << std::endl;
+        do_test<double>(rand_pool);
+        std::cout << "   --- END ---" << std::endl;
 
-    std::cout << "   --- Single precision test ---" << std::endl;
-    do_test<float>();
-    std::cout << "   --- END ---" << std::endl;
+        std::cout << "   --- Single precision test ---" << std::endl;
+        do_test<float>(rand_pool);
+        std::cout << "   --- END ---" << std::endl;
 
-    std::cout << "___ END ___" << std::endl;
-
+        std::cout << "___ END ___" << std::endl;
+    }
     Kokkos::finalize();
     return 0;
 }
