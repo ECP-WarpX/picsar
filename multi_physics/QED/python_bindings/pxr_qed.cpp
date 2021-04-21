@@ -1075,7 +1075,9 @@ PYBIND11_MODULE(pxr_qed, m) {
                     p_res[i] = self.interp(p_chi_phot[i], p_unf_zero_one_minus_epsi[i]);
                 });
                 return res;
-            })
+            },
+            py::arg("chi_phot"),
+            py::arg("unf_zero_one_minus_epsi"))
         .def("__repr__",
             [](const bw_pair_prod_lookup_table &a) {
                 return
