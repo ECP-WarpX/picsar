@@ -12,6 +12,8 @@
 #include "picsar_qed/physics/unit_conversion.hpp"
 //Uses sqrt
 #include "picsar_qed/math/cmath_overloads.hpp"
+//Uses gamma functions
+#include "picsar_qed/physics/gamma_functions.hpp"
 
 namespace picsar{
 namespace multi_physics{
@@ -49,6 +51,9 @@ namespace phys{
             quantity::B, UnitSystem,
             unit_system::heaviside_lorentz, RealType>::fact(reference_quantity);
 
+        const auto gamma_phot =
+            compute_gamma_photon<RealType, unit_system::heaviside_lorentz>(p);
+
         const auto norm_p = norm(p);
         if(norm_p == zero<RealType>)
             return zero<RealType>;
@@ -56,9 +61,6 @@ namespace phys{
         const auto p_unit = p / norm_p;
         const auto em_eperp = em_e - dot(p_unit,em_e)*p_unit;
         const auto field = norm(em_eperp + cross(p_unit, em_b));
-
-        const auto gamma_phot = norm_p/
-            heaviside_lorentz_electron_rest_energy<RealType>;
 
         constexpr auto one_over_schwinger = static_cast<RealType>(1.0/
             heaviside_lorentz_schwinger_field<double>);
@@ -139,11 +141,10 @@ namespace phys{
 
         const auto p_unit = p / norm_p;
 
-        constexpr auto one_over_m2 = static_cast<RealType>(1.0/
-            heaviside_lorentz_electron_rest_energy<double>/
-            heaviside_lorentz_electron_rest_energy<double>);
-        const auto gamma_2 = one<RealType> + norm_p*norm_p*one_over_m2;
-        const auto gamma = m_sqrt(gamma_2);
+        const auto gamma =
+            compute_gamma_ele_pos<RealType, unit_system::heaviside_lorentz>(p);
+
+        const auto gamma_2 = gamma*gamma;
 
         const auto beta =m_sqrt((gamma_2-one<RealType>)/gamma_2);
         const auto beta_vec = beta * p_unit;

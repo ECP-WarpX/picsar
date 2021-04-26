@@ -9,6 +9,7 @@ set(TEST_NAMES
     picsar_breit_wheeler_tables_generator
     picsar_breit_wheeler_tabulated_functions
     picsar_chi_functions
+    picsar_gamma_functions
     picsar_cmath_overload
     picsar_math_constants
     picsar_phys_constants

@@ -29,6 +29,8 @@
 #include "picsar_qed/physics/unit_conversion.hpp"
 //Uses sqrt and log
 #include "picsar_qed/math/cmath_overloads.hpp"
+//Uses gamma functions
+#include "picsar_qed/physics/gamma_functions.hpp"
 
 #include <cmath>
 
@@ -201,8 +203,8 @@ namespace breit_wheeler{
 
         const auto mom_photon = norm(v_mom_photon);
         const auto v_dir_photon = v_mom_photon/mom_photon;
-        const auto gamma_photon = mom_photon/
-            heaviside_lorentz_electron_rest_energy<RealType>;
+        const auto gamma_photon =
+            compute_gamma_photon<RealType, unit_system::heaviside_lorentz>(v_mom_photon);
 
         bool is_out = false;
         const auto chi_ele = ref_pair_prod_table.interp(
