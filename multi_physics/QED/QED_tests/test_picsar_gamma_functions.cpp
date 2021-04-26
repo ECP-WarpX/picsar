@@ -35,9 +35,6 @@ T constexpr tolerance()
 const double me_c = electron_mass<double> * light_speed<double>;
 const double lambda = 800.0e-9;
 const double omega = 2.0*pi<double>*light_speed<double>/lambda;
-const double eref = 2.0*pi<double>*electron_mass<double>*
-    light_speed<double>*light_speed<double>/(lambda*elementary_charge<double>);
-const double bref = eref/light_speed<double>;
 
 // ------------- Tests --------------
 
