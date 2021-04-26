@@ -39,7 +39,7 @@ const double Es = pxr::schwinger_field<>;
 //__________________________________________________
 
 //Parameters of the test case
-const unsigned int how_many_particles = 100'000;
+const unsigned int how_many_particles = 60'000'000;
 const unsigned int how_many_repetitions = 1;
 const double dt_test= 1e-18;
 const double table_chi_min = 0.01;
@@ -140,7 +140,7 @@ void correct_low_momenta(ParticleData<Real>& pdata)
 
             const auto gamma_gamma = energy_phot(px, py, pz)/mec2<Real>;
 
-            const auto bb = Real(2.1);
+            const auto bb = Real(2.2);
 
             if(gamma_gamma == Real(0.0) ){
                 const auto cc = bb/std::sqrt(Real(3.0));
@@ -150,9 +150,9 @@ void correct_low_momenta(ParticleData<Real>& pdata)
             }
             else if (gamma_gamma < Real(2.0)){
                 const auto cc = bb/gamma_gamma;
-                pdata.m_momentum(i,0) * cc;
-                pdata.m_momentum(i,1) * cc;
-                pdata.m_momentum(i,2) * cc;
+                pdata.m_momentum(i,0) *= cc;
+                pdata.m_momentum(i,1) *= cc;
+                pdata.m_momentum(i,2) *= cc;
             }
         });
 }
