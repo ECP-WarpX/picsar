@@ -1,5 +1,5 @@
 
-set(name kokkos_example)
+set(name kokkos_example_breit_wheeler)
 
 add_executable(${name} "${name}.cpp")
 
