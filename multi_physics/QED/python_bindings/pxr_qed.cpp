@@ -12,6 +12,8 @@
 
 #include "picsar_qed/math/vec_functions.hpp"
 
+#include "picsar_qed/physics/gamma_functions.hpp"
+
 #include "picsar_qed/physics/chi_functions.hpp"
 
 #include "picsar_qed/physics/breit_wheeler/breit_wheeler_engine_core.hpp"
@@ -244,6 +246,86 @@ auto check_and_get_pointer_nonconst(pyArr& arr, const long int len)
     const auto cptr = static_cast<REAL*>(arr_buf.ptr);
 
     return cptr;
+}
+//___________________________________________________________________________________
+
+
+// ******************************* Gamma functions wrappers *************************
+
+/**
+* Wrapper for compute_gamma_photon function
+*
+* @param[in] px x components of photon momenta
+* @param[in] py y components of photon momenta
+* @param[in] pz z components of photon momenta
+* @param[in] ref_quantity reference quantity (for NORM_LAMBDA or NORM_OMEGA units)
+* @return the energy of the photons normalized with respect to the electron rest mass
+*/
+pyArr
+compute_gamma_photon_wrapper(
+    const pyArr& px, const pyArr& py, const pyArr& pz,
+    const REAL ref_quantity)
+{
+    const REAL
+        *p_px = nullptr, *p_py = nullptr, *p_pz = nullptr;
+
+    size_t how_many = 0;
+
+    std::tie(
+        how_many,
+        p_px, p_py, p_pz) =
+            check_and_get_pointers(
+                px, py, pz);
+
+    auto res = pyArr(how_many);
+    auto p_res = static_cast<REAL*>(res.request().ptr);
+
+    PXRQEDPY_FOR(how_many, [&](int i){
+        p_res[i] =
+            pxr_phys::compute_gamma_photon<REAL, UU>(
+                p_px[i], p_py[i], p_pz[i],
+                ref_quantity);
+    });
+
+    return res;
+}
+
+/**
+* Wrapper for compute_gamma_ele_pos function
+*
+* @param[in] px x components of particle momenta
+* @param[in] py y components of particle momenta
+* @param[in] pz z components of particle momenta
+* @param[in] ref_quantity reference quantity (for NORM_LAMBDA or NORM_OMEGA units)
+* @return the Lorenz factors of the particles
+*/
+pyArr
+compute_gamma_ele_pos_wrapper(
+    const pyArr& px, const pyArr& py, const pyArr& pz,
+    const REAL ref_quantity)
+{
+    const REAL
+        *p_px = nullptr, *p_py = nullptr, *p_pz = nullptr;
+
+    size_t how_many = 0;
+
+    std::tie(
+        how_many,
+        p_px, p_py, p_pz) =
+            check_and_get_pointers(
+                px, py, pz);
+
+    auto res = pyArr(how_many);
+    auto p_res = static_cast<REAL*>(res.request().ptr);
+
+    PXRQEDPY_FOR(how_many, [&](int i){
+        p_res[i] =
+            pxr_phys::compute_gamma_ele_pos<REAL, UU>(
+                p_px[i], p_py[i], p_pz[i],
+                ref_quantity);
+    });
+
+    return res;
 }
 //___________________________________________________________________________________
 
@@ -878,6 +960,22 @@ PYBIND11_MODULE(pxr_qed, m) {
     m.attr("UNITS") = py::str(PXRQEDPY_USTRING);
     //________________________________________
 
+
+    // Functions to calculate normalized energies and Lorenz factors
+    m.def(
+        "compute_gamma_photon",
+        &compute_gamma_photon_wrapper,
+        py::arg("px").noconvert(true), py::arg("py").noconvert(true), py::arg("pz").noconvert(true),
+        py::arg("ref_quantity") = py::float_(1.0)
+        );
+
+    m.def(
+        "compute_gamma_ele_pos",
+        &compute_gamma_ele_pos_wrapper,
+        py::arg("px").noconvert(true), py::arg("py").noconvert(true), py::arg("pz").noconvert(true),
+        py::arg("ref_quantity") = py::float_(1.0)
+        );
+    //________________________________________
 
     // Functions to calculate chi parameters
     m.def(
