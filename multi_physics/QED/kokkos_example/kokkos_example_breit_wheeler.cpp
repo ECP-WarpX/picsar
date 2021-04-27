@@ -7,22 +7,6 @@
 #define PXRMP_WITH_GPU
 #define PXRMP_GPU_QUALIFIER KOKKOS_INLINE_FUNCTION
 
-namespace picsar{
-namespace multi_physics{
-  PXRMP_FORCE_INLINE
-  void __pxrmp_vec_sync_inside_table(
-    Kokkos::vector<double>& vv) noexcept {
-        vv.template sync<Kokkos::HostSpace>();
-    };
-
-  PXRMP_FORCE_INLINE
-  void __pxrmp_vec_sync_inside_table(
-    Kokkos::vector<float>& vv) noexcept {
-        vv.template sync<Kokkos::HostSpace>();
-    };
-}
-}
-
 #include <picsar_qed/physics/breit_wheeler/breit_wheeler_engine_core.hpp>
 #include <picsar_qed/physics/breit_wheeler/breit_wheeler_engine_tables.hpp>
 #include <picsar_qed/physics/breit_wheeler/breit_wheeler_engine_tables_generator.hpp>
@@ -86,6 +70,20 @@ struct ParticleData{
         Kokkos::View<Real *> Bz;
         Kokkos::View<Real *> opt;
     } m_fields;
+};
+
+template <typename Real>
+class KokkosVectorWrapper : public Kokkos::vector<Real>
+{
+    public:
+    template<typename... Args>
+    KokkosVectorWrapper(Args&&... args) : Kokkos::vector<Real>(std::forward<Args>(args)...)
+    {}
+
+    void pxr_sync()
+    {
+        this->template sync<Kokkos::HostSpace>();
+    }
 };
 
 template<typename T>
@@ -358,13 +356,13 @@ void do_test(Kokkos::Random_XorShift64_Pool<>& rand_pool)
     correct_low_momenta(particle_data);
 
     const auto dndt_table =
-        generate_dndt_table<Real, Kokkos::vector<Real>>(
+        generate_dndt_table<Real, KokkosVectorWrapper<Real>>(
             table_chi_min,
             table_chi_max,
             table_chi_size);
 
     const auto pair_table =
-        generate_pair_table<Real,Kokkos::vector<Real>>(
+        generate_pair_table<Real,KokkosVectorWrapper<Real>>(
             table_chi_min,
             table_chi_max,
             table_chi_size,

@@ -142,13 +142,4 @@
 */
 //#define PXRMP_HAS_OPENMP
 
-namespace picsar{
-namespace multi_physics{
-  template <typename VectorType>
-  PXRMP_FORCE_INLINE
-  void __pxrmp_vec_sync_inside_table(
-    VectorType&) noexcept {}
-}
-}
-
 #endif// PICSAR_MULTIPHYSICS_QED_COMMONS
