@@ -384,7 +384,7 @@ int main(int argc, char** argv)
     {
         Kokkos::Random_XorShift64_Pool<> rand_pool{random_seed};
 
-        std::cout << "*** Kokko example: begin ***" << std::endl;
+        std::cout << "*** Kokkos example: begin ***" << std::endl;
 
         std::cout << "   --- Double precision test ---" << std::endl;
         do_test<double>(rand_pool);
