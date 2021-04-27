@@ -101,6 +101,7 @@ namespace containers{
             auto vals =
                 serialization::get_n_out<RealType>(it_raw_data, m_how_many_x);
             std::copy(vals.begin(), vals.end(), m_values.begin());
+            __pxrmp_vec_sync_inside_table(m_values);
         }
 
         /**
@@ -264,6 +265,7 @@ namespace containers{
         void set_val(int i, RealType what)
         {
             m_values[i] = what;
+            __pxrmp_vec_sync_inside_table(m_values);
         }
 
         /**
@@ -401,6 +403,7 @@ namespace containers{
                     it_raw_data,
                     m_how_many_x*m_how_many_y);
             std::copy(vals.begin(), vals.end(), m_values.begin());
+            __pxrmp_vec_sync_inside_table(m_values);
         }
 
         /**
@@ -711,6 +714,7 @@ namespace containers{
         void set_val(const int i, const int j, const RealType what)
         {
             m_values[idx(i, j)] = what;
+            __pxrmp_vec_sync_inside_table(m_values);
         }
 
         /**
@@ -724,6 +728,7 @@ namespace containers{
         void set_val(const int i, const RealType what)
         {
             m_values[i] = what;
+            __pxrmp_vec_sync_inside_table(m_values);
         }
 
         /**
