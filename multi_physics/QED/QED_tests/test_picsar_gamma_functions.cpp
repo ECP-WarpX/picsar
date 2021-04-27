@@ -60,6 +60,20 @@ void test_gamma_photons(
         BOOST_CHECK_SMALL(res, tolerance<RealType>());
 }
 
+void test_gamma_photons_all_cases(
+    vec3<double> p, double gamma_exp)
+{
+    test_gamma_photons<double, unit_system::SI>(p, gamma_exp);
+    test_gamma_photons<double, unit_system::norm_lambda>(p, gamma_exp, lambda);
+    test_gamma_photons<double, unit_system::norm_omega>(p, gamma_exp, omega);
+    test_gamma_photons<double, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
+    test_gamma_photons<float, unit_system::SI>(p, gamma_exp);
+    test_gamma_photons<float, unit_system::norm_lambda>(p, gamma_exp, lambda);
+    test_gamma_photons<float, unit_system::norm_omega>(p, gamma_exp, omega);
+    test_gamma_photons<float, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
+}
+
+
 BOOST_AUTO_TEST_CASE( gamma_photons_1 )
 {
     const double px = 83.759*me_c;
@@ -70,14 +84,7 @@ BOOST_AUTO_TEST_CASE( gamma_photons_1 )
 
     const auto p = vec3<double>{px,py,pz};
 
-    test_gamma_photons<double, unit_system::SI>(p, gamma_exp);
-    test_gamma_photons<double, unit_system::norm_lambda>(p, gamma_exp, lambda);
-    test_gamma_photons<double, unit_system::norm_omega>(p, gamma_exp, omega);
-    test_gamma_photons<double, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
-    test_gamma_photons<float, unit_system::SI>(p, gamma_exp);
-    test_gamma_photons<float, unit_system::norm_lambda>(p, gamma_exp, lambda);
-    test_gamma_photons<float, unit_system::norm_omega>(p, gamma_exp, omega);
-    test_gamma_photons<float, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
+    test_gamma_photons_all_cases(p, gamma_exp);
 }
 
 BOOST_AUTO_TEST_CASE( gamma_photons_2 )
@@ -90,14 +97,7 @@ BOOST_AUTO_TEST_CASE( gamma_photons_2 )
 
     const auto p = vec3<double>{px,py,pz};
 
-    test_gamma_photons<double, unit_system::SI>(p, gamma_exp);
-    test_gamma_photons<double, unit_system::norm_lambda>(p, gamma_exp, lambda);
-    test_gamma_photons<double, unit_system::norm_omega>(p, gamma_exp, omega);
-    test_gamma_photons<double, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
-    test_gamma_photons<float, unit_system::SI>(p, gamma_exp);
-    test_gamma_photons<float, unit_system::norm_lambda>(p, gamma_exp, lambda);
-    test_gamma_photons<float, unit_system::norm_omega>(p, gamma_exp, omega);
-    test_gamma_photons<float, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
+    test_gamma_photons_all_cases(p, gamma_exp);
 }
 
 BOOST_AUTO_TEST_CASE( gamma_photons_3 )
@@ -110,14 +110,7 @@ BOOST_AUTO_TEST_CASE( gamma_photons_3 )
 
     const auto p = vec3<double>{px,py,pz};
 
-    test_gamma_photons<double, unit_system::SI>(p, gamma_exp);
-    test_gamma_photons<double, unit_system::norm_lambda>(p, gamma_exp, lambda);
-    test_gamma_photons<double, unit_system::norm_omega>(p, gamma_exp, omega);
-    test_gamma_photons<double, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
-    test_gamma_photons<float, unit_system::SI>(p, gamma_exp);
-    test_gamma_photons<float, unit_system::norm_lambda>(p, gamma_exp, lambda);
-    test_gamma_photons<float, unit_system::norm_omega>(p, gamma_exp, omega);
-    test_gamma_photons<float, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
+    test_gamma_photons_all_cases(p, gamma_exp);
 }
 
 BOOST_AUTO_TEST_CASE( gamma_photons_4 )
@@ -130,14 +123,7 @@ BOOST_AUTO_TEST_CASE( gamma_photons_4 )
 
     const auto p = vec3<double>{px,py,pz};
 
-    test_gamma_photons<double, unit_system::SI>(p, gamma_exp);
-    test_gamma_photons<double, unit_system::norm_lambda>(p, gamma_exp, lambda);
-    test_gamma_photons<double, unit_system::norm_omega>(p, gamma_exp, omega);
-    test_gamma_photons<double, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
-    test_gamma_photons<float, unit_system::SI>(p, gamma_exp);
-    test_gamma_photons<float, unit_system::norm_lambda>(p, gamma_exp, lambda);
-    test_gamma_photons<float, unit_system::norm_omega>(p, gamma_exp, omega);
-    test_gamma_photons<float, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
+    test_gamma_photons_all_cases(p, gamma_exp);
 }
 
 BOOST_AUTO_TEST_CASE( gamma_photons_5 )
@@ -150,14 +136,7 @@ BOOST_AUTO_TEST_CASE( gamma_photons_5 )
 
     const auto p = vec3<double>{px,py,pz};
 
-    test_gamma_photons<double, unit_system::SI>(p, gamma_exp);
-    test_gamma_photons<double, unit_system::norm_lambda>(p, gamma_exp, lambda);
-    test_gamma_photons<double, unit_system::norm_omega>(p, gamma_exp, omega);
-    test_gamma_photons<double, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
-    test_gamma_photons<float, unit_system::SI>(p, gamma_exp);
-    test_gamma_photons<float, unit_system::norm_lambda>(p,gamma_exp, lambda);
-    test_gamma_photons<float, unit_system::norm_omega>(p, gamma_exp, omega);
-    test_gamma_photons<float, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
+    test_gamma_photons_all_cases(p, gamma_exp);
 }
 
 BOOST_AUTO_TEST_CASE( gamma_photons_6 )
@@ -170,14 +149,7 @@ BOOST_AUTO_TEST_CASE( gamma_photons_6 )
 
     const auto p = vec3<double>{px,py,pz};
 
-    test_gamma_photons<double, unit_system::SI>(p, gamma_exp);
-    test_gamma_photons<double, unit_system::norm_lambda>(p, gamma_exp, lambda);
-    test_gamma_photons<double, unit_system::norm_omega>(p, gamma_exp, omega);
-    test_gamma_photons<double, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
-    test_gamma_photons<float, unit_system::SI>(p, gamma_exp);
-    test_gamma_photons<float, unit_system::norm_lambda>(p, gamma_exp, lambda);
-    test_gamma_photons<float, unit_system::norm_omega>(p, gamma_exp, omega);
-    test_gamma_photons<float, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
+    test_gamma_photons_all_cases(p, gamma_exp);
 }
 
 //*******************************
@@ -204,6 +176,19 @@ void test_gamma_ele_pos(
         BOOST_CHECK_SMALL(res, tolerance<RealType>());
 }
 
+void test_gamma_ele_pos_all_cases(
+    vec3<double> p, double gamma_exp)
+{
+    test_gamma_ele_pos<double, unit_system::SI>(p, gamma_exp);
+    test_gamma_ele_pos<double, unit_system::norm_lambda>(p, gamma_exp, lambda);
+    test_gamma_ele_pos<double, unit_system::norm_omega>(p, gamma_exp, omega);
+    test_gamma_ele_pos<double, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
+    test_gamma_ele_pos<float, unit_system::SI>(p, gamma_exp);
+    test_gamma_ele_pos<float, unit_system::norm_lambda>(p, gamma_exp, lambda);
+    test_gamma_ele_pos<float, unit_system::norm_omega>(p, gamma_exp, omega);
+    test_gamma_ele_pos<float, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
+}
+
 BOOST_AUTO_TEST_CASE( gamma_ele_pos_1 )
 {
     const double px = 24.3752*me_c;
@@ -214,15 +199,7 @@ BOOST_AUTO_TEST_CASE( gamma_ele_pos_1 )
 
     const auto p = vec3<double>{px,py,pz};
 
-    test_gamma_ele_pos<double, unit_system::SI>(p, gamma_exp, 1.0);
-    test_gamma_ele_pos<double, unit_system::norm_lambda>(p, gamma_exp, lambda);
-    test_gamma_ele_pos<double, unit_system::norm_omega>(p, gamma_exp, omega);
-    test_gamma_ele_pos<double, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
-    test_gamma_ele_pos<float, unit_system::SI>(p, gamma_exp, 1.0);
-    test_gamma_ele_pos<float, unit_system::norm_lambda>(p, gamma_exp, lambda);
-    test_gamma_ele_pos<float, unit_system::norm_omega>(p, gamma_exp, omega);
-    test_gamma_ele_pos<float, unit_system::heaviside_lorentz>(p,gamma_exp, 1.0);
-
+    test_gamma_ele_pos_all_cases(p, gamma_exp);
 }
 
 BOOST_AUTO_TEST_CASE( gamma_ele_pos_2 )
@@ -235,14 +212,7 @@ BOOST_AUTO_TEST_CASE( gamma_ele_pos_2 )
 
     const auto p = vec3<double>{px,py,pz};
 
-    test_gamma_ele_pos<double, unit_system::SI>(p, gamma_exp, 1.0);
-    test_gamma_ele_pos<double, unit_system::norm_lambda>(p, gamma_exp, lambda);
-    test_gamma_ele_pos<double, unit_system::norm_omega>(p, gamma_exp, omega);
-    test_gamma_ele_pos<double, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
-    test_gamma_ele_pos<float, unit_system::SI>(p, gamma_exp, 1.0);
-    test_gamma_ele_pos<float, unit_system::norm_lambda>(p, gamma_exp, lambda);
-    test_gamma_ele_pos<float, unit_system::norm_omega>(p, gamma_exp, omega);
-    test_gamma_ele_pos<float, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
+    test_gamma_ele_pos_all_cases(p, gamma_exp);
 }
 
 BOOST_AUTO_TEST_CASE( gamma_ele_pos_3 )
@@ -255,14 +225,7 @@ BOOST_AUTO_TEST_CASE( gamma_ele_pos_3 )
 
     const auto p = vec3<double>{px,py,pz};
 
-    test_gamma_ele_pos<double, unit_system::SI>(p, gamma_exp, 1.0);
-    test_gamma_ele_pos<double, unit_system::norm_lambda>(p, gamma_exp, lambda);
-    test_gamma_ele_pos<double, unit_system::norm_omega>(p, gamma_exp, omega);
-    test_gamma_ele_pos<double, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
-    test_gamma_ele_pos<float, unit_system::SI>(p, gamma_exp, 1.0);
-    test_gamma_ele_pos<float, unit_system::norm_lambda>(p, gamma_exp, lambda);
-    test_gamma_ele_pos<float, unit_system::norm_omega>(p, gamma_exp, omega);
-    test_gamma_ele_pos<float, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
+    test_gamma_ele_pos_all_cases(p, gamma_exp);
 }
 
 BOOST_AUTO_TEST_CASE( gamma_ele_pos_4 )
@@ -275,14 +238,7 @@ BOOST_AUTO_TEST_CASE( gamma_ele_pos_4 )
 
     const auto p = vec3<double>{px,py,pz};
 
-    test_gamma_ele_pos<double, unit_system::SI>(p, gamma_exp, 1.0);
-    test_gamma_ele_pos<double, unit_system::norm_lambda>(p, gamma_exp, lambda);
-    test_gamma_ele_pos<double, unit_system::norm_omega>(p, gamma_exp, omega);
-    test_gamma_ele_pos<double, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
-    test_gamma_ele_pos<float, unit_system::SI>(p, gamma_exp, 1.0);
-    test_gamma_ele_pos<float, unit_system::norm_lambda>(p, gamma_exp, lambda);
-    test_gamma_ele_pos<float, unit_system::norm_omega>(p, gamma_exp, omega);
-    test_gamma_ele_pos<float, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
+    test_gamma_ele_pos_all_cases(p, gamma_exp);
 }
 
 BOOST_AUTO_TEST_CASE( gamma_ele_pos_5 )
@@ -295,14 +251,7 @@ BOOST_AUTO_TEST_CASE( gamma_ele_pos_5 )
 
     const auto p = vec3<double>{px,py,pz};
 
-    test_gamma_ele_pos<double, unit_system::SI>(p, gamma_exp, 1.0);
-    test_gamma_ele_pos<double, unit_system::norm_lambda>(p, gamma_exp, lambda);
-    test_gamma_ele_pos<double, unit_system::norm_omega>(p, gamma_exp, omega);
-    test_gamma_ele_pos<double, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
-    test_gamma_ele_pos<float, unit_system::SI>(p, gamma_exp, 1.0);
-    test_gamma_ele_pos<float, unit_system::norm_lambda>(p, gamma_exp, lambda);
-    test_gamma_ele_pos<float, unit_system::norm_omega>(p, gamma_exp, omega);
-    test_gamma_ele_pos<float, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
+    test_gamma_ele_pos_all_cases(p, gamma_exp);
 }
 
 BOOST_AUTO_TEST_CASE( gamma_ele_pos_6 )
@@ -315,14 +264,7 @@ BOOST_AUTO_TEST_CASE( gamma_ele_pos_6 )
 
     const auto p = vec3<double>{px,py,pz};
 
-    test_gamma_ele_pos<double, unit_system::SI>(p, gamma_exp, 1.0);
-    test_gamma_ele_pos<double, unit_system::norm_lambda>(p, gamma_exp, lambda);
-    test_gamma_ele_pos<double, unit_system::norm_omega>(p, gamma_exp, omega);
-    test_gamma_ele_pos<double, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
-    test_gamma_ele_pos<float, unit_system::SI>(p, gamma_exp, 1.0);
-    test_gamma_ele_pos<float, unit_system::norm_lambda>(p, gamma_exp, lambda);
-    test_gamma_ele_pos<float, unit_system::norm_omega>(p, gamma_exp, omega);
-    test_gamma_ele_pos<float, unit_system::heaviside_lorentz>(p, gamma_exp, 1.0);
+    test_gamma_ele_pos_all_cases(p, gamma_exp);
 }
 
 //*******************************
