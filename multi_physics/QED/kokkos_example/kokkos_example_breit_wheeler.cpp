@@ -84,6 +84,12 @@ class KokkosVectorWrapper : public Kokkos::vector<Real>
     {
         this->template sync<Kokkos::HostSpace>();
     }
+
+    const Real* data() const
+    {
+      return Kokkos::vector<Real>::d_view.data();
+    }
+
 };
 
 template<typename T>
