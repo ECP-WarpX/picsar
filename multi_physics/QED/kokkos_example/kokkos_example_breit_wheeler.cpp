@@ -69,19 +69,20 @@ struct ParticleData{
 template <typename Real>
 class KokkosVectorWrapper : public Kokkos::vector<Real>
 {
+    using KV = Kokkos::vector<Real>;
     public:
     template<typename... Args>
-    KokkosVectorWrapper(Args&&... args) : Kokkos::vector<Real>(std::forward<Args>(args)...)
+    KokkosVectorWrapper(Args&&... args) : KV(std::forward<Args>(args)...)
     {}
 
     void pxr_sync()
     {
-        Kokkos::vector<Real>::on_device();
+        Kokkos::deep_copy(KV::d_view, KV::h_view);
     }
 
     const Real* data() const
     {
-        return Kokkos::vector<Real>::d_view.data();
+        return KV::d_view.data();
     }
 
 };
