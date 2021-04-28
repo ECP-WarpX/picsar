@@ -28,6 +28,8 @@
 #include "picsar_qed/physics/unit_conversion.hpp"
 //Uses sqrt
 #include "picsar_qed/math/cmath_overloads.hpp"
+//Uses gamma functions
+#include "picsar_qed/physics/gamma_functions.hpp"
 
 namespace picsar{
 namespace multi_physics{
@@ -202,10 +204,8 @@ namespace quantum_sync{
 
         const auto mom_particle = norm(v_mom_particle);
         const auto v_dir_particle = v_mom_particle/mom_particle;
-        const auto norm_mom_particle = mom_particle/
-            heaviside_lorentz_electron_rest_energy<RealType>;
-        const auto gamma_particle = m_sqrt(
-                one<RealType> + norm_mom_particle*norm_mom_particle);
+        const auto gamma_particle =
+            compute_gamma_ele_pos<RealType, unit_system::heaviside_lorentz>(v_mom_particle);
 
         bool is_out = false;
         const auto chi_photon = ref_phot_prod_table.interp(
