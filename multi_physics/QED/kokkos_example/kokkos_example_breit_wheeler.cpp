@@ -40,7 +40,7 @@ const double Es = pxr::schwinger_field<>;
 //__________________________________________________
 
 //Parameters of the test case
-const unsigned int how_many_particles = 60'000'000;
+const unsigned int how_many_particles = 10'000'000;
 const unsigned int how_many_repetitions = 1;
 const double dt_test= 1e-18;
 const double table_chi_min = 0.01;
@@ -268,6 +268,7 @@ bool fill_opt_test(
             pdata.m_fields.opt(i) =
                 pxr_bw::get_optical_depth<Real>(
                     get_rand<Real>(rand_gen));
+            rand_pool.free_state(rand_gen);
         });
     }
 
@@ -348,6 +349,8 @@ bool generate_pairs(
             pos_momentum(i, 0) = p_mom[0];
             pos_momentum(i, 1) = p_mom[1];
             pos_momentum(i, 2) = p_mom[2];
+
+            rand_pool.free_state(rand_gen);
         });
     }
 
