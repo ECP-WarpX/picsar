@@ -382,14 +382,14 @@ void do_test(Kokkos::Random_XorShift64_Pool<>& rand_pool)
 
     const auto evolve_opt_success =
         evolve_optical_depth<Real>(
-            particle_data, dndt_table.get_view(), dt_test, how_many_repetitions);
+            particle_data, dndt_table_view, dt_test, how_many_repetitions);
 
     std::cout << ( evolve_opt_success? "[ OK ]":"[ FAIL ]" )
         << std::endl;
 
     const auto pair_prod_success =
         generate_pairs<Real>(
-            particle_data, pair_table.get_view(), how_many_repetitions, rand_pool);
+            particle_data, pair_table_view, how_many_repetitions, rand_pool);
 
     std::cout << ( pair_prod_success? "[ OK ]":"[ FAIL ]" )
         << std::endl;
