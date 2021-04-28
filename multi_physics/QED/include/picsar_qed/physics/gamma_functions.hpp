@@ -60,7 +60,7 @@ namespace phys{
     * @param[in] reference_quantity reference quantity for unit conversion (e.g. lambda or omega_r), if needed
     * @return the normalized energy of the photon
     */
-    template<typename RealType, unit_system UnitSystem>
+    template<typename RealType, unit_system UnitSystem = unit_system::SI>
     PXRMP_GPU_QUALIFIER
     PXRMP_FORCE_INLINE
     RealType compute_gamma_photon(
