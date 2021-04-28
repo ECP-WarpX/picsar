@@ -281,7 +281,7 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_1d_table_constructor_getters)
 }
 
 // ***Test equispaced_1d_table setter
-BOOST_AUTO_TEST_CASE( picsar_equispaced_1d_table_constructor_setter)
+BOOST_AUTO_TEST_CASE( picsar_equispaced_1d_table_setter)
 {
     auto tab_1d = make_1d_table();
     const auto val = 1000.0;
@@ -291,7 +291,31 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_1d_table_constructor_setter)
     const auto res =tab_1d.interp(x10);
 
     BOOST_CHECK_SMALL((res - val)/val, tolerance<double>());
+}
 
+// ***Test equispaced_1d_table set all
+BOOST_AUTO_TEST_CASE( picsar_equispaced_1d_table_setall)
+{
+    auto tab_1d = make_1d_table();
+    const auto val = 42.0;
+    const auto vec = std::vector<double>(tab_1d.get_how_many_x(), val);
+
+    tab_1d.set_all_vals(vec);
+
+    const auto x0 = tab_1d.get_x_min();
+    const auto x1 = tab_1d.get_x_max();
+    const auto x2 = 0.376*(x1-x0) + x0;
+    const auto x3 = 0.688*(x1-x0) + x0;
+
+    const auto r0 =tab_1d.interp(x0);
+    const auto r1 =tab_1d.interp(x1);
+    const auto r2 =tab_1d.interp(x2);
+    const auto r3 =tab_1d.interp(x3);
+
+    BOOST_CHECK_SMALL((r0 - val)/val, tolerance<double>());
+    BOOST_CHECK_SMALL((r1 - val)/val, tolerance<double>());
+    BOOST_CHECK_SMALL((r2 - val)/val, tolerance<double>());
+    BOOST_CHECK_SMALL((r3 - val)/val, tolerance<double>());
 }
 
 // ***Test equispaced_1d_table equality
@@ -343,7 +367,7 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_interp_one_coord)
 }
 
 // ***Test equispaced_2d_table setter
-BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_constructor_setter)
+BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_setter)
 {
     auto tab_2d = make_2d_table();
     const auto val = 1000.0;
@@ -356,6 +380,37 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_constructor_setter)
 
     BOOST_CHECK_SMALL((res - val)/val, tolerance<double>());
 }
+
+// ***Test equispaced_2d_table set all
+BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_setall)
+{
+    auto tab_2d = make_2d_table();
+    const auto val = 42.0;
+    const auto vec = std::vector<double>(
+        tab_2d.get_how_many_x()*tab_2d.get_how_many_y(),
+        val);
+
+    tab_2d.set_all_vals(vec);
+
+    const auto x0 = tab_2d.get_x_min();
+    const auto x1 = tab_2d.get_x_max();
+    const auto x2 = 0.376*(x1-x0) + x0;
+
+    const auto y0 = tab_2d.get_y_min();
+    const auto y1 = tab_2d.get_y_max();
+    const auto y2 = 0.688*(y1-y0) + y0;
+
+    BOOST_CHECK_SMALL((tab_2d.interp(x0,y0) - val)/val, tolerance<double>());
+    BOOST_CHECK_SMALL((tab_2d.interp(x0,y1) - val)/val, tolerance<double>());
+    BOOST_CHECK_SMALL((tab_2d.interp(x0,y2) - val)/val, tolerance<double>());
+    BOOST_CHECK_SMALL((tab_2d.interp(x1,y0) - val)/val, tolerance<double>());
+    BOOST_CHECK_SMALL((tab_2d.interp(x1,y1) - val)/val, tolerance<double>());
+    BOOST_CHECK_SMALL((tab_2d.interp(x1,y2) - val)/val, tolerance<double>());
+    BOOST_CHECK_SMALL((tab_2d.interp(x2,y0) - val)/val, tolerance<double>());
+    BOOST_CHECK_SMALL((tab_2d.interp(x2,y1) - val)/val, tolerance<double>());
+    BOOST_CHECK_SMALL((tab_2d.interp(x2,y2) - val)/val, tolerance<double>());
+}
+
 
 // ***Test equispaced_2_table equality
 BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_equality)

@@ -26,7 +26,7 @@ namespace containers{
 
     template<typename VectorType>
     inline auto
-    __aux_imp_update_vec_if_possible(VectorType& vec, int)
+    __aux_imp_sync_vec(VectorType& vec, int)
       ->decltype(vec.pxr_sync(), void())
     {
       vec.pxr_sync();
@@ -34,17 +34,16 @@ namespace containers{
 
     template<typename VectorType>
     inline auto
-    __aux_imp_update_vec_if_possible(VectorType&, long)
+    __aux_imp_sync_vec(VectorType&, long)
       ->decltype(void())
     {}
 
     template<typename VectorType>
     inline void
-    __aux_update_vec_if_possible(VectorType& vec)
+    __aux_sync_vec(VectorType& vec)
     {
-      __aux_imp_update_vec_if_possible(vec, int(1));
+      __aux_imp_sync_vec(vec, int(1));
     }
-
 
     //________________ 1D equispaced table _____________________________________
 
@@ -74,7 +73,7 @@ namespace containers{
                 m_how_many_x = static_cast<int>(values.size());
                 m_x_size = x_max - x_min;
                 m_dx = m_x_size/(m_how_many_x-1);
-                __aux_update_vec_if_possible(m_values);
+                __aux_sync_vec(m_values);
             }
 
         /**
@@ -124,7 +123,6 @@ namespace containers{
             auto vals =
                 serialization::get_n_out<RealType>(it_raw_data, m_how_many_x);
             std::copy(vals.begin(), vals.end(), m_values.begin());
-            __aux_update_vec_if_possible(m_values);
         }
 
         /**
@@ -288,8 +286,24 @@ namespace containers{
         void set_val(int i, RealType what)
         {
             m_values[i] = what;
-            __aux_update_vec_if_possible(m_values);
+            __aux_sync_vec(m_values);
         }
+
+        /**
+        * Overwrites all values
+        *
+        * @param[in] new_values
+        */
+        PXRMP_FORCE_INLINE
+        void set_all_vals(const std::vector<RealType>& new_values)
+        {
+            if (new_values.size() != m_values.size())
+                throw std::runtime_error("Mismatch new_values length \
+                    and m_values length");
+            std::copy(new_values.begin(), new_values.end(), m_values.begin());
+            __aux_sync_vec(m_values);
+        }
+
 
         /**
         * Returns a byte vector containing all the raw data of the
@@ -363,7 +377,7 @@ namespace containers{
                 m_y_size = y_max - y_min;
                 m_dx = m_x_size/(m_how_many_x-1);
                 m_dy = m_y_size/(m_how_many_y-1);
-                __aux_update_vec_if_possible(m_values);
+                __aux_sync_vec(m_values);
             }
 
         /**
@@ -427,7 +441,7 @@ namespace containers{
                     it_raw_data,
                     m_how_many_x*m_how_many_y);
             std::copy(vals.begin(), vals.end(), m_values.begin());
-            __aux_update_vec_if_possible(m_values);
+            __aux_sync_vec(m_values);
         }
 
         /**
@@ -738,7 +752,7 @@ namespace containers{
         void set_val(const int i, const int j, const RealType what)
         {
             m_values[idx(i, j)] = what;
-            __aux_update_vec_if_possible(m_values);
+            __aux_sync_vec(m_values);
         }
 
         /**
@@ -752,8 +766,24 @@ namespace containers{
         void set_val(const int i, const RealType what)
         {
             m_values[i] = what;
-            __aux_update_vec_if_possible(m_values);
+            __aux_sync_vec(m_values);
         }
+
+        /**
+        * Overwrites all values
+        *
+        * @param[in] new_values
+        */
+        PXRMP_FORCE_INLINE
+        void set_all_vals(const std::vector<RealType>& new_values)
+        {
+            if (new_values.size() != m_values.size())
+                throw std::runtime_error("Mismatch new_values length \
+                    and m_values length");
+            std::copy(new_values.begin(), new_values.end(), m_values.begin());
+            __aux_sync_vec(m_values);
+        }
+
 
         /**
         * Returns a byte vector containing all the raw data of the

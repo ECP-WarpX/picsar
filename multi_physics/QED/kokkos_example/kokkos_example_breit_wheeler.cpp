@@ -76,12 +76,12 @@ class KokkosVectorWrapper : public Kokkos::vector<Real>
 
     void pxr_sync()
     {
-        this->template sync<Kokkos::HostSpace>();
+        Kokkos::vector<Real>::on_device();
     }
 
     const Real* data() const
     {
-      return Kokkos::vector<Real>::d_view.data();
+        return Kokkos::vector<Real>::d_view.data();
     }
 
 };
