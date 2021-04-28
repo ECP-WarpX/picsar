@@ -26,16 +26,25 @@ namespace containers{
 
     template<typename VectorType>
     inline auto
-    __aux_update_vec_if_possible(VectorType& vec)
-    ->decltype(VectorType::pxr_sync())
+    __aux_imp_update_vec_if_possible(VectorType& vec, int)
+      ->decltype(vec.pxr_sync(), void())
     {
-        return vec.pxr_sync();
+      vec.pxr_sync();
     }
 
     template<typename VectorType>
     inline auto
-    __aux_update_vec_if_possible(const VectorType&)
+    __aux_imp_update_vec_if_possible(VectorType&, long)
+      ->decltype(void())
     {}
+
+    template<typename VectorType>
+    inline void
+    __aux_update_vec_if_possible(VectorType& vec)
+    {
+      __aux_imp_update_vec_if_possible(vec, int(1));
+    }
+
 
     //________________ 1D equispaced table _____________________________________
 
