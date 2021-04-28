@@ -235,18 +235,23 @@ bool check_not_nan_or_inf_multi(Kokkos::View<Real * [ParticleData<Real>::num_com
 using GenType = Kokkos::Random_XorShift64_Pool<>::generator_type;
 
 template <typename Real>
-KOKKOS_INLINE_FUNCTION
-Real get_rand(GenType& gen)
-{
-    return gen.drand();
-}
+struct get_rand{
+    KOKKOS_INLINE_FUNCTION
+    static Real get(GenType& gen)
+    {
+        return gen.drand();
+    }
+};
 
-template <>
-KOKKOS_INLINE_FUNCTION
-float get_rand(GenType& gen)
-{
-    return gen.frand();
-}
+template<>
+struct get_rand<float>{
+
+    KOKKOS_INLINE_FUNCTION
+    static float get(GenType& gen)
+    {
+        return gen.frand();
+    }
+};
 
 template <typename Real>
 bool fill_opt_test(
@@ -261,7 +266,7 @@ bool fill_opt_test(
             auto rand_gen = rand_pool.get_state();
             pdata.m_fields.opt(i) =
                 pxr_bw::get_optical_depth<Real>(
-                    get_rand<Real>(rand_gen));
+                    get_rand<Real>::get(rand_gen));
             rand_pool.free_state(rand_gen);
         });
     }
@@ -333,7 +338,7 @@ bool generate_pairs(
 
             pxr_bw::generate_breit_wheeler_pairs<Real, TableType, pxr::unit_system::SI>(
                 chi, pxr_m::vec3<Real>{px, py, pz},
-                get_rand<Real>(rand_gen),
+                get_rand<Real>::get(rand_gen),
                 ref_table,
                 e_mom, p_mom);
 
