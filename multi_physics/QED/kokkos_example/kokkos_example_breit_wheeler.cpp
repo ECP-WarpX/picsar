@@ -273,7 +273,10 @@ struct get_rand{
     KOKKOS_INLINE_FUNCTION
     static Real get(GenType& gen)
     {
-        return gen.drand();
+        Real res = Real(1.0);
+        while(res >= Real(1.0))
+            res = gen.drand();
+        return res;
     }
 };
 
@@ -283,7 +286,10 @@ struct get_rand<float>{
     KOKKOS_INLINE_FUNCTION
     static float get(GenType& gen)
     {
-        return gen.frand();
+        float res = 1.0f;
+        while(res >= 1.0f)
+            res = gen.frand();
+        return res;
     }
 };
 
