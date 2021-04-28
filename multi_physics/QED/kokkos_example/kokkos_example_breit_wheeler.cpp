@@ -207,29 +207,29 @@ auto generate_pair_table(Real chi_min, Real chi_max, int chi_size, int frac_size
 }
 
 template <typename Real>
-bool check_not_nan(Kokkos::View<Real *> field){
+bool check_not_nan_or_inf(Kokkos::View<Real *> field){
 
-   int num_nans = 0;
-   Kokkos::parallel_reduce("HowManyNaNs_"+get_type_name<Real>(),
+   int num_nans_infs = 0;
+   Kokkos::parallel_reduce("HowManyNaNsInfs_"+get_type_name<Real>(),
        field.size(), KOKKOS_LAMBDA (const int& i, int& temp ) {
-           temp += std::isnan(field(i));},
-        num_nans);
+           temp += std::isnan(field(i)) + std::isinf(field(i));},
+        num_nans_infs);
 
-    return (num_nans == 0);
+    return (num_nans_infs == 0);
 }
 
 template <typename Real>
-bool check_not_nan_multi(Kokkos::View<Real * [ParticleData<Real>::num_components]> vec)
+bool check_not_nan_or_inf_multi(Kokkos::View<Real * [ParticleData<Real>::num_components]> vec)
 {
-   int num_nans = 0;
+   int num_nans_infs = 0;
    Kokkos::parallel_reduce("HowManyNaNsMulti_"+get_type_name<Real>(),
        vec.extent(0), KOKKOS_LAMBDA (const int& i, int& temp ) {
            for (int cc = 0; cc < ParticleData<Real>::num_components; ++cc){
-            temp += std::isnan(vec(i,cc));
+            temp += std::isnan(vec(i,cc) + std::isinf(vec(i,cc)));
            }},
-        num_nans);
+        num_nans_infs);
 
-    return (num_nans == 0);
+    return (num_nans_infs == 0);
 }
 
 using GenType = Kokkos::Random_XorShift64_Pool<>::generator_type;
@@ -266,7 +266,7 @@ bool fill_opt_test(
         });
     }
 
-    return check_not_nan(pdata.m_fields.opt);
+    return check_not_nan_or_inf(pdata.m_fields.opt);
 }
 
 
@@ -295,7 +295,7 @@ bool evolve_optical_depth(
         });
     }
 
-    return check_not_nan(pdata.m_fields.opt);
+    return check_not_nan_or_inf(pdata.m_fields.opt);
 }
 
 
@@ -348,7 +348,7 @@ bool generate_pairs(
         });
     }
 
-    return check_not_nan_multi(ele_momentum) && check_not_nan_multi(pos_momentum);
+    return check_not_nan_or_inf_multi(ele_momentum) && check_not_nan_or_inf_multi(pos_momentum);
 }
 
 
