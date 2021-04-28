@@ -7,6 +7,8 @@
 #define PXRMP_WITH_GPU
 #define PXRMP_GPU_QUALIFIER KOKKOS_INLINE_FUNCTION
 
+#include <picsar_qed/physics/chi_functions.hpp>
+#include <picsar_qed/physics/gamma_functions.hpp>
 #include <picsar_qed/physics/breit_wheeler/breit_wheeler_engine_core.hpp>
 #include <picsar_qed/physics/breit_wheeler/breit_wheeler_engine_tables.hpp>
 #include <picsar_qed/physics/breit_wheeler/breit_wheeler_engine_tables_generator.hpp>
@@ -27,14 +29,6 @@ constexpr T mec = static_cast<T>(pxr::electron_mass<> * pxr::light_speed<>);
 
 template<typename T = double>
 constexpr T mec2= static_cast<T>(pxr::electron_mass<> * pxr::light_speed<> * pxr::light_speed<>);
-
-template<typename T>
-KOKKOS_INLINE_FUNCTION
-constexpr T energy_phot(T px, T py, T pz)
-{
-    const auto p2 = px*px + py*py + pz*pz;
-    return std::sqrt(p2)*pxr::light_speed<T>;
-}
 
 const double Es = pxr::schwinger_field<>;
 //__________________________________________________
@@ -159,9 +153,9 @@ void correct_low_momenta(ParticleData<Real>& pdata)
             const auto py = pdata.m_momentum(i,1);
             const auto pz = pdata.m_momentum(i,2);
 
-            const auto gamma_gamma = energy_phot(px, py, pz)/mec2<Real>;
+            const auto gamma_gamma = pxr::compute_gamma_photon<Real>(px, py, pz);
 
-            const auto bb = Real(2.2);
+            const auto bb = Real(2.1);
 
             if(gamma_gamma == Real(0.0) ){
                 const auto cc = bb/std::sqrt(Real(3.0));
@@ -293,7 +287,7 @@ bool evolve_optical_depth(
             const auto by = pdata.m_fields.By(i);
             const auto bz = pdata.m_fields.Bz(i);
             auto& opt = pdata.m_fields.opt(i);
-            const auto ee = energy_phot(px, py, pz);
+            const auto ee = std::sqrt(px*px + py*py + pz*pz)*pxr::light_speed<Real>;
             const auto chi = pxr::chi_photon<Real, pxr::unit_system::SI>(
                 px, py ,pz, ex, ey, ez, bx, by, bz);
             pxr_bw::evolve_optical_depth<Real, TableType>(
