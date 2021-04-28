@@ -74,6 +74,7 @@ namespace containers{
                 m_how_many_x = static_cast<int>(values.size());
                 m_x_size = x_max - x_min;
                 m_dx = m_x_size/(m_how_many_x-1);
+                __aux_update_vec_if_possible(m_values);
             }
 
         /**
@@ -362,6 +363,7 @@ namespace containers{
                 m_y_size = y_max - y_min;
                 m_dx = m_x_size/(m_how_many_x-1);
                 m_dy = m_y_size/(m_how_many_y-1);
+                __aux_update_vec_if_possible(m_values);
             }
 
         /**
