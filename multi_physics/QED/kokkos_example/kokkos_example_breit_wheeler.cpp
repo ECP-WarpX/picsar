@@ -207,29 +207,63 @@ auto generate_pair_table(Real chi_min, Real chi_max, int chi_size, int frac_size
 }
 
 template <typename Real>
-bool check_not_nan_or_inf(Kokkos::View<Real *> field){
+bool check(Kokkos::View<Real *> field,
+    const bool check_nan = true, const bool check_inf = false){
 
-   int num_nans_infs = 0;
-   Kokkos::parallel_reduce("HowManyNaNsInfs_"+get_type_name<Real>(),
-       field.size(), KOKKOS_LAMBDA (const int& i, int& temp ) {
-           temp += std::isnan(field(i)) + std::isinf(field(i));},
-        num_nans_infs);
+    int num = 0;
 
-    return (num_nans_infs == 0);
+    if(check_nan && !check_inf){
+        Kokkos::parallel_reduce("HowManyNaNs_"+get_type_name<Real>(),
+        field.size(), KOKKOS_LAMBDA (const int& i, int& temp ) {
+            temp += std::isnan(field(i));},
+            num);
+    }
+    else if(!check_nan && check_inf){
+        Kokkos::parallel_reduce("HowManyInfs_"+get_type_name<Real>(),
+        field.size(), KOKKOS_LAMBDA (const int& i, int& temp ) {
+            temp += std::isinf(field(i));},
+            num);
+    }
+    else if(check_nan && check_inf){
+        Kokkos::parallel_reduce("HowManyNaNsInfs_"+get_type_name<Real>(),
+        field.size(), KOKKOS_LAMBDA (const int& i, int& temp ) {
+            temp += std::isnan(field(i)) + std::isinf(field(i));},
+            num);
+    }
+
+    return (num == 0);
 }
 
 template <typename Real>
-bool check_not_nan_or_inf_multi(Kokkos::View<Real * [ParticleData<Real>::num_components]> vec)
+bool check_multi(Kokkos::View<Real * [ParticleData<Real>::num_components]> vec,
+    const bool check_nan = true, const bool check_inf = false)
 {
-   int num_nans_infs = 0;
-   Kokkos::parallel_reduce("HowManyNaNsMulti_"+get_type_name<Real>(),
-       vec.extent(0), KOKKOS_LAMBDA (const int& i, int& temp ) {
-           for (int cc = 0; cc < ParticleData<Real>::num_components; ++cc){
-            temp += std::isnan(vec(i,cc) + std::isinf(vec(i,cc)));
-           }},
-        num_nans_infs);
 
-    return (num_nans_infs == 0);
+    int num = 0;
+
+    if(check_nan && !check_inf){
+        Kokkos::parallel_reduce("HowManyNaNsMulti_"+get_type_name<Real>(),
+        vec.extent(0), KOKKOS_LAMBDA (const int& i, int& temp ) {
+            for (int cc = 0; cc < ParticleData<Real>::num_components; ++cc){
+                temp += std::isnan(vec(i,cc));};},
+            num);
+    }
+    else if(!check_nan && check_inf){
+        Kokkos::parallel_reduce("HowManyInfsMulti_"+get_type_name<Real>(),
+        vec.extent(0), KOKKOS_LAMBDA (const int& i, int& temp ) {
+            for (int cc = 0; cc < ParticleData<Real>::num_components; ++cc){
+                temp += std::isinf(vec(i,cc));};},
+            num);
+    }
+    else if(check_nan && check_inf){
+        Kokkos::parallel_reduce("HowManyNaNsInfsMulti_"+get_type_name<Real>(),
+        vec.extent(0), KOKKOS_LAMBDA (const int& i, int& temp ) {
+            for (int cc = 0; cc < ParticleData<Real>::num_components; ++cc){
+                temp += std::isnan(vec(i,cc)) + std::isinf(vec(i,cc));};},
+            num);
+    }
+
+    return (num == 0);
 }
 
 using GenType = Kokkos::Random_XorShift64_Pool<>::generator_type;
@@ -271,7 +305,7 @@ bool fill_opt_test(
         });
     }
 
-    return check_not_nan_or_inf(pdata.m_fields.opt);
+    return check(pdata.m_fields.opt, true, false);
 }
 
 
@@ -300,7 +334,7 @@ bool evolve_optical_depth(
         });
     }
 
-    return check_not_nan_or_inf(pdata.m_fields.opt);
+    return check(pdata.m_fields.opt, true, false);
 }
 
 
@@ -353,7 +387,7 @@ bool generate_pairs(
         });
     }
 
-    return check_not_nan_or_inf_multi(ele_momentum) && check_not_nan_or_inf_multi(pos_momentum);
+    return check_multi(ele_momentum, true, true) && check_multi(pos_momentum, true, true);
 }
 
 
