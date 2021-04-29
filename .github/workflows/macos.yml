@@ -16,8 +16,8 @@ jobs:
       run: .github/workflows/dependencies/dependencies_mac.sh
     - name: Build & Test
       run: |
-        export CC := clang
-	export CXX := clang++
+        export CC=clang
+	export CXX=clang++
         cmake -S multi_physics/QED                \
             -B build                              \
             -DCMAKE_VERBOSE_MAKEFILE=ON           \
