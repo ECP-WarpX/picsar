@@ -16,6 +16,8 @@ jobs:
         cmake -S multi_physics/QED                \
             -B build                              \
             -DCMAKE_VERBOSE_MAKEFILE=ON           \
-            -DPXRMP_QED_TEST=ON
+            -DPXRMP_QED_TEST=ON                   \
+            -DPXRMP_KOKKOS_EXAMPLE=ON             \
+            -DKokkos_ENABLE_OPENMP=ON
         cmake --build build -j 2
         cmake --build build --target test
