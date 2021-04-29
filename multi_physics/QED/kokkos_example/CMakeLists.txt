@@ -1,16 +1,12 @@
+set(EXAMPLE_NAMES
+    breit_wheeler
+    quantum_synchrotron
+)
 
-set(name kokkos_example_breit_wheeler)
+set(EXAMPLE_SRCS ${EXAMPLE_NAMES})
+list(TRANSFORM EXAMPLE_SRCS PREPEND "kokkos_example_")
+list(TRANSFORM EXAMPLE_SRCS APPEND ".cpp")
 
-add_executable(${name} "${name}.cpp")
-
-target_link_libraries(${name} PRIVATE PXRMP_QED)
-
-
-option(PXRMP_kokkos_internal                    "Download & build Kokkos" ON)
-
-if(NOT PXRMP_KOKKOS_EXAMPLE)
-    mark_as_advanced(PXRMP_kokkos_internal)
-endif()
 
 macro(find_kokkos)
 
@@ -53,6 +49,12 @@ macro(find_kokkos)
 endmacro()
 
 
+option(PXRMP_kokkos_internal                    "Download & build Kokkos" ON)
+
+if(NOT PXRMP_KOKKOS_EXAMPLE)
+    mark_as_advanced(PXRMP_kokkos_internal)
+endif()
+
 # local source-tree
 set(PXRMP_kokkos_src ""
     CACHE PATH
@@ -68,4 +70,26 @@ set(PXRMP_kokkos_tag "3.3.01"
 
 find_kokkos()
 
-target_link_libraries (${name} PRIVATE Kokkos::kokkos)
+
+# Run through each source
+foreach(name ${EXAMPLE_NAMES})
+    set(src "kokkos_example_${name}.cpp")
+
+    # Add compile target
+    add_executable(${name} ${src})
+
+    target_link_libraries(${name} PRIVATE PXRMP_QED)
+
+    target_link_libraries (${name} PRIVATE Kokkos::kokkos)
+
+    set_target_properties(${name} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/kokkos_examples)
+
+    # Require C++14 or newer
+    target_compile_features(${name} PUBLIC cxx_std_14)
+    set_target_properties(${name} PROPERTIES CXX_EXTENSIONS OFF)
+
+    # Finally add it to test execution
+    message(STATUS "Example: ${name} (${src})")
+
+endforeach()

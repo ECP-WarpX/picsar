@@ -9,9 +9,9 @@
 
 #include <picsar_qed/physics/chi_functions.hpp>
 #include <picsar_qed/physics/gamma_functions.hpp>
-#include <picsar_qed/physics/breit_wheeler/breit_wheeler_engine_core.hpp>
-#include <picsar_qed/physics/breit_wheeler/breit_wheeler_engine_tables.hpp>
-#include <picsar_qed/physics/breit_wheeler/breit_wheeler_engine_tables_generator.hpp>
+#include <picsar_qed/physics/quantum_sync/quantum_sync_engine_core.hpp>
+#include <picsar_qed/physics/quantum_sync/quantum_sync_engine_tables.hpp>
+#include <picsar_qed/physics/quantum_sync/quantum_sync_engine_tables_generator.hpp>
 //__________________________________________________
 
 #include <iostream>
@@ -19,7 +19,7 @@
 
 //Some namespace aliases
 namespace pxr =  picsar::multi_physics::phys;
-namespace pxr_bw = picsar::multi_physics::phys::breit_wheeler;
+namespace pxr_qs = picsar::multi_physics::phys::quantum_sync;
 namespace pxr_m =  picsar::multi_physics::math;
 //__________________________________________________
 
@@ -38,6 +38,7 @@ const unsigned int how_many_particles = 10'000'000;
 const unsigned int how_many_repetitions = 1;
 const double dt_test= 1e-18;
 const double table_chi_min = 0.01;
+const double table_frac_min = 1.0e-12;
 const double table_chi_max = 1000.0;
 const int table_chi_size = 128;
 const int table_frac_size = 128;
@@ -144,46 +145,16 @@ ParticleData<Real> create_particles(const int N, Kokkos::Random_XorShift64_Pool<
     return pdata;
 }
 
-template<typename Real>
-void correct_low_momenta(ParticleData<Real>& pdata)
-{
-    const auto num_particles = pdata.num_particles;
-    Kokkos::parallel_for("CorrectLowMomenta_"+get_type_name<Real>(),
-            num_particles, KOKKOS_LAMBDA(int i){
-            const auto px = pdata.m_momentum(i,0);
-            const auto py = pdata.m_momentum(i,1);
-            const auto pz = pdata.m_momentum(i,2);
-
-            const auto gamma_gamma = pxr::compute_gamma_photon<Real>(px, py, pz);
-
-            const auto bb = Real(2.1);
-
-            if(gamma_gamma == Real(0.0) ){
-                const auto cc = bb/std::sqrt(Real(3.0));
-                pdata.m_momentum(i,0) = cc*mec<Real>;
-                pdata.m_momentum(i,1) = cc*mec<Real>;
-                pdata.m_momentum(i,2) = cc*mec<Real>;
-            }
-            else if (gamma_gamma < Real(2.0)){
-                const auto cc = bb/gamma_gamma;
-                pdata.m_momentum(i,0) *= cc;
-                pdata.m_momentum(i,1) *= cc;
-                pdata.m_momentum(i,2) *= cc;
-            }
-        });
-}
-
-
 template <typename Real, typename Vector>
 auto generate_dndt_table(Real chi_min, Real chi_max, int chi_size)
 {
     std::cout << "Preparing dndt table [" << typeid(Real).name() << ", " << chi_size <<"]...\n";
     std::cout.flush();
 
-    pxr_bw::dndt_lookup_table_params<Real> bw_params{chi_min, chi_max, chi_size};
+    pxr_qs::dndt_lookup_table_params<Real> qs_params{chi_min, chi_max, chi_size};
 
-	auto table = pxr_bw::dndt_lookup_table<
-        Real, Vector>{bw_params};
+	auto table = pxr_qs::dndt_lookup_table<
+        Real, Vector>{qs_params};
 
     table.generate();
 
@@ -191,16 +162,17 @@ auto generate_dndt_table(Real chi_min, Real chi_max, int chi_size)
 }
 
 template <typename Real, typename Vector>
-auto generate_pair_table(Real chi_min, Real chi_max, int chi_size, int frac_size)
+auto generate_photon_emission_table(
+    Real chi_min, Real chi_max, Real frac_min, int chi_size, int frac_size)
 {
-    std::cout << "Preparing pair production table [" << typeid(Real).name() << ", " << chi_size << " x " << frac_size <<"]...\n";
+    std::cout << "Preparing photon emission table [" << typeid(Real).name() << ", " << chi_size << " x " << frac_size <<"]...\n";
     std::cout.flush();
 
-    pxr_bw::pair_prod_lookup_table_params<Real> bw_params{
-        chi_min, chi_max, chi_size, frac_size};
+    pxr_qs::photon_emission_lookup_table_params<Real> qs_params{
+        chi_min, chi_max, frac_min, chi_size, frac_size};
 
-	auto table = pxr_bw::pair_prod_lookup_table<
-        Real, Vector>{bw_params};
+	auto table = pxr_qs::photon_emission_lookup_table<
+        Real, Vector>{qs_params};
 
     table.template generate();
 
@@ -306,7 +278,7 @@ bool fill_opt_test(
             num_particles, KOKKOS_LAMBDA(int i){
             auto rand_gen = rand_pool.get_state();
             pdata.m_fields.opt(i) =
-                pxr_bw::get_optical_depth<Real>(
+                pxr_qs::get_optical_depth<Real>(
                     get_rand<Real>::get(rand_gen));
             rand_pool.free_state(rand_gen);
         });
@@ -333,10 +305,12 @@ bool evolve_optical_depth(
             const auto by = pdata.m_fields.By(i);
             const auto bz = pdata.m_fields.Bz(i);
             auto& opt = pdata.m_fields.opt(i);
-            const auto ee = std::sqrt(px*px + py*py + pz*pz)*pxr::light_speed<Real>;
-            const auto chi = pxr::chi_photon<Real, pxr::unit_system::SI>(
-                px, py ,pz, ex, ey, ez, bx, by, bz);
-            pxr_bw::evolve_optical_depth<Real, TableType>(
+            const auto ee =
+                pxr::compute_gamma_ele_pos<Real>(px, py, pz)*mec2<Real>;
+            const auto chi =
+                pxr::chi_ele_pos<Real, pxr::unit_system::SI>(
+                    px, py ,pz, ex, ey, ez, bx, by, bz);
+            pxr_qs::evolve_optical_depth<Real, TableType>(
                 ee, chi, dt, opt, ref_table);
         });
     }
@@ -346,19 +320,17 @@ bool evolve_optical_depth(
 
 
 template <typename Real, typename TableType>
-bool generate_pairs(
+bool generate_photons(
     ParticleData<Real>& pdata, const TableType& ref_table, const int repetitions,
     Kokkos::Random_XorShift64_Pool<>& rand_pool)
 {
     const auto num_particles = pdata.num_particles;
 
-    auto ele_momentum = init_multi_comp_view_with_random_content<Real>(
-        "ele_momentum", 0.0, 0.0, num_particles, rand_pool);
-    auto pos_momentum = init_multi_comp_view_with_random_content<Real>(
-        "pos_momentum", 0.0, 0.0, num_particles, rand_pool);
+    auto photon_momentum = init_multi_comp_view_with_random_content<Real>(
+        "photon_momentum", 0.0, 0.0, num_particles, rand_pool);
 
     for(int rr = 0; rr < repetitions; ++rr){
-        Kokkos::parallel_for("PairGen", num_particles, KOKKOS_LAMBDA(int i){
+        Kokkos::parallel_for("PhotEm", num_particles, KOKKOS_LAMBDA(int i){
             const auto px = pdata.m_momentum(i,0);
             const auto py = pdata.m_momentum(i,1);
             const auto pz = pdata.m_momentum(i,2);
@@ -369,32 +341,33 @@ bool generate_pairs(
             const auto by = pdata.m_fields.By(i);
             const auto bz = pdata.m_fields.Bz(i);
 
-            const auto chi = pxr::chi_photon<Real, pxr::unit_system::SI>(
+            const auto chi = pxr::chi_ele_pos<Real, pxr::unit_system::SI>(
                 px, py ,pz, ex, ey, ez, bx, by, bz);
 
             auto rand_gen = rand_pool.get_state();
 
-            auto e_mom = pxr_m::vec3<Real>{0,0,0};
-            auto p_mom = pxr_m::vec3<Real>{0,0,0};
+            auto e_phot = pxr_m::vec3<Real>{0,0,0};
 
-            pxr_bw::generate_breit_wheeler_pairs<Real, TableType, pxr::unit_system::SI>(
-                chi, pxr_m::vec3<Real>{px, py, pz},
+            auto p_mom = pxr_m::vec3<Real>{px, py, pz};
+
+            pxr_qs::generate_photon_update_momentum<Real, TableType, pxr::unit_system::SI>(
+                chi, p_mom,
                 get_rand<Real>::get(rand_gen),
                 ref_table,
-                e_mom, p_mom);
+                e_phot);
 
-            ele_momentum(i, 0) = e_mom[0];
-            ele_momentum(i, 1) = e_mom[1];
-            ele_momentum(i, 2) = e_mom[2];
-            pos_momentum(i, 0) = p_mom[0];
-            pos_momentum(i, 1) = p_mom[1];
-            pos_momentum(i, 2) = p_mom[2];
+            pdata.m_momentum(i, 0) = p_mom[0];
+            pdata.m_momentum(i, 1) = p_mom[1];
+            pdata.m_momentum(i, 2) = p_mom[2];
+            photon_momentum(i, 0) = e_phot[0];
+            photon_momentum(i, 1) = e_phot[1];
+            photon_momentum(i, 2) = e_phot[2];
 
             rand_pool.free_state(rand_gen);
         });
     }
 
-    return check_multi(ele_momentum, true, true) && check_multi(pos_momentum, true, true);
+    return check_multi(photon_momentum, true, true) && check_multi(pdata.m_momentum, true, true);
 }
 
 
@@ -402,7 +375,6 @@ template <typename Real>
 void do_test(Kokkos::Random_XorShift64_Pool<>& rand_pool)
 {
     auto particle_data = create_particles<Real>(how_many_particles, rand_pool);
-    correct_low_momenta(particle_data);
 
     const auto dndt_table =
         generate_dndt_table<Real, KokkosVectorWrapper<Real>>(
@@ -410,15 +382,16 @@ void do_test(Kokkos::Random_XorShift64_Pool<>& rand_pool)
             table_chi_max,
             table_chi_size);
 
-    const auto pair_table =
-        generate_pair_table<Real,KokkosVectorWrapper<Real>>(
+    const auto phot_em_table =
+        generate_photon_emission_table<Real,KokkosVectorWrapper<Real>>(
             table_chi_min,
             table_chi_max,
+            table_frac_min,
             table_chi_size,
             table_frac_size);
 
     const auto dndt_table_view = dndt_table.get_view();
-    const auto pair_table_view = pair_table.get_view();
+    const auto phot_em_table_view = phot_em_table.get_view();
 
     const auto fill_opt_success =
         fill_opt_test<Real>(particle_data, how_many_repetitions, rand_pool);
@@ -433,11 +406,11 @@ void do_test(Kokkos::Random_XorShift64_Pool<>& rand_pool)
     std::cout << ( evolve_opt_success? "[ OK ]":"[ FAIL ]" )
         << std::endl;
 
-    const auto pair_prod_success =
-        generate_pairs<Real>(
-            particle_data, pair_table_view, how_many_repetitions, rand_pool);
+    const auto phot_em_success =
+        generate_photons<Real>(
+            particle_data, phot_em_table_view, how_many_repetitions, rand_pool);
 
-    std::cout << ( pair_prod_success? "[ OK ]":"[ FAIL ]" )
+    std::cout << ( phot_em_success? "[ OK ]":"[ FAIL ]" )
         << std::endl;
 }
 
