@@ -1,15 +1,21 @@
 #ifndef __KOKKOS_EXAMPLE_COMMONS__
 #define __KOKKOS_EXAMPLE_COMMONS__
 
+//This file contains common functions and constants used by the two Kokkos examples
+
+//Include Kokkos
 #include <Kokkos_Core.hpp>
 #include <Kokkos_Vector.hpp>
 #include <Kokkos_Random.hpp>
+//__________________________________________________
 
-// PICSAR MULTIPHYSICS: BREIT WHEELER ENGINE
+//Sets macros relevant for PICSAR QED according to the values of the corresponding Kokkos macros
 #define PXRMP_FORCE_INLINE
 #define PXRMP_WITH_GPU
 #define PXRMP_GPU_QUALIFIER KOKKOS_INLINE_FUNCTION
+//__________________________________________________
 
+//Include PICSAR QED
 #include <picsar_qed/physics/chi_functions.hpp>
 #include <picsar_qed/physics/gamma_functions.hpp>
 #include <picsar_qed/physics/breit_wheeler/breit_wheeler_engine_core.hpp>
@@ -22,6 +28,7 @@
 
 #include <iostream>
 #include <string>
+#include <cstdlib>
 
 //Some namespace aliases
 namespace pxr =  picsar::multi_physics::phys;
@@ -41,6 +48,13 @@ constexpr T mec2= static_cast<T>(pxr::electron_mass<> * pxr::light_speed<> * pxr
 const double Es = pxr::schwinger_field<>;
 //__________________________________________________
 
+/**
+* Data structure to emulate particle data in a Particle-In-Cell code.
+* Momenta are in a num_particlesx3 vector, while field components and optical depths
+* are each one in a separate vector of size num_particles.
+*
+* @tparam Real the floating point type to be used
+*/
 template<typename Real>
 struct ParticleData{
     static constexpr int num_components = 3;
@@ -57,20 +71,44 @@ struct ParticleData{
     } m_fields;
 };
 
+/**
+* Thin Wrapper around Kokkos::vector<Real> to make it usable
+* as the building block of the lookup tables.
+*
+* @tparam Real the floating point type to be used
+*/
 template <typename Real>
 class KokkosVectorWrapper : public Kokkos::vector<Real>
 {
     using KV = Kokkos::vector<Real>;
     public:
+
+    /**
+    * All the arguments passed to KokkosVectorWrapper constructor
+    * are forwarded to Kokkos::vector constructor.
+    *
+    * @tparam Args the constructor arguments
+    */
     template<typename... Args>
     KokkosVectorWrapper(Args&&... args) : KV(std::forward<Args>(args)...)
     {}
 
+    /**
+    * This function may be called in some places inside picsar_table classes.
+    * It forces a deep copy of the CPU data to the GPU
+    *
+    */
     void pxr_sync()
     {
         Kokkos::deep_copy(KV::d_view, KV::h_view);
     }
 
+    /**
+    * This function returns a point to the raw data inside Kokkos::vector.
+    * It is called to build table_views.
+    *
+    * @return a pointer to the raw vector data
+    */
     const Real* data() const
     {
         return KV::d_view.data();
@@ -78,12 +116,32 @@ class KokkosVectorWrapper : public Kokkos::vector<Real>
 
 };
 
+/**
+* An auxiliary function to call typeid(T).name()
+*
+* @tparam T a typename
+* @return the name of T as a string
+*/
 template<typename T>
 std::string get_type_name()
 {
     return typeid(T).name();
 }
 
+/**
+* Initializes a 2D Kokkos::View with N, ParticleData<Real>::num_components
+* elements. The values inside the View are initialized randomly between min_val
+* and max_val.
+*
+* @tparam Real the floating point type to be used
+* @param[in] label the Kokkos::View label
+* @param[in] N the number of particles
+* @param[in] min_val the minimum value to initialize the content of the Kokkos::View
+* @param[in] max_val the maximum value to initialize the content of the Kokkos::View
+* @param[in] N the number of particles
+* @param[in,out] rand_pool a random pool
+* @return the multi-component view
+*/
 template <typename Real>
 auto init_multi_comp_view_with_random_content(
     const std::string& label,
@@ -98,6 +156,20 @@ auto init_multi_comp_view_with_random_content(
     return view;
 }
 
+/**
+* Initializes a 1D Kokkos::View with N elements.
+* The values inside the View are initialized randomly between min_val
+* and max_val.
+*
+* @tparam Real the floating point type to be used
+* @param[in] label the Kokkos::View label
+* @param[in] N the number of particles
+* @param[in] min_val the minimum value to initialize the content of the Kokkos::View
+* @param[in] max_val the maximum value to initialize the content of the Kokkos::View
+* @param[in] N the number of particles
+* @param[in,out] rand_pool a random pool
+* @return the multi-component view
+*/
 template <typename Real>
 auto init_view_with_random_content(
     const std::string& label,
@@ -110,6 +182,20 @@ auto init_view_with_random_content(
     return view;
 }
 
+/**
+* Initializes particle data
+*
+* @tparam Real the floating point type to be used
+* @param N the number of particles
+* @param[in] Pmin the minimum value of the momentum
+* @param[in] Pmax the maximum value of the momentum
+* @param[in] Emin the minimum value of the momentum
+* @param[in] Emax the maximum value of the momentum
+* @param[in] Bmin the minimum value of the momentum
+* @param[in] Bmax the maximum value of the momentum
+* @param[in,out] rand_pool a random pool
+* @return the particle data
+*/
 template<typename Real>
 ParticleData<Real> create_particles(const int N,
 Real Pmin, Real Pmax, Real Emin, Real Emax, Real Bmin, Real Bmax,
@@ -137,7 +223,15 @@ Kokkos::Random_XorShift64_Pool<>& rand_pool)
     return pdata;
 }
 
-
+/**
+* Checks a 1D view for NaN and/or infs
+*
+* @tparam Real the floating point type to be used
+* @param[in] field the view to be tested
+* @param[in] check_nan whether to check for NaNs in field
+* @param[in] check_inf whether to check for infinities in field
+* @return true if checks pass, false otherwise
+*/
 template <typename Real>
 bool check(Kokkos::View<Real *> field,
     const bool check_nan = true, const bool check_inf = false){
@@ -166,6 +260,16 @@ bool check(Kokkos::View<Real *> field,
     return (num == 0);
 }
 
+/**
+* Checks a 2D view with N,ParticleData<Real>::num_components
+* elements for NaN and/or infs
+*
+* @tparam Real the floating point type to be used
+* @param[in] field the view to be tested
+* @param[in] check_nan whether to check for NaNs in field
+* @param[in] check_inf whether to check for infinities in field
+* @return true if checks pass, false otherwise
+*/
 template <typename Real>
 bool check_multi(Kokkos::View<Real * [ParticleData<Real>::num_components]> vec,
     const bool check_nan = true, const bool check_inf = false)
@@ -202,6 +306,14 @@ using GenType = Kokkos::Random_XorShift64_Pool<>::generator_type;
 
 template <typename Real>
 struct get_rand{
+
+    /**
+    * Calls the drand() method of the Kokkos random number generator.
+    * Prevents results exaclty equal to 1.0
+    *
+    * @tparam Real the floating point type to be used
+    * @param[in,out] gen a random number generator
+    */
     KOKKOS_INLINE_FUNCTION
     static Real get(GenType& gen)
     {
@@ -212,9 +324,20 @@ struct get_rand{
     }
 };
 
+/**
+* Calls the frand() method of the Kokkos random number generator
+* (i.e. the single precision version). Prevents results exaclty equal to 1.
+*
+*/
 template<>
 struct get_rand<float>{
-
+    /**
+    * Calls the frand() method of the Kokkos random number generator
+    * (i.e. the single precision version). Prevents results exaclty equal to 1.
+    *
+    * @tparam Real the floating point type to be used
+    * @param[in,out] gen a random number generator
+    */
     KOKKOS_INLINE_FUNCTION
     static float get(GenType& gen)
     {

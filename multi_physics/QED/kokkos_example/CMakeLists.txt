@@ -3,11 +3,7 @@ set(EXAMPLE_NAMES
     quantum_synchrotron
 )
 
-set(EXAMPLE_SRCS ${EXAMPLE_NAMES})
-list(TRANSFORM EXAMPLE_SRCS PREPEND "kokkos_example_")
-list(TRANSFORM EXAMPLE_SRCS APPEND ".cpp")
-
-
+# This macro downloads Kokkos from git if a PXRMP_kokkos_src is not provided
 macro(find_kokkos)
 
     if(PXRMP_kokkos_src)
@@ -48,7 +44,7 @@ macro(find_kokkos)
 
 endmacro()
 
-
+# By disabling this the user can provide a path to a Kokkos source directory
 option(PXRMP_kokkos_internal                    "Download & build Kokkos" ON)
 
 if(NOT PXRMP_KOKKOS_EXAMPLE)
@@ -79,9 +75,9 @@ foreach(name ${EXAMPLE_NAMES})
     add_executable(${name} ${src})
 
     target_link_libraries(${name} PRIVATE PXRMP_QED)
-
     target_link_libraries (${name} PRIVATE Kokkos::kokkos)
 
+    # Move examples into /bin/kokkos_examples
     set_target_properties(${name} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/kokkos_examples)
 
@@ -89,7 +85,6 @@ foreach(name ${EXAMPLE_NAMES})
     target_compile_features(${name} PUBLIC cxx_std_14)
     set_target_properties(${name} PROPERTIES CXX_EXTENSIONS OFF)
 
-    # Finally add it to test execution
     message(STATUS "Example: ${name} (${src})")
 
 endforeach()

@@ -1,5 +1,7 @@
 #include "kokkos_example_commons.hpp"
 
+// BREIT-WHEELER PAIR PRODUCTION
+
 //Parameters of the test case
 const unsigned int how_many_particles = 20'000'000;
 const unsigned int how_many_repetitions = 1;
@@ -17,6 +19,13 @@ const double P_min = -100*mec<>;
 const double P_max = 100*mec<>;
 //__________________________________________________
 
+/**
+* Corrects momenta which are too low to allow the decay of
+* a photon into a pair.
+*
+* @tparam Real the floating point type to be used
+* @param[in,out] pdata the particle data
+*/
 template<typename Real>
 void correct_low_momenta(ParticleData<Real>& pdata)
 {
@@ -46,11 +55,21 @@ void correct_low_momenta(ParticleData<Real>& pdata)
         });
 }
 
-
+/**
+* Generates the dN/dt lookup table
+*
+* @tparam Real the floating point type to be used
+* @tparam Vector the vector type to be used
+* @param[in] chi_min the minimum chi parameter
+* @param[in] chi_max the maximum chi parameter
+* @param[in] chi_size the size of the lookup table along the chi axis
+* @return the lookup table
+*/
 template <typename Real, typename Vector>
 auto generate_dndt_table(Real chi_min, Real chi_max, int chi_size)
 {
-    std::cout << "Preparing dndt table [" << typeid(Real).name() << ", " << chi_size <<"]...\n";
+    std::cout << "Preparing dndt table [" << get_type_name<Real>()
+        << ", " << chi_size <<"]...\n";
     std::cout.flush();
 
     pxr_bw::dndt_lookup_table_params<Real> bw_params{chi_min, chi_max, chi_size};
@@ -63,10 +82,22 @@ auto generate_dndt_table(Real chi_min, Real chi_max, int chi_size)
     return table;
 }
 
+/**
+* Generates the pair production lookup table
+*
+* @tparam Real the floating point type to be used
+* @tparam Vector the vector type to be used
+* @param[in] chi_min the minimum chi parameter
+* @param[in] chi_max the maximum chi parameter
+* @param[in] chi_size the size of the lookup table along the chi axis
+* @param[in] frac_size the size of the lookup table along the frac axis
+* @return the lookup table
+*/
 template <typename Real, typename Vector>
 auto generate_pair_table(Real chi_min, Real chi_max, int chi_size, int frac_size)
 {
-    std::cout << "Preparing pair production table [" << typeid(Real).name() << ", " << chi_size << " x " << frac_size <<"]...\n";
+    std::cout << "Preparing pair production table [" << get_type_name<Real>()
+        << ", " << chi_size << " x " << frac_size <<"]...\n";
     std::cout.flush();
 
     pxr_bw::pair_prod_lookup_table_params<Real> bw_params{
@@ -80,6 +111,16 @@ auto generate_pair_table(Real chi_min, Real chi_max, int chi_size, int frac_size
     return table;
 }
 
+/**
+* Tests the initialization of the optical depth
+*
+* @tparam Real the floating point type to be used
+* @tparam TableType the lookup table type
+* @param[in,out] pdata the particle data
+* @param[in] repetitions how many times should the test be repeated
+* @param[in,out] rand_pool a random pool
+* @return a bool success flag and the elapsed time in ms, packed in a pair
+*/
 template <typename Real>
 std::pair<bool, double>
 fill_opt_test(
@@ -106,11 +147,22 @@ fill_opt_test(
     return std::make_pair(check(pdata.m_fields.opt, true, false), time);
 }
 
-
+/**
+* Tests the evolution of the optical depth
+*
+* @tparam Real the floating point type to be used
+* @param[in,out] pdata the particle data
+* @param[in] ref_table the dN/dt lookup table
+* @param[in] dt the timestep
+* @param[in] repetitions how many times should the test be repeated
+* @return a bool success flag and the elapsed time, packed in a pair
+*/
 template <typename Real, typename TableType>
 std::pair<bool, double>
 evolve_optical_depth(
-    ParticleData<Real>& pdata, const TableType& ref_table, Real dt, const int repetitions)
+    ParticleData<Real>& pdata,
+    const TableType& ref_table,
+    Real dt, const int repetitions)
 {
     Kokkos::Timer timer;
     for(int rr = 0; rr < repetitions; ++rr){
@@ -140,11 +192,23 @@ evolve_optical_depth(
     return std::make_pair(check(pdata.m_fields.opt, true, false), time);
 }
 
-
+/**
+* Tests pair production
+*
+* @tparam Real the floating point type to be used
+* @tparam TableType the lookup table type
+* @param[in,out] pdata the particle data
+* @param[in] ref_table the pair production lookup table
+* @param[in] repetitions how many times should the test be repeated
+* @param[in,out] rand_pool a random pool
+* @return a bool success flag and the elapsed time in ms, packed in a pair
+*/
 template <typename Real, typename TableType>
 std::pair<bool, double>
 generate_pairs(
-    ParticleData<Real>& pdata, const TableType& ref_table, const int repetitions,
+    ParticleData<Real>& pdata,
+    const TableType& ref_table,
+    const int repetitions,
     Kokkos::Random_XorShift64_Pool<>& rand_pool)
 {
     const auto num_particles = pdata.num_particles;
@@ -200,7 +264,12 @@ generate_pairs(
         time);
 }
 
-
+/**
+* Performs tests with a given precision
+*
+* @tparam Real the floating point type to be used
+* @param[in,out] rand_pool a random pool
+*/
 template <typename Real>
 void do_test(Kokkos::Random_XorShift64_Pool<>& rand_pool)
 {
@@ -269,5 +338,5 @@ int main(int argc, char** argv)
         std::cout << "___ END ___" << std::endl;
     }
     Kokkos::finalize();
-    return 0;
+    exit(EXIT_SUCCESS);
 }

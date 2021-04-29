@@ -1,5 +1,7 @@
 #include "kokkos_example_commons.hpp"
 
+// QUANTUM SYNCHROTRON EMISSION
+
 //Parameters of the test case
 const unsigned int how_many_particles = 20'000'000;
 const unsigned int how_many_repetitions = 1;
@@ -18,10 +20,21 @@ const double P_min = -100*mec<>;
 const double P_max = 100*mec<>;
 //__________________________________________________
 
+/**
+* Generates the dN/dt lookup table
+*
+* @tparam Real the floating point type to be used
+* @tparam Vector the vector type to be used
+* @param[in] chi_min the minimum chi parameter
+* @param[in] chi_max the maximum chi parameter
+* @param[in] chi_size the size of the lookup table along the chi axis
+* @return the lookup table
+*/
 template <typename Real, typename Vector>
 auto generate_dndt_table(Real chi_min, Real chi_max, int chi_size)
 {
-    std::cout << "Preparing dndt table [" << typeid(Real).name() << ", " << chi_size <<"]...\n";
+    std::cout << "Preparing dndt table [" << get_type_name<Real>()
+        << ", " << chi_size <<"]...\n";
     std::cout.flush();
 
     pxr_qs::dndt_lookup_table_params<Real> qs_params{chi_min, chi_max, chi_size};
@@ -34,11 +47,24 @@ auto generate_dndt_table(Real chi_min, Real chi_max, int chi_size)
     return table;
 }
 
+/**
+* Generates the photon emission lookup table
+*
+* @tparam Real the floating point type to be used
+* @tparam Vector the vector type to be used
+* @param[in] chi_min the minimum chi parameter
+* @param[in] chi_max the maximum chi parameter
+* @param[in] frac_min the mimum value for the frac parameter
+* @param[in] chi_size the size of the lookup table along the chi axis
+* @param[in] frac_size the size of the lookup table along the frac axis
+* @return the lookup table
+*/
 template <typename Real, typename Vector>
 auto generate_photon_emission_table(
     Real chi_min, Real chi_max, Real frac_min, int chi_size, int frac_size)
 {
-    std::cout << "Preparing photon emission table [" << typeid(Real).name() << ", " << chi_size << " x " << frac_size <<"]...\n";
+    std::cout << "Preparing photon emission table [" << get_type_name<Real>()
+        << ", " << chi_size << " x " << frac_size <<"]...\n";
     std::cout.flush();
 
     pxr_qs::photon_emission_lookup_table_params<Real> qs_params{
@@ -52,6 +78,15 @@ auto generate_photon_emission_table(
     return table;
 }
 
+/**
+* Tests the initialization of the optical depth
+*
+* @tparam Real the floating point type to be used
+* @param[in,out] pdata the particle data
+* @param[in] repetitions how many times should the test be repeated
+* @param[in,out] rand_pool a random pool
+* @return a bool success flag and the elapsed time in ms, packed in a pair
+*/
 template <typename Real>
 std::pair<bool, double>
  fill_opt_test(
@@ -78,11 +113,23 @@ std::pair<bool, double>
     return std::make_pair(check(pdata.m_fields.opt, true, false), time);
 }
 
-
+/**
+* Tests the evolution of the optical depth
+*
+* @tparam Real the floating point type to be used
+* @tparam TableType the lookup table type
+* @param[in,out] pdata the particle data
+* @param[in] ref_table the dN/dt lookup table
+* @param[in] dt the timestep
+* @param[in] repetitions how many times should the test be repeated
+* @return a bool success flag and the elapsed time, packed in a pair
+*/
 template <typename Real, typename TableType>
 std::pair<bool, double>
 evolve_optical_depth(
-    ParticleData<Real>& pdata, const TableType& ref_table, Real dt, const int repetitions)
+    ParticleData<Real>& pdata,
+    const TableType& ref_table,
+    Real dt, const int repetitions)
 {
     Kokkos::Timer timer;
     for(int rr = 0; rr < repetitions; ++rr){
@@ -114,11 +161,23 @@ evolve_optical_depth(
     return std::make_pair(check(pdata.m_fields.opt, true, false), time);
 }
 
-
+/**
+* Tests photon emission
+*
+* @tparam Real the floating point type to be used
+* @tparam TableType the lookup table type
+* @param[in,out] pdata the particle data
+* @param[in] ref_table the photon emission lookup table
+* @param[in] repetitions how many times should the test be repeated
+* @param[in,out] rand_pool a random pool
+* @return a bool success flag and the elapsed time in ms, packed in a pair
+*/
 template <typename Real, typename TableType>
 std::pair<bool, double>
 generate_photons(
-    ParticleData<Real>& pdata, const TableType& ref_table, const int repetitions,
+    ParticleData<Real>& pdata,
+    const TableType& ref_table,
+    const int repetitions,
     Kokkos::Random_XorShift64_Pool<>& rand_pool)
 {
     const auto num_particles = pdata.num_particles;
@@ -173,7 +232,12 @@ generate_photons(
         time);
 }
 
-
+/**
+* Performs tests with a given precision
+*
+* @tparam Real the floating point type to be used
+* @param[in,out] rand_pool a random pool
+*/
 template <typename Real>
 void do_test(Kokkos::Random_XorShift64_Pool<>& rand_pool)
 {
@@ -243,5 +307,5 @@ int main(int argc, char** argv)
         std::cout << "___ END ___" << std::endl;
     }
     Kokkos::finalize();
-    return 0;
+    exit(EXIT_SUCCESS);
 }
