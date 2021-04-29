@@ -1,7 +1,7 @@
 #include "kokkos_example_commons.hpp"
 
 //Parameters of the test case
-const unsigned int how_many_particles = 10'000'000;
+const unsigned int how_many_particles = 20'000'000;
 const unsigned int how_many_repetitions = 1;
 const double dt_test= 1e-18;
 const double table_chi_min = 0.01;
@@ -53,11 +53,13 @@ auto generate_photon_emission_table(
 }
 
 template <typename Real>
-bool fill_opt_test(
+std::pair<bool, double>
+ fill_opt_test(
     ParticleData<Real>& pdata,
     const int repetitions,
     Kokkos::Random_XorShift64_Pool<>& rand_pool)
 {
+    Kokkos::Timer timer;
     for(int rr = 0; rr < repetitions; ++rr){
         const auto num_particles = pdata.num_particles;
         Kokkos::parallel_for("FillOpt_"+get_type_name<Real>(),
@@ -70,14 +72,19 @@ bool fill_opt_test(
         });
     }
 
-    return check(pdata.m_fields.opt, true, false);
+    Kokkos::fence();
+    const auto time = timer.seconds()*1000.0;
+
+    return std::make_pair(check(pdata.m_fields.opt, true, false), time);
 }
 
 
 template <typename Real, typename TableType>
-bool evolve_optical_depth(
+std::pair<bool, double>
+evolve_optical_depth(
     ParticleData<Real>& pdata, const TableType& ref_table, Real dt, const int repetitions)
 {
+    Kokkos::Timer timer;
     for(int rr = 0; rr < repetitions; ++rr){
         const auto num_particles = pdata.num_particles;
         Kokkos::parallel_for("EvolveOpt", num_particles, KOKKOS_LAMBDA(int i){
@@ -101,12 +108,16 @@ bool evolve_optical_depth(
         });
     }
 
-    return check(pdata.m_fields.opt, true, false);
+    Kokkos::fence();
+    const auto time = timer.seconds()*1000.0;
+
+    return std::make_pair(check(pdata.m_fields.opt, true, false), time);
 }
 
 
 template <typename Real, typename TableType>
-bool generate_photons(
+std::pair<bool, double>
+generate_photons(
     ParticleData<Real>& pdata, const TableType& ref_table, const int repetitions,
     Kokkos::Random_XorShift64_Pool<>& rand_pool)
 {
@@ -115,6 +126,7 @@ bool generate_photons(
     auto photon_momentum = init_multi_comp_view_with_random_content<Real>(
         "photon_momentum", 0.0, 0.0, num_particles, rand_pool);
 
+    Kokkos::Timer timer;
     for(int rr = 0; rr < repetitions; ++rr){
         Kokkos::parallel_for("PhotEm", num_particles, KOKKOS_LAMBDA(int i){
             const auto px = pdata.m_momentum(i,0);
@@ -153,7 +165,12 @@ bool generate_photons(
         });
     }
 
-    return check_multi(photon_momentum, true, true) && check_multi(pdata.m_momentum, true, true);
+    Kokkos::fence();
+    const auto time = timer.seconds()*1000.0;
+
+    return std::make_pair(
+        check_multi(photon_momentum, true, true) && check_multi(pdata.m_momentum, true, true),
+        time);
 }
 
 
@@ -181,25 +198,29 @@ void do_test(Kokkos::Random_XorShift64_Pool<>& rand_pool)
     const auto dndt_table_view = dndt_table.get_view();
     const auto phot_em_table_view = phot_em_table.get_view();
 
-    const auto fill_opt_success =
+    bool fill_opt_success = false; double fill_opt_time = 0.0;
+    std::tie(fill_opt_success, fill_opt_time) =
         fill_opt_test<Real>(particle_data, how_many_repetitions, rand_pool);
 
     std::cout << ( fill_opt_success? "[ OK ]":"[ FAIL ]" )
-        << std::endl;
+        << "  Fill Optical Depth : " << fill_opt_time << " ms" << std::endl;
 
-    const auto evolve_opt_success =
+
+    bool evolve_opt_success = false; double evolve_opt_time = 0.0;
+    std::tie(evolve_opt_success, evolve_opt_time) =
         evolve_optical_depth<Real>(
             particle_data, dndt_table_view, dt_test, how_many_repetitions);
 
     std::cout << ( evolve_opt_success? "[ OK ]":"[ FAIL ]" )
-        << std::endl;
+        << "  Evolve Optical Depth : " << evolve_opt_time << " ms" << std::endl;
 
-    const auto phot_em_success =
+    bool phot_em_success = false; double phot_em_time = 0.0;
+    std::tie(phot_em_success, phot_em_time) =
         generate_photons<Real>(
             particle_data, phot_em_table_view, how_many_repetitions, rand_pool);
 
     std::cout << ( phot_em_success? "[ OK ]":"[ FAIL ]" )
-        << std::endl;
+        << "  Photon Emission : " << phot_em_time << " ms" << std::endl;
 }
 
 
