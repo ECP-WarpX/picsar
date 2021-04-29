@@ -11,5 +11,4 @@ brew update
 brew install boost
 brew install libomp
 brew install pybind11
-brew install llvm
 #brew install open-mpi
