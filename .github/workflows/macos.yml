@@ -8,7 +8,7 @@ env:
 jobs:
   # Build libamrex and all tutorials
   tutorials-macos:
-    name: AppleClang@11.0 GFortran@9.3 [tutorials]
+    name: Clang
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
@@ -16,6 +16,8 @@ jobs:
       run: .github/workflows/dependencies/dependencies_mac.sh
     - name: Build & Test
       run: |
+        export CC := clang
+	export CXX := clang++
         cmake -S multi_physics/QED                \
             -B build                              \
             -DCMAKE_VERBOSE_MAKEFILE=ON           \
