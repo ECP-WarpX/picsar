@@ -8,7 +8,7 @@ env:
 jobs:
   # Build libamrex and all tutorials
   tutorials-macos:
-    name: AppleClang@11.0 GFortran@9.3 [tutorials]
+    name: QED with tests, python bindings, Kokkos examples
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2

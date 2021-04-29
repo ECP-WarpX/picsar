@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   QED:
-    name: QED with tablegen [lib]
+    name: QED with tests, python bindings, Kokkos examples
     runs-on: ubuntu-20.04
     env: {CXXFLAGS: "-Werror -Wshadow -Woverloaded-virtual -Wunreachable-code"}
     steps:
