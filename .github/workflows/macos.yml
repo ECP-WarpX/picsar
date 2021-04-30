@@ -16,6 +16,7 @@ jobs:
       run: .github/workflows/dependencies/dependencies_mac.sh
     - name: Build & Test
       run: |
+        export PATH="/usr/local/opt/llvm/bin:$PATH"
         export CC=clang
         export CXX=clang++
         cmake -S multi_physics/QED                \
