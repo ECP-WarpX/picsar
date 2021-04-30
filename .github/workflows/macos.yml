@@ -4,6 +4,11 @@ on: [push, pull_request]
 
 env:
   CXXFLAGS: "-Werror -Wshadow -Woverloaded-virtual -Wunreachable-code"
+  CTEST_OUTPUT_ON_FAILURE: 1
+  LDFLAGS: "-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib"
+  CPPFLAGS: "-I/usr/local/opt/llvm/include"
+  CC: clang
+  CXX: clang++
 
 jobs:
   # Build libamrex and all tutorials
@@ -16,11 +21,6 @@ jobs:
       run: .github/workflows/dependencies/dependencies_mac.sh
     - name: Build & Test
       run: |
-        export LDFLAGS="-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib"
-        export CPPFLAGS="-I/usr/local/opt/llvm/include"
-        export PATH="/usr/local/opt/llvm/bin:$PATH"
-        export CC=clang
-        export CXX=clang++
         cmake -S multi_physics/QED                \
             -B build                              \
             -DCMAKE_VERBOSE_MAKEFILE=ON           \
