@@ -24,11 +24,12 @@ namespace picsar{
 namespace multi_physics{
 namespace containers{
 
+namespace details{
     //________________ Auxiliary functions _____________________________________
 
     // These auxiliary functions provide a way to check if an object of type
     // VectorType has a pxr_sync() method and call such method if this is the case.
-    // __aux_sync_vec(VectorType& vec) calls the right version of __aux_imp_sync_vec
+    // aux_sync_vec(VectorType& vec) calls the right version of aux_imp_sync_vec
     // (the one which does nothing or the one which calls vec.pxr_sync()) thanks to
     // SFINAE (Substitution Failure Is Not An Error) and overload resolution rules.
 
@@ -38,7 +39,7 @@ namespace containers{
     * template parameter in decltype(vec.pxr_sync(), void()) fails.
     * Therefore, this function specialization is discarded.
     * Otherwise, this function overload has priority over the other one below,
-    * since __aux_imp_sync_vec is called by __aux_sync_vec with an int as a
+    * since aux_imp_sync_vec is called by aux_sync_vec with an int as a
     * second argument. Therefore, this specialization is a better match.
     *
     * @tparam VectorType the vector type to be used (e.g. std::vector<double>)
@@ -47,7 +48,7 @@ namespace containers{
     */
     template<typename VectorType>
     inline auto
-    __aux_imp_sync_vec(VectorType& vec, int)
+    aux_imp_sync_vec(VectorType& vec, int)
       ->decltype(vec.pxr_sync(), void())
     {
       vec.pxr_sync();
@@ -63,7 +64,7 @@ namespace containers{
     */
     template<typename VectorType>
     inline auto
-    __aux_imp_sync_vec(VectorType&, long)
+    aux_imp_sync_vec(VectorType&, long)
       ->decltype(void())
     {}
 
@@ -76,12 +77,14 @@ namespace containers{
     */
     template<typename VectorType>
     inline void
-    __aux_sync_vec(VectorType& vec)
+    aux_sync_vec(VectorType& vec)
     {
-      __aux_imp_sync_vec(vec, int(1));
+      aux_imp_sync_vec(vec, int(1));
     }
 
     //__________________________________________________________________________
+
+}
 
     //________________ 1D equispaced table _____________________________________
 
@@ -112,7 +115,7 @@ namespace containers{
                 m_x_size = x_max - x_min;
                 m_dx = m_x_size/(m_how_many_x-1);
                  //VectorType may need a call to a user-defined method for CPU-GPU synchronization
-                __aux_sync_vec(m_values);
+                details::aux_sync_vec(m_values);
             }
 
         /**
@@ -164,7 +167,7 @@ namespace containers{
             std::copy(vals.begin(), vals.end(), m_values.begin());
 
             //VectorType may need a call to a user-defined method for CPU-GPU synchronization
-            __aux_sync_vec(m_values);
+            details::aux_sync_vec(m_values);
         }
 
         /**
@@ -329,7 +332,7 @@ namespace containers{
         {
             m_values[i] = what;
             //VectorType may need a call to a user-defined method for CPU-GPU synchronization
-            __aux_sync_vec(m_values);
+            details::aux_sync_vec(m_values);
         }
 
         /**
@@ -345,7 +348,7 @@ namespace containers{
                     and m_values length");
             std::copy(new_values.begin(), new_values.end(), m_values.begin());
             //VectorType may need a call to a user-defined method for CPU-GPU synchronization
-            __aux_sync_vec(m_values);
+            details::aux_sync_vec(m_values);
         }
 
 
@@ -422,7 +425,7 @@ namespace containers{
                 m_dx = m_x_size/(m_how_many_x-1);
                 m_dy = m_y_size/(m_how_many_y-1);
                 //VectorType may need a call to a user-defined method for CPU-GPU synchronization
-                 __aux_sync_vec(m_values);
+                details::aux_sync_vec(m_values);
             }
 
         /**
@@ -487,7 +490,7 @@ namespace containers{
                     m_how_many_x*m_how_many_y);
             std::copy(vals.begin(), vals.end(), m_values.begin());
             //VectorType may need a call to a user-defined method for CPU-GPU synchronization
-            __aux_sync_vec(m_values);
+            details::aux_sync_vec(m_values);
         }
 
         /**
@@ -799,7 +802,7 @@ namespace containers{
         {
             m_values[idx(i, j)] = what;
             //VectorType may need a call to a user-defined method for CPU-GPU synchronization
-            __aux_sync_vec(m_values);
+            details::aux_sync_vec(m_values);
         }
 
         /**
@@ -814,7 +817,7 @@ namespace containers{
         {
             m_values[i] = what;
             //VectorType may need a call to a user-defined method for CPU-GPU synchronization
-            __aux_sync_vec(m_values);
+            details::aux_sync_vec(m_values);
         }
 
         /**
@@ -830,7 +833,7 @@ namespace containers{
                     and m_values length");
             std::copy(new_values.begin(), new_values.end(), m_values.begin());
             //VectorType may need a call to a user-defined method for CPU-GPU synchronization
-            __aux_sync_vec(m_values);
+            details::aux_sync_vec(m_values);
         }
 
 
