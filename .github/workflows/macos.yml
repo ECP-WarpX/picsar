@@ -14,9 +14,9 @@ jobs:
     name: QED with tests, python bindings, Kokkos examples
     runs-on: macos-latest
     steps:
+    - uses: actions/checkout@v2
     - name: Dependencies
       run: .github/workflows/dependencies/dependencies_mac.sh
-    - uses: actions/checkout@v2
     - name: Build & Test
       run: |
         cmake -S multi_physics/QED                \
