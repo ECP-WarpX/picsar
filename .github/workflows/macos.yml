@@ -15,7 +15,7 @@ jobs:
   # Build libamrex and all tutorials
   tutorials-macos:
     name: QED with tests, python bindings, Kokkos examples
-    runs-on: macos-11
+    runs-on: macos-latest
     steps:
     - name: Dependencies
       run: .github/workflows/dependencies/dependencies_mac.sh
