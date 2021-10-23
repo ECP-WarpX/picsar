@@ -7,7 +7,6 @@ env:
   CTEST_OUTPUT_ON_FAILURE: 1
   CC: clang
   CXX: clang++
-  PATH: "/usr/local/opt/llvm/bin/:$PATH"
 
 jobs:
   # Build libamrex and all tutorials
@@ -20,6 +19,7 @@ jobs:
       run: .github/workflows/dependencies/dependencies_mac.sh
     - name: Build & Test
       run: |
+        export PATH="/usr/local/opt/llvm/bin/:$PATH"
         cmake -S multi_physics/QED                \
             -B build                              \
             -DCMAKE_VERBOSE_MAKEFILE=ON           \
