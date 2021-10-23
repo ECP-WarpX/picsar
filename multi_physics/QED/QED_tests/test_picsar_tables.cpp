@@ -387,7 +387,8 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_setall)
     auto tab_2d = make_2d_table();
     const auto val = 42.0;
     const auto vec = std::vector<double>(
-        tab_2d.get_how_many_x()*tab_2d.get_how_many_y(),
+        static_cast<std::size_t>(tab_2d.get_how_many_x())*
+        static_cast<std::size_t>(tab_2d.get_how_many_y()),
         val);
 
     tab_2d.set_all_vals(vec);
