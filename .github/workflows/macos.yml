@@ -7,7 +7,7 @@ env:
   CC: clang
   CXX: clang++
   CXXFLAGS: "-Werror -Wshadow -Woverloaded-virtual -Wunreachable-code -Wno-unused-parameter -I /usr/local/include -I/usr/local/opt/llvm/include"
-  CCFLAGS: "-I /usr/local/include -I/usr/local/opt/llvm/include"
+  CCFLAGS: "-Werror -Wshadow -Woverloaded-virtual -Wunreachable-code -Wno-unused-parameter -I /usr/local/include -I/usr/local/opt/llvm/include"
   LDFLAGS: "-L /usr/local/lib -L/usr/local/opt/llvm/lib"
 
 jobs:
