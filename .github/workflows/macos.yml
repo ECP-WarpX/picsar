@@ -7,6 +7,7 @@ env:
   CTEST_OUTPUT_ON_FAILURE: 1
   CC: clang
   CXX: clang++
+  PATH: "/usr/local/opt/llvm/bin/:$PATH"
 
 jobs:
   # Build libamrex and all tutorials
@@ -24,6 +25,6 @@ jobs:
             -DCMAKE_VERBOSE_MAKEFILE=ON           \
             -DPXRMP_QED_TEST=ON                   \
             -DPXRMP_KOKKOS_EXAMPLE=ON             \
-            -DKokkos_ENABLE_OPENMP=OFF
+            -DKokkos_ENABLE_OPENMP=ON
         cmake --build build -j 2
         cmake --build build --target test
