@@ -3,12 +3,11 @@ name: macos
 on: [push, pull_request]
 
 env:
-  CXXFLAGS: "-Werror -Wshadow -Woverloaded-virtual -Wunreachable-code"
   CTEST_OUTPUT_ON_FAILURE: 1
   CC: clang
   CXX: clang++
-  CFLAGS: "-I /usr/local/include -I/usr/local/opt/llvm/include"
-  CXXFLAGS: "-I /usr/local/include -I/usr/local/opt/llvm/include"
+  CXXFLAGS: "-Werror -Wshadow -Woverloaded-virtual -Wunreachable-code -I /usr/local/include -I/usr/local/opt/llvm/include"
+  CCFLAGS: "-Werror -Wshadow -Woverloaded-virtual -Wunreachable-code -I /usr/local/include -I/usr/local/opt/llvm/include"
   LDFLAGS: "-L /usr/local/lib -L/usr/local/opt/llvm/lib"
 
 jobs:
