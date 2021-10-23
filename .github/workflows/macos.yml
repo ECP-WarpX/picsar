@@ -24,6 +24,6 @@ jobs:
             -DCMAKE_VERBOSE_MAKEFILE=ON           \
             -DPXRMP_QED_TEST=ON                   \
             -DPXRMP_KOKKOS_EXAMPLE=ON             \
-            -DKokkos_ENABLE_OPENMP=ON
+            -DKokkos_ENABLE_OPENMP=OFF
         cmake --build build -j 2
         cmake --build build --target test
