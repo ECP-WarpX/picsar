@@ -784,6 +784,464 @@ namespace containers{
 
     //__________________________________________________________________________
 
+    //________________ 2D generic table _____________________________________
+
+    /**
+    * This class implements a generic 2D lookup table for a function f(x, y)
+    * The MapFunctorData struct must implement .deserialize() method, ::serialize(MapFunctorData) methods, and == operator). 
+    * It must also be trivially copiable.
+    *
+    * @tparam RealType the floating point type to be used (e.g. double or float)
+    * @tparam VectorType the vector type to be used (e.g. std::vector<double>)
+    * @tparam XMapFunctor a functor to map the index on the x axis to the corresponding coordinate x
+    * @tparam YMapFunctor a functor to map the index on the y axis to the corresponding coordinate y
+    * @tparam IXMapFunctor a functor to map the coordinate x to the corresponding index
+    * @tparam IYMapFunctor a functor to map the coordinate x to the corresponding index
+    * @tparam MapFunctorData a struct holding auxiliary data for map functions.
+    */
+    template <
+        typename RealType, class VectorType,
+        class XMapFunctor, class YMapFunctor, class IXMapFunctor, class IYMapFunctor, class MapFunctorData>
+    class generic_2d_table
+    {
+    public:
+
+        /**
+        * Constructor (not usable on GPUs)
+        *
+        * @param[in] how_many_x number of grid points along x
+        * @param[in] how_many_y number of grid points along y
+        * @param[in] values the values of the function that should be interpolated (row major order)
+        * @param[in] m_map_functor_data auxiliary data needed for map functors
+        */
+        generic_2d_table(
+            int how_many_x, int how_many_y,
+            VectorType values,
+            MapFunctorData map_functor_data):
+            m_how_many_x{how_many_x}, m_how_many_y{how_many_y},
+            m_values{values}
+            m_map_functor_data{map_functor_data}
+            {}
+
+        /**
+        * Empty constructor
+        */
+        constexpr
+        generic_2d_table(){}
+
+        /**
+        * Constructor from byte array (not usable on GPUs)
+        *
+        * @param[in] raw_data a const reference to a byte vector
+        */
+        generic_2d_table(const std::vector<char>& raw_data)
+        {
+            using namespace picsar::multi_physics::utils;
+
+            constexpr size_t min_size =
+                sizeof(char)+//double or float
+                sizeof(m_how_many_x)+
+                sizeof(m_how_many_y);
+
+            if (raw_data.size() < min_size)
+                throw std::runtime_error("Binary data is too small \
+                to be a 2D table.");
+
+            auto it_raw_data = raw_data.begin();
+
+            if (serialization::get_out<char>(it_raw_data) !=
+                static_cast<char>(sizeof(RealType))){
+                throw std::runtime_error("Mismatch between RealType \
+                used to write and to read the 1D table");
+            }
+
+            m_how_many_x =
+                serialization::get_out<decltype(m_how_many_x)>(it_raw_data);
+            m_how_many_y =
+                serialization::get_out<decltype(m_how_many_y)>(it_raw_data);
+            if(m_how_many_x <= 0)
+                throw std::runtime_error("raw_data contains invalid data.");
+            if(m_how_many_y <= 0)
+                throw std::runtime_error("raw_data contains invalid data.");
+            m_values = VectorType(m_how_many_x*m_how_many_y);
+            auto vals = serialization::get_n_out<RealType>(
+                    it_raw_data,
+                    m_how_many_x*m_how_many_y);
+            std::copy(vals.begin(), vals.end(), m_values.begin());
+
+            m_map_functor_data = MapFunctorData::deserialize(it_raw_data);
+        }
+
+        /**
+        * Operator ==
+        *
+        * @param[in] rhs a const reference to a 2D table of the same type
+        * @return true if rhs and *this are equal. false otherwise
+        */
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
+        bool operator== (
+            const generic_2d_table<
+                RealType, VectorType, XMapFunctor, YMapFunctor, IXMapFunctor, IYMapFunctor
+            > &rhs) const
+        {
+            return
+                (m_how_many_x == rhs.m_how_many_x) &&
+                (m_how_many_y == rhs.m_how_many_y) &&
+                (m_values == rhs.m_values) &&
+                (m_map_functor_data == rhs.m_map_functor_data);
+        }
+
+        /**
+        * Returns the i-th coodinate along x axis
+        *
+        * @param[in] i the index of the desired coordinate
+        * @return the i-th coordinate
+        */
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
+        RealType get_x_coord(int i) const noexcept
+        {
+            return XMapFunctor(i, m_map_functor_data);
+        }
+
+        /**
+        * Returns the j-th coodinate along y axis
+        *
+        * @param[in] j the index of the desired coordinate
+        * @return the j-th coordinate
+        */
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
+        RealType get_y_coord(int j) const noexcept
+        {
+            return YMapFunctor(j, m_map_functor_data);
+        }
+
+        /**
+        * Returns the function value at (i, j)
+        *
+        * @param[in] i the index of the desired value along x
+        * @param[in] j the index of the desired value along y
+        * @return the value at (i,j)
+        */
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
+        RealType get_val(int i, int j) const noexcept
+        {
+            return m_values[idx(i, j)];
+        }
+
+        /**
+        * Returns the number of points along x
+        *
+        * @return the number of points along x
+        */
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
+        int get_how_many_x() const noexcept
+        {
+            return m_how_many_x;
+        }
+
+        /**
+        * Returns the minimum x coordinate
+        *
+        * @return the minimum x coordinate
+        */
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
+        RealType get_x_min() const noexcept
+        {
+            return XMapFunctor(0, m_map_functor_data);
+        }
+
+        /**
+        * Returns the maximum x coordinate
+        *
+        * @return the maximum x coordinate
+        */
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
+        RealType get_x_max() const noexcept
+        {
+            return XMapFunctor(m_how_many_x-1, m_map_functor_data);
+        }
+
+        /**
+        * Returns the size along x
+        *
+        * @return the size along x
+        */
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
+        RealType get_x_size() const noexcept
+        {
+            return get_x_max() - get_x_min();
+        }
+
+        /**
+        * Returns the size of the steps along x between i and i+1
+        *
+        * @return the size of the steps along x
+        */
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
+        RealType get_dx(int i) const noexcept
+        {
+            return get_x_coord(i+1) - get_x_coord(i);
+        }
+
+        /**
+        * Returns the number of points along y
+        *
+        * @return the number of points along y
+        */
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
+        int get_how_many_y() const noexcept
+        {
+            return m_how_many_y;
+        }
+
+        /**
+        * Returns the minimum y coordinate
+        *
+        * @return the minimum y coordinate
+        */
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
+        RealType get_y_min() const noexcept
+        {
+            return YMapFunctor(0, m_map_functor_data);
+        }
+
+        /**
+        * Returns the maximum y coordinate
+        *
+        * @return the maximum y coordinate
+        */
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
+        RealType get_y_max() const noexcept
+        {
+            return YMapFunctor(m_how_many_y-1, m_map_functor_data);
+        }
+
+        /**
+        * Returns the size along y
+        *
+        * @return the size along y
+        */
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
+        RealType get_y_size() const noexcept
+        {
+            return get_y_max() - get_y_min();
+        }
+
+        /**
+        * Returns the size of the steps along y
+        *
+        * @return the size of the steps along y
+        */
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
+        RealType get_dy(int j) const noexcept
+        {
+            return get_y_coord(j+1) - get_y_coord(j);
+        }
+
+        /**
+        * Returns an std::vector containing all the coordinates (not usable on
+        * GPUs). Row major order is used.
+        *
+        * @return all the coordinates
+        */
+        std::vector<std::array<RealType,2>> get_all_coordinates() const noexcept
+        {
+            auto all_coords = std::vector<std::array<RealType,2>>(
+                m_how_many_x*m_how_many_y, {0,0});
+            int count = 0;
+            for (int i = 0; i < m_how_many_x; ++i){
+                for (int j = 0; j < m_how_many_y; ++j){
+                    all_coords[count][0] = get_x_coord(i);
+                    all_coords[count][1] = get_y_coord(j);
+                    count++;
+                }
+            }
+            return all_coords;
+        }
+
+        /**
+        * Returns a const reference to the underlying Vector holding value data
+        *
+        * @return a const reference to the underlying Vector holding value data
+        */
+        const VectorType& get_values_reference() const noexcept
+        {
+            return m_values;
+        }
+
+        /**
+        * Performs an interpolation a bilinear interpolation at given position.
+        *
+        * @param[in] where_x the position along x
+        * @param[in] where_y the position along y
+        * @return the result of the interpolation
+        */
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
+        RealType interp(const RealType where_x, const RealType where_y) const noexcept
+        {
+            using namespace picsar::multi_physics::math;
+
+            auto idx_x_left = static_cast<int>(
+                m_floor((m_how_many_x-1)*(where_x-m_x_min)/m_x_size));
+            if (idx_x_left == (m_how_many_x-1))
+                idx_x_left = m_how_many_x-2;
+            const auto idx_x_right = idx_x_left + 1;
+            auto idx_y_left = static_cast<int>(
+                m_floor((m_how_many_y-1)*(where_y-m_y_min)/m_y_size));
+            if (idx_y_left == (m_how_many_y-1))
+                idx_y_left = m_how_many_y-2;
+            const auto idx_y_right = idx_y_left + 1;
+
+            const auto xleft = get_x_coord(idx_x_left);
+            const auto xright = get_x_coord(idx_x_right);
+            const auto yleft = get_y_coord(idx_y_left);
+            const auto yright = get_y_coord(idx_y_right);
+            const auto f_xl_yl = m_values[idx(idx_x_left, idx_y_left)];
+            const auto f_xl_yr = m_values[idx(idx_x_left, idx_y_right)];
+            const auto f_xr_yl = m_values[idx(idx_x_right, idx_y_left)];
+            const auto f_xr_yr = m_values[idx(idx_x_right, idx_y_right)];
+
+            return utils::bilinear_interp(
+                xleft, xright, yleft, yright,
+                f_xl_yl, f_xl_yr, f_xr_yl, f_xr_yr,
+                where_x, where_y);
+        }
+
+        /**
+        * Performs an interpolation a linear interpolation at given position,
+        * in the special case in which the second coordinate is exactly a grid
+        * point along y
+        *
+        * @param[in] where_x the position along x
+        * @param[in] j the index of the position along y
+        * @return the result of the interpolation
+        */
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
+        RealType interp_first_coord(RealType where_x, int j) const noexcept
+        {
+            using namespace picsar::multi_physics::math;
+
+            auto idx_left = static_cast<int>(
+                m_floor((m_how_many_x-1)*(where_x-m_x_min)/m_x_size));
+            if (idx_left == (m_how_many_x-1))
+                idx_left = m_how_many_x-2;
+            const auto idx_right = idx_left + 1;
+
+            const auto xleft = idx_left*m_dx + m_x_min;
+            const auto xright = idx_right*m_dx + m_x_min;
+            const auto left_val = m_values[idx(idx_left,j)];
+            const auto right_val = m_values[idx(idx_right,j)];
+
+            return utils::linear_interp(xleft, xright, left_val, right_val, where_x);
+        }
+
+        /**
+        * Performs an interpolation a linear interpolation at given position,
+        * in the special case in which the first coordinate is exactly a grid
+        * point along x
+        *
+        * @param[in] i the position along x
+        * @param[in] where_y the position along y
+        * @return the result of the interpolation
+        */
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
+        RealType interp_second_coord(int i, RealType where_y) const noexcept
+        {
+            using namespace picsar::multi_physics::math;
+
+            auto idx_left = static_cast<int>(
+                m_floor((m_how_many_y-1)*(where_y-m_y_min)/m_y_size));
+            if (idx_left == (m_how_many_y-1))
+                idx_left = m_how_many_y-2;
+            const auto idx_right = idx_left + 1;
+
+            const auto left_val = m_values[idx(i, idx_left)];
+            const auto right_val = m_values[idx(i, idx_right)];
+            const auto yleft = idx_left*m_dy + m_y_min;
+            const auto yright = idx_right*m_dy + m_y_min;
+
+            return utils::linear_interp(yleft, yright, left_val, right_val, where_y);
+        }
+
+        /**
+        * Overwrites the (i,j) value (not designed for GPU usage)
+        * Warning: no safety check on i and j is performed!
+        *
+        * @param[in] i index of the value to be overwritten
+        * @param[in] j index of the value to be overwritten
+        * @param[in] what value to be written at position (i,j)
+        */
+        PXRMP_FORCE_INLINE
+        void set_val(const int i, const int j, const RealType what)
+        {
+            m_values[idx(i, j)] = what;
+        }
+
+        /**
+        * Overwrites the i-th value (not designed for GPU usage)
+        * Warning: no safety check on i is performed!
+        *
+        * @param[in] i index of the value to be overwritten
+        * @param[in] what value to be written at position i
+        */
+        PXRMP_FORCE_INLINE
+        void set_val(const int i, const RealType what)
+        {
+            m_values[i] = what;
+        }
+
+        /**
+        * Returns a byte vector containing all the raw data of the
+        * table (not usable on GPUs)
+        *
+        * @return a byte vector containing table data
+        */
+        std::vector<char> serialize() const
+        {
+            auto raw_data = std::vector<char>{};
+
+            utils::serialization::put_in(
+                static_cast<char>(sizeof(RealType)), raw_data);
+            utils::serialization::put_in(m_x_min, raw_data);
+            utils::serialization::put_in(m_x_max, raw_data);
+            utils::serialization::put_in(m_y_min, raw_data);
+            utils::serialization::put_in(m_y_max, raw_data);
+            utils::serialization::put_in(m_how_many_x, raw_data);
+            utils::serialization::put_in(m_how_many_y, raw_data);
+            utils::serialization::put_in(m_dx, raw_data);
+            utils::serialization::put_in(m_dy, raw_data);
+            for (auto val : m_values)
+                utils::serialization::put_in(val, raw_data);
+
+            return raw_data;
+        }
+
+    protected:
+
+            int m_how_many_x = 0; /* how many grid points along x */
+            int m_how_many_y = 0; /* how many grid points along y */
+            VectorType m_values; /* values f(x,y) */
+            MapFunctorData m_map_functor_data /* auxiliary data needed for map functions */
+
+        /**
+        * Function values are stored internally in a 1D vector.
+        * This function calculates the index along this vector
+        * from the coordinate indices i,j. Row major order is used.
+        *
+        * @param[in] i index along x
+        * @param[in] j index along y
+        * @return index along internal 1D vector
+        */
+        PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
+        int idx(int i, int j) const noexcept
+        {
+            return i*m_how_many_y + j;
+        }
+    };
+
+    //__________________________________________________________________________
+
+
 }
 }
 }
