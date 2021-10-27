@@ -55,6 +55,62 @@ const double ymax = 8.0;
 const int xsize = 100;
 const int ysize = 100;
 
+const double xswitch = 8.0;
+const double yswitch = 6.0;
+const int xfirst = 80;
+const int yfirst = 80;
+const double logxmin = std::log(xmin);
+const double logxswitch = std::log(xswitch);
+const double logymin = std::log(ymin);
+const double logyswitch = std::log(yswitch);
+
+const auto x_functor = [](int i)
+    {
+        if (i < xfirst){
+            return std::exp(logxmin + i*(logxswitch-logxmin)/(xfirst-1));
+        }
+        else{
+            return xswitch+((i+1)-xfirst)*(xmax-xswitch)/(xsize-xfirst);
+        }
+    };
+
+const auto y_functor = [](int j)
+    {
+        if (j < yfirst){
+            return std::exp(logymin + j*(logyswitch-logymin)/(yfirst -1));
+        }
+        else{
+            return yswitch+((j+1)-yfirst)*(ymax-yswitch)/(ysize-yfirst);
+        }
+    };
+
+
+const auto ix_functor = [](double x)
+    {
+        if (x < xswitch){
+            const auto logx = std::log(x);
+            return static_cast<int>(
+                std::round( (xfirst -1)*(logx-logxmin)/(logxswitch - logxmin)));
+        }
+        else{
+            return static_cast<int>(
+                std::floor(xfirst + (xsize-xfirst - 1)*(x-xswitch)/(xmax - xswitch)));
+        }
+    };
+
+const auto iy_functor = [](double y)
+    {
+        if (y < yswitch){
+            const auto logy = std::log(y);
+            return static_cast<int>(
+                std::round( (yfirst -1)*(logy-logymin)/(logyswitch - logymin)));
+        }
+        else{
+            return static_cast<int>(
+                std::floor(yfirst + (ysize-yfirst - 1)*(y-yswitch)/(ymax - yswitch)));
+        }
+    };
+
 equispaced_1d_table<double, std::vector<double> > make_1d_table()
 {
     std::vector<double> data(xsize);
@@ -80,6 +136,19 @@ equispaced_2d_table<double, std::vector<double> > make_2d_table()
 
     return equispaced_2d_table<double, std::vector<double>>(
         xmin, xmax, ymin, ymax, xsize, ysize, data);
+}
+
+auto make_generic_2d_table()
+{
+    auto tab = generic_2d_table<
+        double, std::vector<double>,
+        typeof(x_functor),typeof(y_functor),
+        typeof(ix_functor),typeof(iy_functor)>(
+            xsize, ysize,
+            std::vector<double>(xsize*ysize),
+            x_functor, y_functor, ix_functor, iy_functor);
+
+    return tab;
 }
 
 

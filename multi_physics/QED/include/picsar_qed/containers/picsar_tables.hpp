@@ -800,8 +800,10 @@ namespace containers{
     * @tparam MapFunctorData a struct holding auxiliary data for map functions.
     */
     template <
-        typename RealType, class VectorType,
-        class XMapFunctor, class YMapFunctor, class IXMapFunctor, class IYMapFunctor, class MapFunctorData>
+        typename RealType, typename VectorType,
+        typename XMapFunctor, typename YMapFunctor,
+        typename IXMapFunctor, typename IYMapFunctor,
+        typename MapFunctorData>
     class generic_2d_table
     {
     public:
@@ -817,10 +819,14 @@ namespace containers{
         generic_2d_table(
             int how_many_x, int how_many_y,
             VectorType values,
-            MapFunctorData map_functor_data):
+            XMapFunctor&& x_map_functor,
+            YMapFunctor&& y_map_functor,
+            IXMapFunctor&& ix_map_functor,
+            IYMapFunctor&& iy_map_functor):
             m_how_many_x{how_many_x}, m_how_many_y{how_many_y},
-            m_values{values}
-            m_map_functor_data{map_functor_data}
+            m_values{values},
+            m_x_map_functor{x_map_functor}, m_y_map_functor{y_map_functor},
+            m_ix_map_functor{iy_map_functor}, m_iy_map_functor{y_map_functor}
             {}
 
         /**
@@ -869,7 +875,10 @@ namespace containers{
                     m_how_many_x*m_how_many_y);
             std::copy(vals.begin(), vals.end(), m_values.begin());
 
-            m_map_functor_data = MapFunctorData::deserialize(it_raw_data);
+            m_x_map_functor = XMapFunctor::deserialize(it_raw_data);
+            m_y_map_functor = YMapFunctor::deserialize(it_raw_data);
+            m_ix_map_functor = IXMapFunctor::deserialize(it_raw_data);
+            m_iy_map_functor = IYMapFunctor::deserialize(it_raw_data);
         }
 
         /**
@@ -881,14 +890,17 @@ namespace containers{
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         bool operator== (
             const generic_2d_table<
-                RealType, VectorType, XMapFunctor, YMapFunctor, IXMapFunctor, IYMapFunctor
+                RealType, VectorType, XMapFunctor, YMapFunctor, IXMapFunctor, IYMapFunctor, MapFunctorData
             > &rhs) const
         {
             return
                 (m_how_many_x == rhs.m_how_many_x) &&
                 (m_how_many_y == rhs.m_how_many_y) &&
                 (m_values == rhs.m_values) &&
-                (m_map_functor_data == rhs.m_map_functor_data);
+                (m_x_map_functor == rhs.m_x_map_functor) &&
+                (m_y_map_functor == rhs.m_y_map_functor) &&
+                (m_ix_map_functor == rhs.m_ix_map_functor) &&
+                (m_iy_map_functor == rhs.m_iy_map_functor);
         }
 
         /**
@@ -900,7 +912,7 @@ namespace containers{
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_x_coord(int i) const noexcept
         {
-            return XMapFunctor(i, m_map_functor_data);
+            return m_x_map_functor(i);
         }
 
         /**
@@ -912,7 +924,7 @@ namespace containers{
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_y_coord(int j) const noexcept
         {
-            return YMapFunctor(j, m_map_functor_data);
+            return m_y_map_functor(j);
         }
 
         /**
@@ -947,7 +959,7 @@ namespace containers{
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_x_min() const noexcept
         {
-            return XMapFunctor(0, m_map_functor_data);
+            return m_x_map_functor(0);
         }
 
         /**
@@ -958,7 +970,7 @@ namespace containers{
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_x_max() const noexcept
         {
-            return XMapFunctor(m_how_many_x-1, m_map_functor_data);
+            return m_x_map_functor(m_how_many_x-1);
         }
 
         /**
@@ -1002,7 +1014,7 @@ namespace containers{
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_y_min() const noexcept
         {
-            return YMapFunctor(0, m_map_functor_data);
+            return m_y_map_functor(0);
         }
 
         /**
@@ -1013,7 +1025,7 @@ namespace containers{
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_y_max() const noexcept
         {
-            return YMapFunctor(m_how_many_y-1, m_map_functor_data);
+            return m_y_map_functor(m_how_many_y-1);
         }
 
         /**
@@ -1081,13 +1093,11 @@ namespace containers{
         {
             using namespace picsar::multi_physics::math;
 
-            auto idx_x_left = static_cast<int>(
-                m_floor((m_how_many_x-1)*(where_x-m_x_min)/m_x_size));
+            auto idx_x_left = m_ix_map_functor(where_x);
             if (idx_x_left == (m_how_many_x-1))
                 idx_x_left = m_how_many_x-2;
             const auto idx_x_right = idx_x_left + 1;
-            auto idx_y_left = static_cast<int>(
-                m_floor((m_how_many_y-1)*(where_y-m_y_min)/m_y_size));
+            auto idx_y_left = m_iy_map_functor(where_y);
             if (idx_y_left == (m_how_many_y-1))
                 idx_y_left = m_how_many_y-2;
             const auto idx_y_right = idx_y_left + 1;
@@ -1121,14 +1131,13 @@ namespace containers{
         {
             using namespace picsar::multi_physics::math;
 
-            auto idx_left = static_cast<int>(
-                m_floor((m_how_many_x-1)*(where_x-m_x_min)/m_x_size));
+            auto idx_left = m_ix_map_functor(where_x);
             if (idx_left == (m_how_many_x-1))
                 idx_left = m_how_many_x-2;
             const auto idx_right = idx_left + 1;
 
-            const auto xleft = idx_left*m_dx + m_x_min;
-            const auto xright = idx_right*m_dx + m_x_min;
+            const auto xleft = get_x_coord(idx_left);
+            const auto xright = get_x_coord(idx_right);
             const auto left_val = m_values[idx(idx_left,j)];
             const auto right_val = m_values[idx(idx_right,j)];
 
@@ -1149,16 +1158,15 @@ namespace containers{
         {
             using namespace picsar::multi_physics::math;
 
-            auto idx_left = static_cast<int>(
-                m_floor((m_how_many_y-1)*(where_y-m_y_min)/m_y_size));
+            auto idx_left = m_iy_map_functor(where_y);
             if (idx_left == (m_how_many_y-1))
                 idx_left = m_how_many_y-2;
             const auto idx_right = idx_left + 1;
 
             const auto left_val = m_values[idx(i, idx_left)];
             const auto right_val = m_values[idx(i, idx_right)];
-            const auto yleft = idx_left*m_dy + m_y_min;
-            const auto yright = idx_right*m_dy + m_y_min;
+            const auto yleft = get_y_coord(idx_left);
+            const auto yright = get_y_coord(idx_right);
 
             return utils::linear_interp(yleft, yright, left_val, right_val, where_y);
         }
@@ -1202,16 +1210,18 @@ namespace containers{
 
             utils::serialization::put_in(
                 static_cast<char>(sizeof(RealType)), raw_data);
-            utils::serialization::put_in(m_x_min, raw_data);
-            utils::serialization::put_in(m_x_max, raw_data);
-            utils::serialization::put_in(m_y_min, raw_data);
-            utils::serialization::put_in(m_y_max, raw_data);
             utils::serialization::put_in(m_how_many_x, raw_data);
             utils::serialization::put_in(m_how_many_y, raw_data);
-            utils::serialization::put_in(m_dx, raw_data);
-            utils::serialization::put_in(m_dy, raw_data);
-            for (auto val : m_values)
+            for (const auto val : m_values)
                 utils::serialization::put_in(val, raw_data);
+            for (const auto dd : m_x_map_functor.serialize())
+                utils::serialization::put_in(dd, raw_data);
+            for (const auto dd : m_y_map_functor.serialize())
+                utils::serialization::put_in(dd, raw_data);
+            for (const auto dd : m_ix_map_functor.serialize())
+                utils::serialization::put_in(dd, raw_data);
+            for (const auto dd : m_iy_map_functor.serialize())
+                utils::serialization::put_in(dd, raw_data);
 
             return raw_data;
         }
@@ -1221,7 +1231,10 @@ namespace containers{
             int m_how_many_x = 0; /* how many grid points along x */
             int m_how_many_y = 0; /* how many grid points along y */
             VectorType m_values; /* values f(x,y) */
-            MapFunctorData m_map_functor_data /* auxiliary data needed for map functions */
+            XMapFunctor m_x_map_functor;
+            YMapFunctor m_y_map_functor;
+            XMapFunctor m_ix_map_functor;
+            YMapFunctor m_iy_map_functor;
 
         /**
         * Function values are stored internally in a 1D vector.
