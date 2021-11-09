@@ -525,10 +525,10 @@ subroutine pxrpush_emrz_evec_multimode( &
 
      ! advance Etheta
 #ifndef WARPX
-  !$OMP DO COLLAPSE(2)
+  !$OMP DO
 #endif
 !$acc parallel deviceptr(Et,Bz,Br,Jt)
-!$acc loop gang vector collapse(2)
+!$acc loop gang vector
      do k   = tlo(2), thi(2)
        do j = tlo(1), thi(1)
          if (j /= 0) then
@@ -571,10 +571,10 @@ subroutine pxrpush_emrz_evec_multimode( &
 
      ! advance Ez
 #ifndef WARPX
-  !$OMP DO COLLAPSE(2)
+  !$OMP DO
 #endif
 !$acc parallel deviceptr(Ez,Br,Bt,Jz)
-!$acc loop gang vector collapse(2)
+!$acc loop gang vector
      do k   = zlo(2), zhi(2)
        do j = zlo(1), zhi(1)
          if (j /= 0) then

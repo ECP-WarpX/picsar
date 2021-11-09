@@ -51,7 +51,7 @@ CC=mpicc
 CPP=mpic++
 
 # Fortran compiler arguments
-FARGS= -g -fbounds-check -O3 -fopenmp -JModules
+FARGS= -g -fbounds-check -O3 -fopenmp -JModules -fallow-argument-mismatch
 # C compiler Arguments
 CARGS= -g -O3 -fopenmp
 # C++ compiler Arguments
@@ -258,34 +258,34 @@ ifeq ($(COMP),gnu)
 
   ifeq ($(MODE),prod)
 	  FC=mpif90
-	  FARGS= -O3 -fopenmp -JModules -ftree-vectorize
+	  FARGS= -O3 -fopenmp -JModules -ftree-vectorize -fallow-argument-mismatch
 	  #-ftree-vectorize -ffast-math -ftree-vectorizer-verbose=2 -fopt-info
 	  #FARGS=-g
 	else ifeq ($(MODE),debug)
 	  FC=mpif90
-	  FARGS= -O3 -fopenmp -g -JModules -Wunused-variable -fcheck=bound -ftree-vectorize
+	  FARGS= -O3 -fopenmp -g -JModules -Wunused-variable -fcheck=bound -ftree-vectorize -fallow-argument-mismatch
 	else ifeq ($(MODE),prod_spectral)
 	  FC=mpif90
-	  FARGS= -O3 -fopenmp -JModules -ftree-vectorize
+	  FARGS= -O3 -fopenmp -JModules -ftree-vectorize -fallow-argument-mismatch
 	else ifeq ($(MODE),debug_spectral)
 	  FC=mpif90
-	  FARGS= -O3 -fopenmp -JModules -Wunused-variable -ftree-vectorize
+	  FARGS= -O3 -fopenmp -JModules -Wunused-variable -ftree-vectorize -fallow-argument-mismatch
 	else ifeq ($(MODE),dev)
 	  FC=mpif90
-	  FARGS= -O3 -D DEV=1 -fopenmp -JModules -ftree-vectorize
+	  FARGS= -O3 -D DEV=1 -fopenmp -JModules -ftree-vectorize -fallow-argument-mismatch
 	  #-ftree-vectorize -ffast-math -ftree-vectorizer-verbose=2 -fopt-info
 	  #FARGS=-g
 	else ifeq ($(MODE),devdebug)
 	  FC=mpif90
-	  FARGS= -O3 -D DEV=1 -fopenmp -g -JModules  -Wunused-variable -fcheck=bound -ftree-vectorize
+	  FARGS= -O3 -D DEV=1 -fopenmp -g -JModules  -Wunused-variable -fcheck=bound -ftree-vectorize -fallow-argument-mismatch
 	  #-ftree-vectorize -ffast-math -ftree-vectorizer-verbose=2 -fopt-info
 	  #FARGS=-g
 	else ifeq ($(MODE),novec)
 	  FC=mpif90
-	  FARGS= -D NOVEC=0 -O3 -fopenmp -JModules
+	  FARGS= -D NOVEC=0 -O3 -fopenmp -JModules -fallow-argument-mismatch
         else ifeq ($(MODE),library)
           FC=mpif90
-          FARGS= -O3 -fopenmp -JModules -ftree-vectorize -fPIC
+          FARGS= -O3 -fopenmp -JModules -ftree-vectorize -fPIC -fallow-argument-mismatch
 	endif
 
 	# ___ Architecture ________
