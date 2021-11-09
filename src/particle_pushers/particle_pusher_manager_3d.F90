@@ -53,7 +53,7 @@ SUBROUTINE field_gathering_plus_particle_pusher
   USE mpi
   USE params, ONLY: dt, fg_p_pp_separated
   USE particle_properties, ONLY: nspecies, particle_pusher
-  USE picsar_precision, ONLY: idp
+  USE picsar_precision, ONLY: idp, lp
   USE shared_data, ONLY: c_dim, dx, dy, dz, nx, ny, nz
   IMPLICIT NONE
 
@@ -301,7 +301,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg
               curr_tile%nx_cells_tile, curr_tile%ny_cells_tile,                       &
               curr_tile%nz_cells_tile, nxjg, nyjg, nzjg, noxx, noyy, nozz,            &
               extile, eytile, eztile, bxtile, bytile,                                 &
-              bztile, .FALSE., l_lower_order_in_v_in, LVEC_fieldgathe,                &
+              bztile, logical(.FALSE., lp), l_lower_order_in_v_in, LVEC_fieldgathe,                &
               fieldgathe)
 
             CASE DEFAULT! 3D CASE
@@ -315,7 +315,7 @@ SUBROUTINE field_gathering_plus_particle_pusher_sub(exg, eyg, ezg, bxg, byg, bzg
               curr_tile%nx_cells_tile, curr_tile%ny_cells_tile,                       &
               curr_tile%nz_cells_tile, nxjg, nyjg, nzjg, noxx, noyy, nozz,            &
               extile, eytile, eztile, bxtile, bytile,                                 &
-              bztile , .FALSE., l_lower_order_in_v_in, lvec_fieldgathe,               &
+              bztile , logical(.FALSE., lp), l_lower_order_in_v_in, lvec_fieldgathe,               &
               fieldgathe)
             END SELECT
 
