@@ -55,14 +55,20 @@ const double ymax = 8.0;
 const int xsize = 100;
 const int ysize = 100;
 
-const double xswitch = 8.0;
-const double yswitch = 6.0;
-const int xfirst = 80;
-const int yfirst = 80;
-const double logxmin = std::log(xmin);
-const double logxswitch = std::log(xswitch);
-const double logymin = std::log(ymin);
-const double logyswitch = std::log(yswitch);
+const int gxsize = 100;
+const int gysize = 100;
+const double gxmin = 1e-12;
+const double gxmax = 10.0;
+const double gymin = 1e-10;
+const double gymax = 8.0;
+const double gxswitch = 8.0;
+const double gyswitch = 6.0;
+const int gxfirst = 80;
+const int gyfirst = 80;
+const double glogxmin = std::log(gxmin);
+const double glogxswitch = std::log(gxswitch);
+const double glogymin = std::log(gymin);
+const double glogyswitch = std::log(gyswitch);
 
 const auto x_functor = [](int i)
     {
@@ -138,15 +144,25 @@ equispaced_2d_table<double, std::vector<double> > make_2d_table()
         xmin, xmax, ymin, ymax, xsize, ysize, data);
 }
 
+using Generic2DTableType = generic_2d_table<
+        double, std::vector<double>,
+        decltype(x_functor), decltype(y_functor),
+        decltype(ix_functor), decltype(iy_functor)>;
+
 auto make_generic_2d_table()
 {
-    auto tab = generic_2d_table<
-        double, std::vector<double>,
-        typeof(x_functor),typeof(y_functor),
-        typeof(ix_functor),typeof(iy_functor)>(
+    auto tab = Generic2DTableType(
             xsize, ysize,
             std::vector<double>(xsize*ysize),
             x_functor, y_functor, ix_functor, iy_functor);
+
+    const auto coords = tab.get_all_coordinates();
+    auto vals = std::vector<double>(coords.size());
+
+    int i = 0;
+    for (const auto cc : coords){
+        tab.set_val(i++, linear_function(cc[0], cc[1]));
+    }
 
     return tab;
 }
@@ -337,6 +353,31 @@ void check_table_2d_interp_one_coord(
     }
 }
 
+void check_generic_table_2d(
+    const Generic2DTableType& tab)
+{
+    const auto rxmin = tab.get_x_min();
+    BOOST_CHECK_EQUAL(rxmin, xmin);
+    const auto rxmax = tab.get_x_max();
+    BOOST_CHECK_EQUAL(rxmax, xmax);
+    const auto rhowmany_x =  tab.get_how_many_x();
+    BOOST_CHECK_EQUAL(rhowmany_x, xsize);
+    const auto rxsize =  tab.get_x_size();
+    BOOST_CHECK_EQUAL(rxsize, xmax-xmin);
+    //const auto rdx =  tab.get_dx();
+    //BOOST_CHECK_EQUAL(rdx, (xmax-xmin)/(rhowmany_x-1));
+    const auto rymin = tab.get_y_min();
+    BOOST_CHECK_EQUAL(rymin, ymin);
+    const auto rymax = tab.get_y_max();
+    BOOST_CHECK_EQUAL(rymax, ymax);
+    const auto rhowmany_y =  tab.get_how_many_y();
+    BOOST_CHECK_EQUAL(rhowmany_y, ysize);
+    const auto rysize =  tab.get_y_size();
+    BOOST_CHECK_EQUAL(rysize, ymax-ymin);
+    //const auto rdy =  tab.get_dy();
+    //BOOST_CHECK_EQUAL(rdy, (ymax-ymin)/(rhowmany_y-1));
+}
+
 // ***Test equispaced_1d_table constructor and getters
 BOOST_AUTO_TEST_CASE( picsar_equispaced_1d_table_constructor_getters)
 {
@@ -457,4 +498,16 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_serialization)
         BOOST_CHECK_EQUAL(tab_2d.get_values_reference()[i],
             tab_2d_2.get_values_reference()[i]);
     }
+}
+
+// ***Test generic_2d_table constructor and getters
+BOOST_AUTO_TEST_CASE( picsar_generic_2d_table_constructor_getters)
+{
+    auto gtab_2d = make_generic_2d_table();
+    const auto const_gtab_2d = make_generic_2d_table();
+    auto copy_gtab_2d = gtab_2d;
+
+    check_generic_table_2d(gtab_2d);
+    //check_generic_table_2d(const_gtab_2d);
+    //check_generic_table_2d(copy_gtab_2d);
 }

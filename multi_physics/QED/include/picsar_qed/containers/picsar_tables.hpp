@@ -802,8 +802,7 @@ namespace containers{
     template <
         typename RealType, typename VectorType,
         typename XMapFunctor, typename YMapFunctor,
-        typename IXMapFunctor, typename IYMapFunctor,
-        typename MapFunctorData>
+        typename IXMapFunctor, typename IYMapFunctor>
     class generic_2d_table
     {
     public:
@@ -819,14 +818,14 @@ namespace containers{
         generic_2d_table(
             int how_many_x, int how_many_y,
             VectorType values,
-            XMapFunctor&& x_map_functor,
-            YMapFunctor&& y_map_functor,
-            IXMapFunctor&& ix_map_functor,
-            IYMapFunctor&& iy_map_functor):
+            XMapFunctor x_map_functor,
+            YMapFunctor y_map_functor,
+            IXMapFunctor ix_map_functor,
+            IYMapFunctor iy_map_functor):
             m_how_many_x{how_many_x}, m_how_many_y{how_many_y},
             m_values{values},
             m_x_map_functor{x_map_functor}, m_y_map_functor{y_map_functor},
-            m_ix_map_functor{iy_map_functor}, m_iy_map_functor{y_map_functor}
+            m_ix_map_functor{ix_map_functor}, m_iy_map_functor{iy_map_functor}
             {}
 
         /**
@@ -890,8 +889,9 @@ namespace containers{
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         bool operator== (
             const generic_2d_table<
-                RealType, VectorType, XMapFunctor, YMapFunctor, IXMapFunctor, IYMapFunctor, MapFunctorData
-            > &rhs) const
+                RealType, VectorType,
+                XMapFunctor, YMapFunctor,
+                IXMapFunctor, IYMapFunctor> &rhs) const
         {
             return
                 (m_how_many_x == rhs.m_how_many_x) &&
@@ -1233,8 +1233,8 @@ namespace containers{
             VectorType m_values; /* values f(x,y) */
             XMapFunctor m_x_map_functor;
             YMapFunctor m_y_map_functor;
-            XMapFunctor m_ix_map_functor;
-            YMapFunctor m_iy_map_functor;
+            IXMapFunctor m_ix_map_functor;
+            IYMapFunctor m_iy_map_functor;
 
         /**
         * Function values are stored internally in a 1D vector.
