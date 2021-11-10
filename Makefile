@@ -40,6 +40,7 @@ SYS=default
 # - ivy
 # - hsw
 # - host
+# - a64fx (only supported for fujitsu compiler)
 ARCH=
 
 
