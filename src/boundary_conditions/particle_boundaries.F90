@@ -455,11 +455,11 @@ MODULE particle_boundary
     ENDIF
 
     ALLOCATE(partpid(npid))
-    !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr, ispecies, nx0_grid_tile,            &
-    !$OMP ny0_grid_tile, nz0_grid_tile, ipx, ipy, ipz, partx, party, partz, partux,   &
-    !$OMP partuy, partuz, gaminv, partpid, indx, indy, indz, nptile, curr_tile)       &
-    !$OMP SHARED(nspecies, npid, nthreads_loop2, species_parray, ntilex, ntiley,      &
-    !$OMP ntilez, x_min_local, y_min_local, z_min_local, x_min_local_part,            &
+    !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(ix, iy, iz, i, curr, ispecies,            &
+    !$OMP nx0_grid_tile, ny0_grid_tile, nz0_grid_tile, ipx, ipy, ipz, partx, party,   &
+    !$OMP partz, partux, partuy, partuz, gaminv, partpid, indx, indy, indz, nptile    &
+    !$OMP , curr_tile) SHARED(nspecies, npid, nthreads_loop2, species_parray, ntilex, &
+    !$OMP  ntiley, ntilez, x_min_local, y_min_local, z_min_local, x_min_local_part,   &
     !$OMP y_min_local_part, z_min_local_part, x_max_local_part, y_max_local_part,     &
     !$OMP z_max_local_part, dx, dy, dz) NUM_THREADS(nthreads_loop1)
     DO ispecies=1, nspecies! LOOP ON SPECIES
@@ -644,7 +644,7 @@ MODULE particle_boundary
     ENDIF
     ALLOCATE(partpid(npid))
     iy=1
-    !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr, ispecies, nx0_grid_tile,            &
+    !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(ix, iz, i, curr, ispecies, nx0_grid_tile, &
     !$OMP ny0_grid_tile, nz0_grid_tile, ipx, ipz, partx, party, partz, partux,        &
     !$OMP partuy, partuz, gaminv, partpid, indx, indy, indz, curr_tile, nptile)       &
     !$OMP SHARED(iy, nspecies, npid, nthreads_loop2, species_parray, ntilex, ntiley,  &
@@ -2192,8 +2192,8 @@ ALLOCATE(mpi_npart(27, nspecies))
 ALLOCATE(tilebuf(ntilex, ntiley, ntilez, nspecies))
 ALLOCATE(partpid(npid))
 
-!$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr, is, ib, k, nx0_grid_tile,               &
-!$OMP ny0_grid_tile, nz0_grid_tile, ipx, ipy, ipz, nx0_grid_tile_dx,                  &
+!$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(ix, iy, iz, i, i2, i3, curr, is, ib, k,       &
+!$OMP  nx0_grid_tile, ny0_grid_tile, nz0_grid_tile, ipx, ipy, ipz, nx0_grid_tile_dx,  &
 !$OMP ny0_grid_tile_dy, nz0_grid_tile_dz, xbd, ybd, zbd, gaminv, partpid, indx, indy, &
 !$OMP indz, partx, party, partz, curr_tile, nptile, partux, partuy, partuz, j)        &
 !$OMP SHARED(npid, nspecies, nthreads_loop2, species_parray, ntilex, ntiley, ntilez,  &
@@ -2204,7 +2204,8 @@ ALLOCATE(partpid(npid))
 !$OMP z_min_boundary_part, z_max_boundary_part, pbound_x_min, pbound_x_max,           &
 !$OMP pbound_y_min, pbound_y_max, pbound_z_min, pbound_z_max, x_min_local,            &
 !$OMP y_min_local, z_min_local, x_max_local_part, y_max_local_part, z_max_local_part, &
-!$OMP dx, dy, dz, mpi_npart, tilebuf, mpi_buf_size, lvect)                            &
+!$OMP dx, dy, dz, mpi_npart, tilebuf, mpi_buf_size, lvect, new_mpi_buf_size,          &
+!$OMP old_mpi_buf_size) &
 !$OMP NUM_THREADS(nthreads_loop1)
 ! LOOP ON SPECIES
 DO is=1, nspecies
@@ -2613,9 +2614,9 @@ write(0, *) "Part 2 - Creation of the send buffer for the MPI communications"
 ALLOCATE(bufsend(MAXVAL(mpi_npart(:, :)), 7+npid, 27, nspecies))
 
 !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(curr, is, nx0_grid_tile, ny0_grid_tile,       &
-!$OMP nz0_grid_tile, ipx, ipy, ipz, ib, k, j) SHARED(nspecies, npid, nthreads_loop2,  &
-!$OMP species_parray, ntilex, ntiley, ntilez, dx, dy, dz, mpi_npart, bufsend,         &
-!$OMP tilebuf) NUM_THREADS(nthreads_loop1)
+!$OMP nz0_grid_tile, ipx, ipy, ipz, ib, k, j, ix, iy, iz, xbd, ybd, zbd)              &
+!$OMP SHARED(nspecies, npid, nthreads_loop2, species_parray, ntilex, ntiley, ntilez,  &
+!$OMP dx, dy, dz, mpi_npart, bufsend, tilebuf) NUM_THREADS(nthreads_loop1)
 DO is=1, nspecies! LOOP ON SPECIES
 
 mpi_npart(:, is) = 0
