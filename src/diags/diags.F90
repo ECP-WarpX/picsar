@@ -492,7 +492,7 @@ MODULE diagnostics
     ! Loop over the tiles
     !$OMP PARALLEL DO COLLAPSE(3) SCHEDULE(runtime) DEFAULT(NONE) &
     !$OMP SHARED(curr, ntilex,ntiley,ntilez) &
-    !$OMP PRIVATE(ix,iy,iz,is,curr_tile) &
+    !$OMP PRIVATE(ix,iy,iz,curr_tile) &
     !$OMP reduction(+:nptot_loc)
     DO iz=1, ntilez
       DO iy=1, ntiley
