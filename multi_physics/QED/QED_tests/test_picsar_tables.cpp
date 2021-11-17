@@ -55,12 +55,12 @@ const double ymax = 8.0;
 const int xsize = 100;
 const int ysize = 100;
 
-const int gxsize = 100;
-const int gysize = 100;
+const int gxsize = 105;
+const int gysize = 105;
 const double gxmin = 1e-12;
-const double gxmax = 10.0;
+const double gxmax = 11.0;
 const double gymin = 1e-10;
-const double gymax = 8.0;
+const double gymax = 9.0;
 const double gxswitch = 8.0;
 const double gyswitch = 6.0;
 const int gxfirst = 80;
@@ -72,48 +72,48 @@ const double glogyswitch = std::log(gyswitch);
 
 const auto x_functor = [](int i)
     {
-        if (i < xfirst){
-            return std::exp(logxmin + i*(logxswitch-logxmin)/(xfirst-1));
+        if (i < gxfirst){
+            return std::exp(glogxmin + i*(glogxswitch-glogxmin)/(gxfirst-1));
         }
         else{
-            return xswitch+((i+1)-xfirst)*(xmax-xswitch)/(xsize-xfirst);
+            return gxswitch+((i+1)-gxfirst)*(gxmax-gxswitch)/(xsize-gxfirst);
         }
     };
 
 const auto y_functor = [](int j)
     {
-        if (j < yfirst){
-            return std::exp(logymin + j*(logyswitch-logymin)/(yfirst -1));
+        if (j < gyfirst){
+            return std::exp(glogymin + j*(glogyswitch-glogymin)/(gyfirst -1));
         }
         else{
-            return yswitch+((j+1)-yfirst)*(ymax-yswitch)/(ysize-yfirst);
+            return gyswitch+((j+1)-gyfirst)*(gymax-gyswitch)/(ysize-gyfirst);
         }
     };
 
 
 const auto ix_functor = [](double x)
     {
-        if (x < xswitch){
+        if (x < gxswitch){
             const auto logx = std::log(x);
             return static_cast<int>(
-                std::round( (xfirst -1)*(logx-logxmin)/(logxswitch - logxmin)));
+                std::round( (gxfirst -1)*(logx-glogxmin)/(glogxswitch - glogxmin)));
         }
         else{
             return static_cast<int>(
-                std::floor(xfirst + (xsize-xfirst - 1)*(x-xswitch)/(xmax - xswitch)));
+                std::floor(gxfirst + (gxsize-gxfirst - 1)*(x-gxswitch)/(gxmax - gxswitch)));
         }
     };
 
 const auto iy_functor = [](double y)
     {
-        if (y < yswitch){
+        if (y < gyswitch){
             const auto logy = std::log(y);
             return static_cast<int>(
-                std::round( (yfirst -1)*(logy-logymin)/(logyswitch - logymin)));
+                std::round( (gyfirst -1)*(logy-glogymin)/(glogyswitch - glogymin)));
         }
         else{
             return static_cast<int>(
-                std::floor(yfirst + (ysize-yfirst - 1)*(y-yswitch)/(ymax - yswitch)));
+                std::floor(gyfirst + (gysize-gyfirst - 1)*(y-gyswitch)/(gymax - gyswitch)));
         }
     };
 
@@ -152,8 +152,8 @@ using Generic2DTableType = generic_2d_table<
 auto make_generic_2d_table()
 {
     auto tab = Generic2DTableType(
-            xsize, ysize,
-            std::vector<double>(xsize*ysize),
+            gxsize, gysize,
+            std::vector<double>(gxsize*gysize),
             x_functor, y_functor, ix_functor, iy_functor);
 
     const auto coords = tab.get_all_coordinates();
@@ -357,23 +357,23 @@ void check_generic_table_2d(
     const Generic2DTableType& tab)
 {
     const auto rxmin = tab.get_x_min();
-    BOOST_CHECK_EQUAL(rxmin, xmin);
+    BOOST_CHECK_EQUAL(rxmin, gxmin);
     const auto rxmax = tab.get_x_max();
-    BOOST_CHECK_EQUAL(rxmax, xmax);
+    BOOST_CHECK_EQUAL(rxmax, gxmax);
     const auto rhowmany_x =  tab.get_how_many_x();
-    BOOST_CHECK_EQUAL(rhowmany_x, xsize);
+    BOOST_CHECK_EQUAL(rhowmany_x, gxsize);
     const auto rxsize =  tab.get_x_size();
-    BOOST_CHECK_EQUAL(rxsize, xmax-xmin);
+    BOOST_CHECK_EQUAL(rxsize, gxmax-gxmin);
     //const auto rdx =  tab.get_dx();
     //BOOST_CHECK_EQUAL(rdx, (xmax-xmin)/(rhowmany_x-1));
     const auto rymin = tab.get_y_min();
-    BOOST_CHECK_EQUAL(rymin, ymin);
+    BOOST_CHECK_EQUAL(rymin, gymin);
     const auto rymax = tab.get_y_max();
-    BOOST_CHECK_EQUAL(rymax, ymax);
+    BOOST_CHECK_EQUAL(rymax, gymax);
     const auto rhowmany_y =  tab.get_how_many_y();
-    BOOST_CHECK_EQUAL(rhowmany_y, ysize);
+    BOOST_CHECK_EQUAL(rhowmany_y, gysize);
     const auto rysize =  tab.get_y_size();
-    BOOST_CHECK_EQUAL(rysize, ymax-ymin);
+    BOOST_CHECK_EQUAL(rysize, gymax-gymin);
     //const auto rdy =  tab.get_dy();
     //BOOST_CHECK_EQUAL(rdy, (ymax-ymin)/(rhowmany_y-1));
 }
@@ -508,6 +508,6 @@ BOOST_AUTO_TEST_CASE( picsar_generic_2d_table_constructor_getters)
     auto copy_gtab_2d = gtab_2d;
 
     check_generic_table_2d(gtab_2d);
-    //check_generic_table_2d(const_gtab_2d);
-    //check_generic_table_2d(copy_gtab_2d);
+    check_generic_table_2d(const_gtab_2d);
+    check_generic_table_2d(copy_gtab_2d);
 }
