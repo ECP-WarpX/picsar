@@ -8,14 +8,16 @@
 #include <boost/test/tools/floating_point_comparison.hpp>
 
 #include <picsar_qed/containers/picsar_tables.hpp>
-
 #include <picsar_qed/containers/picsar_span.hpp>
+#include <picsar_qed/utils/serialization.hpp>
 
 #include <vector>
 #include <algorithm>
 #include <array>
 
 using namespace picsar::multi_physics::containers;
+
+namespace pxr_ser = picsar::multi_physics::utils::serialization;
 
 //Tolerance for double precision calculations
 const double double_tolerance = 1.0e-12;
@@ -70,52 +72,171 @@ const double glogxswitch = std::log(gxswitch);
 const double glogymin = std::log(gymin);
 const double glogyswitch = std::log(gyswitch);
 
-const auto x_functor = [](int i)
+class Functor
+{
+    public:
+
+    Functor(){};
+
+    Functor(const int zsize, const int zfirst,
+        const double zmin, const double zmax, const double zswitch):
+        m_zsize{zsize}, m_zfirst{zfirst},
+        m_zmin{zmin}, m_zmax{zmax}, m_zswitch{zswitch}
     {
-        if (i < gxfirst){
-            return std::exp(glogxmin + i*(glogxswitch-glogxmin)/(gxfirst-1));
+        m_logzmin = std::log(m_zmin);
+        m_logzswitch = std::log(m_zswitch);
+    }
+
+    double operator() (const int i) const
+    {
+        if (i < m_zfirst){
+            return std::exp(m_logzmin + i*(m_logzswitch-m_logzmin)/(m_zfirst-1));
         }
         else{
-            return gxswitch+((i+1)-gxfirst)*(gxmax-gxswitch)/(xsize-gxfirst);
+            return m_zswitch+((i+1)-m_zfirst)*(m_zmax-m_zswitch)/(m_zsize-m_zfirst);
         }
-    };
+    }
 
-const auto y_functor = [](int j)
+    bool operator== (const Functor& rhs) const
     {
-        if (j < gyfirst){
-            return std::exp(glogymin + j*(glogyswitch-glogymin)/(gyfirst -1));
+        return
+            (this->m_zsize == rhs.m_zsize) &&
+            (this->m_zfirst == rhs.m_zfirst) &&
+            (this->m_zmin == rhs.m_zmin) &&
+            (this->m_logzmin == rhs.m_logzmin) &&
+            (this->m_zmax == rhs.m_zmax) &&
+            (this->m_zswitch == rhs.m_zswitch) &&
+            (this->m_logzswitch == rhs.m_logzswitch);
+    }
+
+    std::vector<char> serialize() const
+    {
+        std::vector<char> raw;
+
+        pxr_ser::put_in(m_zsize, raw);
+        pxr_ser::put_in(m_zfirst, raw);
+        pxr_ser::put_in(m_zmin, raw);
+        pxr_ser::put_in(m_logzmin, raw);
+        pxr_ser::put_in(m_zmax, raw);
+        pxr_ser::put_in(m_zswitch, raw);
+        pxr_ser::put_in(m_logzswitch, raw);
+
+        return raw;
+    }
+
+    template<typename Iter>
+    static Functor deserialize(Iter& it)
+    {
+        auto functor = Functor{};
+
+        functor.m_zsize = pxr_ser::get_out<int>(it);
+        functor.m_zfirst = pxr_ser::get_out<int>(it);
+        functor.m_zmin = pxr_ser::get_out<double>(it);
+        functor.m_logzmin = pxr_ser::get_out<double>(it);
+        functor.m_zmax = pxr_ser::get_out<double>(it);
+        functor.m_zswitch = pxr_ser::get_out<double>(it);
+        functor.m_logzswitch = pxr_ser::get_out<double>(it);
+
+        return functor;
+    }
+
+    private:
+
+    int m_zsize;
+    int m_zfirst;
+    double m_zmin;
+    double m_logzmin;
+    double m_zmax;
+    double m_zswitch;
+    double m_logzswitch;
+};
+
+class IFunctor
+{
+    public:
+
+    IFunctor(){};
+
+    IFunctor(const int zsize, const int zfirst,
+        const double zmin, const double zmax, const double zswitch):
+        m_zsize{zsize}, m_zfirst{zfirst},
+        m_zmin{zmin}, m_zmax{zmax}, m_zswitch{zswitch}
+    {
+        m_logzmin = std::log(m_zmin);
+        m_logzswitch = std::log(m_zswitch);
+    }
+
+    int operator() (const double z) const
+    {
+        if (z < m_zswitch){
+            const auto logz = std::log(z);
+            return static_cast<int>(
+                std::round( (m_zfirst -1)*(logz-m_logzmin)/(m_logzswitch - m_logzmin)));
         }
         else{
-            return gyswitch+((j+1)-gyfirst)*(gymax-gyswitch)/(ysize-gyfirst);
+            return static_cast<int>(
+                std::floor(m_zfirst + (m_zsize-m_zfirst - 1)*(z-m_zswitch)/(m_zmax - m_zswitch)));
         }
-    };
+    }
 
-
-const auto ix_functor = [](double x)
+    bool operator== (const IFunctor& rhs) const
     {
-        if (x < gxswitch){
-            const auto logx = std::log(x);
-            return static_cast<int>(
-                std::round( (gxfirst -1)*(logx-glogxmin)/(glogxswitch - glogxmin)));
-        }
-        else{
-            return static_cast<int>(
-                std::floor(gxfirst + (gxsize-gxfirst - 1)*(x-gxswitch)/(gxmax - gxswitch)));
-        }
-    };
+        return
+            (this->m_zsize == rhs.m_zsize) &&
+            (this->m_zfirst == rhs.m_zfirst) &&
+            (this->m_zmin == rhs.m_zmin) &&
+            (this->m_logzmin == rhs.m_logzmin) &&
+            (this->m_zmax == rhs.m_zmax) &&
+            (this->m_zswitch == rhs.m_zswitch) &&
+            (this->m_logzswitch == rhs.m_logzswitch);
+    }
 
-const auto iy_functor = [](double y)
+    std::vector<char> serialize() const
     {
-        if (y < gyswitch){
-            const auto logy = std::log(y);
-            return static_cast<int>(
-                std::round( (gyfirst -1)*(logy-glogymin)/(glogyswitch - glogymin)));
-        }
-        else{
-            return static_cast<int>(
-                std::floor(gyfirst + (gysize-gyfirst - 1)*(y-gyswitch)/(gymax - gyswitch)));
-        }
-    };
+        std::vector<char> raw;
+
+        pxr_ser::put_in(m_zsize, raw);
+        pxr_ser::put_in(m_zfirst, raw);
+        pxr_ser::put_in(m_zmin, raw);
+        pxr_ser::put_in(m_logzmin, raw);
+        pxr_ser::put_in(m_zmax, raw);
+        pxr_ser::put_in(m_zswitch, raw);
+        pxr_ser::put_in(m_logzswitch, raw);
+
+        return raw;
+    }
+
+    template<typename Iter>
+    static IFunctor deserialize(Iter& it)
+    {
+        auto functor = IFunctor{};
+
+        functor.m_zsize = pxr_ser::get_out<int>(it);
+        functor.m_zfirst = pxr_ser::get_out<int>(it);
+        functor.m_zmin = pxr_ser::get_out<double>(it);
+        functor.m_logzmin = pxr_ser::get_out<double>(it);
+        functor.m_zmax = pxr_ser::get_out<double>(it);
+        functor.m_zswitch = pxr_ser::get_out<double>(it);
+        functor.m_logzswitch = pxr_ser::get_out<double>(it);
+
+        return functor;
+    }
+
+    private:
+
+    int m_zsize;
+    int m_zfirst;
+    double m_zmin;
+    double m_logzmin;
+    double m_zmax;
+    double m_zswitch;
+    double m_logzswitch;
+};
+
+const auto x_functor = Functor{gxsize, gxfirst, gxmin, gxmax, gxswitch};
+const auto y_functor = Functor{gysize, gyfirst, gymin, gymax, gyswitch};
+const auto ix_functor = IFunctor{gxsize, gxfirst, gxmin, gxmax, gxswitch};
+const auto iy_functor = IFunctor{gysize, gyfirst, gymin, gymax, gyswitch};
 
 equispaced_1d_table<double, std::vector<double> > make_1d_table()
 {
@@ -146,15 +267,16 @@ equispaced_2d_table<double, std::vector<double> > make_2d_table()
 
 using Generic2DTableType = generic_2d_table<
         double, std::vector<double>,
-        decltype(x_functor), decltype(y_functor),
-        decltype(ix_functor), decltype(iy_functor)>;
+        Functor, Functor,
+        IFunctor, IFunctor>;
 
 auto make_generic_2d_table()
 {
     auto tab = Generic2DTableType(
             gxsize, gysize,
             std::vector<double>(gxsize*gysize),
-            x_functor, y_functor, ix_functor, iy_functor);
+            x_functor, y_functor,
+            ix_functor, iy_functor);
 
     const auto coords = tab.get_all_coordinates();
     auto vals = std::vector<double>(coords.size());
@@ -357,25 +479,21 @@ void check_generic_table_2d(
     const Generic2DTableType& tab)
 {
     const auto rxmin = tab.get_x_min();
-    BOOST_CHECK_EQUAL(rxmin, gxmin);
+    BOOST_CHECK_SMALL((rxmin - gxmin)/gxmin, tolerance<double>());
     const auto rxmax = tab.get_x_max();
-    BOOST_CHECK_EQUAL(rxmax, gxmax);
+    BOOST_CHECK_SMALL((rxmax - gxmax)/gxmax, tolerance<double>());
     const auto rhowmany_x =  tab.get_how_many_x();
     BOOST_CHECK_EQUAL(rhowmany_x, gxsize);
     const auto rxsize =  tab.get_x_size();
     BOOST_CHECK_EQUAL(rxsize, gxmax-gxmin);
-    //const auto rdx =  tab.get_dx();
-    //BOOST_CHECK_EQUAL(rdx, (xmax-xmin)/(rhowmany_x-1));
     const auto rymin = tab.get_y_min();
-    BOOST_CHECK_EQUAL(rymin, gymin);
+    BOOST_CHECK_SMALL((rymin - gymin)/gymin, tolerance<double>());
     const auto rymax = tab.get_y_max();
-    BOOST_CHECK_EQUAL(rymax, gymax);
+    BOOST_CHECK_SMALL((rymax - gymax)/gymax, tolerance<double>());
     const auto rhowmany_y =  tab.get_how_many_y();
     BOOST_CHECK_EQUAL(rhowmany_y, gysize);
     const auto rysize =  tab.get_y_size();
     BOOST_CHECK_EQUAL(rysize, gymax-gymin);
-    //const auto rdy =  tab.get_dy();
-    //BOOST_CHECK_EQUAL(rdy, (ymax-ymin)/(rhowmany_y-1));
 }
 
 // ***Test equispaced_1d_table constructor and getters
@@ -390,8 +508,8 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_1d_table_constructor_getters)
     check_table_1d(copy_tab_1d);
 }
 
-// ***Test equispaced_1d_table setter
-BOOST_AUTO_TEST_CASE( picsar_equispaced_1d_table_constructor_setter)
+// ***Test equispaced_1d_table interp
+BOOST_AUTO_TEST_CASE( picsar_equispaced_1d_table_interp)
 {
     auto tab_1d = make_1d_table();
     const auto val = 1000.0;
@@ -444,7 +562,7 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_constructor_getters)
     check_table_2d(copy_tab_2d);
 }
 
-// ***Test equispaced_2d_table setter
+// ***Test equispaced_2d_table single coordinate interpolation
 BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_interp_one_coord)
 {
     const auto const_tab_2d = make_2d_table();
@@ -452,8 +570,8 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_interp_one_coord)
     check_table_2d_interp_one_coord(const_tab_2d);
 }
 
-// ***Test equispaced_2d_table setter
-BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_constructor_setter)
+// ***Test equispaced_2d_table interp
+BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_constructor_interp)
 {
     auto tab_2d = make_2d_table();
     const auto val = 1000.0;
@@ -467,7 +585,7 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_constructor_setter)
     BOOST_CHECK_SMALL((res - val)/val, tolerance<double>());
 }
 
-// ***Test equispaced_2_table equality
+// ***Test equispaced_2d_table equality
 BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_equality)
 {
     auto tab_2d = make_2d_table();
@@ -510,4 +628,66 @@ BOOST_AUTO_TEST_CASE( picsar_generic_2d_table_constructor_getters)
     check_generic_table_2d(gtab_2d);
     check_generic_table_2d(const_gtab_2d);
     check_generic_table_2d(copy_gtab_2d);
+}
+
+// ***Test generic_2d_table single coordinate interpolation
+BOOST_AUTO_TEST_CASE( picsar_generic_2d_table_interp_one_coord)
+{
+    const auto gtab_2d = make_generic_2d_table();
+
+    //check_table_2d_interp_one_coord(const_tab_2d);
+}
+
+// ***Test generic_2d_table interp
+BOOST_AUTO_TEST_CASE( picsar_generic_2d_table_constructor_interp)
+{
+    auto gtab_2d = make_generic_2d_table();
+    const auto val = 1000.0;
+    const int i = 10;
+    const int j = 20;
+    gtab_2d.set_val(i,j,val);
+    const auto xx = gtab_2d.get_x_coord(i);
+    const auto yy = gtab_2d.get_y_coord(j);
+    const auto res =gtab_2d.interp(xx,yy);
+
+    BOOST_CHECK_SMALL((res - val)/val, tolerance<double>());
+}
+
+// ***Test generic_2d_table equality
+BOOST_AUTO_TEST_CASE( picsar_generic_2d_table_equality)
+{
+    auto gtab_2d = make_generic_2d_table();
+    auto gtab_2d_2 = make_generic_2d_table();
+    BOOST_CHECK_EQUAL(gtab_2d == gtab_2d_2, true);
+
+    gtab_2d.set_val(0, 10.0);
+    gtab_2d.set_val(gxsize/4, -7.0);
+    gtab_2d.set_val(gxsize/2, 7.0);
+    gtab_2d.set_val(gxsize-1, 100.0);
+    BOOST_CHECK_EQUAL(gtab_2d == gtab_2d_2, false);
+}
+
+// ***Test generic_2d_table serialization
+BOOST_AUTO_TEST_CASE( picsar_generic_2d_table_serialization)
+{
+    auto gtab_2d = make_generic_2d_table();
+    auto raw_data = gtab_2d.serialize();
+    auto gtab_2d_2 = Generic2DTableType{raw_data};
+
+    BOOST_CHECK_EQUAL(gtab_2d.get_x_min(), gtab_2d_2.get_x_min());
+    BOOST_CHECK_EQUAL(gtab_2d.get_x_max(), gtab_2d_2.get_x_max());
+    BOOST_CHECK_EQUAL(gtab_2d.get_y_min(), gtab_2d_2.get_y_min());
+    BOOST_CHECK_EQUAL(gtab_2d.get_y_max(), gtab_2d_2.get_y_max());
+    BOOST_CHECK_EQUAL(gtab_2d.get_x_size(), gtab_2d_2.get_x_size());
+    BOOST_CHECK_EQUAL(gtab_2d.get_y_size(), gtab_2d_2.get_y_size());
+    BOOST_CHECK_EQUAL(gtab_2d.get_how_many_x(), gtab_2d_2.get_how_many_x());
+    BOOST_CHECK_EQUAL(gtab_2d.get_how_many_y(), gtab_2d_2.get_how_many_y());
+
+    for(int i = 0; i < gtab_2d.get_how_many_x()*gtab_2d.get_how_many_x(); ++i){
+        BOOST_CHECK_EQUAL(gtab_2d.get_values_reference()[i],
+            gtab_2d_2.get_values_reference()[i]);
+    }
+
+    BOOST_CHECK_EQUAL(gtab_2d.interp(gxmax - gxmin, gxmax - gxmin),
+        gtab_2d_2.interp(gxmax - gxmin, gxmax - gxmin));
 }
