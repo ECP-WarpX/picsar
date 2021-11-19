@@ -788,7 +788,7 @@ namespace containers{
 
     /**
     * This class implements a generic 2D lookup table for a function f(x, y)
-    * The MapFunctorData struct must implement .deserialize() method, ::serialize(MapFunctorData) methods, and == operator). 
+    * The MapFunctorData struct must implement .deserialize() method, ::serialize(MapFunctorData) methods, and == operator).
     * It must also be trivially copiable.
     *
     * @tparam RealType the floating point type to be used (e.g. double or float)

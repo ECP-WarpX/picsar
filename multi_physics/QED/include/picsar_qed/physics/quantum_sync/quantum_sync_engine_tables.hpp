@@ -52,6 +52,11 @@ namespace quantum_sync{
     template <typename T>
     constexpr T default_frac_min = static_cast<T>(1e-12); /* Default value of the minimum chi_photon fraction */
 
+    template <typename T>
+    constexpr T default_frac_switch = static_cast<T>(5e-2); /* Default value of the minimum chi_photon fraction */
+    const int default_frac_first = 128; /* Default number of grid points for photon chi */
+
+
     //__________________________________________________________________________
 
     //________________ dN/dt table _____________________________________________
@@ -776,9 +781,729 @@ namespace quantum_sync{
             aux_generate_double(RealType x,
                 const std::vector<RealType>& y);
 
+    };
+
+    //__________________________________________________________________________
+
+    //________________ Tail-optimized photon emission table ____________________
+
+template <typename RealType>
+class LogFunctor
+{
+    public:
+
+    LogFunctor(){};
+
+    LogFunctor(int zsize, RealType zmin, RealType zmax):
+        m_zsize{zsize}
+    {
+        m_logzmin = math::m_log(zmin);
+        m_logzmax = math::m_log(zmax);
+    }
+
+    RealType operator() (const int i) const
+    {
+        using namespace picsar::multi_physics::math;
+
+        return m_logzmin + i*(m_logzmax-m_logzmin)/(m_zsize-1);
+    }
+
+    bool operator== (const LogFunctor<RealType>& rhs) const
+    {
+        return
+            (this->m_zsize == rhs.m_zsize) &&
+            (this->m_logzmin == rhs.m_logzmin) &&
+            (this->m_logzmax == rhs.m_logzmax);
+    }
+
+    std::vector<char> serialize() const
+    {
+        using namespace utils;
+
+        std::vector<char> raw;
+
+        serialization::put_in(m_zsize, raw);
+        serialization::put_in(m_logzmin, raw);
+        serialization::put_in(m_logzmax, raw);
+
+        return raw;
+    }
+
+    template<typename Iter>
+    static LogFunctor<RealType> deserialize(Iter& it)
+    {
+        using namespace utils;
+
+        auto functor = LogFunctor<RealType>{};
+
+        functor.m_zsize = serialization::get_out<int>(it);
+        functor.m_logzmin = serialization::get_out<RealType>(it);
+        functor.m_logzmax = serialization::get_out<RealType>(it);
+
+        return functor;
+    }
+
+    private:
+
+    int m_zsize;
+    RealType m_logzmin;
+    RealType m_logzmax;
+};
+
+template <typename RealType>
+class ILogFunctor
+{
+    public:
+
+    ILogFunctor(){};
+
+    ILogFunctor(int zsize, RealType zmin, RealType zmax):
+        m_zsize{zsize}
+    {
+        m_logzmin = math::m_log(zmin);
+        m_logzmax = math::m_log(zmax);
+    }
+
+    RealType operator() (RealType logz) const
+    {
+        using namespace picsar::multi_physics::math;
+
+        return static_cast<int>(
+            math::m_floor(m_logzmin + (m_zsize - 1)*(logz-m_logzmin)/(m_logzmax - m_logzmin)));
+    }
+
+    bool operator== (const ILogFunctor<RealType>& rhs) const
+    {
+        return
+            (this->m_zsize == rhs.m_zsize) &&
+            (this->m_logzmin == rhs.m_logzmin) &&
+            (this->m_logzmax == rhs.m_logzmax);
+    }
+
+    std::vector<char> serialize() const
+    {
+        using namespace utils;
+
+        std::vector<char> raw;
+
+        serialization::put_in(m_zsize, raw);
+        serialization::put_in(m_logzmin, raw);
+        serialization::put_in(m_logzmax, raw);
+
+        return raw;
+    }
+
+    template<typename Iter>
+    static ILogFunctor<RealType> deserialize(Iter& it)
+    {
+        using namespace utils;
+
+        auto functor = ILogFunctor<RealType>{};
+
+        functor.m_zsize = serialization::get_out<int>(it);
+        functor.m_logzmin = serialization::get_out<RealType>(it);
+        functor.m_logzmax = serialization::get_out<RealType>(it);
+
+        return functor;
+    }
+
+    private:
+
+    int m_zsize;
+    RealType m_logzmin;
+    RealType m_logzmax;
+};
+
+template <typename RealType>
+class TailOptFunctor
+{
+    public:
+
+    TailOptFunctor(){};
+
+    TailOptFunctor(const int zsize, const int zfirst,
+        const RealType zmin, const RealType zmax, const RealType zswitch):
+        m_zsize{zsize}, m_zfirst{zfirst},
+        m_zmin{zmin}, m_zmax{zmax}, m_zswitch{zswitch}
+    {
+        m_logzmin = math::m_log(m_zmin);
+        m_logzswitch = math::m_log(m_zswitch);
+    }
+
+    RealType operator() (const int i) const
+    {
+        using namespace picsar::multi_physics::math;
+
+        if (i < m_zfirst){
+            return m_logzmin + i*(m_logzswitch-m_logzmin)/(m_zfirst-1);
+        }
+        else{
+            return math::m_log(
+                m_zswitch+((i+1)-m_zfirst)*(m_zmax-m_zswitch)/(m_zsize-m_zfirst));
+        }
+    }
+
+    bool operator== (const TailOptFunctor<RealType>& rhs) const
+    {
+        return
+            (this->m_zsize == rhs.m_zsize) &&
+            (this->m_zfirst == rhs.m_zfirst) &&
+            (this->m_zmin == rhs.m_zmin) &&
+            (this->m_logzmin == rhs.m_logzmin) &&
+            (this->m_zmax == rhs.m_zmax) &&
+            (this->m_zswitch == rhs.m_zswitch) &&
+            (this->m_logzswitch == rhs.m_logzswitch);
+    }
+
+    std::vector<char> serialize() const
+    {
+        using namespace utils;
+
+        std::vector<char> raw;
+
+        serialization::put_in(m_zsize, raw);
+        serialization::put_in(m_zfirst, raw);
+        serialization::put_in(m_zmin, raw);
+        serialization::put_in(m_logzmin, raw);
+        serialization::put_in(m_zmax, raw);
+        serialization::put_in(m_zswitch, raw);
+        serialization::put_in(m_logzswitch, raw);
+
+        return raw;
+    }
+
+    template<typename Iter>
+    static TailOptFunctor<RealType> deserialize(Iter& it)
+    {
+        using namespace utils;
+
+        auto functor = TailOptFunctor<RealType>{};
+
+        functor.m_zsize = serialization::get_out<int>(it);
+        functor.m_zfirst = serialization::get_out<int>(it);
+        functor.m_zmin = serialization::get_out<RealType>(it);
+        functor.m_logzmin = serialization::get_out<RealType>(it);
+        functor.m_zmax = serialization::get_out<RealType>(it);
+        functor.m_zswitch = serialization::get_out<RealType>(it);
+        functor.m_logzswitch = serialization::get_out<RealType>(it);
+
+        return functor;
+    }
+
+    private:
+
+    int m_zsize;
+    int m_zfirst;
+    RealType m_zmin;
+    RealType m_logzmin;
+    RealType m_zmax;
+    RealType m_zswitch;
+    RealType m_logzswitch;
+};
+
+template <typename RealType>
+class ITailOptFunctor
+{
+    public:
+
+    ITailOptFunctor(){};
+
+    ITailOptFunctor(const int zsize, const int zfirst,
+        const RealType zmin, const RealType zmax, const RealType zswitch):
+        m_zsize{zsize}, m_zfirst{zfirst},
+        m_zmin{zmin}, m_zmax{zmax}, m_zswitch{zswitch}
+    {
+        m_logzmin = math::m_log(m_zmin);
+        m_logzswitch = math::m_log(m_zswitch);
+    }
+
+    int operator() (const RealType logz) const
+    {
+        using namespace picsar::multi_physics::math;
+
+        if (logz < m_logzswitch){
+            return static_cast<int>(
+                math::m_round( (m_zfirst -1)*(logz-m_logzmin)/(m_logzswitch - m_logzmin)));
+        }
+        else{
+            const auto z = m_exp(logz);
+            return static_cast<int>(
+                m_floor(m_zfirst + (m_zsize-m_zfirst - 1)*(z-m_zswitch)/(m_zmax - m_zswitch)));
+        }
+    }
+
+    bool operator== (const ITailOptFunctor<RealType>& rhs) const
+    {
+        return
+            (this->m_zsize == rhs.m_zsize) &&
+            (this->m_zfirst == rhs.m_zfirst) &&
+            (this->m_zmin == rhs.m_zmin) &&
+            (this->m_logzmin == rhs.m_logzmin) &&
+            (this->m_zmax == rhs.m_zmax) &&
+            (this->m_zswitch == rhs.m_zswitch) &&
+            (this->m_logzswitch == rhs.m_logzswitch);
+    }
+
+    std::vector<char> serialize() const
+    {
+        using namespace utils;
+
+        std::vector<char> raw;
+
+        serialization::put_in(m_zsize, raw);
+        serialization::put_in(m_zfirst, raw);
+        serialization::put_in(m_zmin, raw);
+        serialization::put_in(m_logzmin, raw);
+        serialization::put_in(m_zmax, raw);
+        serialization::put_in(m_zswitch, raw);
+        serialization::put_in(m_logzswitch, raw);
+
+        return raw;
+    }
+
+    template<typename Iter>
+    static ITailOptFunctor<RealType> deserialize(Iter& it)
+    {
+        using namespace utils;
+
+        auto functor = ITailOptFunctor<RealType>{};
+
+        functor.m_zsize = serialization::get_out<int>(it);
+        functor.m_zfirst = serialization::get_out<int>(it);
+        functor.m_zmin = serialization::get_out<RealType>(it);
+        functor.m_logzmin = serialization::get_out<RealType>(it);
+        functor.m_zmax = serialization::get_out<RealType>(it);
+        functor.m_zswitch = serialization::get_out<RealType>(it);
+        functor.m_logzswitch = serialization::get_out<RealType>(it);
+
+        return functor;
+    }
+
+    private:
+
+    int m_zsize;
+    int m_zfirst;
+    RealType m_zmin;
+    RealType m_logzmin;
+    RealType m_zmax;
+    RealType m_zswitch;
+    RealType m_logzswitch;
+};
+
+    /**
+    * This structure holds the parameters to generate a photon
+    * emission lookup table. The lookup table stores the
+    * values of a cumulative probability distribution (see validation script)
+    *
+    * @tparam RealType the floating point type to be used
+    */
+    template<typename RealType>
+    struct tailopt_photon_emission_lookup_table_params{
+        RealType chi_part_min = static_cast<RealType>(0.0); /*Minimum particle chi parameter*/
+        RealType chi_part_max = static_cast<RealType>(0.0); /*Maximum particle chi parameter*/
+        RealType frac_min = static_cast<RealType>(0.0); /*Minimum chi photon fraction to be stored*/
+        RealType frac_switch = static_cast<RealType>(0.0);
+        int chi_part_how_many = 0; /* Number of grid points for particle chi */
+        int frac_how_many = 0; /* Number of grid points for photon chi fraction */
+        int frac_first = 0;
+
+        /**
+        * Operator==
+        *
+        * @param[in] rhs a structure of the same type
+        * @return true if rhs is equal to *this. false otherwise
+        */
+        bool operator== (
+            const tailopt_photon_emission_lookup_table_params<RealType> &rhs) const
+        {
+            return (chi_part_min == rhs.chi_part_min) &&
+                (chi_part_max == rhs.chi_part_max) &&
+                (frac_min == rhs.frac_min) &&
+                (frac_switch == rhs.frac_switch) &&
+                (chi_part_how_many == rhs.chi_part_how_many) &&
+                (frac_how_many == rhs.frac_how_many) &&
+                (frac_first == rhs.frac_first);
+        }
+    };
+
+    /**
+    * The default photon_emission_lookup_table_params
+    *
+    * @tparam RealType the floating point type to be used
+    */
+    template<typename RealType>
+    constexpr auto default_tailopt_photon_emission_lookup_table_params =
+        tailopt_photon_emission_lookup_table_params<RealType>{
+                                        default_chi_part_min<RealType>,
+                                        default_chi_part_max<RealType>,
+                                        default_frac_min<RealType>,
+                                        default_frac_switch<RealType>,
+                                        default_chi_part_how_many,
+                                        default_frac_how_many,
+                                        default_frac_first};
+
+
+    template<typename RealType, typename VectorType>
+    using Generic2DTableType =
+        containers::generic_2d_table<
+            RealType, VectorType,
+            LogFunctor<RealType>, TailOptFunctor<RealType>,
+            ILogFunctor<RealType>, ITailOptFunctor<RealType> >;
+
+
+    /**
+    * This class provides the lookup table for photon emission
+    * storing the values of a cumulative probability distribution
+    * (see validation script) and providing methods to perform interpolations.
+    * It also provides methods for serialization (export to byte array,
+    * import from byte array) and to generate "table views" based on
+    * non-owning pointers (this is crucial in order to use the table
+    * in GPU kernels, as explained below).
+    *
+    * Internally, this table stores
+    * log(P(log(chi_particle), log(chi_photon/chi_particle))).
+    *
+    * @tparam RealType the floating point type to be used
+    * @tparam VectorType the vector type to be used internally (e.g. std::vector)
+    */
+    template<typename RealType, typename VectorType>
+    class tailopt_photon_emission_lookup_table
+    {
+
+        public:
+
+            /**
+            * A view_type is essentially a photon_emission_lookup_table which
+            * uses non-owning, constant, pointers to hold the data.
+            * The use of views is crucial for GPUs. As demonstrated
+            * in test_gpu/test_quantum_sync.cu, it is possible to:
+            * - define a thin wrapper around a thrust::device_vector
+            * - use this wrapper as a template parameter for a photon_emission_lookup_table
+            * - initialize the lookup table on the CPU
+            * - generate a view
+            * - pass by copy this view to a GPU kernel (see get_view() method)
+            *
+            * @tparam RealType the floating point type to be used
+            */
+            typedef tailopt_photon_emission_lookup_table<
+                RealType, containers::picsar_span<const RealType>> view_type;
+
+            /**
+            * Empty constructor
+            */
+            constexpr
+            tailopt_photon_emission_lookup_table(){}
+
+            /**
+            * Constructor (not designed for GPU usage)
+            * After construction the table is uninitialized. The user has to generate
+            * the cumulative probability distribution before being able to use the table.
+            *
+            * @param params table parameters
+            */
+            tailopt_photon_emission_lookup_table(
+                tailopt_photon_emission_lookup_table_params<RealType> params):
+                m_params{params},
+                m_table{Generic2DTableType<RealType, VectorType>{
+                    params.chi_part_how_many, params.frac_how_many,
+                    VectorType(params.chi_part_how_many * params.frac_how_many),
+                    LogFunctor<RealType>(
+                        m_params.chi_part_how_many, m_params.chi_part_min, m_params.chi_part_max),
+                    TailOptFunctor<RealType>(
+                        m_params.frac_how_many, m_params.frac_first,
+                        m_params.frac_min, math::one<RealType>, m_params.frac_switch),
+                    ILogFunctor<RealType>(
+                        m_params.chi_part_how_many, m_params.chi_part_min, m_params.chi_part_max),
+                    ITailOptFunctor<RealType>(
+                        m_params.frac_how_many, m_params.frac_first,
+                        m_params.frac_min, math::one<RealType>, m_params.frac_switch)}}
+                {}
+
+            /**
+            * Constructor (not designed for GPU usage)
+            * This constructor allows the user to initialize the table with
+            * a vector of values.
+            *
+            * @param params table parameters
+            */
+            tailopt_photon_emission_lookup_table(
+                tailopt_photon_emission_lookup_table_params<RealType> params,
+                VectorType vals):
+                m_params{params},
+                m_table{Generic2DTableType<RealType, VectorType>{
+                    m_params.chi_part_how_many, m_params.frac_how_many, vals,
+                    LogFunctor<RealType>(
+                        m_params.chi_part_how_many, m_params.chi_part_min, m_params.chi_part_max),
+                    TailOptFunctor<RealType>(
+                        m_params.frac_how_many, m_params.frac_first,
+                        m_params.frac_min, math::one<RealType>, m_params.frac_switch),
+                    ILogFunctor<RealType>(
+                        m_params.chi_part_how_many, m_params.chi_part_min, m_params.chi_part_max),
+                    ITailOptFunctor<RealType>(
+                        m_params.frac_how_many, m_params.frac_first,
+                        m_params.frac_min, math::one<RealType>, m_params.frac_switch)}}
+            {
+                m_init_flag = true;
+            }
+
+            /*
+            * Generates the content of the lookup table (not usable on GPUs).
+            * This function is implemented elsewhere
+            * (in breit_wheeler_engine_tables_generator.hpp)
+            * since it requires a recent version of the Boost library.
+            *
+            * @tparam Policy the generation policy (can force calculations in double precision)
+            *
+            * @param[in] show_progress if true a progress bar is shown
+            */
+            template <generation_policy Policy = generation_policy::regular>
+            void generate(bool show_progress = true);
+
+            /*
+            * Initializes the lookup table from a byte array.
+            * This method is not usable on GPUs.
+            *
+            * @param[in] raw_data the byte array
+            */
+            tailopt_photon_emission_lookup_table(const std::vector<char>& raw_data)
+            {
+                using namespace utils;
+
+                constexpr size_t min_size =
+                    sizeof(char)+//single or double precision
+                    sizeof(m_params);
+
+                if (raw_data.size() < min_size)
+                    throw std::runtime_error("Binary data is too small \
+                    to be a Quantum Synchrotron emisson lookup-table.");
+
+                auto it_raw_data = raw_data.begin();
+
+                if (serialization::get_out<char>(it_raw_data) !=
+                    static_cast<char>(sizeof(RealType))){
+                    throw std::runtime_error("Mismatch between RealType \
+                    used to write and to read the Quantum Synchrotron lookup-table");
+                }
+
+                m_params = serialization::get_out<
+                    tailopt_photon_emission_lookup_table_params<RealType>>(it_raw_data);
+                m_table = Generic2DTableType<RealType, VectorType>{
+                    std::vector<char>(it_raw_data, raw_data.end())};
+
+                m_init_flag = true;
+            }
+
+            /**
+            * Operator==
+            *
+            * @param[in] rhs a structure of the same type
+            *
+            * @return true if rhs is equal to *this. false otherwise
+            */
+            PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
+            bool operator== (
+                const tailopt_photon_emission_lookup_table<
+                    RealType, VectorType> &rhs) const
+            {
+                return
+                    (m_params == rhs.m_params) &&
+                    (m_init_flag == rhs.m_init_flag) &&
+                    (m_table == rhs.m_table);
+            }
+
+            /*
+            * Returns a table view for the current table
+            * (i.e. a table built using non-owning picsar_span
+            * vectors). A view_type is very lightweight and can
+            * be passed by copy to functions and GPU kernels.
+            * Indeed it contains non-owning pointers to the data
+            * held by the original table.
+            * The method is not designed to be run on GPUs.
+            *
+            * @return a table view
+            */
+            view_type get_view() const
+            {
+                if(!m_init_flag)
+                    throw std::runtime_error("Can't generate a view of an \
+                    uninitialized table");
+                const auto span = containers::picsar_span<const RealType>{
+                    static_cast<size_t>(m_params.chi_part_how_many *
+                        m_params.frac_how_many),
+                        m_table.get_values_reference().data()};
+
+                return view_type{m_params, span};
+            }
+
+            /*
+            * Uses the lookup table to extract the chi value of
+            * the generated photon from a cumulative probability
+            * distribution, given the chi parameter of the particle and a
+            * random number uniformly distributed in [0,1). If chi_part is out
+            * of table either the minimum or the maximum value is used.
+            * The method uses the lookup table to invert the equation:
+            * unf_zero_one_minus_epsi = P(chi_part, X)
+            * where X is the ratio between chi_photon and chi_particle.
+            * If X is out of table, 0 is returned (i.e. a photon with
+            * very low energy is emitted, so it can be disregarded)
+            * The method also checks if chi_phot is out of table
+            * and stores the result in a bool variable.
+            *
+            * @param[in] chi_phot to be used for interpolation
+            * @param[in] unf_zero_one_minus_epsi a uniformly distributed random number in [0,1)
+            * @param[out] is_out set to true if chi_part is out of table
+            *
+            * @return chi of one of the generated particles
+            */
+            PXRMP_GPU_QUALIFIER
+            PXRMP_FORCE_INLINE
+            RealType interp(
+                const RealType chi_part,
+                const RealType unf_zero_one_minus_epsi,
+                bool* const is_out = nullptr) const noexcept
+            {
+                using namespace math;
+
+                auto e_chi_part = chi_part;
+                if(chi_part<m_params.chi_part_min){
+                    e_chi_part = m_params.chi_part_min;
+                    if (is_out != nullptr) *is_out = true;
+                }
+                else if (chi_part > m_params.chi_part_max){
+                    e_chi_part = m_params.chi_part_max;
+                    if (is_out != nullptr) *is_out = true;
+                }
+
+                const auto log_e_chi_part = m_log(e_chi_part);
+                const auto log_prob = m_log(one<RealType>-unf_zero_one_minus_epsi);
+
+                const auto upper_frac_index = utils::picsar_upper_bound_functor(
+                    0, m_params.frac_how_many,log_prob,[&](int i){
+                        return (m_table.interp_first_coord(
+                            log_e_chi_part, i));
+                        });
+
+                if(upper_frac_index == 0)
+                    return zero<RealType>;
+
+                if(upper_frac_index ==  m_params.frac_how_many)
+                    return chi_part;
+
+                const auto lower_frac_index = upper_frac_index-1;
+
+                const auto upper_log_frac = m_table.get_y_coord(upper_frac_index);
+                const auto lower_log_frac = m_table.get_y_coord(lower_frac_index);
+
+                const auto lower_log_prob= m_table.interp_first_coord
+                    (log_e_chi_part, lower_frac_index);
+                const auto upper_log_prob = m_table.interp_first_coord
+                    (log_e_chi_part, upper_frac_index);
+
+                const auto log_frac = utils::linear_interp(
+                    lower_log_prob, upper_log_prob, lower_log_frac, upper_log_frac,
+                    log_prob);
+
+                return  m_exp(log_frac)*chi_part;
+            }
+
+            /**
+            * Exports all the coordinates (chi_particle, chi_photon)
+            * of the table to a std::vector
+            * of 2-elements arrays (not usable on GPUs).
+            *
+            * @return a vector containing all the table coordinates
+            */
+            std::vector<std::array<RealType,2>> get_all_coordinates() const noexcept
+            {
+                auto all_coords = m_table.get_all_coordinates();
+                std::transform(all_coords.begin(),all_coords.end(),all_coords.begin(),
+                    [](std::array<RealType,2> a){return
+                        std::array<RealType,2>{math::m_exp(a[0]), math::m_exp(a[1]) * math::m_exp(a[0]) };});
+                return all_coords;
+            }
+
+            /**
+            * Imports table values from an std::vector. Values
+            * should correspond to coordinates exported with
+            * get_all_coordinates(). Not usable on GPU.
+            *
+            * @param[in] a std::vector containing table values
+            *
+            * @return false if the value vector has the wrong length. True otherwise.
+            */
+            bool set_all_vals(const std::vector<RealType>& vals)
+            {
+                if(static_cast<int>(vals.size()) == m_table.get_how_many_x()*
+                    m_table.get_how_many_y()){
+                    for(int i = 0; i < static_cast<int>(vals.size()); ++i){
+                        auto val = math::m_log(vals[i]);
+                        if(std::isinf(val))
+                            val = std::numeric_limits<RealType>::lowest();
+                        m_table.set_val(i, val);
+                    }
+                    m_init_flag = true;
+                    return true;
+                }
+                return false;
+            }
+
+            /*
+            * Checks if the table has been initialized.
+            *
+            * @return true if the table has been initialized, false otherwise
+            */
+            PXRMP_GPU_QUALIFIER
+            PXRMP_FORCE_INLINE
+            bool is_init() const
+            {
+                return m_init_flag;
+            }
+
+            /*
+            * Converts the table to a byte vector
+            *
+            * @return a byte vector
+            */
+            std::vector<char> serialize() const
+            {
+                using namespace utils;
+
+                if(!m_init_flag)
+                    throw std::runtime_error("Cannot serialize an unitialized table");
+
+                std::vector<char> res;
+
+                serialization::put_in(static_cast<char>(sizeof(RealType)), res);
+                serialization::put_in(m_params, res);
+
+                auto tdata = m_table.serialize();
+                res.insert(res.end(), tdata.begin(), tdata.end());
+
+                return res;
+            }
+
+        protected:
+            tailopt_photon_emission_lookup_table_params<RealType> m_params; /* Table parameters*/
+            bool m_init_flag = false; /* Initialization flag*/
+            Generic2DTableType<RealType, VectorType> m_table; /* Table data*/
+
+        private:
+            /*
+            * Auxiliary function used for the generation of the lookup table.
+            * (not usable on GPUs). This function is implemented elsewhere
+            * (in breit_wheeler_engine_tables_generator.hpp)
+            * since it requires the Boost library.
+            */
+            PXRMP_FORCE_INLINE
+            static std::vector<RealType>
+            aux_generate_double(RealType x,
+                const std::vector<RealType>& y);
+
         };
 
         //______________________________________________________________________
+
+
 
 }
 }

@@ -496,6 +496,58 @@ void check_generic_table_2d(
     BOOST_CHECK_EQUAL(rysize, gymax-gymin);
 }
 
+void check_generic_table_2d_interp_one_coord(
+        const Generic2DTableType& tab)
+{
+    const auto x0 = tab.get_x_coord(0);
+    const auto x1 = tab.get_x_coord(xsize/4);
+    const auto x2 = tab.get_x_coord(xsize-1);
+    const auto x3 = 0.732*(x1-x0) + x0;
+    const auto x4 = 0.118*(x2-x1) + x1;
+    const auto xarr = std::array<double, 5>{x0,x1,x2,x3,x4};
+    const auto jarr = std::array<int, 5>{0,1,5,27,ysize-1};
+
+    for (auto xx : xarr){
+        for (auto jj : jarr)
+        {
+            const auto yy = tab.get_y_coord(jj);
+            const auto res = tab.interp_first_coord(xx, jj);
+            const auto exp = linear_function(xx, yy);
+            BOOST_CHECK_SMALL((res - exp)/exp, tolerance<double>());
+        }
+    }
+
+
+    const auto y0 = tab.get_y_coord(0);
+    const auto y1 = tab.get_y_coord(ysize/4);
+    const auto y2 = tab.get_y_coord(ysize-1);
+    const auto y3 = 0.8569*(y1-y0) + y0;
+    const auto y4 = 0.3467*(y2-y1) + y1;
+    const auto yarr = std::array<double, 5>{y0,y1,y2,y3,y4};
+    const auto iarr = std::array<int, 5>{0,1,5,27,xsize-1};
+
+    for (auto yy : yarr){
+        for (auto ii : iarr)
+        {
+            const auto xx = tab.get_x_coord(ii);
+            const auto res = tab.interp_second_coord(ii, yy);
+            const auto exp = linear_function(xx, yy);
+            BOOST_CHECK_SMALL((res - exp)/exp, tolerance<double>());
+        }
+    }
+}
+
+void check_generic_table_2d_interp(int i, int j, double val)
+{
+    auto gtab_2d = make_generic_2d_table();
+    gtab_2d.set_val(i,j,val);
+    const auto xx = gtab_2d.get_x_coord(i);
+    const auto yy = gtab_2d.get_y_coord(j);
+    const auto res =gtab_2d.interp(xx,yy);
+
+    BOOST_CHECK_SMALL((res - val)/val, tolerance<double>());
+}
+
 // ***Test equispaced_1d_table constructor and getters
 BOOST_AUTO_TEST_CASE( picsar_equispaced_1d_table_constructor_getters)
 {
@@ -633,24 +685,22 @@ BOOST_AUTO_TEST_CASE( picsar_generic_2d_table_constructor_getters)
 // ***Test generic_2d_table single coordinate interpolation
 BOOST_AUTO_TEST_CASE( picsar_generic_2d_table_interp_one_coord)
 {
-    const auto gtab_2d = make_generic_2d_table();
+    const auto const_gtab_2d = make_generic_2d_table();
 
-    //check_table_2d_interp_one_coord(const_tab_2d);
+    check_generic_table_2d_interp_one_coord(const_gtab_2d);
 }
 
 // ***Test generic_2d_table interp
 BOOST_AUTO_TEST_CASE( picsar_generic_2d_table_constructor_interp)
 {
-    auto gtab_2d = make_generic_2d_table();
-    const auto val = 1000.0;
-    const int i = 10;
-    const int j = 20;
-    gtab_2d.set_val(i,j,val);
-    const auto xx = gtab_2d.get_x_coord(i);
-    const auto yy = gtab_2d.get_y_coord(j);
-    const auto res =gtab_2d.interp(xx,yy);
-
-    BOOST_CHECK_SMALL((res - val)/val, tolerance<double>());
+    check_generic_table_2d_interp(0, 0, 1000.0);
+    check_generic_table_2d_interp(gxsize-1, gysize-1, -1000.0);
+    check_generic_table_2d_interp(gxsize-1, 0, 1000.0);
+    check_generic_table_2d_interp(0, gysize-1, -1000.0);
+    check_generic_table_2d_interp(5, 5, 1000.0);
+    check_generic_table_2d_interp(gxsize-5, gysize-5, -1000.0);
+    check_generic_table_2d_interp(gxsize-5, 5, 1000.0);
+    check_generic_table_2d_interp(5, gysize-5, -1000.0);
 }
 
 // ***Test generic_2d_table equality

@@ -32,6 +32,8 @@ void test_case_cmath_overloads()
         BOOST_CHECK_EQUAL(m_log(val), std::log(val));
         BOOST_CHECK_EQUAL(m_tanh(val), std::tanh(val));
         BOOST_CHECK_EQUAL(m_tanh(-val), std::tanh(-val));
+        BOOST_CHECK_EQUAL(m_round(val), std::round(val));
+        BOOST_CHECK_EQUAL(m_round(-val), std::round(-val));
      }
 
     const auto vals_floor_fabs = std::vector<RealType>{0.0, 0.001, 0.3, 0.7,

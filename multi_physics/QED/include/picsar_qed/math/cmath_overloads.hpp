@@ -241,6 +241,36 @@ namespace math{
         return fabsf(x);
     }
 
+    /**
+    * This function replaces the overload of round provided
+    * by the Standard Template Library. It calls either
+    * round or roundf in cmath depending on the variable type.
+    *
+    * @tparam RealType the floating point type to be used
+    * @param[in] x argument
+    * @return round(x)
+    */
+    template<typename RealType>
+    PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
+    RealType m_round(const RealType x) noexcept
+    {
+        return round(x);
+    }
+
+    template<>
+    PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
+    double m_round(const double x) noexcept
+    {
+        return round(x);
+    }
+
+    template<>
+    PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
+    float m_round(const float x) noexcept
+    {
+        return roundf(x);
+    }
+
 #else
 
     /**
@@ -353,6 +383,21 @@ namespace math{
     }
 
 #endif
+
+    /**
+    * This function replaces the overload of round provided
+    * by the Standard Template Library.
+    *
+    * @tparam RealType the floating point type to be used
+    * @param[in] x argument
+    * @return round(x)
+    */
+    template<typename RealType>
+    PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
+    RealType m_round(const RealType x) noexcept
+    {
+        return std::round(x);
+    }
 
 }
 }
