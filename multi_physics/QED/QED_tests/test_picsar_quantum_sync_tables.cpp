@@ -334,23 +334,31 @@ void check_tailopt_photon_emission_table()
     auto coords = table.get_all_coordinates();
 
     BOOST_CHECK_EQUAL(coords.size(),how_many*how_many_frac);
-/*
-    const RealType log_chi_min = log(chi_min);
-    const RealType log_chi_max = log(chi_max);
-    const RealType log_frac_min = log(frac_min);
+
+    const auto log_functor = LogFunctor<RealType>{
+        how_many,
+        static_cast<RealType>(chi_min),
+        static_cast<RealType>(chi_max)};
+
+    const auto tailopt_functor = TailOptFunctor<RealType>{
+        how_many_frac,
+        frac_first,
+        static_cast<RealType>(frac_min),
+        static_cast<RealType>(1.0),
+        static_cast<RealType>(frac_switch)};
 
     for (int i = 0 ; i < how_many*how_many_frac; ++i){
-         auto res_1 = coords[i][0];
-         auto res_2 = coords[i][1];
-         const auto ii = i/how_many_frac;
-         const auto jj = i%how_many_frac;
-         auto expected_1 = static_cast<RealType>(
-             exp(log_chi_min +ii*(log_chi_max-log_chi_min)/(how_many-1)));
-        auto expected_2 = static_cast<RealType>(
-             expected_1*exp(log_frac_min +jj*(0.0-log_frac_min)/(how_many_frac-1)));
 
-         BOOST_CHECK_SMALL((res_1-expected_1)/expected_1, tolerance<RealType>());
-         if(expected_2 != static_cast<RealType>(0.0))
+        auto res_1 = coords[i][0];
+        auto res_2 = coords[i][1];
+        const auto ii = i/how_many_frac;
+        const auto jj = i%how_many_frac;
+
+        auto expected_1 = std::exp(log_functor(ii));
+        auto expected_2 = std::exp(tailopt_functor(jj))*expected_1;
+
+        BOOST_CHECK_SMALL((res_1-expected_1)/expected_1, tolerance<RealType>());
+        if(expected_2 != static_cast<RealType>(0.0))
             BOOST_CHECK_SMALL((res_2-expected_2)/expected_2, tolerance<RealType>());
         else
             BOOST_CHECK_SMALL((res_2-expected_2), tolerance<RealType>());
@@ -370,12 +378,10 @@ void check_tailopt_photon_emission_table()
     BOOST_CHECK_EQUAL(result,true);
     BOOST_CHECK_EQUAL(table.is_init(),true);
 
-
-    auto table_2 = get_em_table<RealType, VectorType>();
+    auto table_2 = get_tailopt_em_table<RealType, VectorType>();
     BOOST_CHECK_EQUAL(table_2 == table, false);
     BOOST_CHECK_EQUAL(table == table, true);
     BOOST_CHECK_EQUAL(table_2 == table_2, true);
-
 
     const RealType xo0 = chi_min*0.1;
     const RealType xo1 = chi_max*10;
@@ -386,7 +392,7 @@ void check_tailopt_photon_emission_table()
     const auto xxs = std::array<RealType, 5>
         {xo0, x0, x1, x2, xo1};
     const auto rrs = std::array<RealType, 11>
-            {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.99};
+            {0.0, 1.0e-4, 1.0e-3, 1.0e-2, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.99};
 
     for (const auto xx : xxs){
         for (const auto rr : rrs){
@@ -409,7 +415,7 @@ void check_tailopt_photon_emission_table()
         for (auto r : rrs)
             BOOST_CHECK_EQUAL(table_view.interp(xx,r ), table.interp(xx, r));
     }
-    */
+
 }
 
 // ***Test Quantum Synchrotron photon emission table
