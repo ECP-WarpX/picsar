@@ -60,6 +60,7 @@ namespace quantum_sync{
             compute_G_function<double>(x));
     }
 
+
     /**
     * Generates the lookup table (not usable on GPUs).
     *
@@ -169,6 +170,91 @@ namespace quantum_sync{
     template<typename RealType, typename VectorType>
     template<generation_policy Policy>
     void photon_emission_lookup_table<RealType, VectorType>::generate(
+        const bool show_progress)
+    {
+        constexpr bool use_internal_double =
+            (Policy == generation_policy::force_internal_double) &&
+            !std::is_same<RealType,double>();
+
+        auto t_start =  std::chrono::system_clock::now();
+
+        const int chi_size = m_params.chi_part_how_many;
+        const int frac_size = m_params.frac_how_many;
+
+        const auto all_coords = get_all_coordinates();
+        auto all_vals = std::vector<RealType>(all_coords.size());
+
+        int count = 0;
+#ifdef PXRMP_HAS_OPENMP
+        #pragma omp parallel for schedule(dynamic, 1)
+#endif
+        for (int i = 0; i < chi_size; ++i){
+            const auto chi_part = all_coords[i*frac_size][0];
+            auto chi_phots = std::vector<RealType>(frac_size);
+            std::transform(
+                all_coords.begin()+i*frac_size,
+                all_coords.begin()+(i+1)*frac_size,
+                chi_phots.begin(),
+                [](auto el){return el[1];}
+            );
+
+            std::vector<RealType> vals = std::vector<RealType>(frac_size);
+            PXRMP_CONSTEXPR_IF (use_internal_double){
+                vals = aux_generate_double(
+                    chi_part, chi_phots);
+            } else {
+                vals = compute_cumulative_prob_opt(
+                    chi_part, chi_phots);
+            }
+
+            //make sure that the last point is exactly 1.0
+            vals.back() = math::one<RealType>;
+
+            std::copy(vals.begin(), vals.end(), all_vals.begin()+i*frac_size);
+
+            if(show_progress){
+                #pragma omp critical
+                {
+                    count++;
+                    utils::draw_progress(count, chi_size, "QS photon emission", 1);
+                }
+            }
+        }
+
+        for (auto& val : all_vals){
+            if(std::isnan(val))
+                throw std::runtime_error("Error: nan detected in generated table!");
+        }
+
+        set_all_vals(all_vals);
+        auto t_end =  std::chrono::system_clock::now();
+        if(show_progress){
+            utils::draw_progress(
+                count, chi_size, "QS photon emission", 1, true);
+
+            std::cout << " Done in " <<
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                    t_end - t_start).count()/1000.0 << " seconds. \n" << std::endl;
+        }
+
+        m_init_flag = true;
+    }
+
+    //__________________________________________________________________________
+
+
+    /**
+    * Generates the lookup table (not usable on GPUs).
+    *
+    * @tparam RealType the floating point type to be used
+    * @tparam VectorType the vector type to be used (relevant for the class of which is a method is member)
+    * @tparam Policy if set to generation_policy::force_internal_double it forces internal calculations in double precision
+    *
+    * @param[in] show_progress if true it shows a nice progress bar
+    */
+    template<typename RealType, typename VectorType>
+    template<generation_policy Policy>
+    void tailopt_photon_emission_lookup_table<RealType, VectorType>::generate(
         const bool show_progress)
     {
         constexpr bool use_internal_double =

@@ -46,9 +46,11 @@ T constexpr small()
 
 const double chi_min = 0.01;
 const double chi_max = 100;
-const int how_many = 73;
-const int how_many_frac = 75;
+const int how_many = 81;
+const int how_many_frac = 97;
+const int frac_first = 80;
 const double frac_min = 1e-6;
+const double frac_switch = 3e-1;
 
 // ------------- Tests --------------
 
@@ -118,7 +120,7 @@ void check_photon_emission_table_generation()
     const auto chi_chi_P_vector = std::vector<std::array<RealType,3>>{
         std::array<RealType,3>{ 0.1 , 0.0001 , 0.246635968071763 },
         std::array<RealType,3>{ 0.1 , 0.001 , 0.5111462944662963 },
-        std::array<RealType,3>{ 0.1 , 0.010000000000000002 , 0.9029456666866598 },
+        std::array<RealType,3>{ 0.1 , 0.01 , 0.9029456666866598 },
         std::array<RealType,3>{ 1.0 , 0.001 , 0.1498504179995893 },
         std::array<RealType,3>{ 1.0 , 0.01 , 0.31983031171402876 },
         std::array<RealType,3>{ 1.0 , 0.1 , 0.6537737809484806 },
@@ -166,6 +168,80 @@ BOOST_AUTO_TEST_CASE( picsar_quantum_sync_photon_emission_table_generation)
 {
     check_photon_emission_table_generation<double, std::vector<double>>();
     check_photon_emission_table_generation<float, std::vector<float>>();
+}
+
+// *******************************
+
+// *******************************
+
+// ***Test Quantum Synchrotron tail-optimized photon emission table generation
+
+template <typename RealType, typename VectorType>
+void check_tailopt_photon_emission_table_generation()
+{
+    const auto params =
+        tailopt_photon_emission_lookup_table_params<RealType>{
+            static_cast<RealType>(chi_min),
+            static_cast<RealType>(chi_max),
+            static_cast<RealType>(frac_min),
+            static_cast<RealType>(frac_switch),
+            how_many,how_many_frac, frac_first};
+
+    auto table = tailopt_photon_emission_lookup_table<RealType, VectorType>{params};
+
+    table.generate();
+
+    const auto chi_chi_P_vector = std::vector<std::array<RealType,3>>{
+        std::array<RealType,3>{ 0.1 , 0.0001 , 0.246635968071763 },
+        std::array<RealType,3>{ 0.1 , 0.001 , 0.5111462944662963 },
+        std::array<RealType,3>{ 0.1 , 0.01 , 0.9029456666866598 },
+        std::array<RealType,3>{ 1.0 , 0.001 , 0.1498504179995893 },
+        std::array<RealType,3>{ 1.0 , 0.01 , 0.31983031171402876 },
+        std::array<RealType,3>{ 1.0 , 0.1 , 0.6537737809484806 },
+        std::array<RealType,3>{ 1.0 , 0.2 , 0.7870086703462721 },
+        std::array<RealType,3>{ 1.0 , 0.5 , 0.9509588179865093 },
+        std::array<RealType,3>{ 10.0 , 0.01 , 0.11782827804283932 },
+        std::array<RealType,3>{ 10.0 , 0.1 , 0.25304594229286587 },
+        std::array<RealType,3>{ 10.0 , 1.0 , 0.5329925008830805 },
+        std::array<RealType,3>{ 10.0 , 2.0 , 0.65721264691597 },
+        std::array<RealType,3>{ 10.0 , 5.0 , 0.8452405292352005 },
+        std::array<RealType,3>{ 10.0 , 9.0 , 0.9837225233708096 },
+        std::array<RealType,3>{ 100.0 , 0.1 , 0.10901296836655985 },
+        std::array<RealType,3>{ 100.0 , 1.0 , 0.2344249952917742 },
+        std::array<RealType,3>{ 100.0 , 10.0 , 0.49689370771825486 },
+        std::array<RealType,3>{ 100.0 , 20.0 , 0.6157367664025167 },
+        std::array<RealType,3>{ 100.0 , 50.0 , 0.8017131199967799 },
+        std::array<RealType,3>{ 100.0 , 90.0 , 0.9545809417165405 },
+        // OUT OF TABLE, USE VALUES FOR CHI = 100
+        std::array<RealType,3>{ 1000.0 , 1.0 , 0.10901296836655985 },
+        std::array<RealType,3>{ 1000.0 , 10.0 , 0.2344249952917742 },
+        std::array<RealType,3>{ 1000.0 , 100.0 , 0.49689370771825486 },
+        std::array<RealType,3>{ 1000.0 , 200.0 , 0.6157367664025167 },
+        std::array<RealType,3>{ 1000.0 , 500.0 , 0.8017131199967799 },
+        std::array<RealType,3>{ 1000.0 , 900.0 , 0.9545809417165405 }
+        //_______________________________________
+        };
+
+    for (const auto chi_chi_P : chi_chi_P_vector){
+        bool is_out = false;
+        const auto res = table.interp(chi_chi_P[0], RealType(1.) - chi_chi_P[2], &is_out);
+        const auto exp = chi_chi_P[1];
+
+        BOOST_CHECK_EQUAL(is_out, (chi_chi_P[0] < RealType(chi_min) ) || (chi_chi_P[0] > RealType(chi_max)) );
+
+        if(exp > small<RealType>()){
+            BOOST_CHECK_SMALL((res-exp)/exp,tolerance<RealType>());
+        }
+        else{
+            BOOST_CHECK_SMALL(res,small<RealType>());
+        }
+    }
+}
+
+BOOST_AUTO_TEST_CASE( picsar_quantum_sync_tailopt_photon_emission_table_generation)
+{
+    check_tailopt_photon_emission_table_generation<double, std::vector<double>>();
+    check_tailopt_photon_emission_table_generation<float, std::vector<float>>();
 }
 
 // *******************************

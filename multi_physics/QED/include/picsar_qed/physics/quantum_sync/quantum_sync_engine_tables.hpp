@@ -869,7 +869,7 @@ class ILogFunctor
         using namespace picsar::multi_physics::math;
 
         return static_cast<int>(
-            math::m_floor(m_logzmin + (m_zsize - 1)*(logz-m_logzmin)/(m_logzmax - m_logzmin)));
+            math::m_floor((m_zsize - 1)*(logz-m_logzmin)/(m_logzmax - m_logzmin)));
     }
 
     bool operator== (const ILogFunctor<RealType>& rhs) const
