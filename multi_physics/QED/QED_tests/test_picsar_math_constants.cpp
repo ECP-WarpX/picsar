@@ -10,6 +10,7 @@
 #include <picsar_qed/math/math_constants.h>
 
 #include <cmath>
+#include <limits>
 
 using namespace picsar::multi_physics::math;
 
@@ -32,6 +33,7 @@ void test_case_const_math()
     const auto exp_one_third = static_cast<RealType>(1.0/3.0);
     const auto exp_two_thirds = static_cast<RealType>(2.0/3.0);
     const auto exp_five_thirds = static_cast<RealType>(5.0/3.0);
+    const auto exp_epsilon = std::numeric_limits<RealType>::epsilon();
 
     BOOST_CHECK_EQUAL(pi<RealType>, exp_pi);
     BOOST_CHECK_EQUAL(zero<RealType>, exp_zero);
@@ -43,6 +45,7 @@ void test_case_const_math()
     BOOST_CHECK_EQUAL(one_third<RealType>, exp_one_third);
     BOOST_CHECK_EQUAL(two_thirds<RealType>, exp_two_thirds);
     BOOST_CHECK_EQUAL(five_thirds<RealType>, exp_five_thirds);
+    BOOST_CHECK_EQUAL(epsilon<RealType>, exp_epsilon);
 }
 
 BOOST_AUTO_TEST_CASE( picsar_const_math )

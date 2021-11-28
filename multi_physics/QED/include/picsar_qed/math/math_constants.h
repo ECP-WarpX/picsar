@@ -4,6 +4,8 @@
 //Should be included by all the src files of the library
 #include "picsar_qed/qed_commons.h"
 
+#include <limits>
+
 namespace picsar{
 namespace multi_physics{
 namespace math{
@@ -40,6 +42,9 @@ namespace math{
 
     template<typename RealType = double>
     constexpr RealType five_thirds = RealType(5.0/3.0);
+
+    template<typename RealType = double>
+    constexpr RealType epsilon = std::numeric_limits<RealType>::epsilon();
     //________________________
 }
 }
