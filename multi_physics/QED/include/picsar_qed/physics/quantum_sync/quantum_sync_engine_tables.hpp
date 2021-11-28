@@ -1375,7 +1375,9 @@ class ITailOptFunctor
                 }
 
                 const auto log_e_chi_part = m_log(e_chi_part);
-                const auto log_prob = m_log(one<RealType>-unf_zero_one_minus_epsi);
+
+                const auto tlog_prob = m_log(one<RealType>-unf_zero_one_minus_epsi);
+                const auto log_prob = (tlog_prob >= zero<RealType>) ? -epsilon<RealType> : tlog_prob;
 
                 const auto upper_frac_index = utils::picsar_upper_bound_functor(
                     0, m_params.frac_how_many,log_prob,[&](int i){
