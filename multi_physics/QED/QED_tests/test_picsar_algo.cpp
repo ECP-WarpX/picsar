@@ -7,8 +7,9 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/tools/floating_point_comparison.hpp>
 
-//Force the use of PICSAR implementation of upper_bound for debug purposes
+//Force the use of PICSAR implementation of upper_bound and lower_bound for debug purposes
 #define PXRMP_PICSAR_UPPER_BOUND
+#define PXRMP_PICSAR_LOWER_BOUND
 #include <picsar_qed/utils/picsar_algo.hpp>
 
 #include <array>
@@ -47,6 +48,19 @@ BOOST_AUTO_TEST_CASE( picsar_upper_bound_1 )
     }
 }
 
+// ***Test lower_bound
+
+BOOST_AUTO_TEST_CASE( picsar_lower_bound_1 )
+{
+    const auto arr = std::array<double,5>{0.0, 1.0, 2.0, 3.0, 4.0};
+
+    for (const auto nn : std::vector<double>{-1.,0.,0.1,1,1.1,3.9,4.0,5.0}){
+        BOOST_CHECK_EQUAL(
+            picsar_lower_bound(arr.begin(), arr.end(), nn),
+            std::lower_bound(arr.begin(), arr.end(), nn));
+    }
+}
+
 // ***Test upper_bound_functor
 
 BOOST_AUTO_TEST_CASE( picsar_upper_bound_functor_1 )
@@ -63,6 +77,24 @@ BOOST_AUTO_TEST_CASE( picsar_upper_bound_functor_1 )
 
     }
 }
+
+// ***Test lower_bound_functor
+
+BOOST_AUTO_TEST_CASE( picsar_lower_bound_functor_1 )
+{
+    const auto arr = std::array<double,5>{0.0, 1.0, 2.0, 3.0, 4.0};
+
+    for (const auto nn : std::vector<double>{-1.,0.,0.1,1,1.1,3.9,4.0,5.0}){
+        BOOST_CHECK_EQUAL(
+            picsar_lower_bound_functor(0, arr.size(), nn, [&](size_t i){
+                return arr[i];}),
+            std::distance(
+                arr.begin(),
+                std::lower_bound(arr.begin(), arr.end(), nn)));
+
+    }
+}
+
 
 // ***Test linear_interp
 
