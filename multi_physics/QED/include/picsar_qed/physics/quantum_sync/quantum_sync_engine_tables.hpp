@@ -27,6 +27,8 @@
 #include "picsar_qed/utils/picsar_algo.hpp"
 //Uses log and exp
 #include "picsar_qed/math/cmath_overloads.hpp"
+//Uses auxiliary functors
+#include "quantum_sync_engine_tables_detail.hpp"
 
 #include <algorithm>
 #include <vector>
@@ -787,309 +789,6 @@ namespace quantum_sync{
 
     //________________ Tail-optimized photon emission table ____________________
 
-template <typename RealType>
-class LogFunctor
-{
-    public:
-
-    LogFunctor(){};
-
-    LogFunctor(int zsize, RealType zmin, RealType zmax):
-        m_zsize{zsize}
-    {
-        m_logzmin = math::m_log(zmin);
-        m_logzmax = math::m_log(zmax);
-    }
-
-    RealType operator() (const int i) const
-    {
-        using namespace picsar::multi_physics::math;
-
-        return m_logzmin + i*(m_logzmax-m_logzmin)/(m_zsize-1);
-    }
-
-    bool operator== (const LogFunctor<RealType>& rhs) const
-    {
-        return
-            (this->m_zsize == rhs.m_zsize) &&
-            (this->m_logzmin == rhs.m_logzmin) &&
-            (this->m_logzmax == rhs.m_logzmax);
-    }
-
-    std::vector<char> serialize() const
-    {
-        using namespace utils;
-
-        std::vector<char> raw;
-
-        serialization::put_in(m_zsize, raw);
-        serialization::put_in(m_logzmin, raw);
-        serialization::put_in(m_logzmax, raw);
-
-        return raw;
-    }
-
-    template<typename Iter>
-    static LogFunctor<RealType> deserialize(Iter& it)
-    {
-        using namespace utils;
-
-        auto functor = LogFunctor<RealType>{};
-
-        functor.m_zsize = serialization::get_out<int>(it);
-        functor.m_logzmin = serialization::get_out<RealType>(it);
-        functor.m_logzmax = serialization::get_out<RealType>(it);
-
-        return functor;
-    }
-
-    private:
-
-    int m_zsize;
-    RealType m_logzmin;
-    RealType m_logzmax;
-};
-
-template <typename RealType>
-class ILogFunctor
-{
-    public:
-
-    ILogFunctor(){};
-
-    ILogFunctor(int zsize, RealType zmin, RealType zmax):
-        m_zsize{zsize}
-    {
-        m_logzmin = math::m_log(zmin);
-        m_logzmax = math::m_log(zmax);
-    }
-
-    RealType operator() (RealType logz) const
-    {
-        using namespace picsar::multi_physics::math;
-
-        return static_cast<int>(
-            math::m_floor(m_logzmin + (m_zsize - 1)*(logz-m_logzmin)/(m_logzmax - m_logzmin)));
-    }
-
-    bool operator== (const ILogFunctor<RealType>& rhs) const
-    {
-        return
-            (this->m_zsize == rhs.m_zsize) &&
-            (this->m_logzmin == rhs.m_logzmin) &&
-            (this->m_logzmax == rhs.m_logzmax);
-    }
-
-    std::vector<char> serialize() const
-    {
-        using namespace utils;
-
-        std::vector<char> raw;
-
-        serialization::put_in(m_zsize, raw);
-        serialization::put_in(m_logzmin, raw);
-        serialization::put_in(m_logzmax, raw);
-
-        return raw;
-    }
-
-    template<typename Iter>
-    static ILogFunctor<RealType> deserialize(Iter& it)
-    {
-        using namespace utils;
-
-        auto functor = ILogFunctor<RealType>{};
-
-        functor.m_zsize = serialization::get_out<int>(it);
-        functor.m_logzmin = serialization::get_out<RealType>(it);
-        functor.m_logzmax = serialization::get_out<RealType>(it);
-
-        return functor;
-    }
-
-    private:
-
-    int m_zsize;
-    RealType m_logzmin;
-    RealType m_logzmax;
-};
-
-template <typename RealType>
-class TailOptFunctor
-{
-    public:
-
-    TailOptFunctor(){};
-
-    TailOptFunctor(const int zsize, const int zfirst,
-        const RealType zmin, const RealType zmax, const RealType zswitch):
-        m_zsize{zsize}, m_zfirst{zfirst},
-        m_zmin{zmin}, m_zmax{zmax}, m_zswitch{zswitch}
-    {
-        m_logzmin = math::m_log(m_zmin);
-        m_logzswitch = math::m_log(m_zswitch);
-    }
-
-    RealType operator() (const int i) const
-    {
-        using namespace picsar::multi_physics::math;
-
-        if (i < m_zfirst){
-            return m_logzmin + i*(m_logzswitch-m_logzmin)/(m_zfirst-1);
-        }
-        else{
-            return math::m_log(
-                m_zswitch+((i+1)-m_zfirst)*(m_zmax-m_zswitch)/(m_zsize-m_zfirst));
-        }
-    }
-
-    bool operator== (const TailOptFunctor<RealType>& rhs) const
-    {
-        return
-            (this->m_zsize == rhs.m_zsize) &&
-            (this->m_zfirst == rhs.m_zfirst) &&
-            (this->m_zmin == rhs.m_zmin) &&
-            (this->m_logzmin == rhs.m_logzmin) &&
-            (this->m_zmax == rhs.m_zmax) &&
-            (this->m_zswitch == rhs.m_zswitch) &&
-            (this->m_logzswitch == rhs.m_logzswitch);
-    }
-
-    std::vector<char> serialize() const
-    {
-        using namespace utils;
-
-        std::vector<char> raw;
-
-        serialization::put_in(m_zsize, raw);
-        serialization::put_in(m_zfirst, raw);
-        serialization::put_in(m_zmin, raw);
-        serialization::put_in(m_logzmin, raw);
-        serialization::put_in(m_zmax, raw);
-        serialization::put_in(m_zswitch, raw);
-        serialization::put_in(m_logzswitch, raw);
-
-        return raw;
-    }
-
-    template<typename Iter>
-    static TailOptFunctor<RealType> deserialize(Iter& it)
-    {
-        using namespace utils;
-
-        auto functor = TailOptFunctor<RealType>{};
-
-        functor.m_zsize = serialization::get_out<int>(it);
-        functor.m_zfirst = serialization::get_out<int>(it);
-        functor.m_zmin = serialization::get_out<RealType>(it);
-        functor.m_logzmin = serialization::get_out<RealType>(it);
-        functor.m_zmax = serialization::get_out<RealType>(it);
-        functor.m_zswitch = serialization::get_out<RealType>(it);
-        functor.m_logzswitch = serialization::get_out<RealType>(it);
-
-        return functor;
-    }
-
-    private:
-
-    int m_zsize;
-    int m_zfirst;
-    RealType m_zmin;
-    RealType m_logzmin;
-    RealType m_zmax;
-    RealType m_zswitch;
-    RealType m_logzswitch;
-};
-
-template <typename RealType>
-class ITailOptFunctor
-{
-    public:
-
-    ITailOptFunctor(){};
-
-    ITailOptFunctor(const int zsize, const int zfirst,
-        const RealType zmin, const RealType zmax, const RealType zswitch):
-        m_zsize{zsize}, m_zfirst{zfirst},
-        m_zmin{zmin}, m_zmax{zmax}, m_zswitch{zswitch}
-    {
-        m_logzmin = math::m_log(m_zmin);
-        m_logzswitch = math::m_log(m_zswitch);
-    }
-
-    int operator() (const RealType logz) const
-    {
-        using namespace picsar::multi_physics::math;
-
-        if (logz < m_logzswitch){
-            return static_cast<int>(
-                math::m_round( (m_zfirst -1)*(logz-m_logzmin)/(m_logzswitch - m_logzmin)));
-        }
-        else{
-            const auto z = m_exp(logz);
-            return static_cast<int>(
-                m_floor(m_zfirst + (m_zsize-m_zfirst - 1)*(z-m_zswitch)/(m_zmax - m_zswitch)));
-        }
-    }
-
-    bool operator== (const ITailOptFunctor<RealType>& rhs) const
-    {
-        return
-            (this->m_zsize == rhs.m_zsize) &&
-            (this->m_zfirst == rhs.m_zfirst) &&
-            (this->m_zmin == rhs.m_zmin) &&
-            (this->m_logzmin == rhs.m_logzmin) &&
-            (this->m_zmax == rhs.m_zmax) &&
-            (this->m_zswitch == rhs.m_zswitch) &&
-            (this->m_logzswitch == rhs.m_logzswitch);
-    }
-
-    std::vector<char> serialize() const
-    {
-        using namespace utils;
-
-        std::vector<char> raw;
-
-        serialization::put_in(m_zsize, raw);
-        serialization::put_in(m_zfirst, raw);
-        serialization::put_in(m_zmin, raw);
-        serialization::put_in(m_logzmin, raw);
-        serialization::put_in(m_zmax, raw);
-        serialization::put_in(m_zswitch, raw);
-        serialization::put_in(m_logzswitch, raw);
-
-        return raw;
-    }
-
-    template<typename Iter>
-    static ITailOptFunctor<RealType> deserialize(Iter& it)
-    {
-        using namespace utils;
-
-        auto functor = ITailOptFunctor<RealType>{};
-
-        functor.m_zsize = serialization::get_out<int>(it);
-        functor.m_zfirst = serialization::get_out<int>(it);
-        functor.m_zmin = serialization::get_out<RealType>(it);
-        functor.m_logzmin = serialization::get_out<RealType>(it);
-        functor.m_zmax = serialization::get_out<RealType>(it);
-        functor.m_zswitch = serialization::get_out<RealType>(it);
-        functor.m_logzswitch = serialization::get_out<RealType>(it);
-
-        return functor;
-    }
-
-    private:
-
-    int m_zsize;
-    int m_zfirst;
-    RealType m_zmin;
-    RealType m_logzmin;
-    RealType m_zmax;
-    RealType m_zswitch;
-    RealType m_logzswitch;
-};
-
     /**
     * This structure holds the parameters to generate a photon
     * emission lookup table. The lookup table stores the
@@ -1147,8 +846,8 @@ class ITailOptFunctor
     using Generic2DTableType =
         containers::generic_2d_table<
             RealType, VectorType,
-            LogFunctor<RealType>, TailOptFunctor<RealType>,
-            ILogFunctor<RealType>, ITailOptFunctor<RealType> >;
+            detail::LinFunctor<RealType>, detail::TailOptFunctor<RealType>,
+            detail::ILinFunctor<RealType>, detail::ITailOptFunctor<RealType> >;
 
 
     /**
@@ -1169,7 +868,6 @@ class ITailOptFunctor
     template<typename RealType, typename VectorType>
     class tailopt_photon_emission_lookup_table
     {
-
         public:
 
             /**
@@ -1207,14 +905,18 @@ class ITailOptFunctor
                 m_table{Generic2DTableType<RealType, VectorType>{
                     params.chi_part_how_many, params.frac_how_many,
                     VectorType(params.chi_part_how_many * params.frac_how_many),
-                    LogFunctor<RealType>(
-                        m_params.chi_part_how_many, m_params.chi_part_min, m_params.chi_part_max),
-                    TailOptFunctor<RealType>(
+                    detail::LinFunctor<RealType>(
+                        m_params.chi_part_how_many,
+                        math::m_log(m_params.chi_part_min),
+                        math::m_log(m_params.chi_part_max)),
+                    detail::TailOptFunctor<RealType>(
                         m_params.frac_how_many, m_params.frac_first,
                         m_params.frac_min, math::one<RealType>, m_params.frac_switch),
-                    ILogFunctor<RealType>(
-                        m_params.chi_part_how_many, m_params.chi_part_min, m_params.chi_part_max),
-                    ITailOptFunctor<RealType>(
+                    detail::ILinFunctor<RealType>(
+                        m_params.chi_part_how_many,
+                        math::m_log(m_params.chi_part_min),
+                        math::m_log(m_params.chi_part_max)),
+                    detail::ITailOptFunctor<RealType>(
                         m_params.frac_how_many, m_params.frac_first,
                         m_params.frac_min, math::one<RealType>, m_params.frac_switch)}}
                 {}
@@ -1232,14 +934,18 @@ class ITailOptFunctor
                 m_params{params},
                 m_table{Generic2DTableType<RealType, VectorType>{
                     m_params.chi_part_how_many, m_params.frac_how_many, vals,
-                    LogFunctor<RealType>(
-                        m_params.chi_part_how_many, m_params.chi_part_min, m_params.chi_part_max),
-                    TailOptFunctor<RealType>(
+                    detail::LinFunctor<RealType>(
+                        m_params.chi_part_how_many,
+                        math::m_log(m_params.chi_part_min),
+                        math::m_log(m_params.chi_part_max)),
+                    detail::TailOptFunctor<RealType>(
                         m_params.frac_how_many, m_params.frac_first,
                         m_params.frac_min, math::one<RealType>, m_params.frac_switch),
-                    ILogFunctor<RealType>(
-                        m_params.chi_part_how_many, m_params.chi_part_min, m_params.chi_part_max),
-                    ITailOptFunctor<RealType>(
+                    detail::ILinFunctor<RealType>(
+                        m_params.chi_part_how_many,
+                        math::m_log(m_params.chi_part_min),
+                        math::m_log(m_params.chi_part_max)),
+                    detail::ITailOptFunctor<RealType>(
                         m_params.frac_how_many, m_params.frac_first,
                         m_params.frac_min, math::one<RealType>, m_params.frac_switch)}}
             {
