@@ -28,7 +28,7 @@
 //Uses log and exp
 #include "picsar_qed/math/cmath_overloads.hpp"
 //Uses auxiliary functors
-#include "quantum_sync_engine_tables_detail.hpp"
+#include "picsar_qed/physics/quantum_sync/quantum_sync_engine_tables_detail.hpp"
 
 #include <algorithm>
 #include <vector>
@@ -382,17 +382,6 @@ namespace quantum_sync{
             bool m_init_flag = false;  /* Initialization flag*/
             containers::equispaced_1d_table<
                 RealType, VectorType> m_table; /* Table data */
-
-        private:
-            /*
-            * Auxiliary function used for the generation of the lookup table.
-            * (not usable on GPUs). This function is implemented elsewhere
-            * (in quantum_sync_engine_tables_generator.hpp)
-            * since it requires the Boost library.
-            */
-            PXRMP_FORCE_INLINE
-            static RealType aux_generate_double(RealType x);
-
     };
 
     //__________________________________________________________________________
@@ -770,19 +759,6 @@ namespace quantum_sync{
             bool m_init_flag = false; /* Initialization flag*/
             containers::equispaced_2d_table<
                 RealType, VectorType> m_table; /* Table data*/
-
-        private:
-            /*
-            * Auxiliary function used for the generation of the lookup table.
-            * (not usable on GPUs). This function is implemented elsewhere
-            * (in breit_wheeler_engine_tables_generator.hpp)
-            * since it requires the Boost library.
-            */
-            PXRMP_FORCE_INLINE
-            static std::vector<RealType>
-            aux_generate_double(RealType x,
-                const std::vector<RealType>& y);
-
     };
 
     //__________________________________________________________________________
@@ -911,14 +887,18 @@ namespace quantum_sync{
                         math::m_log(m_params.chi_part_max)),
                     detail::TailOptFunctor<RealType>(
                         m_params.frac_how_many, m_params.frac_first,
-                        m_params.frac_min, math::one<RealType>, m_params.frac_switch),
+                        math::m_log(m_params.frac_min),
+                        math::m_log(math::one<RealType>),
+                        math::m_log(m_params.frac_switch)),
                     detail::ILinFunctor<RealType>(
                         m_params.chi_part_how_many,
                         math::m_log(m_params.chi_part_min),
                         math::m_log(m_params.chi_part_max)),
                     detail::ITailOptFunctor<RealType>(
                         m_params.frac_how_many, m_params.frac_first,
-                        m_params.frac_min, math::one<RealType>, m_params.frac_switch)}}
+                        math::m_log(m_params.frac_min),
+                        math::m_log(math::one<RealType>),
+                        math::m_log(m_params.frac_switch))}}
                 {}
 
             /**
@@ -932,22 +912,26 @@ namespace quantum_sync{
                 tailopt_photon_emission_lookup_table_params<RealType> params,
                 VectorType vals):
                 m_params{params},
-                m_table{Generic2DTableType<RealType, VectorType>{
-                    m_params.chi_part_how_many, m_params.frac_how_many, vals,
+                 m_table{Generic2DTableType<RealType, VectorType>(
+                    params.chi_part_how_many, params.frac_how_many, vals,
                     detail::LinFunctor<RealType>(
                         m_params.chi_part_how_many,
                         math::m_log(m_params.chi_part_min),
                         math::m_log(m_params.chi_part_max)),
                     detail::TailOptFunctor<RealType>(
                         m_params.frac_how_many, m_params.frac_first,
-                        m_params.frac_min, math::one<RealType>, m_params.frac_switch),
+                        math::m_log(m_params.frac_min),
+                        math::m_log(math::one<RealType>),
+                        math::m_log(m_params.frac_switch)),
                     detail::ILinFunctor<RealType>(
                         m_params.chi_part_how_many,
                         math::m_log(m_params.chi_part_min),
                         math::m_log(m_params.chi_part_max)),
                     detail::ITailOptFunctor<RealType>(
                         m_params.frac_how_many, m_params.frac_first,
-                        m_params.frac_min, math::one<RealType>, m_params.frac_switch)}}
+                        math::m_log(m_params.frac_min),
+                        math::m_log(math::one<RealType>),
+                        math::m_log(m_params.frac_switch)))}
             {
                 m_init_flag = true;
             }
@@ -1192,18 +1176,6 @@ namespace quantum_sync{
             tailopt_photon_emission_lookup_table_params<RealType> m_params; /* Table parameters*/
             bool m_init_flag = false; /* Initialization flag*/
             Generic2DTableType<RealType, VectorType> m_table; /* Table data*/
-
-        private:
-            /*
-            * Auxiliary function used for the generation of the lookup table.
-            * (not usable on GPUs). This function is implemented elsewhere
-            * (in breit_wheeler_engine_tables_generator.hpp)
-            * since it requires the Boost library.
-            */
-            PXRMP_FORCE_INLINE
-            static std::vector<RealType>
-            aux_generate_double(RealType x,
-                const std::vector<RealType>& y);
 
         };
 

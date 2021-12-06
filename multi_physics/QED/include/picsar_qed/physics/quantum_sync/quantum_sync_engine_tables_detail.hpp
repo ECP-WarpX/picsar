@@ -222,6 +222,7 @@ namespace detail{
         RealType m_coeff;
     };
 
+
     template <typename RealType>
     class TailOptFunctor
     {
@@ -232,11 +233,12 @@ namespace detail{
 
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         TailOptFunctor(const int zsize, const int zfirst,
-                       const RealType zmin, const RealType zmax, const RealType zswitch) : m_zsize{zsize}, m_zfirst{zfirst},
-                                                                                           m_zmin{zmin}, m_zmax{zmax}, m_zswitch{zswitch}
+            const RealType zmin, const RealType zmax, const RealType zswitch) :
+                m_zsize{zsize}, m_zfirst{zfirst}, m_zmin{zmin}
         {
-            m_logzmin = math::m_log(m_zmin);
-            m_logzswitch = math::m_log(m_zswitch);
+            m_exp_zswitch = math::m_exp(zswitch);
+            m_coeff_first = (zswitch - zmin) / (zfirst - 1);
+            m_coeff_second = (math::m_exp(zmax) - m_exp_zswitch) / (zsize - zfirst);
         }
 
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
@@ -246,12 +248,12 @@ namespace detail{
 
             if (i < m_zfirst)
             {
-                return m_logzmin + i * (m_logzswitch - m_logzmin) / (m_zfirst - 1);
+                return m_zmin + i * m_coeff_first;
             }
             else
             {
                 return math::m_log(
-                    m_zswitch + ((i + 1) - m_zfirst) * (m_zmax - m_zswitch) / (m_zsize - m_zfirst));
+                    m_exp_zswitch + ((i + 1) - m_zfirst) * m_coeff_second);
             }
         }
 
@@ -261,10 +263,9 @@ namespace detail{
             return (this->m_zsize == rhs.m_zsize) &&
                    (this->m_zfirst == rhs.m_zfirst) &&
                    (this->m_zmin == rhs.m_zmin) &&
-                   (this->m_logzmin == rhs.m_logzmin) &&
-                   (this->m_zmax == rhs.m_zmax) &&
-                   (this->m_zswitch == rhs.m_zswitch) &&
-                   (this->m_logzswitch == rhs.m_logzswitch);
+                   (this->m_exp_zswitch == rhs.m_exp_zswitch) &&
+                   (this->m_coeff_first == rhs.m_coeff_first) &&
+                   (this->m_coeff_second == rhs.m_coeff_second);
         }
 
         std::vector<char> serialize() const
@@ -276,10 +277,9 @@ namespace detail{
             serialization::put_in(m_zsize, raw);
             serialization::put_in(m_zfirst, raw);
             serialization::put_in(m_zmin, raw);
-            serialization::put_in(m_logzmin, raw);
-            serialization::put_in(m_zmax, raw);
-            serialization::put_in(m_zswitch, raw);
-            serialization::put_in(m_logzswitch, raw);
+            serialization::put_in(m_exp_zswitch, raw);
+            serialization::put_in(m_coeff_first, raw);
+            serialization::put_in(m_coeff_second, raw);
 
             return raw;
         }
@@ -294,10 +294,9 @@ namespace detail{
             functor.m_zsize = serialization::get_out<int>(it);
             functor.m_zfirst = serialization::get_out<int>(it);
             functor.m_zmin = serialization::get_out<RealType>(it);
-            functor.m_logzmin = serialization::get_out<RealType>(it);
-            functor.m_zmax = serialization::get_out<RealType>(it);
-            functor.m_zswitch = serialization::get_out<RealType>(it);
-            functor.m_logzswitch = serialization::get_out<RealType>(it);
+            functor.m_exp_zswitch = serialization::get_out<RealType>(it);
+            functor.m_coeff_first = serialization::get_out<RealType>(it);
+            functor.m_coeff_second = serialization::get_out<RealType>(it);
 
             return functor;
         }
@@ -306,10 +305,9 @@ namespace detail{
         int m_zsize;
         int m_zfirst;
         RealType m_zmin;
-        RealType m_logzmin;
-        RealType m_zmax;
-        RealType m_zswitch;
-        RealType m_logzswitch;
+        RealType m_exp_zswitch;
+        RealType m_coeff_first;
+        RealType m_coeff_second;
     };
 
     template <typename RealType>
@@ -322,28 +320,27 @@ namespace detail{
 
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         ITailOptFunctor(const int zsize, const int zfirst,
-                        const RealType zmin, const RealType zmax, const RealType zswitch) : m_zsize{zsize}, m_zfirst{zfirst},
-                                                                                            m_zmin{zmin}, m_zmax{zmax}, m_zswitch{zswitch}
+            const RealType zmin, const RealType zmax, const RealType zswitch) :
+                m_zsize{zsize}, m_zfirst{zfirst}, m_zmin{zmin}, m_zswitch{zswitch}
         {
-            m_logzmin = math::m_log(m_zmin);
-            m_logzswitch = math::m_log(m_zswitch);
+            m_exp_zswitch = math::m_exp(zswitch);
+            m_coeff_first = (zfirst - 1) / (zswitch - zmin);
+            m_coeff_second = (zsize - zfirst) / (math::m_exp(zmax) - m_exp_zswitch);
         }
 
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
-        int operator()(const RealType logz) const
+        int operator()(const RealType z) const
         {
-            using namespace picsar::multi_physics::math;
-
-            if (logz < m_logzswitch)
+            if (z < m_zswitch)
             {
                 return static_cast<int>(
-                    math::m_round((m_zfirst - 1) * (logz - m_logzmin) / (m_logzswitch - m_logzmin)));
+                    math::m_floor((z - m_zmin) * m_coeff_first));
             }
             else
             {
-                const auto z = m_exp(logz);
+                const auto exp_z = math::m_exp(z);
                 return static_cast<int>(
-                    m_floor(m_zfirst + (m_zsize - m_zfirst - 1) * (z - m_zswitch) / (m_zmax - m_zswitch)));
+                    (exp_z - m_exp_zswitch) * m_coeff_second + (m_zfirst - 1));
             }
         }
 
@@ -353,10 +350,10 @@ namespace detail{
             return (this->m_zsize == rhs.m_zsize) &&
                    (this->m_zfirst == rhs.m_zfirst) &&
                    (this->m_zmin == rhs.m_zmin) &&
-                   (this->m_logzmin == rhs.m_logzmin) &&
-                   (this->m_zmax == rhs.m_zmax) &&
                    (this->m_zswitch == rhs.m_zswitch) &&
-                   (this->m_logzswitch == rhs.m_logzswitch);
+                   (this->m_exp_zswitch == rhs.m_exp_zswitch) &&
+                   (this->m_coeff_first == rhs.m_coeff_first) &&
+                   (this->m_coeff_second == rhs.m_coeff_second);
         }
 
         std::vector<char> serialize() const
@@ -368,10 +365,10 @@ namespace detail{
             serialization::put_in(m_zsize, raw);
             serialization::put_in(m_zfirst, raw);
             serialization::put_in(m_zmin, raw);
-            serialization::put_in(m_logzmin, raw);
-            serialization::put_in(m_zmax, raw);
             serialization::put_in(m_zswitch, raw);
-            serialization::put_in(m_logzswitch, raw);
+            serialization::put_in(m_exp_zswitch, raw);
+            serialization::put_in(m_coeff_first, raw);
+            serialization::put_in(m_coeff_second, raw);
 
             return raw;
         }
@@ -386,10 +383,10 @@ namespace detail{
             functor.m_zsize = serialization::get_out<int>(it);
             functor.m_zfirst = serialization::get_out<int>(it);
             functor.m_zmin = serialization::get_out<RealType>(it);
-            functor.m_logzmin = serialization::get_out<RealType>(it);
-            functor.m_zmax = serialization::get_out<RealType>(it);
             functor.m_zswitch = serialization::get_out<RealType>(it);
-            functor.m_logzswitch = serialization::get_out<RealType>(it);
+            functor.m_exp_zswitch = serialization::get_out<RealType>(it);
+            functor.m_coeff_first = serialization::get_out<RealType>(it);
+            functor.m_coeff_second = serialization::get_out<RealType>(it);
 
             return functor;
         }
@@ -398,11 +395,12 @@ namespace detail{
         int m_zsize;
         int m_zfirst;
         RealType m_zmin;
-        RealType m_logzmin;
-        RealType m_zmax;
         RealType m_zswitch;
-        RealType m_logzswitch;
+        RealType m_exp_zswitch;
+        RealType m_coeff_first;
+        RealType m_coeff_second;
     };
+
 }
 }
 }
