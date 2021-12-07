@@ -335,17 +335,17 @@ void check_tailopt_photon_emission_table()
 
     BOOST_CHECK_EQUAL(coords.size(),how_many*how_many_frac);
 
-    const auto log_functor = LogFunctor<RealType>{
+    const auto lin_functor = detail::LinFunctor<RealType>{
         how_many,
-        static_cast<RealType>(chi_min),
-        static_cast<RealType>(chi_max)};
+        static_cast<RealType>(std::log(chi_min)),
+        static_cast<RealType>(std::log(chi_max))};
 
-    const auto tailopt_functor = TailOptFunctor<RealType>{
+    const auto tailopt_functor = detail::TailOptFunctor<RealType>{
         how_many_frac,
         frac_first,
-        static_cast<RealType>(frac_min),
-        static_cast<RealType>(1.0),
-        static_cast<RealType>(frac_switch)};
+        static_cast<RealType>(std::log(frac_min)),
+        static_cast<RealType>(std::log(1.0)),
+        static_cast<RealType>(std::log(frac_switch))};
 
     for (int i = 0 ; i < how_many*how_many_frac; ++i){
 
@@ -354,7 +354,7 @@ void check_tailopt_photon_emission_table()
         const auto ii = i/how_many_frac;
         const auto jj = i%how_many_frac;
 
-        auto expected_1 = std::exp(log_functor(ii));
+        auto expected_1 = std::exp(lin_functor(ii));
         auto expected_2 = std::exp(tailopt_functor(jj))*expected_1;
 
         BOOST_CHECK_SMALL((res_1-expected_1)/expected_1, tolerance<RealType>());
