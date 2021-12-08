@@ -123,7 +123,7 @@ namespace detail{
         const auto all_chi_part_size = all_chi_part.size();
         const auto all_frac_size = all_frac.size();
 
-        auto all_vals = std::vector<RealType>{};
+        auto all_vals = std::vector<RealType>(all_chi_part_size*all_frac_size);
 
         int count = 0;
 #ifdef PXRMP_HAS_OPENMP
@@ -156,7 +156,7 @@ namespace detail{
             //make sure that the last point is exactly 1.0
             vals.back() = math::one<RealType>;
 
-            all_vals.insert(all_vals.end(), vals.begin(), vals.end());
+            std::copy(vals.begin(), vals.end(), all_vals.begin() + i*all_frac_size);
 
             PXRMP_CONSTEXPR_IF (ShowProgress){
 #ifdef PXRMP_HAS_OPENMP
