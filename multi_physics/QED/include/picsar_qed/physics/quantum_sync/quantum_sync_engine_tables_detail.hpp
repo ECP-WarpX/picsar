@@ -97,11 +97,14 @@ namespace detail{
         /**
         * Deserializes a LinFunctor object from binary data (not suitable for GPUs)
         *
-        * @tparam Iter a char interator
+        * @tparam CharIter a char interator type
+        *
+        * @param[in,out] it a char interator
+        *
         * @return a LinFunctor<RealType> object
         */
-        template <typename Iter>
-        static LinFunctor<RealType> deserialize(Iter &it)
+        template <typename CharIter>
+        static LinFunctor<RealType> deserialize(CharIter &it)
         {
             using namespace utils;
 
@@ -114,6 +117,7 @@ namespace detail{
         }
 
     private:
+
         RealType m_zmin;
         RealType m_coeff;
     };
@@ -121,8 +125,8 @@ namespace detail{
 
     /**
     * This class implements an inverse linear functor to be used in tail-optimized lookup tables.
-    * The functor is essentially the inverse of LinFunctor.
-    * It also contains methods to serialize and deserialize itself.
+    * The functor is essentially the inverse of LinFunctor. It also contains methods
+    * to serialize and deserialize itself.
     *
     * @tparam RealType the floating point type to be used
     */
@@ -170,7 +174,7 @@ namespace detail{
         /**
         * Operator==
         *
-        * @param[in] rhs a const reference to a ILinFunctor<RealType>
+        * @param[in] rhs a const reference to an ILinFunctor<RealType>
         *
         * @return true if rhs and the current functor are equal, false otherwise
         */
@@ -201,11 +205,14 @@ namespace detail{
         /**
         * Deserializes a ILinFunctor object from binary data (not suitable for GPUs)
         *
-        * @tparam Iter a char interator
+        * @tparam CharIter a char interator
+        *
+        * @param[in,out] it a char interator
+        *
         * @return a ILinFunctor<RealType> object
         */
-        template <typename Iter>
-        static ILinFunctor<RealType> deserialize(Iter &it)
+        template <typename CharIter>
+        static ILinFunctor<RealType> deserialize(CharIter &it)
         {
             using namespace utils;
 
@@ -218,19 +225,40 @@ namespace detail{
         }
 
     private:
+
         RealType m_zmin;
         RealType m_coeff;
     };
 
 
+    /**
+    * This class implements a piecewise functor to be used in tail-optimized lookup tables.
+    * The functor maps integers between 0 and zfirst-1 to linearly spaced values between
+    * zmin and zswitch. It maps integers between zswitch and zsize-1 to logarithmically
+    * spaced points up to zmax. It also contains methods to serialize and deserialize itself.
+    *
+    * @tparam RealType the floating point type to be used
+    */
     template <typename RealType>
     class TailOptFunctor
     {
     public:
 
+        /**
+        * Empty constructor
+        */
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         TailOptFunctor(){}
 
+        /**
+        * Constructor
+        *
+        * @param[in] zsize the total number of points
+        * @param[in] zfirst the number of points to be used in the first interval
+        * @param[in] zmin the lower extremum
+        * @param[in] zmax the upper extremum
+        * @param[in] zswitch the z value corresponding to the switch between the two pieces of the function
+        */
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         TailOptFunctor(const int zsize, const int zfirst,
             const RealType zmin, const RealType zmax, const RealType zswitch) :
@@ -241,6 +269,13 @@ namespace detail{
             m_coeff_second = (math::m_exp(zmax) - m_exp_zswitch) / (zsize - zfirst);
         }
 
+        /**
+        * Operator()
+        *
+        * @param[in] i an integer value
+        *
+        * @return if i < zfirst,  zmin + i*(zswitch-zmin)/(zfirst-1), otherwise log( exp(zswitch) + (i+1-zfirst)*(exp(zmax) - exp(zswitch))/(zsize-zfirst) )
+        */
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType operator()(const int i) const
         {
@@ -257,6 +292,13 @@ namespace detail{
             }
         }
 
+        /**
+        * Operator==
+        *
+        * @param[in] rhs a const reference to a TailOptFunctor<RealType>
+        *
+        * @return true if rhs and the current functor are equal, false otherwise
+        */
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         bool operator==(const TailOptFunctor<RealType> &rhs) const
         {
@@ -268,6 +310,11 @@ namespace detail{
                    (this->m_coeff_second == rhs.m_coeff_second);
         }
 
+        /**
+        * Serializes the functor (not suitable for GPUs)
+        *
+        * @return an std::vector<char> containing the binary representation of the functor
+        */
         std::vector<char> serialize() const
         {
             using namespace utils;
@@ -284,8 +331,17 @@ namespace detail{
             return raw;
         }
 
-        template <typename Iter>
-        static TailOptFunctor<RealType> deserialize(Iter &it)
+        /**
+        * Deserializes a TailOptFunctor object from binary data (not suitable for GPUs)
+        *
+        * @tparam CharIter a char interator type
+        *
+        * @param[in,out] it a char interator
+        *
+        * @return a LinFunctor<RealType> object
+        */
+        template <typename CharIter>
+        static TailOptFunctor<RealType> deserialize(CharIter &it)
         {
             using namespace utils;
 
@@ -302,6 +358,7 @@ namespace detail{
         }
 
     private:
+
         int m_zsize;
         int m_zfirst;
         RealType m_zmin;
@@ -310,14 +367,32 @@ namespace detail{
         RealType m_coeff_second;
     };
 
+    /**
+    * This class essentially implements the inverse functor of TailOptFunctor.
+    * It also contains methods to serialize and deserialize itself.
+    *
+    * @tparam RealType the floating point type to be used
+    */
     template <typename RealType>
     class ITailOptFunctor
     {
     public:
 
+        /**
+        * Empty constructor
+        */
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         ITailOptFunctor(){}
 
+        /**
+        * Constructor
+        *
+        * @param[in] zsize the total number of points
+        * @param[in] zfirst the number of points to be used in the first interval
+        * @param[in] zmin the lower extremum
+        * @param[in] zmax the upper extremum
+        * @param[in] zswitch the z value corresponding to the switch between the two pieces of the function
+        */
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         ITailOptFunctor(const int zsize, const int zfirst,
             const RealType zmin, const RealType zmax, const RealType zswitch) :
@@ -328,22 +403,36 @@ namespace detail{
             m_coeff_second = (zsize - zfirst) / (math::m_exp(zmax) - m_exp_zswitch);
         }
 
+        /**
+        * Operator()
+        *
+        * @param[in] i an integer value
+        *
+        * @return if z < zswitch,  floor((z-zmin)*(zfirst-1))/(zswitch-zmin)), otherwise floor((exp(z)-exp(zswitch))*(zsize-zfirst)/(exp(zmax)-exp(zswitch)) + (zfirst-1))
+        */
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         int operator()(const RealType z) const
         {
             if (z < m_zswitch)
             {
-                return static_cast<int>(
-                    math::m_floor((z - m_zmin) * m_coeff_first));
+                return static_cast<int>(math::m_floor(
+                    (z - m_zmin) * m_coeff_first));
             }
             else
             {
                 const auto exp_z = math::m_exp(z);
-                return static_cast<int>(
-                    (exp_z - m_exp_zswitch) * m_coeff_second + (m_zfirst - 1));
+                return static_cast<int>(math::m_floor(
+                    (exp_z - m_exp_zswitch) * m_coeff_second + (m_zfirst - 1)));
             }
         }
 
+        /**
+        * Operator==
+        *
+        * @param[in] rhs a const reference to an ITailOptFunctor<RealType>
+        *
+        * @return true if rhs and the current functor are equal, false otherwise
+        */
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         bool operator==(const ITailOptFunctor<RealType> &rhs) const
         {
@@ -356,6 +445,11 @@ namespace detail{
                    (this->m_coeff_second == rhs.m_coeff_second);
         }
 
+        /**
+        * Serializes the functor (not suitable for GPUs)
+        *
+        * @return an std::vector<char> containing the binary representation of the functor
+        */
         std::vector<char> serialize() const
         {
             using namespace utils;
@@ -373,8 +467,17 @@ namespace detail{
             return raw;
         }
 
-        template <typename Iter>
-        static ITailOptFunctor<RealType> deserialize(Iter &it)
+        /**
+        * Deserializes a TailOptFunctor object from binary data (not suitable for GPUs)
+        *
+        * @tparam CharIter a char interator type
+        *
+        * @param[in,out] it a char interator
+        *
+        * @return a LinFunctor<RealType> object
+        */
+        template <typename CharIter>
+        static ITailOptFunctor<RealType> deserialize(CharIter &it)
         {
             using namespace utils;
 

@@ -102,6 +102,7 @@ namespace quantum_sync{
 
     //__________________________________________________________________________
 
+    //________________ Tail-optimized photon emission table ____________________
 
     /**
     * Generates the lookup table (not usable on GPUs).
