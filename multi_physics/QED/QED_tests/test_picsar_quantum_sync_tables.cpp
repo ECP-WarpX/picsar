@@ -318,7 +318,7 @@ void check_photon_emission_table_serialization()
 }
 
 
-// ***Test Quantum Synchrotron tail-optimized photon emission table serialization
+// ***Test Quantum Synchrotron photon emission table serialization
 BOOST_AUTO_TEST_CASE( picsar_quantum_sync_photon_emission_table_serialization)
 {
     check_photon_emission_table_serialization<double, std::vector<double>>();
