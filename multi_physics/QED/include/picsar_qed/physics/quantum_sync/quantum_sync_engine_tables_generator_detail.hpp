@@ -1,9 +1,8 @@
 #ifndef PICSAR_MULTIPHYSICS_QUANTUM_SYNC_ENGINE_TABLES_GENERATOR_DETAIL
 #define PICSAR_MULTIPHYSICS_QUANTUM_SYNC_ENGINE_TABLES_GENERATOR_DETAIL
 
-//This .hpp file contains the actual implementation of the lookup tables
-//for Quantum Synchrotron photon production with methods to generate
-//the lookup tables.
+//This .hpp file contains the actual implementation of lookup tables generation
+//for Quantum Synchrotron photon production.
 //Please have a look at the jupyter notebook "validation.ipynb"
 //in QED_tests/validation for a more in-depth discussion.
 //
@@ -46,6 +45,7 @@ namespace detail{
     * @tparam ShowProgress if true it shows a nice progress bar
     *
     * @param[in] all_coords a constant reference to the coordinates of the lookup table
+    *
     * @return the values corresponding to all_coords
     */
     template<typename RealType, bool ForceInternalDouble, bool ShowProgress>
@@ -107,10 +107,13 @@ namespace detail{
     * Implements the generation of the photon emission lookup table (not usable on GPUs).
     *
     * @tparam RealType the floating point type to be used
-    * @tparam VectorType the vector type to be used (relevant for the class of which is a method is member)
-    * @tparam Policy if set to generation_policy::force_internal_double it forces internal calculations in double precision
+    * @tparam ForceInternalDouble if true it forces internal calculations in double precision
+    * @tparam ShowProgress if true it shows a nice progress bar
     *
-    * @param[in] show_progress if true it shows a nice progress bar
+    * @param[in] all_chi_part a constant reference to the chi coordinates (first axis)
+    * @param[in] all_frac a constant reference to the fraction coordinates (second axis)
+    *
+    * @return the values corresponding to all_chi_part x all_frac
     */
     template<typename RealType, bool ForceInternalDouble, bool ShowProgress>
     std::vector<RealType>
