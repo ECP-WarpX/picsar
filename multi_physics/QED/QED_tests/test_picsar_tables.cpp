@@ -67,10 +67,6 @@ const double gxswitch = 8.0;
 const double gyswitch = 6.0;
 const int gxfirst = 80;
 const int gyfirst = 80;
-const double glogxmin = std::log(gxmin);
-const double glogxswitch = std::log(gxswitch);
-const double glogymin = std::log(gymin);
-const double glogyswitch = std::log(gyswitch);
 
 class Functor
 {
