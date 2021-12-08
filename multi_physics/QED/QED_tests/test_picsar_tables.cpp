@@ -543,7 +543,7 @@ void check_generic_table_2d_interp(int i, int j, double val)
     gtab_2d.set_val(i,j,val);
     const auto xx = gtab_2d.get_x_coord(i);
     const auto yy = gtab_2d.get_y_coord(j);
-    const auto res =gtab_2d.interp(xx,yy);
+    const auto res = gtab_2d.interp(xx,yy);
 
     BOOST_CHECK_SMALL((res - val)/val, tolerance<double>());
 }
