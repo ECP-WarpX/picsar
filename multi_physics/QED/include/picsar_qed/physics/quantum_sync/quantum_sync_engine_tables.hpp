@@ -850,10 +850,14 @@ namespace quantum_sync{
     * It also provides methods for serialization (export to byte array,
     * import from byte array) and to generate "table views" based on
     * non-owning pointers (this is crucial in order to use the table
-    * in GPU kernels, as explained below).
-    *
-    * Internally, this table stores
+    * in GPU kernels, as explained below). Internally, this table stores
     * log(P(log(chi_particle), log(chi_photon/chi_particle))).
+    * This class implements a "tail-optimized" lookup table:
+    * the quantity chi_photon/chi_particle is logarithmically spaced up to
+    * a certain threshold, and linearly spaced afterwards. This allows for
+    * more table points in the high-energy tail of the energy distribution of
+    * the generated photons. Besides this detail, it can be used exactly like
+    * a regular table.
     *
     * @tparam RealType the floating point type to be used
     * @tparam VectorType the vector type to be used internally (e.g. std::vector)

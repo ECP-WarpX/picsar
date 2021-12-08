@@ -787,17 +787,18 @@ namespace containers{
     //________________ 2D generic table _____________________________________
 
     /**
-    * This class implements a generic 2D lookup table for a function f(x, y)
-    * The MapFunctorData struct must implement .deserialize() method, ::serialize(MapFunctorData) methods, and == operator).
-    * It must also be trivially copiable.
+    * This class implements a generic 2D lookup table for a function f(x, y),
+    * using functors to map indices to coordinates and vice versa.
+    * Functors must be trivially copiable and must implement a serialize() method
+    * and a deserialize(CharIterator&) static method (see /physics/quantum_sync/quantum_sync_engine_tables_detail.hpp
+    * for an example).
     *
     * @tparam RealType the floating point type to be used (e.g. double or float)
     * @tparam VectorType the vector type to be used (e.g. std::vector<double>)
     * @tparam XMapFunctor a functor to map the index on the x axis to the corresponding coordinate x
     * @tparam YMapFunctor a functor to map the index on the y axis to the corresponding coordinate y
     * @tparam IXMapFunctor a functor to map the coordinate x to the corresponding index
-    * @tparam IYMapFunctor a functor to map the coordinate x to the corresponding index
-    * @tparam MapFunctorData a struct holding auxiliary data for map functions.
+    * @tparam IYMapFunctor a functor to map the coordinate y to the corresponding index
     */
     template <
         typename RealType, typename VectorType,
@@ -808,12 +809,15 @@ namespace containers{
     public:
 
         /**
-        * Constructor (not usable on GPUs)
+        * Constructor
         *
         * @param[in] how_many_x number of grid points along x
         * @param[in] how_many_y number of grid points along y
         * @param[in] values the values of the function that should be interpolated (row major order)
-        * @param[in] m_map_functor_data auxiliary data needed for map functors
+        * @param[in] x_map_functor the functor mapping the index on the x axis to the corresponding coordinate x
+        * @param[in] y_map_functor the functor mapping the index on the y axis to the corresponding coordinate y
+        * @param[in] ix_map_functor the functor mapping the coordinate x to the corresponding index
+        * @param[in] iy_map_functor the functor mapping the coordinate y to the corresponding index
         */
         generic_2d_table(
             int how_many_x, int how_many_y,
@@ -884,6 +888,7 @@ namespace containers{
         * Operator ==
         *
         * @param[in] rhs a const reference to a 2D table of the same type
+        *
         * @return true if rhs and *this are equal. false otherwise
         */
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
@@ -907,6 +912,7 @@ namespace containers{
         * Returns the i-th coodinate along x axis
         *
         * @param[in] i the index of the desired coordinate
+        *
         * @return the i-th coordinate
         */
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
@@ -919,6 +925,7 @@ namespace containers{
         * Returns the j-th coodinate along y axis
         *
         * @param[in] j the index of the desired coordinate
+        *
         * @return the j-th coordinate
         */
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
@@ -932,6 +939,7 @@ namespace containers{
         *
         * @param[in] i the index of the desired value along x
         * @param[in] j the index of the desired value along y
+        *
         * @return the value at (i,j)
         */
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
@@ -1231,10 +1239,10 @@ namespace containers{
             int m_how_many_x = 0; /* how many grid points along x */
             int m_how_many_y = 0; /* how many grid points along y */
             VectorType m_values; /* values f(x,y) */
-            XMapFunctor m_x_map_functor;
-            YMapFunctor m_y_map_functor;
-            IXMapFunctor m_ix_map_functor;
-            IYMapFunctor m_iy_map_functor;
+            XMapFunctor m_x_map_functor /* functor to map indices to coordinates on the first axis */;
+            YMapFunctor m_y_map_functor /* functor to map indices to coordinates on the second axis */;
+            IXMapFunctor m_ix_map_functor /* functor to map coordinates to indices on the first axis */;
+            IYMapFunctor m_iy_map_functor/* functor to map coordinates to indices on the second axis */;
 
         /**
         * Function values are stored internally in a 1D vector.
