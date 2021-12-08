@@ -3,6 +3,10 @@
 
 //This .hpp file contains the implementation of the lookup tables
 //for Quantum Synchrotron photon production.
+//Two different lookup tables styles are provided for the lookup table
+//used to determine the properties of the generated photon. The one
+//referred to as "tail-optimized" lookup table is designed to provide
+//a better resolution of the tail of the photon energy spectra.
 //Please have a look at the jupyter notebook "validation.ipynb"
 //in QED_tests/validation for a more in-depth discussion.
 //
@@ -54,9 +58,10 @@ namespace quantum_sync{
     template <typename T>
     constexpr T default_frac_min = static_cast<T>(1e-12); /* Default value of the minimum chi_photon fraction */
 
+    // These parameters are for the "tail-optimized" lookup table
     template <typename T>
-    constexpr T default_frac_switch = static_cast<T>(5e-2); /* Default value of the minimum chi_photon fraction */
-    const int default_frac_first = 128; /* Default number of grid points for photon chi */
+    constexpr T default_frac_switch = static_cast<T>(5e-2); /* Default for the chi_photon fraction switch value of the "tail-optimized" lookup table*/
+    const int default_frac_first = 128; /* Default number of grid points for the first part of the "tail-optimized" lookup table*/
 
 
     //__________________________________________________________________________
@@ -520,7 +525,7 @@ namespace quantum_sync{
             /*
             * Generates the content of the lookup table (not usable on GPUs).
             * This function is implemented elsewhere
-            * (in breit_wheeler_engine_tables_generator.hpp)
+            * (in quantum_sync_engine_tables_generator.hpp)
             * since it requires a recent version of the Boost library.
             *
             * @tparam Policy the generation policy (can force calculations in double precision)
@@ -766,9 +771,13 @@ namespace quantum_sync{
     //________________ Tail-optimized photon emission table ____________________
 
     /**
-    * This structure holds the parameters to generate a photon
+    * This structure holds the parameters to generate a "tail-optimized" photon
     * emission lookup table. The lookup table stores the
-    * values of a cumulative probability distribution (see validation script)
+    * values of a cumulative probability distribution (see validation script).
+    * A "tail-optimized" lookup table differs from a regular lookup table for the
+    * spacing of the photon fraction coordinates. The photon fraction axis is split
+    * in two parts. The first part uses logarithmically spaced points, while the second
+    * part uses linearly spaced points.
     *
     * @tparam RealType the floating point type to be used
     */
@@ -777,10 +786,10 @@ namespace quantum_sync{
         RealType chi_part_min = static_cast<RealType>(0.0); /*Minimum particle chi parameter*/
         RealType chi_part_max = static_cast<RealType>(0.0); /*Maximum particle chi parameter*/
         RealType frac_min = static_cast<RealType>(0.0); /*Minimum chi photon fraction to be stored*/
-        RealType frac_switch = static_cast<RealType>(0.0);
+        RealType frac_switch = static_cast<RealType>(0.0); /*Value of photon fraction where to switch between log-spaced and lin-spaced points */
         int chi_part_how_many = 0; /* Number of grid points for particle chi */
         int frac_how_many = 0; /* Number of grid points for photon chi fraction */
-        int frac_first = 0;
+        int frac_first = 0; /* Number of grid points to be used in the first part of the table */
 
         /**
         * Operator==
@@ -802,7 +811,7 @@ namespace quantum_sync{
     };
 
     /**
-    * The default photon_emission_lookup_table_params
+    * The default tailopt_photon_emission_lookup_table_params
     *
     * @tparam RealType the floating point type to be used
     */
@@ -818,6 +827,14 @@ namespace quantum_sync{
                                         default_frac_first};
 
 
+    /**
+    * A useful alias, to be used in the tailopt_photon_emission_lookup_table.
+    * Internally, tailopt_photon_emission_lookup_table uses a generic_2d_table
+    * built using functors defined in `quantum_sync_engine_tables_detail.hpp`
+    *
+    * @tparam RealType the floating point type to be used
+    * @tparam VectorType the vector type to be used
+    */
     template<typename RealType, typename VectorType>
     using Generic2DTableType =
         containers::generic_2d_table<
@@ -852,7 +869,7 @@ namespace quantum_sync{
             * The use of views is crucial for GPUs. As demonstrated
             * in test_gpu/test_quantum_sync.cu, it is possible to:
             * - define a thin wrapper around a thrust::device_vector
-            * - use this wrapper as a template parameter for a photon_emission_lookup_table
+            * - use this wrapper as a template parameter for a tailopt_photon_emission_lookup_table
             * - initialize the lookup table on the CPU
             * - generate a view
             * - pass by copy this view to a GPU kernel (see get_view() method)
@@ -936,10 +953,10 @@ namespace quantum_sync{
                 m_init_flag = true;
             }
 
-            /*
+            /**
             * Generates the content of the lookup table (not usable on GPUs).
             * This function is implemented elsewhere
-            * (in breit_wheeler_engine_tables_generator.hpp)
+            * (in quantum_sync_engine_tables_generator.hpp)
             * since it requires a recent version of the Boost library.
             *
             * @tparam Policy the generation policy (can force calculations in double precision)
@@ -949,7 +966,7 @@ namespace quantum_sync{
             template <generation_policy Policy = generation_policy::regular>
             void generate(bool show_progress = true);
 
-            /*
+            /**
             * Initializes the lookup table from a byte array.
             * This method is not usable on GPUs.
             *
@@ -965,14 +982,14 @@ namespace quantum_sync{
 
                 if (raw_data.size() < min_size)
                     throw std::runtime_error("Binary data is too small \
-                    to be a Quantum Synchrotron emisson lookup-table.");
+                    to be a Tail-optimized Quantum Synchrotron emisson lookup-table.");
 
                 auto it_raw_data = raw_data.begin();
 
                 if (serialization::get_out<char>(it_raw_data) !=
                     static_cast<char>(sizeof(RealType))){
                     throw std::runtime_error("Mismatch between RealType \
-                    used to write and to read the Quantum Synchrotron lookup-table");
+                    used to write and to read the Tail-optimized Quantum Synchrotron lookup-table");
                 }
 
                 m_params = serialization::get_out<
@@ -1001,7 +1018,7 @@ namespace quantum_sync{
                     (m_table == rhs.m_table);
             }
 
-            /*
+            /**
             * Returns a table view for the current table
             * (i.e. a table built using non-owning picsar_span
             * vectors). A view_type is very lightweight and can
@@ -1025,7 +1042,7 @@ namespace quantum_sync{
                 return view_type{m_params, span};
             }
 
-            /*
+            /**
             * Uses the lookup table to extract the chi value of
             * the generated photon from a cumulative probability
             * distribution, given the chi parameter of the particle and a
@@ -1137,7 +1154,7 @@ namespace quantum_sync{
                 return false;
             }
 
-            /*
+            /**
             * Checks if the table has been initialized.
             *
             * @return true if the table has been initialized, false otherwise
@@ -1149,7 +1166,7 @@ namespace quantum_sync{
                 return m_init_flag;
             }
 
-            /*
+            /**
             * Converts the table to a byte vector
             *
             * @return a byte vector
