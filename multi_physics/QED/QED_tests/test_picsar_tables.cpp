@@ -76,7 +76,7 @@ class Functor
 {
     public:
 
-    Functor(){};
+    Functor(){}
 
     Functor(const int zsize, const int zfirst,
         const double zmin, const double zmax, const double zswitch):
@@ -155,7 +155,7 @@ class IFunctor
 {
     public:
 
-    IFunctor(){};
+    IFunctor(){}
 
     IFunctor(const int zsize, const int zfirst,
         const double zmin, const double zmax, const double zswitch):
