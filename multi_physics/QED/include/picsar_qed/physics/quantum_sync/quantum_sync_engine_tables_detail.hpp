@@ -34,7 +34,7 @@ namespace detail{
         * Empty constructor
         */
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
-        LinFunctor(){};
+        LinFunctor(){}
 
         /**
         * Constructor
@@ -135,7 +135,7 @@ namespace detail{
         * Empty constructor
         */
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
-        ILinFunctor(){};
+        ILinFunctor(){}
 
         /**
         * Constructor
@@ -229,7 +229,7 @@ namespace detail{
     public:
 
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
-        TailOptFunctor(){};
+        TailOptFunctor(){}
 
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         TailOptFunctor(const int zsize, const int zfirst,
@@ -316,7 +316,7 @@ namespace detail{
     public:
 
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
-        ITailOptFunctor(){};
+        ITailOptFunctor(){}
 
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         ITailOptFunctor(const int zsize, const int zfirst,
