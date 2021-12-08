@@ -901,7 +901,7 @@ namespace quantum_sync{
                 m_params{params},
                 m_table{Generic2DTableType<RealType, VectorType>{
                     params.chi_part_how_many, params.frac_how_many,
-                    VectorType(params.chi_part_how_many * params.frac_how_many),
+                    VectorType(static_cast<int>(params.chi_part_how_many * params.frac_how_many)),
                     detail::LinFunctor<RealType>(
                         m_params.chi_part_how_many,
                         math::m_log(m_params.chi_part_min),
