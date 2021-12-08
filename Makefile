@@ -15,6 +15,7 @@
 # - gnu
 # - intel
 # - user
+# - fujitsu
 COMP=gnu
 
 # Mode (MODE)
@@ -39,6 +40,7 @@ SYS=default
 # - ivy
 # - hsw
 # - host
+# - a64fx (only supported for fujitsu compiler)
 ARCH=
 
 
@@ -323,6 +325,20 @@ else ifeq ($(COMP),intel)
     LARCH= -xAVX
   else ifeq ($(ARCH),hsw)
     LARCH= -xCORE-AVX2
+  endif
+
+  # Fujitsu compiler  ______________________________________________
+else ifeq ($(COMP),fujitsu)
+
+  # ___ Mode ______________
+  ifeq ($(MODE),prod)
+	  FC=mpifrtpx
+	  FARGS= -O3 -Kfast -Kopenmp -Kopenmp_simd -Ksimd=2 -Nlst=t -Koptmsg=2
+  endif
+
+    # ___ Architecture ________
+  ifeq ($(ARCH),a64fx)
+    LARCH= -KA64FX -KSVE -SSL2
   endif
 
 endif
