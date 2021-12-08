@@ -25,6 +25,8 @@
     #include <omp.h>
 #endif
 
+#include <algorithm>
+
 namespace picsar{
 namespace multi_physics{
 namespace phys{
@@ -78,16 +80,13 @@ namespace quantum_sync{
     void photon_emission_lookup_table<RealType, VectorType>::generate(
         const bool show_progress)
     {
-        const auto all_coords = get_all_coordinates();
+        auto all_chi_part = VectorType(m_params.chi_part_how_many);
+        auto all_frac = VectorType(m_params.frac_how_many);
 
-        auto all_chi_part = std::vector<RealType>(m_params.chi_part_how_many);
-        auto all_frac = std::vector<RealType>(m_params.frac_how_many);
-
-        for(int i = 0; i < m_params.chi_part_how_many; ++i)
-            all_chi_part[i] = all_coords[i*m_params.frac_how_many][0];
-
-        for(int i = 0; i < m_params.frac_how_many; ++i)
-            all_frac[i] = all_coords[i][1];
+        std::generate(all_chi_part.begin(), all_chi_part.end(),
+            [&,n=0]() mutable {return math::m_exp(m_table.get_x_coord(n++));});
+        std::generate(all_frac.begin(), all_frac.end(),
+            [&,n=0]() mutable {return math::m_exp(m_table.get_y_coord(n++));});
 
         const auto all_vals = show_progress ?
             detail::generate_photon_emission_lookup_table_chipartxfrac<
@@ -118,16 +117,13 @@ namespace quantum_sync{
     void tailopt_photon_emission_lookup_table<RealType, VectorType>::generate(
         const bool show_progress)
     {
-        const auto all_coords = get_all_coordinates();
+        auto all_chi_part = VectorType(m_params.chi_part_how_many);
+        auto all_frac = VectorType(m_params.frac_how_many);
 
-        auto all_chi_part = std::vector<RealType>(m_params.chi_part_how_many);
-        auto all_frac = std::vector<RealType>(m_params.frac_how_many);
-
-        for(int i = 0; i < m_params.chi_part_how_many; ++i)
-            all_chi_part[i] = all_coords[i*m_params.frac_how_many][0];
-
-        for(int i = 0; i < m_params.frac_how_many; ++i)
-            all_frac[i] = all_coords[i][1];
+        std::generate(all_chi_part.begin(), all_chi_part.end(),
+            [&,n=0]() mutable {return math::m_exp(m_table.get_x_coord(n++));});
+        std::generate(all_frac.begin(), all_frac.end(),
+            [&,n=0]() mutable {return math::m_exp(m_table.get_y_coord(n++));});
 
         const auto all_vals = show_progress ?
             detail::generate_photon_emission_lookup_table_chipartxfrac<
