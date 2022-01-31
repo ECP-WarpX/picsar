@@ -266,16 +266,9 @@ compute_gamma_photon_wrapper(
     const pyArr& px, const pyArr& py, const pyArr& pz,
     const REAL ref_quantity)
 {
-    const REAL
-        *p_px = nullptr, *p_py = nullptr, *p_pz = nullptr;
 
-    size_t how_many = 0;
-
-    std::tie(
-        how_many,
-        p_px, p_py, p_pz) =
-            check_and_get_pointers(
-                px, py, pz);
+    const auto [how_many, p_px, p_py, p_pz] =
+        check_and_get_pointers(px, py, pz);
 
     auto res = pyArr(how_many);
     auto p_res = static_cast<REAL*>(res.request().ptr);
