@@ -31,7 +31,7 @@ option(PXRMP_DPCPP_FIX            "Use cl::sycl::floor cl::sycl::floorf on devic
 add_library(PXRMP_QED INTERFACE)
 add_library(${PROJECT_NAME}::PXRMP_QED ALIAS PXRMP_QED)
 
-target_compile_features(PXRMP_QED INTERFACE cxx_std_14)
+target_compile_features(PXRMP_QED INTERFACE cxx_std_17)
 
 if(PXRMP_QED_OMP)
    find_package(OpenMP REQUIRED)
