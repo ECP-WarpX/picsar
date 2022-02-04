@@ -62,6 +62,55 @@ picsar_upper_bound
 }
 
 /**
+* This function returns an iterator pointing
+* to the first element in the range [first,last)
+* which compares not less than val. If no element in the range compares
+* not less than val, the function returns last.
+* If the preprocessor variable PXRMP_PICSAR_LOWER_BOUND
+* is defined, a GPU-compatible version is used. Otherwise,
+* the lower_bound function of the standard template library is used.
+* The choice should be made automatically by the library depending on if
+* the code is compiled for GPU. However, the PICSAR implementation can
+* be forced defining PXRMP_PICSAR_LOWER_BOUND.
+*
+* @tparam ForwardIt the iterator type
+* @tparam T the type of 'val'
+* @param[in] first a ForwardIt pointing to the first element of the container
+* @param[in] last a ForwardIt pointing to the end of the container (i.e. beyond the last element)
+* @param[in] val the value to use to find the lower bound
+* @return a ForwardIt to the lower bound
+*/
+template<typename ForwardIt, typename T>
+PXRMP_GPU_QUALIFIER
+PXRMP_FORCE_INLINE
+ForwardIt
+picsar_lower_bound
+(ForwardIt first, ForwardIt last, const T& val)
+{
+#ifdef PXRMP_PICSAR_LOWER_BOUND
+
+    size_t count = last-first;
+    do{
+        auto it = first;
+        const auto step = count/2;
+        it += step;
+         if (!(val<=*it)){
+             first = ++it;
+             count -= step + 1;
+         }
+         else{
+             count = step;
+         }
+    }while(count>0);
+
+    return first;
+
+#else
+    return std::lower_bound(first, last, val);
+#endif
+}
+
+/**
 * This function returns the value of the
 * the first element in a sequence which compares greater than val.
 * If no element in the range compares greater than val, the function returns last.
@@ -89,6 +138,45 @@ picsar_upper_bound_functor
         const auto step = count/2;
         i += step;
          if (!(val<functor(i))){
+             first = ++i;
+             count -= step + 1;
+         }
+         else{
+             count = step;
+         }
+    }while(count>0);
+
+    return first;
+}
+
+/**
+* This function returns the value of the
+* the first element in a sequence which compares not less than val.
+* If no element in the range compares not less than val, the function returns last.
+* In order to be completely general, the sequence is given by a functor
+* f(int i) --> T res, which should respect the property "res2 >= res1 if i2 >= i1".
+*
+* @tparam T the type of 'val'
+* @tparam Functor the type of Functor
+* @param[in] first the first index (an int)
+* @param[in] last the last index (an int)
+* @param[in] val the value to use to find the lower bound
+* @param[in] functor a functor f(int i) --> T res, respecting "res2 >= res1 if i2 >= i1"
+* @return a ForwardIt to the lower bound
+*/
+template<typename T, typename Functor>
+PXRMP_GPU_QUALIFIER
+PXRMP_FORCE_INLINE
+int
+picsar_lower_bound_functor
+(int first, const int last, const T& val, Functor&& functor)
+{
+    int count = last-first;
+    do{
+        auto i = first;
+        const auto step = count/2;
+        i += step;
+         if (!(val<=functor(i))){
              first = ++i;
              count -= step + 1;
          }
