@@ -8,6 +8,7 @@ env:
   CXX: clang++
   CXXFLAGS: "-Wall -Wextra -I /usr/local/include -I/usr/local/opt/llvm/include"
   CCFLAGS: "-Wall -Wextra -I /usr/local/include -I/usr/local/opt/llvm/include"
+  LDFLAGS: "-L /usr/local/lib"
 
 jobs:
   # Build libamrex and all tutorials
