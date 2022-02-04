@@ -6,6 +6,8 @@ env:
   CTEST_OUTPUT_ON_FAILURE: 1
   CC: clang
   CXX: clang++
+  CXXFLAGS: "-Wall -Wextra -I /usr/local/include -I/usr/local/opt/llvm/include"
+  CCFLAGS: "-Wall -Wextra -I /usr/local/include -I/usr/local/opt/llvm/include"
 
 jobs:
   # Build libamrex and all tutorials
