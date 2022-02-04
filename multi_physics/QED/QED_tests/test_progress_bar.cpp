@@ -11,7 +11,7 @@
 
 // ***Test progress bar
 
-BOOST_AUTO_TEST_CASE( picsar_progress_bar_1 )
+BOOST_AUTO_TEST_CASE( test )
 {
     boost::test_tools::output_test_stream output;
     const int a = 1;
