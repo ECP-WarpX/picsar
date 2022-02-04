@@ -42,7 +42,7 @@ namespace utils{
                 else out << " ";
             }
             const int progress_percentage = static_cast<int>(progress * 100.0);
-            out << "] " << progress_percentage << "%  " << text ;
+            out << "] " << std::to_string(progress_percentage) << "%  " << text ;
             if(last) out <<"\n";
             else out <<"\r";
             out.flush();
