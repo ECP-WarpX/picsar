@@ -95,13 +95,16 @@
 
 /**
  * If GPU support is enabled, the library uses an internal, GPU-friendly,
- * implementation of the upper_bound algorithm. For test purposes, this implementation
+ * implementation of the upper_bound and of the lower_bound algorithm.
+ * For test purposes, this implementation
  * can be used also on CPU, instead of the implementation provided by the STL.
  * This can be achieved by doing:
  * #define PXRMP_PICSAR_UPPER_BOUND
+ * #define PXRMP_PICSAR_LOWER_BOUND
  */
 #ifdef PXRMP_WITH_GPU
     #define PXRMP_PICSAR_UPPER_BOUND
+    #define PXRMP_PICSAR_LOWER_BOUND
 #endif
 
 
