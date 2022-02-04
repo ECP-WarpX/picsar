@@ -41,7 +41,7 @@ namespace utils{
                 else if (j == pos) out << ">";
                 else out << " ";
             }
-            out << "] " << static_cast<int>(progress * 100.0)
+            out << "] " << std::to_string(static_cast<int>(progress * 100.0))
             << "%  " << text ;
             if(last) out <<"\n";
             else out <<"\r";
