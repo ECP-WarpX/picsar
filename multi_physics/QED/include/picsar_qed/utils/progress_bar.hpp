@@ -41,8 +41,8 @@ namespace utils{
                 else if (j == pos) out << ">";
                 else out << " ";
             }
-            const int progress_percentage = static_cast<int>(progress * 100.0);
-            out << "] " << std::to_string(progress_percentage) << "%  " << text ;
+            out << "] " << std::to_string(static_cast<int>(progress * 100.0))
+            << "%  " << text ;
             if(last) out <<"\n";
             else out <<"\r";
             out.flush();
