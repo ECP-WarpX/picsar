@@ -2,29 +2,6 @@
 find_package(Boost 1.66.0 REQUIRED COMPONENTS unit_test_framework)
 
 set(TEST_NAMES
-    picsar_algo
-    picsar_array
-    picsar_breit_wheeler_core
-    picsar_breit_wheeler_tables
-    picsar_breit_wheeler_tables_generator
-    picsar_breit_wheeler_tabulated_functions
-    picsar_chi_functions
-    picsar_gamma_functions
-    picsar_cmath_overload
-    picsar_math_constants
-    picsar_phys_constants
-    picsar_quadrature
-    picsar_quantum_sync_core
-    picsar_quantum_sync_tables
-    picsar_quantum_sync_tables_generator
-    picsar_quantum_sync_tabulated_functions
-    picsar_schwinger_engine_core
-    picsar_serialization
-    picsar_span
-    picsar_spec_functions
-    picsar_tables
-    picsar_units
-    picsar_vec_functions
     progress_bar
 )
 

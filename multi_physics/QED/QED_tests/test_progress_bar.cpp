@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE( picsar_progress_bar_2 )
     boost::test_tools::output_test_stream output;
     draw_progress(2, 10, "bcd", 1, false, output);
     BOOST_CHECK(output.is_equal(
-        " [==========>                                       ] 20%  bcd\r"));
+        " [==========>                                       ] 30%  bcd\r"));
 }
 
 BOOST_AUTO_TEST_CASE( picsar_progress_bar_3 )
