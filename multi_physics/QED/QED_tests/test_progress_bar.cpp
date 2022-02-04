@@ -7,10 +7,6 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/tools/output_test_stream.hpp>
 
-#include <picsar_qed/utils/progress_bar.hpp>
-
-using namespace picsar::multi_physics::utils;
-
 // ------------- Tests --------------
 
 // ***Test progress bar
@@ -18,40 +14,9 @@ using namespace picsar::multi_physics::utils;
 BOOST_AUTO_TEST_CASE( picsar_progress_bar_1 )
 {
     boost::test_tools::output_test_stream output;
-    draw_progress(0, 10, "aa", 1, false, output);
-    BOOST_CHECK(output.is_equal(
-        " [>                                                 ] 0%  aa\r"));
-}
-
-BOOST_AUTO_TEST_CASE( picsar_progress_bar_2 )
-{
-    boost::test_tools::output_test_stream output;
-    draw_progress(2, 10, "bcd", 1, false, output);
-    BOOST_CHECK(output.is_equal(
-        " [==========>                                       ] 20%  bcd\r"));
-}
-
-BOOST_AUTO_TEST_CASE( picsar_progress_bar_3 )
-{
-    boost::test_tools::output_test_stream output;
-    draw_progress(10, 10, "efg", 1, false, output);
-    BOOST_CHECK(output.is_equal(
-        " [==================================================] 100%  efg\r"));
-}
-
-BOOST_AUTO_TEST_CASE( picsar_progress_bar_4 )
-{
-    boost::test_tools::output_test_stream output;
-    draw_progress(10, 10, "efg", 1, true, output);
-    BOOST_CHECK(output.is_equal(
-        " [==================================================] 100%  efg\n"));
-}
-
-BOOST_AUTO_TEST_CASE( picsar_progress_bar_5 )
-{
-    boost::test_tools::output_test_stream output;
-    draw_progress(5, 10, "efg", 3, false, output);
-    BOOST_CHECK(output.is_equal(""));
+    const int a = 1;
+    output << a;
+    BOOST_CHECK(output.is_equal("1"));
 }
 
 // *******************************
