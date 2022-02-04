@@ -41,7 +41,8 @@ namespace utils{
                 else if (j == pos) out << ">";
                 else out << " ";
             }
-            out << "] " << static_cast<int>(progress * 100.0)
+            const int progress_percentage = static_cast<int>(progress * 100.0);
+            out << "] " << progress_percentage
             << "%  " << text ;
             if(last) out <<"\n";
             else out <<"\r";
