@@ -59,7 +59,7 @@ set(PXRMP_kokkos_src ""
 # Git fetcher
 set(PXRMP_kokkos_repo "https://github.com/kokkos/kokkos.git"
     CACHE STRING
-    "Repository URI to pull and build AMReX from if(PXRMP_kokkos_internal)")
+    "Repository URI to pull and build Kokkos from if(PXRMP_kokkos_internal)")
 set(PXRMP_kokkos_tag "3.3.01"
     CACHE STRING
     "git tag for PXRMP_kokkos_repo if(PXRMP_kokkos_internal)")
