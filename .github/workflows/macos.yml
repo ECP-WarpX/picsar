@@ -22,5 +22,5 @@ jobs:
     - name: Build & Test
       run: |
         export PATH="/usr/local/opt/llvm/bin/:$PATH"
-        clang++ -v -I /usr/local/include -I/usr/local/opt/llvm/include -L /usr/local/lib -L/usr/local/opt/llvm/lib test.cpp
+        clang++ -v -I /usr/local/include -I/usr/local/opt/llvm/include -isysroot /Applications/Xcode_13.2.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk -mmacosx-version-min=11.6 -Wall -Wextra -pedantic -fopenmp=libomp -std=c++17 -L /usr/local/lib -L/usr/local/opt/llvm/lib test.cpp
         ./a.out
