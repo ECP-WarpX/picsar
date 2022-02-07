@@ -22,5 +22,5 @@ jobs:
     - name: Build & Test
       run: |
         export PATH="/usr/local/opt/llvm/bin/:$PATH"
-        clang++ test.cpp
+        clang++ -I /usr/local/include -I/usr/local/opt/llvm/include -L /usr/local/lib -L/usr/local/opt/llvm/lib test.cpp
         ./a.out
