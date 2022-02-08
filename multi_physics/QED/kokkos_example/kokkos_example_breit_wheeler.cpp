@@ -66,7 +66,7 @@ void correct_low_momenta(ParticleData<Real>& pdata)
 * @return the lookup table
 */
 template <typename Real, typename Vector>
-auto generate_dndt_table(Real chi_min, Real chi_max, int chi_size)
+auto generate_dndt_table(const Real chi_min, const Real chi_max, const int chi_size)
 {
     std::cout << "Preparing dndt table [" << get_type_name<Real>()
         << ", " << chi_size <<"]...\n";
