@@ -189,10 +189,10 @@ auto init_view_with_random_content(
 * @param N the number of particles
 * @param[in] Pmin the minimum value of the momentum
 * @param[in] Pmax the maximum value of the momentum
-* @param[in] Emin the minimum value of the momentum
-* @param[in] Emax the maximum value of the momentum
-* @param[in] Bmin the minimum value of the momentum
-* @param[in] Bmax the maximum value of the momentum
+* @param[in] Emin the minimum value of the electric field
+* @param[in] Emax the maximum value of the electric field
+* @param[in] Bmin the minimum value of the magnetic field
+* @param[in] Bmax the maximum value of the magnetic field
 * @param[in,out] rand_pool a random pool
 * @return the particle data
 */
