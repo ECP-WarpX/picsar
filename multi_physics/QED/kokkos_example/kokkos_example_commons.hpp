@@ -131,7 +131,7 @@ std::string get_type_name()
 /**
 * Initializes a 2D Kokkos::View with N, ParticleData<Real>::num_components
 * elements. The values inside the View are initialized randomly between min_val
-* and max_val.
+* and max_val with a uniform distribution.
 *
 * @tparam Real the floating point type to be used
 * @param[in] label the Kokkos::View label
@@ -159,7 +159,7 @@ auto init_multi_comp_view_with_random_content(
 /**
 * Initializes a 1D Kokkos::View with N elements.
 * The values inside the View are initialized randomly between min_val
-* and max_val.
+* and max_val with a uniform distribution.
 *
 * @tparam Real the floating point type to be used
 * @param[in] label the Kokkos::View label
