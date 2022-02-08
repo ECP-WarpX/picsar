@@ -38,7 +38,7 @@ void correct_low_momenta(ParticleData<Real>& pdata)
 
             const auto gamma_gamma = pxr::compute_gamma_photon<Real>(px, py, pz);
 
-            const auto minimum_normalized_momentum = Real(2.1);
+            constexpr auto minimum_normalized_momentum = Real(2.1);
 
             // if the photon has zero energy, replace it with a photon
             // having momentum equal to the minimum_normalized_momentum
