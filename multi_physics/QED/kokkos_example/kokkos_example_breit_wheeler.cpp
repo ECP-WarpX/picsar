@@ -162,7 +162,7 @@ std::pair<bool, double>
 evolve_optical_depth(
     ParticleData<Real>& pdata,
     const TableType& ref_table,
-    Real dt, const int repetitions)
+    const Real dt, const int repetitions)
 {
     Kokkos::Timer timer;
     for(int rr = 0; rr < repetitions; ++rr){
