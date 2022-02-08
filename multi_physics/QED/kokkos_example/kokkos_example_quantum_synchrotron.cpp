@@ -54,7 +54,7 @@ auto generate_dndt_table(Real chi_min, Real chi_max, int chi_size)
 * @tparam Vector the vector type to be used
 * @param[in] chi_min the minimum chi parameter
 * @param[in] chi_max the maximum chi parameter
-* @param[in] frac_min the mimum value for the frac parameter
+* @param[in] frac_min the minimum value for the frac parameter
 * @param[in] chi_size the size of the lookup table along the chi axis
 * @param[in] frac_size the size of the lookup table along the frac axis
 * @return the lookup table
