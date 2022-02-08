@@ -104,7 +104,7 @@ class KokkosVectorWrapper : public Kokkos::vector<Real>
     }
 
     /**
-    * This function returns a point to the raw data inside Kokkos::vector.
+    * This function returns a pointer to the raw data inside Kokkos::vector.
     * It is called to build table_views.
     *
     * @return a pointer to the raw vector data
