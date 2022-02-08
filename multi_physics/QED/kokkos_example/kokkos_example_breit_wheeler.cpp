@@ -106,7 +106,7 @@ auto generate_pair_table(const Real chi_min, const Real chi_max, const int chi_s
 	auto table = pxr_bw::pair_prod_lookup_table<
         Real, Vector>{bw_params};
 
-    table.template generate();
+    table.generate();
 
     return table;
 }
