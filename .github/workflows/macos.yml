@@ -11,7 +11,7 @@ env:
   LDFLAGS: "-L /usr/local/lib -L/usr/local/opt/llvm/lib"
 
 jobs:
-  # Build libamrex and all tutorials
+  # Build PICSAR tests, PICSAR python bindings, and Kokkos examples
   tutorials-macos:
     name: QED with tests, python bindings, Kokkos examples
     runs-on: macos-11
