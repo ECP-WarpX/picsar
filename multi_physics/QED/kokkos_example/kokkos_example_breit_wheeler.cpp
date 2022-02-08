@@ -121,7 +121,6 @@ auto generate_pair_table(const Real chi_min, const Real chi_max, const int chi_s
 * Tests the initialization of the optical depth
 *
 * @tparam Real the floating point type to be used
-* @tparam TableType the lookup table type
 * @param[in,out] pdata the particle data
 * @param[in] repetitions how many times should the test be repeated
 * @param[in,out] rand_pool a random pool
