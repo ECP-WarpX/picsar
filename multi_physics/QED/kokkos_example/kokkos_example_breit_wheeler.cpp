@@ -156,6 +156,7 @@ fill_opt_test(
 * Tests the evolution of the optical depth
 *
 * @tparam Real the floating point type to be used
+* @tparam TableType the lookup table type
 * @param[in,out] pdata the particle data
 * @param[in] ref_table the dN/dt lookup table
 * @param[in] dt the timestep
