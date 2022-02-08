@@ -135,7 +135,6 @@ std::string get_type_name()
 *
 * @tparam Real the floating point type to be used
 * @param[in] label the Kokkos::View label
-* @param[in] N the number of particles
 * @param[in] min_val the minimum value to initialize the content of the Kokkos::View
 * @param[in] max_val the maximum value to initialize the content of the Kokkos::View
 * @param[in] N the number of particles
@@ -163,7 +162,6 @@ auto init_multi_comp_view_with_random_content(
 *
 * @tparam Real the floating point type to be used
 * @param[in] label the Kokkos::View label
-* @param[in] N the number of particles
 * @param[in] min_val the minimum value to initialize the content of the Kokkos::View
 * @param[in] max_val the maximum value to initialize the content of the Kokkos::View
 * @param[in] N the number of particles
