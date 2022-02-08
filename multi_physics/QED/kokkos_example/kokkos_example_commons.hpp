@@ -326,7 +326,7 @@ struct get_rand{
 
 /**
 * Calls the frand() method of the Kokkos random number generator
-* (i.e. the single precision version). Prevents results exaclty equal to 1.
+* (i.e. the single precision version). Prevents results exactly equal to 1.
 *
 */
 template<>
