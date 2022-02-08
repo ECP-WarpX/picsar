@@ -61,7 +61,7 @@ auto generate_dndt_table(Real chi_min, Real chi_max, int chi_size)
 */
 template <typename Real, typename Vector>
 auto generate_photon_emission_table(
-    Real chi_min, Real chi_max, Real frac_min, int chi_size, int frac_size)
+    const Real chi_min, const Real chi_max, const Real frac_min, const int chi_size, const int frac_size)
 {
     std::cout << "Preparing photon emission table [" << get_type_name<Real>()
         << ", " << chi_size << " x " << frac_size <<"]...\n";
