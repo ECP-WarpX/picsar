@@ -73,7 +73,7 @@ auto generate_photon_emission_table(
 	auto table = pxr_qs::photon_emission_lookup_table<
         Real, Vector>{qs_params};
 
-    table.template generate();
+    table.generate();
 
     return table;
 }
