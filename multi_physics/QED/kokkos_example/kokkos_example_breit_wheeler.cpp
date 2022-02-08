@@ -38,19 +38,25 @@ void correct_low_momenta(ParticleData<Real>& pdata)
 
             const auto gamma_gamma = pxr::compute_gamma_photon<Real>(px, py, pz);
 
-            const auto bb = Real(2.1);
+            const auto minimum_normalized_momentum = Real(2.1);
 
+            // if the photon has zero energy, replace it with a photon
+            // having momentum equal to the minimum_normalized_momentum
             if(gamma_gamma == Real(0.0) ){
-                const auto cc = bb/std::sqrt(Real(3.0));
-                pdata.m_momentum(i,0) = cc*mec<Real>;
-                pdata.m_momentum(i,1) = cc*mec<Real>;
-                pdata.m_momentum(i,2) = cc*mec<Real>;
+                const auto coeff =
+                    minimum_normalized_momentum * (mec<Real>/std::sqrt(Real(3.0)));
+                pdata.m_momentum(i,0) = coeff;
+                pdata.m_momentum(i,1) = coeff;
+                pdata.m_momentum(i,2) = coeff;
             }
-            else if (gamma_gamma < Real(2.0)){
-                const auto cc = bb/gamma_gamma;
-                pdata.m_momentum(i,0) *= cc;
-                pdata.m_momentum(i,1) *= cc;
-                pdata.m_momentum(i,2) *= cc;
+            // if the photon momentum is less than minimum_normalized_momentum,
+            // increase it by a correction factor so that it becomes equal to
+            // minimum_normalized_momentum
+            else if (gamma_gamma < minimum_normalized_momentum){
+                const auto corr_factor = minimum_normalized_momentum/gamma_gamma;
+                pdata.m_momentum(i,0) *= corr_factor;
+                pdata.m_momentum(i,1) *= corr_factor;
+                pdata.m_momentum(i,2) *= corr_factor;
             }
         });
 }
