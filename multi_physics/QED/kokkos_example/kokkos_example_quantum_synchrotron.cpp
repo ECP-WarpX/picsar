@@ -203,7 +203,7 @@ generate_photons(
 
             auto rand_gen = rand_pool.get_state();
 
-            auto e_phot = pxr_m::vec3<Real>{0,0,0};
+            auto phot_mom = pxr_m::vec3<Real>{0,0,0};
 
             auto p_mom = pxr_m::vec3<Real>{px, py, pz};
 
@@ -211,14 +211,14 @@ generate_photons(
                 chi, p_mom,
                 get_rand<Real>(rand_gen),
                 ref_table,
-                e_phot);
+                phot_mom);
 
             pdata.m_momentum(i, 0) = p_mom[0];
             pdata.m_momentum(i, 1) = p_mom[1];
             pdata.m_momentum(i, 2) = p_mom[2];
-            photon_momentum(i, 0) = e_phot[0];
-            photon_momentum(i, 1) = e_phot[1];
-            photon_momentum(i, 2) = e_phot[2];
+            photon_momentum(i, 0) = phot_mom[0];
+            photon_momentum(i, 1) = phot_mom[1];
+            photon_momentum(i, 2) = phot_mom[2];
 
             rand_pool.free_state(rand_gen);
         });
