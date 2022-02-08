@@ -239,7 +239,7 @@ Kokkos::Random_XorShift64_Pool<>& rand_pool)
 * @return true if checks pass, false otherwise
 */
 template <typename Real>
-bool check(Kokkos::View<Real *> field,
+bool check_nan_inf(Kokkos::View<Real *> field,
     const bool check_nan = true, const bool check_inf = false){
 
     int num = 0;
@@ -277,7 +277,7 @@ bool check(Kokkos::View<Real *> field,
 * @return true if checks pass, false otherwise
 */
 template <typename Real>
-bool check_multi(Kokkos::View<Real * [ParticleData<Real>::num_components]> vec,
+bool check_nan_inf_multi(Kokkos::View<Real * [ParticleData<Real>::num_components]> vec,
     const bool check_nan = true, const bool check_inf = false)
 {
 

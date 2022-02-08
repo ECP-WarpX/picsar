@@ -110,7 +110,7 @@ std::pair<bool, double>
     Kokkos::fence();
     const auto time = timer.seconds()*1000.0;
 
-    return std::make_pair(check(pdata.m_fields.opt, true, false), time);
+    return std::make_pair(check_nan_inf(pdata.m_fields.opt, true, false), time);
 }
 
 /**
@@ -158,7 +158,7 @@ evolve_optical_depth(
     Kokkos::fence();
     const auto time = timer.seconds()*1000.0;
 
-    return std::make_pair(check(pdata.m_fields.opt, true, false), time);
+    return std::make_pair(check_nan_inf(pdata.m_fields.opt, true, false), time);
 }
 
 /**
@@ -228,7 +228,7 @@ generate_photons(
     const auto time = timer.seconds()*1000.0;
 
     return std::make_pair(
-        check_multi(photon_momentum, true, true) && check_multi(pdata.m_momentum, true, true),
+        check_nan_inf_multi(photon_momentum, true, true) && check_nan_inf_multi(pdata.m_momentum, true, true),
         time);
 }
 
