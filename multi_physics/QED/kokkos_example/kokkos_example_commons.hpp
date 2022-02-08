@@ -181,7 +181,15 @@ auto init_view_with_random_content(
 }
 
 /**
-* Initializes particle data
+* Initializes "synthetic" particle data
+* For each particle, the three components of momentum
+* are randomly initialized with a uniform distribution between
+* Pmin and Pmax, the three components of the electric field
+* are initialized drawing from a uniform distribution between
+* Emin and Emax, and the three components of the magnetic
+* field are initialized drawing from a uniform distribution between
+* Bmin and Bmax. The "optical depth" is initialized equal to zero
+* for all the particles.
 *
 * @tparam Real the floating point type to be used
 * @param N the number of particles
