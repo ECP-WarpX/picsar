@@ -339,7 +339,7 @@ template<>
 struct get_rand<float>{
     /**
     * Calls the frand() method of the Kokkos random number generator
-    * (i.e. the single precision version). Prevents results exaclty equal to 1.
+    * (i.e. the single precision version). Prevents results exactly equal to 1.
     *
     * @tparam Real the floating point type to be used
     * @param[in,out] gen a random number generator
