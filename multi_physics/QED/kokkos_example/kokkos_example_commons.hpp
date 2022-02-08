@@ -317,7 +317,6 @@ struct get_rand{
     * Calls the drand() method of the Kokkos random number generator.
     * Prevents results exactly equal to 1.0
     *
-    * @tparam Real the floating point type to be used
     * @param[in,out] gen a random number generator
     */
     KOKKOS_INLINE_FUNCTION
