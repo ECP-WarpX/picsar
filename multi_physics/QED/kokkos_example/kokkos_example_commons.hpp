@@ -51,7 +51,7 @@ const double Es = pxr::schwinger_field<>;
 /**
 * Data structure to emulate particle data in a Particle-In-Cell code.
 * Momenta are in a num_particlesx3 vector, while field components and optical depths
-* are each one in a separate vector of size num_particles.
+* are each in a separate vector of size num_particles.
 *
 * @tparam Real the floating point type to be used
 */
