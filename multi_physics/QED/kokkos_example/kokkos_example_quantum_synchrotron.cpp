@@ -102,7 +102,7 @@ std::pair<bool, double>
             auto rand_gen = rand_pool.get_state();
             pdata.m_fields.opt(i) =
                 pxr_qs::get_optical_depth<Real>(
-                    get_rand<Real>::get(rand_gen));
+                    get_rand<Real>(rand_gen));
             rand_pool.free_state(rand_gen);
         });
     }
@@ -209,7 +209,7 @@ generate_photons(
 
             pxr_qs::generate_photon_update_momentum<Real, TableType, pxr::unit_system::SI>(
                 chi, p_mom,
-                get_rand<Real>::get(rand_gen),
+                get_rand<Real>(rand_gen),
                 ref_table,
                 e_phot);
 

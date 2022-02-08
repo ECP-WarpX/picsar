@@ -310,47 +310,31 @@ bool check_multi(Kokkos::View<Real * [ParticleData<Real>::num_components]> vec,
 
 using GenType = Kokkos::Random_XorShift64_Pool<>::generator_type;
 
-template <typename Real>
-struct get_rand{
-
-    /**
-    * Calls the drand() method of the Kokkos random number generator.
-    * Prevents results exactly equal to 1.0
-    *
-    * @param[in,out] gen a random number generator
-    */
-    KOKKOS_INLINE_FUNCTION
-    static Real get(GenType& gen)
-    {
-        Real res = Real(1.0);
-        while(res >= Real(1.0))
-            res = gen.drand();
-        return res;
-    }
-};
-
 /**
-* Calls the frand() method of the Kokkos random number generator
-* (i.e. the single precision version). Prevents results exactly equal to 1.
+* Calls either the drand() (double precision) of the frand() (single precision)
+* method of the Kokkos random number generator, depending on the type Real.
+* Prevents results exactly equal to 1.0
 *
+* @tparam Real the floating point type to be used
+* @param[in,out] gen a random number generator
 */
-template<>
-struct get_rand<float>{
-    /**
-    * Calls the frand() method of the Kokkos random number generator
-    * (i.e. the single precision version). Prevents results exactly equal to 1.
-    *
-    * @tparam Real the floating point type to be used
-    * @param[in,out] gen a random number generator
-    */
-    KOKKOS_INLINE_FUNCTION
-    static float get(GenType& gen)
-    {
-        float res = 1.0f;
+template <typename Real>
+KOKKOS_INLINE_FUNCTION
+Real get_rand(GenType& gen)
+{
+    Real res = Real{1.0};
+
+    if constexpr (std::is_same<Real,float>::value){
         while(res >= 1.0f)
             res = gen.frand();
-        return res;
     }
-};
+    else
+    {
+        while(res >= Real(1.0))
+            res = gen.drand();
+    }
+
+    return res;
+}
 
 #endif //__KOKKOS_EXAMPLE_COMMONS__

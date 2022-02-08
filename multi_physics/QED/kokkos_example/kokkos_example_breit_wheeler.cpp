@@ -136,7 +136,7 @@ fill_opt_test(
             auto rand_gen = rand_pool.get_state();
             pdata.m_fields.opt(i) =
                 pxr_bw::get_optical_depth<Real>(
-                    get_rand<Real>::get(rand_gen));
+                    get_rand<Real>(rand_gen));
             rand_pool.free_state(rand_gen);
         });
     }
@@ -241,7 +241,7 @@ generate_pairs(
 
             pxr_bw::generate_breit_wheeler_pairs<Real, TableType, pxr::unit_system::SI>(
                 chi, pxr_m::vec3<Real>{px, py, pz},
-                get_rand<Real>::get(rand_gen),
+                get_rand<Real>(rand_gen),
                 ref_table,
                 e_mom, p_mom);
 
