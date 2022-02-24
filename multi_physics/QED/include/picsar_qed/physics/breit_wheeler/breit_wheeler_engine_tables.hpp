@@ -711,10 +711,11 @@ namespace breit_wheeler{
                     one<RealType> - unf_zero_one_minus_epsi;
 
                 const auto upper_frac_index = utils::picsar_upper_bound_functor(
-                    0, m_params.frac_how_many,prob,[&](int i){
+                    0, m_params.frac_how_many-1,prob,[&](int i){
                         return (m_table.interp_first_coord(
                             log_e_chi_phot, i));
                     });
+
                 const auto lower_frac_index = upper_frac_index-1;
 
                 const auto upper_frac = m_table.get_y_coord(upper_frac_index);
