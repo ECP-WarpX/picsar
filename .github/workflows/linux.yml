@@ -6,7 +6,7 @@ jobs:
   QED:
     name: QED with tablegen [lib]
     runs-on: ubuntu-20.04
-    env: {CXXFLAGS: "-Werror -Wshadow -Woverloaded-virtual -Wunreachable-code"}
+    env: {CXXFLAGS: "-Werror -Wshadow -Woverloaded-virtual -Wunreachable-code -fsanitize=address -fsanitize=undefined"}
     steps:
     - uses: actions/checkout@v2
     - name: Dependencies
