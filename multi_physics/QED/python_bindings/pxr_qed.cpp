@@ -84,7 +84,7 @@ namespace pxr_sc = picsar::multi_physics::phys::schwinger;
     void PXRQEDPY_FOR(int N, const Func& func){
         for (int i = 0; i < N; ++i) func(i);
     }
-    const auto PXRQEDPY_OPENMP_FLAG = true;
+    const auto PXRQEDPY_OPENMP_FLAG = false;
 #endif
 //___________________________________________________________________________________
 
