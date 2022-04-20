@@ -25,6 +25,9 @@
 #include "picsar_qed/math/cmath_overloads.hpp"
 
 #include <algorithm>
+#include <cmath>
+#include <exception>
+#include <limits>
 #include <stdexcept>
 
 namespace picsar{
@@ -73,8 +76,9 @@ namespace quantum_sync{
         return quad_a_inf<RealType>(
             [=](RealType s){
                 using namespace math;
+                using namespace std;
                 if( y ==  zero<RealType>)
-                    return std::numeric_limits<RealType>::infinity();;
+                    return numeric_limits<RealType>::infinity();
                 const auto s2 = s*s;
                 const auto s4 = s2*s2;
                 const auto cc = (one<RealType> +
@@ -106,11 +110,12 @@ namespace quantum_sync{
         const RealType chi_part, const RealType csi) noexcept
     {
         using namespace math;
+        using namespace std;
         if( csi >= one<RealType> || chi_part == zero<RealType> )
             return zero<RealType>;
 
         if (csi == zero<RealType>)
-            return std::numeric_limits<RealType>::infinity();
+            return numeric_limits<RealType>::infinity();
 
         const auto yy = compute_y(chi_part, csi);
         const RealType coeff = m_sqrt(three<>)/(two<>*pi<>);
@@ -118,7 +123,7 @@ namespace quantum_sync{
 
         const auto second_part = (csi*csi/(one<RealType>-csi))*
             k_v(two_thirds<RealType>,yy);
-        if(std::isinf(second_part))
+        if(isinf(second_part))
             return zero<RealType>;
 
         return coeff*csi*(inner + second_part);
