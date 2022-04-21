@@ -307,10 +307,10 @@ SUBROUTINE init_godfrey_filter_coeffs(stencilz_ex, stencilz_by, nstencilz, cdtod
     IF (index>size_coeff_table-1) THEN
       index = size_coeff_table-1
     ENDIF
-    weight_right = cdtodz - (index-1)/size_coeff_table
+    weight_right = cdtodz - (REAL(index,num)-1.)/REAL(size_coeff_table,num)
     DO i=0, 3
-      prestencil_ex(i) = (1-weight_right)*coeff_ex_galerkin(i+1,index) + weight_right*coeff_ex_galerkin(i+1,index+1)
-      prestencil_by(i) = (1-weight_right)*coeff_by_galerkin(i+1,index) + weight_right*coeff_by_galerkin(i+1,index+1)
+      prestencil_ex(i) = (1.-weight_right)*coeff_ex_galerkin(i+1,index) + weight_right*coeff_ex_galerkin(i+1,index+1)
+      prestencil_by(i) = (1.-weight_right)*coeff_by_galerkin(i+1,index) + weight_right*coeff_by_galerkin(i+1,index+1)
     END DO
     stencilz_ex(0) =  (256+128*prestencil_ex(0)+96*prestencil_ex(1)+80*prestencil_ex(2)+70*prestencil_ex(3))/256
     stencilz_ex(1) = -(     64*prestencil_ex(0)+64*prestencil_ex(1)+60*prestencil_ex(2)+56*prestencil_ex(3))/256
