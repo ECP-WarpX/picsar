@@ -3,7 +3,7 @@ name: macos
 on: [push, pull_request]
 
 env:
-  CXXFLAGS: "-Werror -Wshadow -Woverloaded-virtual -Wextra-semi -Wunreachable-code -fsanitize=address -fsanitize=undefined"
+  CXXFLAGS: "-Xpreprocessor -fopenmp -Werror -Wshadow -Woverloaded-virtual -Wextra-semi -Wunreachable-code -fsanitize=address -fsanitize=undefined"
 
 jobs:
   # Build PICSAR tests, PICSAR python bindings, and Kokkos examples
