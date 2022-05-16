@@ -5,7 +5,7 @@ on: [push, pull_request]
 env:
   CXX:      "/usr/local/opt/llvm/bin/clang++"
   LDFLAGS:  "-L/usr/local/opt/llvm/lib"
-  CXXFLAGS: "-I/usr/local/opt/llvm/include -Werror -Wshadow -Woverloaded-virtual -Wextra-semi -Wunreachable-code -fsanitize=address -fsanitize=undefined"
+  CXXFLAGS: "-I/usr/local/opt/llvm/include -Werror -Wshadow -Woverloaded-virtual -Wunreachable-code -fsanitize=address -fsanitize=undefined"
 
 jobs:
   # Build PICSAR tests, PICSAR python bindings, and Kokkos examples
