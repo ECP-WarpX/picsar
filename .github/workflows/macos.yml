@@ -3,13 +3,15 @@ name: macos
 on: [push, pull_request]
 
 env:
-  CXXFLAGS: "-Werror -Wshadow -Woverloaded-virtual -Wextra-semi -Wunreachable-code -fsanitize=address -fsanitize=undefined"
+  CXX:      "/usr/local/opt/llvm/bin/clang++"
+  LDFLAGS:  "-L/usr/local/opt/llvm/lib"
+  CXXFLAGS: "-I/usr/local/opt/llvm/include -Werror -Wshadow -Woverloaded-virtual -Wunreachable-code -fsanitize=address -fsanitize=undefined"
 
 jobs:
-  # Build libamrex and all tutorials
+  # Build PICSAR tests, PICSAR python bindings, and Kokkos examples
   tutorials-macos:
-    name: AppleClang@11.0 GFortran@9.3 [tutorials]
-    runs-on: macos-latest
+    name: QED with tests, python bindings, Kokkos examples
+    runs-on: macos-11
     steps:
     - uses: actions/checkout@v2
     - name: Dependencies
@@ -19,6 +21,9 @@ jobs:
         cmake -S multi_physics/QED                \
             -B build                              \
             -DCMAKE_VERBOSE_MAKEFILE=ON           \
-            -DPXRMP_QED_TEST=ON
+            -DPXRMP_QED_TEST=ON                   \
+            -DPXRMP_KOKKOS_EXAMPLE=ON             \
+            -DKokkos_ENABLE_OPENMP=ON             \
+            -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
         cmake --build build -j 2
         cmake --build build --target test

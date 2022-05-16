@@ -372,17 +372,19 @@ namespace breit_wheeler{
             */
             bool set_all_vals(const std::vector<RealType>& vals)
             {
-                if(static_cast<int>(vals.size()) == m_table.get_how_many_x()){
-                    for(int i = 0; i < static_cast<int>(vals.size()); ++i){
-                        auto val = math::m_log(vals[i]);
-                        if(std::isinf(val))
-                            val = std::numeric_limits<RealType>::lowest();
-                        m_table.set_val(i, val);
-                    }
-                    m_init_flag = true;
-                    return true;
-                }
-                return false;
+                const auto vals_length = vals.size();
+                auto log_vals = std::vector<RealType>(vals_length);
+
+                if(static_cast<int>(vals_length) != m_table.get_how_many_x())
+                    return false;
+
+                std::transform(vals.begin(), vals.end(), log_vals.begin(),
+                    [](auto x){return math::m_log(x);});
+
+                m_table.set_all_vals(log_vals);
+
+                m_init_flag = true;
+                return true;
             }
 
             /*
@@ -761,15 +763,14 @@ namespace breit_wheeler{
             */
             bool set_all_vals(const std::vector<RealType>& vals)
             {
-                if(static_cast<int>(vals.size()) == m_table.get_how_many_x()*
-                    m_table.get_how_many_y()){
-                    for(int i = 0; i < static_cast<int>(vals.size()); ++i){
-                        m_table.set_val(i,vals[i]);
-                    }
-                    m_init_flag = true;
-                    return true;
-                }
-                return false;
+                if(static_cast<int>(vals.size()) != m_table.get_how_many_x()*
+                    m_table.get_how_many_y())
+                        return false;
+
+                m_table.set_all_vals(vals);
+                m_init_flag = true;
+
+                return true;
             }
 
             /*
