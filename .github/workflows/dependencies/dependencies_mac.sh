@@ -10,5 +10,5 @@ set -eu -o pipefail
 brew update
 brew install boost
 brew install pybind11
-brew install libomp
+brew install llvm
 #brew install open-mpi
