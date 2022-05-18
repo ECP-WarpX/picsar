@@ -87,7 +87,7 @@ ForwardIt
 picsar_lower_bound
 (ForwardIt first, ForwardIt last, const T& val)
 {
-#ifdef PXRMP_PICSAR_UPPER_BOUND
+#ifdef PXRMP_PICSAR_LOWER_BOUND
 
     size_t count = last-first;
     do{

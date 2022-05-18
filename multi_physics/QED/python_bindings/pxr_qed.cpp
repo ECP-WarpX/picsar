@@ -84,7 +84,7 @@ namespace pxr_sc = picsar::multi_physics::phys::schwinger;
     void PXRQEDPY_FOR(int N, const Func& func){
         for (int i = 0; i < N; ++i) func(i);
     }
-    const auto PXRQEDPY_OPENMP_FLAG = true;
+    const auto PXRQEDPY_OPENMP_FLAG = false;
 #endif
 //___________________________________________________________________________________
 
@@ -266,21 +266,14 @@ compute_gamma_photon_wrapper(
     const pyArr& px, const pyArr& py, const pyArr& pz,
     const REAL ref_quantity)
 {
-    const REAL
-        *p_px = nullptr, *p_py = nullptr, *p_pz = nullptr;
 
-    size_t how_many = 0;
-
-    std::tie(
-        how_many,
-        p_px, p_py, p_pz) =
-            check_and_get_pointers(
-                px, py, pz);
+    const auto [how_many, p_px, p_py, p_pz] =
+        check_and_get_pointers(px, py, pz);
 
     auto res = pyArr(how_many);
     auto p_res = static_cast<REAL*>(res.request().ptr);
 
-    PXRQEDPY_FOR(how_many, [&](int i){
+    PXRQEDPY_FOR(how_many, [&, p_px=p_px, p_py=p_py, p_pz=p_pz](int i){
         p_res[i] =
             pxr_phys::compute_gamma_photon<REAL, UU>(
                 p_px[i], p_py[i], p_pz[i],

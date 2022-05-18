@@ -4,9 +4,9 @@ on: [push, pull_request]
 
 jobs:
   QED:
-    name: QED with tablegen [lib]
+    name: QED with tests, python bindings, Kokkos examples
     runs-on: ubuntu-20.04
-    env: {CXXFLAGS: "-Werror -Wshadow -Woverloaded-virtual -Wunreachable-code"}
+    env: {CXXFLAGS: "-Werror -Wshadow -Woverloaded-virtual -Wunreachable-code -fsanitize=address -fsanitize=undefined"}
     steps:
     - uses: actions/checkout@v2
     - name: Dependencies
@@ -16,6 +16,8 @@ jobs:
         cmake -S multi_physics/QED                \
             -B build                              \
             -DCMAKE_VERBOSE_MAKEFILE=ON           \
-            -DPXRMP_QED_TEST=ON
+            -DPXRMP_QED_TEST=ON                   \
+            -DPXRMP_KOKKOS_EXAMPLE=ON             \
+            -DKokkos_ENABLE_OPENMP=ON
         cmake --build build -j 2
         cmake --build build --target test

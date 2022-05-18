@@ -23,6 +23,7 @@ option(PXRMP_QED_TOOLS            "Build PICSAR QED tools " ${IS_TOPLEVEL})
 option(PXRMP_QED_PYTHON_BINDINGS  "Build PICSAR QED python bindings " ${IS_TOPLEVEL})
 option(PXRMP_BOOST_TEST_DYN_LINK  "Link against the Boost Unit Test Framework shared library" ON)
 option(PXRMP_DPCPP_FIX            "Use cl::sycl::floor cl::sycl::floorf on device" OFF)
+option(PXRMP_KOKKOS_EXAMPLE       "Build examples using Kokkos" OFF)
 
 
 ########
@@ -31,7 +32,7 @@ option(PXRMP_DPCPP_FIX            "Use cl::sycl::floor cl::sycl::floorf on devic
 add_library(PXRMP_QED INTERFACE)
 add_library(${PROJECT_NAME}::PXRMP_QED ALIAS PXRMP_QED)
 
-target_compile_features(PXRMP_QED INTERFACE cxx_std_14)
+target_compile_features(PXRMP_QED INTERFACE cxx_std_17)
 
 if(PXRMP_QED_OMP)
    find_package(OpenMP REQUIRED)
@@ -85,4 +86,14 @@ if(PXRMP_QED_TOOLS)
          message( FATAL_ERROR "Tools require to enable table generation!" )
     endif()
     add_subdirectory(QED_table_generator)
+endif()
+
+########
+# Setup CMake to build Kokkos example
+########
+if(PXRMP_KOKKOS_EXAMPLE)
+    if(NOT PXRMP_QED_TABLEGEN)
+         message( FATAL_ERROR "Kokkos example require to enable table generation!" )
+    endif()
+    add_subdirectory(kokkos_example)
 endif()
