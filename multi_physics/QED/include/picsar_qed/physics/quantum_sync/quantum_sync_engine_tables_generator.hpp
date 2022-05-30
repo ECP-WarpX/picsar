@@ -16,7 +16,7 @@
 //Should be included by all the src files of the library
 #include "picsar_qed/qed_commons.h"
 
-//Implements methods of BW lookup tables
+//Implements methods of QS lookup tables
 #include "picsar_qed/physics/quantum_sync/quantum_sync_engine_tables.hpp"
 //Uses source file containing the actual implementation of table generation methods
 #include "picsar_qed/physics/quantum_sync/quantum_sync_engine_tables_generator_detail.hpp"
@@ -80,8 +80,8 @@ namespace quantum_sync{
     void photon_emission_lookup_table<RealType, VectorType>::generate(
         const bool show_progress)
     {
-        auto all_chi_part = VectorType(m_params.chi_part_how_many);
-        auto all_frac = VectorType(m_params.frac_how_many);
+        auto all_chi_part = std::vector<RealType>(m_params.chi_part_how_many);
+        auto all_frac = std::vector<RealType>(m_params.frac_how_many);
 
         std::generate(all_chi_part.begin(), all_chi_part.end(),
             [&,n=0]() mutable {return math::m_exp(m_table.get_x_coord(n++));});
