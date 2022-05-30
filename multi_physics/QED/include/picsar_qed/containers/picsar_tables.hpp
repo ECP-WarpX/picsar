@@ -696,7 +696,7 @@ namespace details{
         }
 
         /**
-        * Performs an interpolation a bilinear interpolation at given position.
+        * Performs a bilinear interpolation at given position.
         *
         * @param[in] where_x the position along x
         * @param[in] where_y the position along y
@@ -734,7 +734,7 @@ namespace details{
         }
 
         /**
-        * Performs an interpolation a linear interpolation at given position,
+        * Performs a linear interpolation at given position,
         * in the special case in which the second coordinate is exactly a grid
         * point along y
         *
@@ -762,7 +762,7 @@ namespace details{
         }
 
         /**
-        * Performs an interpolation a linear interpolation at given position,
+        * Performs a linear interpolation at given position,
         * in the special case in which the first coordinate is exactly a grid
         * point along x
         *
@@ -1201,7 +1201,7 @@ namespace details{
         }
 
         /**
-        * Performs an interpolation a bilinear interpolation at given position.
+        * Performs a bilinear interpolation at given position.
         *
         * @param[in] where_x the position along x
         * @param[in] where_y the position along y
@@ -1237,7 +1237,7 @@ namespace details{
         }
 
         /**
-        * Performs an interpolation a linear interpolation at given position,
+        * Performs a linear interpolation at given position,
         * in the special case in which the second coordinate is exactly a grid
         * point along y
         *
@@ -1264,7 +1264,7 @@ namespace details{
         }
 
         /**
-        * Performs an interpolation a linear interpolation at given position,
+        * Performs a linear interpolation at given position,
         * in the special case in which the first coordinate is exactly a grid
         * point along x
         *
