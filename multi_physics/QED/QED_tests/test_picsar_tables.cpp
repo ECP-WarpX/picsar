@@ -790,6 +790,8 @@ BOOST_AUTO_TEST_CASE( picsar_generic_2d_table_serialization)
             gtab_2d_2.get_values_reference()[i]);
     }
 
-    BOOST_CHECK_EQUAL(gtab_2d.interp(gxmax - gxmin, gxmax - gxmin),
-        gtab_2d_2.interp(gxmax - gxmin, gxmax - gxmin));
+    const auto xt = 0.5*(gxmax - gxmin);
+    const auto yt = 0.5*(gymax - gymin);
+
+    BOOST_CHECK_EQUAL(gtab_2d.interp(xt, yt), gtab_2d_2.interp(xt, yt));
 }
