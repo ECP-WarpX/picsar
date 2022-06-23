@@ -1074,7 +1074,7 @@ namespace quantum_sync{
             * @param[in] unf_zero_one_minus_epsi a uniformly distributed random number in [0,1)
             * @param[out] is_out set to true if chi_part is out of table
             *
-            * @return chi of one of the generated particles
+            * @return chi of the generated photon```
             */
             PXRMP_GPU_QUALIFIER
             PXRMP_FORCE_INLINE
