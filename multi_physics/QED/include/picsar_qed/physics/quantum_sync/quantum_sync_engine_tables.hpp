@@ -937,6 +937,7 @@ namespace quantum_sync{
             * a vector of values.
             *
             * @param params table parameters
+              @param vals the values used to initialize the table
             */
             tailopt_photon_emission_lookup_table(
                 tailopt_photon_emission_lookup_table_params<RealType> params,
