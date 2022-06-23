@@ -877,7 +877,7 @@ namespace quantum_sync{
         public:
 
             /**
-            * A view_type is essentially a photon_emission_lookup_table which
+            * A view_type is essentially a tailopt_photon_emission_lookup_table which
             * uses non-owning, constant, pointers to hold the data.
             * The use of views is crucial for GPUs. As demonstrated
             * in test_gpu/test_quantum_sync.cu, it is possible to:
