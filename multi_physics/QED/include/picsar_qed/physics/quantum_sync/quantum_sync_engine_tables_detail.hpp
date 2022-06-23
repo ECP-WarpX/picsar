@@ -97,7 +97,7 @@ namespace detail{
         /**
         * Deserializes a LinFunctor object from binary data (not suitable for GPUs)
         *
-        * @tparam CharIter a char interator type
+        * @tparam CharIter a char iterator type
         *
         * @param[in,out] it a char interator
         *
