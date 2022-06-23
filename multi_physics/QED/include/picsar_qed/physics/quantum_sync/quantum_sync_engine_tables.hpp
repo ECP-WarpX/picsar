@@ -1154,18 +1154,24 @@ namespace quantum_sync{
             */
             bool set_all_vals(const std::vector<RealType>& vals)
             {
-                if(static_cast<int>(vals.size()) == m_table.get_how_many_x()*
-                    m_table.get_how_many_y()){
-                    for(int i = 0; i < static_cast<int>(vals.size()); ++i){
-                        auto val = math::m_log(vals[i]);
-                        if(std::isinf(val))
-                            val = std::numeric_limits<RealType>::lowest();
-                        m_table.set_val(i, val);
-                    }
-                    m_init_flag = true;
-                    return true;
-                }
-                return false;
+                if(static_cast<int>(vals.size()) != m_table.get_how_many_x()*
+                    m_table.get_how_many_y())
+                    return false;
+
+                auto logvals = VectorType{};
+                logvals.reserve(vals.size());
+                std::transform(
+                    std::begin(vals), std::end(vals), logvals.back_inserter(),
+                    [](auto vv){
+                        const auto lvv = math::m_log(vv);
+                        if(std::isinf(lvv))
+                            return  std::numeric_limits<RealType>::lowest();
+                        else
+                            return lvv;
+                    });
+                m_table.set_all_vals(logvals);
+                m_init_flag = true;
+                return true;
             }
 
             /**

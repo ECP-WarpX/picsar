@@ -769,6 +769,37 @@ BOOST_AUTO_TEST_CASE( picsar_generic_2d_table_equality)
     BOOST_CHECK_EQUAL(gtab_2d == gtab_2d_2, false);
 }
 
+// ***Test generic_2d_table set all
+BOOST_AUTO_TEST_CASE( picsar_generic_2d_table_setall)
+{
+    auto gtab_2d = make_generic_2d_table();
+    const auto val = 42.0;
+    const auto vec = std::vector<double>(
+        static_cast<std::size_t>(tab_2d.get_how_many_x())*
+        static_cast<std::size_t>(tab_2d.get_how_many_y()),
+        val);
+
+    gtab_2d.set_all_vals(vec);
+
+    const auto x0 = tab_2d.get_x_min();
+    const auto x1 = tab_2d.get_x_max();
+    const auto x2 = 0.376*(x1-x0) + x0;
+
+    const auto y0 = tab_2d.get_y_min();
+    const auto y1 = tab_2d.get_y_max();
+    const auto y2 = 0.688*(y1-y0) + y0;
+
+    BOOST_CHECK_SMALL((gtab_2d.interp(x0,y0) - val)/val, tolerance<double>());
+    BOOST_CHECK_SMALL((gtab_2d.interp(x0,y1) - val)/val, tolerance<double>());
+    BOOST_CHECK_SMALL((gtab_2d.interp(x0,y2) - val)/val, tolerance<double>());
+    BOOST_CHECK_SMALL((gtab_2d.interp(x1,y0) - val)/val, tolerance<double>());
+    BOOST_CHECK_SMALL((gtab_2d.interp(x1,y1) - val)/val, tolerance<double>());
+    BOOST_CHECK_SMALL((gtab_2d.interp(x1,y2) - val)/val, tolerance<double>());
+    BOOST_CHECK_SMALL((gtab_2d.interp(x2,y0) - val)/val, tolerance<double>());
+    BOOST_CHECK_SMALL((gtab_2d.interp(x2,y1) - val)/val, tolerance<double>());
+    BOOST_CHECK_SMALL((gtab_2d.interp(x2,y2) - val)/val, tolerance<double>());
+}
+
 // ***Test generic_2d_table serialization
 BOOST_AUTO_TEST_CASE( picsar_generic_2d_table_serialization)
 {

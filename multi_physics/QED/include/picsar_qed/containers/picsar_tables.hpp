@@ -1331,6 +1331,23 @@ namespace details{
         }
 
         /**
+        * Overwrites all values
+        *
+        * @param[in] new_values
+        */
+        PXRMP_FORCE_INLINE
+        void set_all_vals(const std::vector<RealType>& new_values)
+        {
+            if (new_values.size() != m_values.size())
+                throw std::runtime_error("Mismatch new_values length \
+                    and m_values length");
+            std::copy(new_values.begin(), new_values.end(), m_values.begin());
+            //VectorType may need a call to a user-defined method for CPU-GPU synchronization
+            details::aux_sync_vec(m_values);
+        }
+
+
+        /**
         * Returns a byte vector containing all the raw data of the
         * table (not usable on GPUs)
         *
