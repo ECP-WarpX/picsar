@@ -99,7 +99,7 @@ namespace detail{
         *
         * @tparam CharIter a char iterator type
         *
-        * @param[in,out] it a char interator
+        * @param[in,out] it a char iterator
         *
         * @return a LinFunctor<RealType> object
         */
