@@ -13,7 +13,7 @@
 //Should be included by all the src files of the library
 #include "picsar_qed/qed_commons.h"
 
-//Uses BW tabulated functions
+//Uses QS tabulated functions
 #include "picsar_qed/physics/quantum_sync/quantum_sync_engine_tabulated_functions.hpp"
 //Uses cmath overloads
 #include "picsar_qed/math/cmath_overloads.hpp"
