@@ -983,7 +983,7 @@ namespace details{
                 throw std::runtime_error("raw_data contains invalid data.");
             if(m_how_many_y <= 0)
                 throw std::runtime_error("raw_data contains invalid data.");
-            m_values = VectorType(static_cast<int>(m_how_many_x*m_how_many_y));
+            m_values = VectorType(m_how_many_x*m_how_many_y);
             auto vals = serialization::get_n_out<RealType>(
                     it_raw_data,
                     m_how_many_x*m_how_many_y);
