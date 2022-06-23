@@ -1000,6 +1000,7 @@ namespace details{
             m_ix_map_functor = IXMapFunctor::deserialize(it_raw_data);
             m_iy_map_functor = IYMapFunctor::deserialize(it_raw_data);
 
+            //VectorType may need a call to a user-defined method for CPU-GPU synchronization
             details::aux_sync_vec(m_values);
         }
 
