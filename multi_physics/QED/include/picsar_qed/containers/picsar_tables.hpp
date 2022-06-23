@@ -1167,7 +1167,7 @@ namespace details{
         }
 
         /**
-        * Returns the size of the steps along y
+        * Returns the size of the steps along y between j and j+1
         *
         * @return the size of the steps along y
         */
