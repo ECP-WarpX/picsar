@@ -972,7 +972,7 @@ namespace details{
             if (serialization::get_out<char>(it_raw_data) !=
                 static_cast<char>(sizeof(RealType))){
                 throw std::runtime_error("Mismatch between RealType \
-                used to write and to read the 1D table");
+                used to write and to read the 2D table");
             }
 
             m_how_many_x =
