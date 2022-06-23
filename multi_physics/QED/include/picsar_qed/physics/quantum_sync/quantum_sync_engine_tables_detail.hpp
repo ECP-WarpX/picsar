@@ -338,7 +338,7 @@ namespace detail{
         *
         * @param[in,out] it a char interator
         *
-        * @return a LinFunctor<RealType> object
+        * @return a TailOptFunctor<RealType> object
         */
         template <typename CharIter>
         static TailOptFunctor<RealType> deserialize(CharIter &it)
