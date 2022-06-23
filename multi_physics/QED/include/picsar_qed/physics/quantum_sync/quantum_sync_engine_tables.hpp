@@ -1161,7 +1161,7 @@ namespace quantum_sync{
                 auto logvals = VectorType{};
                 logvals.reserve(vals.size());
                 std::transform(
-                    std::begin(vals), std::end(vals), logvals.back_inserter(),
+                    std::begin(vals), std::end(vals), std::back_inserter(logvals),
                     [](auto vv){
                         const auto lvv = math::m_log(vv);
                         if(std::isinf(lvv))
