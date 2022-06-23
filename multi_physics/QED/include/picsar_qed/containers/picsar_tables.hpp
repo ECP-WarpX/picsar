@@ -1310,6 +1310,8 @@ namespace details{
         void set_val(const int i, const int j, const RealType what)
         {
             m_values[idx(i, j)] = what;
+            //VectorType may need a call to a user-defined method for CPU-GPU synchronization
+            details::aux_sync_vec(m_values);
         }
 
         /**
@@ -1323,6 +1325,8 @@ namespace details{
         void set_val(const int i, const RealType what)
         {
             m_values[i] = what;
+            //VectorType may need a call to a user-defined method for CPU-GPU synchronization
+            details::aux_sync_vec(m_values);
         }
 
         /**
