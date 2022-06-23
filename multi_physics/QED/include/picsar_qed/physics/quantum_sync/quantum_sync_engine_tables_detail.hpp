@@ -406,7 +406,7 @@ namespace detail{
         /**
         * Operator()
         *
-        * @param[in] i an integer value
+        * @param[in] z a real value
         *
         * @return if z < zswitch,  floor((z-zmin)*(zfirst-1))/(zswitch-zmin)), otherwise floor((exp(z)-exp(zswitch))*(zsize-zfirst)/(exp(zmax)-exp(zswitch)) + (zfirst-1))
         */
