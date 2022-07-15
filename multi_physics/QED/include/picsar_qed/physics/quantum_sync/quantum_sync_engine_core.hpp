@@ -208,7 +208,7 @@ namespace quantum_sync{
             compute_gamma_ele_pos<RealType, unit_system::heaviside_lorentz>(v_mom_particle);
 
         bool is_out = false;
-        const auto chi_photon = ref_phot_prod_table.interp(
+        const RealType chi_photon = ref_phot_prod_table.interp(
                 chi_particle, unf_zero_one_minus_epsi,
                 &is_out);
 

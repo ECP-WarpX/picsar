@@ -207,7 +207,7 @@ namespace breit_wheeler{
             compute_gamma_photon<RealType, unit_system::heaviside_lorentz>(v_mom_photon);
 
         bool is_out = false;
-        const auto chi_ele = ref_pair_prod_table.interp(
+        const RealType chi_ele = ref_pair_prod_table.interp(
                 chi_photon, unf_zero_one_minus_epsi,
                 &is_out);
         const auto chi_pos = chi_photon - chi_ele;
