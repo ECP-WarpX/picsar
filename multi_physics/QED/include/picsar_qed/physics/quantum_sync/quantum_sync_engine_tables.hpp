@@ -755,7 +755,7 @@ namespace quantum_sync{
                 using namespace utils;
 
                 if(!m_init_flag)
-                    throw std::runtime_error("Cannot serialize an unitialized table");
+                    throw std::runtime_error("Cannot serialize an uninitialized table");
 
                 std::vector<char> res;
 
@@ -1189,7 +1189,7 @@ namespace quantum_sync{
                 using namespace utils;
 
                 if(!m_init_flag)
-                    throw std::runtime_error("Cannot serialize an unitialized table");
+                    throw std::runtime_error("Cannot serialize an uninitialized table");
 
                 std::vector<char> res;
 

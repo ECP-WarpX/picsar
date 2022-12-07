@@ -795,7 +795,7 @@ namespace breit_wheeler{
                 using namespace utils;
 
                 if(!m_init_flag)
-                    throw "Cannot serialize an unitialized table";
+                    throw "Cannot serialize an uniniitialized table";
 
                 std::vector<char> res;
 
