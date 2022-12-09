@@ -7,8 +7,11 @@
 
 set -eu -o pipefail
 
+brew unlink gcc
 brew update
 brew install boost
 brew install pybind11
 brew install llvm
 #brew install open-mpi
+brew install libomp
+brew link --force libomp
