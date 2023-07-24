@@ -60,7 +60,7 @@ set(PXRMP_kokkos_src ""
 set(PXRMP_kokkos_repo "https://github.com/kokkos/kokkos.git"
     CACHE STRING
     "Repository URI to pull and build Kokkos from if(PXRMP_kokkos_internal)")
-set(PXRMP_kokkos_tag "3.3.01"
+set(PXRMP_kokkos_tag "4.1.00"
     CACHE STRING
     "git tag for PXRMP_kokkos_repo if(PXRMP_kokkos_internal)")
 
