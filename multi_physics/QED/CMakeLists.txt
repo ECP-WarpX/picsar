@@ -22,7 +22,7 @@ option(PXRMP_QED_TEST             "Build PICSAR QED tests " ${IS_TOPLEVEL})
 option(PXRMP_QED_TOOLS            "Build PICSAR QED tools " ${IS_TOPLEVEL})
 option(PXRMP_QED_PYTHON_BINDINGS  "Build PICSAR QED python bindings " ${IS_TOPLEVEL})
 option(PXRMP_BOOST_TEST_DYN_LINK  "Link against the Boost Unit Test Framework shared library" ON)
-option(PXRMP_DPCPP_FIX            "Use cl::sycl::floor cl::sycl::floorf on device" OFF)
+option(PXRMP_DPCPP_FIX            "Use sycl::floor sycl::floorf on device" OFF)
 option(PXRMP_KOKKOS_EXAMPLE       "Build examples using Kokkos" OFF)
 
 
