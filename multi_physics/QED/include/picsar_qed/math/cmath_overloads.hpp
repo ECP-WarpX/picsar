@@ -7,7 +7,7 @@
 #include <cmath>
 
 #ifdef PXRMP_DPCPP_FIX
-    #include <CL/sycl.hpp>
+    #include <sycl/sycl.hpp>
 #endif
 
 namespace picsar{
