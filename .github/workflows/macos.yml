@@ -3,15 +3,13 @@ name: macos
 on: [push, pull_request]
 
 env:
-  CXX:      "/usr/local/opt/llvm/bin/clang++"
-  LDFLAGS:  "-L/usr/local/opt/llvm/lib"
-  CXXFLAGS: "-I/usr/local/opt/llvm/include -Werror -Wshadow -Woverloaded-virtual -Wunreachable-code -fsanitize=address -fsanitize=undefined"
+  CXXFLAGS: "-Werror -Wshadow -Woverloaded-virtual -Wunreachable-code -fsanitize=address -fsanitize=undefined"
 
 jobs:
   # Build PICSAR tests, PICSAR python bindings, and Kokkos examples
   tutorials-macos:
     name: QED with tests, python bindings, Kokkos examples
-    runs-on: macos-11
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
     - name: Dependencies
@@ -26,4 +24,4 @@ jobs:
             -DKokkos_ENABLE_OPENMP=ON             \
             -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
         cmake --build build -j 2
-        cmake --build build --target test
+        ctest --test-dir build --output-on-failure
