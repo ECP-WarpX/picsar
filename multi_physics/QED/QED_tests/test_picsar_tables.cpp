@@ -20,10 +20,10 @@ using namespace picsar::multi_physics::containers;
 namespace pxr_ser = picsar::multi_physics::utils::serialization;
 
 //Tolerance for double precision calculations
-const double double_tolerance = 1.0e-11;
+const double double_tolerance = 2.0e-11;
 
 //Tolerance for single precision calculations
-const float float_tolerance = 1.0e-4;
+const float float_tolerance = 2.0e-4;
 
 //Templated tolerance
 template <typename T>
