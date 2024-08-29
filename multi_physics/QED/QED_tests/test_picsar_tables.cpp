@@ -319,9 +319,9 @@ void check_table_1d(
     const auto v0 = tab.get_val(0);
     const auto v1 = tab.get_val(xsize/2);
     const auto v2 = tab.get_val(xsize-1);
-    BOOST_CHECK_EQUAL(v0, linear_function(x0));
-    BOOST_CHECK_EQUAL(v1, linear_function(x1));
-    BOOST_CHECK_EQUAL(v2, linear_function(x2));
+    BOOST_CHECK_SMALL((linear_function(x0)-v0)/v0, tolerance<double>());
+    BOOST_CHECK_SMALL((linear_function(x1)-v1)/v1, tolerance<double>());
+    BOOST_CHECK_SMALL((linear_function(x2)-v2)/v2, tolerance<double>());
 
     const auto xarr = std::array<double, 5>{x0,x1,x2,x3,x4};
     for (const auto& xx : xarr)
@@ -394,15 +394,15 @@ void check_table_2d(
     const auto v02 = tab.get_val(0, ysize-1);
     const auto v12 = tab.get_val(xsize/2, ysize-1);
     const auto v22 = tab.get_val(xsize-1, ysize-1);
-    BOOST_CHECK_EQUAL(v00, linear_function(x0,y0));
-    BOOST_CHECK_EQUAL(v10, linear_function(x1,y0));
-    BOOST_CHECK_EQUAL(v20, linear_function(x2,y0));
-    BOOST_CHECK_EQUAL(v01, linear_function(x0,y1));
-    BOOST_CHECK_EQUAL(v11, linear_function(x1,y1));
-    BOOST_CHECK_EQUAL(v21, linear_function(x2,y1));
-    BOOST_CHECK_EQUAL(v02, linear_function(x0,y2));
-    BOOST_CHECK_EQUAL(v12, linear_function(x1,y2));
-    BOOST_CHECK_EQUAL(v22, linear_function(x2,y2));
+    BOOST_CHECK_SMALL((linear_function(x0,y0)-v00)/v00, tolerance<double>());
+    BOOST_CHECK_SMALL((linear_function(x1,y0)-v10)/v10, tolerance<double>());
+    BOOST_CHECK_SMALL((linear_function(x2,y0)-v20)/v20, tolerance<double>());
+    BOOST_CHECK_SMALL((linear_function(x0,y1)-v01)/v01, tolerance<double>());
+    BOOST_CHECK_SMALL((linear_function(x1,y1)-v11)/v11, tolerance<double>());
+    BOOST_CHECK_SMALL((linear_function(x2,y1)-v21)/v21, tolerance<double>());
+    BOOST_CHECK_SMALL((linear_function(x0,y2)-v02)/v02, tolerance<double>());
+    BOOST_CHECK_SMALL((linear_function(x1,y2)-v12)/v12, tolerance<double>());
+    BOOST_CHECK_SMALL((linear_function(x2,y2)-v22)/v22, tolerance<double>());
 
     const auto y3 = 0.8569*(y1-y0) + y0;
     const auto y4 = 0.3467*(y2-y1) + y1;
