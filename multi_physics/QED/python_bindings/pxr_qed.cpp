@@ -103,6 +103,8 @@ template <typename Real>
 std::string float_to_string(const Real num)
 {
     std::stringstream ss;
+    constexpr auto precision = 8;
+    ss.precision(precision);
     ss << num;
     return ss.str();
 }
@@ -411,7 +413,7 @@ chi_ele_pos_wrapper(
         *p_ex = nullptr, *p_ey = nullptr, *p_ez = nullptr,
         *p_bx = nullptr, *p_by = nullptr, *p_bz = nullptr;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many,
@@ -475,7 +477,7 @@ bw_get_optical_depth_wrapper(
     const REAL
         *p_unf_zero_one_minus_epsi = nullptr;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many, p_unf_zero_one_minus_epsi)=
@@ -511,7 +513,7 @@ bw_get_dn_dt_wrapper(
     const REAL
         *p_energy_phot = nullptr, *p_chi_phot = nullptr;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many,
@@ -681,7 +683,7 @@ qs_get_optical_depth_wrapper(
     const REAL
         *p_unf_zero_one_minus_epsi = nullptr;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many, p_unf_zero_one_minus_epsi)=
@@ -717,7 +719,7 @@ qs_get_dn_dt_wrapper(
     const REAL
         *p_energy_part = nullptr, *p_chi_part = nullptr;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many,
@@ -871,7 +873,7 @@ sc_pair_production_rate_wrapper(
         *p_ex = nullptr, *p_ey = nullptr, *p_ez = nullptr,
         *p_bx = nullptr, *p_by = nullptr, *p_bz = nullptr;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many,
@@ -920,7 +922,7 @@ sc_expected_pair_number_wrapper(
         *p_ex = nullptr, *p_ey = nullptr, *p_ez = nullptr,
         *p_bx = nullptr, *p_by = nullptr, *p_bz = nullptr;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many,
