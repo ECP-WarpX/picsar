@@ -310,7 +310,7 @@ void check_table_1d(
     const auto x0 = tab.get_x_coord(0);
     const auto x1 = tab.get_x_coord(xsize/2);
     const auto x2 = tab.get_x_coord(xsize-1);
-    const auto x1exp = static_cast<double>(xsize/2)*(xmax - xmin)/(xsize-1) + xmin;
+    const auto x1exp = (xsize/2.0)*(xmax - xmin)/(xsize-1) + xmin;
     BOOST_CHECK_SMALL((x0-xmin)/xmin, tolerance<double>());
     BOOST_CHECK_SMALL((x1 - x1exp)/x1exp, tolerance<double>());
     BOOST_CHECK_SMALL((x2 - xmax)/xmax, tolerance<double>());
@@ -370,7 +370,7 @@ void check_table_2d(
     const auto x0 = tab.get_x_coord(0);
     const auto x1 = tab.get_x_coord(xsize/2);
     const auto x2 = tab.get_x_coord(xsize-1);
-    const auto x1exp = static_cast<double>(xsize/2)*(xmax - xmin)/(xsize-1) + xmin;
+    const auto x1exp = (xsize/2.0)*(xmax - xmin)/(xsize-1) + xmin;
     BOOST_CHECK_SMALL((x0-xmin)/xmin, tolerance<double>());
     BOOST_CHECK_SMALL((x1 - x1exp)/x1exp, tolerance<double>());
     BOOST_CHECK_SMALL((x2 - xmax)/xmax, tolerance<double>());
@@ -382,7 +382,7 @@ void check_table_2d(
     const auto y0 = tab.get_y_coord(0);
     const auto y1 = tab.get_y_coord(ysize/2);
     const auto y2 = tab.get_y_coord(ysize-1);
-    const auto y1exp = (ysize/2)*(ymax - ymin)/(ysize-1) + ymin;
+    const auto y1exp = (ysize/2.0)*(ymax - ymin)/(ysize-1) + ymin;
     BOOST_CHECK_SMALL((y0-ymin)/ymin, tolerance<double>());
     BOOST_CHECK_SMALL((y1 - y1exp)/y1exp, tolerance<double>());
     BOOST_CHECK_SMALL((y2 - ymax)/ymax, tolerance<double>());
