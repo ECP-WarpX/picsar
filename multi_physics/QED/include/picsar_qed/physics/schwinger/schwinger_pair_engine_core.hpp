@@ -64,8 +64,8 @@ namespace picsar::multi_physics::phys::schwinger{
 
         const auto inner = m_sqrt(ff*ff+ gg*gg);
 
-        const auto epsi = m_sqrt(fabs(inner + ff))*one_over_schwinger;
-        const auto eta = m_sqrt(fabs(inner - ff))*one_over_schwinger;
+        const auto epsi = m_sqrt(m_fabs(inner + ff))*one_over_schwinger;
+        const auto eta = m_sqrt(m_fabs(inner - ff))*one_over_schwinger;
 
         constexpr const auto coeff = static_cast<RealType>(
             heaviside_lorentz_elementary_charge<double>*
