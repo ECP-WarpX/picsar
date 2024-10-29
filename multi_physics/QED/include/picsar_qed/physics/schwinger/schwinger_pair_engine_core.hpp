@@ -15,9 +15,7 @@
 //Should be included by all the src files of the library
 #include "picsar_qed/qed_commons.h"
 
-//Uses GPU-friendly arrays
-#include "picsar_qed/math/vec_functions.hpp"
-//Uses vector functions
+//Uses GPU-friendly arrays and vector functions
 #include "picsar_qed/math/vec_functions.hpp"
 //Uses physical constants
 #include "picsar_qed/physics/phys_constants.h"
