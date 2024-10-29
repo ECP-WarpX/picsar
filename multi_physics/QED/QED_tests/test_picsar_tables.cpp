@@ -629,7 +629,7 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_constructor_getters)
 {
     auto tab_2d = make_2d_table();
     const auto const_tab_2d = make_2d_table();
-    auto copy_tab_2d = tab_2d;
+    const auto copy_tab_2d = tab_2d;
 
     check_table_2d(tab_2d);
     check_table_2d(const_tab_2d);
