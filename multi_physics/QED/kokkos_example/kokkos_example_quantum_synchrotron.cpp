@@ -68,7 +68,7 @@ auto generate_photon_emission_table(
         << ", " << chi_size << " x " << frac_size <<"]...\n";
     std::cout.flush();
 
-    pxr_qs::photon_emission_lookup_table_params<Real> qs_params{
+    const pxr_qs::photon_emission_lookup_table_params<Real> qs_params{
         chi_min, chi_max, frac_min, chi_size, frac_size};
 
 	auto table = pxr_qs::photon_emission_lookup_table<

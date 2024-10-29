@@ -100,7 +100,7 @@ namespace pxr_sc = picsar::multi_physics::phys::schwinger;
 * @return num as a string
 */
 template <typename Real>
-std::string float_to_string(Real num)
+std::string float_to_string(const Real num)
 {
     std::stringstream ss;
     ss << num;
@@ -278,7 +278,7 @@ compute_gamma_photon_wrapper(
     auto res = pyArr(how_many);
     auto* p_res = static_cast<REAL*>(res.request().ptr);
 
-    PXRQEDPY_FOR(how_many, [&, p_px=p_px, p_py=p_py, p_pz=p_pz](int i){
+    PXRQEDPY_FOR(static_cast<int>(how_many), [&, p_px=p_px, p_py=p_py, p_pz=p_pz](int i){
         p_res[i] =
             pxr_phys::compute_gamma_photon<REAL, UU>(
                 p_px[i], p_py[i], p_pz[i],
@@ -605,12 +605,13 @@ bw_generate_breit_wheeler_pairs_wrapper(
             check_and_get_pointers(
                 chi_phot, phot_px, phot_py, phot_pz, unf_zero_one_minus_epsi);
 
-    auto ele_px = pyArr(how_many);
-    auto ele_py = pyArr(how_many);
-    auto ele_pz = pyArr(how_many);
-    auto pos_px = pyArr(how_many);
-    auto pos_py = pyArr(how_many);
-    auto pos_pz = pyArr(how_many);
+    const auto casted_how_many = static_cast<pybind11::ssize_t>(how_many);
+    auto ele_px = pyArr(casted_how_many);
+    auto ele_py = pyArr(casted_how_many);
+    auto ele_pz = pyArr(casted_how_many);
+    auto pos_px = pyArr(casted_how_many);
+    auto pos_py = pyArr(casted_how_many);
+    auto pos_pz = pyArr(casted_how_many);
     auto* p_ele_px = static_cast<REAL*>(ele_px.request().ptr);
     auto* p_ele_py = static_cast<REAL*>(ele_py.request().ptr);
     auto* p_ele_pz = static_cast<REAL*>(ele_pz.request().ptr);
@@ -1289,7 +1290,7 @@ PYBIND11_MODULE(pxr_qed, m) {
             py::arg("do_regular") = py::bool_(true),
             py::arg("verbose") = py::bool_(true))
         .def("save_as",
-            [&](const qs_dndt_lookup_table &self, const std::string file_name){
+            [&](const qs_dndt_lookup_table &self, const std::string& file_name){
                 if(!self.is_init()){
                     throw_error("Table must be initialized!");
                 }
