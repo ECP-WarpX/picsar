@@ -305,7 +305,7 @@ compute_gamma_ele_pos_wrapper(
     const REAL
         *p_px = nullptr, *p_py = nullptr, *p_pz = nullptr;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many,
@@ -357,7 +357,7 @@ chi_photon_wrapper(
         *p_ex = nullptr, *p_ey = nullptr, *p_ez = nullptr,
         *p_bx = nullptr, *p_by = nullptr, *p_bz = nullptr;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many,
@@ -1135,7 +1135,7 @@ PYBIND11_MODULE(pxr_qed, m) {
             py::arg("do_regular") = py::bool_(true),
             py::arg("verbose") = py::bool_(true))
         .def("save_as",
-            [&](const bw_pair_prod_lookup_table &self, const std::string file_name){
+            [&](const bw_pair_prod_lookup_table &self, const std::string& file_name){
                 if(!self.is_init()){
                     throw_error("Table must be initialized!");
                 }
