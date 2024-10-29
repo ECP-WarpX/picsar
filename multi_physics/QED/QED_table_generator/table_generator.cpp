@@ -24,7 +24,6 @@
 
 namespace px_bw = picsar::multi_physics::phys::breit_wheeler;
 namespace px_qs = picsar::multi_physics::phys::quantum_sync;
-namespace px_ut = picsar::multi_physics::utils;
 
 // These string constants are used to parse command line instructions
 const std::string CMD_HELP_S = "-h";
