@@ -767,7 +767,9 @@ std::string parse_file_name_prefix(std::map<std::string, std::string>& args){
     }
 }
 
-
+// This is added because clang-tidy seems to erroneously
+// flag this function for this specific test.
+// NOLINTNEXTLINE(bugprone-exception-escape)
 int main(int argc, char** argv)
 {
     try{
