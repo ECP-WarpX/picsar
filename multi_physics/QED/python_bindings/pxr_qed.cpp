@@ -1064,7 +1064,7 @@ PYBIND11_MODULE(pxr_qed, m) {
             py::arg("do_regular") = py::bool_(true),
             py::arg("verbose") = py::bool_(true))
         .def("save_as",
-            [&](const bw_dndt_lookup_table &self, const std::string file_name){
+            [&](const bw_dndt_lookup_table &self, const std::string& file_name){
                 if(!self.is_init()){
                     throw_error("Table must be initialized!");
                 }
@@ -1074,12 +1074,12 @@ PYBIND11_MODULE(pxr_qed, m) {
                 if( !of ){
                     throw_error("Opening file failed!");
                 }
-                of.write(raw.data(), raw.size());
+                of.write(raw.data(), static_cast<int>(raw.size()));
                 of.close();
             },
             py::arg("file_name"))
         .def("load_from",
-            [&](bw_dndt_lookup_table &self, const std::string file_name){
+            [&](bw_dndt_lookup_table &self, const std::string& file_name){
                 auto input = std::ifstream(file_name,
                     std::ios::ate | std::ios::binary);
                 if( !input ){
@@ -1147,7 +1147,7 @@ PYBIND11_MODULE(pxr_qed, m) {
                 if( !of ){
                     throw_error("Opening file failed!");
                 }
-                of.write(raw.data(), raw.size());
+                of.write(raw.data(), static_cast<int>(raw.size()));
                 of.close();
             },
             py::arg("file_name"))
@@ -1302,7 +1302,7 @@ PYBIND11_MODULE(pxr_qed, m) {
                 if( !of ){
                     throw_error("Opening file failed!");
                 }
-                of.write(raw.data(), raw.size());
+                of.write(raw.data(), static_cast<int>(raw.size()));
                 of.close();
             },
             py::arg("file_name"))
@@ -1375,7 +1375,7 @@ PYBIND11_MODULE(pxr_qed, m) {
                 if( !of ){
                     throw_error("Opening file failed!");
                 }
-                of.write(raw.data(), raw.size());
+                of.write(raw.data(), static_cast<int>(raw.size()));
                 of.close();
             },
             py::arg("file_name"))
