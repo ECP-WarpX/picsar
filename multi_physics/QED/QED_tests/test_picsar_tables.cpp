@@ -551,7 +551,7 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_1d_table_constructor_getters)
 {
     auto tab_1d = make_1d_table();
     const auto const_tab_1d = make_1d_table();
-    auto copy_tab_1d = tab_1d;
+    const auto copy_tab_1d = tab_1d; // NOLINT(performance-unnecessary-copy-initialization)
 
     check_table_1d(tab_1d);
     check_table_1d(const_tab_1d);
@@ -629,7 +629,7 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_constructor_getters)
 {
     auto tab_2d = make_2d_table();
     const auto const_tab_2d = make_2d_table();
-    const auto copy_tab_2d = tab_2d;
+    const auto copy_tab_2d = tab_2d; // NOLINT(performance-unnecessary-copy-initialization)
 
     check_table_2d(tab_2d);
     check_table_2d(const_tab_2d);
@@ -729,7 +729,7 @@ BOOST_AUTO_TEST_CASE( picsar_generic_2d_table_constructor_getters)
 {
     auto gtab_2d = make_generic_2d_table();
     const auto const_gtab_2d = make_generic_2d_table();
-    auto copy_gtab_2d = gtab_2d;
+    auto copy_gtab_2d = gtab_2d; // NOLINT(performance-unnecessary-copy-initialization)
 
     check_generic_table_2d(gtab_2d);
     check_generic_table_2d(const_gtab_2d);

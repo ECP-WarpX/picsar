@@ -1098,7 +1098,7 @@ PYBIND11_MODULE(pxr_qed, m) {
         .def("interp",
             [&](bw_dndt_lookup_table &self, const pyArr& chi_phot){
                 const REAL* p_chi_phot = nullptr;
-                size_t how_many = 0;
+                int how_many = 0;
                 std::tie(how_many, p_chi_phot)=
                     check_and_get_pointers(chi_phot);
 
@@ -1152,7 +1152,7 @@ PYBIND11_MODULE(pxr_qed, m) {
             },
             py::arg("file_name"))
         .def("load_from",
-            [&](bw_pair_prod_lookup_table &self, const std::string file_name){
+            [&](bw_pair_prod_lookup_table &self, const std::string& file_name){
                 auto input = std::ifstream(file_name,
                     std::ios::ate | std::ios::binary);
                 if( !input ){
@@ -1173,7 +1173,7 @@ PYBIND11_MODULE(pxr_qed, m) {
                 const pyArr& chi_phot, const pyArr& unf_zero_one_minus_epsi){
                 const REAL
                     *p_chi_phot = nullptr, *p_unf_zero_one_minus_epsi = nullptr;
-                size_t how_many = 0;
+                int how_many = 0;
                 std::tie(how_many, p_chi_phot, p_unf_zero_one_minus_epsi)=
                     check_and_get_pointers(chi_phot, unf_zero_one_minus_epsi);
 
@@ -1307,7 +1307,7 @@ PYBIND11_MODULE(pxr_qed, m) {
             },
             py::arg("file_name"))
         .def("load_from",
-            [&](qs_dndt_lookup_table &self, const std::string file_name){
+            [&](qs_dndt_lookup_table &self, const std::string& file_name){
                 auto input = std::ifstream(file_name,
                     std::ios::ate | std::ios::binary);
                 if( !input ){
@@ -1326,7 +1326,7 @@ PYBIND11_MODULE(pxr_qed, m) {
         .def("interp",
             [&](qs_dndt_lookup_table &self, const pyArr& chi_part){
                 const REAL* p_chi_part = nullptr;
-                size_t how_many = 0;
+                int how_many = 0;
                 std::tie(how_many, p_chi_part)=
                     check_and_get_pointers(chi_part);
 
@@ -1365,7 +1365,7 @@ PYBIND11_MODULE(pxr_qed, m) {
             py::arg("do_regular") = py::bool_(true),
             py::arg("verbose") = py::bool_(true))
         .def("save_as",
-            [&](const qs_photon_emission_lookup_table &self, const std::string file_name){
+            [&](const qs_photon_emission_lookup_table &self, const std::string& file_name){
                 if(!self.is_init()){
                     throw_error("Table must be initialized!");
                 }
@@ -1380,7 +1380,7 @@ PYBIND11_MODULE(pxr_qed, m) {
             },
             py::arg("file_name"))
         .def("load_from",
-            [&](qs_photon_emission_lookup_table &self, const std::string file_name){
+            [&](qs_photon_emission_lookup_table &self, const std::string& file_name){
                 auto input = std::ifstream(file_name,
                     std::ios::ate | std::ios::binary);
                 if( !input ){
@@ -1401,7 +1401,7 @@ PYBIND11_MODULE(pxr_qed, m) {
                 const pyArr& chi_part, const pyArr& unf_zero_one_minus_epsi){
                 const REAL
                     *p_chi_part = nullptr, *p_unf_zero_one_minus_epsi = nullptr;
-                size_t how_many = 0;
+                int how_many = 0;
                 std::tie(how_many, p_chi_part, p_unf_zero_one_minus_epsi)=
                     check_and_get_pointers(chi_part, unf_zero_one_minus_epsi);
 
