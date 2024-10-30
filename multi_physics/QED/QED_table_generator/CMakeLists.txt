@@ -18,7 +18,7 @@ set_target_properties(${name} PROPERTIES
 configure_file(table_inspector.ipynb
     ${CMAKE_BINARY_DIR}/tools/table_inspector.ipynb COPYONLY)
 
-# Require 17 or newer
+# Require C++17 or newer
 target_compile_features(${name} PUBLIC cxx_std_17)
 set_target_properties(${name} PROPERTIES CXX_EXTENSIONS OFF)
 
