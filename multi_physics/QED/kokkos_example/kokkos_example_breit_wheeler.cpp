@@ -347,7 +347,7 @@ int main(int argc, char** argv)
         Kokkos::finalize();
     }
     catch(const std::exception& e){
-        std::cerr << e.what;
+        std::cerr << e.what();
         exit(EXIT_FAILURE);
     }
     exit(EXIT_SUCCESS);
