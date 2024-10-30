@@ -4,14 +4,15 @@
 * or gnuplot.
 */
 
-#include <string>
-#include <vector>
 #include <algorithm>
-#include <fstream>
-#include <map>
 #include <cstdlib>
 #include <cstring>
+#include <exception>
+#include <fstream>
 #include <iomanip>
+#include <map>
+#include <string>
+#include <vector>
 
 #ifdef PXRMP_TABLE_GEN_HAS_OPENMP
     #include <omp.h>
@@ -769,51 +770,58 @@ std::string parse_file_name_prefix(std::map<std::string, std::string>& args){
 
 int main(int argc, char** argv)
 {
-    handle_help_argument(argc, argv);
-    auto args = read_arg_pairs(argc, argv);
+    try{
+        handle_help_argument(argc, argv);
+        auto args = read_arg_pairs(argc, argv);
 
-    const auto precision = parse_precision(args);
-    const auto table_type = parse_table_type(args);
-    const auto file_name_prefix = parse_file_name_prefix(args);
+        const auto precision = parse_precision(args);
+        const auto table_type = parse_table_type(args);
+        const auto file_name_prefix = parse_file_name_prefix(args);
 
-    if(table_type == TableType::breit_wheeler_table){
-        if(precision == Precision::double_precision){
-            auto params = parse_breit_wheeler_params<double>(args);
-            do_breit_wheeler<
-                double, px_bw::generation_policy::regular>(
+        if(table_type == TableType::breit_wheeler_table){
+            if(precision == Precision::double_precision){
+                auto params = parse_breit_wheeler_params<double>(args);
+                do_breit_wheeler<
+                    double, px_bw::generation_policy::regular>(
+                        params, file_name_prefix);
+            }
+            else if(precision == Precision::single_precision){
+                auto params = parse_breit_wheeler_params<float>(args);
+                do_breit_wheeler<
+                    float, px_bw::generation_policy::regular>(
                     params, file_name_prefix);
+            }
+            else if(precision == Precision::single_prec_out_double_prec_comp){
+                auto params = parse_breit_wheeler_params<float>(args);
+                do_breit_wheeler<
+                    float, px_bw::generation_policy::force_internal_double>(
+                        params, file_name_prefix);
+            }
         }
-        else if(precision == Precision::single_precision){
-            auto params = parse_breit_wheeler_params<float>(args);
-            do_breit_wheeler<
-                float, px_bw::generation_policy::regular>(
-                    params, file_name_prefix);
-        }
-        else if(precision == Precision::single_prec_out_double_prec_comp){
-            auto params = parse_breit_wheeler_params<float>(args);
-            do_breit_wheeler<
-                float, px_bw::generation_policy::force_internal_double>(
-                    params, file_name_prefix);
+        else if(table_type == TableType::quantum_synchrotron_table){
+            if(precision == Precision::double_precision){
+                auto params = parse_quantum_sync_params<double>(args);
+                do_quantum_sync<
+                    double, px_qs::generation_policy::regular>(
+                        params, file_name_prefix);
+            }
+            else if(precision == Precision::single_precision){
+                auto params = parse_quantum_sync_params<float>(args);
+                do_quantum_sync<
+                    float, px_qs::generation_policy::regular>(
+                        params, file_name_prefix);
+            }
+            else if(precision == Precision::single_prec_out_double_prec_comp){
+                auto params = parse_quantum_sync_params<float>(args);
+                do_quantum_sync<
+                    float, px_qs::generation_policy::force_internal_double>(
+                        params, file_name_prefix);
+            }
         }
     }
-    else if(table_type == TableType::quantum_synchrotron_table){
-        if(precision == Precision::double_precision){
-            auto params = parse_quantum_sync_params<double>(args);
-            do_quantum_sync<
-                double, px_qs::generation_policy::regular>(
-                    params, file_name_prefix);
-        }
-        else if(precision == Precision::single_precision){
-            auto params = parse_quantum_sync_params<float>(args);
-            do_quantum_sync<
-                float, px_qs::generation_policy::regular>(
-                    params, file_name_prefix);
-        }
-        else if(precision == Precision::single_prec_out_double_prec_comp){
-            auto params = parse_quantum_sync_params<float>(args);
-            do_quantum_sync<
-                float, px_qs::generation_policy::force_internal_double>(
-                    params, file_name_prefix);
-        }
+    catch(const std::exception& e){
+        std::cerr << e.what();
+        exit(EXIT_FAILURE);
     }
+    exit(EXIT_SUCCESS);
 }

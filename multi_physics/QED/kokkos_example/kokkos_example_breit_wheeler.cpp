@@ -327,21 +327,28 @@ void do_test(Kokkos::Random_XorShift64_Pool<>& rand_pool)
 
 int main(int argc, char** argv)
 {
-    Kokkos::initialize(argc, argv);
-    {
-        Kokkos::Random_XorShift64_Pool<> rand_pool{random_seed};
+    try{
+        Kokkos::initialize(argc, argv);
+        {
+            Kokkos::Random_XorShift64_Pool<> rand_pool{random_seed};
 
-        std::cout << "*** Kokkos example: begin ***" << std::endl;
+            std::cout << "*** Kokkos example: begin ***" << std::endl;
 
-        std::cout << "   --- Double precision test ---" << std::endl;
-        do_test<double>(rand_pool);
-        std::cout << "   --- END ---" << std::endl;
+            std::cout << "   --- Double precision test ---" << std::endl;
+            do_test<double>(rand_pool);
+            std::cout << "   --- END ---" << std::endl;
 
-        std::cout << "   --- Single precision test ---" << std::endl;
-        do_test<float>(rand_pool);
-        std::cout << "   --- END ---" << std::endl;
+            std::cout << "   --- Single precision test ---" << std::endl;
+            do_test<float>(rand_pool);
+            std::cout << "   --- END ---" << std::endl;
 
-        std::cout << "___ END ___" << std::endl;
+            std::cout << "___ END ___" << std::endl;
+        }
+        Kokkos::finalize();
     }
-    Kokkos::finalize();
+    catch(const std::exception& e){
+        std::cerr << e.what;
+        exit(EXIT_FAILURE);
+    }
+    exit(EXIT_SUCCESS);
 }

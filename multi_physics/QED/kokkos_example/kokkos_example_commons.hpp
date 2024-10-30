@@ -26,9 +26,10 @@
 #include <picsar_qed/physics/quantum_sync/quantum_sync_engine_tables_generator.hpp>
 //__________________________________________________
 
+#include <cstdlib>
+#include <exception>
 #include <iostream>
 #include <string>
-#include <cstdlib>
 
 //Some namespace aliases
 namespace pxr =  picsar::multi_physics::phys;
