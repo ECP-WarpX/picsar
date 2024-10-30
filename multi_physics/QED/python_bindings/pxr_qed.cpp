@@ -554,7 +554,7 @@ bw_evolve_optical_depth_wrapper(
     const REAL
         *p_energy_phot = nullptr, *p_chi_phot = nullptr;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many,
@@ -598,7 +598,7 @@ bw_generate_breit_wheeler_pairs_wrapper(
         *p_phot_px = nullptr, *p_phot_py = nullptr, *p_phot_pz = nullptr,
         *p_unf_zero_one_minus_epsi;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many,
@@ -760,7 +760,7 @@ qs_evolve_optical_depth_wrapper(
     const REAL
         *p_energy_part = nullptr, *p_chi_part = nullptr;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many,
@@ -802,7 +802,7 @@ qs_generate_photon_update_momentum_wrapper(
     const REAL
         *p_chi_part = nullptr, *p_unf_zero_one_minus_epsi = nullptr;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many,
