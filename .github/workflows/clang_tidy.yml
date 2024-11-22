@@ -19,7 +19,7 @@ jobs:
 
 
         # The following wrapper ensures that only source files
-        # in WarpX/Source/* are actually processed by clang-tidy
+        # in multi_physics/QED* are actually processed by clang-tidy
         #_______________________________
         cat > clang_tidy_wrapper << EOF
         #!/bin/bash
