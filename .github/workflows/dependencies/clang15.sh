@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Copyright 2023 The WarpX Community
+# Copyright 2023 The BLAST Community
 #
 # License: BSD-3-Clause-LBNL
 # Authors: Luca Fedeli
