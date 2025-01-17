@@ -4,14 +4,15 @@
 * or gnuplot.
 */
 
-#include <string>
-#include <vector>
 #include <algorithm>
-#include <fstream>
-#include <map>
 #include <cstdlib>
 #include <cstring>
+#include <exception>
+#include <fstream>
 #include <iomanip>
+#include <map>
+#include <string>
+#include <vector>
 
 #ifdef PXRMP_TABLE_GEN_HAS_OPENMP
     #include <omp.h>
@@ -24,7 +25,6 @@
 
 namespace px_bw = picsar::multi_physics::phys::breit_wheeler;
 namespace px_qs = picsar::multi_physics::phys::quantum_sync;
-namespace px_ut = picsar::multi_physics::utils;
 
 // These string constants are used to parse command line instructions
 const std::string CMD_HELP_S = "-h";
@@ -327,7 +327,7 @@ void generate_quantum_sync_photem_table(
 double stod_wrapper(const std::string& str)
 {
     size_t idx = 0;
-    double val = std::stod(str, &idx);
+    const double val = std::stod(str, &idx);
     if (idx != str.length()){
         print_error("Failed to parse '" + str + "' as a floating point number!");
         exit(EXIT_FAILURE);
@@ -345,7 +345,7 @@ double stod_wrapper(const std::string& str)
 int stoi_wrapper(const std::string& str)
 {
     size_t idx = 0;
-    int val = std::stoi(str, &idx);
+    const int val = std::stoi(str, &idx);
     if (idx != str.length()){
         print_error("Failed to parse '" + str + "' as an integer number!");
         exit(EXIT_FAILURE);
@@ -372,20 +372,24 @@ parse_breit_wheeler_params(std::map<std::string, std::string> args)
     params.frac_size = px_bw::default_frac_how_many;
 
     auto s_cmin = args.find(CMD_CHI_MIN);
-    if(s_cmin != args.end())
+    if(s_cmin != args.end()){
         params.chi_min = static_cast<RealType>(stod_wrapper(s_cmin->second));
+    }
 
     auto s_cmax = args.find(CMD_CHI_MAX);
-    if( s_cmax != args.end())
+    if( s_cmax != args.end()){
         params.chi_max = static_cast<RealType>(stod_wrapper(s_cmax->second));
+    }
 
     auto s_csize = args.find(CMD_CHI_SIZE);
-    if( s_csize != args.end())
+    if( s_csize != args.end()){
         params.chi_size = stoi_wrapper(s_csize->second);
+    }
 
     auto s_fsize = args.find(CMD_FRAC_SIZE);
-    if(s_fsize != args.end())
+    if(s_fsize != args.end()){
         params.frac_size = stoi_wrapper(s_fsize->second);
+    }
 
     return params;
 }
@@ -415,7 +419,7 @@ void do_breit_wheeler(BreitWheelerTableParams<RealType> params, const std::strin
         std::cout << " Tables will be generated in double precision." << std::endl;
     }
     else{
-        const auto prec =
+        const auto *const prec =
             (Policy == px_bw::generation_policy::force_internal_double) ?
             "double" : "single";
         std::cout << " Tables will be calculated in " << prec <<
@@ -465,24 +469,29 @@ parse_quantum_sync_params(std::map<std::string, std::string> args)
     params.frac_size = px_qs::default_frac_how_many;
 
     auto s_cmin = args.find(CMD_CHI_MIN);
-    if(s_cmin != args.end())
+    if(s_cmin != args.end()){
         params.chi_min = static_cast<RealType>(stod_wrapper(s_cmin->second));
+    }
 
     auto s_cmax = args.find(CMD_CHI_MAX);
-    if(s_cmax != args.end())
+    if(s_cmax != args.end()){
         params.chi_max = static_cast<RealType>(stod_wrapper(s_cmax->second));
+    }
 
     auto s_fmin = args.find(CMD_FRAC_MIN);
-    if(s_fmin != args.end())
+    if(s_fmin != args.end()){
         params.frac_min = static_cast<RealType>(stod_wrapper(s_fmin->second));
+    }
 
     auto s_csize = args.find(CMD_CHI_SIZE);
-    if(s_csize != args.end())
+    if(s_csize != args.end()){
         params.chi_size = stoi_wrapper(s_csize->second);
+    }
 
     auto s_fsize = args.find(CMD_FRAC_SIZE);
-    if(s_fsize != args.end())
+    if(s_fsize != args.end()){
         params.frac_size = stoi_wrapper(s_fsize->second);
+    }
 
     return params;
 }
@@ -512,7 +521,7 @@ void do_quantum_sync(QuantumSyncTableParams<RealType> params, const std::string&
         std::cout << " Tables will be generated in double precision." << std::endl;
     }
     else{
-        const auto prec =
+        const auto *const prec =
             (Policy == px_qs::generation_policy::force_internal_double) ?
             "double" : "single";
         std::cout << " Tables will be calculated in " << prec <<
@@ -654,11 +663,12 @@ void check_argc(int argc)
 */
 void handle_help_argument(int argc, char** argv)
 {
-    if(argc < 2)
+    if(argc < 2){
         return;
+    }
 
     const auto arg = std::string{argv[1]};
-    if(arg.compare(CMD_HELP_S) == 0 || arg.compare(CMD_HELP_L) == 0){
+    if(arg == CMD_HELP_S || arg == CMD_HELP_L){
         print_help_message();
         exit(EXIT_SUCCESS);
     }
@@ -757,56 +767,63 @@ std::string parse_file_name_prefix(std::map<std::string, std::string>& args){
     }
 }
 
-
+// This is added because clang-tidy seems to erroneously
+// flag this function for this specific test.
+// NOLINTNEXTLINE(bugprone-exception-escape)
 int main(int argc, char** argv)
 {
-    handle_help_argument(argc, argv);
-    auto args = read_arg_pairs(argc, argv);
+    try{
+        handle_help_argument(argc, argv);
+        auto args = read_arg_pairs(argc, argv);
 
-    const auto precision = parse_precision(args);
-    const auto table_type = parse_table_type(args);
-    const auto file_name_prefix = parse_file_name_prefix(args);
+        const auto precision = parse_precision(args);
+        const auto table_type = parse_table_type(args);
+        const auto file_name_prefix = parse_file_name_prefix(args);
 
-    if(table_type == TableType::breit_wheeler_table){
-        if(precision == Precision::double_precision){
-            auto params = parse_breit_wheeler_params<double>(args);
-            do_breit_wheeler<
-                double, px_bw::generation_policy::regular>(
+        if(table_type == TableType::breit_wheeler_table){
+            if(precision == Precision::double_precision){
+                auto params = parse_breit_wheeler_params<double>(args);
+                do_breit_wheeler<
+                    double, px_bw::generation_policy::regular>(
+                        params, file_name_prefix);
+            }
+            else if(precision == Precision::single_precision){
+                auto params = parse_breit_wheeler_params<float>(args);
+                do_breit_wheeler<
+                    float, px_bw::generation_policy::regular>(
                     params, file_name_prefix);
+            }
+            else if(precision == Precision::single_prec_out_double_prec_comp){
+                auto params = parse_breit_wheeler_params<float>(args);
+                do_breit_wheeler<
+                    float, px_bw::generation_policy::force_internal_double>(
+                        params, file_name_prefix);
+            }
         }
-        else if(precision == Precision::single_precision){
-            auto params = parse_breit_wheeler_params<float>(args);
-            do_breit_wheeler<
-                float, px_bw::generation_policy::regular>(
-                    params, file_name_prefix);
-        }
-        else if(precision == Precision::single_prec_out_double_prec_comp){
-            auto params = parse_breit_wheeler_params<float>(args);
-            do_breit_wheeler<
-                float, px_bw::generation_policy::force_internal_double>(
-                    params, file_name_prefix);
+        else if(table_type == TableType::quantum_synchrotron_table){
+            if(precision == Precision::double_precision){
+                auto params = parse_quantum_sync_params<double>(args);
+                do_quantum_sync<
+                    double, px_qs::generation_policy::regular>(
+                        params, file_name_prefix);
+            }
+            else if(precision == Precision::single_precision){
+                auto params = parse_quantum_sync_params<float>(args);
+                do_quantum_sync<
+                    float, px_qs::generation_policy::regular>(
+                        params, file_name_prefix);
+            }
+            else if(precision == Precision::single_prec_out_double_prec_comp){
+                auto params = parse_quantum_sync_params<float>(args);
+                do_quantum_sync<
+                    float, px_qs::generation_policy::force_internal_double>(
+                        params, file_name_prefix);
+            }
         }
     }
-    else if(table_type == TableType::quantum_synchrotron_table){
-        if(precision == Precision::double_precision){
-            auto params = parse_quantum_sync_params<double>(args);
-            do_quantum_sync<
-                double, px_qs::generation_policy::regular>(
-                    params, file_name_prefix);
-        }
-        else if(precision == Precision::single_precision){
-            auto params = parse_quantum_sync_params<float>(args);
-            do_quantum_sync<
-                float, px_qs::generation_policy::regular>(
-                    params, file_name_prefix);
-        }
-        else if(precision == Precision::single_prec_out_double_prec_comp){
-            auto params = parse_quantum_sync_params<float>(args);
-            do_quantum_sync<
-                float, px_qs::generation_policy::force_internal_double>(
-                    params, file_name_prefix);
-        }
+    catch(const std::exception& e){
+        std::cerr << e.what();
+        exit(EXIT_FAILURE);
     }
-
     exit(EXIT_SUCCESS);
 }

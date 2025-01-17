@@ -27,10 +27,8 @@
 
 #include <algorithm>
 
-namespace picsar{
-namespace multi_physics{
-namespace phys{
-namespace quantum_sync{
+namespace picsar::multi_physics::phys::quantum_sync
+{
 
     //________________ dN/dt table _____________________________________________
 
@@ -140,9 +138,6 @@ namespace quantum_sync{
 
     //__________________________________________________________________________
 
-}
-}
-}
 }
 
 #endif // PICSAR_MULTIPHYSICS_QUANTUM_SYNC_ENGINE_TABLES_GENERATOR

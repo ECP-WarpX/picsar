@@ -30,11 +30,9 @@
 #include <type_traits>
 #include <stdexcept>
 
-namespace picsar{
-namespace multi_physics{
-namespace phys{
-namespace quantum_sync{
-namespace detail{
+namespace picsar::multi_physics::phys::quantum_sync::detail
+{
+
     //________________ dN/dt table _____________________________________________
 
     /**
@@ -63,7 +61,7 @@ namespace detail{
         #pragma omp parallel for
 #endif
         for (int i = 0; i < static_cast<int>(all_coords.size()); ++i){
-            PXRMP_CONSTEXPR_IF (ForceInternalDouble && !std::is_same<RealType,double>()){
+            if constexpr (ForceInternalDouble && !std::is_same<RealType,double>()){
                 all_vals[i] = static_cast<RealType>(
                     compute_G_function<double>(all_coords[i]));
             }
@@ -71,19 +69,20 @@ namespace detail{
                 all_vals[i] = compute_G_function(all_coords[i]);
             }
 
-            PXRMP_CONSTEXPR_IF (ShowProgress){
-                #pragma omp critical
-                {
-                    count++;
-                    utils::draw_progress(count,
-                        all_vals.size(), "Quantum sync dN/dt", 1);
+            #pragma omp critical
+            {
+                count++;
+                if constexpr (ShowProgress){
+                    utils::draw_progress(count, all_vals.size(),
+                        "Quantum sync dN/dt", 1);
                 }
             }
         }
 
         for (const auto& val : all_vals){
-            if(std::isnan(val))
+            if(std::isnan(val)){
                 throw std::runtime_error("Error: nan detected in generated table!");
+            }
         }
 
         auto t_end =  std::chrono::system_clock::now();
@@ -137,7 +136,7 @@ namespace detail{
 
             auto vals = std::vector<RealType>(all_frac_size);
 
-            PXRMP_CONSTEXPR_IF (ForceInternalDouble && !std::is_same<RealType,double>()){
+            if constexpr (ForceInternalDouble && !std::is_same<RealType,double>()){
                 const auto d_chi_part = static_cast<double>(chi_part);
                 auto d_chi_phots = std::vector<double>(all_frac_size);
                 std::transform(
@@ -161,20 +160,20 @@ namespace detail{
 
             std::copy(vals.begin(), vals.end(), all_vals.begin() + i*all_frac_size);
 
-            PXRMP_CONSTEXPR_IF (ShowProgress){
-#ifdef PXRMP_HAS_OPENMP
-                #pragma omp critical
-#endif
-                {
-                    count++;
-                    utils::draw_progress(count, all_chi_part_size, "QS photon emission", 1);
+            #pragma omp critical
+            {
+                count++;
+                if constexpr (ShowProgress){
+                    utils::draw_progress(count, all_chi_part_size,
+                        "QS photon emission", 1);
                 }
             }
         }
 
         for (const auto& val : all_vals){
-            if(std::isnan(val))
+            if(std::isnan(val)){
                 throw std::runtime_error("Error: nan detected in generated table!");
+            }
         }
 
         auto t_end =  std::chrono::system_clock::now();
@@ -192,10 +191,6 @@ namespace detail{
 
     //__________________________________________________________________________
 
-}
-}
-}
-}
 }
 
 #endif // PICSAR_MULTIPHYSICS_QUANTUM_SYNC_ENGINE_TABLES_GENERATOR_DETAIL

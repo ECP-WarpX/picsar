@@ -13,10 +13,8 @@
     #include <boost/math/special_functions/bessel.hpp>
 #endif
 
-namespace picsar{
-namespace multi_physics{
-namespace math{
-
+namespace picsar::multi_physics::math
+{
     /**
     * This function is a wrapper around the Bessel function
     * of the second kind defined either in the STL (if C++17 is available)
@@ -37,8 +35,6 @@ namespace math{
 #endif
     }
 
-}
-}
 }
 
 #endif //PICSAR_MULTIPHYSICS_SPECIAL_FUNCTIONS

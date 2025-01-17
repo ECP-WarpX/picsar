@@ -19,10 +19,10 @@
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
+#include <utility>
 
-namespace picsar{
-namespace multi_physics{
-namespace containers{
+namespace picsar::multi_physics::containers
+{
 
 namespace details{
     //________________ Auxiliary functions _____________________________________
@@ -109,12 +109,12 @@ namespace details{
         */
         equispaced_1d_table(
             RealType x_min, RealType x_max, VectorType values):
-            m_x_min{x_min}, m_x_max{x_max}, m_values{values}
+            m_x_min{x_min}, m_x_max{x_max}, m_x_size{x_max - x_min},
+            m_how_many_x{static_cast<int>(values.size())},
+            m_dx{m_x_size/(m_how_many_x-1)},
+            m_values{std::move(values)}
             {
-                m_how_many_x = static_cast<int>(values.size());
-                m_x_size = x_max - x_min;
-                m_dx = m_x_size/(m_how_many_x-1);
-                 //VectorType may need a call to a user-defined method for CPU-GPU synchronization
+                //VectorType may need a call to a user-defined method for CPU-GPU synchronization
                 details::aux_sync_vec(m_values);
             }
 
@@ -122,7 +122,7 @@ namespace details{
         * Empty constructor
         */
         constexpr
-        equispaced_1d_table(){}
+        equispaced_1d_table() = default;
 
         /**
         * Constructor from byte array (not usable on GPUs)
@@ -138,9 +138,10 @@ namespace details{
                 sizeof(m_x_min)+sizeof(m_x_max)+
                 sizeof(m_how_many_x) + sizeof(m_dx);
 
-            if (raw_data.size() < min_size)
+            if (raw_data.size() < min_size){
                 throw std::runtime_error("Binary data is too small \
                 to be a 1D table.");
+            }
 
             auto it_raw_data = raw_data.begin();
 
@@ -153,14 +154,16 @@ namespace details{
             m_x_min = serialization::get_out<decltype(m_x_min)>(it_raw_data);
             m_x_max = serialization::get_out<decltype(m_x_max)>(it_raw_data);
             m_x_size = m_x_max - m_x_min;
-            if(m_x_size < 0)
+            if(m_x_size < 0){
                 throw std::runtime_error("raw_data contains invalid data.");
+            }
 
             m_how_many_x =
                 serialization::get_out<decltype(m_how_many_x)>(it_raw_data);
             m_dx = serialization::get_out<decltype(m_dx)>(it_raw_data);
-            if(m_how_many_x <= 0)
+            if(m_how_many_x <= 0){
                 throw std::runtime_error("raw_data contains invalid data.");
+            }
             m_values = VectorType(m_how_many_x);
             auto vals =
                 serialization::get_n_out<RealType>(it_raw_data, m_how_many_x);
@@ -176,6 +179,7 @@ namespace details{
         * @param[in] rhs a const reference to a 1D table of the same type
         * @return true if rhs and *this are equal. false otherwise
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         bool operator== (
             const equispaced_1d_table<RealType, VectorType> &rhs) const
@@ -195,6 +199,7 @@ namespace details{
         * @param[in] i the index of the desired coordinate
         * @return the i-th coordinate
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_x_coord(const int i) const noexcept
         {
@@ -207,6 +212,7 @@ namespace details{
         * @param[in] i the index of the desired value
         * @return the i-th value
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_val(const size_t i) const noexcept
         {
@@ -218,6 +224,7 @@ namespace details{
         *
         * @return the number of points along x
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         int get_how_many_x() const noexcept
         {
@@ -229,6 +236,7 @@ namespace details{
         *
         * @return the minimum x coordinate
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_x_min() const noexcept
         {
@@ -240,6 +248,7 @@ namespace details{
         *
         * @return the maximum x coordinate
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_x_max() const noexcept
         {
@@ -251,6 +260,7 @@ namespace details{
         *
         * @return the size along x
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_x_size() const noexcept
         {
@@ -262,6 +272,7 @@ namespace details{
         *
         * @return the size of the steps along x
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_dx() const noexcept
         {
@@ -274,6 +285,7 @@ namespace details{
         *
         * @return all the coordinates
         */
+        [[nodiscard]]
         std::vector<RealType> get_all_coordinates()  const noexcept
         {
             auto all_coords = std::vector<RealType>(m_how_many_x);
@@ -288,6 +300,7 @@ namespace details{
         *
         * @return a const reference to the underlying Vector holding value data
         */
+        [[nodiscard]]
         const VectorType& get_values_reference() const noexcept
         {
             return m_values;
@@ -301,6 +314,7 @@ namespace details{
         * @param[in] where_x where to perform the interpolation
         * @return the interpolated value
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType interp(const RealType where_x) const noexcept
         {
@@ -308,8 +322,9 @@ namespace details{
 
             const auto idx_left = static_cast<int>(
                 m_floor((m_how_many_x-1)*(where_x-m_x_min)/m_x_size));
-            if (idx_left == (m_how_many_x-1))
+            if (idx_left == (m_how_many_x-1)){
                 return  m_values[m_how_many_x-1];
+            }
             const auto idx_right = idx_left + 1;
 
             const auto xleft = get_x_coord(idx_left);
@@ -343,9 +358,10 @@ namespace details{
         PXRMP_FORCE_INLINE
         void set_all_vals(const std::vector<RealType>& new_values)
         {
-            if (new_values.size() != m_values.size())
+            if (new_values.size() != m_values.size()){
                 throw std::runtime_error("Mismatch new_values length \
                     and m_values length");
+            }
             std::copy(new_values.begin(), new_values.end(), m_values.begin());
             //VectorType may need a call to a user-defined method for CPU-GPU synchronization
             details::aux_sync_vec(m_values);
@@ -358,6 +374,7 @@ namespace details{
         *
         * @return a byte vector containing table data
         */
+        [[nodiscard]]
         std::vector<char> serialize() const
         {
             auto raw_data = std::vector<char>{};
@@ -368,8 +385,9 @@ namespace details{
             utils::serialization::put_in(m_x_max, raw_data);
             utils::serialization::put_in(m_how_many_x, raw_data);
             utils::serialization::put_in(m_dx, raw_data);
-            for (auto val : m_values)
+            for (auto val : m_values){
                 utils::serialization::put_in(val, raw_data);
+            }
 
             return raw_data;
         }
@@ -417,13 +435,13 @@ namespace details{
             VectorType values):
             m_x_min{x_min}, m_x_max{x_max},
             m_y_min{y_min}, m_y_max{y_max},
+            m_x_size{x_max - x_min},
+            m_y_size{y_max - y_min},
             m_how_many_x{how_many_x}, m_how_many_y{how_many_y},
-            m_values{values}
+            m_dx{m_x_size/(m_how_many_x-1)},
+            m_dy{m_y_size/(m_how_many_y-1)},
+            m_values{std::move(values)}
             {
-                m_x_size = x_max - x_min;
-                m_y_size = y_max - y_min;
-                m_dx = m_x_size/(m_how_many_x-1);
-                m_dy = m_y_size/(m_how_many_y-1);
                 //VectorType may need a call to a user-defined method for CPU-GPU synchronization
                 details::aux_sync_vec(m_values);
             }
@@ -432,7 +450,7 @@ namespace details{
         * Empty constructor
         */
         constexpr
-        equispaced_2d_table(){}
+        equispaced_2d_table() = default;
 
         /**
         * Constructor from byte array (not usable on GPUs)
@@ -451,9 +469,10 @@ namespace details{
                 sizeof(m_how_many_y)+
                 sizeof(m_dx) + sizeof(m_dy);
 
-            if (raw_data.size() < min_size)
+            if (raw_data.size() < min_size){
                 throw std::runtime_error("Binary data is too small \
                 to be a 2D table.");
+            }
 
             auto it_raw_data = raw_data.begin();
 
@@ -469,10 +488,12 @@ namespace details{
             m_y_max = serialization::get_out<decltype(m_y_max)>(it_raw_data);
             m_x_size = m_x_max - m_x_min;
             m_y_size = m_y_max - m_y_min;
-            if(m_x_size < 0)
+            if(m_x_size < 0){
                 throw std::runtime_error("raw_data contains invalid data.");
-            if(m_y_size < 0)
+            }
+            if(m_y_size < 0){
                 throw std::runtime_error("raw_data contains invalid data.");
+            }
 
             m_how_many_x =
                 serialization::get_out<decltype(m_how_many_x)>(it_raw_data);
@@ -480,10 +501,12 @@ namespace details{
                 serialization::get_out<decltype(m_how_many_y)>(it_raw_data);
             m_dx = serialization::get_out<decltype(m_dx)>(it_raw_data);
             m_dy = serialization::get_out<decltype(m_dy)>(it_raw_data);
-            if(m_how_many_x <= 0)
+            if(m_how_many_x <= 0){
                 throw std::runtime_error("raw_data contains invalid data.");
-            if(m_how_many_y <= 0)
+            }
+            if(m_how_many_y <= 0){
                 throw std::runtime_error("raw_data contains invalid data.");
+            }
             m_values = VectorType(m_how_many_x*m_how_many_y);
             auto vals = serialization::get_n_out<RealType>(
                     it_raw_data,
@@ -499,6 +522,7 @@ namespace details{
         * @param[in] rhs a const reference to a 2D table of the same type
         * @return true if rhs and *this are equal. false otherwise
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         bool operator== (
             const equispaced_2d_table<RealType, VectorType> &rhs) const
@@ -523,6 +547,7 @@ namespace details{
         * @param[in] i the index of the desired coordinate
         * @return the i-th coordinate
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_x_coord(int i) const noexcept
         {
@@ -535,6 +560,7 @@ namespace details{
         * @param[in] j the index of the desired coordinate
         * @return the j-th coordinate
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_y_coord(int j) const noexcept
         {
@@ -548,6 +574,7 @@ namespace details{
         * @param[in] j the index of the desired value along y
         * @return the value at (i,j)
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_val(int i, int j) const noexcept
         {
@@ -559,6 +586,7 @@ namespace details{
         *
         * @return the number of points along x
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         int get_how_many_x() const noexcept
         {
@@ -570,6 +598,7 @@ namespace details{
         *
         * @return the minimum x coordinate
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_x_min() const noexcept
         {
@@ -581,6 +610,7 @@ namespace details{
         *
         * @return the maximum x coordinate
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_x_max() const noexcept
         {
@@ -592,6 +622,7 @@ namespace details{
         *
         * @return the size along x
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_x_size() const noexcept
         {
@@ -603,6 +634,7 @@ namespace details{
         *
         * @return the size of the steps along x
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_dx() const noexcept
         {
@@ -614,6 +646,7 @@ namespace details{
         *
         * @return the number of points along y
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         int get_how_many_y() const noexcept
         {
@@ -625,6 +658,7 @@ namespace details{
         *
         * @return the minimum y coordinate
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_y_min() const noexcept
         {
@@ -636,6 +670,7 @@ namespace details{
         *
         * @return the maximum y coordinate
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_y_max() const noexcept
         {
@@ -647,6 +682,7 @@ namespace details{
         *
         * @return the size along y
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_y_size() const noexcept
         {
@@ -658,6 +694,7 @@ namespace details{
         *
         * @return the size of the steps along y
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_dy() const noexcept
         {
@@ -670,16 +707,16 @@ namespace details{
         *
         * @return all the coordinates
         */
+        [[nodiscard]]
         std::vector<std::array<RealType,2>> get_all_coordinates() const noexcept
         {
             auto all_coords = std::vector<std::array<RealType,2>>(
                 m_how_many_x*m_how_many_y, {0,0});
-            int count = 0;
             for (int i = 0; i < m_how_many_x; ++i){
                 for (int j = 0; j < m_how_many_y; ++j){
-                    all_coords[count][0] = get_x_coord(i);
-                    all_coords[count][1] = get_y_coord(j);
-                    count++;
+                    const auto idx = i*m_how_many_y + j;
+                    all_coords[idx][0] = get_x_coord(i);
+                    all_coords[idx][1] = get_y_coord(j);
                 }
             }
             return all_coords;
@@ -690,6 +727,7 @@ namespace details{
         *
         * @return a const reference to the underlying Vector holding value data
         */
+        [[nodiscard]]
         const VectorType& get_values_reference() const noexcept
         {
             return m_values;
@@ -702,6 +740,7 @@ namespace details{
         * @param[in] where_y the position along y
         * @return the result of the interpolation
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType interp(const RealType where_x, const RealType where_y) const noexcept
         {
@@ -709,13 +748,15 @@ namespace details{
 
             auto idx_x_left = static_cast<int>(
                 m_floor((m_how_many_x-1)*(where_x-m_x_min)/m_x_size));
-            if (idx_x_left == (m_how_many_x-1))
+            if (idx_x_left == (m_how_many_x-1)){
                 idx_x_left = m_how_many_x-2;
+            }
             const auto idx_x_right = idx_x_left + 1;
             auto idx_y_left = static_cast<int>(
                 m_floor((m_how_many_y-1)*(where_y-m_y_min)/m_y_size));
-            if (idx_y_left == (m_how_many_y-1))
+            if (idx_y_left == (m_how_many_y-1)){
                 idx_y_left = m_how_many_y-2;
+            }
             const auto idx_y_right = idx_y_left + 1;
 
             const auto xleft = get_x_coord(idx_x_left);
@@ -742,6 +783,7 @@ namespace details{
         * @param[in] j the index of the position along y
         * @return the result of the interpolation
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType interp_first_coord(RealType where_x, int j) const noexcept
         {
@@ -749,8 +791,9 @@ namespace details{
 
             auto idx_left = static_cast<int>(
                 m_floor((m_how_many_x-1)*(where_x-m_x_min)/m_x_size));
-            if (idx_left == (m_how_many_x-1))
+            if (idx_left == (m_how_many_x-1)){
                 idx_left = m_how_many_x-2;
+            }
             const auto idx_right = idx_left + 1;
 
             const auto xleft = idx_left*m_dx + m_x_min;
@@ -770,6 +813,7 @@ namespace details{
         * @param[in] where_y the position along y
         * @return the result of the interpolation
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType interp_second_coord(int i, RealType where_y) const noexcept
         {
@@ -777,8 +821,9 @@ namespace details{
 
             auto idx_left = static_cast<int>(
                 m_floor((m_how_many_y-1)*(where_y-m_y_min)/m_y_size));
-            if (idx_left == (m_how_many_y-1))
+            if (idx_left == (m_how_many_y-1)){
                 idx_left = m_how_many_y-2;
+            }
             const auto idx_right = idx_left + 1;
 
             const auto left_val = m_values[idx(i, idx_left)];
@@ -828,9 +873,10 @@ namespace details{
         PXRMP_FORCE_INLINE
         void set_all_vals(const std::vector<RealType>& new_values)
         {
-            if (new_values.size() != m_values.size())
+            if (new_values.size() != m_values.size()){
                 throw std::runtime_error("Mismatch new_values length \
                     and m_values length");
+            }
             std::copy(new_values.begin(), new_values.end(), m_values.begin());
             //VectorType may need a call to a user-defined method for CPU-GPU synchronization
             details::aux_sync_vec(m_values);
@@ -843,6 +889,7 @@ namespace details{
         *
         * @return a byte vector containing table data
         */
+        [[nodiscard]]
         std::vector<char> serialize() const
         {
             auto raw_data = std::vector<char>{};
@@ -857,8 +904,9 @@ namespace details{
             utils::serialization::put_in(m_how_many_y, raw_data);
             utils::serialization::put_in(m_dx, raw_data);
             utils::serialization::put_in(m_dy, raw_data);
-            for (auto val : m_values)
+            for (auto val : m_values){
                 utils::serialization::put_in(val, raw_data);
+            }
 
             return raw_data;
         }
@@ -886,6 +934,7 @@ namespace details{
         * @param[in] j index along y
         * @return index along internal 1D vector
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         int idx(int i, int j) const noexcept
         {
@@ -938,7 +987,7 @@ namespace details{
             IXMapFunctor ix_map_functor,
             IYMapFunctor iy_map_functor):
             m_how_many_x{how_many_x}, m_how_many_y{how_many_y},
-            m_values{values},
+            m_values{std::move(values)},
             m_x_map_functor{x_map_functor}, m_y_map_functor{y_map_functor},
             m_ix_map_functor{ix_map_functor}, m_iy_map_functor{iy_map_functor}
             {}
@@ -947,7 +996,7 @@ namespace details{
         * Empty constructor
         */
         constexpr
-        generic_2d_table(){}
+        generic_2d_table() = default;
 
         /**
         * Constructor from byte array (not usable on GPUs)
@@ -963,9 +1012,10 @@ namespace details{
                 sizeof(m_how_many_x)+
                 sizeof(m_how_many_y);
 
-            if (raw_data.size() < min_size)
+            if (raw_data.size() < min_size){
                 throw std::runtime_error("Binary data is too small \
                 to be a 2D table.");
+            }
 
             auto it_raw_data = raw_data.begin();
 
@@ -979,10 +1029,12 @@ namespace details{
                 serialization::get_out<decltype(m_how_many_x)>(it_raw_data);
             m_how_many_y =
                 serialization::get_out<decltype(m_how_many_y)>(it_raw_data);
-            if(m_how_many_x <= 0)
+            if(m_how_many_x <= 0){
                 throw std::runtime_error("raw_data contains invalid data.");
-            if(m_how_many_y <= 0)
+            }
+            if(m_how_many_y <= 0){
                 throw std::runtime_error("raw_data contains invalid data.");
+            }
 
             //static_cast<int> here has the sole purpose of avoiding to trigger
             //a CodeQL check in CI (Multiplication result converted to larger type)
@@ -1011,6 +1063,7 @@ namespace details{
         *
         * @return true if rhs and *this are equal. false otherwise
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         bool operator== (
             const generic_2d_table<
@@ -1035,6 +1088,7 @@ namespace details{
         *
         * @return the i-th coordinate
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_x_coord(int i) const noexcept
         {
@@ -1048,6 +1102,7 @@ namespace details{
         *
         * @return the j-th coordinate
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_y_coord(int j) const noexcept
         {
@@ -1062,6 +1117,7 @@ namespace details{
         *
         * @return the value at (i,j)
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_val(int i, int j) const noexcept
         {
@@ -1073,6 +1129,7 @@ namespace details{
         *
         * @return the number of points along x
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         int get_how_many_x() const noexcept
         {
@@ -1084,6 +1141,7 @@ namespace details{
         *
         * @return the minimum x coordinate
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_x_min() const noexcept
         {
@@ -1095,6 +1153,7 @@ namespace details{
         *
         * @return the maximum x coordinate
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_x_max() const noexcept
         {
@@ -1106,6 +1165,7 @@ namespace details{
         *
         * @return the size along x
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_x_size() const noexcept
         {
@@ -1117,6 +1177,7 @@ namespace details{
         *
         * @return the size of the steps along x
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_dx(int i) const noexcept
         {
@@ -1128,6 +1189,7 @@ namespace details{
         *
         * @return the number of points along y
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         int get_how_many_y() const noexcept
         {
@@ -1139,6 +1201,7 @@ namespace details{
         *
         * @return the minimum y coordinate
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_y_min() const noexcept
         {
@@ -1150,6 +1213,7 @@ namespace details{
         *
         * @return the maximum y coordinate
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_y_max() const noexcept
         {
@@ -1161,6 +1225,7 @@ namespace details{
         *
         * @return the size along y
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_y_size() const noexcept
         {
@@ -1172,6 +1237,7 @@ namespace details{
         *
         * @return the size of the steps along y
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType get_dy(int j) const noexcept
         {
@@ -1184,16 +1250,16 @@ namespace details{
         *
         * @return all the coordinates
         */
+        [[nodiscard]]
         std::vector<std::array<RealType,2>> get_all_coordinates() const noexcept
         {
             auto all_coords = std::vector<std::array<RealType,2>>(
                 static_cast<int>(m_how_many_x*m_how_many_y), {0,0});
-            int count = 0;
             for (int i = 0; i < m_how_many_x; ++i){
                 for (int j = 0; j < m_how_many_y; ++j){
-                    all_coords[count][0] = get_x_coord(i);
-                    all_coords[count][1] = get_y_coord(j);
-                    count++;
+                    const auto idx = i*m_how_many_x + j;
+                    all_coords[idx][0] = get_x_coord(i);
+                    all_coords[idx][1] = get_y_coord(j);
                 }
             }
             return all_coords;
@@ -1204,6 +1270,7 @@ namespace details{
         *
         * @return a const reference to the underlying Vector holding value data
         */
+        [[nodiscard]]
         const VectorType& get_values_reference() const noexcept
         {
             return m_values;
@@ -1216,18 +1283,21 @@ namespace details{
         * @param[in] where_y the position along y
         * @return the result of the interpolation
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType interp(const RealType where_x, const RealType where_y) const noexcept
         {
             using namespace picsar::multi_physics::math;
 
             auto idx_x_left = m_ix_map_functor(where_x);
-            if (idx_x_left == (m_how_many_x-1))
+            if (idx_x_left == (m_how_many_x-1)){
                 idx_x_left = m_how_many_x-2;
+            }
             const auto idx_x_right = idx_x_left + 1;
             auto idx_y_left = m_iy_map_functor(where_y);
-            if (idx_y_left == (m_how_many_y-1))
+            if (idx_y_left == (m_how_many_y-1)){
                 idx_y_left = m_how_many_y-2;
+            }
             const auto idx_y_right = idx_y_left + 1;
 
             const auto xleft = get_x_coord(idx_x_left);
@@ -1254,14 +1324,16 @@ namespace details{
         * @param[in] j the index of the position along y
         * @return the result of the interpolation
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType interp_first_coord(RealType where_x, int j) const noexcept
         {
             using namespace picsar::multi_physics::math;
 
             auto idx_left = m_ix_map_functor(where_x);
-            if (idx_left == (m_how_many_x-1))
+            if (idx_left == (m_how_many_x-1)){
                 idx_left = m_how_many_x-2;
+            }
             const auto idx_right = idx_left + 1;
 
             const auto xleft = get_x_coord(idx_left);
@@ -1281,14 +1353,16 @@ namespace details{
         * @param[in] where_y the position along y
         * @return the result of the interpolation
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         RealType interp_second_coord(int i, RealType where_y) const noexcept
         {
             using namespace picsar::multi_physics::math;
 
             auto idx_left = m_iy_map_functor(where_y);
-            if (idx_left == (m_how_many_y-1))
+            if (idx_left == (m_how_many_y-1)){
                 idx_left = m_how_many_y-2;
+            }
             const auto idx_right = idx_left + 1;
 
             const auto left_val = m_values[idx(i, idx_left)];
@@ -1338,9 +1412,10 @@ namespace details{
         PXRMP_FORCE_INLINE
         void set_all_vals(const std::vector<RealType>& new_values)
         {
-            if (new_values.size() != m_values.size())
+            if (new_values.size() != m_values.size()){
                 throw std::runtime_error("Mismatch new_values length \
                     and m_values length");
+            }
             std::copy(new_values.begin(), new_values.end(), m_values.begin());
             //VectorType may need a call to a user-defined method for CPU-GPU synchronization
             details::aux_sync_vec(m_values);
@@ -1353,6 +1428,7 @@ namespace details{
         *
         * @return a byte vector containing table data
         */
+        [[nodiscard]]
         std::vector<char> serialize() const
         {
             auto raw_data = std::vector<char>{};
@@ -1361,16 +1437,21 @@ namespace details{
                 static_cast<char>(sizeof(RealType)), raw_data);
             utils::serialization::put_in(m_how_many_x, raw_data);
             utils::serialization::put_in(m_how_many_y, raw_data);
-            for (const auto val : m_values)
+            for (const auto val : m_values){
                 utils::serialization::put_in(val, raw_data);
-            for (const auto dd : m_x_map_functor.serialize())
+            }
+            for (const auto dd : m_x_map_functor.serialize()){
                 utils::serialization::put_in(dd, raw_data);
-            for (const auto dd : m_y_map_functor.serialize())
+            }
+            for (const auto dd : m_y_map_functor.serialize()){
                 utils::serialization::put_in(dd, raw_data);
-            for (const auto dd : m_ix_map_functor.serialize())
+            }
+            for (const auto dd : m_ix_map_functor.serialize()){
                 utils::serialization::put_in(dd, raw_data);
-            for (const auto dd : m_iy_map_functor.serialize())
+            }
+            for (const auto dd : m_iy_map_functor.serialize()){
                 utils::serialization::put_in(dd, raw_data);
+            }
 
             return raw_data;
         }
@@ -1394,6 +1475,7 @@ namespace details{
         * @param[in] j index along y
         * @return index along internal 1D vector
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         int idx(int i, int j) const noexcept
         {
@@ -1404,8 +1486,6 @@ namespace details{
     //__________________________________________________________________________
 
 
-}
-}
 }
 
 

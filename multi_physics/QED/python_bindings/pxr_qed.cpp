@@ -76,13 +76,13 @@ namespace pxr_sc = picsar::multi_physics::phys::schwinger;
     template <typename Func>
     void PXRQEDPY_FOR(int N, const Func& func){
         #pragma omp parallel for
-        for (int i = 0; i < N; ++i) func(i);
+        for (int i = 0; i < N; ++i){ func(i) ;}
     }
     const auto PXRQEDPY_OPENMP_FLAG = true;
 #else
     template <typename Func>
     void PXRQEDPY_FOR(int N, const Func& func){
-        for (int i = 0; i < N; ++i) func(i);
+        for (int i = 0; i < N; ++i){ func(i); }
     }
     const auto PXRQEDPY_OPENMP_FLAG = false;
 #endif
@@ -100,9 +100,11 @@ namespace pxr_sc = picsar::multi_physics::phys::schwinger;
 * @return num as a string
 */
 template <typename Real>
-std::string float_to_string(Real num)
+std::string float_to_string(const Real num)
 {
     std::stringstream ss;
+    constexpr auto precision = 8;
+    ss.precision(precision);
     ss << num;
     return ss.str();
 }
@@ -153,10 +155,11 @@ using rawVec = std::vector<char>;
 auto aux_check_and_get_pointers(const long int len, const pyArr& last)
 {
     const auto last_buf = last.request();
-    if (last_buf.ndim != 1 || last_buf.shape[0] != len)
+    if (last_buf.ndim != 1 || last_buf.shape[0] != len){
         throw_error("All arrays must be one-dimensional with equal size");
+    }
 
-    const auto cptr = static_cast<REAL*>(last_buf.ptr);
+    auto *const cptr = static_cast<REAL*>(last_buf.ptr);
     return std::make_tuple(cptr);
 }
 
@@ -175,10 +178,11 @@ template<typename ...Args>
 auto aux_check_and_get_pointers(const long int len, const pyArr& arg, const Args& ...args)
 {
     const auto arg_buf = arg.request();
-    if (arg_buf.ndim != 1 || arg_buf.shape[0] != len)
+    if (arg_buf.ndim != 1 || arg_buf.shape[0] != len){
         throw_error("All arrays must be one-dimensional with equal size");
+    }
 
-    const auto cptr = static_cast<REAL*>(arg_buf.ptr);
+    auto *const cptr = static_cast<REAL*>(arg_buf.ptr);
     return std::tuple_cat(std::make_tuple(cptr),
         aux_check_and_get_pointers(len, args...));
 }
@@ -198,12 +202,13 @@ template<typename ...Args>
 auto check_and_get_pointers(const pyArr& first, const Args& ...args)
 {
     const auto first_buf = first.request();
-    if (first_buf.ndim != 1)
+    if (first_buf.ndim != 1){
         throw_error("All arrays must be one-dimensional with equal size");
+    }
 
     const auto len = first_buf.shape[0];
 
-    const auto cptr = static_cast<REAL*>(first_buf.ptr);
+    auto *const cptr = static_cast<REAL*>(first_buf.ptr);
 
     return std::tuple_cat(std::make_tuple(len, cptr),
             aux_check_and_get_pointers(len, args...));
@@ -219,12 +224,13 @@ auto check_and_get_pointers(const pyArr& first, const Args& ...args)
 auto check_and_get_pointers(const pyArr& arr)
 {
     const auto arr_buf = arr.request();
-    if (arr_buf.ndim != 1)
+    if (arr_buf.ndim != 1){
         throw_error("Array must be one-dimensional");
+    }
 
     const auto len = arr_buf.shape[0];
 
-    const auto cptr = static_cast<REAL*>(arr_buf.ptr);
+    auto *const cptr = static_cast<REAL*>(arr_buf.ptr);
 
     return std::make_tuple(len, cptr);
 }
@@ -240,10 +246,11 @@ auto check_and_get_pointers(const pyArr& arr)
 auto check_and_get_pointer_nonconst(pyArr& arr, const long int len)
 {
     const auto arr_buf = arr.request();
-    if (arr_buf.ndim != 1 || arr_buf.shape[0] != len)
+    if (arr_buf.ndim != 1 || arr_buf.shape[0] != len){
         throw_error("Array must be one-dimensional with size " + std::to_string(len));
+    }
 
-    const auto cptr = static_cast<REAL*>(arr_buf.ptr);
+    auto *const cptr = static_cast<REAL*>(arr_buf.ptr);
 
     return cptr;
 }
@@ -271,9 +278,9 @@ compute_gamma_photon_wrapper(
         check_and_get_pointers(px, py, pz);
 
     auto res = pyArr(how_many);
-    auto p_res = static_cast<REAL*>(res.request().ptr);
+    auto* p_res = static_cast<REAL*>(res.request().ptr);
 
-    PXRQEDPY_FOR(how_many, [&, p_px=p_px, p_py=p_py, p_pz=p_pz](int i){
+    PXRQEDPY_FOR(static_cast<int>(how_many), [&, p_px=p_px, p_py=p_py, p_pz=p_pz](int i){
         p_res[i] =
             pxr_phys::compute_gamma_photon<REAL, UU>(
                 p_px[i], p_py[i], p_pz[i],
@@ -300,7 +307,7 @@ compute_gamma_ele_pos_wrapper(
     const REAL
         *p_px = nullptr, *p_py = nullptr, *p_pz = nullptr;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many,
@@ -309,7 +316,7 @@ compute_gamma_ele_pos_wrapper(
                 px, py, pz);
 
     auto res = pyArr(how_many);
-    auto p_res = static_cast<REAL*>(res.request().ptr);
+    auto* p_res = static_cast<REAL*>(res.request().ptr);
 
     PXRQEDPY_FOR(how_many, [&](int i){
         p_res[i] =
@@ -352,7 +359,7 @@ chi_photon_wrapper(
         *p_ex = nullptr, *p_ey = nullptr, *p_ez = nullptr,
         *p_bx = nullptr, *p_by = nullptr, *p_bz = nullptr;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many,
@@ -365,7 +372,7 @@ chi_photon_wrapper(
                 bx, by, bz);
 
     auto res = pyArr(how_many);
-    auto p_res = static_cast<REAL*>(res.request().ptr);
+    auto* p_res = static_cast<REAL*>(res.request().ptr);
 
     PXRQEDPY_FOR(how_many, [&](int i){
         p_res[i] =
@@ -406,7 +413,7 @@ chi_ele_pos_wrapper(
         *p_ex = nullptr, *p_ey = nullptr, *p_ez = nullptr,
         *p_bx = nullptr, *p_by = nullptr, *p_bz = nullptr;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many,
@@ -419,7 +426,7 @@ chi_ele_pos_wrapper(
                 bx, by, bz);
 
     auto res = pyArr(how_many);
-    auto p_res = static_cast<REAL*>(res.request().ptr);
+    auto* p_res = static_cast<REAL*>(res.request().ptr);
 
     PXRQEDPY_FOR(how_many, [&](int i){
         p_res[i] =
@@ -470,14 +477,14 @@ bw_get_optical_depth_wrapper(
     const REAL
         *p_unf_zero_one_minus_epsi = nullptr;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many, p_unf_zero_one_minus_epsi)=
             check_and_get_pointers(unf_zero_one_minus_epsi);
 
     auto res = pyArr(how_many);
-    auto p_res = static_cast<REAL*>(res.request().ptr);
+    auto* p_res = static_cast<REAL*>(res.request().ptr);
 
     PXRQEDPY_FOR(how_many, [&](int i){
         p_res[i] =
@@ -506,7 +513,7 @@ bw_get_dn_dt_wrapper(
     const REAL
         *p_energy_phot = nullptr, *p_chi_phot = nullptr;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many,
@@ -515,7 +522,7 @@ bw_get_dn_dt_wrapper(
                 energy_phot, chi_phot);
 
     auto res = pyArr(how_many);
-    auto p_res = static_cast<REAL*>(res.request().ptr);
+    auto* p_res = static_cast<REAL*>(res.request().ptr);
 
     PXRQEDPY_FOR(how_many, [&](int i){
         p_res[i] =
@@ -547,7 +554,7 @@ bw_evolve_optical_depth_wrapper(
     const REAL
         *p_energy_phot = nullptr, *p_chi_phot = nullptr;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many,
@@ -555,7 +562,7 @@ bw_evolve_optical_depth_wrapper(
             check_and_get_pointers(
                 energy_phot, chi_phot);
 
-    auto p_optical_depth =
+    auto* p_optical_depth =
         check_and_get_pointer_nonconst(optical_depth, how_many);
 
     PXRQEDPY_FOR(how_many, [&](int i){
@@ -591,7 +598,7 @@ bw_generate_breit_wheeler_pairs_wrapper(
         *p_phot_px = nullptr, *p_phot_py = nullptr, *p_phot_pz = nullptr,
         *p_unf_zero_one_minus_epsi;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many,
@@ -600,18 +607,19 @@ bw_generate_breit_wheeler_pairs_wrapper(
             check_and_get_pointers(
                 chi_phot, phot_px, phot_py, phot_pz, unf_zero_one_minus_epsi);
 
-    auto ele_px = pyArr(how_many);
-    auto ele_py = pyArr(how_many);
-    auto ele_pz = pyArr(how_many);
-    auto pos_px = pyArr(how_many);
-    auto pos_py = pyArr(how_many);
-    auto pos_pz = pyArr(how_many);
-    auto p_ele_px = static_cast<REAL*>(ele_px.request().ptr);
-    auto p_ele_py = static_cast<REAL*>(ele_py.request().ptr);
-    auto p_ele_pz = static_cast<REAL*>(ele_pz.request().ptr);
-    auto p_pos_px = static_cast<REAL*>(pos_px.request().ptr);
-    auto p_pos_py = static_cast<REAL*>(pos_py.request().ptr);
-    auto p_pos_pz = static_cast<REAL*>(pos_pz.request().ptr);
+    const auto casted_how_many = static_cast<pybind11::ssize_t>(how_many);
+    auto ele_px = pyArr(casted_how_many);
+    auto ele_py = pyArr(casted_how_many);
+    auto ele_pz = pyArr(casted_how_many);
+    auto pos_px = pyArr(casted_how_many);
+    auto pos_py = pyArr(casted_how_many);
+    auto pos_pz = pyArr(casted_how_many);
+    auto* p_ele_px = static_cast<REAL*>(ele_px.request().ptr);
+    auto* p_ele_py = static_cast<REAL*>(ele_py.request().ptr);
+    auto* p_ele_pz = static_cast<REAL*>(ele_pz.request().ptr);
+    auto* p_pos_px = static_cast<REAL*>(pos_px.request().ptr);
+    auto* p_pos_py = static_cast<REAL*>(pos_py.request().ptr);
+    auto* p_pos_pz = static_cast<REAL*>(pos_pz.request().ptr);
 
     PXRQEDPY_FOR(how_many, [&](int i){
         auto ele_mom = pxr_math::vec3<REAL>{};
@@ -675,14 +683,14 @@ qs_get_optical_depth_wrapper(
     const REAL
         *p_unf_zero_one_minus_epsi = nullptr;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many, p_unf_zero_one_minus_epsi)=
             check_and_get_pointers(unf_zero_one_minus_epsi);
 
     auto res = pyArr(how_many);
-    auto p_res = static_cast<REAL*>(res.request().ptr);
+    auto* p_res = static_cast<REAL*>(res.request().ptr);
 
     PXRQEDPY_FOR(how_many, [&](int i){
         p_res[i] =
@@ -711,7 +719,7 @@ qs_get_dn_dt_wrapper(
     const REAL
         *p_energy_part = nullptr, *p_chi_part = nullptr;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many,
@@ -720,7 +728,7 @@ qs_get_dn_dt_wrapper(
                 energy_part, chi_part);
 
     auto res = pyArr(how_many);
-    auto p_res = static_cast<REAL*>(res.request().ptr);
+    auto* p_res = static_cast<REAL*>(res.request().ptr);
 
     PXRQEDPY_FOR(how_many, [&](int i){
         p_res[i] =
@@ -752,7 +760,7 @@ qs_evolve_optical_depth_wrapper(
     const REAL
         *p_energy_part = nullptr, *p_chi_part = nullptr;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many,
@@ -760,7 +768,7 @@ qs_evolve_optical_depth_wrapper(
             check_and_get_pointers(
                 energy_part, chi_part);
 
-    auto p_optical_depth =
+    auto* p_optical_depth =
         check_and_get_pointer_nonconst(optical_depth, how_many);
 
     PXRQEDPY_FOR(how_many, [&](int i){
@@ -794,26 +802,26 @@ qs_generate_photon_update_momentum_wrapper(
     const REAL
         *p_chi_part = nullptr, *p_unf_zero_one_minus_epsi = nullptr;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many,
         p_chi_part, p_unf_zero_one_minus_epsi) =
             check_and_get_pointers(chi_part, unf_zero_one_minus_epsi);
 
-    auto p_part_px =
+    auto* p_part_px =
         check_and_get_pointer_nonconst(part_px, how_many);
-    auto p_part_py =
+    auto* p_part_py =
         check_and_get_pointer_nonconst(part_py, how_many);
-    auto p_part_pz =
+    auto* p_part_pz =
         check_and_get_pointer_nonconst(part_pz, how_many);
 
     auto phot_px = pyArr(how_many);
     auto phot_py = pyArr(how_many);
     auto phot_pz = pyArr(how_many);
-    auto p_phot_px = static_cast<REAL*>(phot_px.request().ptr);
-    auto p_phot_py = static_cast<REAL*>(phot_py.request().ptr);
-    auto p_phot_pz = static_cast<REAL*>(phot_pz.request().ptr);
+    auto* p_phot_px = static_cast<REAL*>(phot_px.request().ptr);
+    auto* p_phot_py = static_cast<REAL*>(phot_py.request().ptr);
+    auto* p_phot_pz = static_cast<REAL*>(phot_pz.request().ptr);
 
     PXRQEDPY_FOR(how_many, [&](int i){
         auto part_mom = pxr_math::vec3<REAL>{p_part_px[i], p_part_py[i], p_part_pz[i]};
@@ -865,7 +873,7 @@ sc_pair_production_rate_wrapper(
         *p_ex = nullptr, *p_ey = nullptr, *p_ez = nullptr,
         *p_bx = nullptr, *p_by = nullptr, *p_bz = nullptr;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many,
@@ -876,7 +884,7 @@ sc_pair_production_rate_wrapper(
                 bx, by, bz);
 
     auto res = pyArr(how_many);
-    auto p_res = static_cast<REAL*>(res.request().ptr);
+    auto* p_res = static_cast<REAL*>(res.request().ptr);
 
     PXRQEDPY_FOR(how_many, [&](int i){
         p_res[i] =
@@ -914,7 +922,7 @@ sc_expected_pair_number_wrapper(
         *p_ex = nullptr, *p_ey = nullptr, *p_ez = nullptr,
         *p_bx = nullptr, *p_by = nullptr, *p_bz = nullptr;
 
-    size_t how_many = 0;
+    int how_many = 0;
 
     std::tie(
         how_many,
@@ -925,7 +933,7 @@ sc_expected_pair_number_wrapper(
                 bx, by, bz);
 
     auto res = pyArr(how_many);
-    auto p_res = static_cast<REAL*>(res.request().ptr);
+    auto* p_res = static_cast<REAL*>(res.request().ptr);
 
     PXRQEDPY_FOR(how_many, [&](int i){
         p_res[i] =
@@ -1046,32 +1054,37 @@ PYBIND11_MODULE(pxr_qed, m) {
         .def("generate",
             [&](bw_dndt_lookup_table &self,
                 bool do_regular, bool verbose){
-                    if(do_regular)
+                    if(do_regular){
                         self.generate<bw_regular>(verbose);
-                    else
+                    }
+                    else{
                         self.generate<bw_force_double>(verbose);
+                    }
             },
             py::arg("do_regular") = py::bool_(true),
             py::arg("verbose") = py::bool_(true))
         .def("save_as",
-            [&](const bw_dndt_lookup_table &self, const std::string file_name){
-                if(!self.is_init())
+            [&](const bw_dndt_lookup_table &self, const std::string& file_name){
+                if(!self.is_init()){
                     throw_error("Table must be initialized!");
+                }
                 const auto raw = self.serialize();
                 auto of = std::fstream(file_name,
                     std::ios::out | std::ios::binary);
-                if( !of )
+                if( !of ){
                     throw_error("Opening file failed!");
-                of.write(raw.data(), raw.size());
+                }
+                of.write(raw.data(), static_cast<int>(raw.size()));
                 of.close();
             },
             py::arg("file_name"))
         .def("load_from",
-            [&](bw_dndt_lookup_table &self, const std::string file_name){
+            [&](bw_dndt_lookup_table &self, const std::string& file_name){
                 auto input = std::ifstream(file_name,
                     std::ios::ate | std::ios::binary);
-                if( !input )
+                if( !input ){
                     throw_error("Opening file failed!");
+                }
                 const auto pos = input.tellg();
                 auto raw = rawVec(pos);
 
@@ -1085,12 +1098,12 @@ PYBIND11_MODULE(pxr_qed, m) {
         .def("interp",
             [&](bw_dndt_lookup_table &self, const pyArr& chi_phot){
                 const REAL* p_chi_phot = nullptr;
-                size_t how_many = 0;
+                int how_many = 0;
                 std::tie(how_many, p_chi_phot)=
                     check_and_get_pointers(chi_phot);
 
                 auto res = pyArr(how_many);
-                auto p_res = static_cast<REAL*>(res.request().ptr);
+                auto* p_res = static_cast<REAL*>(res.request().ptr);
 
                 PXRQEDPY_FOR(how_many, [&](int i){
                     p_res[i] = self.interp(p_chi_phot[i]);
@@ -1114,32 +1127,37 @@ PYBIND11_MODULE(pxr_qed, m) {
         .def("generate",
             [&](bw_pair_prod_lookup_table &self,
                 bool do_regular, bool verbose){
-                    if(do_regular)
+                    if(do_regular){
                         self.generate<bw_regular>(verbose);
-                    else
+                    }
+                    else{
                         self.generate<bw_force_double>(verbose);
+                    }
             },
             py::arg("do_regular") = py::bool_(true),
             py::arg("verbose") = py::bool_(true))
         .def("save_as",
-            [&](const bw_pair_prod_lookup_table &self, const std::string file_name){
-                if(!self.is_init())
+            [&](const bw_pair_prod_lookup_table &self, const std::string& file_name){
+                if(!self.is_init()){
                     throw_error("Table must be initialized!");
+                }
                 const auto raw = self.serialize();
                 auto of = std::fstream(file_name,
                     std::ios::out | std::ios::binary);
-                if( !of )
+                if( !of ){
                     throw_error("Opening file failed!");
-                of.write(raw.data(), raw.size());
+                }
+                of.write(raw.data(), static_cast<int>(raw.size()));
                 of.close();
             },
             py::arg("file_name"))
         .def("load_from",
-            [&](bw_pair_prod_lookup_table &self, const std::string file_name){
+            [&](bw_pair_prod_lookup_table &self, const std::string& file_name){
                 auto input = std::ifstream(file_name,
                     std::ios::ate | std::ios::binary);
-                if( !input )
+                if( !input ){
                     throw_error("Opening file failed!");
+                }
                 const auto pos = input.tellg();
                 auto raw = rawVec(pos);
 
@@ -1155,12 +1173,12 @@ PYBIND11_MODULE(pxr_qed, m) {
                 const pyArr& chi_phot, const pyArr& unf_zero_one_minus_epsi){
                 const REAL
                     *p_chi_phot = nullptr, *p_unf_zero_one_minus_epsi = nullptr;
-                size_t how_many = 0;
+                int how_many = 0;
                 std::tie(how_many, p_chi_phot, p_unf_zero_one_minus_epsi)=
                     check_and_get_pointers(chi_phot, unf_zero_one_minus_epsi);
 
                 auto res = pyArr(how_many);
-                auto p_res = static_cast<REAL*>(res.request().ptr);
+                auto* p_res = static_cast<REAL*>(res.request().ptr);
 
                 PXRQEDPY_FOR(how_many, [&](int i){
                     p_res[i] = self.interp(p_chi_phot[i], p_unf_zero_one_minus_epsi[i]);
@@ -1264,32 +1282,37 @@ PYBIND11_MODULE(pxr_qed, m) {
         .def("generate",
             [&](qs_dndt_lookup_table &self,
                 bool do_regular, bool verbose){
-                    if(do_regular)
+                    if(do_regular){
                         self.generate<qs_regular>(verbose);
-                    else
+                    }
+                    else{
                         self.generate<qs_force_double>(verbose);
+                    }
             },
             py::arg("do_regular") = py::bool_(true),
             py::arg("verbose") = py::bool_(true))
         .def("save_as",
-            [&](const qs_dndt_lookup_table &self, const std::string file_name){
-                if(!self.is_init())
+            [&](const qs_dndt_lookup_table &self, const std::string& file_name){
+                if(!self.is_init()){
                     throw_error("Table must be initialized!");
+                }
                 const auto raw = self.serialize();
                 auto of = std::fstream(file_name,
                     std::ios::out | std::ios::binary);
-                if( !of )
+                if( !of ){
                     throw_error("Opening file failed!");
-                of.write(raw.data(), raw.size());
+                }
+                of.write(raw.data(), static_cast<int>(raw.size()));
                 of.close();
             },
             py::arg("file_name"))
         .def("load_from",
-            [&](qs_dndt_lookup_table &self, const std::string file_name){
+            [&](qs_dndt_lookup_table &self, const std::string& file_name){
                 auto input = std::ifstream(file_name,
                     std::ios::ate | std::ios::binary);
-                if( !input )
+                if( !input ){
                     throw_error("Opening file failed!");
+                }
                 const auto pos = input.tellg();
                 auto raw = rawVec(pos);
 
@@ -1303,12 +1326,12 @@ PYBIND11_MODULE(pxr_qed, m) {
         .def("interp",
             [&](qs_dndt_lookup_table &self, const pyArr& chi_part){
                 const REAL* p_chi_part = nullptr;
-                size_t how_many = 0;
+                int how_many = 0;
                 std::tie(how_many, p_chi_part)=
                     check_and_get_pointers(chi_part);
 
                 auto res = pyArr(how_many);
-                auto p_res = static_cast<REAL*>(res.request().ptr);
+                auto* p_res = static_cast<REAL*>(res.request().ptr);
 
                 PXRQEDPY_FOR(how_many, [&](int i){
                     p_res[i] = self.interp(p_chi_part[i]);
@@ -1332,32 +1355,37 @@ PYBIND11_MODULE(pxr_qed, m) {
         .def("generate",
             [&](qs_photon_emission_lookup_table &self,
                 bool do_regular, bool verbose){
-                    if(do_regular)
+                    if(do_regular){
                         self.generate<qs_regular>(verbose);
-                    else
+                    }
+                    else{
                         self.generate<qs_force_double>(verbose);
+                    }
             },
             py::arg("do_regular") = py::bool_(true),
             py::arg("verbose") = py::bool_(true))
         .def("save_as",
-            [&](const qs_photon_emission_lookup_table &self, const std::string file_name){
-                if(!self.is_init())
+            [&](const qs_photon_emission_lookup_table &self, const std::string& file_name){
+                if(!self.is_init()){
                     throw_error("Table must be initialized!");
+                }
                 const auto raw = self.serialize();
                 auto of = std::fstream(file_name,
                     std::ios::out | std::ios::binary);
-                if( !of )
+                if( !of ){
                     throw_error("Opening file failed!");
-                of.write(raw.data(), raw.size());
+                }
+                of.write(raw.data(), static_cast<int>(raw.size()));
                 of.close();
             },
             py::arg("file_name"))
         .def("load_from",
-            [&](qs_photon_emission_lookup_table &self, const std::string file_name){
+            [&](qs_photon_emission_lookup_table &self, const std::string& file_name){
                 auto input = std::ifstream(file_name,
                     std::ios::ate | std::ios::binary);
-                if( !input )
+                if( !input ){
                     throw_error("Opening file failed!");
+                }
                 const auto pos = input.tellg();
                 auto raw = rawVec(pos);
 
@@ -1373,12 +1401,12 @@ PYBIND11_MODULE(pxr_qed, m) {
                 const pyArr& chi_part, const pyArr& unf_zero_one_minus_epsi){
                 const REAL
                     *p_chi_part = nullptr, *p_unf_zero_one_minus_epsi = nullptr;
-                size_t how_many = 0;
+                int how_many = 0;
                 std::tie(how_many, p_chi_part, p_unf_zero_one_minus_epsi)=
                     check_and_get_pointers(chi_part, unf_zero_one_minus_epsi);
 
                 auto res = pyArr(how_many);
-                auto p_res = static_cast<REAL*>(res.request().ptr);
+                auto* p_res = static_cast<REAL*>(res.request().ptr);
 
                 PXRQEDPY_FOR(how_many, [&](int i){
                     p_res[i] = self.interp(p_chi_part[i], p_unf_zero_one_minus_epsi[i]);

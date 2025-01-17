@@ -28,19 +28,23 @@ using namespace picsar::multi_physics::phys::quantum_sync;
 template <typename T>
 T constexpr tolerance()
 {
-    if(std::is_same<T,float>::value)
+    if(std::is_same<T,float>::value){
         return float_tolerance;
-    else
+    }
+    else{
         return double_tolerance;
+    }
 }
 
 template <typename T>
 T constexpr small()
 {
-    if(std::is_same<T,float>::value)
+    if(std::is_same<T,float>::value){
         return float_small;
-    else
+    }
+    else{
         return double_small;
+    }
 }
 
 const double chi_min = 0.001;
@@ -108,7 +112,7 @@ void check_dndt_table()
      for (int i = 0 ; i < static_cast<int>(coords.size()); ++i){
          auto res = coords[i];
          auto expected = static_cast<RealType>(
-             exp(log_chi_min + i*(log_chi_max-log_chi_min)/(how_many-1)));
+             std::exp(log_chi_min + i*(log_chi_max-log_chi_min)/(how_many-1)));
          BOOST_CHECK_SMALL((res-expected)/expected, tolerance<RealType>());
      }
 
@@ -119,7 +123,7 @@ void check_dndt_table()
     std::transform(coords.begin(), coords.end(), vals.begin(),
         [=](RealType x){return alpha*x;});
 
-    bool result = table.set_all_vals(vals);
+    const bool result = table.set_all_vals(vals);
     BOOST_CHECK_EQUAL(result,true);
     BOOST_CHECK_EQUAL(table.is_init(),true);
 
@@ -158,10 +162,12 @@ void check_dndt_table()
 
         const RealType expect = exp_ext[i];
 
-        if(i != 0)
+        if(i != 0){
             BOOST_CHECK_SMALL((res-expect)/expect, tolerance<RealType>());
-        else
+        }
+        else{
             BOOST_CHECK_SMALL((res-expect), tolerance<RealType>());
+        }
     }
 
     const auto table_view = table.get_view();
@@ -224,15 +230,17 @@ void check_photon_emission_table()
          const auto ii = i/how_many_frac;
          const auto jj = i%how_many_frac;
          auto expected_1 = static_cast<RealType>(
-             exp(log_chi_min +ii*(log_chi_max-log_chi_min)/(how_many-1)));
+             std::exp(log_chi_min +ii*(log_chi_max-log_chi_min)/(how_many-1)));
         auto expected_2 = static_cast<RealType>(
-             expected_1*exp(log_frac_min +jj*(0.0-log_frac_min)/(how_many_frac-1)));
+             expected_1*std::exp(log_frac_min +jj*(0.0-log_frac_min)/(how_many_frac-1)));
 
          BOOST_CHECK_SMALL((res_1-expected_1)/expected_1, tolerance<RealType>());
-         if(expected_2 != static_cast<RealType>(0.0))
+        if(expected_2 != static_cast<RealType>(0.0)){
             BOOST_CHECK_SMALL((res_2-expected_2)/expected_2, tolerance<RealType>());
-        else
+         }
+        else {
             BOOST_CHECK_SMALL((res_2-expected_2), tolerance<RealType>());
+        }
      }
 
     auto vals = VectorType(coords.size());
@@ -245,7 +253,7 @@ void check_photon_emission_table()
 
     std::transform(coords.begin(), coords.end(), vals.begin(),functor);
 
-    bool result = table.set_all_vals(vals);
+    const bool result = table.set_all_vals(vals);
     BOOST_CHECK_EQUAL(result,true);
     BOOST_CHECK_EQUAL(table.is_init(),true);
 
@@ -271,22 +279,24 @@ void check_photon_emission_table()
         for (const auto rr : rrs){
             auto res = table.interp(xx, rr);
             auto rxx = xx;
-            if(rxx < chi_min) rxx = chi_min;
-            if(rxx > chi_max) rxx = chi_max;
+            if(rxx < chi_min) { rxx = chi_min; }
+            if(rxx > chi_max) { rxx = chi_max; }
             auto expected = inverse_functor(std::array<RealType,2>{rxx, rr})*xx;
-            if(expected < small<RealType>())
+            if(expected < small<RealType>()){
                 BOOST_CHECK_SMALL((res-expected)/expected, tolerance<RealType>());
-            else
+            }
+            else{
                 BOOST_CHECK_SMALL((res-expected), tolerance<RealType>());
-
+            }
         }
     }
 
     const auto table_view = table.get_view();
 
     for(auto xx : xxs){
-        for (auto r : rrs)
+        for (auto r : rrs){
             BOOST_CHECK_EQUAL(table_view.interp(xx,r ), table.interp(xx, r));
+        }
     }
 }
 
@@ -358,10 +368,12 @@ void check_tailopt_photon_emission_table()
         auto expected_2 = std::exp(tailopt_functor(jj))*expected_1;
 
         BOOST_CHECK_SMALL((res_1-expected_1)/expected_1, tolerance<RealType>());
-        if(expected_2 != static_cast<RealType>(0.0))
+        if(expected_2 != static_cast<RealType>(0.0)){
             BOOST_CHECK_SMALL((res_2-expected_2)/expected_2, tolerance<RealType>());
-        else
+        }
+        else{
             BOOST_CHECK_SMALL((res_2-expected_2), tolerance<RealType>());
+        }
     }
 
     auto vals = VectorType(coords.size());
@@ -374,7 +386,7 @@ void check_tailopt_photon_emission_table()
 
     std::transform(coords.begin(), coords.end(), vals.begin(),functor);
 
-    bool result = table.set_all_vals(vals);
+    const bool result = table.set_all_vals(vals);
     BOOST_CHECK_EQUAL(result,true);
     BOOST_CHECK_EQUAL(table.is_init(),true);
 
@@ -398,13 +410,15 @@ void check_tailopt_photon_emission_table()
         for (const auto rr : rrs){
             auto res = table.interp(xx, rr);
             auto rxx = xx;
-            if(rxx < chi_min) rxx = chi_min;
-            if(rxx > chi_max) rxx = chi_max;
+            if(rxx < chi_min) { rxx = chi_min; }
+            if(rxx > chi_max) { rxx = chi_max; }
             auto expected = inverse_functor(std::array<RealType,2>{rxx, rr})*xx;
-            if(expected < small<RealType>())
+            if(expected < small<RealType>()){
                 BOOST_CHECK_SMALL((res-expected)/expected, tolerance<RealType>());
-            else
+            }
+            else {
                 BOOST_CHECK_SMALL((res-expected), tolerance<RealType>());
+            }
 
         }
     }
@@ -412,8 +426,9 @@ void check_tailopt_photon_emission_table()
     const auto table_view = table.get_view();
 
     for(auto xx : xxs){
-        for (auto r : rrs)
+        for (auto r : rrs){
             BOOST_CHECK_EQUAL(table_view.interp(xx,r ), table.interp(xx, r));
+        }
     }
 
 }

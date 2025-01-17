@@ -99,8 +99,9 @@ BOOST_AUTO_TEST_CASE( picsar_serialization_get_n_out)
     auto doublevec = std::vector<double>{
         1.0, 2,0, 3.0, 4.0, 5.0, 6.0};
 
-    for (auto dd : doublevec)
+    for (auto dd : doublevec){
         put_in(dd, raw_data);
+    }
 
     auto it = raw_data.begin();
     auto dvec1 = get_n_out<double>(it, 3);

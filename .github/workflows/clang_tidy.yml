@@ -1,0 +1,46 @@
+name: 🧹 clang-tidy
+
+on: [push, pull_request]
+
+jobs:
+  run_clang_tidy:
+    name: clang-tidy
+    runs-on: ubuntu-22.04
+    env: {CXXFLAGS: "-Werror -Wshadow -Woverloaded-virtual -Wunreachable-code -fsanitize=address -fsanitize=undefined"}
+    steps:
+    - uses: actions/checkout@v4
+    - name: install dependencies
+      run: .github/workflows/dependencies/clang15.sh
+    - name: Build & run clang-tidy
+      run: |
+
+        export CXX=$(which clang++-15)
+        export CC=$(which clang-15)
+
+
+        # The following wrapper ensures that only source files
+        # in multi_physics/QED* are actually processed by clang-tidy
+        #_______________________________
+        cat > clang_tidy_wrapper << EOF
+        #!/bin/bash
+        REGEX="[a-z_A-Z0-9\/]*multi_physics\/[a-z_A-Z0-9\/]+.cpp"
+        if [[ \$4 =~ \$REGEX ]];then
+          clang-tidy-15 \$@
+        fi
+        EOF
+        chmod +x clang_tidy_wrapper
+        #_____________________________________
+
+        rm -rf build_clang_tidy
+
+        cmake -S multi_physics/QED                \
+            -DCMAKE_CXX_CLANG_TIDY="$PWD/clang_tidy_wrapper;--system-headers=0;--config-file=$PWD/.clang-tidy" \
+            -B build_clang_tidy                   \
+            -DCMAKE_VERBOSE_MAKEFILE=ON           \
+            -DPXRMP_QED_TEST=ON                   \
+            -DPXRMP_KOKKOS_EXAMPLE=ON             \
+            -DKokkos_ENABLE_OPENMP=ON
+
+        cmake --build build_clang_tidy -j 4 2> build_clang_tidy/clang-tidy.log
+        cat build_clang_tidy/clang-tidy.log
+        if [[ $(wc -m <build_clang_tidy/clang-tidy.log) -gt 1 ]]; then exit 1; fi

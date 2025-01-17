@@ -29,10 +29,12 @@ const float float_tolerance = 1.0e-5;
 template <typename T>
 T constexpr tolerance()
 {
-    if(std::is_same<T,float>::value)
+    if(std::is_same<T,float>::value){
         return float_tolerance;
-    else
+    }
+    else{
         return double_tolerance;
+    }
 }
 
 double linear_function(double x)
@@ -72,16 +74,15 @@ class Functor
 {
     public:
 
-    Functor(){}
+    Functor () = default;
 
     Functor(const int zsize, const int zfirst,
         const double zmin, const double zmax, const double zswitch):
         m_zsize{zsize}, m_zfirst{zfirst},
-        m_zmin{zmin}, m_zmax{zmax}, m_zswitch{zswitch}
-    {
-        m_logzmin = std::log(m_zmin);
-        m_logzswitch = std::log(m_zswitch);
-    }
+        m_zmin{zmin}, m_logzmin{std::log(m_zmin)},
+        m_zmax{zmax}, m_zswitch{zswitch},
+        m_logzswitch{std::log(m_zswitch)}
+    {}
 
     double operator() (const int i) const
     {
@@ -105,6 +106,7 @@ class Functor
             (this->m_logzswitch == rhs.m_logzswitch);
     }
 
+    [[nodiscard]]
     std::vector<char> serialize() const
     {
         std::vector<char> raw;
@@ -151,16 +153,15 @@ class IFunctor
 {
     public:
 
-    IFunctor(){}
+    IFunctor() = default;
 
     IFunctor(const int zsize, const int zfirst,
         const double zmin, const double zmax, const double zswitch):
         m_zsize{zsize}, m_zfirst{zfirst},
-        m_zmin{zmin}, m_zmax{zmax}, m_zswitch{zswitch}
-    {
-        m_logzmin = std::log(m_zmin);
-        m_logzswitch = std::log(m_zswitch);
-    }
+        m_zmin{zmin}, m_logzmin{std::log(m_zmin)},
+        m_zmax{zmax}, m_zswitch{zswitch},
+        m_logzswitch{std::log(m_zswitch)}
+    {}
 
     int operator() (const double z) const
     {
@@ -187,6 +188,7 @@ class IFunctor
             (this->m_logzswitch == rhs.m_logzswitch);
     }
 
+    [[nodiscard]]
     std::vector<char> serialize() const
     {
         std::vector<char> raw;
@@ -239,7 +241,7 @@ equispaced_1d_table<double, std::vector<double> > make_1d_table()
     std::vector<double> data(xsize);
     std::generate(data.begin(), data.end(),
         [&, n = 0]() mutable {
-            double x = xmin+((xmax-xmin)*(n++))/(xsize-1);
+            const double x = xmin+((xmax-xmin)*(n++))/(xsize-1);
             return linear_function(x);
         });
 
@@ -251,8 +253,8 @@ equispaced_2d_table<double, std::vector<double> > make_2d_table()
     std::vector<double> data(xsize*ysize);
     for (int i = 0; i < xsize; ++i){
         for (int j = 0; j < ysize; ++j){
-            double x = xmin+i*(xmax-xmin)/(xsize-1);
-            double y = ymin+j*(ymax-ymin)/(ysize-1);
+            const double x = xmin+i*(xmax-xmin)/(xsize-1);
+            const double y = ymin+j*(ymax-ymin)/(ysize-1);
             data[i*ysize+j] = linear_function(x, y);
         }
     }
@@ -308,7 +310,7 @@ void check_table_1d(
     const auto x0 = tab.get_x_coord(0);
     const auto x1 = tab.get_x_coord(xsize/2);
     const auto x2 = tab.get_x_coord(xsize-1);
-    const auto x1exp = (xsize/2)*(xmax - xmin)/(xsize-1) + xmin;
+    const auto x1exp = (xsize/2.0)*(xmax - xmin)/(xsize-1) + xmin;
     BOOST_CHECK_SMALL((x0-xmin)/xmin, tolerance<double>());
     BOOST_CHECK_SMALL((x1 - x1exp)/x1exp, tolerance<double>());
     BOOST_CHECK_SMALL((x2 - xmax)/xmax, tolerance<double>());
@@ -368,7 +370,7 @@ void check_table_2d(
     const auto x0 = tab.get_x_coord(0);
     const auto x1 = tab.get_x_coord(xsize/2);
     const auto x2 = tab.get_x_coord(xsize-1);
-    const auto x1exp = (xsize/2)*(xmax - xmin)/(xsize-1) + xmin;
+    const auto x1exp = (xsize/2.0)*(xmax - xmin)/(xsize-1) + xmin;
     BOOST_CHECK_SMALL((x0-xmin)/xmin, tolerance<double>());
     BOOST_CHECK_SMALL((x1 - x1exp)/x1exp, tolerance<double>());
     BOOST_CHECK_SMALL((x2 - xmax)/xmax, tolerance<double>());
@@ -380,7 +382,7 @@ void check_table_2d(
     const auto y0 = tab.get_y_coord(0);
     const auto y1 = tab.get_y_coord(ysize/2);
     const auto y2 = tab.get_y_coord(ysize-1);
-    const auto y1exp = (ysize/2)*(ymax - ymin)/(ysize-1) + ymin;
+    const auto y1exp = (ysize/2.0)*(ymax - ymin)/(ysize-1) + ymin;
     BOOST_CHECK_SMALL((y0-ymin)/ymin, tolerance<double>());
     BOOST_CHECK_SMALL((y1 - y1exp)/y1exp, tolerance<double>());
     BOOST_CHECK_SMALL((y2 - ymax)/ymax, tolerance<double>());
@@ -549,7 +551,7 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_1d_table_constructor_getters)
 {
     auto tab_1d = make_1d_table();
     const auto const_tab_1d = make_1d_table();
-    auto copy_tab_1d = tab_1d;
+    const auto copy_tab_1d = tab_1d; // NOLINT(performance-unnecessary-copy-initialization)
 
     check_table_1d(tab_1d);
     check_table_1d(const_tab_1d);
@@ -627,7 +629,7 @@ BOOST_AUTO_TEST_CASE( picsar_equispaced_2d_table_constructor_getters)
 {
     auto tab_2d = make_2d_table();
     const auto const_tab_2d = make_2d_table();
-    auto copy_tab_2d = tab_2d;
+    const auto copy_tab_2d = tab_2d; // NOLINT(performance-unnecessary-copy-initialization)
 
     check_table_2d(tab_2d);
     check_table_2d(const_tab_2d);
@@ -727,7 +729,7 @@ BOOST_AUTO_TEST_CASE( picsar_generic_2d_table_constructor_getters)
 {
     auto gtab_2d = make_generic_2d_table();
     const auto const_gtab_2d = make_generic_2d_table();
-    auto copy_gtab_2d = gtab_2d;
+    auto copy_gtab_2d = gtab_2d; // NOLINT(performance-unnecessary-copy-initialization)
 
     check_generic_table_2d(gtab_2d);
     check_generic_table_2d(const_gtab_2d);

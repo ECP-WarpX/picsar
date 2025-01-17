@@ -15,9 +15,8 @@
 //Uses gamma functions
 #include "picsar_qed/physics/gamma_functions.hpp"
 
-namespace picsar{
-namespace multi_physics{
-namespace phys{
+namespace picsar::multi_physics::phys
+{
 
     /**
     * This function returns the chi parameter for a photon
@@ -55,8 +54,9 @@ namespace phys{
             compute_gamma_photon<RealType, unit_system::heaviside_lorentz>(p);
 
         const auto norm_p = norm(p);
-        if(norm_p == zero<RealType>)
+        if(norm_p == zero<RealType>){
             return zero<RealType>;
+        }
 
         const auto p_unit = p / norm_p;
         const auto em_eperp = em_e - dot(p_unit,em_e)*p_unit;
@@ -136,8 +136,9 @@ namespace phys{
             unit_system::heaviside_lorentz, RealType>::fact(reference_quantity);
 
         const auto norm_p = norm(p);
-        if(norm_p == zero<RealType>)
+        if(norm_p == zero<RealType>){
             return zero<RealType>;
+        }
 
         const auto p_unit = p / norm_p;
 
@@ -194,8 +195,6 @@ namespace phys{
         return chi_ele_pos<RealType, UnitSystem>(
             p, em_e, em_b, reference_quantity);
     }
-}
-}
 }
 
 #endif //PICSAR_MULTIPHYSICS_CHI_FUNCTIONS

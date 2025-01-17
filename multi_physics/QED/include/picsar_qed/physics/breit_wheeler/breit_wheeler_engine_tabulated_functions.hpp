@@ -29,11 +29,8 @@
 #include <algorithm>
 #include <stdexcept>
 
-namespace picsar{
-namespace multi_physics{
-namespace phys{
-namespace breit_wheeler{
-
+namespace picsar::multi_physics::phys::breit_wheeler
+{
     /**
     * It computes the X parameter (see validation script).
     * This function is not designed to be run on GPUs.
@@ -71,11 +68,13 @@ namespace breit_wheeler{
         const RealType chi_phot, const RealType chi_ele)
     {
         using namespace math;
-        if( chi_ele >= chi_phot )
+        if( chi_ele >= chi_phot ){
             return zero<RealType>;
+        }
 
-        if (chi_phot == zero<RealType> || chi_ele == zero<RealType>)
+        if (chi_phot == zero<RealType> || chi_ele == zero<RealType>){
             return zero<RealType>;
+        }
 
         const auto xx = compute_x(chi_phot, chi_ele);
         const auto sqrt_xx = m_sqrt(xx);
@@ -87,15 +86,16 @@ namespace breit_wheeler{
                 const auto s_3_2 = s*sqrt_s;
 
                 const auto arg = two_thirds<RealType>*s_3_2;
-                if (std::isinf(arg))
+                if (std::isinf(arg)){
                     return zero<RealType>;
+                }
                 return sqrt_s*math::k_v(one_third<RealType>, arg);
             }, xx);
 
         auto prod = (two<RealType>-chi_phot*xx_3_2)
             *k_v(two_thirds<RealType>,
                 two_thirds<RealType>*xx_3_2);
-        if(std::isnan(prod)) prod = zero<RealType>;
+        if(std::isnan(prod)) { prod = zero<RealType>; }
 
         return (inner_integral-prod);
     }
@@ -114,7 +114,7 @@ namespace breit_wheeler{
     inline RealType compute_T_function(const RealType chi_phot)
     {
         using namespace math;
-        if(chi_phot <= math::zero<RealType>) return math::zero<RealType>;
+        if(chi_phot <= math::zero<RealType>) { return math::zero<RealType>; }
         constexpr auto coeff = static_cast<RealType>(1./math::pi<>);
         return coeff*math::quad_a_b_s<RealType>(
             [=](RealType cc){
@@ -144,11 +144,11 @@ namespace breit_wheeler{
     {
         using namespace math;
 
-        if(chi_photon <= zero<RealType>) return zero<RealType>;
-        if(chi_ele_end  <= zero<RealType>) return zero<RealType>;
+        if(chi_photon <= zero<RealType>) { return zero<RealType>; }
+        if(chi_ele_end  <= zero<RealType>) { return zero<RealType>; }
 
-        if(chi_ele_end > chi_photon) chi_ele_end = chi_photon;
-        if(chi_ele_start >= chi_ele_end) return zero<RealType>;
+        if(chi_ele_end > chi_photon) { chi_ele_end = chi_photon; }
+        if(chi_ele_start >= chi_ele_end) { return zero<RealType>; }
 
         constexpr auto coeff = static_cast<RealType>(1./pi<>);
 
@@ -213,7 +213,7 @@ namespace breit_wheeler{
         auto res = VectorType(chis.size());
 
         if(chi_photon <= zero<RealType>){
-            for (auto& el: res ) el = zero<RealType>;
+            for (auto& el: res ){ el = zero<RealType>; }
             return res;
         }
 
@@ -221,10 +221,12 @@ namespace breit_wheeler{
         if (den <= zero<RealType>){
             std::transform(chis.begin(), chis.end(),
             res.begin(), [=](auto chi_part){
-                if(chi_part < half<RealType>*chi_photon - std::numeric_limits<RealType>::epsilon())
+                if(chi_part < half<RealType>*chi_photon - std::numeric_limits<RealType>::epsilon()) {
                     return zero<RealType>;
-                if(chi_part > half<RealType>*chi_photon + std::numeric_limits<RealType>::epsilon())
+                }
+                if(chi_part > half<RealType>*chi_photon + std::numeric_limits<RealType>::epsilon()) {
                     return one<RealType>;
+                }
                 return half<RealType>;
             });
             return res;
@@ -234,7 +236,7 @@ namespace breit_wheeler{
             res.begin(), [=](auto chi_part){
                 const auto val =
                     compute_cumulative_prob_numerator(chi_photon, chi_part)/den;
-                if(val <= one<RealType>) return val;
+                if(val <= one<RealType>) { return val; }
                 return one<RealType>;});
         return res;
     }
@@ -256,15 +258,16 @@ namespace breit_wheeler{
     inline VectorType compute_cumulative_prob_opt(
         const RealType chi_photon, const VectorType& chis)
     {
-        if(!std::is_sorted(chis.begin(), chis.end()))
+        if(!std::is_sorted(chis.begin(), chis.end())) {
             throw std::runtime_error("Chi vector is not sorted!");
+        }
 
         using namespace math;
         const auto den = compute_T_function(chi_photon);
         auto res = VectorType(chis.size());
 
         if(chi_photon <= zero<RealType>){
-            for (auto& el: res ) el = zero<RealType>;
+            for (auto& el: res ) { el = zero<RealType>; }
             return res;
         }
 
@@ -272,10 +275,12 @@ namespace breit_wheeler{
         if (den <= zero<RealType>){
             std::transform(chis.begin(), chis.end(),
             res.begin(), [=](auto chi_part){
-                if(chi_part < half<RealType>*chi_photon - std::numeric_limits<RealType>::epsilon())
+                if(chi_part < half<RealType>*chi_photon - std::numeric_limits<RealType>::epsilon()) {
                     return zero<RealType>;
-                if(chi_part > half<RealType>*chi_photon + std::numeric_limits<RealType>::epsilon())
+                }
+                if(chi_part > half<RealType>*chi_photon + std::numeric_limits<RealType>::epsilon()) {
                     return one<RealType>;
+                }
                 return half<RealType>;
             });
             return res;
@@ -292,7 +297,7 @@ namespace breit_wheeler{
             c = (t - sum) - y;
             sum = t;
             res[i] = sum;
-            if(res[i] > one<RealType>) res[i] = one<RealType>;
+            if(res[i] > one<RealType>) { res[i] = one<RealType>; }
             old_chi = chis[i];
         }
 
@@ -300,9 +305,6 @@ namespace breit_wheeler{
         return res;
     }
 
-}
-}
-}
 }
 
 #endif //PICSAR_MULTIPHYSICS_BREIT_WHEELER_ENGINE_TABULATED_FUNCTIONS

@@ -37,7 +37,8 @@ auto generate_dndt_table(const Real chi_min, const Real chi_max, const int chi_s
         << ", " << chi_size <<"]...\n";
     std::cout.flush();
 
-    pxr_qs::dndt_lookup_table_params<Real> qs_params{chi_min, chi_max, chi_size};
+    const auto qs_params =
+        pxr_qs::dndt_lookup_table_params<Real>{chi_min, chi_max, chi_size};
 
 	auto table = pxr_qs::dndt_lookup_table<
         Real, Vector>{qs_params};
@@ -67,7 +68,7 @@ auto generate_photon_emission_table(
         << ", " << chi_size << " x " << frac_size <<"]...\n";
     std::cout.flush();
 
-    pxr_qs::photon_emission_lookup_table_params<Real> qs_params{
+    const pxr_qs::photon_emission_lookup_table_params<Real> qs_params{
         chi_min, chi_max, frac_min, chi_size, frac_size};
 
 	auto table = pxr_qs::photon_emission_lookup_table<
@@ -94,7 +95,7 @@ std::pair<bool, double>
     const int repetitions,
     Kokkos::Random_XorShift64_Pool<>& rand_pool)
 {
-    Kokkos::Timer timer;
+    const Kokkos::Timer timer;
     for(int rr = 0; rr < repetitions; ++rr){
         const auto num_particles = pdata.num_particles;
         Kokkos::parallel_for("FillOpt_"+get_type_name<Real>(),
@@ -131,7 +132,7 @@ evolve_optical_depth(
     const TableType& ref_table,
     Real dt, const int repetitions)
 {
-    Kokkos::Timer timer;
+    const Kokkos::Timer timer;
     for(int rr = 0; rr < repetitions; ++rr){
         const auto num_particles = pdata.num_particles;
         Kokkos::parallel_for("EvolveOpt", num_particles, KOKKOS_LAMBDA(int i){
@@ -185,7 +186,7 @@ generate_photons(
     auto photon_momentum = init_multi_comp_view_with_random_content<Real>(
         "photon_momentum", 0.0, 0.0, num_particles, rand_pool);
 
-    Kokkos::Timer timer;
+    const Kokkos::Timer timer;
     for(int rr = 0; rr < repetitions; ++rr){
         Kokkos::parallel_for("PhotEm", num_particles, KOKKOS_LAMBDA(int i){
             const auto px = pdata.m_momentum(i,0);
@@ -290,22 +291,28 @@ void do_test(Kokkos::Random_XorShift64_Pool<>& rand_pool)
 
 int main(int argc, char** argv)
 {
-    Kokkos::initialize(argc, argv);
-    {
-        Kokkos::Random_XorShift64_Pool<> rand_pool{random_seed};
+    try{
+        Kokkos::initialize(argc, argv);
+        {
+            Kokkos::Random_XorShift64_Pool<> rand_pool{random_seed};
 
-        std::cout << "*** Kokkos example: begin ***" << std::endl;
+            std::cout << "*** Kokkos example: begin ***" << std::endl;
 
-        std::cout << "   --- Double precision test ---" << std::endl;
-        do_test<double>(rand_pool);
-        std::cout << "   --- END ---" << std::endl;
+            std::cout << "   --- Double precision test ---" << std::endl;
+            do_test<double>(rand_pool);
+            std::cout << "   --- END ---" << std::endl;
 
-        std::cout << "   --- Single precision test ---" << std::endl;
-        do_test<float>(rand_pool);
-        std::cout << "   --- END ---" << std::endl;
+            std::cout << "   --- Single precision test ---" << std::endl;
+            do_test<float>(rand_pool);
+            std::cout << "   --- END ---" << std::endl;
 
-        std::cout << "___ END ___" << std::endl;
+            std::cout << "___ END ___" << std::endl;
+        }
+        Kokkos::finalize();
     }
-    Kokkos::finalize();
+    catch(const std::exception& e){
+        std::cerr << e.what();
+        exit(EXIT_FAILURE);
+    }
     exit(EXIT_SUCCESS);
 }

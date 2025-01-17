@@ -40,10 +40,8 @@
 #include <limits>
 #include <stdexcept>
 
-namespace picsar{
-namespace multi_physics{
-namespace phys{
-namespace quantum_sync{
+namespace picsar::multi_physics::phys::quantum_sync
+{
 
     //________________ Default parameters ______________________________________
 
@@ -151,14 +149,14 @@ namespace quantum_sync{
             *
             * @tparam RealType the floating point type to be used
             */
-            typedef dndt_lookup_table<
-                RealType, containers::picsar_span<const RealType>> view_type;
+            using view_type =
+                dndt_lookup_table<RealType, containers::picsar_span<const RealType>> ;
 
             /**
             * Empty constructor
             **/
             constexpr
-            dndt_lookup_table(){}
+            dndt_lookup_table() = default;
 
             /**
             * Constructor (not designed for GPU usage)
@@ -189,10 +187,9 @@ namespace quantum_sync{
             m_table{containers::equispaced_1d_table<RealType, VectorType>{
                     math::m_log(params.chi_part_min),
                     math::m_log(params.chi_part_max),
-                    vals}}
-            {
-                m_init_flag = true;
-            }
+                    vals}},
+            m_init_flag{true}
+            {}
 
             /*
             * Generates the content of the lookup table (not usable on GPUs).
@@ -205,7 +202,7 @@ namespace quantum_sync{
             * @param[in] show_progress if true a progress bar is shown
             */
             template <generation_policy Policy = generation_policy::regular>
-            void generate(const bool show_progress  = true);
+            void generate(bool show_progress  = true);
 
             /*
             * Initializes the lookup table from a byte array.
@@ -221,9 +218,10 @@ namespace quantum_sync{
                     sizeof(char)+ //single or double precision
                     sizeof(m_params);
 
-                if (raw_data.size() < min_size)
+                if (raw_data.size() < min_size){
                     throw std::runtime_error("Binary data is too small \
                     to be a Quantum Synchrotron G-function lookup-table.");
+                }
 
                 auto it_raw_data = raw_data.begin();
 
@@ -249,6 +247,7 @@ namespace quantum_sync{
             *
             * @return true if rhs is equal to *this. false otherwise
             */
+            [[nodiscard]]
             PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
             bool operator== (
                 const dndt_lookup_table<RealType, VectorType> &rhs) const
@@ -270,11 +269,13 @@ namespace quantum_sync{
             *
             * @return a table view
             */
+            [[nodiscard]]
             view_type get_view() const
             {
-                if(!m_init_flag)
+                if(!m_init_flag){
                     throw std::runtime_error("Can't generate a view of an \
                     uninitialized table");
+                }
                 const auto span = containers::picsar_span<const RealType>{
                     static_cast<size_t>(m_params.chi_part_how_many),
                     m_table.get_values_reference().data()
@@ -295,6 +296,7 @@ namespace quantum_sync{
             *
             * @return the value of the G function
             */
+            [[nodiscard]]
             PXRMP_GPU_QUALIFIER
             PXRMP_FORCE_INLINE
             RealType interp(
@@ -302,11 +304,11 @@ namespace quantum_sync{
             {
                 if(chi_part<m_params.chi_part_min){
                     chi_part = m_params.chi_part_min;
-                    if (is_out != nullptr) *is_out = true;
+                    if (is_out != nullptr) { *is_out = true; }
                 }
                 else if (chi_part > m_params.chi_part_max){
                     chi_part = m_params.chi_part_max;
-                    if (is_out != nullptr) *is_out = true;
+                    if (is_out != nullptr) { *is_out = true; }
                 }
                 return math::m_exp(m_table.interp(math::m_log(chi_part)));
             }
@@ -317,6 +319,7 @@ namespace quantum_sync{
             *
             * @return a vector containing all the table coordinates
             */
+            [[nodiscard]]
             std::vector<RealType> get_all_coordinates() const noexcept
             {
                 auto all_coords = m_table.get_all_coordinates();
@@ -339,8 +342,9 @@ namespace quantum_sync{
                 const auto vals_length = vals.size();
                 auto log_vals = std::vector<RealType>(vals_length);
 
-                if(static_cast<int>(vals_length) != m_table.get_how_many_x())
+                if(static_cast<int>(vals_length) != m_table.get_how_many_x()){
                     return false;
+                }
 
                 std::transform(vals.begin(), vals.end(), log_vals.begin(),
                     [](auto x){return math::m_log(x);});
@@ -356,6 +360,7 @@ namespace quantum_sync{
             *
             * @return true if the table has been initialized, false otherwise
             */
+            [[nodiscard]]
             PXRMP_GPU_QUALIFIER
             PXRMP_FORCE_INLINE
             bool is_init() const
@@ -368,13 +373,15 @@ namespace quantum_sync{
             *
             * @return a byte vector
             */
+            [[nodiscard]]
             std::vector<char> serialize() const
             {
                 using namespace utils;
 
-                if(!m_init_flag)
+                if(!m_init_flag){
                     throw std::runtime_error("Cannot serialize \
                     an uninitialized table");
+                }
 
                 std::vector<char> res;
 
@@ -389,9 +396,9 @@ namespace quantum_sync{
 
         protected:
             dndt_lookup_table_params<RealType> m_params; /* Table parameters*/
-            bool m_init_flag = false;  /* Initialization flag*/
             containers::equispaced_1d_table<
                 RealType, VectorType> m_table; /* Table data */
+            bool m_init_flag = false;  /* Initialization flag*/
     };
 
     //__________________________________________________________________________
@@ -419,6 +426,7 @@ namespace quantum_sync{
         * @param[in] rhs a structure of the same type
         * @return true if rhs is equal to *this. false otherwise
         */
+        [[nodiscard]]
         bool operator== (
             const photon_emission_lookup_table_params<RealType> &rhs) const
         {
@@ -477,14 +485,14 @@ namespace quantum_sync{
             *
             * @tparam RealType the floating point type to be used
             */
-            typedef photon_emission_lookup_table<
-                RealType, containers::picsar_span<const RealType>> view_type;
+            using view_type =
+                photon_emission_lookup_table<RealType, containers::picsar_span<const RealType>>;
 
             /**
             * Empty constructor
             */
             constexpr
-            photon_emission_lookup_table(){}
+            photon_emission_lookup_table() = default;
 
             /**
             * Constructor (not designed for GPU usage)
@@ -522,10 +530,9 @@ namespace quantum_sync{
                     math::m_log(params.frac_min),
                     math::m_log(math::one<RealType>),
                     params.chi_part_how_many, params.frac_how_many,
-                    vals}}
-            {
-                m_init_flag = true;
-            }
+                    vals}},
+                m_init_flag{true}
+            {}
 
             /*
             * Generates the content of the lookup table (not usable on GPUs).
@@ -554,9 +561,10 @@ namespace quantum_sync{
                     sizeof(char)+//single or double precision
                     sizeof(m_params);
 
-                if (raw_data.size() < min_size)
+                if (raw_data.size() < min_size){
                     throw std::runtime_error("Binary data is too small \
                     to be a Quantum Synchrotron emisson lookup-table.");
+                }
 
                 auto it_raw_data = raw_data.begin();
 
@@ -582,6 +590,7 @@ namespace quantum_sync{
             *
             * @return true if rhs is equal to *this. false otherwise
             */
+            [[nodiscard]]
             PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
             bool operator== (
                 const photon_emission_lookup_table<
@@ -604,11 +613,13 @@ namespace quantum_sync{
             *
             * @return a table view
             */
+            [[nodiscard]]
             view_type get_view() const
             {
-                if(!m_init_flag)
+                if(!m_init_flag){
                     throw std::runtime_error("Can't generate a view of an \
                     uninitialized table");
+                }
                 const auto span = containers::picsar_span<const RealType>{
                     static_cast<size_t>(m_params.chi_part_how_many *
                         m_params.frac_how_many),
@@ -637,6 +648,7 @@ namespace quantum_sync{
             *
             * @return chi of one of the generated particles
             */
+            [[nodiscard]]
             PXRMP_GPU_QUALIFIER
             PXRMP_FORCE_INLINE
             RealType interp(
@@ -649,11 +661,11 @@ namespace quantum_sync{
                 auto e_chi_part = chi_part;
                 if(chi_part<m_params.chi_part_min){
                     e_chi_part = m_params.chi_part_min;
-                    if (is_out != nullptr) *is_out = true;
+                    if (is_out != nullptr) { *is_out = true; }
                 }
                 else if (chi_part > m_params.chi_part_max){
                     e_chi_part = m_params.chi_part_max;
-                    if (is_out != nullptr) *is_out = true;
+                    if (is_out != nullptr) { *is_out = true; }
                 }
 
                 const auto log_e_chi_part = m_log(e_chi_part);
@@ -665,11 +677,13 @@ namespace quantum_sync{
                             log_e_chi_part, i));
                         });
 
-                if(upper_frac_index == 0)
+                if(upper_frac_index == 0){
                     return zero<RealType>;
+                }
 
-                if(upper_frac_index ==  m_params.frac_how_many)
+                if(upper_frac_index ==  m_params.frac_how_many){
                     return chi_part;
+                }
 
                 const auto lower_frac_index = upper_frac_index-1;
 
@@ -695,6 +709,7 @@ namespace quantum_sync{
             *
             * @return a vector containing all the table coordinates
             */
+            [[nodiscard]]
             std::vector<std::array<RealType,2>> get_all_coordinates() const noexcept
             {
                 auto all_coords = m_table.get_all_coordinates();
@@ -719,8 +734,9 @@ namespace quantum_sync{
                 auto log_vals = std::vector<RealType>(vals_length);
 
                 if(static_cast<int>(vals_length) != m_table.get_how_many_x()*
-                    m_table.get_how_many_y())
+                    m_table.get_how_many_y()){
                         return false;
+                    }
 
                 std::transform(vals.begin(), vals.end(), log_vals.begin(),
                     [](auto x){
@@ -738,6 +754,7 @@ namespace quantum_sync{
             *
             * @return true if the table has been initialized, false otherwise
             */
+            [[nodiscard]]
             PXRMP_GPU_QUALIFIER
             PXRMP_FORCE_INLINE
             bool is_init() const
@@ -750,12 +767,14 @@ namespace quantum_sync{
             *
             * @return a byte vector
             */
+            [[nodiscard]]
             std::vector<char> serialize() const
             {
                 using namespace utils;
 
-                if(!m_init_flag)
+                if(!m_init_flag){
                     throw std::runtime_error("Cannot serialize an uninitialized table");
+                }
 
                 std::vector<char> res;
 
@@ -770,9 +789,9 @@ namespace quantum_sync{
 
         protected:
             photon_emission_lookup_table_params<RealType> m_params; /* Table parameters*/
-            bool m_init_flag = false; /* Initialization flag*/
             containers::equispaced_2d_table<
                 RealType, VectorType> m_table; /* Table data*/
+            bool m_init_flag = false; /* Initialization flag*/
     };
 
     //__________________________________________________________________________
@@ -889,14 +908,14 @@ namespace quantum_sync{
             *
             * @tparam RealType the floating point type to be used
             */
-            typedef tailopt_photon_emission_lookup_table<
-                RealType, containers::picsar_span<const RealType>> view_type;
+            using view_type =
+                tailopt_photon_emission_lookup_table<RealType, containers::picsar_span<const RealType>>;
 
             /**
             * Empty constructor
             */
             constexpr
-            tailopt_photon_emission_lookup_table(){}
+            tailopt_photon_emission_lookup_table() = default;
 
             /**
             * Constructor (not designed for GPU usage)
@@ -943,7 +962,7 @@ namespace quantum_sync{
                 tailopt_photon_emission_lookup_table_params<RealType> params,
                 VectorType vals):
                 m_params{params},
-                 m_table{Generic2DTableType<RealType, VectorType>(
+                m_table{Generic2DTableType<RealType, VectorType>(
                     params.chi_part_how_many, params.frac_how_many, vals,
                     detail::LinFunctor<RealType>(
                         m_params.chi_part_how_many,
@@ -962,10 +981,9 @@ namespace quantum_sync{
                         m_params.frac_how_many, m_params.frac_first,
                         math::m_log(m_params.frac_min),
                         math::m_log(math::one<RealType>),
-                        math::m_log(m_params.frac_switch)))}
-            {
-                m_init_flag = true;
-            }
+                        math::m_log(m_params.frac_switch)))},
+                m_init_flag{true}
+            {}
 
             /**
             * Generates the content of the lookup table (not usable on GPUs).
@@ -994,9 +1012,10 @@ namespace quantum_sync{
                     sizeof(char)+//single or double precision
                     sizeof(m_params);
 
-                if (raw_data.size() < min_size)
+                if (raw_data.size() < min_size){
                     throw std::runtime_error("Binary data is too small \
                     to be a Tail-optimized Quantum Synchrotron emisson lookup-table.");
+                }
 
                 auto it_raw_data = raw_data.begin();
 
@@ -1021,6 +1040,7 @@ namespace quantum_sync{
             *
             * @return true if rhs is equal to *this. false otherwise
             */
+            [[nodiscard]]
             PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
             bool operator== (
                 const tailopt_photon_emission_lookup_table<
@@ -1043,11 +1063,13 @@ namespace quantum_sync{
             *
             * @return a table view
             */
+            [[nodiscard]]
             view_type get_view() const
             {
-                if(!m_init_flag)
+                if(!m_init_flag){
                     throw std::runtime_error("Can't generate a view of an \
                     uninitialized table");
+                }
                 const auto span = containers::picsar_span<const RealType>{
                     static_cast<size_t>(m_params.chi_part_how_many *
                         m_params.frac_how_many),
@@ -1076,6 +1098,7 @@ namespace quantum_sync{
             *
             * @return chi of the generated photon```
             */
+            [[nodiscard]]
             PXRMP_GPU_QUALIFIER
             PXRMP_FORCE_INLINE
             RealType interp(
@@ -1088,11 +1111,11 @@ namespace quantum_sync{
                 auto e_chi_part = chi_part;
                 if(chi_part<m_params.chi_part_min){
                     e_chi_part = m_params.chi_part_min;
-                    if (is_out != nullptr) *is_out = true;
+                    if (is_out != nullptr) { *is_out = true; }
                 }
                 else if (chi_part > m_params.chi_part_max){
                     e_chi_part = m_params.chi_part_max;
-                    if (is_out != nullptr) *is_out = true;
+                    if (is_out != nullptr) { *is_out = true; }
                 }
 
                 const auto log_e_chi_part = m_log(e_chi_part);
@@ -1104,11 +1127,13 @@ namespace quantum_sync{
                             log_e_chi_part, i));
                         });
 
-                if(upper_frac_index == 0)
+                if(upper_frac_index == 0){
                     return zero<RealType>;
+                }
 
-                if(upper_frac_index ==  m_params.frac_how_many)
+                if(upper_frac_index ==  m_params.frac_how_many){
                     return chi_part;
+                }
 
                 const auto lower_frac_index = upper_frac_index-1;
 
@@ -1134,6 +1159,7 @@ namespace quantum_sync{
             *
             * @return a vector containing all the table coordinates
             */
+            [[nodiscard]]
             std::vector<std::array<RealType,2>> get_all_coordinates() const noexcept
             {
                 auto all_coords = m_table.get_all_coordinates();
@@ -1155,8 +1181,9 @@ namespace quantum_sync{
             bool set_all_vals(const std::vector<RealType>& vals)
             {
                 if(static_cast<int>(vals.size()) != m_table.get_how_many_x()*
-                    m_table.get_how_many_y())
+                    m_table.get_how_many_y()){
                     return false;
+                }
 
                 auto logvals = VectorType{};
                 logvals.reserve(vals.size());
@@ -1164,10 +1191,12 @@ namespace quantum_sync{
                     std::begin(vals), std::end(vals), std::back_inserter(logvals),
                     [](auto vv){
                         const auto lvv = math::m_log(vv);
-                        if(std::isinf(lvv))
+                        if(std::isinf(lvv)){
                             return  std::numeric_limits<RealType>::lowest();
-                        else
+                        }
+                        else{
                             return lvv;
+                        }
                     });
                 m_table.set_all_vals(logvals);
                 m_init_flag = true;
@@ -1179,6 +1208,7 @@ namespace quantum_sync{
             *
             * @return true if the table has been initialized, false otherwise
             */
+            [[nodiscard]]
             PXRMP_GPU_QUALIFIER
             PXRMP_FORCE_INLINE
             bool is_init() const
@@ -1191,12 +1221,14 @@ namespace quantum_sync{
             *
             * @return a byte vector
             */
+            [[nodiscard]]
             std::vector<char> serialize() const
             {
                 using namespace utils;
 
-                if(!m_init_flag)
+                if(!m_init_flag){
                     throw std::runtime_error("Cannot serialize an uninitialized table");
+                }
 
                 std::vector<char> res;
 
@@ -1211,18 +1243,14 @@ namespace quantum_sync{
 
         protected:
             tailopt_photon_emission_lookup_table_params<RealType> m_params; /* Table parameters*/
-            bool m_init_flag = false; /* Initialization flag*/
             Generic2DTableType<RealType, VectorType> m_table; /* Table data*/
-
+            bool m_init_flag = false; /* Initialization flag*/
         };
 
         //______________________________________________________________________
 
 
 
-}
-}
-}
 }
 
 #endif // PICSAR_MULTIPHYSICS_QUANTUM_SYNC_ENGINE_TABLES

@@ -4,9 +4,8 @@
 //Should be included by all the src files of the library
 #include "picsar_qed/qed_commons.h"
 
-namespace picsar{
-namespace multi_physics{
-namespace math{
+namespace picsar::multi_physics::math
+{
 
     // Mathemtatical constants
     template<typename RealType = double>
@@ -41,8 +40,6 @@ namespace math{
     template<typename RealType = double>
     constexpr RealType five_thirds = RealType(5.0/3.0);
     //________________________
-}
-}
 }
 
 #endif //PICSAR_MULTIPHYSICS_MATH_CONSTANTS

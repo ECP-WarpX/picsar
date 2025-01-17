@@ -28,19 +28,23 @@ using namespace picsar::multi_physics::phys::breit_wheeler;
 template <typename T>
 T constexpr tolerance()
 {
-    if(std::is_same<T,float>::value)
+    if(std::is_same<T,float>::value){
         return float_tolerance;
-    else
+    }
+    else{
         return double_tolerance;
+    }
 }
 
 template <typename T>
 T constexpr small()
 {
-    if(std::is_same<T,float>::value)
+    if(std::is_same<T,float>::value){
         return float_small;
-    else
+    }
+    else{
         return double_small;
+    }
 }
 
 // ------------- Helper functions --------------
@@ -94,7 +98,7 @@ void check_dndt_table()
      for (int i = 0 ; i < static_cast<int>(coords.size()); ++i){
          auto res = coords[i];
          auto expected = static_cast<RealType>(
-             exp(log_chi_min + i*(log_chi_max-log_chi_min)/(how_many-1)));
+             std::exp(log_chi_min + i*(log_chi_max-log_chi_min)/(how_many-1)));
          BOOST_CHECK_SMALL((res-expected)/expected, tolerance<RealType>());
      }
 
@@ -105,7 +109,7 @@ void check_dndt_table()
     std::transform(coords.begin(), coords.end(), vals.begin(),
         [=](RealType x){return alpha*x;});
 
-    bool result = table.set_all_vals(vals);
+    const bool result = table.set_all_vals(vals);
     BOOST_CHECK_EQUAL(result,true);
     BOOST_CHECK_EQUAL(table.is_init(),true);
 
@@ -120,8 +124,8 @@ void check_dndt_table()
     const RealType x1 = (chi_max+chi_min)*0.5642 + chi_min;
     const RealType x2 = chi_max;
 
-    const RealType ye_app_o0 = dndt_approx_left<RealType>(xo0);
-    const RealType ye_app_o1 = dndt_approx_right<RealType>(xo1);
+    const auto ye_app_o0 = dndt_approx_left<RealType>(xo0);
+    const auto ye_app_o1 = dndt_approx_right<RealType>(xo1);
     const RealType ye0 = alpha*x0;
     const RealType ye1 = alpha*x1;
     const RealType ye2 = alpha*x2;
@@ -144,10 +148,12 @@ void check_dndt_table()
 
         const RealType expect = exp_app[i];
 
-        if(i != 0)
+        if(i != 0){
             BOOST_CHECK_SMALL((res-expect)/expect, tolerance<RealType>());
-        else
+        }
+        else{
             BOOST_CHECK_SMALL((res-expect), tolerance<RealType>());
+        }
     }
 
     const auto table_view = table.get_view();
@@ -248,15 +254,17 @@ void check_pair_production_table()
          const auto ii = i/how_many_frac;
          const auto jj = i%how_many_frac;
          auto expected_1 = static_cast<RealType>(
-             exp(log_chi_min +ii*(log_chi_max-log_chi_min)/(how_many-1)));
+             std::exp(log_chi_min +ii*(log_chi_max-log_chi_min)/(how_many-1)));
         auto expected_2 = expected_1*static_cast<RealType>(
              0.0 +jj*0.5/(how_many_frac-1));
 
          BOOST_CHECK_SMALL((res_1-expected_1)/expected_1, tolerance<RealType>());
-         if(expected_2 != static_cast<RealType>(0.0))
+        if(expected_2 != static_cast<RealType>(0.0)){
             BOOST_CHECK_SMALL((res_2-expected_2)/expected_2, tolerance<RealType>());
-        else
+        }
+        else {
             BOOST_CHECK_SMALL((res_2-expected_2), tolerance<RealType>());
+        }
      }
 
     auto vals = VectorType(coords.size());
@@ -269,7 +277,7 @@ void check_pair_production_table()
 
     std::transform(coords.begin(), coords.end(), vals.begin(),functor);
 
-    bool result = table.set_all_vals(vals);
+    const bool result = table.set_all_vals(vals);
     BOOST_CHECK_EQUAL(result,true);
     BOOST_CHECK_EQUAL(table.is_init(),true);
 
@@ -304,16 +312,18 @@ void check_pair_production_table()
             BOOST_CHECK_EQUAL(res, res2);
 
             auto rxx = xx;
-            if(rxx < chi_min) rxx = chi_min;
-            if(rxx > chi_max) rxx = chi_max;
+            if(rxx < chi_min) { rxx = chi_min; }
+            if(rxx > chi_max) { rxx = chi_max; }
             auto eff_rr = (rr > 0.5)?(static_cast<RealType>(1.0) - rr):rr;
             auto expected = inverse_functor(std::array<RealType,2>{rxx, eff_rr})*xx;
-            if(rr >= 0.5) expected = xx - expected;
+            if(rr >= 0.5) { expected = xx - expected; }
 
-            if(expected != static_cast<RealType>(0.0))
+            if(expected != static_cast<RealType>(0.0)) {
                 BOOST_CHECK_SMALL((res-expected)/expected, tolerance<RealType>());
-            else
+            }
+            else {
                 BOOST_CHECK_SMALL(res, small<RealType>());
+            }
 
         }
     }
@@ -322,8 +332,9 @@ void check_pair_production_table()
     const auto ff = std::array<double,4>{0.0, 0.1, 0.5, 0.99};
 
     for(int i = 0 ; i < static_cast<int>(xxs.size()) ; ++i){
-        for (auto f : ff)
+        for (auto f : ff){
             BOOST_CHECK_EQUAL(table_view.interp(xxs[i],f ), table.interp(xxs[i], f));
+        }
     }
 }
 

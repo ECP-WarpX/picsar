@@ -9,9 +9,8 @@
 //Uses sqrt
 #include "picsar_qed/math/cmath_overloads.hpp"
 
-namespace picsar{
-namespace multi_physics{
-namespace math{
+namespace picsar::multi_physics::math
+{
 
     //This .hpp file contains functions to perform operations on 3-vectors
     // (norm, scalar multiplication, vector and cross product...)
@@ -175,8 +174,6 @@ namespace math{
         return out;
     }
 
-}
-}
 }
 
 #endif // PICSAR_MULTIPHYSICS_VEC_FUNCTIONS

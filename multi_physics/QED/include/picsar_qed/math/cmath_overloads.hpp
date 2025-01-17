@@ -10,9 +10,8 @@
     #include <sycl/sycl.hpp>
 #endif
 
-namespace picsar{
-namespace multi_physics{
-namespace math{
+namespace picsar::multi_physics::math
+{
 
 #ifdef PXRMP_PREVENT_USE_STD_FOR_MATH
 
@@ -354,8 +353,6 @@ namespace math{
 
 #endif
 
-}
-}
 }
 
 

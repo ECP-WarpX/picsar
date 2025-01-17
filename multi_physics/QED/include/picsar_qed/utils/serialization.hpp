@@ -10,10 +10,8 @@
 #include <type_traits>
 #include <cstring>
 
-namespace picsar{
-namespace multi_physics{
-namespace utils{
-namespace serialization{
+namespace picsar::multi_physics::utils::serialization
+{
 
     /**
     * This function transform a variable of type T into a vector of chars holding its
@@ -91,9 +89,6 @@ namespace serialization{
         return res;
     }
 
-}
-}
-}
 }
 
 #endif //PICSAR_MULTIPHYSICS_SERIALIZATION

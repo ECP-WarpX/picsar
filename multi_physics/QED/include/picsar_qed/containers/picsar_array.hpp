@@ -10,9 +10,8 @@
     #include <array>
 #endif
 
-namespace picsar{
-namespace multi_physics{
-namespace containers{
+namespace picsar::multi_physics::containers
+{
 
 #ifdef PXRMP_ENABLE_GPU_FRIENDLY_ARRAY
 
@@ -34,6 +33,7 @@ namespace containers{
         * @param[in] i the index of the element
         * @return a const reference to the i-th element
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         const T& operator [] (int i) const noexcept
         {
@@ -46,6 +46,7 @@ namespace containers{
         * @param[in] i the index of the element
         * @return a reference to the i-th element
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         T& operator [] (int i) noexcept
         {
@@ -57,6 +58,7 @@ namespace containers{
         *
         * @return a const pointer to the underlying raw data array
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         const T* data() const noexcept
         {
@@ -68,6 +70,7 @@ namespace containers{
         *
         * @return the size of the array
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         constexpr int size() const noexcept
         {
@@ -79,6 +82,7 @@ namespace containers{
         *
         * @return a const pointer to the first element of the array
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         constexpr const T* begin() const noexcept
         {
@@ -90,6 +94,7 @@ namespace containers{
         *
         * @return a const pointer to the end of the array
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         constexpr const T* end() const noexcept
         {
@@ -101,6 +106,7 @@ namespace containers{
         *
         * @return a pointer to the first element of the array
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         constexpr T* begin() noexcept
         {
@@ -112,6 +118,7 @@ namespace containers{
         *
         * @return a pointer to the end of the array
         */
+        [[nodiscard]]
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         constexpr T* end() noexcept
         {
@@ -127,8 +134,6 @@ namespace containers{
     using picsar_array = std::array<T, N>;
 #endif
 
-}
-}
 }
 
 #endif //PICSAR_MULTIPHYSICS_ARRAY

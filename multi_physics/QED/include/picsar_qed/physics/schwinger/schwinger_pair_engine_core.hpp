@@ -15,9 +15,7 @@
 //Should be included by all the src files of the library
 #include "picsar_qed/qed_commons.h"
 
-//Uses GPU-friendly arrays
-#include "picsar_qed/math/vec_functions.hpp"
-//Uses vector functions
+//Uses GPU-friendly arrays and vector functions
 #include "picsar_qed/math/vec_functions.hpp"
 //Uses physical constants
 #include "picsar_qed/physics/phys_constants.h"
@@ -26,10 +24,7 @@
 //Uses sqrt, exp and tanh
 #include "picsar_qed/math/cmath_overloads.hpp"
 
-namespace picsar{
-namespace multi_physics{
-namespace phys{
-namespace schwinger{
+namespace picsar::multi_physics::phys::schwinger{
 
     /**
     * This function computes the Schwinger pair production rate
@@ -69,8 +64,8 @@ namespace schwinger{
 
         const auto inner = m_sqrt(ff*ff+ gg*gg);
 
-        const auto epsi = m_sqrt(fabs(inner + ff))*one_over_schwinger;
-        const auto eta = m_sqrt(fabs(inner - ff))*one_over_schwinger;
+        const auto epsi = m_sqrt(m_fabs(inner + ff))*one_over_schwinger;
+        const auto eta = m_sqrt(m_fabs(inner - ff))*one_over_schwinger;
 
         constexpr const auto coeff = static_cast<RealType>(
             heaviside_lorentz_elementary_charge<double>*
@@ -81,12 +76,15 @@ namespace schwinger{
         const auto rate_conv = conv<quantity::rate,
             unit_system::heaviside_lorentz, UnitSystem, RealType>::fact(1.0, ref_quantity);
 
-        if(epsi != zero<RealType> && eta != zero<RealType>)
+        if(epsi != zero<RealType> && eta != zero<RealType>){
             return coeff*rate_conv*epsi*eta*m_exp(-pi<RealType>/epsi)/m_tanh(pi<RealType>*eta/epsi);
-        else if(epsi == zero<RealType>)
+        }
+        else if(epsi == zero<RealType>){
             return zero<RealType>;
-        else
+        }
+        else{
             return coeff*rate_conv*epsi*epsi*m_exp(-pi<RealType>/epsi)/pi<RealType>;
+        }
     }
 
     /**
@@ -198,9 +196,6 @@ namespace schwinger{
             em_e, em_b, t_volume, t_dt, reference_quantity);
     }
 
-}
-}
-}
 }
 
 #endif //PICSAR_MULTIPHYSICS_SCHWINGER_PAIR_ENGINE_CORE

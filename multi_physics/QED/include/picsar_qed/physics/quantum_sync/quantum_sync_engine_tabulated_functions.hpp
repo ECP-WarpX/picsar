@@ -30,11 +30,8 @@
 #include <limits>
 #include <stdexcept>
 
-namespace picsar{
-namespace multi_physics{
-namespace phys{
-namespace quantum_sync{
-
+namespace picsar::multi_physics::phys::quantum_sync
+{
     /**
     * It computes the y parameter (see validation script).
     * This function is not designed to be run on GPUs.
@@ -49,7 +46,7 @@ namespace quantum_sync{
     template<typename RealType>
     PXRMP_FORCE_INLINE
     constexpr RealType compute_y(
-        const RealType chi_part, const RealType csi) noexcept
+        const RealType chi_part, const RealType csi)
     {
         return math::two_thirds<RealType>*
             csi/(chi_part*(math::one<RealType> - csi));
@@ -70,15 +67,16 @@ namespace quantum_sync{
     * @return the integral of kv(5/3, x) from y to infinity
     */
     template<typename RealType>
-    inline RealType inner_integral(const RealType y)
+    RealType inner_integral(const RealType y)
     {
         using namespace math;
         return quad_a_inf<RealType>(
             [=](RealType s){
                 using namespace math;
                 using namespace std;
-                if( y ==  zero<RealType>)
+                if( y ==  zero<RealType>){
                     return numeric_limits<RealType>::infinity();
+                }
                 const auto s2 = s*s;
                 const auto s4 = s2*s2;
                 const auto cc = (one<RealType> +
@@ -87,8 +85,9 @@ namespace quantum_sync{
                 const auto f1 = static_cast<RealType>(9.0) +
                     static_cast<RealType>(36.0) * s2 +
                     static_cast<RealType>(16.0) * s4;
-                if(isinf(f1) || isinf(cc))
+                if(isinf(f1) || isinf(cc)){
                     return zero<RealType>;
+                }
                 return f1*m_exp(-y*cc)/cc/three<RealType>;},
             zero<RealType>)/m_sqrt(three<RealType>);
     }
@@ -106,16 +105,18 @@ namespace quantum_sync{
     * @return the value of the integrand of the G function
     */
     template<typename RealType>
-    inline RealType compute_G_integrand(
-        const RealType chi_part, const RealType csi) noexcept
+    RealType compute_G_integrand(
+        const RealType chi_part, const RealType csi)
     {
         using namespace math;
         using namespace std;
-        if( csi >= one<RealType> || chi_part == zero<RealType> )
+        if( csi >= one<RealType> || chi_part == zero<RealType> ){
             return zero<RealType>;
+        }
 
-        if (csi == zero<RealType>)
+        if (csi == zero<RealType>){
             return numeric_limits<RealType>::infinity();
+        }
 
         const auto yy = compute_y(chi_part, csi);
         const RealType coeff = m_sqrt(three<>)/(two<>*pi<>);
@@ -123,8 +124,9 @@ namespace quantum_sync{
 
         const auto second_part = (csi*csi/(one<RealType>-csi))*
             k_v(two_thirds<RealType>,yy);
-        if(isinf(second_part))
+        if(isinf(second_part)){
             return zero<RealType>;
+        }
 
         return coeff*csi*(inner + second_part);
     }
@@ -140,7 +142,7 @@ namespace quantum_sync{
     * @return the value of the G function
     */
     template<typename RealType>
-    inline RealType compute_G_function(const RealType chi_part)
+    RealType compute_G_function(const RealType chi_part)
     {
         using namespace math;
         return quad_a_b_s<RealType>(
@@ -164,21 +166,21 @@ namespace quantum_sync{
     * @return the value of the numerator of the cumulative probability distribution
     */
     template<typename RealType>
-    inline RealType compute_cumulative_prob_numerator_a_b(
+    RealType compute_cumulative_prob_numerator_a_b(
         const RealType chi_particle,
         RealType chi_photon_start,
         RealType chi_photon_end)
     {
         using namespace math;
 
-        if(chi_particle  <= math::zero<RealType>) return math::zero<RealType>;
-        if(chi_photon_end <= math::zero<RealType>) return math::zero<RealType>;
+        if(chi_particle  <= math::zero<RealType>) { return math::zero<RealType>; }
+        if(chi_photon_end <= math::zero<RealType>) { return math::zero<RealType>; }
 
-        if(chi_photon_end > chi_particle) chi_photon_end = chi_particle;
-        if(chi_photon_start >= chi_photon_end) return zero<RealType>;
+        if(chi_photon_end > chi_particle) { chi_photon_end = chi_particle; }
+        if(chi_photon_start >= chi_photon_end) { return zero<RealType>; }
 
         auto frac_end = chi_photon_end/chi_particle;
-        if(frac_end > math::one<RealType>) frac_end =  math::one<RealType>;
+        if(frac_end > math::one<RealType>) { frac_end =  math::one<RealType>; }
         auto frac_start = chi_photon_start/chi_particle;
 
         //The default quadrature method is very fast but in some rare cases
@@ -213,7 +215,7 @@ namespace quantum_sync{
     * @return the value of the numerator of the cumulative probability distribution
     */
     template<typename RealType>
-    inline RealType compute_cumulative_prob_numerator(
+    RealType compute_cumulative_prob_numerator(
         const RealType chi_particle, RealType chi_photon)
     {
         using namespace math;
@@ -234,14 +236,14 @@ namespace quantum_sync{
     * @return the cumulative probability distribution calculated for all the chi parameters
     */
     template<typename RealType, typename VectorType>
-    inline VectorType compute_cumulative_prob(
+    VectorType compute_cumulative_prob(
         const RealType chi_particle, const VectorType& chi_photons)
     {
         const auto den = compute_G_function(chi_particle);
         auto res = VectorType(chi_photons.size());
 
         if(chi_particle <= math::zero<RealType> || den <= math::zero<RealType>){
-            for (auto& el: res ) el = math::zero<RealType>;
+            for (auto& el: res ) { el = math::zero<RealType>; }
             return res;
         }
 
@@ -249,7 +251,7 @@ namespace quantum_sync{
             res.begin(), [=](auto chi_phot){
                 const auto val =
                     compute_cumulative_prob_numerator(chi_particle, chi_phot)/den;
-                if(val <= math::one<RealType>) return val;
+                if(val <= math::one<RealType>) { return val; }
                 return math::one<RealType>;});
 
         return res;
@@ -269,18 +271,19 @@ namespace quantum_sync{
     * @return the cumulative probability distribution calculated for all the chi parameters
     */
     template<typename RealType, typename VectorType>
-    inline VectorType compute_cumulative_prob_opt(
+    VectorType compute_cumulative_prob_opt(
         const RealType chi_particle, const VectorType& chi_photons)
     {
-        if(!std::is_sorted(chi_photons.begin(), chi_photons.end()))
+        if(!std::is_sorted(chi_photons.begin(), chi_photons.end())){
             throw std::runtime_error("Chi vector is not sorted!");
+        }
 
         using namespace math;
         const auto den = compute_G_function(chi_particle);
         auto res = VectorType(chi_photons.size());
 
         if(chi_particle <= zero<RealType> || den <= zero<RealType>){
-            for (auto& el: res ) el = zero<RealType>;
+            for (auto& el: res ) { el = zero<RealType>; }
             return res;
         }
 
@@ -295,7 +298,7 @@ namespace quantum_sync{
             c = (t - sum) - y;
             sum = t;
             res[i] = sum;
-            if(res[i] > one<RealType>) res[i] = one<RealType>;
+            if(res[i] > one<RealType>) { res[i] = one<RealType>; }
             old_chi = chi_photons[i];
         }
 
@@ -304,9 +307,6 @@ namespace quantum_sync{
     }
 
 
-}
-}
-}
 }
 
 #endif //PICSAR_MULTIPHYSICS_QUANTUM_SYNC_ENGINE_TABULATED_FUNCTIONS

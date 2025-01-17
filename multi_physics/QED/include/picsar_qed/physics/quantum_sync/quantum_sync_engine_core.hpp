@@ -31,10 +31,8 @@
 //Uses gamma functions
 #include "picsar_qed/physics/gamma_functions.hpp"
 
-namespace picsar{
-namespace multi_physics{
-namespace phys{
-namespace quantum_sync{
+namespace picsar::multi_physics::phys::quantum_sync
+{
 
     /**
     * Computes the optical depth of a new electron or positron (simply a number
@@ -232,9 +230,6 @@ namespace quantum_sync{
         return !is_out;
     }
 
-}
-}
-}
 }
 
 #endif //PICSAR_MULTIPHYSICS_QUANTUM_SYNC_ENGINE_CORE

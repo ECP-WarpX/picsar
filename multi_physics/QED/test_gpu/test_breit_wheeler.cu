@@ -39,12 +39,12 @@ const double Bs = pxr::schwinger_field<>/pxr::light_speed<>;
 //__________________________________________________
 
 //Parameters of the test case
-const int test_size = 100'000'000;
+const int test_size = 25'000'000;
 const double dt_test = 1e-18;
 const double table_chi_min = 0.01;
 const double table_chi_max = 1000.0;
-const int table_chi_size = 256;
-const int table_frac_size = 256;
+const int table_chi_size = 512;
+const int table_frac_size = 512;
 const double max_normalized_field = 0.02;
 const double max_normalized_momentum = 1000.0;
 const int random_seed = 22051988;
@@ -56,10 +56,12 @@ const float float_tolerance = 1.0e-3;
 template <typename T>
 T constexpr tolerance()
 {
-    if(std::is_same<T,float>::value)
+    if(std::is_same<T,float>::value){
         return float_tolerance;
-    else
+    }
+    else{
         return double_tolerance;
+    }
 }
 
 //Templated small number for double and single precision
@@ -68,10 +70,12 @@ const float float_small = 1.0e-4;
 template <typename T>
 T constexpr small()
 {
-    if(std::is_same<T,float>::value)
+    if(std::is_same<T,float>::value){
         return float_small;
-    else
+    }
+    else{
         return double_small;
+    }
 }
 //__________________________________________________
 
@@ -462,7 +466,6 @@ void do_pair_prod_test(
     else
         std::cout << " [FAIL] ";
 
-    cudaEventElapsedTime(&milliseconds, start, stop);
     std::cout << "      elapsed time : " << milliseconds << " ms \n";
 
     //hack

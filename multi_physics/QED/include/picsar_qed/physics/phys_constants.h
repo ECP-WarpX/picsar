@@ -7,9 +7,8 @@
 //Uses some mathematical constants
 #include "picsar_qed/math/math_constants.h"
 
-namespace picsar{
-namespace multi_physics{
-namespace phys{
+namespace picsar::multi_physics::phys
+{
 
     // Some useful physical constants in SI units
     template<typename RealType = double>
@@ -67,8 +66,6 @@ namespace phys{
     template<typename RealType = double>
     constexpr auto tau_e = RealType(classical_electron_radius<>/light_speed<>);
     //_______________________________________________________________________
-}
-}
 }
 
 #endif //PICSAR_MULTIPHYSICS_MATH_CONSTANTS

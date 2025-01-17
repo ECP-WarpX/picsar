@@ -28,10 +28,12 @@ const float float_tolerance = 1.0e-4;
 template <typename T>
 T constexpr tolerance()
 {
-    if(std::is_same<T,float>::value)
+    if(std::is_same<T,float>::value){
         return float_tolerance;
-    else
+    }
+    else{
         return double_tolerance;
+    }
 }
 
 //Auxiliary functions for tests
@@ -67,8 +69,9 @@ constexpr void test_to_SI(val_pack<RealType> vals,
     const auto res_hl2SI = vals.hl*fact_hl;
     const auto all_res = std::array<RealType,4>{
         res_SI2SI, res_omega2SI, res_lambda2SI, res_hl2SI};
-    for (const auto& res : all_res)
+    for (const auto& res : all_res){
         BOOST_CHECK_SMALL((res-vals.SI)/vals.SI, tolerance<RealType>());
+    }
 }
 
 template<typename RealType, quantity Quantity>

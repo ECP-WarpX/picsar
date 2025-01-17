@@ -34,10 +34,8 @@
 
 #include <cmath>
 
-namespace picsar{
-namespace multi_physics{
-namespace phys{
-namespace breit_wheeler{
+namespace picsar::multi_physics::phys::breit_wheeler
+{
 
     /**
     * Computes the optical depth of a new photon (simply a number
@@ -228,9 +226,6 @@ namespace breit_wheeler{
         return !is_out;
     }
 
-}
-}
-}
 }
 
 #endif //PICSAR_MULTIPHYSICS_SCHWINGER_PAIR_ENGINE_CORE

@@ -1,5 +1,5 @@
-#ifndef __KOKKOS_EXAMPLE_COMMONS__
-#define __KOKKOS_EXAMPLE_COMMONS__
+#ifndef KOKKOS_EXAMPLE_COMMONS_
+#define KOKKOS_EXAMPLE_COMMONS_
 
 //This file contains common functions and constants used by the two Kokkos examples
 
@@ -26,9 +26,10 @@
 #include <picsar_qed/physics/quantum_sync/quantum_sync_engine_tables_generator.hpp>
 //__________________________________________________
 
+#include <cstdlib>
+#include <exception>
 #include <iostream>
 #include <string>
-#include <cstdlib>
 
 //Some namespace aliases
 namespace pxr =  picsar::multi_physics::phys;
@@ -109,6 +110,7 @@ class KokkosVectorWrapper : public Kokkos::vector<Real>
     *
     * @return a pointer to the raw vector data
     */
+    [[nodiscard]]
     const Real* data() const
     {
         return KV::d_view.data();
@@ -325,16 +327,18 @@ Real get_rand(GenType& gen)
     Real res = Real{1.0};
 
     if constexpr (std::is_same<Real,float>::value){
-        while(res >= 1.0f)
+        while(res >= 1.0f){
             res = gen.frand();
+        }
     }
     else
     {
-        while(res >= Real(1.0))
+        while(res >= Real(1.0)){
             res = gen.drand();
+        }
     }
 
     return res;
 }
 
-#endif //__KOKKOS_EXAMPLE_COMMONS__
+#endif // KOKKOS_EXAMPLE_COMMONS_

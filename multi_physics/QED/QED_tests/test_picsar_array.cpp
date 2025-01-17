@@ -71,10 +71,10 @@ BOOST_AUTO_TEST_CASE( picsar_array_range_based_loops )
 {
     auto arr = picsar_array<int,3>();
     int i = 0;
-    for(auto& el : arr) el = ++i;
+    for(auto& el : arr){ el = ++i; };
     int sum = 0;
-    for(const auto& el : arr) sum += el;
-    for(auto el : arr) sum += el;
+    for(const auto& el : arr){ sum += el; }
+    for(auto el : arr){ sum += el; }
     BOOST_CHECK_EQUAL(sum, 12);
 }
 
@@ -86,10 +86,11 @@ BOOST_AUTO_TEST_CASE( picsar_array_copy )
 {
     auto arr = picsar_array<int,3>();
     int j = 0;
-    for(auto& el : arr) el = ++j;
+    for(auto& el : arr){ el = ++j; }
     auto c_arr = arr;
-    for(int i = 0; i < arr.size(); ++i)
+    for(int i = 0; i < arr.size(); ++i){
         BOOST_CHECK_EQUAL(arr[i], c_arr[i]);
+    }
 }
 
 // *******************************

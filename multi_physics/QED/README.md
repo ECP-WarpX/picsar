@@ -3,7 +3,7 @@
 ### Library
 The QED library is a header only library. Its only external dependency is Boost (a recent version is needed). Boost is absolutely necessary to generate lookup tables, but it's not needed at runtime if lookup tables have been previously generated.
 
-C++14 standard is followed. The core functions of the library can be included in GPU kernels, provided that the user sets the `PXRMP_GPU` before including any file of the library (e.g. `#define PXRMP_GPU __host__ __device__`).
+C++17 standard is followed. The core functions of the library can be included in GPU kernels, provided that the user sets the `PXRMP_GPU` before including any file of the library (e.g. `#define PXRMP_GPU __host__ __device__`).
 
 The library implements the following physical processes: Breit-Wheeler pair production, Quantum Synchrotron photon emission and Schwinger pair production.
 

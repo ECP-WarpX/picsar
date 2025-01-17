@@ -13,10 +13,8 @@
 //Uses sqrt
 #include "picsar_qed/math/cmath_overloads.hpp"
 
-namespace picsar{
-namespace multi_physics{
-namespace phys{
-
+namespace picsar::multi_physics::phys
+{
     /**
     * This function returns the energy of a photon normalized with respect to the rest mass of an electron
     *
@@ -40,8 +38,9 @@ namespace phys{
             unit_system::heaviside_lorentz, RealType>::fact(reference_quantity);
 
         const auto norm_p = norm(p);
-        if(norm_p == zero<RealType>)
+        if(norm_p == zero<RealType>){
             return zero<RealType>;
+        }
 
         const auto gamma_phot = norm_p/
             heaviside_lorentz_electron_rest_energy<RealType>;
@@ -130,8 +129,6 @@ namespace phys{
         return compute_gamma_ele_pos<RealType, UnitSystem>(p, reference_quantity);
     }
 
-}
-}
 }
 
 #endif //PICSAR_MULTIPHYSICS_GAMMA_FUNCTIONS

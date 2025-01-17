@@ -59,8 +59,8 @@ set_target_properties(${name} PROPERTIES
 configure_file(demo_python_bindings.ipynb
     ${CMAKE_BINARY_DIR}/python_bindings/demo_python_bindings.ipynb COPYONLY)
 
-# Require C++14 or newer
-target_compile_features(${name} PUBLIC cxx_std_14)
+# Require C++17 or newer
+target_compile_features(${name} PUBLIC cxx_std_17)
 set_target_properties(${name} PROPERTIES CXX_EXTENSIONS OFF)
 
 # Enable warnings

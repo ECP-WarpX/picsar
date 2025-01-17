@@ -57,10 +57,12 @@ const float float_tolerance = 5.0e-3;
 template <typename T>
 T constexpr tolerance()
 {
-    if(std::is_same<T,float>::value)
+    if(std::is_same<T,float>::value){
         return float_tolerance;
-    else
+    }
+    else{
         return double_tolerance;
+    }
 }
 
 //Templated small number for double and single precision
@@ -69,10 +71,12 @@ const float float_small = 1.0e-4;
 template <typename T>
 T constexpr small()
 {
-    if(std::is_same<T,float>::value)
+    if(std::is_same<T,float>::value){
         return float_small;
-    else
+    }
+    else{
         return double_small;
+    }
 }
 //__________________________________________________
 

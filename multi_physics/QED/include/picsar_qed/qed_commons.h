@@ -108,17 +108,6 @@
 #endif
 
 
-/**
- * If possible (i.e. if C++17 or more recent is used)
- * picsar makes use of "if constexpr". Otherwise, the
- * expression falls back to a regular "if".
- */
-  #if __cplusplus >= 201703L
-    #define PXRMP_CONSTEXPR_IF if constexpr
-  #else
-    #define PXRMP_CONSTEXPR_IF if
-  #endif
-
  /**
  * Unless PXRMP_PREVENT_USE_STD_FOR_MATH is defined by the
  * user std::sqrt, std::cbrt... mathematical functions

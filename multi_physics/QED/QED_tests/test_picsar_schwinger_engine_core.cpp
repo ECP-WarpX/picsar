@@ -28,10 +28,12 @@ const float float_tolerance = 1.0e-4;
 template <typename T>
 T constexpr tolerance()
 {
-    if(std::is_same<T,float>::value)
+    if(std::is_same<T,float>::value){
         return float_tolerance;
-    else
+    }
+    else{
         return double_tolerance;
+    }
 }
 
 // ------------- Tests --------------
@@ -86,10 +88,12 @@ void test_expected_pair_number(RealType ref = zero<RealType>)
             E[i][0]*fe, E[i][1]*fe, E[i][2]*fe, B[i][0]*fb, B[i][1]*fb, B[i][2]*fb,
             volume*fv, dt*ft, ref);
 
-        if(res_exp[i] <= tolerance<RealType>())
+        if(res_exp[i] <= tolerance<RealType>()){
             BOOST_CHECK_SMALL(res, tolerance<RealType>());
-        else
+        }
+        else{
             BOOST_CHECK_SMALL((res-static_cast<RealType>(res_exp[i]))/static_cast<RealType>(res_exp[i]), tolerance<RealType>());
+        }
     }
 }
 
@@ -104,8 +108,8 @@ BOOST_AUTO_TEST_CASE( picsar_schwinger_core_expected_pair_number )
     test_expected_pair_number <unit_system::norm_lambda, double>(reference_length);
     test_expected_pair_number <unit_system::heaviside_lorentz, double>();
     test_expected_pair_number <unit_system::SI, float>();
-    test_expected_pair_number <unit_system::norm_omega, float>(reference_omega);
-    test_expected_pair_number <unit_system::norm_lambda, float>(reference_length);
+    test_expected_pair_number <unit_system::norm_omega, float>(static_cast<float>(reference_omega));
+    test_expected_pair_number <unit_system::norm_lambda, float>(static_cast<float>(reference_length));
     test_expected_pair_number <unit_system::heaviside_lorentz, float>();
 }
 

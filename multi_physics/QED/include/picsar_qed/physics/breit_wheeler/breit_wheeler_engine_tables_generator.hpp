@@ -35,10 +35,8 @@
 #include <type_traits>
 #include <stdexcept>
 
-namespace picsar{
-namespace multi_physics{
-namespace phys{
-namespace breit_wheeler{
+namespace picsar::multi_physics::phys::breit_wheeler
+{
 
     //________________ dN/dt table _____________________________________________
 
@@ -90,7 +88,7 @@ namespace breit_wheeler{
         #pragma omp parallel for
 #endif
         for (int i = 0; i < static_cast<int>(all_coords.size()); ++i){
-            PXRMP_CONSTEXPR_IF (use_internal_double){
+            if constexpr (use_internal_double){
                 all_vals[i] = aux_generate_double(all_coords[i]);
             }
             else {
@@ -108,8 +106,9 @@ namespace breit_wheeler{
         }
 
         for (auto& val : all_vals){
-            if(std::isnan(val))
+            if(std::isnan(val)){
                 throw std::runtime_error("Error: nan detected in generated table!");
+            }
         }
 
         set_all_vals(all_vals);
@@ -200,7 +199,7 @@ namespace breit_wheeler{
             );
 
             std::vector<RealType> vals = std::vector<RealType>(frac_size);
-            PXRMP_CONSTEXPR_IF (use_internal_double){
+            if constexpr (use_internal_double){
                 vals = aux_generate_double(
                     chi_phot, chi_parts);
             } else {
@@ -222,8 +221,9 @@ namespace breit_wheeler{
         }
 
         for (auto& val : all_vals){
-            if(std::isnan(val))
+            if(std::isnan(val)){
                 throw std::runtime_error("Error: nan detected in generated table!");
+            }
         }
 
         set_all_vals(all_vals);
@@ -241,9 +241,6 @@ namespace breit_wheeler{
     }
 
     //__________________________________________________________________________
-}
-}
-}
 }
 
 #endif //PICSAR_MULTIPHYSICS_BREIT_WHEELER_ENGINE_TABLES_GENERATOR

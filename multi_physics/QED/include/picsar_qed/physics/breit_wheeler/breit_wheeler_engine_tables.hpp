@@ -36,10 +36,8 @@
 #include <limits>
 #include <stdexcept>
 
-namespace picsar{
-namespace multi_physics{
-namespace phys{
-namespace breit_wheeler{
+namespace picsar::multi_physics::phys::breit_wheeler
+{
 
     //________________ Default parameters ______________________________________
 
@@ -120,7 +118,7 @@ namespace breit_wheeler{
     PXRMP_FORCE_INLINE
     RealType dndt_approx_left(RealType chi_phot)
     {
-        constexpr RealType coeff = static_cast<RealType>(8./3.);
+        constexpr auto coeff = static_cast<RealType>(8./3.);
         return erber_dndt_asynt_a<RealType>*math::m_exp(-coeff/chi_phot);
     }
 
@@ -184,14 +182,14 @@ namespace breit_wheeler{
             *
             * @tparam RealType the floating point type to be used
             */
-            typedef dndt_lookup_table<
-                RealType, containers::picsar_span<const RealType>> view_type;
+            using view_type =
+                dndt_lookup_table<RealType, containers::picsar_span<const RealType>> ;
 
             /**
             * Empty constructor
             **/
             constexpr
-            dndt_lookup_table(){}
+            dndt_lookup_table() = default;
 
             /**
             * Constructor (not designed for GPU)
@@ -223,10 +221,9 @@ namespace breit_wheeler{
             m_table{containers::equispaced_1d_table<RealType, VectorType>{
                     math::m_log(params.chi_phot_min),
                     math::m_log(params.chi_phot_max),
-                    vals}}
-            {
-                m_init_flag = true;
-            }
+                    vals}},
+            m_init_flag{true}
+            {}
 
             /*
             * Generates the content of the lookup table (not usable on GPUs).
@@ -239,7 +236,7 @@ namespace breit_wheeler{
             * @param[in] show_progress if true a progress bar is shown
             */
             template <generation_policy Policy = generation_policy::regular>
-            void generate(const bool show_progress  = true);
+            void generate(bool show_progress  = true);
 
             /*
             * Initializes the lookup table from a byte array.
@@ -255,9 +252,10 @@ namespace breit_wheeler{
                     sizeof(char)+ //single or double precision
                     sizeof(m_params);
 
-                if (raw_data.size() < min_size)
+                if (raw_data.size() < min_size){
                     throw std::runtime_error("Binary data is too small to be a Breit Wheeler \
                      T-function lookup-table.");
+                }
 
                 auto it_raw_data = raw_data.begin();
 
@@ -283,6 +281,7 @@ namespace breit_wheeler{
             *
             * @return true if rhs is equal to *this. false otherwise
             */
+            [[nodiscard]]
             PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
             bool operator== (
                 const dndt_lookup_table<
@@ -305,11 +304,13 @@ namespace breit_wheeler{
             *
             * @return a table view
             */
+            [[nodiscard]]
             view_type get_view() const
             {
-                if(!m_init_flag)
+                if(!m_init_flag){
                     throw std::runtime_error("Can't generate a view of an \
                     uninitialized table");
+                }
                 const auto span = containers::picsar_span<const RealType>{
                     static_cast<size_t>(m_params.chi_phot_how_many),
                     m_table.get_values_reference().data()
@@ -330,18 +331,19 @@ namespace breit_wheeler{
             *
             * @return the value of the T function
             */
+            [[nodiscard]]
             PXRMP_GPU_QUALIFIER
             PXRMP_FORCE_INLINE
             RealType interp(
                 RealType chi_phot, bool* const is_out = nullptr) const noexcept
             {
                 if (chi_phot < m_params.chi_phot_min){
-                    if (is_out != nullptr) *is_out = true;
+                    if (is_out != nullptr) { *is_out = true; }
                     return dndt_approx_left<RealType>(chi_phot);
                 }
 
                 if(chi_phot > m_params.chi_phot_max){
-                    if (is_out != nullptr) *is_out = true;
+                    if (is_out != nullptr) { *is_out = true; }
                     return dndt_approx_right<RealType>(chi_phot);
                 }
                 return math::m_exp(m_table.interp(math::m_log(chi_phot)));
@@ -353,6 +355,7 @@ namespace breit_wheeler{
             *
             * @return a vector containing all the table coordinates
             */
+            [[nodiscard]]
             std::vector<RealType> get_all_coordinates() const noexcept
             {
                 auto all_coords = m_table.get_all_coordinates();
@@ -375,8 +378,9 @@ namespace breit_wheeler{
                 const auto vals_length = vals.size();
                 auto log_vals = std::vector<RealType>(vals_length);
 
-                if(static_cast<int>(vals_length) != m_table.get_how_many_x())
+                if(static_cast<int>(vals_length) != m_table.get_how_many_x()){
                     return false;
+                }
 
                 std::transform(vals.begin(), vals.end(), log_vals.begin(),
                     [](auto x){return math::m_log(x);});
@@ -392,6 +396,7 @@ namespace breit_wheeler{
             *
             * @return true if the table has been initialized, false otherwise
             */
+            [[nodiscard]]
             PXRMP_GPU_QUALIFIER
             PXRMP_FORCE_INLINE
             bool is_init() const
@@ -404,12 +409,14 @@ namespace breit_wheeler{
             *
             * @return a byte vector
             */
+            [[nodiscard]]
             std::vector<char> serialize() const
             {
                 using namespace utils;
 
-                if(!m_init_flag)
+                if(!m_init_flag){
                     throw std::runtime_error("Cannot serialize an uninitialized table");
+                }
 
                 std::vector<char> res;
 
@@ -424,9 +431,9 @@ namespace breit_wheeler{
 
         protected:
             dndt_lookup_table_params<RealType> m_params; /* Table parameters*/
-            bool m_init_flag = false; /* Initialization flag*/
             containers::equispaced_1d_table<
                 RealType, VectorType> m_table; /* Table data */
+            bool m_init_flag = false; /* Initialization flag*/
 
         private:
             /*
@@ -522,14 +529,14 @@ namespace breit_wheeler{
             *
             * @tparam RealType the floating point type to be used
             */
-            typedef pair_prod_lookup_table<
-                RealType, containers::picsar_span<const RealType>> view_type;
+            using view_type =
+                pair_prod_lookup_table<RealType, containers::picsar_span<const RealType>>;
 
             /**
             * Empty constructor
             */
             constexpr
-            pair_prod_lookup_table(){}
+            pair_prod_lookup_table() = default;
 
 
             /**
@@ -568,10 +575,9 @@ namespace breit_wheeler{
                         math::zero<RealType>,
                         math::half<RealType>,
                         params.chi_phot_how_many, params.frac_how_many,
-                        vals}}
-            {
-                m_init_flag = true;
-            }
+                        vals}},
+                m_init_flag{true}
+            {}
 
             /*
             * Generates the content of the lookup table (not usable on GPUs).
@@ -600,9 +606,10 @@ namespace breit_wheeler{
                     sizeof(char)+//single or double precision
                     sizeof(m_params);
 
-                if (raw_data.size() < min_size)
+                if (raw_data.size() < min_size){
                     throw std::runtime_error("Binary data is too small to be a \
                     Breit Wheeler pair production lookup-table.");
+                }
 
                 auto it_raw_data = raw_data.begin();
 
@@ -628,6 +635,7 @@ namespace breit_wheeler{
             *
             * @return true if rhs is equal to *this. false otherwise
             */
+            [[nodiscard]]
             PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
             bool operator== (
                 const pair_prod_lookup_table<
@@ -650,11 +658,13 @@ namespace breit_wheeler{
             *
             * @return a table view
             */
+            [[nodiscard]]
             view_type get_view() const
             {
-                if(!m_init_flag)
+                if(!m_init_flag){
                     throw std::runtime_error("Can't generate a view of an \
                     uninitialized table");
+                }
                 const auto span = containers::picsar_span<const RealType>{
                     static_cast<size_t>(m_params.chi_phot_how_many *
                         m_params.frac_how_many),
@@ -685,6 +695,7 @@ namespace breit_wheeler{
             *
             * @return chi of one of the generated particles
             */
+            [[nodiscard]]
             PXRMP_GPU_QUALIFIER
             PXRMP_FORCE_INLINE
             RealType interp(
@@ -697,11 +708,11 @@ namespace breit_wheeler{
                 auto e_chi_phot = chi_phot;
                 if(chi_phot<m_params.chi_phot_min){
                     e_chi_phot = m_params.chi_phot_min;
-                    if (is_out != nullptr) *is_out = true;
+                    if (is_out != nullptr) { *is_out = true; }
                 }
                 else if (chi_phot > m_params.chi_phot_max){
                     e_chi_phot = m_params.chi_phot_max;
-                    if (is_out != nullptr) *is_out = true;
+                    if (is_out != nullptr) { *is_out = true; }
                 }
                 const auto log_e_chi_phot = m_log(e_chi_phot);
 
@@ -743,6 +754,7 @@ namespace breit_wheeler{
             *
             * @return a vector containing all the table coordinates
             */
+            [[nodiscard]]
             std::vector<std::array<RealType,2>> get_all_coordinates() const noexcept
             {
                 auto all_coords = m_table.get_all_coordinates();
@@ -764,8 +776,9 @@ namespace breit_wheeler{
             bool set_all_vals(const std::vector<RealType>& vals)
             {
                 if(static_cast<int>(vals.size()) != m_table.get_how_many_x()*
-                    m_table.get_how_many_y())
+                    m_table.get_how_many_y()){
                         return false;
+                }
 
                 m_table.set_all_vals(vals);
                 m_init_flag = true;
@@ -778,6 +791,7 @@ namespace breit_wheeler{
             *
             * @return true if the table has been initialized, false otherwise
             */
+            [[nodiscard]]
             PXRMP_GPU_QUALIFIER
             PXRMP_FORCE_INLINE
             bool is_init() const
@@ -790,12 +804,14 @@ namespace breit_wheeler{
             *
             * @return a byte vector
             */
+            [[nodiscard]]
             std::vector<char> serialize() const
             {
                 using namespace utils;
 
-                if(!m_init_flag)
+                if(!m_init_flag){
                     throw "Cannot serialize an uninitialized table";
+                }
 
                 std::vector<char> res;
 
@@ -810,9 +826,9 @@ namespace breit_wheeler{
 
         protected:
             pair_prod_lookup_table_params<RealType> m_params; /* Table parameters*/
-            bool m_init_flag = false; /* Initialization flag*/
             containers::equispaced_2d_table<
                 RealType, VectorType> m_table; /* Table data*/
+            bool m_init_flag = false; /* Initialization flag*/
 
         private:
             /*
@@ -829,9 +845,6 @@ namespace breit_wheeler{
 
     //__________________________________________________________________________
 
-}
-}
-}
 }
 
 #endif // PICSAR_MULTIPHYSICS_BREIT_WHEELER_ENGINE_TABLES

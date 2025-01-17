@@ -27,10 +27,12 @@ const float float_tolerance = 1.0e-6;
 template <typename T>
 T constexpr tolerance()
 {
-    if(std::is_same<T,float>::value)
+    if(std::is_same<T,float>::value){
         return float_tolerance;
-    else
+    }
+    else{
         return double_tolerance;
+    }
 }
 
 // ------------- Tests --------------

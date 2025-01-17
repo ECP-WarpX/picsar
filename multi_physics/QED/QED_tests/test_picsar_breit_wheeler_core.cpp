@@ -30,19 +30,23 @@ using namespace picsar::multi_physics::math;
 template <typename T>
 T constexpr tolerance()
 {
-    if(std::is_same<T,float>::value)
+    if(std::is_same<T,float>::value){
         return float_tolerance;
-    else
+    }
+    else{
         return double_tolerance;
+    }
 }
 
 template <typename T>
 T constexpr small()
 {
-    if(std::is_same<T,float>::value)
+    if(std::is_same<T,float>::value){
         return float_small;
-    else
+    }
+    else{
         return double_small;
+    }
 }
 
 template<typename RealType>
@@ -50,7 +54,7 @@ struct fake_T_table
 {
     RealType interp(RealType chi, bool* is_out = nullptr) const {
         m_chi = chi;
-        if(is_out != nullptr) *is_out = m_is_out;
+        if(is_out != nullptr) { *is_out = m_is_out; }
         return m_res;
     }
 
@@ -65,7 +69,7 @@ struct fake_P_table
     RealType interp(RealType chi, RealType random, bool* is_out = nullptr) const {
         m_chi = chi;
         m_random = random;
-        if(is_out != nullptr) *is_out = m_is_out;
+        if(is_out != nullptr) { *is_out = m_is_out; }
         return m_res;
     }
 
@@ -185,8 +189,8 @@ BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_core_get_dndt)
     check_dndt<double, unit_system::norm_lambda>(reference_length);
     check_dndt<double, unit_system::heaviside_lorentz>();
     check_dndt<float, unit_system::SI>();
-    check_dndt<float, unit_system::norm_omega>(reference_omega);
-    check_dndt<float, unit_system::norm_lambda>(reference_length);
+    check_dndt<float, unit_system::norm_omega>(static_cast<float>(reference_omega));
+    check_dndt<float, unit_system::norm_lambda>(static_cast<float>(reference_length));
     check_dndt<float, unit_system::heaviside_lorentz>();
 }
 
@@ -282,8 +286,8 @@ BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_core_evolve_opt_depth)
     check_evolve_opt_depth<double, unit_system::norm_lambda>(reference_length);
     check_evolve_opt_depth<double, unit_system::heaviside_lorentz>();
     check_evolve_opt_depth<float, unit_system::SI>();
-    check_evolve_opt_depth<float, unit_system::norm_omega>(reference_omega);
-    check_evolve_opt_depth<float, unit_system::norm_lambda>(reference_length);
+    check_evolve_opt_depth<float, unit_system::norm_omega>(static_cast<float>(reference_omega));
+    check_evolve_opt_depth<float, unit_system::norm_lambda>(static_cast<float>(reference_length));
     check_evolve_opt_depth<float, unit_system::heaviside_lorentz>();
 }
 
@@ -339,7 +343,7 @@ void check_pair_production(RealType ref_q = one<RealType>)
                         fake_table.m_res = chi_ele;
                         fake_table.m_is_out = false;
 
-                        const RealType pmom = static_cast<RealType>(mom);
+                        const auto pmom = static_cast<RealType>(mom);
 
                         const auto photon_momentum =
                             vec3<RealType>{
@@ -424,8 +428,8 @@ BOOST_AUTO_TEST_CASE( picsar_breit_wheeler_core_pair_production)
     check_pair_production<double, unit_system::norm_lambda>(reference_length);
     check_pair_production<double, unit_system::heaviside_lorentz>();
     check_pair_production<float, unit_system::SI>();
-    check_pair_production<float, unit_system::norm_omega>(reference_omega);
-    check_pair_production<float, unit_system::norm_lambda>(reference_length);
+    check_pair_production<float, unit_system::norm_omega>(static_cast<float>(reference_omega));
+    check_pair_production<float, unit_system::norm_lambda>(static_cast<float>(reference_length));
     check_pair_production<float, unit_system::heaviside_lorentz>();
 }
 

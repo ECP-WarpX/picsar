@@ -25,10 +25,12 @@ const float float_tolerance = 1.0e-6;
 template <typename T>
 T constexpr tolerance()
 {
-    if(std::is_same<T,float>::value)
+    if(std::is_same<T,float>::value){
         return float_tolerance;
-    else
+    }
+    else{
         return double_tolerance;
+    }
 }
 
 
@@ -70,10 +72,12 @@ void test_chi_photons(
 
     const auto exp_res = static_cast<RealType>(t_exp_res);
 
-    if(exp_res != static_cast<RealType>(0.0))
+    if(exp_res != static_cast<RealType>(0.0)){
         BOOST_CHECK_SMALL((res-exp_res)/exp_res, tolerance<RealType>());
-    else
+    }
+    else{
         BOOST_CHECK_SMALL(res, tolerance<RealType>());
+    }
 }
 
 BOOST_AUTO_TEST_CASE( chi_photons_1 )
@@ -275,10 +279,12 @@ void test_chi_ele_pos(
 
     const auto exp_res = static_cast<RealType>(t_exp_res);
 
-    if(exp_res != static_cast<RealType>(0.0))
+    if(exp_res != static_cast<RealType>(0.0)){
         BOOST_CHECK_SMALL((res-exp_res)/exp_res, tolerance<RealType>());
-    else
+    }
+    else{
         BOOST_CHECK_SMALL(res, tolerance<RealType>());
+    }
 }
 
 BOOST_AUTO_TEST_CASE( chi_ele_pos_1 )

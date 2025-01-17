@@ -12,11 +12,8 @@
 //Uses log and exp
 #include "picsar_qed/math/cmath_overloads.hpp"
 
-namespace picsar{
-namespace multi_physics{
-namespace phys{
-namespace quantum_sync{
-namespace detail{
+namespace picsar::multi_physics::phys::quantum_sync::detail
+{
 
     /**
     * This class implements a linear functor to be used in tail-optimized lookup tables.
@@ -34,7 +31,7 @@ namespace detail{
         * Empty constructor
         */
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
-        LinFunctor(){}
+        LinFunctor() = default;
 
         /**
         * Constructor
@@ -45,10 +42,9 @@ namespace detail{
         */
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         LinFunctor(int zsize, RealType zmin, RealType zmax) :
-            m_zmin{zmin}
-        {
-            m_coeff = (zmax - zmin)/(zsize - 1);
-        }
+            m_zmin{zmin},
+            m_coeff{(zmax - zmin)/(zsize - 1)}
+        {}
 
         /**
         * Operator()
@@ -82,6 +78,7 @@ namespace detail{
         *
         * @return an std::vector<char> containing the binary representation of the functor
         */
+        [[nodiscard]]
         std::vector<char> serialize() const
         {
             using namespace utils;
@@ -139,7 +136,7 @@ namespace detail{
         * Empty constructor
         */
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
-        ILinFunctor(){}
+        ILinFunctor() = default;
 
         /**
         * Constructor
@@ -150,10 +147,9 @@ namespace detail{
         */
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         ILinFunctor(int zsize, RealType zmin, RealType zmax) :
-            m_zmin{zmin}
-        {
-            m_coeff = (zsize - 1)/(zmax - zmin);
-        }
+            m_zmin{zmin},
+            m_coeff{(zsize - 1)/(zmax - zmin)}
+        {}
 
         /**
         * Operator()
@@ -190,6 +186,7 @@ namespace detail{
         *
         * @return an std::vector<char> containing the binary representation of the functor
         */
+        [[nodiscard]]
         std::vector<char> serialize() const
         {
             using namespace utils;
@@ -248,7 +245,7 @@ namespace detail{
         * Empty constructor
         */
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
-        TailOptFunctor(){}
+        TailOptFunctor() = default;
 
         /**
         * Constructor
@@ -262,12 +259,11 @@ namespace detail{
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         TailOptFunctor(const int zsize, const int zfirst,
             const RealType zmin, const RealType zmax, const RealType zswitch) :
-                m_zsize{zsize}, m_zfirst{zfirst}, m_zmin{zmin}
-        {
-            m_exp_zswitch = math::m_exp(zswitch);
-            m_coeff_first = (zswitch - zmin) / (zfirst - 1);
-            m_coeff_second = (math::m_exp(zmax) - m_exp_zswitch) / (zsize - zfirst);
-        }
+                m_zsize{zsize}, m_zfirst{zfirst}, m_zmin{zmin},
+                m_exp_zswitch{math::m_exp(zswitch)},
+                m_coeff_first{(zswitch - zmin) / (zfirst - 1)},
+                m_coeff_second{(math::m_exp(zmax) - m_exp_zswitch) / (zsize - zfirst)}
+        {}
 
         /**
         * Operator()
@@ -315,6 +311,7 @@ namespace detail{
         *
         * @return an std::vector<char> containing the binary representation of the functor
         */
+        [[nodiscard]]
         std::vector<char> serialize() const
         {
             using namespace utils;
@@ -382,7 +379,7 @@ namespace detail{
         * Empty constructor
         */
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
-        ITailOptFunctor(){}
+        ITailOptFunctor() = default;
 
         /**
         * Constructor
@@ -396,12 +393,14 @@ namespace detail{
         PXRMP_GPU_QUALIFIER PXRMP_FORCE_INLINE
         ITailOptFunctor(const int zsize, const int zfirst,
             const RealType zmin, const RealType zmax, const RealType zswitch) :
-                m_zsize{zsize}, m_zfirst{zfirst}, m_zmin{zmin}, m_zswitch{zswitch}
-        {
-            m_exp_zswitch = math::m_exp(zswitch);
-            m_coeff_first = (zfirst - 1) / (zswitch - zmin);
-            m_coeff_second = (zsize - zfirst) / (math::m_exp(zmax) - m_exp_zswitch);
-        }
+            m_zsize{zsize},
+            m_zfirst{zfirst},
+            m_zmin{zmin},
+            m_zswitch{zswitch},
+            m_exp_zswitch{math::m_exp(zswitch)},
+            m_coeff_first{(zfirst - 1) / (zswitch - zmin)},
+            m_coeff_second{(zsize - zfirst) / (math::m_exp(zmax) - m_exp_zswitch)}
+        {}
 
         /**
         * Operator()
@@ -450,6 +449,7 @@ namespace detail{
         *
         * @return an std::vector<char> containing the binary representation of the functor
         */
+        [[nodiscard]]
         std::vector<char> serialize() const
         {
             using namespace utils;
@@ -504,10 +504,6 @@ namespace detail{
         RealType m_coeff_second;
     };
 
-}
-}
-}
-}
 }
 
 #endif //PICSAR_MULTIPHYSICS_QUANTUM_SYNC_ENGINE_TABLES_DETAIL

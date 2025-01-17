@@ -7,9 +7,8 @@
 #include <string>
 #include <iostream>
 
-namespace picsar{
-namespace multi_physics{
-namespace utils{
+namespace picsar::multi_physics::utils
+{
 
     /**
     * A simple progress bar
@@ -24,32 +23,31 @@ namespace utils{
     inline
     void draw_progress(
         const int i, const int how_many,
-        const std::string text = "",
+        const std::string& text = "",
         const int up_freq = 1,
         bool last=false,
         std::ostream& out = std::cout)
         {
-            if (i % up_freq != 0 && i != how_many)
-            return;
+            if (i % up_freq != 0 && i != how_many){
+                return;
+            }
 
             const auto bar_length = 50;
             const auto progress = (i*1.0/how_many);
             const auto pos = static_cast<int>(bar_length*progress);
             out << " [";
             for (int j = 0; j < bar_length; ++j) {
-                if (j < pos) out << "=";
-                else if (j == pos) out << ">";
-                else out << " ";
+                if (j < pos) { out << "="; }
+                else if (j == pos) { out << ">"; }
+                else { out << " "; }
             }
             out << "] " << std::to_string(static_cast<int>(progress * 100.0))
             << "%  " << text ;
-            if(last) out <<"\n";
-            else out <<"\r";
+            if(last) { out <<"\n"; }
+            else { out <<"\r"; }
             out.flush();
         }
 
-}
-}
 }
 
 #endif //PICSAR_MULTIPHYSICS_PROGRESS_BAR
