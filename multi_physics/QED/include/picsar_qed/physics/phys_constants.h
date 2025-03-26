@@ -9,10 +9,9 @@
 
 namespace picsar::multi_physics::phys
 {
-
-    // Some useful physical constants in SI units
+    // Some useful physical constants in SI units (CODATA 2022)
     template<typename RealType = double>
-    constexpr auto electron_mass = RealType(9.1093837015e-31);
+    constexpr auto electron_mass = RealType(9.1093837139e-31);
 
     template<typename RealType = double>
     constexpr auto elementary_charge = RealType(1.602176634e-19);
@@ -24,31 +23,31 @@ namespace picsar::multi_physics::phys
     constexpr auto reduced_plank = RealType(1.054571817e-34);
 
     template<typename RealType = double>
-    constexpr auto vacuum_permittivity = RealType(8.8541878128e-12);
+    constexpr auto vacuum_permittivity = RealType(8.8541878188e-12);
 
     template<typename RealType = double>
-    constexpr auto vacuum_permeability = RealType(1.25663706212e-6);
+    constexpr auto vacuum_permeability = RealType(1.25663706127e-6);
 
     template<typename RealType = double>
-    constexpr auto fine_structure =  RealType(0.0072973525693);
+    constexpr auto fine_structure =  RealType(0.0072973525643);
 
     template<typename RealType = double>
-    constexpr auto eV = RealType(1.602176634e-19);
+    constexpr auto eV = RealType(elementary_charge);
 
     template<typename RealType = double>
-    constexpr auto KeV = RealType(1.602176634e-16);
+    constexpr auto KeV = RealType(elementary_charge*1e3);
 
     template<typename RealType = double>
-    constexpr auto MeV = RealType(1.602176634e-13);
+    constexpr auto MeV = RealType(elementary_charge*1e6);
 
     template<typename RealType = double>
-    constexpr auto GeV = RealType(1.602176634e-10);
+    constexpr auto GeV = RealType(elementary_charge*1e9);
 
     //This constant is used for the Heaviside Lorentz unit system
     //(unfortunately, sqrt is not constexpr)
     template<typename RealType = double>
     constexpr auto sqrt_4_pi_fine_structure =
-        RealType(0.302822120872089);
+        RealType(0.3028221207683449);
 
     //Intermediate calculations of the following quantities are performed with
     //double precision to avoid numerical issues
