@@ -32,16 +32,16 @@ namespace picsar::multi_physics::phys
     constexpr auto fine_structure =  RealType(0.0072973525643);
 
     template<typename RealType = double>
-    constexpr auto eV = RealType(elementary_charge);
+    constexpr auto eV = RealType(elementary_charge<>);
 
     template<typename RealType = double>
-    constexpr auto KeV = RealType(elementary_charge*1e3);
+    constexpr auto KeV = RealType(elementary_charge<>*1e3);
 
     template<typename RealType = double>
-    constexpr auto MeV = RealType(elementary_charge*1e6);
+    constexpr auto MeV = RealType(elementary_charge<>*1e6);
 
     template<typename RealType = double>
-    constexpr auto GeV = RealType(elementary_charge*1e9);
+    constexpr auto GeV = RealType(elementary_charge<>*1e9);
 
     //This constant is used for the Heaviside Lorentz unit system
     //(unfortunately, sqrt is not constexpr)
