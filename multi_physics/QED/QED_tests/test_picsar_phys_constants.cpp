@@ -35,25 +35,25 @@ T constexpr tolerance()
 
 // ------------- Tests --------------
 
-// ***Test physical constants
+// ***Test physical constants (CODATA 2022)
 
 template<typename RealType>
 void test_case_const_phys()
 {
     const auto exp_electron_mass =
-        static_cast<RealType>(9.1093837015e-31);
+        static_cast<RealType>(9.1093837139e-31);
     const auto exp_elementary_charge =
         static_cast<RealType>(1.602176634e-19);
     const auto exp_light_speed =
         static_cast<RealType>(299792458.);
     const auto exp_reduced_plank =
-        static_cast<RealType>(1.054571817e-34);
+        static_cast<RealType>(1.0545718176461565e-34);
     const auto exp_vacuum_permittivity =
-        static_cast<RealType>(8.8541878128e-12);
+        static_cast<RealType>(8.8541878188e-12);
     const auto exp_vacuum_permeability =
-        static_cast<RealType>(1.25663706212e-6);
+        static_cast<RealType>(1.25663706127e-6);
     const auto exp_fine_structure =
-        static_cast<RealType>(0.0072973525693);
+        static_cast<RealType>(0.0072973525643);
     const auto exp_eV =
         static_cast<RealType>(1.602176634e-19);
     const auto exp_KeV =
@@ -66,11 +66,11 @@ void test_case_const_phys()
             static_cast<RealType>(sqrt(
                 4.0*pi<double>*fine_structure<double>));
     const auto exp_classical_electron_radius =
-        static_cast<RealType>(2.81794032620493e-15);
+        static_cast<RealType>(2.8179403205e-15);
     const auto exp_schwinger_field =
-        static_cast<RealType>(1.32328547494817e18);
+        static_cast<RealType>(1.3232854777399644e18);
     const auto exp_tau_e =
-        static_cast<RealType>(9.39963715232933e-24);
+        static_cast<RealType>(9.39963713329973e-24);
 
     BOOST_CHECK_SMALL(
         (electron_mass<RealType>-exp_electron_mass)/exp_electron_mass,
