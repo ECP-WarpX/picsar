@@ -47,7 +47,7 @@ void test_case_const_phys()
     const auto exp_light_speed =
         static_cast<RealType>(299792458.);
     const auto exp_reduced_plank =
-        static_cast<RealType>(1.054571817e-34);
+        static_cast<RealType>(1.0545718176461565e-34);
     const auto exp_vacuum_permittivity =
         static_cast<RealType>(8.8541878188e-12);
     const auto exp_vacuum_permeability =
@@ -68,7 +68,7 @@ void test_case_const_phys()
     const auto exp_classical_electron_radius =
         static_cast<RealType>(2.8179403205e-15);
     const auto exp_schwinger_field =
-        static_cast<RealType>(1.323285478550767e18);
+        static_cast<RealType>(1.3232854777399644e18);
     const auto exp_tau_e =
         static_cast<RealType>(9.39963713329973e-24);
 

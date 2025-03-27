@@ -10,6 +10,8 @@
 namespace picsar::multi_physics::phys
 {
     // Some useful physical constants in SI units (CODATA 2022)
+    // (note that iIntermediate calculations, when required, are performed in
+    // double precision to avoid numerical issues)
     template<typename RealType = double>
     constexpr auto electron_mass = RealType(9.1093837139e-31);
 
@@ -20,7 +22,7 @@ namespace picsar::multi_physics::phys
     constexpr auto light_speed = RealType(299792458.);
 
     template<typename RealType = double>
-    constexpr auto reduced_plank = RealType(1.054571817e-34);
+    constexpr auto reduced_plank = RealType(6.62607015e-34/(2.0*math::pi<>));
 
     template<typename RealType = double>
     constexpr auto vacuum_permittivity = RealType(8.8541878188e-12);
@@ -43,20 +45,16 @@ namespace picsar::multi_physics::phys
     template<typename RealType = double>
     constexpr auto GeV = RealType(elementary_charge<>*1e9);
 
+    template<typename RealType = double>
+    constexpr auto classical_electron_radius = RealType(2.8179403205e-15);
+
     //This constant is used for the Heaviside Lorentz unit system
     //(unfortunately, sqrt is not constexpr)
     template<typename RealType = double>
     constexpr auto sqrt_4_pi_fine_structure =
         RealType(0.3028221207683449);
 
-    //Intermediate calculations of the following quantities are performed with
-    //double precision to avoid numerical issues
-    template<typename RealType = double>
-    constexpr auto classical_electron_radius = RealType(
-        elementary_charge<>*elementary_charge<> /
-        (4.0*math::pi<> * vacuum_permittivity<> *
-        electron_mass<> * light_speed<> * light_speed<>));
-
+    //
     template<typename RealType = double>
     constexpr auto schwinger_field = RealType(
         electron_mass<>*electron_mass<>*(light_speed<>*light_speed<>*light_speed<>)/

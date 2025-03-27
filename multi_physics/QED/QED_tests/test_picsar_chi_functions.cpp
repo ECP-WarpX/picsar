@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE( chi_photons_1 )
     const double by = -158.849*bref;
     const double bz = -93.826*bref;
 
-    const double chi_exp = 0.3471118445206898;
+    const double chi_exp = 0.34711184426087166;
 
     const auto p = vec3<double>{px,py,pz};
     const auto em_e = vec3<double>{ex,ey,ez};
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE( chi_photons_2 )
     const double by = 1.9778*bref;
     const double bz = 17.8799*bref;
 
-    const double chi_exp = 0.0009041474058668584;
+    const double chi_exp = 0.0009041474051900912;
 
     const auto p = vec3<double>{px,py,pz};
     const auto em_e = vec3<double>{ex,ey,ez};
@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE( chi_photons_3 )
     const double by = 1243.79*bref;
     const double bz = -2830.99*bref;
 
-    const double chi_exp = 57.22043983047014;
+    const double chi_exp = 57.220439787639826;
 
     const auto p = vec3<double>{px,py,pz};
     const auto em_e = vec3<double>{ex,ey,ez};
@@ -299,7 +299,7 @@ BOOST_AUTO_TEST_CASE( chi_ele_pos_1 )
     const double by = -23.8724*bref;
     const double bz = 13.9934*bref;
 
-    const double chi_exp = 0.002167166273468506;
+    const double chi_exp = 0.002167166271846351;
 
     const auto p = vec3<double>{px,py,pz};
     const auto em_e = vec3<double>{ex,ey,ez};
@@ -328,7 +328,7 @@ BOOST_AUTO_TEST_CASE( chi_ele_pos_2 )
     const double by = -129.115*bref;
     const double bz = -57.002*bref;
 
-    const double  chi_exp = 0.16631811297207244;
+    const double  chi_exp = 0.16631811284758097;
 
     const auto p = vec3<double>{px,py,pz};
     const auto em_e = vec3<double>{ex,ey,ez};
@@ -356,7 +356,7 @@ BOOST_AUTO_TEST_CASE( chi_ele_pos_3 )
     const double by = -1448.33*bref;
     const double bz = 1953.68*bref;
 
-    const double chi_exp = 16.011457274095676;
+    const double chi_exp = 16.01145726211088;
 
     const auto p = vec3<double>{px,py,pz};
     const auto em_e = vec3<double>{ex,ey,ez};
