@@ -51,9 +51,9 @@ void test_case_const_phys()
     const auto exp_vacuum_permittivity =
         static_cast<RealType>(8.8541878188e-12);
     const auto exp_vacuum_permeability =
-        static_cast<RealType>(1.25663706127e-6);
+        static_cast<RealType>(1.2566370612685e-6);
     const auto exp_fine_structure =
-        static_cast<RealType>(0.0072973525643);
+        static_cast<RealType>(0.0072973525643330135);
     const auto exp_eV =
         static_cast<RealType>(1.602176634e-19);
     const auto exp_KeV =
