@@ -27,11 +27,16 @@ namespace picsar::multi_physics::phys
     template<typename RealType = double>
     constexpr auto vacuum_permittivity = RealType(8.8541878188e-12);
 
+    // NOTE This is adjusted from the CODATA 2022 value 1.25663706127e-6,
+    // so that the relation between exp_light_speed, exp_vacuum_permittivity,
+    // and exp_vacuum_permeability is exact
     template<typename RealType = double>
-    constexpr auto vacuum_permeability = RealType(1.25663706127e-6);
+    constexpr auto vacuum_permeability = RealType(1.2566370612685e-6);
 
+    // NOTE This is calculated from alpha = mu_0/(4*pi)*q_e*q_e*c/hbar
+    // and differs slightly from the CODATA 2022 value 0.0072973525643
     template<typename RealType = double>
-    constexpr auto fine_structure =  RealType(0.0072973525643);
+    constexpr auto fine_structure =  RealType(0.0072973525643330135);
 
     template<typename RealType = double>
     constexpr auto eV = RealType(elementary_charge<>);
@@ -52,7 +57,7 @@ namespace picsar::multi_physics::phys
     //(unfortunately, sqrt is not constexpr)
     template<typename RealType = double>
     constexpr auto sqrt_4_pi_fine_structure =
-        RealType(0.3028221207683449);
+        RealType(0.3028221207690299);
 
     //
     template<typename RealType = double>
