@@ -415,7 +415,7 @@ void do_breit_wheeler(BreitWheelerTableParams<RealType> params, const std::strin
     std::cout << " No OpenMP support.\n";
 #endif
 
-    if (std::is_same<RealType, double>::value){
+    if (std::is_same_v<RealType, double>){
         std::cout << " Tables will be generated in double precision.\n";
     }
     else{
@@ -517,7 +517,7 @@ void do_quantum_sync(QuantumSyncTableParams<RealType> params, const std::string&
     std::cout << " No OpenMP support.\n";
 #endif
 
-    if (std::is_same<RealType, double>::value){
+    if (std::is_same_v<RealType, double>){
         std::cout << " Tables will be generated in double precision.\n";
     }
     else{
