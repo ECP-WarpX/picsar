@@ -92,7 +92,7 @@ namespace picsar::multi_physics::phys::quantum_sync::detail
 
             std::cout << " Done in " <<
                 std::chrono::duration_cast<std::chrono::milliseconds>(
-                    t_end - t_start).count()/1000.0 << " seconds. \n" << std::endl;
+                    t_end - t_start).count()/1000.0 << " seconds. \n\n";
         }
 
         return all_vals;
@@ -183,7 +183,7 @@ namespace picsar::multi_physics::phys::quantum_sync::detail
 
             std::cout << " Done in " <<
                 std::chrono::duration_cast<std::chrono::milliseconds>(
-                    t_end - t_start).count()/1000.0 << " seconds. \n" << std::endl;
+                    t_end - t_start).count()/1000.0 << " seconds. \n\n";
         }
 
         return all_vals;

@@ -44,8 +44,8 @@ const std::string OPT_PRECISION_SINGLE = "single";
 const std::string OPT_PRECISION_SINGLE_WITH_DOUBLE_COMP = "single_with_double_comp";
 //___________________________________________________________________________________
 
-enum Precision {double_precision, single_precision, single_prec_out_double_prec_comp};
-enum TableType {breit_wheeler_table, quantum_synchrotron_table};
+enum Precision : std::uint8_t {double_precision, single_precision, single_prec_out_double_prec_comp};
+enum TableType : std::uint8_t {breit_wheeler_table, quantum_synchrotron_table};
 
 template<typename RealType>
 struct BreitWheelerTableParams{
@@ -71,7 +71,7 @@ struct QuantumSyncTableParams{
 */
 void print_error(const std::string& str)
 {
-    std::cout << "\n [ERROR!] " << str << "\n" << std::endl;
+    std::cout << "\n [ERROR!] " << str << "\n\n";
 }
 
 
@@ -408,22 +408,22 @@ template<
     px_bw::generation_policy Policy>
 void do_breit_wheeler(BreitWheelerTableParams<RealType> params, const std::string& file_name_prefix)
 {
-    std::cout << " ***** QED table generator: Breit-Wheeler tables *****" << std::endl;
+    std::cout << " ***** QED table generator: Breit-Wheeler tables *****\n";
 #ifdef PXRMP_TABLE_GEN_HAS_OPENMP
-    std::cout << " Using " << omp_get_max_threads() << " OpenMP threads." << std::endl;
+    std::cout << " Using " << omp_get_max_threads() << " OpenMP threads.\n";
 #else
-    std::cout << " No OpenMP support." << std::endl;
+    std::cout << " No OpenMP support.\n";
 #endif
 
-    if (std::is_same<RealType, double>::value){
-        std::cout << " Tables will be generated in double precision." << std::endl;
+    if (std::is_same_v<RealType, double>){
+        std::cout << " Tables will be generated in double precision.\n";
     }
     else{
         const auto *const prec =
             (Policy == px_bw::generation_policy::force_internal_double) ?
             "double" : "single";
         std::cout << " Tables will be calculated in " << prec <<
-            " precision and will be saved in single precision." << std::endl;
+            " precision and will be saved in single precision.\n";
     }
 
     std::cout << " Table parameters:\n"
@@ -510,22 +510,22 @@ template<
     px_qs::generation_policy Policy>
 void do_quantum_sync(QuantumSyncTableParams<RealType> params, const std::string& file_name_prefix)
 {
-    std::cout << " ***** QED table generator: Quantum Synchrotron tables *****" << std::endl;
+    std::cout << " ***** QED table generator: Quantum Synchrotron tables *****\n";
 #ifdef PXRMP_TABLE_GEN_HAS_OPENMP
-    std::cout << " Using " << omp_get_max_threads() << " OpenMP threads." << std::endl;
+    std::cout << " Using " << omp_get_max_threads() << " OpenMP threads.\n";
 #else
-    std::cout << " No OpenMP support." << std::endl;
+    std::cout << " No OpenMP support.\n";
 #endif
 
-    if (std::is_same<RealType, double>::value){
-        std::cout << " Tables will be generated in double precision." << std::endl;
+    if (std::is_same_v<RealType, double>){
+        std::cout << " Tables will be generated in double precision.\n";
     }
     else{
         const auto *const prec =
             (Policy == px_qs::generation_policy::force_internal_double) ?
             "double" : "single";
         std::cout << " Tables will be calculated in " << prec <<
-            " precision and will be saved in single precision." << std::endl;
+            " precision and will be saved in single precision.\n";
     }
 
     std::cout << " Table parameters:\n"
@@ -552,37 +552,37 @@ void do_quantum_sync(QuantumSyncTableParams<RealType> params, const std::string&
     generate_quantum_sync_dndt_table<RealType, Policy>(dndt_params, file_name_prefix);
     generate_quantum_sync_photem_table<RealType, Policy>(pair_prod_params, file_name_prefix);
 
-    std::cout << " ____________________________" << std::endl;
+    std::cout << " ____________________________\n";
 }
 
 /**
 * Prints default values of optional parameters in the help message
 */
 void print_default_values()
-{  
-    std::cout << "   Breit-Wheeler tables: " << std::endl;
+{
+    std::cout << "   Breit-Wheeler tables:\n";
     std::cout << "       " << CMD_CHI_MIN << " : "
-        << px_bw::default_chi_phot_min<double> << std::endl;
+        << px_bw::default_chi_phot_min<double> << "\n";
     std::cout << "       " << CMD_CHI_MAX << " : "
-        << px_bw::default_chi_phot_max<double> << std::endl;
+        << px_bw::default_chi_phot_max<double> << "\n";
     std::cout << "       " << CMD_FRAC_MIN << " : "
-        << "(unused)" << std::endl;
+        << "(unused)\n";
     std::cout << "       " << CMD_CHI_SIZE << " : "
-        << px_bw::default_chi_phot_how_many << std::endl;
+        << px_bw::default_chi_phot_how_many << "\n";
     std::cout << "       " << CMD_FRAC_SIZE << " : "
-        << px_bw::default_frac_how_many << std::endl;
+        << px_bw::default_frac_how_many << "\n";
 
-    std::cout << "   Quantum Synchrotron tables: " << std::endl;
+    std::cout << "   Quantum Synchrotron tables:\n";
     std::cout << "       " << CMD_CHI_MIN << " : "
-        << px_qs::default_chi_part_min<double> << std::endl;
+        << px_qs::default_chi_part_min<double> << "\n";
     std::cout << "       " << CMD_CHI_MAX << " : "
-        << px_qs::default_chi_part_max<double> << std::endl;
+        << px_qs::default_chi_part_max<double> << "\n";
     std::cout << "       " << CMD_FRAC_MIN << " : "
-        << px_qs::default_frac_min<double> << std::endl;
+        << px_qs::default_frac_min<double> << "\n";
     std::cout << "       " << CMD_CHI_SIZE << " : "
-        << px_qs::default_chi_part_how_many << std::endl;
+        << px_qs::default_chi_part_how_many << "\n";
     std::cout << "       " << CMD_FRAC_SIZE << " : "
-        << px_qs::default_frac_how_many << std::endl;
+        << px_qs::default_frac_how_many << "\n";
 }
 
 /**
@@ -593,17 +593,17 @@ void print_help_message()
     // Max size of a CMD field in the help message
     const int MAX_CMD_SIZE = 26;
 
-    std::cout << " ***** QED table generator HELP *****" << std::endl;
+    std::cout << " ***** QED table generator HELP *****\n";
 
     std::cout << std::setw(MAX_CMD_SIZE) << CMD_HELP_S <<
-        " : prints this help message" << std::endl;
+        " : prints this help message\n";
 
     std::cout << std::setw(MAX_CMD_SIZE) << CMD_HELP_L <<
-        " : prints this help message" << std::endl;
+        " : prints this help message\n";
 
     std::cout << std::setw(MAX_CMD_SIZE) << CMD_TABLE <<
         " : sets table type. Must be either " << OPT_TABLE_BREIT_WHEELER <<
-        " or " << OPT_TABLE_QUANTUM_SYNC << "." << std::endl;
+        " or " << OPT_TABLE_QUANTUM_SYNC << ".\n";
 
     std::cout << std::setw(MAX_CMD_SIZE) << CMD_PRECISION <<
         " : sets table precision. Must be one of the following: "
@@ -613,30 +613,30 @@ void print_help_message()
         << std::setw(MAX_CMD_SIZE+3) << "" << OPT_PRECISION_SINGLE_WITH_DOUBLE_COMP
         << " means that calculations are carried out in double precision\n"
         << std::setw(MAX_CMD_SIZE+3) << ""
-        << "even if the table is in single precision. " << std::endl;
+        << "even if the table is in single precision.\n";
 
     std::cout << std::setw(MAX_CMD_SIZE) << CMD_CHI_MIN <<
-        " : sets minimum chi parameter (real number, optional*)" << std::endl;
+        " : sets minimum chi parameter (real number, optional*)\n";
 
     std::cout << std::setw(MAX_CMD_SIZE) << CMD_CHI_MAX <<
-        " : sets maximum chi parameter (real number, optional*)" << std::endl;
+        " : sets maximum chi parameter (real number, optional*)\n";
 
     std::cout << std::setw(MAX_CMD_SIZE) << CMD_FRAC_MIN <<
-        " : sets minimum frac parameter (real number, optional*)" << std::endl;
+        " : sets minimum frac parameter (real number, optional*)\n";
 
     std::cout << std::setw(MAX_CMD_SIZE) << CMD_CHI_SIZE <<
-        " : sets number of chi parameters (integer number, optional*)" << std::endl;
+        " : sets number of chi parameters (integer number, optional*)\n";
 
     std::cout << std::setw(MAX_CMD_SIZE) << CMD_FRAC_SIZE <<
-        " : sets number of frac parameters (integer number, optional*)" << std::endl;
+        " : sets number of frac parameters (integer number, optional*)\n";
 
     std::cout << std::setw(MAX_CMD_SIZE) << CMD_FILENAME <<
-        " : sets output file name (string)" << std::endl;
+        " : sets output file name (string)\n";
 
-    std::cout << " * Optional parameters have default values: " << std::endl;
+    std::cout << " * Optional parameters have default values:\n";
     print_default_values();
 
-    std::cout << " ____________________________" << std::endl;
+    std::cout << " ____________________________\n";
 }
 
 /**

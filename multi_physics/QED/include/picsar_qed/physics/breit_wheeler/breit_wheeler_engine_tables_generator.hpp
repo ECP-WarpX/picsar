@@ -120,7 +120,7 @@ namespace picsar::multi_physics::phys::breit_wheeler
 
             std::cout << " Done in " <<
                 std::chrono::duration_cast<std::chrono::milliseconds>(
-                    t_end - t_start).count()/1000.0 << " seconds. \n" << std::endl;
+                    t_end - t_start).count()/1000.0 << " seconds. \n\n";
         }
 
         m_init_flag = true;
@@ -234,7 +234,7 @@ namespace picsar::multi_physics::phys::breit_wheeler
 
             std::cout << " Done in " <<
                 std::chrono::duration_cast<std::chrono::milliseconds>(
-                    t_end - t_start).count()/1000.0 << " seconds. \n" << std::endl;
+                    t_end - t_start).count()/1000.0 << " seconds. \n\n";
         }
 
         m_init_flag = true;

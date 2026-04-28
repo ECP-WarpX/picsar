@@ -81,8 +81,8 @@ foreach(name ${EXAMPLE_NAMES})
     set_target_properties(${name} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/kokkos_examples)
 
-    # Require C++17 or newer
-    target_compile_features(${name} PUBLIC cxx_std_17)
+    # Require C++20 or newer
+    target_compile_features(${name} PUBLIC cxx_std_20)
     set_target_properties(${name} PROPERTIES CXX_EXTENSIONS OFF)
 
     message(STATUS "Example: ${name} (${src})")

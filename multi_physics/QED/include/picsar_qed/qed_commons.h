@@ -82,15 +82,11 @@
 /**
  * By doing
  * #define PXRMP_USE_CXX17_FOR_SPECIAL_FUNCTIONS
- * the user can choose to use special functions provided by the C++17
- * standard library if C++17 is available. Otherwise, special functions
- * provided by Boost are used.
+ * the user can choose to use special functions provided by the C++
+ * standard library. The default behavior is using
+ * special functions provided by Boost.
  */
- #ifdef PXRMP_USE_CXX17_FOR_SPECIAL_FUNCTIONS
-     #if __cplusplus < 201703L
-        #error C++17 or above is needed to enable special functions from the standard C++ library
-     #endif
- #endif
+ // #define PXRMP_USE_CXX17_FOR_SPECIAL_FUNCTIONS
 
 
 /**

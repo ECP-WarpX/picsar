@@ -57,7 +57,7 @@ const float float_tolerance = 5.0e-3;
 template <typename T>
 T constexpr tolerance()
 {
-    if(std::is_same<T,float>::value){
+    if(std::is_same_v<T,float>){
         return float_tolerance;
     }
     else{
@@ -71,7 +71,7 @@ const float float_small = 1.0e-4;
 template <typename T>
 T constexpr small()
 {
-    if(std::is_same<T,float>::value){
+    if(std::is_same_v<T,float>){
         return float_small;
     }
     else{
@@ -334,7 +334,7 @@ void do_dndt_test(
                 is_ok = false;
                 #pragma omp critical
                 {
-                    std::cout << exp_opt << " " << res_opt << std::endl;
+                    std::cout << exp_opt << " " << res_opt << "\n";
                 }
             }
         }
@@ -343,7 +343,7 @@ void do_dndt_test(
             is_ok = false;
             #pragma omp critical
             {
-                std::cout << exp_opt << " " << res_opt << std::endl;
+                std::cout << exp_opt << " " << res_opt << "\n";
             }
         }
     }

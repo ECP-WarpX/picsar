@@ -268,7 +268,7 @@ void do_test(Kokkos::Random_XorShift64_Pool<>& rand_pool)
         fill_opt_test<Real>(particle_data, how_many_repetitions, rand_pool);
 
     std::cout << ( fill_opt_success? "[ OK ]":"[ FAIL ]" )
-        << "  Fill Optical Depth : " << fill_opt_time << " ms" << std::endl;
+        << "  Fill Optical Depth : " << fill_opt_time << " ms\n";
 
 
     bool evolve_opt_success = false; double evolve_opt_time = 0.0;
@@ -277,7 +277,7 @@ void do_test(Kokkos::Random_XorShift64_Pool<>& rand_pool)
             particle_data, dndt_table_view, dt_test, how_many_repetitions);
 
     std::cout << ( evolve_opt_success? "[ OK ]":"[ FAIL ]" )
-        << "  Evolve Optical Depth : " << evolve_opt_time << " ms" << std::endl;
+        << "  Evolve Optical Depth : " << evolve_opt_time << " ms\n";
 
     bool phot_em_success = false; double phot_em_time = 0.0;
     std::tie(phot_em_success, phot_em_time) =
@@ -285,7 +285,7 @@ void do_test(Kokkos::Random_XorShift64_Pool<>& rand_pool)
             particle_data, phot_em_table_view, how_many_repetitions, rand_pool);
 
     std::cout << ( phot_em_success? "[ OK ]":"[ FAIL ]" )
-        << "  Photon Emission : " << phot_em_time << " ms" << std::endl;
+        << "  Photon Emission : " << phot_em_time << " ms\n";
 }
 
 
@@ -296,17 +296,17 @@ int main(int argc, char** argv)
         {
             Kokkos::Random_XorShift64_Pool<> rand_pool{random_seed};
 
-            std::cout << "*** Kokkos example: begin ***" << std::endl;
+            std::cout << "*** Kokkos example: begin ***\n";
 
-            std::cout << "   --- Double precision test ---" << std::endl;
+            std::cout << "   --- Double precision test ---\n";
             do_test<double>(rand_pool);
-            std::cout << "   --- END ---" << std::endl;
+            std::cout << "   --- END ---\n";
 
-            std::cout << "   --- Single precision test ---" << std::endl;
+            std::cout << "   --- Single precision test ---\n";
             do_test<float>(rand_pool);
-            std::cout << "   --- END ---" << std::endl;
+            std::cout << "   --- END ---\n";
 
-            std::cout << "___ END ___" << std::endl;
+            std::cout << "___ END ___\n";
         }
         Kokkos::finalize();
     }
