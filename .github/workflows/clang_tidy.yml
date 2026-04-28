@@ -5,17 +5,17 @@ on: [push, pull_request]
 jobs:
   run_clang_tidy:
     name: clang-tidy
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env: {CXXFLAGS: "-Werror -Wshadow -Woverloaded-virtual -Wunreachable-code -fsanitize=address -fsanitize=undefined"}
     steps:
     - uses: actions/checkout@v4
     - name: install dependencies
-      run: .github/workflows/dependencies/clang15.sh
+      run: .github/workflows/dependencies/clang18.sh
     - name: Build & run clang-tidy
       run: |
 
-        export CXX=$(which clang++-15)
-        export CC=$(which clang-15)
+        export CXX=$(which clang++-18)
+        export CC=$(which clang-18)
 
 
         # The following wrapper ensures that only source files

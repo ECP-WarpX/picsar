@@ -16,10 +16,10 @@ sudo apt-get -qqq update
 sudo apt-get install -y \
     build-essential   \
     cmake             \
-    clang-15          \
-    clang-tidy-15     \
+    clang-18          \
+    clang-tidy-18     \
     libblas-dev       \
-    libc++-15-dev     \
+    libc++-18-dev     \
     libboost-dev      \
     libboost-math-dev \
     libboost-test-dev \
