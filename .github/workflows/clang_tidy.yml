@@ -25,7 +25,7 @@ jobs:
         #!/bin/bash
         REGEX="[a-z_A-Z0-9\/]*multi_physics\/[a-z_A-Z0-9\/]+.cpp"
         if [[ \$4 =~ \$REGEX ]];then
-          clang-tidy-15 \$@
+          clang-tidy-18 \$@
         fi
         EOF
         chmod +x clang_tidy_wrapper
