@@ -6,7 +6,7 @@ jobs:
   run_clang_tidy:
     name: clang-tidy
     runs-on: ubuntu-24.04
-    env: {CXXFLAGS: "-Werror -Wshadow -Woverloaded-virtual -Wunreachable-code -fsanitize=address -fsanitize=undefined"}
+    env: {CXXFLAGS: "-Werror -Wshadow -Woverloaded-virtual -Wunreachable-code"}
     steps:
     - uses: actions/checkout@v4
     - name: install dependencies
