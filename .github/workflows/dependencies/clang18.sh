@@ -23,7 +23,7 @@ sudo apt-get install -y \
     libboost-dev      \
     libboost-math-dev \
     libboost-test-dev \
-    libomp-15-dev     \
+    libomp-18-dev     \
     python3-dev
 
 python3 -m pip install -U pip
