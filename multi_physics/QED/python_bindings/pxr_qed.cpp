@@ -280,7 +280,7 @@ compute_gamma_photon_wrapper(
     auto res = pyArr(how_many);
     auto* p_res = static_cast<REAL*>(res.request().ptr);
 
-    PXRQEDPY_FOR(static_cast<int>(how_many), [&, p_px=p_px, p_py=p_py, p_pz=p_pz](int i){
+    PXRQEDPY_FOR(static_cast<int>(how_many), [=](int i){
         p_res[i] =
             pxr_phys::compute_gamma_photon<REAL, UU>(
                 p_px[i], p_py[i], p_pz[i],
