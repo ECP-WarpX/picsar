@@ -18,8 +18,8 @@ set_target_properties(${name} PROPERTIES
 configure_file(table_inspector.ipynb
     ${CMAKE_BINARY_DIR}/tools/table_inspector.ipynb COPYONLY)
 
-# Require C++17 or newer
-target_compile_features(${name} PUBLIC cxx_std_17)
+# Require C++20 or newer
+target_compile_features(${name} PUBLIC cxx_std_20)
 set_target_properties(${name} PROPERTIES CXX_EXTENSIONS OFF)
 
 # Enable warnings
