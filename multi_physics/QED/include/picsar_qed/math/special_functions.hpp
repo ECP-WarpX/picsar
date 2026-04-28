@@ -5,8 +5,8 @@
 #include "picsar_qed/qed_commons.h"
 
 //This .hpp file is an extremely thin wrapper around special functions
-//(Bessel functions for now) defined either in the STL (if C++17 is available)
-//or in Boost library as a fallback.
+//(Bessel functions for now) defined either in the STL
+//or in Boost library (default).
 #ifdef PXRMP_USE_CXX17_FOR_SPECIAL_FUNCTIONS
     #include <cmath>
 #else
@@ -17,8 +17,8 @@ namespace picsar::multi_physics::math
 {
     /**
     * This function is a wrapper around the Bessel function
-    * of the second kind defined either in the STL (if C++17 is available)
-    * or in Boost library as a fallback (not usable on GPUs).
+    * of the second kind defined either in the STL
+    * or in Boost library (default).
     *
     * @tparam RealType the floating point type to be used
     * @param[in] v order of the function
