@@ -41,6 +41,6 @@ jobs:
             -DPXRMP_KOKKOS_EXAMPLE=ON             \
             -DKokkos_ENABLE_OPENMP=ON
 
-        cmake --build build_clang_tidy -j 4 > build_clang_tidy/clang-tidy.log
+        cmake --build build_clang_tidy -j 4 2> build_clang_tidy/clang-tidy.log
         cat build_clang_tidy/clang-tidy.log
         if [[ $(wc -m <build_clang_tidy/clang-tidy.log) -gt 1 ]]; then exit 1; fi
