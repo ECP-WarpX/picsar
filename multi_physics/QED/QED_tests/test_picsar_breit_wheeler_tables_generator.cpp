@@ -29,7 +29,7 @@ using namespace picsar::multi_physics::phys::breit_wheeler;
 template <typename T>
 T constexpr tolerance()
 {
-    if(std::is_same<T,float>::value){
+    if(std::is_same_v<T,float>){
         return float_tolerance;
     }
     else{
@@ -40,7 +40,7 @@ T constexpr tolerance()
 template <typename T>
 T constexpr small()
 {
-    if(std::is_same<T,float>::value){
+    if(std::is_same_v<T,float>){
         return float_small;
     }
     else{
