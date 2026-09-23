@@ -1,5 +1,8 @@
 # Check if unit_test package is available
-find_package(Boost 1.66.0 REQUIRED COMPONENTS unit_test_framework)
+find_package(Boost 1.71 CONFIG REQUIRED COMPONENTS unit_test_framework)
+
+# Boost.Test needs BOOST_TEST_DYN_LINK if linked as a shared library
+get_target_property(_pxrmp_boost_utf_type Boost::unit_test_framework TYPE)
 
 set(TEST_NAMES
     picsar_algo
@@ -41,8 +44,8 @@ foreach(name ${TEST_NAMES})
 
     # link to Boost libraries AND your targets and dependencies
     target_link_libraries(${name} PRIVATE PXRMP_QED)
-    target_link_libraries(${name} PRIVATE Boost::boost Boost::unit_test_framework)
-    if(PXRMP_BOOST_TEST_DYN)
+    target_link_libraries(${name} PRIVATE Boost::headers Boost::unit_test_framework)
+    if(_pxrmp_boost_utf_type STREQUAL "SHARED_LIBRARY")
         target_compile_definitions(${name} PRIVATE BOOST_TEST_DYN_LINK)
     endif()
 
