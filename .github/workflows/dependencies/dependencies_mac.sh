@@ -7,7 +7,10 @@
 
 set -eu -o pipefail
 
-brew unlink gcc
+# newer runner images do not ship GCC anymore
+if brew list --formula gcc &>/dev/null; then
+    brew unlink gcc
+fi
 brew update
 brew install boost
 brew install pybind11
