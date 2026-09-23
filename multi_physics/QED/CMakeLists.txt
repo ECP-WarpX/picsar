@@ -40,9 +40,6 @@ if(PXRMP_QED_OMP)
 endif()
 
 if(PXRMP_QED_TABLEGEN)
-    # Boost's own CMake config package (BoostConfig.cmake, Boost >= 1.70; we
-    # require >= 1.71 to avoid known issues in 1.70). CMake's FindBoost module
-    # is deprecated (policy CMP0167, CMake 3.30+) and thus not used.
     find_package(Boost 1.71 CONFIG)
     if(Boost_FOUND)
         target_link_libraries(PXRMP_QED INTERFACE Boost::headers)
