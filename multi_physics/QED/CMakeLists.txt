@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.12)
 
+# find_package uses upper-case <PACKAGENAME>_ROOT variables, e.g., BOOST_ROOT
+# as set by many HPC modules (CMake 3.27+)
+if(POLICY CMP0144)
+    cmake_policy(SET CMP0144 NEW)
+endif()
+
 project(
   PXRMP_QED
   DESCRIPTION
